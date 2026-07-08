@@ -1,4 +1,6 @@
 import { appVersionService } from '@/_services';
+import { yieldToMain } from '@/AppBuilder/_stores/batchManager';
+import { clearAllHintRebuildTimers } from '@/AppBuilder/_stores/slices/codeHinterSlice';
 import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import {
   resolveDynamicValues,
@@ -1102,9 +1104,10 @@ export const createComponentsSlice = (set, get) => ({
     return resolvedComponentValues[componentId];
   },
 
-  initDependencyGraph: (moduleId) => {
-    // Cancel any pending rerun timers from the previous page/context
+  initDependencyGraph: async (moduleId) => {
+    // Cancel any pending rerun/hint-rebuild timers from the previous page/context
     clearAllQueryRerunTimers();
+    clearAllHintRebuildTimers();
 
     const {
       getCurrentPageComponents,
@@ -1120,10 +1123,22 @@ export const createComponentsSlice = (set, get) => ({
     //TODO: Replace with object of component types
     let resolvedComponentValues = {};
 
+    // Yield every YIELD_CHUNK_SIZE components so a large page's dependency-graph
+    // build doesn't block the main thread in one uninterrupted synchronous pass —
+    // this loop calls addToDependencyGraph per component, the actual expensive
+    // (parsing/binding-analysis) work in this function. The batch stays open
+    // across the yields; startDependencyBatch/flushDependencyBatch just buffer
+    // mutations until the matching flush, so pausing mid-batch is safe.
+    const YIELD_CHUNK_SIZE = 100;
     startDependencyBatch();
-    Object.entries(components).forEach(([componentId, component]) => {
+    let processed = 0;
+    for (const [componentId, component] of Object.entries(components)) {
       resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
-    });
+      processed++;
+      if (processed % YIELD_CHUNK_SIZE === 0) {
+        await yieldToMain();
+      }
+    }
     flushDependencyBatch();
 
     setResolvedComponents(resolvedComponentValues, moduleId);

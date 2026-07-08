@@ -582,7 +582,7 @@ const useAppData = (
           moduleId
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
-        initDependencyGraph(moduleId);
+        await initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
@@ -845,7 +845,7 @@ const useAppData = (
         });
 
         setQueryMapping(moduleId);
-        initDependencyGraph(moduleId);
+        await initDependencyGraph(moduleId);
         setEditorLoading(false, moduleId);
       });
     }

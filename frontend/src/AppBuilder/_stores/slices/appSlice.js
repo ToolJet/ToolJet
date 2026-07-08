@@ -346,7 +346,7 @@ export const createAppSlice = (set, get) => ({
         moduleId
       );
       setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(queryParamsString))));
-      initDependencyGraph('canvas');
+      await initDependencyGraph('canvas');
       setIsComponentLayoutReady(false, moduleId);
       await yieldToMain(); // Let React commit all state changes before showing the Container
 

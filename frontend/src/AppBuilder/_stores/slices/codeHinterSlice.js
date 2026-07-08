@@ -3,6 +3,31 @@ import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 import { ROW_SCOPED_WIDGET_TYPES, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 /**
+ * Debounce timers for component/variable hint rebuilds, keyed by moduleId.
+ *
+ * Both rebuilds are fire-and-forget from every call site (componentsSlice.js's
+ * name-mapping mutations, resolvedSlice.js's setVariable/setDefaultExposedValues) —
+ * nothing reads suggestions.appHints synchronously right after calling them, so
+ * coalescing a burst of calls (e.g. one setDefaultExposedValues per ListView row
+ * mounting during a lazy-resolution cascade) into one rebuild is safe. Hints are
+ * autocomplete data; a bounded delay before the segment updates is imperceptible.
+ */
+const componentHintTimers = new Map();
+const variableHintTimers = new Map();
+const HINT_REBUILD_DEBOUNCE_MS = 150;
+
+/** Clear any pending debounced hint rebuilds (e.g. on page switch, before a fresh
+ *  initDependencyGraph run — a stale timer firing against the new page's module
+ *  state would just rebuild what's about to be rebuilt anyway, but there's no
+ *  reason to let it race). */
+export function clearAllHintRebuildTimers() {
+  componentHintTimers.forEach((timerId) => clearTimeout(timerId));
+  componentHintTimers.clear();
+  variableHintTimers.forEach((timerId) => clearTimeout(timerId));
+  variableHintTimers.clear();
+}
+
+/**
  * Module-level single-entry caches for context hints.
  *
  * These live OUTSIDE the Zustand/Immer-managed state intentionally:
@@ -234,17 +259,24 @@ export const createCodeHinterSlice = (set, get) => ({
   },
 
   rebuildComponentHints: (moduleId = 'canvas') => {
-    const state = get();
-    const componentHints = buildComponentHints(state, moduleId);
-    set(
-      (draft) => {
-        draft.suggestions.segments.components = componentHints;
-        draft.suggestions.appHints = mergeAllSegments(draft.suggestions.segments);
-        draft._contextHintsVersion += 1;
-      },
-      false,
-      'rebuildComponentHints'
-    );
+    if (componentHintTimers.has(moduleId)) {
+      clearTimeout(componentHintTimers.get(moduleId));
+    }
+    const timerId = setTimeout(() => {
+      componentHintTimers.delete(moduleId);
+      const state = get();
+      const componentHints = buildComponentHints(state, moduleId);
+      set(
+        (draft) => {
+          draft.suggestions.segments.components = componentHints;
+          draft.suggestions.appHints = mergeAllSegments(draft.suggestions.segments);
+          draft._contextHintsVersion += 1;
+        },
+        false,
+        'rebuildComponentHints'
+      );
+    }, HINT_REBUILD_DEBOUNCE_MS);
+    componentHintTimers.set(moduleId, timerId);
   },
 
   rebuildQueryHints: (moduleId = 'canvas', queryId = null) => {
@@ -280,16 +312,23 @@ export const createCodeHinterSlice = (set, get) => ({
   },
 
   rebuildVariableHints: (moduleId = 'canvas') => {
-    const state = get();
-    const variableHints = buildVariableHints(state, moduleId);
-    set(
-      (draft) => {
-        draft.suggestions.segments.variables = variableHints;
-        draft.suggestions.appHints = mergeAllSegments(draft.suggestions.segments);
-      },
-      false,
-      'rebuildVariableHints'
-    );
+    if (variableHintTimers.has(moduleId)) {
+      clearTimeout(variableHintTimers.get(moduleId));
+    }
+    const timerId = setTimeout(() => {
+      variableHintTimers.delete(moduleId);
+      const state = get();
+      const variableHints = buildVariableHints(state, moduleId);
+      set(
+        (draft) => {
+          draft.suggestions.segments.variables = variableHints;
+          draft.suggestions.appHints = mergeAllSegments(draft.suggestions.segments);
+        },
+        false,
+        'rebuildVariableHints'
+      );
+    }, HINT_REBUILD_DEBOUNCE_MS);
+    variableHintTimers.set(moduleId, timerId);
   },
 
   rebuildGlobalHints: (moduleId = 'canvas') => {
