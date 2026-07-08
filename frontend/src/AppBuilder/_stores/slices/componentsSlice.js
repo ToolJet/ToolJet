@@ -37,6 +37,8 @@ import {
   engineCutoverPrepare,
   resolveDependencyViaEngine,
 } from '@/AppBuilder/_engine/engineBridge';
+import { isWorkerEngineShadowActive, workerEngineShadowOnCascade } from '@/AppBuilder/_engine/workerEngineBridge';
+import { isWorkerCutoverActive } from '@/AppBuilder/_engine/workerWriteBehind';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 import {
   TOP_ALIGNMENT_HEIGHT_INCREMENT,
@@ -2733,6 +2735,22 @@ export const createComponentsSlice = (set, get) => ({
 
     const [entityType, entityId, type, ...keys] = dependency.split('.');
     const key = keys.join('.');
+
+    // Phase 6 "sole computer" cutover (experimental, opt-in): for bindings
+    // workerWriteBehind.ts already covers (flat components/others,
+    // non-array-notation — row-scoped deps never reach here, handled by the
+    // itemsLength branch above; array-notation has no worker seam), skip
+    // this thread's own computation entirely and let the worker's async
+    // answer be the ONLY writer. See workerWriteBehind.ts's isWorkerCutoverActive
+    // doc comment for the trade-off (propagation latency) and rough edges.
+    if (
+      isWorkerCutoverActive() &&
+      !hasArrayNotation(key) &&
+      ((entityType === 'components' && type !== undefined) || (entityType === 'others' && type === undefined))
+    ) {
+      return;
+    }
+
     const unResolvedValue = getNodeData(dependency, moduleId);
     const exposedValues = preloadedExposedValues || getAllExposedValues(moduleId);
     // Flag-gated engine seam: identical to the direct call while cutover is off;
@@ -2854,6 +2872,9 @@ export const createComponentsSlice = (set, get) => ({
     // called): mirrors this cascade into the ResolutionEngine and compares its
     // output against what the store just wrote. Phase 2 cutover validation.
     if (isEngineShadowActive()) engineShadowOnCascade(path, moduleId);
+    // Phase 5: same mirror, hosted in a Web Worker instead of the main
+    // thread — batched per frame, diffed the same way.
+    if (isWorkerEngineShadowActive()) workerEngineShadowOnCascade(path, moduleId);
   },
   computePageSettings: (currentPageSettings) => {
     try {

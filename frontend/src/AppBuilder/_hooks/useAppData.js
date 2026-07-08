@@ -29,6 +29,8 @@ import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
+import { isWorkerEngineShadowActive, startWorkerEngineShadow } from '@/AppBuilder/_engine/workerEngineBridge';
+import { startWorkerWriteBehind } from '@/AppBuilder/_engine/workerWriteBehind';
 
 /* 
 Whitelist of cross-cutting query option keys that need snake→camel normalization.
@@ -68,6 +70,17 @@ export const normalizeQueryTransformationOptions = (query) => {
     }
   });
   return query;
+};
+
+/** Phase 6: promotes the worker engine from a dev-console-toggled shadow to
+ *  always-on for every loaded app (editor and viewer) — the mechanism itself
+ *  (main thread stays synchronous/authoritative, worker confirms/corrects
+ *  asynchronously) is unchanged, only WHEN it starts. Idempotent — safe to
+ *  call once per module init even though it's really a once-per-app-load
+ *  singleton session (see workerEngineBridge.ts). */
+const ensureWorkerEngineActive = () => {
+  if (!isWorkerEngineShadowActive()) startWorkerEngineShadow();
+  startWorkerWriteBehind();
 };
 
 const useAppData = (
@@ -583,6 +596,7 @@ const useAppData = (
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
         await initDependencyGraph(moduleId);
+        ensureWorkerEngineActive();
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
@@ -846,6 +860,7 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         await initDependencyGraph(moduleId);
+        ensureWorkerEngineActive();
         setEditorLoading(false, moduleId);
       });
     }

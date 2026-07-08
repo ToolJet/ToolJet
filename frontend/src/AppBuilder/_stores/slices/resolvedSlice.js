@@ -460,6 +460,79 @@ export const createResolvedSlice = (set, get) => {
         }
       );
     },
+    /** Batched sibling of setResolvedComponentByProperty — one set() call for
+     *  N row updates instead of N separate calls (perf: avoids N re-render
+     *  triggers for e.g. a 1000-row Table write-back). Single-level row
+     *  scoping only (index must be a scalar per update) — matches the worker
+     *  engine's own lack of nested-array (ListView-in-ListView) modeling. */
+    setResolvedComponentByPropertyBatch: (componentId, type, property, updates, moduleId = 'canvas') => {
+      const validated = updates.map(({ index, value }) => ({
+        index,
+        value: get().debugger.validateProperty(componentId, type, property, value, moduleId),
+      }));
+
+      set(
+        (state) => {
+          if (!state.resolvedStore.modules[moduleId]) {
+            state.resolvedStore.modules[moduleId] = { components: {} };
+          }
+          if (!state.resolvedStore.modules[moduleId].components[componentId]) {
+            state.resolvedStore.modules[moduleId].components[componentId] = { ...DEFAULT_COMPONENT_STRUCTURE };
+          }
+
+          const unwrapToObject = (val) => {
+            let result = val;
+            while (result && Array.isArray(result)) {
+              result = result[0];
+            }
+            return result && typeof result === 'object' ? result : null;
+          };
+
+          if (!Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
+            const existing = state.resolvedStore.modules[moduleId].components[componentId];
+            const unwrapped = unwrapToObject(existing);
+            state.resolvedStore.modules[moduleId].components[componentId] = unwrapped ? [unwrapped] : [];
+          }
+
+          const arr = state.resolvedStore.modules[moduleId].components[componentId];
+
+          for (const { index, value } of validated) {
+            let componentObj = unwrapToObject(arr[index]);
+            if (!componentObj) {
+              const source = unwrapToObject(arr[0]);
+              componentObj = source ? { ...source } : { ...DEFAULT_COMPONENT_STRUCTURE };
+            } else {
+              componentObj = { ...componentObj };
+            }
+            if (!componentObj[type]) {
+              componentObj[type] = {};
+            } else {
+              componentObj[type] = { ...componentObj[type] };
+            }
+            componentObj[type][property] = value;
+            arr[index] = componentObj;
+          }
+        },
+        false,
+        { type: 'setResolvedComponentByPropertyBatch', payload: { componentId, type, property, updates, moduleId } }
+      );
+    },
+    /** Direct assignment for the non-component cascade targets (canvas
+     *  background color, page-sidebar visibility) — the `others.<key>`
+     *  shape applyDependencyUpdate's `type === undefined` branch writes.
+     *  No validation, mirrors what that branch already does today. */
+    setResolvedOtherByKey: (key, value, moduleId = 'canvas') => {
+      set(
+        (state) => {
+          if (!state.resolvedStore.modules[moduleId].others) {
+            state.resolvedStore.modules[moduleId].others = {};
+          }
+          state.resolvedStore.modules[moduleId].others[key] = value;
+        },
+        false,
+        { type: 'setResolvedOtherByKey', payload: { key, value, moduleId } }
+      );
+    },
     setExposedValue: (componentId, property, value, moduleId = 'canvas') => {
       const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId]?.[property];
       if (existing !== undefined && _.isEqual(existing, value)) return;

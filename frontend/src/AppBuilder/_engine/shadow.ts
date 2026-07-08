@@ -16,8 +16,7 @@
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { ResolutionEngine, ROW_UNRESOLVABLE } from './ResolutionEngine';
-import { serializeGraph } from './graphSerializer';
-import { buildRowScopedEngineSeed, getComparableRowIndices } from './rowScopedShadow';
+import { buildEngineInit, getComparableRowIndices } from './rowScopedShadow';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -69,15 +68,7 @@ export function runShadowCheck(moduleId = 'canvas'): ShadowReport {
   }
 
   const engine = new ResolutionEngine();
-  engine.init({
-    graph: serializeGraph(liveGraph),
-    bindings: [],
-    // raw: true — this feeds ResolutionEngine.init, which _.cloneDeep's the
-    // seed; cloning the lazy-ListView-read Proxy from getAllExposedValues
-    // would break it (see resolvedSlice.js's getAllExposedValues comment).
-    seedState: store.getAllExposedValues(moduleId, { raw: true }),
-    ...buildRowScopedEngineSeed(store, moduleId),
-  });
+  engine.init(buildEngineInit(store, moduleId));
 
   const report: ShadowReport = {
     moduleId,

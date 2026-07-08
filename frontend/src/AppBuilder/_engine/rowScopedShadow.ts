@@ -12,6 +12,7 @@
  * something the engine itself needs to know how to do.
  */
 import { ROW_SCOPED_WIDGET_TYPES, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { serializeGraph } from './graphSerializer';
 import type { EngineInit } from './ResolutionEngine';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -62,6 +63,22 @@ export function buildRowScopedEngineSeed(store: any, moduleId: string): RowScope
   }
 
   return { rowScopedParentOf, containerChildrenMapping, customResolvables, resolvableKeyOf, lazyRowIndicesOf };
+}
+
+/** Builds a full EngineInit snapshot from the live store — the seeding logic
+ *  shared by every engine mirror (main-thread continuous shadow, cutover,
+ *  one-shot shadow check, worker-hosted shadow). */
+export function buildEngineInit(store: any, moduleId: string): EngineInit {
+  const liveGraph = store.dependencyGraph.modules[moduleId]?.graph;
+  return {
+    graph: serializeGraph(liveGraph),
+    bindings: [],
+    // raw: true — this gets _.cloneDeep'd right after (ResolutionEngine.init),
+    // and cloning the lazy-ListView-read Proxy from getAllExposedValues
+    // would break it (see resolvedSlice.js's getAllExposedValues comment).
+    seedState: store.getAllExposedValues(moduleId, { raw: true }),
+    ...buildRowScopedEngineSeed(store, moduleId),
+  };
 }
 
 /** Nearest row-scoped ancestor id for `entityId`, or null if it isn't one —

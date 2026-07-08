@@ -16,9 +16,21 @@
  * each needs its own shadow-verification because their param lists differ.
  */
 import moment from 'moment';
-import _ from 'lodash';
 import { getCompiledFn } from '@/AppBuilder/_utils/resolverCache';
 import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
+
+// babel-plugin-import (configured for lodash in webpack.config.js) assumes
+// every usage of a default-imported lodash object is a `_.method()` member
+// access it can rewrite to a `lodash/method` import, and unconditionally
+// strips the original `import ... from 'lodash'` statement on that
+// assumption. This file hands the WHOLE lodash object to arbitrary user
+// `{{ }}` code (any method might be called), so there's no static
+// member-access site for the plugin to see — it drops the import anyway,
+// leaving a bare unbound `_` reference that throws at runtime. A plain
+// require() isn't an `import` AST node, so the plugin's rewriter never
+// touches it.
+declare const require: (id: string) => any;
+const _lodash = require('lodash');
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type ResolverState = Record<string, any>;
@@ -179,7 +191,7 @@ export const resolveCode = (
       ['constants', state?.constants],
       ['parameters', state?.parameters],
       ['moment', moment],
-      ['_', _],
+      ['_', _lodash],
       ...Object.entries(customObjects),
     ],
     withError,

@@ -12,9 +12,10 @@
  * INVOKE_CSA / FIRE_EVENT / SET_VISIBLE_ROWS land with Phase 3 contracts.
  */
 import _ from 'lodash';
-import { resolveDynamicValues } from './resolver';
+import { resolveDynamicValues, getDynamicVariables } from './resolver';
 import { deserializeGraph } from './graphSerializer';
 import { getContract } from './contracts';
+import { isQueryDataHandle } from '@/AppBuilder/_utils/queryDataHandle';
 import type {
   BindingDefinition,
   CascadeResult,
@@ -43,6 +44,37 @@ import type {
  *  comparing rows that come back as this sentinel instead of treating them
  *  as a divergence. */
 export const ROW_UNRESOLVABLE = Symbol('row-unresolvable');
+
+/** True if `code` references a runtimeState path currently holding a
+ *  QueryDataHandle (Phase 6 Stage 2) in a way that ISN'T a pure single-
+ *  variable pass-through of that exact path. A pure reference (`{{
+ *  queries.x.data }}`, nothing else) just hands the handle through untouched
+ *  — harmless, matches this engine's own single-variable fast path. Anything
+ *  else (`.filter(...)`, `.length` via string interpolation, multi-variable
+ *  templates, `Array.isArray()` checks) could silently resolve to a wrong
+ *  value instead of the real array, since the handle isn't array-shaped —
+ *  conservatively treated as unsafe rather than trying to enumerate every
+ *  property/method a handle happens to support. Callers must skip resolving
+ *  `code` entirely when this returns true, leaving the main thread's own
+ *  synchronous (real-array) computation as the only answer for that path. */
+function referencesQueryDataHandleUnsafely(code: string, runtimeState: RuntimeState): boolean {
+  const variables = getDynamicVariables(code) ?? [];
+  if (!variables.length) return false;
+  const trimmedCode = code.trim();
+  for (const variable of variables) {
+    const inner = variable.slice(2, -2).trim();
+    let value: unknown;
+    try {
+      value = _.get(runtimeState, inner);
+    } catch {
+      continue;
+    }
+    if (!isQueryDataHandle(value)) continue;
+    const isPureSingleReference = variables.length === 1 && trimmedCode === variable.trim();
+    if (!isPureSingleReference) return true;
+  }
+  return false;
+}
 
 /** One overlay per row-scoped parent, built once and reused across all of
  *  that parent's descendant bindings within one resolution pass — mirrors
@@ -220,6 +252,10 @@ export class ResolutionEngine {
         continue;
       }
       const scopedState = overlay ? { ...this.runtimeState, components: overlay.scoped } : this.runtimeState;
+      if (referencesQueryDataHandleUnsafely(code, scopedState)) {
+        values[i] = ROW_UNRESOLVABLE;
+        continue;
+      }
       values[i] = resolveDynamicValues(code, scopedState, rows[i] ?? {}, false, []);
     }
     return values;
@@ -235,6 +271,7 @@ export class ResolutionEngine {
     const overlayCache = new Map<string, RowScopeOverlay | null>();
     for (const [path, code] of this.bindings) {
       const rowValues = this.resolveRowScoped(path, code, overlayCache);
+      if (rowValues === null && referencesQueryDataHandleUnsafely(code, this.runtimeState)) continue;
       const value = rowValues ?? resolveDynamicValues(code, this.runtimeState, {}, false, []);
       updates.push({ path, value });
     }
@@ -338,6 +375,7 @@ export class ResolutionEngine {
       const code = this.bindings.get(path);
       if (code === undefined) continue; // structural node (base/data path), nothing to resolve
       const rowValues = this.resolveRowScoped(path, code, overlayCache);
+      if (rowValues === null && referencesQueryDataHandleUnsafely(code, this.runtimeState)) continue;
       const value = rowValues ?? resolveDynamicValues(code, this.runtimeState, {}, false, []);
       _.set(this.runtimeState, path, value);
       updates.push({ path, value });

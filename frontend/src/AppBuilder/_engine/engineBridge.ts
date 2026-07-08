@@ -19,33 +19,36 @@
  * cascade, so structural edits need no restart.
  */
 import useStore from '@/AppBuilder/_stores/store';
-import { ResolutionEngine, ROW_UNRESOLVABLE } from './ResolutionEngine';
-import { serializeGraph } from './graphSerializer';
-import { buildRowScopedEngineSeed, getComparableRowIndices } from './rowScopedShadow';
+import { ResolutionEngine } from './ResolutionEngine';
+import { buildRowScopedEngineSeed, buildEngineInit, getComparableRowIndices } from './rowScopedShadow';
+import { compareUpdatesToStore, type Divergence, type CompareSession } from './shadowCompare';
 import { get as lodashGet } from 'lodash';
+import {
+  isWorkerEngineShadowActive,
+  startWorkerEngineShadow,
+  stopWorkerEngineShadow,
+  workerEngineShadowStats,
+  invalidateWorkerEngineMirrors,
+} from './workerEngineBridge';
+import {
+  startWorkerWriteBehind,
+  stopWorkerWriteBehind,
+  workerWriteBehindStats,
+  startWorkerCutover,
+  stopWorkerCutover,
+  isWorkerCutoverActive,
+} from './workerWriteBehind';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-interface Divergence {
-  path: string;
-  engineValue: unknown;
-  storeValue: unknown;
-  trigger: string;
-}
-
-interface ShadowSession {
+interface ShadowSession extends CompareSession {
   engines: Map<string, ResolutionEngine>;
   cascades: number;
-  compared: number;
-  matches: number;
-  divergences: Divergence[];
   /** Where affected paths went instead of being compared — coverage truth. */
-  skipped: {
+  skipped: CompareSession['skipped'] & {
     querySentinels: number;
-    rowScoped: number;
     structuralNoBinding: number;
     nonComponent: number;
-    rowUnresolvable: number;
   };
 }
 
@@ -68,18 +71,9 @@ function getOrInitEngine(moduleId: string): ResolutionEngine | null {
   let engine = session.engines.get(moduleId);
   if (!engine) {
     const store = (useStore as any).getState();
-    const liveGraph = store.dependencyGraph.modules[moduleId]?.graph;
-    if (!liveGraph) return null;
+    if (!store.dependencyGraph.modules[moduleId]?.graph) return null;
     engine = new ResolutionEngine();
-    engine.init({
-      graph: serializeGraph(liveGraph),
-      bindings: [],
-      // raw: true — this gets _.cloneDeep'd right after (ResolutionEngine.init),
-      // and cloning the lazy-ListView-read Proxy from getAllExposedValues
-      // would break it (see resolvedSlice.js's getAllExposedValues comment).
-      seedState: store.getAllExposedValues(moduleId, { raw: true }),
-      ...buildRowScopedEngineSeed(store, moduleId),
-    });
+    engine.init(buildEngineInit(store, moduleId));
     session.engines.set(moduleId, engine);
   }
   return engine;
@@ -141,74 +135,7 @@ export function engineShadowOnCascade(path: string, moduleId: string): void {
 
   queueMicrotask(() => {
     if (!session) return;
-    const state = (useStore as any).getState();
-    const resolvedModule = state.resolvedStore.modules[moduleId];
-    for (const { path: bindingPath, value: engineValue } of toCompare) {
-      const [entityType, entityId, type, ...keys] = bindingPath.split('.');
-      const key = keys.join('.');
-      const storeNode = resolvedModule?.[entityType]?.[entityId];
-
-      if (Array.isArray(storeNode)) {
-        // Row-scoped: compare only the row indices the store has actually
-        // resolved (respects isLazyResolvableParent/getLazyRowIndices) —
-        // comparing against a row the store hasn't computed yet would just
-        // be a false divergence, not a real one.
-        const comparableIndices =
-          entityType === 'components' ? getComparableRowIndices(state, entityId, moduleId) : null;
-        if (!comparableIndices) {
-          session.skipped.rowScoped++;
-          continue;
-        }
-        const engineValues = Array.isArray(engineValue) ? engineValue : [];
-        for (const i of comparableIndices) {
-          const storeRowNode = storeNode[i];
-          if (storeRowNode === undefined) continue; // store hasn't materialized this row yet
-          if (engineValues[i] === ROW_UNRESOLVABLE) {
-            session.skipped.rowUnresolvable++;
-            continue; // engine's seed has no data for a descendant this row needs — see ROW_UNRESOLVABLE
-          }
-          const validatedEngineValue = type
-            ? state.debugger.validateProperty(entityId, type, key, engineValues[i], moduleId)
-            : engineValues[i];
-          const storeValue = type ? lodashGet(storeRowNode, [type, ...key.split('.')]) : storeRowNode;
-          session.compared++;
-          if (stable(validatedEngineValue) === stable(storeValue)) {
-            session.matches++;
-          } else {
-            const rowPath = `${bindingPath}[${i}]`;
-            session.divergences.push({ path: rowPath, engineValue: validatedEngineValue, storeValue, trigger: path });
-            // eslint-disable-next-line no-console
-            console.warn('[engine-shadow] divergence', {
-              path: rowPath,
-              engineValue: validatedEngineValue,
-              storeValue,
-              trigger: path,
-            });
-          }
-        }
-        continue;
-      }
-
-      // Compare like-for-like: the store writes VALIDATED values.
-      const validatedEngineValue =
-        entityType === 'components' && entityId && type
-          ? state.debugger.validateProperty(entityId, type, key, engineValue, moduleId)
-          : engineValue;
-      const storeValue = type ? lodashGet(storeNode, [type, ...key.split('.')]) : storeNode;
-      session.compared++;
-      if (stable(validatedEngineValue) === stable(storeValue)) {
-        session.matches++;
-      } else {
-        session.divergences.push({ path: bindingPath, engineValue: validatedEngineValue, storeValue, trigger: path });
-        // eslint-disable-next-line no-console
-        console.warn('[engine-shadow] divergence', {
-          path: bindingPath,
-          engineValue: validatedEngineValue,
-          storeValue,
-          trigger: path,
-        });
-      }
-    }
+    compareUpdatesToStore(toCompare, path, moduleId, session, 'main');
   });
 }
 
@@ -271,24 +198,16 @@ export function invalidateEngineMirrors(moduleId?: string): void {
     session?.engines.clear();
   }
   cutoverValues.clear();
+  invalidateWorkerEngineMirrors(moduleId);
 }
 
 function getOrInitCutoverEngine(moduleId: string): ResolutionEngine | null {
   let engine = cutoverEngines.get(moduleId);
   if (!engine) {
     const store = (useStore as any).getState();
-    const liveGraph = store.dependencyGraph.modules[moduleId]?.graph;
-    if (!liveGraph) return null;
+    if (!store.dependencyGraph.modules[moduleId]?.graph) return null;
     engine = new ResolutionEngine();
-    engine.init({
-      graph: serializeGraph(liveGraph),
-      bindings: [],
-      // raw: true — this gets _.cloneDeep'd right after (ResolutionEngine.init),
-      // and cloning the lazy-ListView-read Proxy from getAllExposedValues
-      // would break it (see resolvedSlice.js's getAllExposedValues comment).
-      seedState: store.getAllExposedValues(moduleId, { raw: true }),
-      ...buildRowScopedEngineSeed(store, moduleId),
-    });
+    engine.init(buildEngineInit(store, moduleId));
     cutoverEngines.set(moduleId, engine);
   }
   return engine;
@@ -343,7 +262,13 @@ export function resolveDependencyViaEngine(
     if (stable(engineValue) === stable(storeValue)) {
       cutoverStats.verifyMatches++;
     } else {
-      cutoverStats.verifyDivergences.push({ path: dependency, engineValue, storeValue, trigger: '(cutover-verify)' });
+      cutoverStats.verifyDivergences.push({
+        path: dependency,
+        engineValue,
+        storeValue,
+        trigger: '(cutover-verify)',
+        source: 'main',
+      });
       // eslint-disable-next-line no-console
       console.warn('[engine-cutover] divergence — using store value', { path: dependency, engineValue, storeValue });
     }
@@ -371,4 +296,44 @@ if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
   };
   (window as any).__tjEngineShadowStats = () => engineShadowStats();
   (window as any).__tjEngineShadowStop = () => stopEngineShadow();
+  (window as any).__tjWorkerEngineShadowStart = () => {
+    startWorkerEngineShadow();
+    // eslint-disable-next-line no-console
+    console.log(
+      '[engine-shadow:worker] worker mirroring started — interact with the app, then __tjWorkerEngineShadowStats()'
+    );
+  };
+  (window as any).__tjWorkerEngineShadowStats = () => workerEngineShadowStats();
+  (window as any).__tjWorkerEngineShadowStop = () => stopWorkerEngineShadow();
+  (window as any).__tjWorkerEngineWriteBehindStart = () => {
+    // Write-behind rides the same worker-command pipeline the Phase 5 shadow
+    // uses (dispatchWorkerCommand early-returns without an active shadow
+    // session) — start that too if it isn't already running.
+    if (!isWorkerEngineShadowActive()) startWorkerEngineShadow();
+    startWorkerWriteBehind();
+    // eslint-disable-next-line no-console
+    console.log(
+      '[worker-write-behind] started — interact with the app, then __tjWorkerEngineWriteBehindStats()'
+    );
+  };
+  (window as any).__tjWorkerEngineWriteBehindStats = () => workerWriteBehindStats();
+  (window as any).__tjWorkerEngineWriteBehindStop = () => stopWorkerWriteBehind();
+  // Experimental "sole computer" cutover — see workerWriteBehind.ts's
+  // isWorkerCutoverActive doc comment. Off by default; the app bootstrap
+  // (useAppData.js) only starts plain write-behind, never this.
+  (window as any).__tjWorkerEngineCutoverStart = () => {
+    startWorkerCutover();
+    // eslint-disable-next-line no-console
+    console.log(
+      '[worker-cutover] started — main thread now skips computing eligible bindings; worker write-behind is the sole writer for them'
+    );
+  };
+  (window as any).__tjWorkerEngineCutoverStop = () => stopWorkerCutover();
+  (window as any).__tjWorkerEngineCutoverActive = () => isWorkerCutoverActive();
+  // Dev-only manual cascade trigger — for forcing a race from the console
+  // (e.g. two calls on the same path to test isSourcePathStale) without
+  // needing raw store access, which isn't otherwise exposed on `window`.
+  (window as any).__tjUpdateDependencyValues = (path: string, moduleId = 'canvas') => {
+    (useStore as any).getState().updateDependencyValues(path, moduleId);
+  };
 }
