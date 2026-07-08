@@ -49,6 +49,9 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'org_constant_crud', default: false })
   orgConstantCRUD: boolean;
 
+  @Column({ name: 'tjdb_crud', default: false })
+  tjdbCRUD: boolean;
+
   @Column({ name: 'data_source_create', default: false })
   dataSourceCreate: boolean;
 
