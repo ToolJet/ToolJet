@@ -38,7 +38,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
       // For branch-type versions the `name` column holds a UUID. Replace with the
       // human-readable branch name so globals.appVersion.name resolves correctly.
       if (editorVersion?.versionType === AppVersionType.BRANCH && editorVersion.branch?.name) {
-        editorVersion.name = editorVersion.branch.name;
+        editorVersion.displayName = editorVersion.branch.name;
       }
 
       return await this.appEnvironmentUtilService.init(editorVersion, organizationId, false, manager);
@@ -225,8 +225,9 @@ export class AppEnvironmentService implements IAppEnvironmentService {
         }
       }
 
-      return await manager.find(AppVersion, {
+      const versions = await manager.find(AppVersion, {
         where: { ...conditions },
+        relations: ['branch'],
         order: {
           createdAt: 'DESC',
         },
@@ -248,6 +249,15 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'isSynced',
         ],
       });
+
+      // For branch-type versions, replace the UUID name with the human-readable branch name
+      for (const version of versions) {
+        if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
+          version.displayName = version.branch.name;
+        }
+      }
+
+      return versions;
     });
   }
 

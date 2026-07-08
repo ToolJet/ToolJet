@@ -143,7 +143,7 @@ export class VersionService implements IVersionService {
     // so all consumers (export dialog, globals.appVersion.name, etc.) display correctly.
     for (const version of result) {
       if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
-        version.name = version.branch.name;
+        version.displayName = version.branch.name;
       }
     }
 

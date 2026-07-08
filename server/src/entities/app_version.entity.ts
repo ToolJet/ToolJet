@@ -147,6 +147,14 @@ export class AppVersion extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
+  /**
+   * Human-readable name for display purposes. For branch-type versions, the DB
+   * `name` column stores a UUID (used as a unique key); this transient field
+   * carries the actual branch name from WorkspaceBranch. For regular versions
+   * it mirrors `name`. Not persisted — set at query time by service methods.
+   */
+  displayName?: string;
+
   @ManyToOne(() => App, (appVersion) => appVersion.id)
   @JoinColumn({ name: 'app_id' })
   app: App;

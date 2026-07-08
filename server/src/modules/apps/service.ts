@@ -729,9 +729,13 @@ export class AppsService implements IAppsService {
     const targetBranchId = branchId ?? defaultBranchId;
     const version = await this.versionRepository.findOne({
       where: { appId: app.id, branchId: targetBranchId, isStub: false },
+      relations: ['branch'],
       order: { updatedAt: 'DESC' },
     });
     if (version) {
+      if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
+        version.displayName = version.branch.name;
+      }
       app.editingVersion = version;
       (app as any).isStub = false;
     } else {
