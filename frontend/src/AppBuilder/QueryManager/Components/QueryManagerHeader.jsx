@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
+import { isAbortUnsupported } from '@/AppBuilder/QueryManager/constants';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components';
 import { Button } from 'react-bootstrap';
@@ -453,7 +453,7 @@ const AbortButton = () => {
     return () => clearTimeout(timer);
   }, [isActive]);
 
-  if (ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind) || !isActive || !hasExceededDelay) return null;
+  if (isAbortUnsupported(selectedQuery) || !isActive || !hasExceededDelay) return null;
 
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
   const shortcutDisplay = `Stop waiting for the response  ${isMac ? '⌘.' : 'Ctrl+.'}`;

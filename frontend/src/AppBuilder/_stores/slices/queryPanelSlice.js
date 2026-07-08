@@ -11,6 +11,11 @@ import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel
 import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
 import { ABORT_UNSUPPORTED_KINDS, defaultSources } from '@/AppBuilder/QueryManager/constants';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import {
+  runJsInWorker,
+  isRunJsWorkerEnabled,
+  terminateRunJsWorker,
+} from '@/AppBuilder/_stores/slices/runjs/runjsWorkerBridge';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -863,13 +868,17 @@ export const createQueryPanelSlice = (set, get) => ({
         controller.abort();
         queryAbortControllers.delete(queryId);
       }
+      // Worker-mode RunJS (opt-in MVP): the one query kind where abort is a
+      // REAL hard-cancel (worker.terminate()) rather than the cosmetic-only
+      // loading-state clear below — see runjsWorkerBridge.ts.
+      const terminatedWorker = terminateRunJsWorker(queryId);
       // Always clear loading states — covers both the run path and the preview path,
       // and recovers any stuck state even if the controller was already cleaned up.
       const setResolvedQuery = get().setResolvedQuery;
       if (queryId && setResolvedQuery) setResolvedQuery(queryId, { isLoading: false }, moduleId);
       get().queryPanel.setIsPreviewQueryLoading(false);
       get().queryPanel.setPreviewLoading(false);
-      return !!controller;
+      return !!controller || terminatedWorker;
     },
 
     previewQuery: (
@@ -1688,6 +1697,40 @@ export const createQueryPanelSlice = (set, get) => ({
             return resolvedState.queries[key].isLoading;
           },
         };
+      }
+
+      // Opt-in MVP: run this script in a Web Worker instead of in-process.
+      // Explicit per-query setting only (query.options.runInWorker), or a
+      // dev-console override (__tjRunJsWorkerEnable()) — never a default
+      // migration. Known limitations vs. the in-process path: JS libraries
+      // aren't available (jsLibraryRegistry entries aren't structured-clone-
+      // able), and actions.getVariable()/getPageVariable() become Promises
+      // (they're raw synchronous values today) — see runjs.worker.ts's
+      // header comment for the full compatibility notes.
+      const runInWorker = queryDetails?.options?.runInWorker || isRunJsWorkerEnabled();
+      if (runInWorker) {
+        result = await runJsInWorker(
+          queryId,
+          code,
+          {
+            components: resolvedState.components,
+            queriesInResolvedState,
+            globals: resolvedState.globals,
+            page: deepClone(resolvedState.page),
+            variables: deepClone(resolvedState.variables),
+            constants: resolvedState?.constants,
+            parameters: !_.isEmpty(formattedParams) ? formattedParams : undefined,
+            input: appType === 'module' ? resolvedState.input : undefined,
+          },
+          actions
+        );
+        if (hasCircularDependency(result)) {
+          return {
+            status: 'failed',
+            data: { message: 'Circular dependency detected', description: 'Cannot resolve circular dependency' },
+          };
+        }
+        return result;
       }
 
       try {

@@ -1,4 +1,5 @@
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { isRunJsWorkerEnabled } from '@/AppBuilder/_stores/slices/runjs/runjsWorkerBridge';
 
 const allStaticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API', shortName: 'REST API' },
@@ -137,3 +138,13 @@ export const workflowDefaultSources = {
 // cannot cancel the underlying work — runjs/runpy run in-browser, workflows use SSE.
 // Used by AbortButton (to hide it) and QueryKeyHooks (to disable Cmd+. shortcut).
 export const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
+
+// Worker-mode RunJS (query.options.runInWorker, opt-in MVP, OR the
+// __tjRunJsWorkerEnable() dev-console override) genuinely supports abort
+// (worker.terminate()) — the one real exception to the blanket runjs entry
+// above. Callers that gate on kind alone should use this instead of a raw
+// ABORT_UNSUPPORTED_KINDS.has(query.kind) check.
+export const isAbortUnsupported = (query) => {
+  const runsInWorker = query?.kind === 'runjs' && (query?.options?.runInWorker || isRunJsWorkerEnabled());
+  return ABORT_UNSUPPORTED_KINDS.has(query?.kind) && !runsInWorker;
+};

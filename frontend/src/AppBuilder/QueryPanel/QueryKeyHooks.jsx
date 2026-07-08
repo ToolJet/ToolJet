@@ -2,7 +2,7 @@ import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
-import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
+import { isAbortUnsupported } from '@/AppBuilder/QueryManager/constants';
 
 const QueryKeyHooks = ({ children, isExpanded }) => {
   const runQueryOnShortcut = useStore((state) => state.queryPanel.runQueryOnShortcut);
@@ -15,7 +15,7 @@ const QueryKeyHooks = ({ children, isExpanded }) => {
   );
   const moduleId = useModuleId();
 
-  const isAbortSupported = !ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind);
+  const isAbortSupported = !isAbortUnsupported(selectedQuery);
   const isQueryActive = isQueryLoading || isPreviewQueryLoading;
 
   useHotkeys(
