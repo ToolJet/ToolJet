@@ -87,6 +87,7 @@ type NewRevampedComponent =
   | 'DropdownV2'
   | 'Table'
   | 'Button'
+  | 'Cascader'
   | 'Checkbox'
   | 'Divider'
   | 'VerticalDivider'
@@ -140,6 +141,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Table',
   'Checkbox',
   'Button',
+  'Cascader',
   'Divider',
   'VerticalDivider',
   'Link',
@@ -239,6 +241,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
   'Button',
   'ButtonGroupV2',
+  'Cascader',
   'Checkbox',
   'CodeEditor',
   'ColorPicker',
@@ -276,7 +279,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
-const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
@@ -286,6 +289,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Button',
   'ButtonGroupV2',
   'Camera',
+  'Cascader',
   'Checkbox',
   'CircularProgressBar',
   'ColorPicker',

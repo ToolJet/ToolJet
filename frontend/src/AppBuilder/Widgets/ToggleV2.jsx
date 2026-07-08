@@ -76,6 +76,7 @@ const Switch = ({
             marginLeft: alignment === 'left' && '-2rem',
             border: `1 px solid ${borderColor}`,
           }}
+          disabled={disabledState}
           aria-disabled={disabledState}
           aria-hidden={!visibility}
           aria-required={isMandatory}
