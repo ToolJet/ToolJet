@@ -506,7 +506,7 @@ const BaseManageOrgConstants = ({
                     customStyles={{ minWidth: '200px', height: '32px' }}
                     disabled={isManageVarDrawerOpen}
                   >
-                    + Create new constant
+                    + Create new {activeTab === Constants.Global ? 'constant' : 'secret'}
                   </ButtonSolid>
                 )}
               </div>
@@ -630,6 +630,7 @@ const BaseManageOrgConstants = ({
                       </div>
                     ) : (
                       <EmptyState
+                        activeTab={activeTab}
                         canCreateVariable={canCreateVariable()}
                         setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
                         isLoading={isLoading}
