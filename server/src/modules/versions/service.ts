@@ -3,7 +3,6 @@ import { BadRequestException, Injectable, NotAcceptableException, NotFoundExcept
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -138,6 +137,15 @@ export class VersionService implements IVersionService {
       app.type === APP_TYPES.MODULE
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
+
+    // For branch-type versions, the `name` column holds a UUID used as an internal
+    // unique key. Replace it with the human-readable branch name from WorkspaceBranch
+    // so all consumers (export dialog, globals.appVersion.name, etc.) display correctly.
+    for (const version of result) {
+      if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
+        version.name = version.branch.name;
+      }
+    }
 
     // Git-sync on: once a synced (gitsync-origin) DRAFT exists, hide the non-synced
     // DRAFT versions — those are locally-created drafts not yet pushed to git. Synced

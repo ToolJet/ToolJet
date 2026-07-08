@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { EntityManager, FindOneOptions, In } from 'typeorm';
-import { AppVersion } from 'src/entities/app_version.entity';
+import { AppVersion, AppVersionType } from 'src/entities/app_version.entity';
 import { AppEnvironmentActions } from './constants';
 import { IAppEnvironmentService } from './interfaces/IService';
 import { AppEnvironmentActionParametersDto } from './dto';
@@ -20,9 +20,27 @@ export class AppEnvironmentService implements IAppEnvironmentService {
   async init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editorVersion = await manager.findOne(AppVersion, {
-        select: ['id', 'name', 'description', 'status', 'versionType', 'currentEnvironmentId', 'appId', 'isSynced'],
+        select: [
+          'id',
+          'name',
+          'description',
+          'status',
+          'versionType',
+          'currentEnvironmentId',
+          'appId',
+          'isSynced',
+          'branchId',
+        ],
+        relations: ['branch'],
         where: { id: editingVersionId },
       });
+
+      // For branch-type versions the `name` column holds a UUID. Replace with the
+      // human-readable branch name so globals.appVersion.name resolves correctly.
+      if (editorVersion?.versionType === AppVersionType.BRANCH && editorVersion.branch?.name) {
+        editorVersion.name = editorVersion.branch.name;
+      }
+
       return await this.appEnvironmentUtilService.init(editorVersion, organizationId, false, manager);
     });
   }
