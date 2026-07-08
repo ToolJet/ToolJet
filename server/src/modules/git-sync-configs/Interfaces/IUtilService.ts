@@ -41,4 +41,9 @@ export interface IGitSyncConfigsUtilService {
     orgGitObj?: OrganizationGitSync,
     options?: GetDetailsOptions
   ): Promise<GitSyncDetails>;
+
+  // True when a git provider is CONNECTED but the git-sync license is inactive (expired/invalid).
+  // In this "locked" state the whole workspace is read-only until git sync is turned off — used to
+  // block edits/creates server-side (getDetails().isEnabled is false here, so it can't detect it).
+  isGitEditLocked(organizationId: string): Promise<boolean>;
 }

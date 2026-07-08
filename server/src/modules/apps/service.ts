@@ -62,6 +62,10 @@ import { DataQuery } from '@entities/data_query.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import {
+  assertNotGitLicenseLocked,
+  assertGitSyncEditAllowedForOrg,
+} from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
@@ -86,6 +90,10 @@ export class AppsService implements IAppsService {
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
+    // Git configured but license expired/invalid → workspace is read-only; block creates.
+    if (type !== APP_TYPES.WORKFLOW) {
+      await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, user.organizationId);
+    }
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Workflows don't participate in branching — their app_versions row must have
       // branch_id NULL. Drop any DTO-supplied branchId (frontend may send the current
@@ -314,6 +322,10 @@ export class AppsService implements IAppsService {
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
+    // Git configured but license expired/invalid → workspace is read-only; block metadata edits.
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, app.organizationId);
+    }
     const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
       app.organizationId
     );
@@ -428,6 +440,19 @@ export class AppsService implements IAppsService {
   async delete(app: App, user: User) {
     const { organizationId } = user;
     const { id } = app;
+
+    // Git checks: block deleting a synced app on the default branch (multi-branch) or any
+    // feature-branch delete (single-branch), and the whole workspace when license-locked. Workflows
+    // don't participate in branching. Uses the resolved version's branch/synced state.
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      const version = app.appVersions?.[0];
+      await assertGitSyncEditAllowedForOrg(
+        this.gitSyncConfigsUtilService,
+        app.organizationId,
+        { branchId: version?.branchId, status: version?.status, isSynced: version?.isSynced },
+        app.type === APP_TYPES.MODULE ? 'module' : 'app'
+      );
+    }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const schedules = await manager

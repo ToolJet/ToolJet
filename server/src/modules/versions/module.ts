@@ -31,6 +31,7 @@ export class VersionModule extends SubModule {
       VersionsCreateService,
       VersionService,
       VersionUtilService,
+      GitSyncEditGuard,
     } = await this.getProviders(configs, 'versions', [
       'controller',
       'controller.v2',
@@ -40,6 +41,7 @@ export class VersionModule extends SubModule {
       'services/create.service',
       'service',
       'util.service',
+      'guards/git-sync-edit.guard',
     ]);
 
     // Get apps related providers
@@ -81,6 +83,7 @@ export class VersionModule extends SubModule {
         FeatureAbilityFactory,
         GroupPermissionsRepository,
         ValidModuleByCorrelationGuard,
+        GitSyncEditGuard,
       ],
       exports: [VersionUtilService],
     });

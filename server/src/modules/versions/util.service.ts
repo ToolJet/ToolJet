@@ -19,11 +19,11 @@ import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
-import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { assertGitSyncEditAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -33,7 +33,6 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly versionRepository: VersionRepository,
     protected readonly createVersionService: VersionsCreateService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
-    protected readonly organizationGitSyncRepository: OrganizationGitSyncRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
@@ -113,9 +112,30 @@ export class VersionUtilService implements IVersionUtilService {
       editableParams['description'] = appVersionUpdateDto.description;
     }
 
+    // A content edit (global/page settings, home page, viewer nav) to a git-synced draft on the
+    // default branch is not allowed — those changes must be made on a feature branch. A pure
+    // status change (publish/release) is NOT a content edit and stays allowed.
+    const hasContentEdit =
+      'globalSettings' in editableParams ||
+      'pageSettings' in editableParams ||
+      'homePageId' in editableParams ||
+      'showViewerNavigation' in editableParams;
+
     // DB write. Wrap in a transaction so the optional post-publish hook below
     // commits atomically with the status change.
     const runWrite = async (mgr: EntityManager) => {
+      if (hasContentEdit) {
+        const app = await mgr.findOne(App, { where: { id: appVersion.appId }, select: ['id', 'organizationId'] });
+        if (app) {
+          await assertGitSyncEditAllowedForOrg(
+            this.gitSyncConfigsUtilService,
+            app.organizationId,
+            { branchId: appVersion.branchId, status: appVersion.status, isSynced: appVersion.isSynced },
+            'version'
+          );
+        }
+      }
+
       await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);
 
       // Post-publish hook: when a default-branch DRAFT VERSION row flips to
@@ -258,34 +278,6 @@ export class VersionUtilService implements IVersionUtilService {
     });
   }
 
-  private async validateDraftVersionConstraints(
-    app: App,
-    versionType: AppVersionType,
-    organizationId: string,
-    manager?: EntityManager
-  ): Promise<void> {
-    const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
-      organizationId,
-      manager
-    );
-
-    // Applies whenever git sync is on (single- or multi-branch): git needs exactly one non-branch
-    // draft to push. branch_id is mandatory, so this branch-aware rule isn't gated on multi-branch.
-    if (organizationGit && versionType !== AppVersionType.BRANCH) {
-      const existingDraftVersion = await this.versionRepository.findOne({
-        where: {
-          appId: app.id,
-          status: AppVersionStatus.DRAFT,
-          versionType: Not(AppVersionType.BRANCH),
-        },
-      });
-
-      if (existingDraftVersion) {
-        throw new BadRequestException('Only one draft version is allowed when git sync is enabled.');
-      }
-    }
-  }
-
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
     const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
     // Workflows must always have branch_id NULL — they don't participate in branching.
@@ -298,11 +290,12 @@ export class VersionUtilService implements IVersionUtilService {
       throw new BadRequestException('Version name cannot be empty.');
     }
     const { organizationId } = user;
-    const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
-      organizationId,
-      manager
-    );
-    if (organizationGit) {
+    // The single-draft-per-branch rule is a git-sync constraint, so enforce it only when git sync is
+    // actually ON (configured + a provider enabled + licensed). getDetails().isEnabled is false when
+    // git is turned off OR the license no longer covers it — so a stale/disabled org-git config row
+    // (which still exists in the DB) no longer wrongly blocks version creation.
+    const isGitSyncEnabled = (await this.gitSyncConfigsUtilService.getDetails(organizationId)).isEnabled;
+    if (isGitSyncEnabled) {
       // Only allow one draft version of type 'version' (not branch) per branch. Runs for single-
       // and multi-branch alike (branch_id is mandatory); scoping by branchId keeps drafts on
       // different branches from conflicting.

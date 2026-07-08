@@ -115,4 +115,9 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
       };
     });
   }
+
+  // Git sync is EE-only, so the community edition is never in a git-locked state.
+  async isGitEditLocked(_organizationId: string): Promise<boolean> {
+    return false;
+  }
 }

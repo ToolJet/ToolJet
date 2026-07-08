@@ -28,12 +28,15 @@ export class DataSourcesModule extends SubModule {
       DataSourcesUtilService,
       PluginsServiceSelector,
       SampleDataSourceService,
+      GitSyncDataSourceCreateGuard,
+      GitSyncDataSourceEditGuard,
     } = await this.getProviders(configs, 'data-sources', [
       'service',
       'controller',
       'util.service',
       'services/plugin-selector.service',
       'services/sample-ds.service',
+      'guards/git-sync-datasource.guard',
     ]);
 
     const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
@@ -63,6 +66,8 @@ export class DataSourcesModule extends SubModule {
         SampleDataSourceService,
         FeatureAbilityFactory,
         OrganizationRepository,
+        GitSyncDataSourceCreateGuard,
+        GitSyncDataSourceEditGuard,
       ],
       controllers: isMainImport ? [DataSourcesController] : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
