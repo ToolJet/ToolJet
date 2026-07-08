@@ -120,10 +120,8 @@ export const EventManager = ({
 
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
-
-    const sortedEvents = (currentEvents || []).slice().sort((a, b) => a.index - b.index);
-    onEventHandlersUpdated(sortedEvents, events);
-    setEvents(sortedEvents, moduleId);
+    onEventHandlersUpdated(currentEvents, events);
+    setEvents(currentEvents, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
 
