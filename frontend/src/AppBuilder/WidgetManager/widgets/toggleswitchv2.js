@@ -4,7 +4,7 @@ export const toggleSwitchV2Config = {
   description: 'User-controlled on-off switch',
   component: 'ToggleSwitchV2',
   defaultSize: {
-    width: 6,
+    width: 2,
     height: 30,
   },
   others: {

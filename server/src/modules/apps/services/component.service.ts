@@ -335,7 +335,7 @@ export class ComponentsService implements IComponentsService {
 
   resolveGridPositionForComponent(dimension: number, type: string): number {
     // const numberOfGrids = type === 'desktop' ? 43 : 12;
-    const numberOfGrids = 43;
+    const numberOfGrids = 12;
     return Math.round((dimension * numberOfGrids) / 100);
   }
 
