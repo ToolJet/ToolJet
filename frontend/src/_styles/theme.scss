@@ -6641,19 +6641,25 @@ a.step-item-disabled {
   }
 }
 
-// list footer: cursor pagination — sits below the scroll area (design overflow variant)
+// cursor pagination — pinned footer bar below the scroll area (design 70:8193)
 .notification-load-more {
   display: block;
   width: 100%;
   background: none;
   border: none;
-  padding: 0 16px 10px;
+  border-top: 1px solid var(--borders-weak, #e4e7eb);
+  padding: 10px 16px;
   cursor: pointer;
-  color: var(--indigo9, #4368e3);
+  color: var(--text-default, #1b1f24);
   font-size: 12px;
+  font-weight: 500;
   line-height: 18px;
   letter-spacing: -0.24px;
-  text-align: left;
+  text-align: center;
+
+  &:hover:not(:disabled) {
+    background: var(--surfaces-surface-02, #f6f8fa);
+  }
 
   &:disabled {
     color: var(--text-placeholder);

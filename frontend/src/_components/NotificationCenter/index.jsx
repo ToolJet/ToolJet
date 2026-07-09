@@ -118,7 +118,7 @@ export const NotificationCenter = ({ darkMode }) => {
             </div>
           )}
         </div>
-        {/* design overflow variant: Load more sits below the scroll area, not inside it */}
+        {/* design 70:8193: pinned footer bar below the scroll area — centered label, top border */}
         {!isLoading && hasMore && (
           <button
             className="notification-load-more"
@@ -126,7 +126,7 @@ export const NotificationCenter = ({ darkMode }) => {
             disabled={loadingMore}
             data-cy="load-more-notifications"
           >
-            {loadingMore ? t('notifications.loading', 'Loading…') : t('notifications.loadMore', 'Load more…')}
+            {loadingMore ? t('notifications.loading', 'Loading…') : t('notifications.loadMore', 'Load more')}
           </button>
         )}
       </div>
