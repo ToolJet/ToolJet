@@ -170,6 +170,32 @@ describe('GitSyncQueueService (enqueue side)', () => {
     });
   });
 
+  it('should use import copy on started notifications when isImport is set', async () => {
+    await svc.enqueueCreateBranch({
+      organizationId: 'org1',
+      name: 'feat-perms',
+      sourceBranchId: 'src-branch-id',
+      userId: 'user1',
+      isImport: true,
+    });
+    expect(notify.mock.calls[0][0]).toMatchObject({
+      title: 'Branch import started',
+      body: 'Importing feat-perms. It will appear in the branch list once ready.',
+    });
+
+    await svc.enqueuePullBranch({
+      organizationId: 'org1',
+      branchId: 'branch-uuid',
+      branchName: 'feat-perms',
+      userId: 'user1',
+      isImport: true,
+    });
+    expect(notify.mock.calls[1][0]).toMatchObject({
+      title: 'Branch import started',
+      body: 'Importing feat-perms. Your changes will be available in a moment.',
+    });
+  });
+
   it('should not fail the enqueue when the started notification throws', async () => {
     notify.mockRejectedValue(new Error('db down'));
     await expect(
@@ -448,6 +474,56 @@ describe('GitSyncQueueProcessor failed-event hook', () => {
     const { error } = notifications.notifications[0].metadata;
     expect(error.stack).toContain('Repository not found');
     expect(error.stack).not.toContain('Naming conflicts detected');
+  });
+
+  it('should use import copy on failure when the payload is an import', async () => {
+    const notifications = new FakeNotificationService();
+    const processor = new GitSyncQueueProcessor(
+      new FakeWorkspaceBranchService() as any,
+      new FakeRedisService() as any,
+      notifications as any
+    );
+
+    await processor.onFailed(
+      makeFailedJob({ organizationId: 'org1', name: 'feat-perms', userId: 'u1', isImport: true }),
+      new Error('remote: Repository not found')
+    );
+
+    expect(notifications.notifications[0]).toMatchObject({
+      title: 'Branch import failed',
+      body: "Couldn't import feat-perms. Please try again.",
+    });
+  });
+
+  it('should use import copy on completion when the payload is an import', async () => {
+    const notifications = new FakeNotificationService();
+    const processor = new GitSyncQueueProcessor(
+      new FakeWorkspaceBranchService() as any,
+      new FakeRedisService() as any,
+      notifications as any
+    );
+
+    await processor.onCompleted({
+      name: 'git-create-branch',
+      id: 'j1',
+      processedOn: 1,
+      data: { organizationId: 'org1', name: 'feat-perms', userId: 'u1', isImport: true },
+    } as any);
+    expect(notifications.notifications[0]).toMatchObject({
+      title: 'Branch imported',
+      body: 'feat-perms has been imported successfully',
+    });
+
+    await processor.onCompleted({
+      name: 'git-pull-branch',
+      id: 'j2',
+      processedOn: 2,
+      data: { organizationId: 'org1', branchName: 'feat-perms', userId: 'u1', isImport: true },
+    } as any);
+    expect(notifications.notifications[1]).toMatchObject({
+      title: 'Branch imported',
+      body: 'feat-perms has been imported successfully',
+    });
   });
 });
 
