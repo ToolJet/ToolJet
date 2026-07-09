@@ -136,7 +136,9 @@ export const TableData = ({
         selectedRow: row?.original ?? {},
         selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
       });
-      fireEvent('onRowClicked');
+      setTimeout(() => {
+        fireEvent('onRowClicked');
+      }, 0);
       return;
     }
     if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
