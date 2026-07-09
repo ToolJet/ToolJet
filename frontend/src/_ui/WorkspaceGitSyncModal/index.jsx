@@ -284,12 +284,14 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const handleResolveConflicts = async (resolutions) => {
     try {
       await actions.resolveConflicts(resolutions);
-      toast.success('Selected conflicts resolved and synced from git.');
       setPullConflictGroups(null);
       onClose();
       // resolveConflicts hydrates the affected apps server-side (isSynced, content),
       // but the app builder/homepage's in-memory state doesn't know that happened —
       // reload so the UI reflects it immediately instead of on next manual refresh.
+      // A toast fired now would be destroyed by the reload before it's visible, so
+      // persist it and let App.jsx's componentDidMount show it once the fresh page mounts.
+      sessionStorage.setItem('sync_success_toast', 'Resource(s) synced successfully!');
       window.location.reload();
     } catch (error) {
       toast.error(error?.error || error?.message || 'Failed to resolve conflicts');

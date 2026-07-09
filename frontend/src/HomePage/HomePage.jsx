@@ -1108,11 +1108,13 @@ class HomePageComponent extends React.Component {
     try {
       const { actions } = useWorkspaceBranchesStore.getState();
       await actions.resolveConflicts(resolutions);
-      toast.success('Selected conflicts resolved and synced from git.');
       this.setState({ gitImportConflictGroups: null });
       // resolveConflicts hydrates the affected apps server-side (isSynced, content),
       // but this component's in-memory state doesn't know that happened — reload so
       // the UI (app list, sync badges) reflects it immediately.
+      // A toast fired now would be destroyed by the reload before it's visible, so
+      // persist it and let App.jsx's componentDidMount show it once the fresh page mounts.
+      sessionStorage.setItem('sync_success_toast', 'Resource(s) synced successfully!');
       window.location.reload();
     } catch (error) {
       toast.error(error?.error || error?.message || 'Failed to resolve conflicts');
