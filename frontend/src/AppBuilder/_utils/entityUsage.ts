@@ -21,6 +21,7 @@ export type UsageEntryKind =
   | 'global'
   | 'constant'
   | 'page'
+  | 'action'
   | 'unknown';
 
 export type UsageEntry = {
@@ -40,6 +41,14 @@ const COMPONENT_EVENT_TARGETS: Record<string, (action: any) => string | undefine
   'close-modal': (action) => action.modal?.id ?? action.modal,
   'set-table-page': (action) => action.table?.id ?? action.table,
   'scroll-component-into-view': (action) => action.componentId,
+};
+
+// Event actions that write app/page variables; value is the variable entry kind.
+const VARIABLE_EVENT_TARGETS: Record<string, UsageEntryKind> = {
+  'set-custom-variable': 'variable',
+  'unset-custom-variable': 'variable',
+  'set-page-variable': 'pageVariable',
+  'unset-page-variable': 'pageVariable',
 };
 
 const getGraph = (state: any, moduleId: string) => state.dependencyGraph?.modules?.[moduleId]?.graph;
@@ -134,6 +143,64 @@ function addRefEntry(state: any, moduleId: string, map: Map<string, UsageEntry>,
   }
 }
 
+type EventTarget = { kind: UsageEntryKind; id: string | null; name: string };
+
+// Resolves any event handler action to the entity it affects — or a plain
+// 'action' entry (show-alert, logout, …) so trigger lists are a complete
+// inventory of a source's event handlers.
+function resolveEventTarget(state: any, action: any, moduleId: string): EventTarget {
+  const actionId = action?.actionId;
+
+  if (QUERY_EVENT_ACTIONS.has(actionId) && action.queryId) {
+    const name = getQueryName(state, action.queryId, moduleId) ?? action.queryName;
+    return name
+      ? { kind: 'query', id: action.queryId, name }
+      : { kind: 'unknown', id: action.queryId, name: 'Unknown query' };
+  }
+
+  const extractComponent = COMPONENT_EVENT_TARGETS[actionId];
+  if (extractComponent) {
+    const targetId = extractComponent(action);
+    if (targetId && typeof targetId === 'string') {
+      const name = getComponentName(state, targetId, moduleId);
+      return name
+        ? { kind: 'component', id: targetId, name }
+        : { kind: 'unknown', id: targetId, name: 'Unknown component' };
+    }
+    return { kind: 'action', id: null, name: actionId };
+  }
+
+  const variableKind = VARIABLE_EVENT_TARGETS[actionId];
+  if (variableKind) {
+    const key = action.key;
+    if (typeof key === 'string' && key.length && !key.includes('{{')) {
+      return { kind: variableKind, id: null, name: key };
+    }
+    return { kind: 'unknown', id: null, name: 'dynamic variable key' };
+  }
+
+  if (actionId === 'switch-page') {
+    const pages = state.modules?.[moduleId]?.pages ?? [];
+    const page =
+      pages.find((p: any) => p.id === action.pageId) ??
+      pages.find((p: any) => p.handle === action.pageHandle?.toLowerCase?.());
+    return page
+      ? { kind: 'page', id: page.id, name: page.name }
+      : { kind: 'unknown', id: action.pageId ?? null, name: 'Unknown page' };
+  }
+
+  return { kind: 'action', id: null, name: actionId ?? 'unknown action' };
+}
+
+function eventDetail(action: any, target: EventTarget): string {
+  const eventId = action.eventId;
+  if (target.kind === 'variable' || target.kind === 'pageVariable') {
+    return `${eventId} · ${String(action.actionId).startsWith('unset') ? 'unsets' : 'sets'}`;
+  }
+  if ((target.kind === 'query' && action.actionId === 'run-query') || target.kind === 'action') return eventId;
+  return `${eventId} · ${action.actionId}`;
+}
+
 // Memoized per options object — query saves replace options, invalidating the cache entry.
 const queryRefsCache = new WeakMap<object, any[]>();
 
@@ -206,29 +273,31 @@ export function getComponentUsage(state: any, componentId: string, moduleId = 'c
     });
   });
 
-  // Event handlers: queries this component runs, components it controls,
-  // and events on other entities that control this component.
+  // Event handlers: the component's full trigger inventory (every action it fires),
+  // and events on other entities (components, queries, pages) that control this component.
   getEvents(state, moduleId).forEach((evt: any) => {
     const action = evt?.event;
     if (!action) return;
-    const extractTarget = COMPONENT_EVENT_TARGETS[action.actionId];
 
     if (evt?.sourceId === componentId) {
-      if (QUERY_EVENT_ACTIONS.has(action.actionId) && action.queryId) {
-        addQueryEntry(state, moduleId, triggers, action.queryId, action.eventId, action.queryName);
-      } else if (extractTarget) {
-        const targetId = extractTarget(action);
-        if (targetId && typeof targetId === 'string' && targetId !== componentId) {
-          addComponentEntry(state, moduleId, triggers, targetId, `${action.eventId} · ${action.actionId}`);
-        }
-      }
-    } else if (extractTarget && extractTarget(action) === componentId) {
+      const target = resolveEventTarget(state, action, moduleId);
+      if (target.kind === 'component' && target.id === componentId) return; // self-targeting CSA — skip
+      addEntry(triggers, target.kind, target.id, target.name, eventDetail(action, target));
+      return;
+    }
+
+    const extractTarget = COMPONENT_EVENT_TARGETS[action.actionId];
+    if (extractTarget && extractTarget(action) === componentId) {
       const sourceId = evt?.sourceId;
       if (!sourceId) return;
+      const detail = `${action.eventId} · ${action.actionId}`;
       if (getComponentName(state, sourceId, moduleId)) {
-        addComponentEntry(state, moduleId, usedBy, sourceId, `${action.eventId} · ${action.actionId}`);
+        addComponentEntry(state, moduleId, usedBy, sourceId, detail);
       } else if (getQueryName(state, sourceId, moduleId)) {
-        addQueryEntry(state, moduleId, usedBy, sourceId, `${action.eventId} · ${action.actionId}`);
+        addQueryEntry(state, moduleId, usedBy, sourceId, detail);
+      } else {
+        const page = state.modules?.[moduleId]?.pages?.find((p: any) => p.id === sourceId);
+        if (page) addEntry(usedBy, 'page', sourceId, page.name, detail);
       }
     }
   });
@@ -303,6 +372,34 @@ export function getQueryUsageCount(state: any, queryId: string, moduleId = 'canv
 }
 
 /**
+ * The query's own success/failure event handlers, in execution order
+ * (sorted by event index — sequence matters, so no dedupe and no name sort).
+ */
+export function getQueryOwnEvents(state: any, queryId: string, moduleId = 'canvas') {
+  const onSuccess: UsageEntry[] = [];
+  const onFailure: UsageEntry[] = [];
+
+  getEvents(state, moduleId)
+    .filter((evt: any) => evt?.sourceId === queryId && evt?.event)
+    .slice()
+    .sort((a: any, b: any) => (a.index ?? 0) - (b.index ?? 0))
+    .forEach((evt: any) => {
+      const action = evt.event;
+      const target = resolveEventTarget(state, action, moduleId);
+      const entry: UsageEntry = {
+        kind: target.kind,
+        id: target.id,
+        name: target.name,
+        details: target.kind === 'action' ? [] : [action.actionId],
+      };
+      if (action.eventId === 'onDataQuerySuccess') onSuccess.push(entry);
+      else if (action.eventId === 'onDataQueryFailure') onFailure.push(entry);
+    });
+
+  return { onSuccess, onFailure };
+}
+
+/**
  * Queries that run automatically on load, split by lifecycle (see useAppData.js):
  * - appLoad: per-query "Run this query on application load" option (internally
  *   `runOnPageLoad`) — runs ONCE when the app loads, explicitly skipped on page switches.
@@ -320,19 +417,32 @@ export function getPageLoadQueries(state: any, moduleId = 'canvas') {
     }
   });
 
+  const pageLoadActions: UsageEntry[] = [];
   const currentPageId = state.getCurrentPageId?.(moduleId);
   getEvents(state, moduleId).forEach((evt: any) => {
     const action = evt?.event;
-    if (!action || action.eventId !== 'onPageLoad' || !QUERY_EVENT_ACTIONS.has(action.actionId) || !action.queryId)
-      return;
+    if (!action || action.eventId !== 'onPageLoad') return;
     // Same filter the runtime uses when firing page events (useAppData.js)
     if (evt?.target !== 'page' || evt?.sourceId !== currentPageId) return;
-    const name = getQueryName(state, action.queryId, moduleId) ?? action.queryName;
-    if (name) addEntry(pageLoad, 'query', action.queryId, name, 'every visit to this page');
-    else addEntry(pageLoad, 'unknown', action.queryId, 'Unknown query', 'every visit to this page');
+
+    if (QUERY_EVENT_ACTIONS.has(action.actionId) && action.queryId) {
+      const name = getQueryName(state, action.queryId, moduleId) ?? action.queryName;
+      if (name) addEntry(pageLoad, 'query', action.queryId, name, 'every visit to this page');
+      else addEntry(pageLoad, 'unknown', action.queryId, 'Unknown query', 'every visit to this page');
+      return;
+    }
+
+    // Non-query page-load activity: show-modal, set variable, etc.
+    const target = resolveEventTarget(state, action, moduleId);
+    pageLoadActions.push({
+      kind: target.kind,
+      id: target.id,
+      name: target.name,
+      details: target.kind === 'action' ? [] : [action.actionId],
+    });
   });
 
-  return { appLoad: sorted(appLoad), pageLoad: sorted(pageLoad) };
+  return { appLoad: sorted(appLoad), pageLoad: sorted(pageLoad), pageLoadActions };
 }
 
 export type GraphNode = { id: string; kind: UsageEntryKind; name: string; entityId: string | null };
@@ -366,7 +476,10 @@ export function getPageDependencyGraph(state: any, moduleId = 'canvas') {
     const usage = getComponentUsage(state, componentId, moduleId);
     usage.uses.forEach((entry) => addEdge(addNode(entry.kind, entry.id, entry.name), componentKey, 'binds'));
     usage.usedBy.forEach((entry) => addEdge(componentKey, addNode(entry.kind, entry.id, entry.name), 'binds'));
-    usage.triggers.forEach((entry) => addEdge(componentKey, addNode(entry.kind, entry.id, entry.name), 'triggers'));
+    usage.triggers.forEach((entry) => {
+      if (entry.kind === 'action') return; // show-alert/logout/etc. are not entities — noise as graph nodes
+      addEdge(componentKey, addNode(entry.kind, entry.id, entry.name), 'triggers');
+    });
   });
 
   // Every page query gets a node even when unconnected, so dead queries are visible.

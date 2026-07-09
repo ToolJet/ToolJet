@@ -10,6 +10,7 @@ export const KIND_LABELS = {
   global: 'global',
   constant: 'constant',
   page: 'page',
+  action: 'action',
   unknown: 'unknown',
 };
 

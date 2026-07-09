@@ -35,7 +35,8 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [queries, events, moduleId]
   );
-  const loadQueriesCount = loadQueries.appLoad.length + loadQueries.pageLoad.length;
+  const loadQueriesCount =
+    loadQueries.appLoad.length + loadQueries.pageLoad.length + loadQueries.pageLoadActions.length;
 
   const componentList = useMemo(() => {
     const state = useStore.getState();
@@ -155,6 +156,7 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }) => {
                   groups={[
                     { title: 'On app load (once)', entries: loadQueries.appLoad },
                     { title: 'On page load (every visit)', entries: loadQueries.pageLoad },
+                    { title: 'Other page-load actions', entries: loadQueries.pageLoadActions },
                   ]}
                 />
               </div>

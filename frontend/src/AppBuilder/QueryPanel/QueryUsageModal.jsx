@@ -3,7 +3,7 @@ import { Modal } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import { decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { getQueryUsage } from '@/AppBuilder/_utils/entityUsage';
+import { getQueryUsage, getQueryOwnEvents } from '@/AppBuilder/_utils/entityUsage';
 import EntityUsageList from '@/AppBuilder/Shared/EntityUsage/EntityUsageList';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
@@ -12,17 +12,24 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 const QueryUsageModal = ({ show, onHide, query, darkMode }) => {
   const { moduleId } = useModuleContext();
 
-  const usage = useMemo(() => {
+  const data = useMemo(() => {
     if (!show || !query) return null;
-    return getQueryUsage(useStore.getState(), query.id, moduleId);
+    const state = useStore.getState();
+    return {
+      usage: getQueryUsage(state, query.id, moduleId),
+      ownEvents: getQueryOwnEvents(state, query.id, moduleId),
+    };
   }, [show, query, moduleId]);
 
-  if (!usage) return null;
+  if (!data) return null;
+  const { usage, ownEvents } = data;
 
   const groups = [
     { title: 'Used by', entries: usage.usedBy },
     { title: 'Triggered by', entries: usage.triggeredBy },
     { title: 'Uses', entries: usage.uses },
+    { title: 'On success', entries: ownEvents.onSuccess },
+    { title: 'On failure', entries: ownEvents.onFailure },
   ];
 
   return (
