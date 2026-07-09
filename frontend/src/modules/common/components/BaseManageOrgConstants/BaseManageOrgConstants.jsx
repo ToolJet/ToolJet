@@ -506,7 +506,7 @@ const BaseManageOrgConstants = ({
                     customStyles={{ minWidth: '200px', height: '32px' }}
                     disabled={isManageVarDrawerOpen}
                   >
-                    + Create new constant
+                    + Create new {activeTab === Constants.Global ? 'constant' : 'secret'}
                   </ButtonSolid>
                 )}
               </div>
@@ -585,13 +585,7 @@ const BaseManageOrgConstants = ({
 
                       <div>
                         <Button
-                          // Todo: Update link to documentation: workspace constants
-                          onClick={() =>
-                            window.open(
-                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
-                              '_blank'
-                            )
-                          }
+                          onClick={() => window.open('https://docs.tooljet.com/docs/security/constants/', '_blank')}
                           darkMode={darkMode}
                           size="sm"
                           styles={{
@@ -630,6 +624,7 @@ const BaseManageOrgConstants = ({
                       </div>
                     ) : (
                       <EmptyState
+                        activeTab={activeTab}
                         canCreateVariable={canCreateVariable()}
                         setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
                         isLoading={isLoading}
