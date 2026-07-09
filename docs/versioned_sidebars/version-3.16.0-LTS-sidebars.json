@@ -533,6 +533,7 @@
                 "actions/show-modal",
                 "actions/close-modal",
                 "actions/set-table-page",
+                "actions/scroll-component-into-view",
                 "actions/switch-page",
                 "actions/go-to-app",
                 "actions/open-webpage",
