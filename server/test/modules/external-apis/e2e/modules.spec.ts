@@ -91,6 +91,14 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
         .expect(403);
     });
 
+    it('returns 403 with an invalid Authorization token', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      await request(app.getHttpServer())
+        .get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`)
+        .set('Authorization', 'Basic wrong-token')
+        .expect(403);
+    });
+
     it('returns 400 for non-UUID workspaceId', async () => {
       await request(app.getHttpServer())
         .get('/api/ext/workspace/not-a-uuid/modules')
@@ -187,6 +195,15 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
         .expect(403);
     });
 
+    it('returns 403 with an invalid Authorization token', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const mod = await createApplication(app, { name: 'M', user, type: APP_TYPES.MODULE });
+      await request(app.getHttpServer())
+        .post(`/api/ext/export/workspace/${user.defaultOrganizationId}/modules/${mod.id}`)
+        .set('Authorization', 'Basic wrong-token')
+        .expect(403);
+    });
+
     it('returns 400 for non-UUID moduleId', async () => {
       const { user } = await createUser(app, { email: 'admin@tooljet.io' });
       await request(app.getHttpServer())
@@ -271,6 +288,15 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       const { user } = await createUser(app, { email: 'admin@tooljet.io' });
       await request(app.getHttpServer())
         .post(`/api/ext/import/workspace/${user.defaultOrganizationId}/modules`)
+        .expect(403);
+    });
+
+    it('returns 403 with an invalid Authorization token', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${user.defaultOrganizationId}/modules`)
+        .set('Authorization', 'Basic wrong-token')
+        .send({ tooljet_version: '1.0.0', app: [] })
         .expect(403);
     });
 
@@ -410,6 +436,35 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       const listing = await listModules(app.getHttpServer(), orgId);
       const names = listing.modules.map((m: any) => m.name);
       expect(names).toContain('Renamed Module');
+    });
+
+    it('returns 400 when the target module name already exists in the workspace', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const mod = await createApplication(app, { name: 'Original Name', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
+
+      await importModule(app.getHttpServer(), orgId, {
+        tooljet_version: exportBody.tooljet_version,
+        appName: 'Dup Module',
+        app: exportBody.app,
+        tooljet_database: exportBody.tooljet_database ?? [],
+      });
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${orgId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: exportBody.tooljet_version,
+          appName: 'Dup Module',
+          app: exportBody.app,
+          tooljet_database: exportBody.tooljet_database ?? [],
+        })
+        .expect(400);
+
+      expect(res.body.message).toContain('already taken');
     });
 
     it('imports into a different workspace than the source', async () => {

@@ -14,7 +14,7 @@ import { createUser, initTestApp, closeTestApp, createApplication, createApplica
  * Tested cases:
  *   - Auth: missing header, wrong token
  *   - 400: non-UUID workspaceId, workspace does not exist, tooljet_version missing,
- *     tooljet_version exceeds current
+ *     tooljet_version exceeds current, target app name already taken in the workspace
  *   - Happy path: export → import round trip into the same and a different workspace,
  *     appName override, tooljet_database accepted as an empty array
  *   - Documented gotcha: omitting both `app` and `appName` 500s instead of 400 — the
@@ -112,6 +112,37 @@ describe('External API — POST /ext/import/workspace/:workspaceId/apps', () => 
         .set('Authorization', AUTH_HEADER)
         .send({ tooljet_version: '999.0.0', appName: 'X', app: [{ definition: { appV2: { name: 'X' } } }] })
         .expect(400);
+    });
+
+    it('returns 400 when the target app name is already taken in the workspace', async () => {
+      const { user, organization } = await createUser(app, { email: `app-import-dupname-${Date.now()}@tooljet.io` });
+      const seededApp = await createApplication(app, { name: 'Source App', user });
+      await createApplicationVersion(app, seededApp);
+      const exportBody = await exportApp(organization.id, seededApp.id);
+
+      await request(app.getHttpServer())
+        .post(importUrl(organization.id))
+        .set('Authorization', AUTH_HEADER)
+        .send({
+          tooljet_version: exportBody.tooljet_version,
+          appName: 'Dup App',
+          app: exportBody.app,
+          tooljet_database: exportBody.tooljet_database ?? [],
+        })
+        .expect(201);
+
+      const res = await request(app.getHttpServer())
+        .post(importUrl(organization.id))
+        .set('Authorization', AUTH_HEADER)
+        .send({
+          tooljet_version: exportBody.tooljet_version,
+          appName: 'Dup App',
+          app: exportBody.app,
+          tooljet_database: exportBody.tooljet_database ?? [],
+        })
+        .expect(400);
+
+      expect(res.body.message).toContain('already taken');
     });
 
     // Documented gotcha (see file header) — not a contract we assert should stay this way,

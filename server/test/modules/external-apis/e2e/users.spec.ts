@@ -374,6 +374,50 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
     });
   });
 
+  describe('POST /api/ext/users — payload validation', () => {
+    it('should return 400 when name is missing', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin14@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ email: 'no-name@example.com', workspaces: [{ id: orgId }] })
+        .expect(400);
+    });
+
+    it('should return 400 when email is malformed', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin15@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Bad Email Vendor', email: 'not-an-email', workspaces: [{ id: orgId }] })
+        .expect(400);
+    });
+
+    it('should return 400 when status is not a valid enum value', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin16@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Bad Status Vendor',
+          email: 'bad-status@example.com',
+          status: 'not-a-real-status',
+          workspaces: [{ id: orgId }],
+        })
+        .expect(400);
+    });
+
+    it('should return 400 when the request body is empty', async () => {
+      await request(app.getHttpServer()).post('/api/ext/users').set('Authorization', getExtAuth()).send({}).expect(400);
+    });
+  });
+
   describe('GET /api/ext/user/:id — backward compat', () => {
     it('should return inviteUrl as null for users without invitation tokens', async () => {
       // Users created via test helper (internal path) never get invitationToken set,

@@ -2,7 +2,14 @@ import * as request from 'supertest';
 import * as bcrypt from 'bcrypt';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { initTestApp, closeTestApp, createUser, createGroupPermission, getDefaultDataSource } from 'test-helper';
+import {
+  initTestApp,
+  closeTestApp,
+  createUser,
+  createGroupPermission,
+  createApplication,
+  getDefaultDataSource,
+} from 'test-helper';
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
@@ -160,6 +167,38 @@ describe('External API — user update endpoints', () => {
       });
       expect(membership.status).toBe('active');
     });
+
+    it('is a no-op when given an empty body', async () => {
+      const { user } = await createUser(app, { email: uniqueEmail('patch-empty-body') });
+      const before = await userRepo.findOneOrFail({ where: { id: user.id } });
+
+      await request(app.getHttpServer())
+        .patch(`/api/ext/user/${user.id}`)
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(200);
+
+      const after = await userRepo.findOneOrFail({ where: { id: user.id } });
+      expect(after).toMatchObject({
+        firstName: before.firstName,
+        lastName: before.lastName,
+        email: before.email,
+        status: before.status,
+      });
+    });
+
+    it('ignores unknown fields in the body', async () => {
+      const { user } = await createUser(app, { email: uniqueEmail('patch-unknown-field') });
+
+      await request(app.getHttpServer())
+        .patch(`/api/ext/user/${user.id}`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ nonsense: 'whatever' })
+        .expect(200);
+
+      const after = await userRepo.findOneOrFail({ where: { id: user.id } });
+      expect(after.email).toBe(user.email);
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -197,6 +236,23 @@ describe('External API — user update endpoints', () => {
 
       const remainingGroupLinks = await groupUsersRepo.find({ where: { userId: user.id, groupId: customGroupA.id } });
       expect(remainingGroupLinks).toHaveLength(0);
+    });
+
+    it('removes the user from every workspace when given an empty array', async () => {
+      const { user } = await createUser(app, { email: uniqueEmail('replace-all-deprovision') });
+      const { organization: orgB } = await createUser(app, { email: uniqueEmail('replace-all-deprovision-org-b') });
+      await orgUserRepo.save(
+        orgUserRepo.create({ userId: user.id, organizationId: orgB.id, status: 'active', role: 'all_users' })
+      );
+      expect(await orgUserRepo.find({ where: { userId: user.id } })).not.toHaveLength(0);
+
+      await request(app.getHttpServer())
+        .put(`/api/ext/user/${user.id}/workspaces`)
+        .set('Authorization', AUTH_HEADER)
+        .send([])
+        .expect(200);
+
+      expect(await orgUserRepo.find({ where: { userId: user.id } })).toHaveLength(0);
     });
 
     it('returns 400 when a referenced workspace id does not exist', async () => {
@@ -312,6 +368,24 @@ describe('External API — user update endpoints', () => {
         .send({ groups: [{ id: NONEXISTENT_UUID }] })
         .expect(400);
     });
+
+    it('is a no-op when given an empty body', async () => {
+      const { user, organization } = await createUser(app, { email: uniqueEmail('patchws-empty-body') });
+      const before = await orgUserRepo.findOneOrFail({
+        where: { userId: user.id, organizationId: organization.id },
+      });
+
+      await request(app.getHttpServer())
+        .patch(`/api/ext/user/${user.id}/workspace/${organization.id}`)
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(200);
+
+      const after = await orgUserRepo.findOneOrFail({
+        where: { userId: user.id, organizationId: organization.id },
+      });
+      expect(after.status).toBe(before.status);
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -394,6 +468,42 @@ describe('External API — user update endpoints', () => {
         .set('Authorization', AUTH_HEADER)
         .send({ newRole: 'admin', userId: user.id })
         .expect(200);
+    });
+
+    it('changes the role from builder back to end-user', async () => {
+      const { user, organization } = await createUser(app, {
+        email: uniqueEmail('role-change-reverse'),
+        groups: ['builder'],
+      });
+
+      await request(app.getHttpServer())
+        .put(`/api/ext/update-user-role/workspace/${organization.id}`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ newRole: 'end-user', userId: user.id })
+        .expect(200);
+
+      const endUserGroup = await groupRepo.findOneOrFail({
+        where: { organizationId: organization.id, name: 'end-user' },
+      });
+      const link = await groupUsersRepo.findOne({ where: { userId: user.id, groupId: endUserGroup.id } });
+      expect(link).toBeDefined();
+    });
+
+    it('returns 400 when demoting an app-owning builder to end-user without an ownership transfer target', async () => {
+      const { user, organization } = await createUser(app, {
+        email: uniqueEmail('role-appowner'),
+        groups: ['builder'],
+      });
+      const ownedApp = await createApplication(app, { name: `owned-app-${Date.now()}`, user });
+
+      const res = await request(app.getHttpServer())
+        .put(`/api/ext/update-user-role/workspace/${organization.id}`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ newRole: 'end-user', userId: user.id })
+        .expect(400);
+
+      expect(res.body.message.error).toContain('cannot be an end-user');
+      expect(res.body.message.data).toContain(ownedApp.name);
     });
   });
 });
