@@ -3,7 +3,7 @@ id: multilingual-app
 title: Build a Multilingual Employee Directory App
 ---
 
-This guide demonstrates how to build a multilingual application in ToolJet using ToolJet Database, App Variables, and component bindings. You'll create a simple Employee Directory app where users can switch between multiple languages and see the interface update instantly.
+This guide demonstrates how to build a multilingual application in ToolJet using ToolJet Database, Variables, and component bindings. You'll create a simple Employee Directory app where users can switch between multiple languages and see the interface update instantly.
 
 ## Overview 
 
