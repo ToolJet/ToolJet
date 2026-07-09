@@ -528,6 +528,7 @@
                 "actions/run-actions-from-runjs",
                 "actions/run-query",
                 "actions/reset-query",
+                "actions/abort-query",
                 "actions/show-alert",
                 "actions/control-component",
                 "actions/show-modal",
