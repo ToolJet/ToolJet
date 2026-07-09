@@ -23,7 +23,10 @@ import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
-import { assertGitSyncEditAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import {
+  assertGitSyncEditAllowedForOrg,
+  assertVersionEditable,
+} from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -125,6 +128,9 @@ export class VersionUtilService implements IVersionUtilService {
     // commits atomically with the status change.
     const runWrite = async (mgr: EntityManager) => {
       if (hasContentEdit) {
+        // Saved (published/released) versions are immutable — block content edits regardless of git
+        // state. A pure status flip (publish/release) is not a content edit and is allowed through.
+        assertVersionEditable(appVersion.status);
         const app = await mgr.findOne(App, { where: { id: appVersion.appId }, select: ['id', 'organizationId'] });
         if (app) {
           await assertGitSyncEditAllowedForOrg(

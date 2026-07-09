@@ -3,7 +3,10 @@ import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { AppVersion } from '@entities/app_version.entity';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
-import { assertGitSyncEditAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import {
+  assertGitSyncEditAllowedForOrg,
+  assertVersionEditable,
+} from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 
 /**
  * Blocks query create/update against a git-synced draft on the default branch (and feature-branch
@@ -24,6 +27,9 @@ export class GitSyncQueryEditGuard implements CanActivate {
       manager.findOne(AppVersion, { where: { id: versionId }, select: ['id', 'branchId', 'status', 'isSynced'] })
     );
     if (!appVersion) return true;
+
+    // Saved (published/released) versions are immutable regardless of git state.
+    assertVersionEditable(appVersion.status);
 
     await assertGitSyncEditAllowedForOrg(
       this.gitSyncConfigsUtilService,

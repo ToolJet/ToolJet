@@ -1,5 +1,19 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { AppVersionStatus } from '@entities/app_version.entity';
+
+/**
+ * A version is editable only while it is a DRAFT. Once it's saved (PUBLISHED) or RELEASED it becomes
+ * an immutable snapshot — components/queries can no longer be added, updated or deleted on it; the
+ * user must work on a draft instead. This is independent of git sync (it holds in git-off workspaces
+ * too), so it runs before the git-specific checks.
+ *
+ * No-op when status is undefined (e.g. data source versions, which have no draft/published status).
+ */
+export function assertVersionEditable(status: AppVersionStatus | string | undefined): void {
+  if (status !== undefined && status !== AppVersionStatus.DRAFT) {
+    throw new BadRequestException('Cannot edit a saved version. Create a new version to make changes.');
+  }
+}
 
 export interface GitSyncEditGuardParams {
   // From GitSyncConfigsUtilService.getDetails(organizationId):

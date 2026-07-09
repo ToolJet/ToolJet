@@ -1,6 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
-import { assertGitSyncEditAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import {
+  assertGitSyncEditAllowedForOrg,
+  assertVersionEditable,
+} from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 
 /**
  * Route guard for version-scoped mutations (components, etc.). Runs AFTER ValidAppGuard, which
@@ -17,6 +20,9 @@ export class GitSyncEditGuard implements CanActivate {
     const app = request.tj_app;
     const version = app?.appVersions?.[0];
     if (!app || !version) return true;
+
+    // Saved (published/released) versions are immutable regardless of git state.
+    assertVersionEditable(version.status);
 
     await assertGitSyncEditAllowedForOrg(
       this.gitSyncConfigsUtilService,
