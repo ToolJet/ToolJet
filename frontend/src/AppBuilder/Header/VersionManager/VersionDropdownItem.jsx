@@ -46,6 +46,13 @@ const VersionDropdownItem = ({
   // version name instead of the default-branch label. isSynced propagates from the source
   // version at creation time (see `createVersion` in versions/util.service.ts).
   const isGitSyncDraft = isDraft && isGitSyncEnabled && version.isSynced !== false;
+  // True when any default-branch version has been pushed to git. Feature-branch
+  // versions have isSynced=false by default, so scoping to versionType='version'
+  // avoids false negatives on apps that only have branch versions locally.
+  const isAppSyncedToGit = developmentVersions?.some(
+    (v) =>
+      (v.isSynced === true || v.is_synced === true) && (v.versionType === 'version' || v.version_type === 'version')
+  );
   const displayName = isGitSyncDraft ? defaultBranch : version.name;
   const effectiveDescription = isGitSyncDraft ? 'Latest commit to main will appear here' : version.description;
   // A version is released when it matches the releasedVersionId
@@ -286,7 +293,7 @@ const VersionDropdownItem = ({
                   pushed to git yet. Purely informational — no click action, hover-only.
                   Only meaningful when git sync is actually configured for the org — in a
                   non-git workspace isSynced isn't a signal worth surfacing. */}
-              {!isDraft && isGitSyncEnabled && version.isSynced === false && (
+              {!isDraft && isGitSyncEnabled && isAppSyncedToGit && version.isSynced === false && (
                 <ToolTip message="Version not synced in remote git" placement="top">
                   <div
                     className="d-flex align-items-center"

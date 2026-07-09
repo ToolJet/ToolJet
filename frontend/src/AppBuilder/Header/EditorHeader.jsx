@@ -17,7 +17,18 @@ import SaveIndicator from './SaveIndicator';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
+  const {
+    isSaving,
+    saveError,
+    isVersionReleased,
+    appId,
+    organizationId,
+    selectedVersion,
+    featureAccess,
+    isGitSyncConfigured,
+    orgGit,
+    developmentVersions,
+  } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
@@ -25,6 +36,10 @@ export const EditorHeader = ({ darkMode, appType }) => {
       appId: state.appStore.modules[moduleId].app.appId,
       organizationId: state.appStore.modules[moduleId].app.organizationId,
       selectedVersion: state.selectedVersion,
+      featureAccess: state?.license?.featureAccess,
+      isGitSyncConfigured: state.isGitSyncConfigured,
+      orgGit: state.orgGit,
+      developmentVersions: state.developmentVersions,
     }),
     shallow
   );
@@ -32,6 +47,18 @@ export const EditorHeader = ({ darkMode, appType }) => {
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isOnWorkspaceFeatureBranch =
     workspaceActiveBranch && !workspaceActiveBranch.is_default && !workspaceActiveBranch.isDefault;
+
+  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const isOnDefaultBranch = workspaceActiveBranch
+    ? workspaceActiveBranch.is_default ||
+      workspaceActiveBranch.isDefault ||
+      workspaceActiveBranch.name === defaultBranchName
+    : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
+  const isAppSyncedToGit = developmentVersions?.some(
+    (v) => v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  );
+  const showSyncButton =
+    featureAccess?.gitSync && isGitSyncConfigured && workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -85,7 +112,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
               <div className="d-flex align-items-center p-0">
                 <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                   {!isModuleEditor && <PreviewAndShareIcons />}
-                  <BranchDropdown appId={appId} organizationId={organizationId} />
+                  {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
                   {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
                   {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
                     <VersionManagerErrorBoundary>

@@ -169,7 +169,13 @@ const LifecycleCTAButton = () => {
           versionId={selectedVersion?.id}
           appName={appName}
           resourceType={appType === 'module' ? 'module' : 'app'}
-          onSuccess={() => setShowPushModal(false)}
+          onSuccess={() => {
+            setShowPushModal(false);
+            setTimeout(() => {
+              const pathParts = window.location.pathname.split('/');
+              window.location.href = `/${pathParts[1]}/apps/${appId}`;
+            }, 1500);
+          }}
         />
       )}
       {pushValidationError && (
