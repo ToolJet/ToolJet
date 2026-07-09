@@ -14,6 +14,7 @@ export interface CreateDefaultGroupObject {
   moduleDelete?: boolean;
   folderCRUD?: boolean;
   orgConstantCRUD?: boolean;
+  tjdbCRUD?: boolean;
   dataSourceCreate?: boolean;
   dataSourceDelete?: boolean;
 }

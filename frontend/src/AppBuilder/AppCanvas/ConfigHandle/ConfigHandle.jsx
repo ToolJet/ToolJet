@@ -12,7 +12,7 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
 import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
 import Popover from '@/_ui/Popover';
-import DynamicHeightInfo from '@assets/images/dynamic-height-info.svg';
+import dynamicHeightSvg from '@assets/images/dynamic-height-info.svg?url';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 
 // Lazy load editor-only component to reduce viewer bundle size
@@ -167,7 +167,7 @@ export const ConfigHandle = ({
   const popoverContent = (
     <div className="dynamic-height-info-wrapper" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="dynamic-height-info-image">
-        <DynamicHeightInfo />
+        <img src={dynamicHeightSvg} alt="Dynamic Height Info" />
       </div>
       <div className="dynamic-height-info-body">
         <p className="dynamic-height-info-text-title">Dynamic Height enabled</p>
