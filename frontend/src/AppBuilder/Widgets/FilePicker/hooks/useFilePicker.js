@@ -162,8 +162,8 @@ export const useFilePicker = ({
         // Keep the heavy strings (and the Blob itself) in the main-thread
         // registry; expose lightweight string-like refs through the store.
         // Refs materialize to real strings at the resolver boundary.
-        const handleId = fileStateKey ?? uuidv4();
-        registerFileHandle(handleId, file, {
+        // internalId doubles as the registry key — no need for a second id.
+        registerFileHandle(fileStateKey, file, {
           content: readFileAsText,
           base64Data: base64Data,
           dataURL: readFileAsDataURLResult,
@@ -171,15 +171,14 @@ export const useFilePicker = ({
 
         return {
           internalId: fileStateKey,
-          handleId: handleId,
           lastModified: file.lastModified,
           lastModifiedDate: file.lastModifiedDate,
           name: file.name,
           size: file.size,
           type: file.type,
           webkitRelativePath: file.webkitRelativePath,
-          content: createFileFieldRef(handleId, 'content'),
-          base64Data: createFileFieldRef(handleId, 'base64Data'),
+          content: createFileFieldRef(fileStateKey, 'content'),
+          base64Data: createFileFieldRef(fileStateKey, 'base64Data'),
           parsedValue: parsedValue,
           parsedData: parsedData,
           filePath: file.path,
@@ -348,9 +347,9 @@ export const useFilePicker = ({
         const finalFiles = enableMultiple ? updatedFiles.slice(0, maxFileCount) : updatedFiles;
         // Release registry entries for files that fell out of the selection
         // (single-mode replacement or maxFileCount overflow).
-        const keptHandles = new Set(finalFiles.map((f) => f.handleId));
+        const keptHandles = new Set(finalFiles.map((f) => f.internalId));
         [...prevFiles, ...successfullyProcessedFiles].forEach((f) => {
-          if (f.handleId && !keptHandles.has(f.handleId)) releaseFileHandle(f.handleId);
+          if (f.internalId && !keptHandles.has(f.internalId)) releaseFileHandle(f.internalId);
         });
         return finalFiles;
       });
@@ -458,7 +457,7 @@ export const useFilePicker = ({
       });
 
       fireEvent?.('onFileDeselected', { file: stripFileId(fileToRemove) });
-      if (fileToRemove.handleId) releaseFileHandle(fileToRemove.handleId);
+      if (fileToRemove.internalId) releaseFileHandle(fileToRemove.internalId);
     },
     [selectedFiles, fireEvent, stripFileId]
   );
@@ -466,7 +465,7 @@ export const useFilePicker = ({
   // --- Exposed Actions ---
   const clearFiles = useCallback(() => {
     setSelectedFiles((prevFiles) => {
-      prevFiles.forEach((f) => f.handleId && releaseFileHandle(f.handleId));
+      prevFiles.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
       return [];
     });
     setFileErrors({});
@@ -666,7 +665,7 @@ export const useFilePicker = ({
   selectedFilesRef.current = selectedFiles;
   useEffect(() => {
     return () => {
-      selectedFilesRef.current.forEach((f) => f.handleId && releaseFileHandle(f.handleId));
+      selectedFilesRef.current.forEach((f) => f.internalId && releaseFileHandle(f.internalId));
     };
   }, []);
 
