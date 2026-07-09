@@ -30,6 +30,7 @@ import { GroupFolders } from "@entities/group_folders.entity";
 import { ResourceType } from "@modules/group-permissions/constants";
 import { AbilityService } from "@modules/ability/interfaces/IService";
 import { MODULES } from "@modules/app/constants/modules";
+import { AppsGroupPermissions } from "@entities/apps_group_permissions.entity";
 
 const FOLDER_TYPE = 'front-end';
 
@@ -779,6 +780,36 @@ describe('FoldersController', () => {
         }
       }
 
+      /** Grants an isAll:true APP-resource granular permission (matches a default role's shape). */
+      async function grantAllAppsPermission(
+        group: GroupPermissions,
+        options: {
+          canEdit?: boolean;
+          canAccessDevelopment?: boolean;
+          canAccessStaging?: boolean;
+          canAccessProduction?: boolean;
+          canAccessReleased?: boolean;
+        },
+      ): Promise<void> {
+        const granPerm = await saveEntity(GranularPermissions, {
+          groupId: group.id,
+          name: "App permissions",
+          type: ResourceType.APP,
+          isAll: true,
+        });
+        await saveEntity(AppsGroupPermissions, {
+          granularPermissionId: granPerm.id,
+          appType: APP_TYPES.FRONT_END,
+          canEdit: options.canEdit ?? false,
+          canView: false,
+          hideFromDashboard: false,
+          canAccessDevelopment: options.canAccessDevelopment ?? false,
+          canAccessStaging: options.canAccessStaging ?? false,
+          canAccessProduction: options.canAccessProduction ?? false,
+          canAccessReleased: options.canAccessReleased ?? false,
+        });
+      }
+
       // TC1: admin sees all folders regardless of app count
       it("admin sees all folders including empty ones", async () => {
         const adminData = await createUser(nestApp, {
@@ -1013,8 +1044,10 @@ describe('FoldersController', () => {
         expect(folderNames).not.toContain("empty-folder");
       });
 
-      // TC6: canViewApps on folder → appSpecificEnvironmentAccess has released=true only (bug fix)
-      it("folder canViewApps grants released-only env access in appSpecificEnvironmentAccess", async () => {
+      // TC6: folders are environment-agnostic — canViewApps on a specific folder must grant
+      // full env access, same as canEditApps. Currently FAILS: the editable/viewable split
+      // caps view-only folder access to released-only.
+      it("folder canViewApps grants all-env access in appSpecificEnvironmentAccess", async () => {
         const adminData = await createUser(nestApp, {
           email: "admin@tooljet.io",
         });
@@ -1067,10 +1100,10 @@ describe('FoldersController', () => {
         const envAccess =
           perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
+        expect(envAccess?.development).toBe(true);
+        expect(envAccess?.staging).toBe(true);
+        expect(envAccess?.production).toBe(true);
         expect(envAccess?.released).toBe(true);
-        expect(envAccess?.development).toBe(false);
-        expect(envAccess?.staging).toBe(false);
-        expect(envAccess?.production).toBe(false);
       });
 
       // TC7: canEditApps on folder → all envs true in appSpecificEnvironmentAccess
@@ -1208,6 +1241,342 @@ describe('FoldersController', () => {
         expect(envAccess?.staging).toBe(true);
         expect(envAccess?.production).toBe(true);
         expect(envAccess?.released).toBe(true);
+      });
+
+      // TC9: isAll-folder canViewApps (no specific folder IDs) must grant all-env access,
+      // same as the specific-folder canViewApps case (TC6). Currently FAILS: the
+      // allFoldersViewable branch caps this to released-only.
+      it("isAll folder canViewApps grants all-env access in appSpecificEnvironmentAccess", async () => {
+        const adminData = await createUser(nestApp, {
+          email: "admin@tooljet.io",
+        });
+        const endUserData = await createUser(nestApp, {
+          email: "enduser@tooljet.io",
+          groups: ["all_users"],
+          organization: adminData.organization,
+        });
+
+        const folder = await createFolder(nestApp, {
+          name: "isall-view-folder",
+          type: FOLDER_TYPE,
+          organizationId: adminData.organization.id,
+        });
+        const app = await createApplication(nestApp, {
+          name: "App9",
+          user: adminData.user,
+        });
+        await addAppToFolder(nestApp, app, folder);
+
+        await createGroupPermission(nestApp, {
+          group: "isall-view-group",
+          organization: adminData.organization,
+        });
+        const isAllViewGroup = await findEntityOrFail(GroupPermissions, {
+          name: "isall-view-group",
+          organizationId: adminData.organization.id,
+        });
+        await grantFolderPermission(isAllViewGroup, {
+          canViewApps: true,
+          isAll: true,
+        });
+        await createUserGroupPermissions(nestApp, endUserData.user, [
+          "isall-view-group",
+        ]);
+
+        const abilityService = nestApp.get(AbilityService);
+        const perms = await abilityService.resourceActionsPermission(
+          endUserData.user,
+          {
+            resources: [
+              { resource: MODULES.APP },
+              { resource: MODULES.FOLDER },
+            ],
+            organizationId: adminData.organization.id,
+          },
+        );
+
+        const envAccess =
+          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        expect(envAccess).toBeDefined();
+        expect(envAccess?.development).toBe(true);
+        expect(envAccess?.staging).toBe(true);
+        expect(envAccess?.production).toBe(true);
+        expect(envAccess?.released).toBe(true);
+      });
+
+      // TC10: builder with isAllEditable=true (app-level) PLUS isAll-folder canEditFolder=true
+      // must still get all-env access to folder apps. Currently FAILS harder than TC6/TC9:
+      // `allFoldersEditable && !isAllEditable` is false (isAllEditable blocks it) AND
+      // `allFoldersViewable` is also false (canViewApps was never set at the DB level), so
+      // NEITHER branch runs — appSpecificEnvironmentAccess stays completely empty for the app.
+      it("isAllEditable app permission + isAll folder canEditFolder grants all-env access (neither-branch bug)", async () => {
+        const adminData = await createUser(nestApp, {
+          email: "admin@tooljet.io",
+        });
+        const builderData = await createUser(nestApp, {
+          email: "builder@tooljet.io",
+          organization: adminData.organization,
+          groups: [],
+        });
+
+        const folder = await createFolder(nestApp, {
+          name: "isall-editor-folder",
+          type: FOLDER_TYPE,
+          organizationId: adminData.organization.id,
+        });
+        const app = await createApplication(nestApp, {
+          name: "App10",
+          user: adminData.user,
+        });
+        await addAppToFolder(nestApp, app, folder);
+
+        await createGroupPermission(nestApp, {
+          group: "isall-editor-group",
+          organization: adminData.organization,
+        });
+        const isAllEditorGroup = await findEntityOrFail(GroupPermissions, {
+          name: "isall-editor-group",
+          organizationId: adminData.organization.id,
+        });
+        await grantAllAppsPermission(isAllEditorGroup, {
+          canEdit: true,
+          canAccessDevelopment: true,
+          canAccessReleased: true,
+        });
+        await grantFolderPermission(isAllEditorGroup, {
+          canEditFolder: true,
+          isAll: true,
+        });
+        await createUserGroupPermissions(nestApp, builderData.user, [
+          "isall-editor-group",
+        ]);
+
+        const abilityService = nestApp.get(AbilityService);
+        const perms = await abilityService.resourceActionsPermission(
+          builderData.user,
+          {
+            resources: [
+              { resource: MODULES.APP },
+              { resource: MODULES.FOLDER },
+            ],
+            organizationId: adminData.organization.id,
+          },
+        );
+
+        const envAccess =
+          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        expect(envAccess).toBeDefined();
+        expect(envAccess?.development).toBe(true);
+        expect(envAccess?.staging).toBe(true);
+        expect(envAccess?.production).toBe(true);
+        expect(envAccess?.released).toBe(true);
+      });
+
+      // TC11: builder with isAllEditable=true (app-level) PLUS isAll-folder canViewApps=true
+      // (a group that only grants folder viewing, not editing) must still get all-env access.
+      // Currently FAILS: falls into the `allFoldersViewable` branch → released-only.
+      it("isAllEditable app permission + isAll folder canViewApps grants all-env access", async () => {
+        const adminData = await createUser(nestApp, {
+          email: "admin@tooljet.io",
+        });
+        const builderData = await createUser(nestApp, {
+          email: "builder@tooljet.io",
+          organization: adminData.organization,
+          groups: [],
+        });
+
+        const folder = await createFolder(nestApp, {
+          name: "isall-editor-view-folder",
+          type: FOLDER_TYPE,
+          organizationId: adminData.organization.id,
+        });
+        const app = await createApplication(nestApp, {
+          name: "App11",
+          user: adminData.user,
+        });
+        await addAppToFolder(nestApp, app, folder);
+
+        await createGroupPermission(nestApp, {
+          group: "isall-editor-view-group",
+          organization: adminData.organization,
+        });
+        const group = await findEntityOrFail(GroupPermissions, {
+          name: "isall-editor-view-group",
+          organizationId: adminData.organization.id,
+        });
+        await grantAllAppsPermission(group, {
+          canEdit: true,
+          canAccessDevelopment: true,
+          canAccessReleased: true,
+        });
+        await grantFolderPermission(group, {
+          canViewApps: true,
+          isAll: true,
+        });
+        await createUserGroupPermissions(nestApp, builderData.user, [
+          "isall-editor-view-group",
+        ]);
+
+        const abilityService = nestApp.get(AbilityService);
+        const perms = await abilityService.resourceActionsPermission(
+          builderData.user,
+          {
+            resources: [
+              { resource: MODULES.APP },
+              { resource: MODULES.FOLDER },
+            ],
+            organizationId: adminData.organization.id,
+          },
+        );
+
+        const envAccess =
+          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        expect(envAccess).toBeDefined();
+        expect(envAccess?.development).toBe(true);
+        expect(envAccess?.staging).toBe(true);
+        expect(envAccess?.production).toBe(true);
+        expect(envAccess?.released).toBe(true);
+      });
+
+      // TC12 (regression guard, expected to PASS today and after the fix): a builder who is
+      // NOT isAllEditable at the app level, but has isAll-folder canEditFolder, correctly hits
+      // the `allFoldersEditable && !isAllEditable` branch and gets all-env access already.
+      // This isolates isAllEditable specifically as the variable that breaks TC10.
+      it("non-isAllEditable builder + isAll folder canEditFolder already grants all-env access", async () => {
+        const adminData = await createUser(nestApp, {
+          email: "admin@tooljet.io",
+        });
+        const builderData = await createUser(nestApp, {
+          email: "builder@tooljet.io",
+          organization: adminData.organization,
+          groups: [],
+        });
+
+        const folder = await createFolder(nestApp, {
+          name: "narrow-editor-folder",
+          type: FOLDER_TYPE,
+          organizationId: adminData.organization.id,
+        });
+        const app = await createApplication(nestApp, {
+          name: "App12",
+          user: adminData.user,
+        });
+        await addAppToFolder(nestApp, app, folder);
+
+        await createGroupPermission(nestApp, {
+          group: "narrow-editor-group",
+          organization: adminData.organization,
+        });
+        const group = await findEntityOrFail(GroupPermissions, {
+          name: "narrow-editor-group",
+          organizationId: adminData.organization.id,
+        });
+        await grantFolderPermission(group, {
+          canEditFolder: true,
+          isAll: true,
+        });
+        await createUserGroupPermissions(nestApp, builderData.user, [
+          "narrow-editor-group",
+        ]);
+
+        const abilityService = nestApp.get(AbilityService);
+        const perms = await abilityService.resourceActionsPermission(
+          builderData.user,
+          {
+            resources: [
+              { resource: MODULES.APP },
+              { resource: MODULES.FOLDER },
+            ],
+            organizationId: adminData.organization.id,
+          },
+        );
+
+        const envAccess =
+          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        expect(envAccess).toBeDefined();
+        expect(envAccess?.development).toBe(true);
+        expect(envAccess?.staging).toBe(true);
+        expect(envAccess?.production).toBe(true);
+        expect(envAccess?.released).toBe(true);
+      });
+
+      // TC13: user belongs to two groups — one grants isAll-folder canEditFolder, the other
+      // isAll-folder canViewApps — so allFoldersEditable AND allFoldersViewable are both true
+      // at once. Must still grant all-env access, and both editableAppsId and viewableAppsId
+      // must reflect the folder-derived app (neither flag should cancel the other out).
+      it("isAll folder canEditFolder + isAll folder canViewApps from separate groups both apply", async () => {
+        const adminData = await createUser(nestApp, {
+          email: "admin@tooljet.io",
+        });
+        const builderData = await createUser(nestApp, {
+          email: "builder@tooljet.io",
+          organization: adminData.organization,
+          groups: [],
+        });
+
+        const folder = await createFolder(nestApp, {
+          name: "dual-isall-folder",
+          type: FOLDER_TYPE,
+          organizationId: adminData.organization.id,
+        });
+        const app = await createApplication(nestApp, {
+          name: "App13",
+          user: adminData.user,
+        });
+        await addAppToFolder(nestApp, app, folder);
+
+        await createGroupPermission(nestApp, {
+          group: "dual-isall-edit-group",
+          organization: adminData.organization,
+        });
+        const editGroup = await findEntityOrFail(GroupPermissions, {
+          name: "dual-isall-edit-group",
+          organizationId: adminData.organization.id,
+        });
+        await grantFolderPermission(editGroup, {
+          canEditFolder: true,
+          isAll: true,
+        });
+
+        await createGroupPermission(nestApp, {
+          group: "dual-isall-view-group",
+          organization: adminData.organization,
+        });
+        const viewGroup = await findEntityOrFail(GroupPermissions, {
+          name: "dual-isall-view-group",
+          organizationId: adminData.organization.id,
+        });
+        await grantFolderPermission(viewGroup, {
+          canViewApps: true,
+          isAll: true,
+        });
+
+        await createUserGroupPermissions(nestApp, builderData.user, [
+          "dual-isall-edit-group",
+          "dual-isall-view-group",
+        ]);
+
+        const abilityService = nestApp.get(AbilityService);
+        const perms = await abilityService.resourceActionsPermission(
+          builderData.user,
+          {
+            resources: [
+              { resource: MODULES.APP },
+              { resource: MODULES.FOLDER },
+            ],
+            organizationId: adminData.organization.id,
+          },
+        );
+
+        const envAccess =
+          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        expect(envAccess).toBeDefined();
+        expect(envAccess?.development).toBe(true);
+        expect(envAccess?.staging).toBe(true);
+        expect(envAccess?.production).toBe(true);
+        expect(envAccess?.released).toBe(true);
+        expect(perms[MODULES.APP]?.editableAppsId).toContain(app.id);
+        expect(perms[MODULES.APP]?.viewableAppsId).toContain(app.id);
       });
     });
   });

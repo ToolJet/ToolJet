@@ -94,7 +94,7 @@ function AppPermissionsActions({
             <input
               className="form-check-input"
               type="checkbox"
-              disabled={!initialPermissionState.canView}
+              disabled={!initialPermissionState.canView && !initialPermissionState.canEdit}
               checked={initialPermissionState.hideFromDashboard}
               onClick={() => {
                 handleHideFromDashboard();
