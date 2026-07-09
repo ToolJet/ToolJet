@@ -15,6 +15,10 @@ The **Date Time Picker** component can be used for selecting dates with time inp
 | Manage time zones | Use the toggle to manage the time zone.                                          | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Default value     | The default value that the component will hold when the app is loaded.           | String (e.g., `01/01/2022 16:00`).                                                                                           |
 
+:::caution
+Click the **fx** button next to **Date Format** or **Time Format** to enter a custom format string. ToolJet uses **[Moment.js](https://momentjs.com/docs/#/displaying/format/)** to parse and format dates and times, so the format string must use Moment.js tokens, and these tokens are case-sensitive — for example, `D` is the day of the month (`1`–`31`), while lowercase `d` is the day of the week (`0`–`6`, Sunday to Saturday). Also note that `YYYY` gives a 4-digit year, but lowercase `yyyy` isn't a valid Moment.js token and gets rendered as literal text. Use a format like `MMM D, YYYY` (e.g., `Jan 5, 2024`), not `MMM d, yyyy`.
+:::
+
 ## Events
 
 | Event     | Description                                                |
