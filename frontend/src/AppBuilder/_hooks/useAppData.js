@@ -419,10 +419,20 @@ const useAppData = (
           promptSentRef.current = true;
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          sendMessage(state.prompt, {}, {}, moduleId);
+          // Structured datasources/tables the user tagged via "@mentions" in the create prompt. Sent
+          // alongside the kickoff message so the backend can auto-complete the data-clarification /
+          // datasource-selection / table-mapping steps for what was already referenced.
+          const taggedResources = state?.taggedResources;
+          const hasTaggedResources =
+            taggedResources && (taggedResources.datasources?.length ?? 0) + (taggedResources.tables?.length ?? 0) > 0;
+          sendMessage(state.prompt, {}, hasTaggedResources ? { taggedResources } : {}, moduleId);
           setIsQueryPaneExpanded(false);
           // Clear prompt from navigation state so it doesn't re-trigger on page refresh
-          const { prompt: _prompt, ...restUsrState } = window.history.state?.usr || {};
+          const {
+            prompt: _prompt,
+            taggedResources: _taggedResources,
+            ...restUsrState
+          } = window.history.state?.usr || {};
           window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 

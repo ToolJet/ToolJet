@@ -323,7 +323,7 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName, type, prompt) => {
+  createApp = async (appName, type, prompt, taggedResources) => {
     appName = appName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ creatingApp: true });
@@ -347,7 +347,7 @@ class HomePageComponent extends React.Component {
 
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
-        state: { commitEnabled: this.state.commitEnabled, prompt },
+        state: { commitEnabled: this.state.commitEnabled, prompt, taggedResources },
       });
       this.eraseAIOnboardingRelatedCookies();
       this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
