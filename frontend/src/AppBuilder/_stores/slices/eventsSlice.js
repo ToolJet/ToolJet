@@ -645,6 +645,10 @@ export const createEventsSlice = (set, get) => ({
             const { queryId } = event;
             return get().queryPanel.resetQuery(queryId, moduleId);
           }
+          case 'abort-query': {
+            const { queryId } = event;
+            return get().queryPanel.abortQuery(queryId, moduleId);
+          }
           case 'logout': {
             return logoutAction();
           }
@@ -666,7 +670,11 @@ export const createEventsSlice = (set, get) => ({
                 (result, queryParam) => ({
                   ...result,
                   ...{
-                    [getResolvedValue(queryParam[0])]: getResolvedValue(queryParam[1], undefined, customVariables),
+                    [getResolvedValue(queryParam[0], customVariables, moduleId)]: getResolvedValue(
+                      queryParam[1],
+                      customVariables,
+                      moduleId
+                    ),
                   },
                 }),
                 {}
@@ -1105,6 +1113,21 @@ export const createEventsSlice = (set, get) => ({
         }
       };
 
+      const abortQuery = (queryName = '') => {
+        const query = dataQuery.queries.modules[moduleId].find((query) => query.name === queryName);
+        if (query) {
+          return executeAction(
+            {
+              actionId: 'abort-query',
+              queryId: query.id,
+            },
+            mode,
+            {},
+            moduleId
+          );
+        }
+      };
+
       const setVariable = (key = '', value = '') => {
         if (key) {
           const event = {
@@ -1406,6 +1429,7 @@ export const createEventsSlice = (set, get) => ({
         logError,
         toggleAppMode,
         resetQuery,
+        abortQuery,
         scrollComponentInToView,
       };
     },

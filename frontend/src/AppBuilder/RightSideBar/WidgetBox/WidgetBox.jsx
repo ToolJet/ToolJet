@@ -17,6 +17,7 @@ const NEW_WIDGETS = [
   'DatetimePickerV2',
   'DatePickerV2',
   'TimePicker',
+  'Cascader',
   'ModalV2',
   'EmailInput',
   'PhoneInput',

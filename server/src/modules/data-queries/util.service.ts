@@ -322,6 +322,19 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         this.setCookiesBackToClient(response, result.responseHeaders);
       }
 
+      result['metadata'] = {
+        ...(result['metadata'] || {}),
+        ...queryStatus.getResponseMetadata(),
+      };
+
+      if (dataSource.kind === 'restapi' || dataSource.kind === 'grpcv2') {
+        const queryDefinition =
+          dataSource.kind === 'restapi'
+            ? (result as any)['metadata']?.['request']?.['url']
+            : dataQuery.options?.['raw_message'];
+        (result as any)['metadata']['queryDefinition'] = queryDefinition;
+      }
+
       return result;
     } catch (queryError) {
       abortCtrl.cleanup();
@@ -551,11 +564,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Case 3: String
       if (typeof obj === 'string') {
-        let resolvedValue = obj.replace(/\n/g, ' ');
+        // Preserve newlines in the query text itself.
+        // A newline-flattened form is only used for whole-string map lookups.
+        // Flattening the query text here would collapse a multi-line query into a single line,
+        // so a leading `-- comment` would then comment out the entire query.
+        let resolvedValue = obj;
+        const flattenedForLookup = obj.replace(/\n/g, ' ');
 
         // a: Handle strings with both {{ }} and %% (%% - deprecated removed) TODO: CHECK IF ITS NEEDED
         if (typeof resolvedValue === 'string' && resolvedValue.includes('{{') && resolvedValue.includes('}}')) {
-          const resolvedVar = options[resolvedValue];
+          const resolvedVar = options[flattenedForLookup];
           if (parent && key !== null) {
             parent[key] = resolvedVar;
           }
@@ -587,7 +605,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               resolvedValue.endsWith('}}') &&
               (resolvedValue.match(/{{/g) || [])?.length === 1)) // Single variables
         ) {
-          resolvedValue = options[resolvedValue];
+          resolvedValue = options[flattenedForLookup];
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }

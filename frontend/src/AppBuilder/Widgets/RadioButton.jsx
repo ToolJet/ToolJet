@@ -80,6 +80,7 @@ export const RadioButton = function RadioButton({
               value={option.value}
               name={`${id}-${uuidv4()}`}
               onChange={() => onSelect(option.value)}
+              disabled={disabledState}
               aria-disabled={disabledState}
               aria-hidden={!visibility}
               aria-labelledby={`${id}-option-${index}-label`}
