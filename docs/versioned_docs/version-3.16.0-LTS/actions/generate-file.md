@@ -3,22 +3,16 @@ id: generate-file
 title: Generate file
 ---
 
-# Generate file
+The **Generate file** action constructs a CSV, text, or PDF file on the fly and lets the user download it.
 
-This action allows you to construct files on the fly and let users download it.
+## Configuration
 
-## Options
-
-| Option    | Description                                                                                                                                                 |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Type      | Type of file to be generated. Types: `CSV`, `Text` and `PDF`                                                                                                |
-| File name | Name of the file to be generated                                                                                                                            |
-| Data      | Data that will be used to construct the file. Its format will depend on the file type, as specified in the following section                                |
-| Debounce  | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300` |
-
-:::tip
-Check how to run **[generate file action using RunJS](/docs/actions/run-actions-from-runjs/#generate-file)**.
-:::
+| Parameter | Description | Default |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| Type      | Type of file to be generated. Types: `CSV`, `Text` and `PDF`                                                                                                | — |
+| File name | Name of the file to be generated                                                                                                                            | — |
+| Data      | Data that will be used to construct the file. Its format will depend on the file type, as specified in the following section                                | — |
+| Debounce  | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 ### CSV Data Format
 
@@ -56,3 +50,26 @@ For example, if you are using the table component to provide the data, you can e
 ### PDF data format
 
 The PDF data format supports two types of input: either a `string` or an `array of objects`. When using an array of objects, the resulting PDF will display the data in a tabular format with columns and rows. On the other hand, if a string is provided, the generated PDF will consist of plain text.
+
+## Triggering via RunJS
+
+```js
+actions.generateFile('<fileName>', '<fileType>', '<data>');
+```
+
+`fileName` is the name to give the file (string), `fileType` is one of `csv`, `plaintext`, or `pdf`, and `data` is the data to store in the file.
+
+```js
+// CSV
+actions.generateFile('csvfile1', 'csv', '{{components.table1.currentPageData}}');
+
+// Text
+actions.generateFile('textfile1', 'plaintext', '{{JSON.stringify(components.table1.currentPageData)}}');
+
+// PDF
+actions.generateFile('pdffile1', 'pdf', '{{components.table1.currentPageData}}');
+```
+
+:::info
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+:::

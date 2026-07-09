@@ -3,21 +3,29 @@ id: control-component
 title: Control component (Component Specific Actions)
 ---
 
-Control component action invokes the component specific actions. Component specific actions are the actions that are exclusive actions for a particular component. Component specific actions can be triggered either through the event handlers or from the Run JavaScript code query.
+The **Control Component** action invokes a Component-Specific Action (CSA) — an exclusive action exposed by a particular component, such as setting a Text Input's value or clearing it. CSAs can be triggered either through event handlers or from a RunJS query.
 
-You can find the component specific actions for the specific component in their respective documentation. For example, you can find the component specific actions for the **Bounded Box** component in the [Bounded Box](/docs/widgets/bounded-box) documentation.
+You can find the list of CSAs available for a specific component in that component's own documentation. For example, the CSAs for the **Bounded Box** component are listed in the [Bounded Box](/docs/widgets/bounded-box) documentation.
+
+## Configuration
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Component | The target component whose CSA you want to invoke | — |
+| Action | The CSA to invoke on the selected component (e.g. `Set text`, `Clear`) | — |
+| Action-specific fields | Additional fields depend on the CSA selected (e.g. the `Text` field for `Set text`) | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 :::info
-Check out the **[demo](https://youtu.be/JIhSH3YeM3E)** of Component specific actions demonstrated in one of our community call.
+Check out the **[demo](https://youtu.be/JIhSH3YeM3E)** of Component Specific Actions demonstrated in one of our community calls.
 :::
 
-## Using Component Specific Actions
+## Example
 
-### Set a value for text input component using button's event handler
+### Set a value for a text input component using a button's event handler
 
 - Drag a **Text Input** and a **Button** component onto the canvas.
-
-- Go to the **Inspector** on the left sidebar to check the exposed variables available for the `textinput1` component under the `components`. You'll see that the variable `value` is an empty string because the field value of the text input component is empty right now.
+- Go to the **Inspector** on the left sidebar to check the exposed variables available for the `textinput1` component under `components`. The `value` is an empty string because the field is empty right now.
 
 <div style={{textAlign: 'center'}}>
 
@@ -25,7 +33,7 @@ Check out the **[demo](https://youtu.be/JIhSH3YeM3E)** of Component specific act
 
 </div>
 
-- Now enter some value in the text input component and you'll see that the `value` in inspector has been updated.
+- Enter some value in the text input component and you'll see that `value` in the Inspector has been updated.
 
 <div style={{textAlign: 'center'}}>
 
@@ -33,7 +41,7 @@ Check out the **[demo](https://youtu.be/JIhSH3YeM3E)** of Component specific act
 
 </div>
 
-- Now, click on the button's component handler to open up its properties in the right sidebar and then add a event handler for **On Click** event to trigger **Control Component** action. Select `textinput1` in component dropdown, `Set text` as Action, and in `Text` field enter the text that you want to update in the field value.
+- Now click on the button component to open its properties in the right sidebar, then add an event handler for **On Click** to trigger the **Control Component** action. Select `textinput1` in the component dropdown, `Set text` as the action, and enter the text you want to update the field with in the `Text` field.
 
 <div style={{textAlign: 'center'}}>
 
@@ -41,7 +49,7 @@ Check out the **[demo](https://youtu.be/JIhSH3YeM3E)** of Component specific act
 
 </div>
 
-- Now when you'll click on the button you'll see that the field value of the text input component has been updated with value that you set.
+- When you click the button, the text input's value updates to the value you set.
 
 <div style={{textAlign: 'center'}}>
 
@@ -49,12 +57,10 @@ Check out the **[demo](https://youtu.be/JIhSH3YeM3E)** of Component specific act
 
 </div>
 
+### Clear the value of a text input component using RunJS
 
-### Clear value of text input component using JavaScript query
+Let's clear the value we set above using a RunJS query. Create a new Run JavaScript Code query and call the component and the CSA that component provides.
 
-- Let's clear the value that we set in the previous section, using Run JavaScript code. Create a new Run JavaScript Code query and call the component and the CSA that component provides.
-
-**Syntax:**
 ```js
 await components.textinput1.clear()
 ```
@@ -65,12 +71,25 @@ await components.textinput1.clear()
 
 </div>
 
-
 <div style={{textAlign: 'center'}}>
 
 ![ToolJet - Action reference - Control Component](/img/actions/controlcomponent/clear.png)
 
 </div>
 
-- Finally, hit the **save and run** query button to fire up the query, and you'll see that the field value of the text input component has been cleared.
+Hit **Save and run** to fire the query, and you'll see that the text input's field value has been cleared.
 
+## Triggering via RunJS
+
+CSAs are invoked directly on the target component, using the CSA's own method name — not through a generic `actions.controlComponent()` call:
+
+```js
+await components.<componentName>.<csaMethod>(<params>);
+// e.g. await components.textinput1.setText('hello');
+```
+
+The available CSA methods depend on the component — refer to that component's documentation for its full list.
+
+:::info
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+:::

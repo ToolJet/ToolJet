@@ -3,9 +3,15 @@ id: switch-page
 title: Switch Page
 ---
 
-Utilize this action with various event handler to transition to a different page within the [Multipage App](/docs/app-builder/events/use-case/page-nav).
+The **Switch Page** action navigates to a different page within a [Multipage App](/docs/app-builder/events/use-case/page-nav). Use it with any event handler to build in-app navigation.
 
-By default, the debounce field is left empty. However, you can input a numeric value to indicate the time in milliseconds before the action is executed. For example, `300`.
+## Configuration
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Page | The page to navigate to | — |
+| Query params | Optional key-value pairs appended to the switched page's URL | Empty |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <div style={{textAlign: 'center'}}>
 
@@ -13,11 +19,9 @@ By default, the debounce field is left empty. However, you can input a numeric v
 
 </div>
 
-## Query Params
+## Query params
 
-Query parameters can be passed through action such as `Switch Page`. The parameters are appended to the end of the application URL and are preceded by a question mark (`?`).
-
-Query parameters are composed of key-value pairs, where the `key` and `value` are separated by an equals sign (`=`). Multiple query parameters can be included by clicking on the `+` button.
+Query parameters are composed of key-value pairs, where the `key` and `value` are separated by an equals sign (`=`), and are appended to the end of the switched page's URL preceded by a question mark (`?`). Multiple query parameters can be included by clicking the `+` button.
 
 <div style={{textAlign: 'center'}}>
 
@@ -25,9 +29,7 @@ Query parameters are composed of key-value pairs, where the `key` and `value` ar
 
 </div>
 
-In the above screenshot, we have provided the `username` as the key and the value is `{{globals.currentUser.email}}` which gets the email of the signed in user dynamically. When the button is clicked to trigger the `Switch Page` event handler attached to it then the URL on the switched page will have the parameters.
-
-They are commonly used to provide additional information to the server or to modify the behavior of a web page. They can be used for filtering search results, pagination, sorting, and various other purposes.
+In the above screenshot, `username` is the key and its value is `{{globals.currentUser.email}}`, which resolves to the signed-in user's email dynamically. When the button triggers the `Switch Page` action, the switched page's URL carries this parameter. Query params are commonly used for filtering, pagination, sorting, or passing context to the target page.
 
 <div style={{textAlign: 'center'}}>
 
@@ -35,25 +37,21 @@ They are commonly used to provide additional information to the server or to mod
 
 </div>
 
-## Using RunJS query to switch page
-
-Alternatively, the switch page action can be activated via a RunJS query using the following syntax:
+## Triggering via RunJS
 
 ```js
-await actions.switchPage("<page-handle>");
+await actions.switchPage('<page-handle>');
 ```
-
-:::info
-For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/actions/run-actions-from-runjs/).
-:::
 
 ### Switch page with query params
 
-The switch page action can also be triggered along with query parameters using the following syntax:
-
 ```js
-actions.switchPage("<pageHandle>", [
-  ["param1", "value1"],
-  ["param2", "value2"],
+actions.switchPage('<pageHandle>', [
+  ['param1', 'value1'],
+  ['param2', 'value2'],
 ]);
 ```
+
+:::info
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+:::

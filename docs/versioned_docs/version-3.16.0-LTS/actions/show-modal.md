@@ -3,16 +3,27 @@ id: show-modal
 title: Show modal
 ---
 
-Use this action to show the modal for an event.
+The **Show modal** action opens a Modal component when an event occurs.
 
-Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`
+## Configuration
 
-:::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
-:::
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Modal | The Modal component to open | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/actions/showmodal/showmodal2.png" alt="ToolJet - Action reference - Show modal" width="700" />
 
 </div>
+
+## Triggering via RunJS
+
+```js
+actions.showModal('<modalName>');
+```
+
+:::info
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+:::

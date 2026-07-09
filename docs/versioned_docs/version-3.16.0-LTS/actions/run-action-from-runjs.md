@@ -3,279 +3,106 @@ id: run-actions-from-runjs
 title: Run Actions from RunJS query
 ---
 
-ToolJet allows you to execute various [actions](/docs/actions/show-alert) within RunJS queries. This guide outlines the syntax and examples for each action.
+Actions are normally configured through an event handler in the App Builder, but you can also trigger them programmatically from a RunJS query using the `actions.*` API. This is useful when the logic is conditional, needs to run inside a loop, or needs to combine several actions together — see [Custom Code: Control Components](/docs/app-builder/custom-code/control-components) for more on when to reach for RunJS.
 
-## Run Query 
+This page is a quick-reference of every action's RunJS syntax, grouped the same way as the [Actions Reference](/docs/actions/overview). Each entry links to the action's own page for full parameter details, behavior notes, and examples.
 
-To trigger a query, you can use the below functions:
+<a id="abort-query"></a>
 
-```js
-queries.getSalesData.run()
-// replace getSalesData with your query name
-```
-or
-```js
-await actions.runQuery('getSalesData') 
-// replace getSalesData with your query name
-```
+## Run Action
 
-**Example:**
+| Action | RunJS syntax |
+| --- | --- |
+| [Run Query](/docs/actions/run-query) | `queries.<queryName>.run()` or `await actions.runQuery('<queryName>')` |
+| [Reset Query](/docs/actions/reset-query) | `queries.<queryName>.reset()` or `await actions.resetQuery('<queryName>')` |
+| [Abort Query](/docs/actions/abort-query) | `queries.<queryName>.abort()` or `await actions.abortQuery('<queryName>')` |
+| [Show Alert](/docs/actions/show-alert) | `actions.showAlert('<alertType>', '<message>')` |
 
-In the screenshot below, we are triggering two different queries using two different syntax available for `Run Query` action.
+<a id="show-modal"></a>
 
-<img className="screenshot-full img-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
+## Control Component
 
-:::info
-When triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
+| Action | RunJS syntax |
+| --- | --- |
+| [Control Component](/docs/actions/control-component) | `await components.<componentName>.<csaMethod>(<params>)` — invoked directly on the component, not through `actions.*` |
+| [Show Modal](/docs/actions/show-modal) | `actions.showModal('<modalName>')` |
+| [Close Modal](/docs/actions/close-modal) | `actions.closeModal('<modalName>')` |
+| [Set Table Page](/docs/actions/set-table-page) | Not available via `actions.*` — use `await components.<tableName>.setPage(<pageIndex>)` |
+| [Scroll Component into View](/docs/actions/scroll-component-into-view) | `actions.scrollComponentInToView('<componentName>')` |
 
-For more information, refer **[here](/docs/data-sources/run-js#callback-functions)**.
-:::
+## Navigation
 
-## Reset Query
+| Action | RunJS syntax |
+| --- | --- |
+| [Switch Page](/docs/actions/switch-page) | `await actions.switchPage('<pageHandle>')` (optionally with query params — see the action's page) |
+| [Go to App](/docs/actions/go-to-app) | `actions.goToApp('<slug>', queryParams)` |
+| [Open Web Page](/docs/actions/open-webpage) | Not available via `actions.*` — use `window.open('<url>', '_blank')` |
 
-To reset a query, you can use the below functions:
+<a id="set-variables"></a>
 
-```js
-queries.getSalesData.reset()
-// replace getSalesData with your query name
-```
-or
-```js
-await actions.resetQuery('getSalesData') 
-// replace getSalesData with your query name
-```
+## Variable
 
-## Abort Query
+| Action | RunJS syntax |
+| --- | --- |
+| [Set Page Variable](/docs/actions/set-page-variable) | `await actions.setPageVariable('<key>', <value>)` |
+| [Unset Page Variable](/docs/actions/unset-page-variable) | `await actions.unsetPageVariable('<key>')` |
+| [Unset All Page Variable](/docs/actions/unset-all-page-var) | `actions.unsetAllPageVariables()` |
+| [Set Variable](/docs/actions/set-variable) | `actions.setVariable('<key>', <value>)` |
+| [Unset Variable](/docs/actions/unset-variable) | `actions.unSetVariable('<key>')` |
+| [Unset All Variable](/docs/actions/unset-all-var) | `actions.unsetAllVariables()` |
 
-To stop a running query, one that was triggered via `run()` or Preview and is still waiting for a response, you can use the below functions:
+## Other
 
-```js
-queries.getSalesData.abort()
-// replace getSalesData with your query name
-```
-or
-```js
-await actions.abortQuery('getSalesData') 
-// replace getSalesData with your query name
-```
+| Action | RunJS syntax |
+| --- | --- |
+| [Logout](/docs/actions/logout) | `actions.logout()` |
+| [Generate File](/docs/actions/generate-file) | `actions.generateFile('<fileName>', '<fileType>', '<data>')` |
+| [Set Local Storage](/docs/actions/set-localstorage) | `actions.setLocalStorage('<key>', '<value>')` |
+| [Copy to Clipboard](/docs/actions/copy-to-clipboard) | `actions.copyToClipboard('<contentToCopy>')` |
+| [Toggle App Mode](/docs/actions/toggle-app-mode) | `actions.toggleAppMode('<light\|dark>')` |
 
-:::info
-Abort cancels the pending request on the client only. If the data source has already started processing the query, it may keep running on its end until it completes on its own.
-:::
+## Reading query and variable data
 
-Abort is not available for **RunJS**, **RunPy**, and **Workflow** queries, since they don't execute as cancellable network requests.
+These aren't actions — they're getters for immediately reading state right after triggering a query or setting a variable in the same RunJS query.
 
-## Get Query Data
-
-In the previous section, we saw how we can trigger queries. Once the queries are triggered, if you want to immediately use the data returned by the query inside the RunJS query, you can use the `getData()`, `getRawData()` and `getloadingState()` functions:
-
-### Trigger a query and retrieve its data:
+### Query data
 
 ```js
-await queries.getSalesData.run(); 
-// replace getSalesData with your query name
-
-let value = queries.getSalesData.getData(); 
-// replace getSalesData with your query name
+await queries.getSalesData.run();
+let value = queries.getSalesData.getData();       // resolved data
+let raw = queries.getSalesData.getRawData();       // raw response
+let loading = queries.getSalesData.getloadingState();
 ```
 
-The response returned by `actions.runQuery()` and `queries.queryName.run()` is an object containing both status and data, allowing inline access to query results immediately after execution.
+The response returned by `actions.runQuery()` / `queries.queryName.run()` is an object containing both status and data, so you can also read it inline:
 
 ```js
-const response = await actions.runQuery("getOrders", 
-{
-  limit: 10 
-});
-
+const response = await actions.runQuery('getOrders', { limit: 10 });
 return response;
+// { status: "ok", data: [ { id: 1, customer_name: "John Doe", total: 250 } ] }
 ```
 
-<details id="tj-dropdown">
-<summary> **Response Example** </summary>
-```
-{ 
-  status: "ok", 
-  data: [ 
-    { 
-      id: 1, 
-      customer_name: "John Doe", 
-      total: 250 
-    } 
-  ] 
-}
-```
-</details>
-
-### Trigger a query and retrieve its raw data:
+### Variables
 
 ```js
-await queries.getCustomerData.run(); 
-//replace getCustomerData with your query name
-
-let value = queries.getCustomerData.getRawData(); 
-// replace getCustomerData your with query name
-```
-
-### Trigger a query and retrieve its loading state:
-
-```js
-await queries.getTodos.run()
-//replace getTodos with your query name
-
-let value = queries.getTodos.getloadingState();
-//replace getTodos with your query name
-```
-
-**Execution Behaviours are :**
-- `run()` triggers the query asynchronously.
-- Callback functions are executed after the query completion.
-
-## Set Variables
-
-To create a variable, you can use the below function:
-
-```javascript
-actions.setVariable('<variableName>', `<variableValue>`)
-```
-
-## Unset Variable
-
-To delete a created variable, you can use the below function:
-
-**Syntax:**
-
-```javascript
-actions.unSetVariable('<variableName>')
-```
-
-## Get Variables
-
-To access variables immediately after setting them in a RunJS query, you can use the `getVariable` and `getPageVariable` functions:
-
-### Set and retrieve a variable: 
-
-```js
-actions.setVariable('mode','dark');
-//replace mode with your desired variable name
-
+actions.setVariable('mode', 'dark');
 return actions.getVariable('mode');
 ```
 
-### Set and retrieve a page-specific variable:
 ```js
-actions.setPageVariable('number',1);
-//replace number with your desired variable name
-
+actions.setPageVariable('number', 1);
 return actions.getPageVariable('number');
 ```
 
-## Logout
+## Running multiple actions from a RunJS query
 
-To log out the current logged-in user from the ToolJet, use the below function:
-
-```javascript
-actions.logout();
-```
-
-## Show Modal
-
-To open a modal using RunJS query, use the below function:
-
-```javascript
-actions.showModal('<modalName>')
-```
-
-## Close Modal
-
-To close a modal using RunJS query, use the below function:
-
-```javascript
-actions.closeModal('<modalName>')
-```
-
-## Set Local Storage 
-
-Set a value in local storage using the below code:
-
-**Syntax:**
-
-```javascript
-actions.setLocalStorage('key', 'value');
-```
-
-## Copy to Clipboard
-
-Use the below code to copy content to the clipboard:
-
-```javascript
-actions.copyToClipboard('<contentToCopy>')
-```
-
-## Generate File
-
-The below action can be used to generate a file.
+Use `async`/`await` to sequence several actions together. The example below runs two queries and shows an alert at a fixed interval — see the full guide on [running queries at specified intervals](/docs/app-builder/connecting-with-data-sources/run-query-at-specified-intervals).
 
 ```js
-actions.generateFile('<fileName>', '<fileType>', '<data>')
-```
-
-`fileName` is the name that you want to give the file(string), `fileType` can be **csv**, **plaintext**, or **pdf** and `data` is the data that you want to store in the file.
-
-Example for generating CSV file:
-
-```js
-actions.generateFile('csvfile1', 'csv', '{{components.table1.currentPageData}}') // generate a csv file named csvfile1 with the data from the current page of table
-```
-
-Example for generating Text file:
-
-```js
-actions.generateFile('textfile1', 'plaintext', '{{JSON.stringify(components.table1.currentPageData)}}') // generate a text file named textfile1 with the data from the current page of table (stringified)
-```
-
-Example for generating PDF file:
-
-```js
-actions.generateFile('Pdffile1', 'pdf', '{{components.table1.currentPageData}}') // generate a text file named Pdffile1 with the data from the current page of table
-```
-
-## Go to App
-
-You can switch to a different application using the below action:
-
-```javascript
-actions.goToApp('slug',queryparams) 
-```
-
-- `slug` can be found in URL of the released app after `application/` or in the share modal that opens up when you click on the `Share` button on the top-right of the app-builder
-- `queryparams` can be provided in this format - `[ ['key1','value1' ], ['key2','value2'] ]`
-
-## Show Alert
-
-To show an alert using RunJS query, use the below code:
-
-```js
-actions.showAlert('<alert type>' , '<message>' )
-```
-
-Available alert types are `info`, `success`, `warning`, and `danger`.
-
-Example:
-```js
-actions.showAlert('error' , 'This is an error' )
-```
-
-## Run Multiple Actions From RunJS Query
-
-To run multiple actions from a RunJS query, you'll have to use **async-await** in the function.
-
-Here is a example code snippet for running the queries and showing alert after specific intervals. Check the complete guide on running queries at specified intervals **[here](/docs/app-builder/connecting-with-data-sources/run-query-at-specified-intervals)**.
-
-```js
-actions.setVariable('interval',setInterval(countdown, 5000));
-async function countdown(){
-  await queries.restapi1.run()
-  await queries.restapi2.run()
-  await actions.showAlert('info','This is an information')
+actions.setVariable('interval', setInterval(countdown, 5000));
+async function countdown() {
+  await queries.restapi1.run();
+  await queries.restapi2.run();
+  await actions.showAlert('info', 'This is an information');
 }
 ```

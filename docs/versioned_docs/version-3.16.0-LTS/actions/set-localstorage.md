@@ -3,11 +3,25 @@ id: set-localstorage
 title: Set localStorage
 ---
 
-# Set localStorage
+The **Set localStorage** action stores a `key`/`value` pair in the browser's local storage. This is useful for saving form values so users don't lose them on reload, or storing data that shouldn't be persisted to the database.
 
-This action allows you to specify a `key` and its corresponding `value` to be stored in local storage of the browser. Local storage can be useful in a lot of scenarios. Some of the most common use cases of the local storage includes:
-- Saving form values so that users don't accidentally lose them if they reload the page
-- Storing any kind of data that is not going to be transferred to the database
+## Configuration
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Key | Name (string) under which the value is stored | — |
+| Value | The value to store | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
+
+## Triggering via RunJS
+
+```js
+actions.setLocalStorage('<key>', '<value>');
+```
+
+:::info
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+:::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

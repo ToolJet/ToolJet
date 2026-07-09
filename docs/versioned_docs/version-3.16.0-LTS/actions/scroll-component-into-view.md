@@ -5,9 +5,9 @@ title: Scroll Component into View
 
 Use this action to scroll a specific component into the visible area of the app. This is useful for guiding users to a component after an interaction, for example, scrolling down to a validation error, a newly added table row, or a section that's currently outside the viewport.
 
-## Options
+## Configuration
 
-| Option    | Description                                                                                                                                                                                                                    |
+| Parameter | Description                                                                                                                                                                                                                    |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Component | Select the target component from the dropdown. Components nested inside a Modal aren't listed here, since they're only rendered when the modal is open.                                                                      |
 | Behaviour | Controls the scrolling animation. **Smooth** (default) animates the scroll, **Instant** jumps to the component with no animation, and **Auto** defers to the browser's default scrolling behavior.                           |
@@ -18,9 +18,7 @@ Use this action to scroll a specific component into the visible area of the app.
 You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
 :::
 
-## Using RunJS query to scroll a component into view
-
-This action can also be triggered via a RunJS query using the following syntax:
+## Triggering via RunJS
 
 ```js
 actions.scrollComponentInToView("<componentName>");

@@ -3,12 +3,27 @@ id: reset-query
 title: Reset Query
 ---
 
-This action allows you to reset a queries when an event occurs.
+The **Reset Query** action resets a query's data and state back to its initial values when an event occurs.
 
-Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. Example: `300`
+## Configuration
 
-:::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
-:::
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Query | The query to reset | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <img className="screenshot-full img-s" src="/img/actions/reset-query/reset-query.png" alt="ToolJet - Action reference -  Reset Query" />
+
+## Triggering via RunJS
+
+```js
+queries.<queryName>.reset();
+```
+or
+```js
+await actions.resetQuery('<queryName>');
+```
+
+:::info
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+:::

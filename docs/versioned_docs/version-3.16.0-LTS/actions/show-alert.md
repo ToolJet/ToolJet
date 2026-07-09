@@ -3,20 +3,36 @@ id: show-alert
 title: Show alert
 ---
 
-This action allows you to display an alert message.
+The **Show alert** action displays an alert message on the app's canvas. Use it to give users feedback after an event — for example, confirming a save, or warning about invalid input.
 
-You can set a custom **message** for the alert and choose a particular alert type.
+## Configuration
 
-There are 4 types of alert messages - **Info**, **Success**, **Warning**, and **Error**.
-
-Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`
-
-:::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
-:::
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Alert type | The style of the alert: **Info**, **Success**, **Warning**, or **Error** | Info |
+| Message | The text to display in the alert | Empty |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/actions/show-alert/alert2.png" alt="ToolJet - Action reference -  Show Alert" width="700" />
 
 </div>
+
+## Triggering via RunJS
+
+```js
+actions.showAlert('<alertType>', '<message>');
+```
+
+`alertType` is one of `info`, `success`, `warning`, or `danger` (`danger` maps to the **Error** type in the Events panel).
+
+**Example:**
+
+```js
+actions.showAlert('error', 'This is an error');
+```
+
+:::info
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
+:::
