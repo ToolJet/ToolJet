@@ -6661,60 +6661,21 @@ a.step-item-disabled {
   }
 }
 
-// branded arrival toast (icon + title + View details) — self-managed container
-#tj-notification-toasts {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10000;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  pointer-events: none;
+// "View details" action inside notification arrival toasts (standard react-hot-toast look)
+.notification-toast-view {
+  margin-left: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--indigo9, #4368e3);
+  font-size: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
 
-  > div {
-    pointer-events: auto;
+  &:hover {
+    text-decoration: underline;
   }
-}
-
-.notification-toast {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--surfaces-surface-01, #ffffff);
-  color: var(--text-default);
-  box-shadow: var(--elevation-400-box-shadow, 0 8px 16px rgba(48, 50, 51, 0.1));
-  max-width: 480px;
-  cursor: pointer; // click anywhere to dismiss (design has no close button)
-
-  .notification-toast-title {
-    font-size: 13px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .notification-toast-action {
-    flex-shrink: 0;
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--borders-weak, #e4e7eb);
-    background: var(--surfaces-surface-01, #ffffff);
-    color: var(--text-default);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-
-    &:hover {
-      background: var(--surfaces-surface-02, #f6f8fa);
-    }
-  }
-
 }
 
 // cap the bell list to ~4 rows; scroll the rest (bell sits low, panel grows upward)

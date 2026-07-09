@@ -61,11 +61,17 @@ export class NotificationRepository extends Repository<Notification> {
     });
   }
 
-  async listForUser(userId: string, opts: { status: 'unread' | 'all'; limit: number; before?: Date }) {
+  // reads are org-scoped: a multi-workspace user must not see org B's items in org A's panel
+  async listForUser(
+    userId: string,
+    organizationId: string,
+    opts: { status: 'unread' | 'all'; limit: number; before?: Date }
+  ) {
     const qb = this.manager
       .createQueryBuilder(NotificationRecipient, 'r')
       .innerJoinAndMapOne('r.notification', Notification, 'n', 'n.id = r.notification_id')
       .where('r.user_id = :userId', { userId })
+      .andWhere('n.organization_id = :organizationId', { organizationId })
       .orderBy('n.created_at', 'DESC')
       .limit(opts.limit);
     if (opts.status === 'unread') qb.andWhere('r.read_at IS NULL');
@@ -73,10 +79,12 @@ export class NotificationRepository extends Repository<Notification> {
     return qb.getMany();
   }
 
-  async unreadCount(userId: string): Promise<number> {
+  async unreadCount(userId: string, organizationId: string): Promise<number> {
     const [{ c }] = await this.manager.query(
-      `SELECT COUNT(*) AS c FROM notification_recipients WHERE user_id = $1 AND read_at IS NULL`,
-      [userId]
+      `SELECT COUNT(*) AS c FROM notification_recipients r
+         JOIN notifications n ON n.id = r.notification_id
+        WHERE r.user_id = $1 AND n.organization_id = $2 AND r.read_at IS NULL`,
+      [userId, organizationId]
     );
     return parseInt(c, 10);
   }
@@ -91,28 +99,33 @@ export class NotificationRepository extends Repository<Notification> {
       .execute();
   }
 
-  async markAllRead(userId: string): Promise<void> {
-    await this.manager
-      .createQueryBuilder()
-      .update(NotificationRecipient)
-      .set({ readAt: () => 'now()' })
-      .where('user_id = :userId AND read_at IS NULL', { userId })
-      .execute();
+  async markAllRead(userId: string, organizationId: string): Promise<void> {
+    await this.manager.query(
+      `UPDATE notification_recipients r SET read_at = now()
+         FROM notifications n
+        WHERE n.id = r.notification_id AND r.user_id = $1 AND n.organization_id = $2 AND r.read_at IS NULL`,
+      [userId, organizationId]
+    );
   }
 
   // clear-read: drop this user's READ recipients only; unread stay. Content rows
   // are deleted once no recipient references them (v1 is single-recipient, but
   // the guard keeps multi-recipient fan-out safe).
-  async clearReadForUser(userId: string): Promise<number> {
+  async clearReadForUser(userId: string, organizationId: string): Promise<number> {
     return this.manager.transaction(async (em) => {
-      const rows: { notification_id: string }[] = await em.query(
-        `DELETE FROM notification_recipients WHERE user_id = $1 AND read_at IS NOT NULL RETURNING notification_id`,
-        [userId]
-      );
+      // typeorm returns [rows, rowCount] for DELETE — destructure or ids map over the tuple
+      const [rows] = (await em.query(
+        `DELETE FROM notification_recipients r
+          USING notifications n
+          WHERE n.id = r.notification_id AND r.user_id = $1 AND n.organization_id = $2 AND r.read_at IS NOT NULL
+          RETURNING r.notification_id`,
+        [userId, organizationId]
+      )) as [{ notification_id: string }[], number];
       if (rows.length === 0) return 0;
       const ids = [...new Set(rows.map((r) => r.notification_id))];
+      // ::uuid[] — node-postgres binds string arrays as text[]; uuid = text has no operator
       await em.query(
-        `DELETE FROM notifications n WHERE n.id = ANY($1) AND NOT EXISTS
+        `DELETE FROM notifications n WHERE n.id = ANY($1::uuid[]) AND NOT EXISTS
            (SELECT 1 FROM notification_recipients r WHERE r.notification_id = n.id)`,
         [ids]
       );

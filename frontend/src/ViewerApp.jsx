@@ -62,12 +62,12 @@ const ViewerApp = () => {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
-          wordBreak: 'break-all',
+          wordBreak: 'break-word',
         },
       }
     : {
         style: {
-          wordBreak: 'break-all',
+          wordBreak: 'break-word',
         },
       };
 

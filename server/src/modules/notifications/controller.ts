@@ -14,6 +14,7 @@ export class NotificationController implements INotificationController {
   async list(@User() user, @Query() query: ListNotificationsQueryDto) {
     const notifications = await this.notificationService.list(
       user.id,
+      user.organizationId,
       query.status ?? 'all',
       query.limit ?? 20,
       query.before ? new Date(query.before) : undefined
@@ -23,7 +24,7 @@ export class NotificationController implements INotificationController {
 
   @Get('unread-count')
   async unreadCount(@User() user) {
-    return { count: await this.notificationService.unreadCount(user.id) };
+    return { count: await this.notificationService.unreadCount(user.id, user.organizationId) };
   }
 
   @Patch(':recipientId/read')
@@ -34,13 +35,13 @@ export class NotificationController implements INotificationController {
 
   @Patch('read-all')
   async markAllRead(@User() user) {
-    await this.notificationService.markAllRead(user.id);
+    await this.notificationService.markAllRead(user.id, user.organizationId);
     return { success: true };
   }
 
   @Delete('read')
   async clearRead(@User() user) {
-    const cleared = await this.notificationService.clearRead(user.id);
+    const cleared = await this.notificationService.clearRead(user.id, user.organizationId);
     return { success: true, cleared };
   }
 }

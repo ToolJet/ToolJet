@@ -37,8 +37,14 @@ export class NotificationService implements INotificationService {
     }
   }
 
-  async list(userId: string, status: 'unread' | 'all', limit: number, before?: Date): Promise<NotificationListItem[]> {
-    const rows = await this.repository.listForUser(userId, { status, limit, before });
+  async list(
+    userId: string,
+    organizationId: string,
+    status: 'unread' | 'all',
+    limit: number,
+    before?: Date
+  ): Promise<NotificationListItem[]> {
+    const rows = await this.repository.listForUser(userId, organizationId, { status, limit, before });
     return rows.map((r: any) => ({
       recipientId: r.id,
       id: r.notification.id,
@@ -52,19 +58,19 @@ export class NotificationService implements INotificationService {
     }));
   }
 
-  unreadCount(userId: string) {
-    return this.repository.unreadCount(userId);
+  unreadCount(userId: string, organizationId: string) {
+    return this.repository.unreadCount(userId, organizationId);
   }
 
   markRead(recipientId: string, userId: string) {
     return this.repository.markRead(recipientId, userId);
   }
 
-  markAllRead(userId: string) {
-    return this.repository.markAllRead(userId);
+  markAllRead(userId: string, organizationId: string) {
+    return this.repository.markAllRead(userId, organizationId);
   }
 
-  clearRead(userId: string) {
-    return this.repository.clearReadForUser(userId);
+  clearRead(userId: string, organizationId: string) {
+    return this.repository.clearReadForUser(userId, organizationId);
   }
 }

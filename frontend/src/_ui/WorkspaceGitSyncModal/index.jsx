@@ -266,7 +266,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     try {
       // Pull hydrates in the background — reloading now would only show stale data
       await actions.pullWorkspace();
-      toast.success('Pulling latest changes. Refresh in a moment to see them.');
+      toast.success('Pulling latest changes.');
       onClose();
     } catch (error) {
       if (error?.statusCode === 409) {

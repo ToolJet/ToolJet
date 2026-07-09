@@ -88,9 +88,18 @@ describe('NotificationService', () => {
     expect(inAppDeliver).toHaveBeenCalledWith(expect.anything(), expect.anything(), { toast: true });
   });
 
-  it('should clear read notifications scoped to the user', async () => {
+  it('should clear read notifications scoped to the user and org', async () => {
     repo.clearReadForUser.mockResolvedValue(3);
-    await expect(service.clearRead('u1')).resolves.toBe(3);
-    expect(repo.clearReadForUser).toHaveBeenCalledWith('u1');
+    await expect(service.clearRead('u1', 'org1')).resolves.toBe(3);
+    expect(repo.clearReadForUser).toHaveBeenCalledWith('u1', 'org1');
+  });
+
+  it('should scope list and unread count to the active org', async () => {
+    repo.listForUser.mockResolvedValue([]);
+    repo.unreadCount.mockResolvedValue(2);
+    await service.list('u1', 'org1', 'all', 20);
+    expect(repo.listForUser).toHaveBeenCalledWith('u1', 'org1', { status: 'all', limit: 20, before: undefined });
+    await expect(service.unreadCount('u1', 'org1')).resolves.toBe(2);
+    expect(repo.unreadCount).toHaveBeenCalledWith('u1', 'org1');
   });
 });
