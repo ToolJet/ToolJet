@@ -16,6 +16,10 @@ The **Range Picker** component enables users to select a range of dates. It can 
 | Default end date   | Set the end date to be selected by default in the component.    | Date in correct format (e.g., 10/04/2024).                    |
 | Format             | Defines the date format. Default date format is **DD/MM/YYYY**. | Date format in ISO 8601 defined formats (e.g., `MM/DD/YYYY`). |
 
+:::caution
+Click the **fx** button next to **Format** to enter a custom format string. ToolJet uses **[Moment.js](https://momentjs.com/docs/#/displaying/format/)** to parse and format dates, so the format string must use Moment.js tokens, and these tokens are case-sensitive — for example, `D` is the day of the month (`1`–`31`), while lowercase `d` is the day of the week (`0`–`6`, Sunday to Saturday). Also note that `YYYY` gives a 4-digit year, but lowercase `yyyy` isn't a valid Moment.js token and gets rendered as literal text. Use a format like `MMM D, YYYY` (e.g., `Jan 5, 2024`), not `MMM d, yyyy`.
+:::
+
 </div>
 
 <div style={{paddingTop:'24px'}}>
