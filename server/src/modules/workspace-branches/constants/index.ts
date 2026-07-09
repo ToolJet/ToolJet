@@ -9,6 +9,9 @@ export enum FEATURE_KEY {
   LIST_REMOTE_BRANCHES = 'LIST_REMOTE_BRANCHES',
   FETCH_PULL_REQUESTS = 'FETCH_PULL_REQUESTS',
   ENSURE_DRAFT = 'ENSURE_DRAFT',
+  PULL_APP = 'PULL_APP',
+  PULL_MODULE = 'PULL_MODULE',
+  GET_ENTITY_TAGS = 'GET_ENTITY_TAGS',
 }
 
 // Git-sync background queue. Lives in src so module registration (CE + EE)

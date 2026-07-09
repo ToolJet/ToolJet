@@ -33,8 +33,17 @@ export interface IWorkspaceBranchService {
     organizationId: string,
     user?: User,
     sourceBranch?: string,
-    branchId?: string
+    branchId?: string,
   ): Promise<{ success: boolean }>;
+  pullApp(
+    organizationId: string,
+    user: User,
+    appId: string,
+    branchId?: string,
+    tagSha?: string,
+    tagName?: string,
+    tagDescription?: string,
+  ): Promise<{ success: boolean; draftVersionId: string | null }>;
   ensureAppDraft(
     organizationId: string,
     appId: string,
@@ -43,7 +52,17 @@ export interface IWorkspaceBranchService {
     tagSha?: string,
     tagName?: string
   ): Promise<{ draftVersionId: string | null }>;
+  pullModule(
+    organizationId: string,
+    user: User,
+    moduleId: string,
+    branchId?: string,
+    tagSha?: string,
+    tagName?: string,
+    tagDescription?: string,
+  ): Promise<{ success: boolean; draftVersionId: string | null }>;
   checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse>;
   listRemoteBranches(organizationId: string): Promise<{ branches: any[] }>;
   getPullRequests(organizationId: string): Promise<any>;
+  getEntityTags(organizationId: string, coRelationId: string): Promise<any[]>;
 }

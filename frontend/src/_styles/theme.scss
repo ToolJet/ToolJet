@@ -18175,6 +18175,58 @@ section.ai-message-prompt-input-wrapper {
   }
 }
 
+.import-in-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+
+  .branch-name-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--indigo3);
+    color: var(--indigo11);
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+.import-from-helper-text {
+  margin-top: 4px;
+  color: var(--slate11);
+}
+
+.import-from-disabled-select {
+  .react-select__control--is-disabled {
+    background-color: rgba(204, 209, 213, 0.3) !important;
+    border-color: transparent !important;
+  }
+  .react-select__dropdown-indicator {
+    color: var(--slate8) !important;
+  }
+}
+
+.import-dependent-info-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--indigo3);
+  border-radius: 6px;
+  color: var(--slate12);
+  font-size: 12px;
+  line-height: 18px;
+  margin-bottom: 12px;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
 .custom_fc_frame {
   left: 40px !important;
 }
