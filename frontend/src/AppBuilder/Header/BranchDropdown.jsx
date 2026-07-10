@@ -794,99 +794,40 @@ export function BranchDropdown({ appId, organizationId }) {
                       <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
                       <span>Create pull request</span>
                     </button>
-                    {allBranches.length > 0 && (
+                    <div className="branch-dropdown-split-row">
                       <button
-                        className="switch-branch-btn"
+                        className="save-version-btn"
                         onClick={() => {
                           setShowDropdown(false);
-                          setShowSwitchModal(true);
+                          setShowSaveVersionModal(true);
                         }}
-                        data-cy="switch-branch-btn"
+                        data-cy="save-version-btn"
                       >
-                        <SolidIcon name="refresh" width="14" />
-                        <span>Switch branch</span>
+                        <Tag size="14" />
+                        <span>Save version</span>
                       </button>
-                    )}
+                      {allBranches.length > 0 && (
+                        <>
+                          <div className="branch-dropdown-split-divider" />
+                          <button
+                            className="switch-branch-btn split"
+                            onClick={() => {
+                              setShowDropdown(false);
+                              setShowSwitchModal(true);
+                            }}
+                            data-cy="switch-branch-btn"
+                          >
+                            <SolidIcon name="refresh" width="14" />
+                            <span>Switch branch</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
             </>
           )}
-
-          {/* Footer actions */}
-          <div className="branch-dropdown-footer">
-            {/* Default branch footer: Create branch + Switch branch */}
-            {isOnDefaultBranch ? (
-              <>
-                <button
-                  className="create-branch-btn"
-                  onClick={() => {
-                    setShowDropdown(false);
-                    setShowCreateModal(true);
-                  }}
-                  disabled={!branchingEnabled}
-                  title={!branchingEnabled ? 'Single-branch mode: branching is disabled' : undefined}
-                  data-cy="create-branch-btn"
-                >
-                  <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
-                  <span>Create new branch</span>
-                </button>
-                {allBranches.length > 0 && (
-                  <button
-                    className="switch-branch-btn"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setShowSwitchModal(true);
-                    }}
-                    disabled={!branchingEnabled}
-                    title={!branchingEnabled ? 'Single-branch mode: branching is disabled' : undefined}
-                    data-cy="switch-branch-btn"
-                  >
-                    <SolidIcon name="refresh" width="14" />
-                    <span>Switch branch</span>
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                {/* Feature branch footer: Create PR + Switch branch */}
-                {/* Always show Create PR button when on sub-branch */}
-                <button className="create-pr-btn" onClick={_handleCreatePR} data-cy="create-pr-btn">
-                  <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
-                  <span>Create pull request</span>
-                </button>
-                <div className="branch-dropdown-split-row">
-                  <button
-                    className="save-version-btn"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setShowSaveVersionModal(true);
-                    }}
-                    data-cy="save-version-btn"
-                  >
-                    <Tag size="14" />
-                    <span>Save version</span>
-                  </button>
-                  {allBranches.length > 0 && (
-                    <>
-                      <div className="branch-dropdown-split-divider" />
-                      <button
-                        className="switch-branch-btn split"
-                        onClick={() => {
-                          setShowDropdown(false);
-                          setShowSwitchModal(true);
-                        }}
-                        data-cy="switch-branch-btn"
-                      >
-                        <SolidIcon name="refresh" width="14" />
-                        <span>Switch branch</span>
-                      </button>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
         </div>
       </Popover.Body>
     </Popover>
