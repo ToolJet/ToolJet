@@ -625,20 +625,16 @@ export const Navigation = function Navigation(props) {
     }
 
     // Vertical orientation - use visibleMenuItems (deduplicated and filtered)
-    // Auto-margins handle alignment without clipping scrollable content:
-    // center → auto margins on both sides; end → auto margin on start side only
     const verticalMenuStyle = {
       ...navItemStyles,
       marginTop: verticalAlignment === 'center' ? 'auto' : verticalAlignment === 'bottom' ? 'auto' : undefined,
       marginBottom: verticalAlignment === 'center' ? 'auto' : undefined,
-      marginLeft: horizontalAlignment === 'center' ? 'auto' : horizontalAlignment === 'right' ? 'auto' : undefined,
-      marginRight: horizontalAlignment === 'center' ? 'auto' : undefined,
     };
 
     return (
       <div
-        className={`navigation-vertical-menu ${
-          navItemSize === 'equalWidth' ? `nav-equal-width nav-align-${horizontalAlignment}` : ''
+        className={`navigation-vertical-menu nav-align-${horizontalAlignment} ${
+          navItemSize === 'equalWidth' ? 'nav-equal-width' : ''
         }`}
         style={verticalMenuStyle}
       >

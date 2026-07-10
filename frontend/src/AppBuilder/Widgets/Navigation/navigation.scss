@@ -72,14 +72,29 @@
 
   // Vertical menu - uses pages-wrapper styling
   .navigation-vertical-menu {
-    width: max-content;
+    width: 100%;
+    max-width: 100%;
     padding: 0 8px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    align-items: flex-start;
+
+    .tj-list-item,
+    .page-group-wrapper {
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    &.nav-align-center {
+      align-items: center;
+    }
+    &.nav-align-right {
+      align-items: flex-end;
+    }
 
     &.nav-equal-width {
-      width: 100%;
+      align-items: stretch;
 
       .tj-list-item,
       .page-group-wrapper {
@@ -120,7 +135,18 @@
     }
   }
 
-  .navigation-vertical-menu .accordion-content {
+  .navigation-vertical-menu:not(.nav-equal-width) .accordion-content {
+    align-items: flex-start;
+
+    &.nav-subalign-center {
+      align-items: center;
+    }
+    &.nav-subalign-right {
+      align-items: flex-end;
+    }
+  }
+
+  .navigation-vertical-menu.nav-equal-width .accordion-content {
     &.nav-subalign-left .tj-list-item {
       justify-content: flex-start !important;
     }
@@ -189,6 +215,7 @@
 
     &:hover {
       background-color: var(--hovered-nav-item-pill-bg);
+      border-radius: var(--nav-item-pill-radius);
     }
 
     &.tj-list-item-selected {
@@ -439,6 +466,8 @@
   // Accordion item for vertical groups
   .accordion-item {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     margin: 0 !important;
     border-radius: 0 !important;
     border: none;
@@ -450,6 +479,7 @@
       flex-direction: column;
       gap: 6px;
       margin-top: 6px;
+      min-width: 0;
 
       &.expanded {
         display: flex;
@@ -463,6 +493,8 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
+        width: 100%;
+        min-width: 0;
       }
 
       .tj-list-item {
