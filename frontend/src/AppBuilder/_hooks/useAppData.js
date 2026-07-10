@@ -1007,7 +1007,7 @@ const useAppData = (
         { timeout: 2000 }
       ); // Adding a timeout of 2 seconds as fallback
     }
-  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode]);
+  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode, restoreTimestamp]);
 
   return appTypeRef.current;
 };
