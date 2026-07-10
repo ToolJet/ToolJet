@@ -167,11 +167,14 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
 
       onClose();
 
-      // Navigate based on whether app exists on the new branch
+      // Navigate based on whether app exists on the new branch.
+      // Include ?branch= in the URL so whenBranchResolved() waits for the branch
+      // context before fetching the app — without it the app loads on main branch.
       const pathParts = window.location.pathname.split('/');
       const resolvedAppId = switchResult?.resolvedAppId;
+      const encodedBranch = encodeURIComponent(branchName.trim());
       if (resolvedAppId) {
-        window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
+        window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}?branch=${encodedBranch}`;
       } else {
         sessionStorage.setItem('git_sync_toast', 'This app does not exist for this branch on ToolJet');
         window.location.href = `/${pathParts[1]}`;
