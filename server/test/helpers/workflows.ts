@@ -5,7 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
 import { App } from '@entities/app.entity';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DataSource } from '@entities/data_source.entity';
@@ -242,6 +242,14 @@ export const createWorkflowApplicationVersion = async (
   });
 
   return await appVersionRepository.save(version);
+};
+
+/** Marks a version as the app's released version (mirrors the release() write path: status=PUBLISHED + apps.current_version_id). */
+export const releaseWorkflowVersion = async (application: App, version: AppVersion): Promise<void> => {
+  const ds = getDefaultDataSource();
+
+  await ds.getRepository(AppVersion).update({ id: version.id }, { status: AppVersionStatus.PUBLISHED });
+  await ds.getRepository(App).update({ id: application.id }, { currentVersionId: version.id });
 };
 
 // ---------------------------------------------------------------------------
