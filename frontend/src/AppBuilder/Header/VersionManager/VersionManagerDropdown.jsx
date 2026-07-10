@@ -78,6 +78,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     (state) => ({ currentBranch: state.currentBranch, pullApp: state.actions.pullApp }),
     shallow
   );
+  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
 
   const appCoRelationId = useStore((state) => state.appStore.modules[moduleId]?.app?.co_relation_id, shallow);
 
@@ -146,26 +147,19 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const draftVersions = developmentVersions.filter((v) => v.versionType === 'version' && v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
 
-  // Disable create draft logic:
-  // - Git sync enabled + synced app: disable if a synced draft already exists (one
-  //   draft per branch rule).
-  // - Git sync enabled + unsynced app (never pushed to git): no synced draft exists,
-  //   so it falls through to the same rule as a non-git workspace — need at least one
-  //   saved version to create a draft from. See `createVersion` in versions/util.service.ts.
-  // - Git sync disabled: disable if no published versions AND a draft exists (need published version to create from)
-  const hasSyncedDraft = draftVersions.some((v) => v.isSynced !== false);
-  const needsSavedVersion = savedVersions.length === 0 && draftVersions.length > 0;
-  const shouldDisableCreateDraft = isGitSyncEnabled ? hasSyncedDraft || needsSavedVersion : needsSavedVersion;
+  // A draft is always created FROM a saved version — so hide the button entirely when there are
+  // no saved versions to create from (nothing to pick in the modal).
+  const showCreateDraftButton = savedVersions.length > 0;
 
-  // Determine tooltip message based on why create draft is disabled
-  let createDraftDisabledTooltip = '';
-  if (shouldDisableCreateDraft) {
-    if (isGitSyncEnabled && hasSyncedDraft) {
-      createDraftDisabledTooltip = 'Draft version already exists.';
-    } else if (savedVersions.length === 0) {
-      createDraftDisabledTooltip = 'Draft version can only be created from saved versions.';
-    }
-  }
+  // Enable/disable logic (only relevant when shown):
+  // - Git-off: enabled (a workspace can hold multiple drafts).
+  // - Git single-branch: always enabled. Unsynced app → normal create (unlimited drafts, git-off
+  //   style); synced app → creating a draft REPLACES the single synced draft (see replaceDraftVersion).
+  // - Git multi-branch + a synced draft exists: disabled — patches are made on feature branches, not
+  //   by replacing the default-branch draft.
+  const hasSyncedDraft = draftVersions.some((v) => v.isSynced !== false);
+  const shouldDisableCreateDraft = isGitSyncEnabled && isMultiBranchingEnabled && hasSyncedDraft;
+  const createDraftDisabledTooltip = shouldDisableCreateDraft ? 'Draft version already exists.' : '';
 
   const mergedVersions = useMemo(() => {
     const gitOnlyItems = [];
@@ -322,6 +316,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleCreateDraft = () => {
+    // Close the version dropdown before opening the modal, otherwise both stay open at once.
+    closeDropdown();
     setShowCreateDraftModal(true);
   };
 
@@ -601,12 +597,14 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        <CreateDraftButton
-          onClick={handleCreateDraft}
-          disabled={shouldDisableCreateDraft}
-          disabledTooltip={createDraftDisabledTooltip}
-          darkMode={darkMode}
-        />
+        {showCreateDraftButton && (
+          <CreateDraftButton
+            onClick={handleCreateDraft}
+            disabled={shouldDisableCreateDraft}
+            disabledTooltip={createDraftDisabledTooltip}
+            darkMode={darkMode}
+          />
+        )}
       </Popover.Body>
     </Popover>
   );

@@ -60,7 +60,15 @@ function getModuleVersionData(coRelationId, moduleReferenceId, mode) {
   ).then(handleResponse);
 }
 
-function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId, versionType = 'version') {
+function create(
+  appId,
+  versionName,
+  versionDescription,
+  versionFromId,
+  currentEnvironmentId,
+  versionType = 'version',
+  replace = false
+) {
   const body = {
     versionName,
     versionDescription,
@@ -68,6 +76,10 @@ function create(appId, versionName, versionDescription, versionFromId, currentEn
     environmentId: currentEnvironmentId,
     versionType,
   };
+  // Git single-branch: replace the existing single draft with a fresh one cloned from versionFromId.
+  if (replace) {
+    body.replace = true;
+  }
 
   const requestOptions = {
     method: 'POST',
@@ -78,13 +90,17 @@ function create(appId, versionName, versionDescription, versionFromId, currentEn
   return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions`), requestOptions).then(handleResponse);
 }
 
-function createDraftVersion(appId, versionFromId, environmentId, versionDescription = '') {
+function createDraftVersion(appId, versionFromId, environmentId, versionDescription = '', replace = false) {
   const body = {
     versionFromId,
     environmentId,
   };
   if (versionDescription) {
     body.versionDescription = versionDescription;
+  }
+  // Git single-branch: replace the existing single draft with a fresh one cloned from versionFromId.
+  if (replace) {
+    body.replace = true;
   }
 
   const requestOptions = {

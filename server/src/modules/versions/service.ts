@@ -165,7 +165,20 @@ export class VersionService implements IVersionService {
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
     const context = await this.beforeVersionCreate(app, user, versionCreateDto);
-    const result = await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    let result;
+    // Git single-branch keeps exactly one draft on the default branch. When the caller opts to
+    // replace (the "Replace with new draft" action), atomically swap the existing draft for a fresh
+    // one cloned from versionFromId instead of tripping the single-draft guard. Only applies to git
+    // single-branch (git-off allows many drafts; multi-branch patches via feature branches).
+    if (versionCreateDto.replace) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      if (details.isEnabled && !details.isMultiBranchingEnabled) {
+        result = await this.versionsUtilService.replaceDraftVersion(app, user, versionCreateDto);
+      }
+    }
+    if (!result) {
+      result = await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    }
     await this.afterVersionCreate(context, result, app, user);
     return result;
   }
@@ -511,6 +524,22 @@ export class VersionService implements IVersionService {
       versionDescription: '',
       versionType: versionType,
     };
+
+    // Git single-branch keeps exactly one draft on the default branch. When the caller opts to
+    // replace (the "Replace with new draft" action from the version selector), atomically swap the
+    // existing draft for a fresh one cloned from the chosen saved version instead of tripping the
+    // single-draft guard. Only applies to git single-branch (git-off allows many drafts; multi-branch
+    // patches via feature branches). Runs through the same before/after hooks so history is captured.
+    if (draftVersionDto.replace) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      if (details.isEnabled && !details.isMultiBranchingEnabled) {
+        const context = await this.beforeVersionCreate(app, user, createVersionDto);
+        const replaced = await this.versionsUtilService.replaceDraftVersion(app, user, createVersionDto);
+        await this.afterVersionCreate(context, replaced, app, user);
+        return replaced;
+      }
+    }
+
     const draftVersion = await this.createVersion(app, user, createVersionDto);
     return draftVersion;
   }

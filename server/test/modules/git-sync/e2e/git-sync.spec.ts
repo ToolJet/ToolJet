@@ -4303,5 +4303,206 @@ describe('GitSyncController', () => {
         }
       }, 600000);
     });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Create-draft & patch flow (git enabled, branching OFF / single-branch).
+    //
+    // Git single-branch keeps one draft on the default branch. Creating a draft from a SAVED
+    // (published) version REPLACES the current draft — any uncommitted edits on it are discarded and
+    // the new draft is a clean copy of the chosen saved version. This exercises the atomic
+    // replaceDraftVersion path (POST /apps/:id/versions with `replace: true`). No git transport is
+    // involved (pure version create/publish/replace), so it runs fine against the protected-main repo.
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('create draft & patch flow', () => {
+      let patchOrgId: string;
+      let patchCookie: string[];
+      let patchDataSource: DataSource;
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-patch-flow@tooljet.io',
+          firstName: 'git',
+          lastName: 'patch',
+        });
+        patchOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-patch-flow@tooljet.io');
+        patchCookie = tokenCookie;
+        await ensureAppEnvironments(app, patchOrgId);
+        patchDataSource = app.get<DataSource>(getDataSourceToken('default'));
+        // Seed the default branch (createUser doesn't) so getDetails() resolves it without the
+        // "No default branch found" fallback log.
+        await patchDataSource.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [patchOrgId]
+        );
+      });
+
+      it('replaces the draft when creating from a saved version, discarding uncommitted edits', async () => {
+        const { randomUUID } = await import('crypto');
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', patchCookie).set('tj-workspace-id', patchOrgId);
+
+        const buttonDiff = (name: string) => {
+          const id = randomUUID();
+          return {
+            diff: {
+              [id]: {
+                name,
+                layouts: {
+                  desktop: { top: 80, left: 15, width: 4, height: 40 },
+                  mobile: { top: 80, left: 15, width: 4, height: 40 },
+                },
+                type: 'Button',
+                general: {},
+                generalStyles: {},
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: { text: { value: 'Button' }, visibility: { value: '{{true}}' } },
+                styles: { backgroundColor: { value: 'var(--cc-primary-brand)' } },
+                parent: null,
+              },
+            },
+          };
+        };
+
+        // GET app detail → the current editing (draft) version id + home page id.
+        const getEditing = async (appId: string) => {
+          const detail = await auth(agent().get(`/api/apps/${appId}`)).query({ branch_id: mainBranchId }).expect(200);
+          const ev = detail.body?.editing_version || detail.body?.editingVersion;
+          const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id;
+          return { versionId: ev.id as string, envId: (ev.current_environment_id || ev.currentEnvironmentId) as string, pageId };
+        };
+        // Component + query names on a version (deterministic DB reads, keyed by the version id).
+        const componentNames = async (versionId: string): Promise<string[]> =>
+          (
+            await patchDataSource.query(
+              `SELECT c.name FROM components c JOIN pages p ON p.id = c.page_id
+                WHERE p.app_version_id = $1 ORDER BY c.name`,
+              [versionId]
+            )
+          ).map((r: any) => r.name);
+        const queryNames = async (versionId: string): Promise<string[]> =>
+          (
+            await patchDataSource.query(`SELECT name FROM data_queries WHERE app_version_id = $1 ORDER BY name`, [
+              versionId,
+            ])
+          ).map((r: any) => r.name);
+        const addComponent = (appId: string, versionId: string, pageId: string, name: string) =>
+          auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+            .query({ branch_id: mainBranchId })
+            .send({ is_user_switched_version: false, pageId, diff: buttonDiff(name).diff })
+            .expect(201);
+        const addQuery = (dsId: string, versionId: string, name: string) =>
+          auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+            .query({ branch_id: mainBranchId })
+            .send({ kind: 'restapi', name, options: { method: 'get', url: '', headers: [], url_params: [], body: [] } })
+            .expect(201);
+        const publish = (appId: string, versionId: string, name: string) =>
+          auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}`))
+            .query({ branch_id: mainBranchId })
+            .send({ is_user_switched_version: false, name, status: 'PUBLISHED' })
+            .expect(200);
+        // Create a draft from a saved version. replace=true → atomic swap of the current draft.
+        const createDraftFrom = (appId: string, versionFromId: string, envId: string, replace: boolean) =>
+          auth(agent().post(`/api/apps/${appId}/versions`))
+            .query({ branch_id: mainBranchId })
+            .send({ versionName: 'main', versionFromId, environmentId: envId, versionType: 'version', replace })
+            .expect(201);
+
+        const restapiDsOptions = [
+          { key: 'url', value: '' },
+          { key: 'auth_type', value: 'none' },
+          { key: 'headers', value: [['', '']] },
+        ];
+
+        // ── Configure git + branching OFF (single-branch) ────────────────────
+        await auth(agent().post('/api/git-sync/configs')).send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false }).expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${patchOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`)).send({ isBranchingEnabled: false }).expect(200);
+        const branchesResp = await auth(agent().get('/api/workspace-branches')).expect(200);
+        const mainBranchId: string = branchesResp.body.activeBranchId;
+        expect(mainBranchId).toBeDefined();
+
+        // ── Setup: app + module + data source + query + components on the default branch ──
+        const appResp = await auth(agent().post('/api/apps'))
+          .send({ icon: 'home', name: 'patch-flow-app', type: 'front-end' })
+          .expect(201);
+        const appId: string = appResp.body.id;
+        const moduleResp = await auth(agent().post('/api/modules'))
+          .send({ icon: 'folderupload', name: 'patch-flow-module', type: 'module' })
+          .expect(201);
+        const moduleId: string = moduleResp.body.id;
+        const dsResp = await auth(agent().post('/api/data-sources'))
+          .send({ name: 'patch-flow-ds', kind: 'restapi', options: restapiDsOptions, scope: 'global' })
+          .expect(201);
+        const dsId: string = dsResp.body.id;
+
+        const v1Ctx = await getEditing(appId);
+        await addComponent(appId, v1Ctx.versionId, v1Ctx.pageId, 'comp_A');
+        await addQuery(dsId, v1Ctx.versionId, 'query_A');
+        // Module gets its own query (setup coverage; the patch flow is asserted on the app).
+        const modCtx = await getEditing(moduleId);
+        await addQuery(dsId, modCtx.versionId, 'mod_query_A');
+
+        // ── Save the version (publish v1) ────────────────────────────────────
+        const v1Id = v1Ctx.versionId;
+        await publish(appId, v1Id, 'v1');
+        expect(await componentNames(v1Id)).toEqual(['comp_A']);
+        expect(await queryNames(v1Id)).toEqual(['query_A']);
+
+        // Resolve a draft's home page from the DB. The app-detail editing-version resolver can
+        // surface the just-published version instead of the new draft once several versions exist,
+        // so we target draft ids (from the create responses) directly rather than via GET /apps/:id.
+        const draftPageId = async (versionId: string): Promise<string> =>
+          (
+            await patchDataSource.query(
+              `SELECT COALESCE(av.home_page_id, (SELECT id FROM pages WHERE app_version_id = av.id LIMIT 1)) AS page_id
+                 FROM app_versions av WHERE av.id = $1`,
+              [versionId]
+            )
+          )[0]?.page_id;
+
+        // ── New draft from v1, then add 1 more component + query ─────────────
+        const d2Resp = await createDraftFrom(appId, v1Id, v1Ctx.envId, false);
+        const d2Id: string = d2Resp.body.id;
+        expect(await componentNames(d2Id)).toEqual(['comp_A']); // clean copy of v1
+        expect(await queryNames(d2Id)).toEqual(['query_A']);
+        await addComponent(appId, d2Id, await draftPageId(d2Id), 'comp_B');
+        await addQuery(dsId, d2Id, 'query_B');
+        expect(await componentNames(d2Id)).toEqual(['comp_A', 'comp_B']);
+        expect(await queryNames(d2Id)).toEqual(['query_A', 'query_B']);
+
+        // ── Create draft from the saved version (replace) → discards comp_B/query_B ──
+        const d3Resp = await createDraftFrom(appId, v1Id, v1Ctx.envId, true);
+        const d3Id: string = d3Resp.body.id;
+        expect(d3Id).not.toBe(d2Id);
+        // d2 is gone (replaced) — exactly one non-branch DRAFT remains on the default branch, and it's d3.
+        const d2After = await patchDataSource.query(`SELECT id FROM app_versions WHERE id = $1`, [d2Id]);
+        expect(d2After).toHaveLength(0);
+        const draftsAfterReplace = await patchDataSource.query(
+          `SELECT id FROM app_versions WHERE app_id = $1 AND status = 'DRAFT' AND version_type = 'version'`,
+          [appId]
+        );
+        expect(draftsAfterReplace).toHaveLength(1);
+        expect(draftsAfterReplace[0].id).toBe(d3Id);
+        // The new draft is a clean copy of v1 — uncommitted edits (comp_B/query_B) discarded.
+        expect(await componentNames(d3Id)).toEqual(['comp_A']);
+        expect(await queryNames(d3Id)).toEqual(['query_A']);
+
+        // ── Edit + save the new draft as v2 ──────────────────────────────────
+        await addComponent(appId, d3Id, await draftPageId(d3Id), 'comp_C');
+        await addQuery(dsId, d3Id, 'query_C');
+        await publish(appId, d3Id, 'v2');
+        expect(await componentNames(d3Id)).toEqual(['comp_A', 'comp_C']);
+
+        // ── Create draft from the FIRST saved version (v1) again → clean v1 copy ──
+        const d4Resp = await createDraftFrom(appId, v1Id, v1Ctx.envId, true);
+        const d4Id: string = d4Resp.body.id;
+        // d4 mirrors v1 (comp_A/query_A) — NOT v2 (no comp_C/query_C).
+        expect(await componentNames(d4Id)).toEqual(['comp_A']);
+        expect(await queryNames(d4Id)).toEqual(['query_A']);
+      }, 300000);
+    });
   });
 });

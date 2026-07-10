@@ -244,7 +244,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     versionDescription = '',
     onSuccess,
     onFailure,
-    versionType = 'version'
+    versionType = 'version',
+    replace = false
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -254,13 +255,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionDescription,
         selectedVersionId,
         editorEnvironment,
-        versionType
+        versionType,
+        replace
       );
       const editorVersion = {
         id: newVersion.id,
         name: newVersion.name,
         current_environment_id: newVersion.current_environment_id,
-        isSynced: false,
+        // Use the created version's actual sync state (git-off/normal drafts are unsynced; a
+        // git single-branch replace draft stays synced), not a hardcoded false.
+        isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
       };
       set((state) => ({
         ...state,

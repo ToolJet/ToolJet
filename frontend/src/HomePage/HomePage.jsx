@@ -149,7 +149,6 @@ class HomePageComponent extends React.Component {
       dependentPlugins: [],
       dependentPluginsDetail: {},
       importedAppName: {},
-      isAppImportEditable: false,
       showMissingGroupsModal: false,
       missingGroups: [],
       missingGroupsExpanded: false,
@@ -1069,7 +1068,8 @@ class HomePageComponent extends React.Component {
       gitVersionId: git_version_id,
       organizationGitId: orgGit?.id,
       appName: importedAppName?.trim().replace(/\s+/g, ' '),
-      allowEditing: this.state.isAppImportEditable,
+      // Imported apps are non-editable by default; editability is driven by git branch/sync state.
+      allowEditing: false,
       ...(selectedImportBranch && { gitBranchName: selectedImportBranch }),
       ...(currentWorkspaceBranchId && { workspaceBranchId: currentWorkspaceBranchId }),
       ...(commitHash && { commitHash, appCoRelationId: app_co_relation_id }),
@@ -2197,24 +2197,6 @@ class HomePageComponent extends React.Component {
                         <span>
                           This app with its <strong>dependent modules &amp; data sources</strong> will be pulled
                         </span>
-                      </div>
-
-                      {/* EDITABLE CHECKBOX */}
-                      <div className="application-editable-checkbox-container">
-                        <input
-                          className="form-check-input"
-                          checked={this.state.isAppImportEditable}
-                          type="checkbox"
-                          onChange={() =>
-                            this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
-                          }
-                        />
-                        Make application editable
-                        <div className="helper-text">
-                          <div className="tj-text-xxsm">
-                            Enabling this allows editing and git sync push/pull access in development.
-                          </div>
-                        </div>
                       </div>
                     </>
                   )}
