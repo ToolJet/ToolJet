@@ -254,7 +254,7 @@ export const keyValuePairConfig = {
       type: 'colorSwatches',
       displayName: '',
       showLabel: false,
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--interactive-overlays-fill-hover)' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface2-surface)' },
       conditionallyRender: {
         key: 'hoverBackgroundMode',
         value: 'manual',
@@ -484,7 +484,7 @@ export const keyValuePairConfig = {
       borderRadius: { value: '6' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       hoverBackgroundMode: { value: 'auto' },
-      hoverBackgroundColor: { value: 'var(--interactive-overlays-fill-hover)' },
+      hoverBackgroundColor: { value: 'var(--cc-surface2-surface)' },
     },
   },
 };
