@@ -4,6 +4,7 @@ import { resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -246,6 +247,9 @@ export const Tabs = function Tabs({
   }, [setCurrentTab, currentTab]);
 
   const containerRef = useRef(null);
+  // Disabled tabs block the mouse via `data-disabled`; `inert` also removes the tab nav and panel
+  // components from the tab order (runtime only — keeps the builder editable).
+  useDisableInert(containerRef, isDisabled);
   const { canScroll, canScrollLeft, canScrollRight, scrollTabs } = useTabsNavScrollArrows({
     tabsRef,
     tabWidth,

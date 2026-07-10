@@ -9,7 +9,7 @@ import { BreadCrumbContext } from '@/App/App';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tablesLimit, setTablesLimit }) {
-  const { organizationId, setSelectedTable, setTables, tables } = useContext(TooljetDatabaseContext);
+  const { organizationId, setSelectedTable, setTables, tables, canEditTjdb } = useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   setBannerVisible(tablesLimit?.current >= tablesLimit?.total - 1 || false);
@@ -33,7 +33,7 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tab
         <ButtonSolid
           type="button"
           variant="primary"
-          disabled={tablesLimit?.current >= tablesLimit?.total}
+          disabled={!canEditTjdb || tablesLimit?.current >= tablesLimit?.total}
           onClick={() => {
             posthogHelper.captureEvent('click_add_tooljet_table_button', {
               workspace_id:
