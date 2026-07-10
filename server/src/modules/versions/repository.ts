@@ -70,12 +70,28 @@ export class VersionRepository extends Repository<AppVersion> {
     });
   }
 
-  findByName(name: string, appId: string, relations?: string[], manager?: EntityManager): Promise<AppVersion> {
+  async findByName(name: string, appId: string, relations?: string[], manager?: EntityManager): Promise<AppVersion> {
     const m = manager ?? this.manager;
-    return m.findOneOrFail(AppVersion, {
+    // Direct lookup by the `name` column (works for regular versions and legacy UUID-based URLs)
+    const version = await m.findOne(AppVersion, {
       where: { name, appId },
       ...(relations?.length ? { relations } : {}),
     });
+    if (version) return version;
+
+    // For branch-type versions the URL carries the human-readable branch name,
+    // but the `name` column stores a UUID. Fall back to a branch-name lookup.
+    const branchVersion = await m
+      .createQueryBuilder(AppVersion, 'v')
+      .innerJoin(WorkspaceBranch, 'b', 'v.branch_id = b.id')
+      .where('v.app_id = :appId', { appId })
+      .andWhere('b.branch_name = :branchName', { branchName: name })
+      .andWhere('v.version_type = :versionType', { versionType: AppVersionType.BRANCH })
+      .getOne();
+    if (branchVersion) return branchVersion;
+
+    // Neither matched — throw the same EntityNotFoundError the caller expects
+    return m.findOneOrFail(AppVersion, { where: { name, appId } });
   }
 
   async findLatestVersionForEnvironment(
