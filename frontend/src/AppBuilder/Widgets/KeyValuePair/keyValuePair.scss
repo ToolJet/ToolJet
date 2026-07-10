@@ -146,12 +146,11 @@
 
 .kv-row-side {
   .key-value-label {
-    height: 100%;
-    margin-top: 19px; // Half of field height i.e 38px / 2
+    align-self: flex-start;
+    align-items: center;
+    min-height: 38px;
   }
 }
-
-
 
 // Value styling
 .key-value-render-value {

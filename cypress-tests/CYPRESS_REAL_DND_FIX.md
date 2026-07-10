@@ -4,6 +4,8 @@ This documents a bug in the [`cypress-real-dnd`](https://github.com/emidhun/cypr
 plugin (v0.1.2) that ToolJet's `dragAndDropWidget` command currently works
 around with a band-aid. Fixing the plugin lets us delete that workaround.
 
+> **Status:** band-aid in place; the upstream plugin fix is still pending.
+
 - **Plugin source (local checkout):** `/Users/midhunkumare/toolJetSpace/cypress-real-dnd/`
 - **Installed copy:** `cypress-tests/node_modules/cypress-real-dnd/src/plugin.js`
 - **Workaround to remove after the fix:** the `cy.on('fail')` trap

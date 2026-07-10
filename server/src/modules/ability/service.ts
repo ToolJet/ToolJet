@@ -54,6 +54,7 @@ export class AbilityService extends IAbilityService {
           dataSourceDelete: acc.dataSourceDelete || group.dataSourceDelete,
           folderCRUD: acc.folderCRUD || group.folderCRUD,
           orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
+          tjdbCRUD: acc.tjdbCRUD || group.tjdbCRUD,
           orgVariableCRUD: acc.orgVariableCRUD,
           workflowCreate: acc.workflowCreate || group.workflowCreate,
           workflowDelete: acc.workflowDelete || group.workflowDelete,
