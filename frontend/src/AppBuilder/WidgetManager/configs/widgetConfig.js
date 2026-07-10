@@ -57,6 +57,7 @@ import {
   kanbanConfig,
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
@@ -128,6 +129,7 @@ export const widgets = [
   radiobuttonV2Config,
   fileinputConfig,
   treeSelectConfig,
+  cascaderConfig,
 
   //Date and time inputs
   datePickerV2Config,
