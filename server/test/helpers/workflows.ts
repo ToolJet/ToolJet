@@ -10,7 +10,8 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { DataQuery } from '@entities/data_query.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
@@ -279,13 +280,36 @@ export const createWorkflowDataSource = async (
 
   const savedDataSource = await dataSourceRepository.save(dataSource);
 
-  const dataSourceOptionsRepository = ds.getRepository(DataSourceOptions);
-  const dataSourceOptions = dataSourceOptionsRepository.create({
+  // DataSourceOptions/data_source_options was dropped (migration DropDataSourceOptionsTable);
+  // options now live on a DataSourceVersion (one per data source per branch) via
+  // DataSourceVersionOptions, keyed by (dataSourceVersionId, environmentId).
+  const workspaceBranchRepository = ds.getRepository(WorkspaceBranch);
+  let defaultBranch = await workspaceBranchRepository.findOne({
+    where: { organizationId, isDefault: true },
+  });
+  if (!defaultBranch) {
+    defaultBranch = await workspaceBranchRepository.save(
+      workspaceBranchRepository.create({ organizationId, name: 'main', isDefault: true })
+    );
+  }
+
+  const dataSourceVersionRepository = ds.getRepository(DataSourceVersion);
+  const dataSourceVersion = await dataSourceVersionRepository.save(
+    dataSourceVersionRepository.create({
+      dataSourceId: savedDataSource.id,
+      branchId: defaultBranch.id,
+      name: savedDataSource.name,
+      isActive: true,
+    })
+  );
+
+  const dataSourceVersionOptionsRepository = ds.getRepository(DataSourceVersionOptions);
+  const dataSourceVersionOptions = dataSourceVersionOptionsRepository.create({
+    dataSourceVersionId: dataSourceVersion.id,
     environmentId: environmentId,
-    dataSourceId: savedDataSource.id,
     options: {},
   });
-  await dataSourceOptionsRepository.save(dataSourceOptions);
+  await dataSourceVersionOptionsRepository.save(dataSourceVersionOptions);
 
   return savedDataSource;
 };
