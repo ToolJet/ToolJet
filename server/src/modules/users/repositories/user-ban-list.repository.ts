@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, ILike, Repository } from 'typeorm';
 import { UserBanList } from '@entities/user_ban_list.entity';
 
 @Injectable()
@@ -9,6 +9,6 @@ export class UserBanListRepository extends Repository<UserBanList> {
   }
 
   async findByEmail(email: string): Promise<UserBanList | null> {
-    return this.findOne({ where: { email } });
+    return this.findOne({ where: { email: ILike(email) } });
   }
 }
