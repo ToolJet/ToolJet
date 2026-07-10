@@ -371,7 +371,7 @@
 
   // Page menu popup - matches page navigation dropdown
   .page-menu-popup {
-    background: var(--background-surface-layer-01, #ffffff);
+    background: var(--nav-container-bg, var(--background-surface-layer-01, #ffffff));
     border-radius: 8px !important;
     border: 1px solid var(--cc-weak-border, #e4e7eb);
     padding: 8px;

@@ -533,7 +533,7 @@ export const Navigation = function Navigation(props) {
             className={`navigation-horizontal-list ${justifyTwClass} ${
               navItemSize === 'equalWidth' ? `nav-equal-width nav-align-${horizontalAlignment}` : ''
             }`}
-            style={{ ...navItemStyles, flex: navItemSize === 'equalWidth' ? '1' : 'none' }}
+            style={{ flex: navItemSize === 'equalWidth' ? '1' : 'none' }}
           >
             {links.visible.map((item) => {
               if (item.isGroup) {
@@ -625,8 +625,8 @@ export const Navigation = function Navigation(props) {
     }
 
     // Vertical orientation - use visibleMenuItems (deduplicated and filtered)
+    // Nav-item CSS vars now live on the widget root, so only layout margins remain here.
     const verticalMenuStyle = {
-      ...navItemStyles,
       marginTop: verticalAlignment === 'center' ? 'auto' : verticalAlignment === 'bottom' ? 'auto' : undefined,
       marginBottom: verticalAlignment === 'center' ? 'auto' : undefined,
     };
@@ -679,7 +679,7 @@ export const Navigation = function Navigation(props) {
         'navigation-horizontal': orientation === 'horizontal',
         'navigation-vertical': orientation === 'vertical',
       })}
-      style={containerStyle}
+      style={{ ...navItemStyles, ...containerStyle }}
       data-cy={dataCy}
       role="navigation"
       aria-label="Navigation menu"
