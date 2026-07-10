@@ -24,7 +24,7 @@ async function bootstrap() {
   await dataSource.initialize();
   const manager = dataSource.manager;
 
-  const user = await manager.findOne(User, { where: { email } });
+  const user = await manager.findOne(User, { where: { email, status: 'active' } });
 
   if (!user) {
     console.error(`✗ No user found with email: ${email}`);
