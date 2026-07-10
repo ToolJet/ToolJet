@@ -1956,9 +1956,11 @@ class HomePageComponent extends React.Component {
                 <span>
                   {`The ${appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} ${
                     appToBeDeleted?.name
-                  } and the associated data will be deleted from this branch. On merge to main, `}
+                  } and the associated data will be deleted from this branch. On merge to ${
+                    useWorkspaceBranchesStore.getState().branches?.find((b) => b.is_default || b.isDefault)?.name ??
+                    'the default branch'
+                  }, `}
                   <strong>
-                    {' '}
                     {appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} and all its associated
                     versions
                   </strong>

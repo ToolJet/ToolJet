@@ -108,9 +108,17 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       const sourceBranchId = defaultBranch?.id || null;
 
       // Branch creation runs as a background job — no branch to switch/navigate to yet
-      await workspaceActions.createBranch(branchName.trim(), sourceBranchId, selectedOption.commitSha || undefined);
+      const ack = await workspaceActions.createBranch(
+        branchName.trim(),
+        sourceBranchId,
+        selectedOption.commitSha || undefined
+      );
 
-      toast.success('Creating branch. It will show up in the branch list once ready.');
+      toast.success(
+        ack?.isImport
+          ? 'Importing branch. It will show up in the branch list once ready.'
+          : 'Creating branch. It will show up in the branch list once ready.'
+      );
 
       onClose();
     } catch (error) {

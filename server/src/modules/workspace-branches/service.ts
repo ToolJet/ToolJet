@@ -9,7 +9,11 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
-  async createBranch(organizationId: string, dto: CreateBranchDto, user?: User): Promise<{ enqueued: boolean }> {
+  async createBranch(
+    organizationId: string,
+    dto: CreateBranchDto,
+    user?: User
+  ): Promise<{ enqueued: boolean; isImport: boolean }> {
     throw new NotFoundException();
   }
 
