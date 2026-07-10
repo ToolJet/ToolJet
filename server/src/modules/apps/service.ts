@@ -48,6 +48,8 @@ import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { AppVersion } from '@entities/app_version.entity';
+import { Component } from '@entities/component.entity';
+import { Page } from '@entities/page.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -115,12 +117,21 @@ export class AppsService implements IAppsService {
 
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
-      // Viewer role: require access_type=view explicitly; reject edit or missing
-      if (accessType?.toLowerCase() !== 'view') {
-        throw new ForbiddenException({
-          organizationId: app.organizationId,
-          type: 'restricted-preview',
-        });
+      if (app.type === APP_TYPES.MODULE && hasViewPermission) {
+        // Build-with: user can open the module builder read-only.
+        // If preview params are present we need version resolution — fall through.
+        // Only short-circuit when there is nothing to resolve.
+        if (!versionName && !environmentName && !versionId && !envId) {
+          return plainToClass(ValidateAppAccessResponseDto, { ...response, canEdit: false });
+        }
+      } else {
+        // Viewer role: require access_type=view explicitly; reject edit or missing
+        if (accessType?.toLowerCase() !== 'view') {
+          throw new ForbiddenException({
+            organizationId: app.organizationId,
+            type: 'restricted-preview',
+          });
+        }
       }
     }
     /* If the request comes from preview which needs version id */
@@ -205,6 +216,9 @@ export class AppsService implements IAppsService {
       response['versionId'] = version.id;
       response['environmentId'] = environment.id;
     }
+    if (!hasEditPermission && app.type === APP_TYPES.MODULE && hasViewPermission) {
+      response['canEdit'] = false;
+    }
     return plainToClass(ValidateAppAccessResponseDto, response);
   }
 
@@ -288,6 +302,27 @@ export class AppsService implements IAppsService {
     const { organizationId } = user;
     const { id } = app;
 
+    if (app.type === APP_TYPES.MODULE) {
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        const refCount = await manager
+          .createQueryBuilder(Component, 'component')
+          .innerJoin(Page, 'page', 'page.id = component.page_id')
+          .innerJoin(AppVersion, 'appVersion', 'appVersion.id = page.app_version_id')
+          .where("component.type = 'ModuleViewer'")
+          .andWhere(
+            "component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleId",
+            { moduleId: app.id }
+          )
+          .andWhere('appVersion.app_id != :appId', { appId: app.id })
+          .getCount();
+        if (refCount > 0) {
+          throw new BadRequestException(
+            'This module is currently used in one or more apps. Remove its dependencies before deleting it.'
+          );
+        }
+      });
+    }
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       const schedules = await manager
         .createQueryBuilder(WorkflowSchedule, 'workflowSchedule')
@@ -342,7 +377,7 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, context } = appListDto;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
@@ -357,7 +392,7 @@ export class AppsService implements IAppsService {
         apps = viewableApps;
         totalFolderCount = totalCount;
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
+        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, context);
       }
 
       if (isGetAll) {

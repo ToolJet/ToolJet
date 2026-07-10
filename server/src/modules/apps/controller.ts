@@ -121,6 +121,7 @@ export class AppsController implements IAppsController {
       folderId: query.folder,
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
+      context: query.context,
     };
     return this.appsService.getAllApps(user, AppListDto, false);
   }
