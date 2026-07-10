@@ -42,13 +42,8 @@ export class VersionController implements IVersionController {
   @InitFeature(FEATURE_KEY.APP_DRAFT_VERSION_CREATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/draft-versions')
-  createDraftVersion(
-    @User() user: UserEntity,
-    @App() app: AppEntity,
-    @Body() draftVersionDto: DraftVersionDto,
-    @Headers('x-branch-id') branchId?: string
-  ) {
-    draftVersionDto.branchId = branchId;
+  createDraftVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() draftVersionDto: DraftVersionDto) {
+    draftVersionDto.branchId = user.branchId;
     return this.versionService.createDraftVersion(app, user, draftVersionDto);
   }
 }
