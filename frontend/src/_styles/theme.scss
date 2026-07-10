@@ -9458,8 +9458,22 @@ tbody {
 }
 
 .workspace-settings-table-wrap {
-  min-width: 930px;
+  min-width: 936px;
   margin: 0 auto;
+
+  ::-webkit-scrollbar {
+    display: block;
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--base);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--slate7);
+    border-radius: 6px;
+  }
 
   &:hover {
     .tj-user-table-wrapper {
@@ -9676,7 +9690,7 @@ tbody {
 }
 
 .workspace-page-header {
-  width: 930px;
+  width: 936px;
   margin: 0 auto !important;
 
   div:first-child {
