@@ -2,7 +2,15 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } fro
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { WorkspaceBranchService } from './service';
-import { CreateBranchDto, WorkspacePushDto, WorkspacePullDto, PullAppDto, EnsureDraftDto, PullModuleDto } from './dto';
+import {
+  CreateBranchDto,
+  WorkspacePushDto,
+  WorkspacePullDto,
+  PullAppDto,
+  EnsureDraftDto,
+  PullModuleDto,
+  ResolveConflictsDto,
+} from './dto';
 import { IWorkspaceBranchController } from './interfaces/IController';
 import { FEATURE_KEY } from './constants';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -71,12 +79,25 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
     return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch, dto?.branchId);
   }
 
+  @InitFeature(FEATURE_KEY.RESOLVE_CONFLICTS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Post('resolve-conflicts')
+  async resolveConflicts(@User() user, @Body() dto: ResolveConflictsDto) {
+    return this.workspaceBranchService.resolveConflicts(user.organizationId, dto.resolutions, dto.branchId);
+  }
+
   @InitFeature(FEATURE_KEY.PULL_APP)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('pull-app')
   async pullApp(@User() user, @Body() dto: PullAppDto) {
     return this.workspaceBranchService.pullApp(
-      user.organizationId, user, dto.appId, dto.branchId, dto.tagSha, dto.tagName, dto.tagDescription
+      user.organizationId,
+      user,
+      dto.appId,
+      dto.branchId,
+      dto.tagSha,
+      dto.tagName,
+      dto.tagDescription
     );
   }
 
@@ -91,7 +112,7 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
       dto.branchId,
       dto.tagSha,
       dto.tagName,
-      dto.tagDescription,
+      dto.tagDescription
     );
   }
 

@@ -63,6 +63,7 @@ import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { whenBranchResolved } from '@/_helpers/active-branch';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
+import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { TriangleAlert } from 'lucide-react';
 
 import { appTypeToDisplayNameMapping } from './helper';
@@ -119,6 +120,7 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: null,
       importingApp: false,
       importingGitAppOperations: {},
+      gitImportConflictGroups: null,
       latestCommitData: null,
       selectedImportBranch: null,
       remoteBranches: [],
@@ -1085,11 +1087,43 @@ class HomePageComponent extends React.Component {
         this.props.navigate(`/${workspaceId}/apps/${data.app.id}`);
       })
       .catch((error) => {
+        if (error?.statusCode === 409) {
+          try {
+            const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+            if (parsed?.conflictGroups?.length) {
+              this.setState({
+                gitImportConflictGroups: parsed.conflictGroups,
+                importingApp: false,
+                showGitRepositoryImportModal: false,
+              });
+              return;
+            }
+          } catch {
+            /* fall through to inline error */
+          }
+        }
         this.setState({ importingGitAppOperations: { message: error?.error } });
       })
       .finally(() => {
         this.setState({ importingApp: false });
       });
+  };
+
+  handleResolveImportConflicts = async (resolutions) => {
+    try {
+      const { actions } = useWorkspaceBranchesStore.getState();
+      await actions.resolveConflicts(resolutions);
+      this.setState({ gitImportConflictGroups: null });
+      // resolveConflicts hydrates the affected apps server-side (isSynced, content),
+      // but this component's in-memory state doesn't know that happened — reload so
+      // the UI (app list, sync badges) reflects it immediately.
+      // A toast fired now would be destroyed by the reload before it's visible, so
+      // persist it and let App.jsx's componentDidMount show it once the fresh page mounts.
+      sessionStorage.setItem('sync_success_toast', 'Resource(s) synced successfully!');
+      window.location.reload();
+    } catch (error) {
+      toast.error(error?.error || error?.message || 'Failed to resolve conflicts');
+    }
   };
 
   addAppToFolder = () => {
@@ -1475,11 +1509,6 @@ class HomePageComponent extends React.Component {
       validationMessage = { message: 'App name cannot be empty' };
     } else if (newAppName.length > 100) {
       validationMessage = { message: 'App name cannot exceed 100 characters' };
-    } else {
-      const matchingApp = Object.values(appsFromRepos).find((app) => app.git_app_name === newAppName.trim());
-      if (matchingApp?.app_name_exist === 'EXIST') {
-        validationMessage = { message: 'App name already exists' };
-      }
     }
     if (newAppName.length > MAX_LENGTH) {
       this.setState({
@@ -1500,20 +1529,20 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: newVal,
       importedAppName: selectedApp?.git_app_name,
     });
-    if (selectedApp?.app_name_exist === 'EXIST') {
-      this.setState({
-        importingGitAppOperations: { message: 'App name already exists' },
-        fetchingLatestCommitData: true,
-        latestCommitData: null,
-      });
-    } else {
-      this.setState({
-        importingGitAppOperations: {},
-        fetchingLatestCommitData: true,
-        latestCommitData: null,
-        selectedVersionOption: null,
-      });
-    }
+    // if (selectedApp?.app_name_exist === 'EXIST') {
+    //   this.setState({
+    //     importingGitAppOperations: { message: 'App name already exists' },
+    //     fetchingLatestCommitData: true,
+    //     latestCommitData: null,
+    //   });
+    // } else {
+    this.setState({
+      importingGitAppOperations: {},
+      fetchingLatestCommitData: true,
+      latestCommitData: null,
+      selectedVersionOption: null,
+    });
+    // }
 
     try {
       const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedImportBranch);
@@ -1832,6 +1861,13 @@ class HomePageComponent extends React.Component {
               this.fetchApps(1, this.state.currentFolder.id);
               this.setState({ showSwitchBranchForChangeIcon: false, showChangeIconModal: true });
             }}
+          />
+          <PullConflictModal
+            show={!!this.state.gitImportConflictGroups}
+            conflictGroups={this.state.gitImportConflictGroups || []}
+            onClose={() => this.setState({ gitImportConflictGroups: null })}
+            onResolve={this.handleResolveImportConflicts}
+            context="import"
           />
           <AppActionModal
             modalStates={{

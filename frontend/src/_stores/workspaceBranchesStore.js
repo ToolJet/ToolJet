@@ -174,8 +174,8 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async createBranch(name, sourceBranchId, commitSha) {
-          const newBranch = await workspaceBranchesService.create(name, sourceBranchId, commitSha);
+        async createBranch(name, sourceBranchId, commitSha, appId, versionId) {
+          const newBranch = await workspaceBranchesService.create(name, sourceBranchId, commitSha, appId, versionId);
           await get().actions.fetchBranches();
           return newBranch;
         },
@@ -240,6 +240,11 @@ export const useWorkspaceBranchesStore = create(
             set({ isPulling: false });
             throw error;
           }
+        },
+
+        async resolveConflicts(resolutions, targetBranchId) {
+          const branchId = targetBranchId || get().activeBranchId;
+          return workspaceBranchesService.resolveConflicts(resolutions, branchId);
         },
 
         async pullApp(appId, tagSha, tagName, tagDescription) {

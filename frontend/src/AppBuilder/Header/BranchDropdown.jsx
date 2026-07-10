@@ -8,11 +8,12 @@ import '@/_styles/branch-dropdown.scss';
 import { toast } from 'react-hot-toast';
 import { CreateBranchModal } from './CreateBranchModal';
 import { SwitchBranchModal } from './SwitchBranchModal';
+import { CreateVersionModal } from './VersionManager';
 import { Tooltip } from 'react-tooltip';
 import { authenticationService, gitSyncService } from '@/_services';
 import { getSubpath } from '@/_helpers/routes';
 import OverflowTooltip from '@/_components/OverflowTooltip';
-import { AlertTriangle, Info, ExternalLink } from 'lucide-react';
+import { AlertTriangle, Tag, Info, ExternalLink } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 export function BranchDropdown({ appId, organizationId }) {
@@ -20,6 +21,7 @@ export function BranchDropdown({ appId, organizationId }) {
   const [expandedBranches, setExpandedBranches] = useState(new Set());
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSwitchModal, setShowSwitchModal] = useState(false);
+  const [showSaveVersionModal, setShowSaveVersionModal] = useState(false);
   const [activeTab, setActiveTab] = useState('open'); // 'open' or 'closed'
   const [lastCommit, setLastCommit] = useState(null);
   const [isLoadingCommit, setIsLoadingCommit] = useState(false);
@@ -792,19 +794,35 @@ export function BranchDropdown({ appId, organizationId }) {
                       <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
                       <span>Create pull request</span>
                     </button>
-                    {allBranches.length > 0 && (
+                    <div className="branch-dropdown-split-row">
                       <button
-                        className="switch-branch-btn"
+                        className="save-version-btn"
                         onClick={() => {
                           setShowDropdown(false);
-                          setShowSwitchModal(true);
+                          setShowSaveVersionModal(true);
                         }}
-                        data-cy="switch-branch-btn"
+                        data-cy="save-version-btn"
                       >
-                        <SolidIcon name="refresh" width="14" />
-                        <span>Switch branch</span>
+                        <Tag size="14" />
+                        <span>Save version</span>
                       </button>
-                    )}
+                      {allBranches.length > 0 && (
+                        <>
+                          <div className="branch-dropdown-split-divider" />
+                          <button
+                            className="switch-branch-btn split"
+                            onClick={() => {
+                              setShowDropdown(false);
+                              setShowSwitchModal(true);
+                            }}
+                            data-cy="switch-branch-btn"
+                          >
+                            <SolidIcon name="refresh" width="14" />
+                            <span>Switch branch</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
@@ -905,6 +923,17 @@ export function BranchDropdown({ appId, organizationId }) {
           organizationId={organizationId}
         />
       )}
+
+      {/* Save Version Modal — same modal/logic used to save a version on the default branch.
+          Saving from a feature branch only makes the version visible on the default branch's
+          version dropdown, so the success message calls that out explicitly. */}
+      <CreateVersionModal
+        showCreateAppVersion={showSaveVersionModal}
+        setShowCreateAppVersion={setShowSaveVersionModal}
+        getSuccessMessage={(versionName) =>
+          `Version ${versionName} saved successfully! Switch to ${defaultBranchName} branch to view it`
+        }
+      />
 
       {/* Tooltip for PR details */}
       {/* Tooltip for PR details */}

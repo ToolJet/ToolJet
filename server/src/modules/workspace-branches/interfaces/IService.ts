@@ -1,6 +1,6 @@
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { User } from '@entities/user.entity';
-import { CreateBranchDto, WorkspacePushDto } from '../dto';
+import { CreateBranchDto, WorkspacePushDto, PullConflictResolutionDto } from '../dto';
 
 export interface WorkspaceBranchListResponse {
   branches: WorkspaceBranch[];
@@ -36,7 +36,12 @@ export interface IWorkspaceBranchService {
     organizationId: string,
     user?: User,
     sourceBranch?: string,
-    branchId?: string,
+    branchId?: string
+  ): Promise<{ success: boolean }>;
+  resolveConflicts(
+    organizationId: string,
+    resolutions: PullConflictResolutionDto[],
+    branchId?: string
   ): Promise<{ success: boolean }>;
   pullApp(
     organizationId: string,
@@ -45,7 +50,7 @@ export interface IWorkspaceBranchService {
     branchId?: string,
     tagSha?: string,
     tagName?: string,
-    tagDescription?: string,
+    tagDescription?: string
   ): Promise<{ success: boolean; draftVersionId: string | null }>;
   ensureAppDraft(
     organizationId: string,
@@ -62,7 +67,7 @@ export interface IWorkspaceBranchService {
     branchId?: string,
     tagSha?: string,
     tagName?: string,
-    tagDescription?: string,
+    tagDescription?: string
   ): Promise<{ success: boolean; draftVersionId: string | null }>;
   checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse>;
   listRemoteBranches(organizationId: string): Promise<{ branches: any[] }>;
