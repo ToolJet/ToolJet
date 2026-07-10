@@ -202,6 +202,30 @@ Guards apply uniformly to **components**, **queries**, **pages**, **version cont
 
 ---
 
+## 4. Create draft & patch flow (`it: replaces the draft when creating from a saved version, discarding uncommitted edits`)
+
+Dedicated isolated org, **git enabled + branching OFF (single-branch)**. Verifies that creating a
+draft from a saved version replaces the single draft (the atomic `replaceDraftVersion` /
+`POST /apps/:id/versions { replace: true }` path). No git transport — pure version
+create/publish/replace — so it runs against the protected-`main` repo.
+
+| Step | Action | Assert |
+|---|---|---|
+| Setup | Configure git, toggle branching OFF; create app + module + data source on the default branch; add `comp_A` + `query_A` to the app, `mod_query_A` to the module | creates succeed |
+| Save v1 | Publish the app version (`PUT status=PUBLISHED`, name `v1`) | v1 has `[comp_A]` / `[query_A]` |
+| New draft | Create draft from `v1` (`replace:false`) → `d2` | `d2` is a clean copy of v1 (`[comp_A]` / `[query_A]`); it's the editing version |
+| Edit draft | Add `comp_B` + `query_B` to `d2` | `d2` = `[comp_A, comp_B]` / `[query_A, query_B]` |
+| **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version |
+| Save v2 | Add `comp_C` + `query_C` to `d3`, publish as `v2` | `v2` = `[comp_A, comp_C]` |
+| **Patch from first version** | Create draft from `v1` again (`replace:true`) → `d4` | `d4` mirrors **v1** (`[comp_A]` / `[query_A]`), **not** v2 (no `comp_C`/`query_C`); `d4` is the editing version |
+
+Component/query assertions read the DB keyed by the version id resolved from `GET /apps/:id`
+(`editing_version`), so they're deterministic. Backend: `replaceDraftVersion` deletes the existing
+default-branch draft and clones the chosen published version in one transaction, preserving the
+replaced draft's sync state.
+
+---
+
 ## Test-only license control
 
 `ee/licensing/configs/License.ts` reads `TEST_LICENSE_TERMS` (JSON) under `NODE_ENV=test` instead of decrypting a key.
