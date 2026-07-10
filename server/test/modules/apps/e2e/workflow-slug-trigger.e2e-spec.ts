@@ -15,7 +15,7 @@ describe('Workflow app_versions slug uniqueness trigger', () => {
     await closeTestApp(app);
   }, 60000);
 
-  describe('trg_app_versions_workflow_slug_unique', () => {
+  describe('enforce_app_versions_default_branch_slug_unique (workflow branch)', () => {
     it('should reject updating a workflow app_version to a slug already used by a different workflow app', async () => {
       const admin = await createAdmin(app, 'workflow-slug-admin@tooljet.io');
       const workflowA = await createApplication(app, {
