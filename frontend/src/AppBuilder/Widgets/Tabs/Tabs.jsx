@@ -152,7 +152,6 @@ export const Tabs = function Tabs({
   );
   const [tabItems, setTabItems] = useState(parsedTabs);
   const tabItemsRef = useRef(tabItems);
-  const [bgColor, setBgColor] = useState(commonBackgroundColor);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -177,12 +176,6 @@ export const Tabs = function Tabs({
       tabItemsRef.current = parsedTabs;
     }
   }, [parsedTabs]);
-
-  useEffect(() => {
-    const currentTabData = parsedTabs.filter((tab) => tab.id == currentTab);
-    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : commonBackgroundColor);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab, darkMode, parsedTabs]);
 
   useEffect(() => {
     if (!parsedScrollToTopOnTabSwitch) return;
@@ -529,10 +522,9 @@ export const Tabs = function Tabs({
                     height={height}
                     width={width}
                     parsedHideTabs={parsedHideTabs}
-                    bgColor={bgColor}
                     darkMode={darkMode}
                     isDynamicHeightEnabled={isDynamicHeightEnabled}
-                    currentTab={currentTab}
+                    isActive={currentTab === tab.id}
                     isTransitioning={isTransitioning}
                     commonBackgroundColor={commonBackgroundColor}
                   />
@@ -567,10 +559,9 @@ export const Tabs = function Tabs({
                         height={height}
                         width={width}
                         parsedHideTabs={parsedHideTabs}
-                        bgColor={bgColor}
                         darkMode={darkMode}
                         isDynamicHeightEnabled={isDynamicHeightEnabled}
-                        currentTab={currentTab}
+                        isActive={currentTab === tab.id}
                         isTransitioning={isTransitioning}
                         commonBackgroundColor={commonBackgroundColor}
                       />
@@ -605,10 +596,9 @@ const TabContent = memo(function TabContent({
   height,
   width,
   parsedHideTabs,
-  bgColor,
   darkMode,
   isDynamicHeightEnabled,
-  currentTab,
+  isActive,
   isTransitioning,
   commonBackgroundColor,
 }) {
@@ -617,20 +607,24 @@ const TabContent = memo(function TabContent({
   const visible = tab?.visible;
 
   const fieldBackgroundColor = tab?.fieldBackgroundColor;
+  // Resolve background from this tab's own config. Previously a shared,
+  // currentTab-derived `bgColor` prop was passed to every pane; it changed on
+  // each switch and defeated this component's memo, re-rendering all tabs.
+  const tabBackgroundColor = fieldBackgroundColor || tab?.backgroundColor || commonBackgroundColor;
   if (visible === false) return null;
 
   return (
     <div
       data-disabled={disable}
-      activetab={currentTab}
-      className={`tab-pane active ${isDynamicHeightEnabled && currentTab === tab.id && `dynamic-${id}`}`}
+      activetab={tab.id}
+      className={`tab-pane active ${isDynamicHeightEnabled && isActive && `dynamic-${id}`}`}
       style={{
         display: 'block',
         height: '100%',
         position: 'relative',
         top: '0px',
         width: '100%',
-        backgroundColor: fieldBackgroundColor || bgColor || commonBackgroundColor,
+        backgroundColor: tabBackgroundColor,
         opacity: disable ? 0.5 : 1,
         pointerEvents: disable ? 'none' : 'auto',
         overflow: 'hidden', // Ensure TabContent doesn't overflow
@@ -657,7 +651,7 @@ const TabContent = memo(function TabContent({
           allowContainerSelect={true}
           styles={{
             overflow: isTransitioning || isDynamicHeightEnabled ? 'hidden' : 'hidden auto',
-            backgroundColor: fieldBackgroundColor || bgColor || commonBackgroundColor,
+            backgroundColor: tabBackgroundColor,
             opacity: disable ? 0.5 : 1,
             width: '100%', // Ensure it doesn't exceed container width
             maxWidth: '100%', // Additional constraint
