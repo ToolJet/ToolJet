@@ -158,6 +158,7 @@ export class VersionRepository extends Repository<AppVersion> {
       where: { id },
       relations: [
         'app',
+        'branch',
         'dataQueries',
         'dataQueries.dataSource',
         'dataQueries.plugins',
@@ -196,6 +197,7 @@ export class VersionRepository extends Repository<AppVersion> {
       .createQueryBuilder(AppVersion, 'appVersion')
       .where('appVersion.id = :id', { id })
       .leftJoinAndSelect('appVersion.app', 'app')
+      .leftJoinAndSelect('appVersion.branch', 'branch')
       .leftJoinAndSelect('appVersion.dataQueries', 'dataQueries')
       .leftJoinAndSelect('dataQueries.dataSource', 'dataSource')
       .leftJoinAndSelect('dataQueries.plugins', 'plugins')
@@ -330,6 +332,7 @@ export class VersionRepository extends Repository<AppVersion> {
       where: { appId: app.id },
       relations: [
         'app',
+        'branch',
         'dataQueries',
         'dataQueries.dataSource',
         'dataQueries.plugins',
