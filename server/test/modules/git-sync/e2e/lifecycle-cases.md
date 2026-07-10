@@ -226,6 +226,24 @@ replaced draft's sync state.
 
 ---
 
+## 5. Unsynced app — multiple drafts across git/branching states (`it: allows unlimited draft versions for an unsynced app (git off/on, branching on/off)`)
+
+Dedicated isolated org. The single-draft rule only applies to **synced** versions (`createVersion`
+exempts `is_synced === false`), so an app that was never pushed to git behaves like a non-git
+workspace and can hold any number of drafts — in **every** git/branching combination. The app is
+created git-off and stays unsynced throughout; only the workspace git/branching state is toggled.
+
+| State | Action | Assert |
+|---|---|---|
+| **git OFF** | Create the (unsynced) app, then create 2 extra drafts from its version | both `201`; **3** DRAFT versions; app fully unsynced |
+| **git ON, branching ON** (multi-branch) | Configure git, `is-branching-enabled: true`; create 2 more drafts | both `201`; **5** drafts; still fully unsynced (configuring git must not flip existing versions) |
+| **git ON, branching OFF** (single-branch) | `is-branching-enabled: false`; create 2 more drafts | both `201`; **7** drafts; still fully unsynced |
+
+Draft count + sync state are read from the DB (`status='DRAFT' AND version_type='version'`, and
+`bool_and(is_synced=false)`), so the assertions are deterministic.
+
+---
+
 ## Test-only license control
 
 `ee/licensing/configs/License.ts` reads `TEST_LICENSE_TERMS` (JSON) under `NODE_ENV=test` instead of decrypting a key.

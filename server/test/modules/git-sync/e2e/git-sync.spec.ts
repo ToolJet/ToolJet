@@ -4504,5 +4504,105 @@ describe('GitSyncController', () => {
         expect(await queryNames(d4Id)).toEqual(['query_A']);
       }, 300000);
     });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Unsynced app → multiple drafts allowed in EVERY git/branching combination.
+    //
+    // The single-draft rule only applies to SYNCED versions (createVersion in versions/util.service.ts
+    // exempts isSynced === false). So an app that was never pushed to git behaves like a non-git
+    // workspace and can hold any number of drafts — regardless of git off/on or branching on/off.
+    // The app is created git-off and stays unsynced (never pushed) throughout; only the workspace's
+    // git/branching state is toggled between the checks.
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('unsynced app — multiple drafts across git/branching states', () => {
+      let unsyncOrgId: string;
+      let unsyncCookie: string[];
+      let unsyncDataSource: DataSource;
+      let unsyncBranchId: string;
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-unsynced-multidraft@tooljet.io',
+          firstName: 'git',
+          lastName: 'multidraft',
+        });
+        unsyncOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-unsynced-multidraft@tooljet.io');
+        unsyncCookie = tokenCookie;
+        await ensureAppEnvironments(app, unsyncOrgId);
+        unsyncDataSource = app.get<DataSource>(getDataSourceToken('default'));
+        await unsyncDataSource.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [unsyncOrgId]
+        );
+        const [branch] = await unsyncDataSource.query(
+          `SELECT id FROM organization_git_sync_branches WHERE organization_id = $1 AND is_default = true`,
+          [unsyncOrgId]
+        );
+        unsyncBranchId = branch.id;
+      });
+
+      it('allows unlimited draft versions for an unsynced app (git off/on, branching on/off)', async () => {
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', unsyncCookie).set('tj-workspace-id', unsyncOrgId);
+
+        // Count non-branch DRAFT versions for the app.
+        const draftCount = async (appId: string): Promise<number> =>
+          (
+            await unsyncDataSource.query(
+              `SELECT COUNT(*)::int AS c FROM app_versions
+                WHERE app_id = $1 AND status = 'DRAFT' AND version_type = 'version'`,
+              [appId]
+            )
+          )[0].c;
+        // Every non-stub version of the app must remain unsynced (never pushed to git).
+        const isFullyUnsynced = async (appId: string): Promise<boolean> =>
+          (
+            await unsyncDataSource.query(
+              `SELECT bool_and(is_synced = false) AS unsynced FROM app_versions WHERE app_id = $1 AND is_stub = false`,
+              [appId]
+            )
+          )[0].unsynced;
+        const createDraft = (appId: string, versionFromId: string, name: string, envId: string) =>
+          auth(agent().post(`/api/apps/${appId}/versions`))
+            .query({ branch_id: unsyncBranchId })
+            .send({ versionName: name, versionFromId, environmentId: envId, versionType: 'version' });
+
+        // ── GIT OFF: create the (unsynced) app + two extra drafts ────────────
+        const appResp = await auth(agent().post('/api/apps'))
+          .send({ icon: 'home', name: 'unsynced-multidraft-app', type: 'front-end' })
+          .expect(201);
+        const appId: string = appResp.body.id;
+        const detail = await auth(agent().get(`/api/apps/${appId}`)).query({ branch_id: unsyncBranchId }).expect(200);
+        const ev = detail.body?.editing_version || detail.body?.editingVersion;
+        const v0Id: string = ev.id;
+        const envId: string = ev.current_environment_id || ev.currentEnvironmentId;
+
+        await createDraft(appId, v0Id, 'draft_off_1', envId).expect(201);
+        await createDraft(appId, v0Id, 'draft_off_2', envId).expect(201);
+        expect(await draftCount(appId)).toBe(3); // v0 + 2
+        expect(await isFullyUnsynced(appId)).toBe(true);
+
+        // ── GIT ON + branching ON (multi-branch) ─────────────────────────────
+        await auth(agent().post('/api/git-sync/configs')).send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false }).expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${unsyncOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`)).send({ isBranchingEnabled: true }).expect(200);
+
+        await createDraft(appId, v0Id, 'draft_multi_1', envId).expect(201);
+        await createDraft(appId, v0Id, 'draft_multi_2', envId).expect(201);
+        expect(await draftCount(appId)).toBe(5);
+        expect(await isFullyUnsynced(appId)).toBe(true); // configuring git must NOT flip existing versions
+
+        // ── GIT ON + branching OFF (single-branch) ───────────────────────────
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`)).send({ isBranchingEnabled: false }).expect(200);
+
+        await createDraft(appId, v0Id, 'draft_single_1', envId).expect(201);
+        await createDraft(appId, v0Id, 'draft_single_2', envId).expect(201);
+        expect(await draftCount(appId)).toBe(7);
+        expect(await isFullyUnsynced(appId)).toBe(true);
+      }, 180000);
+    });
   });
 });
