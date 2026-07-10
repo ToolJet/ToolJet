@@ -285,20 +285,9 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
-    const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
-    // Workflows must always have branch_id NULL — they don't participate in branching.
-    // The controller forwards the branch id into versionCreateDto.branchId even for workflows;
-    // drop it here so the new row doesn't land with branch_id set + app_name/slug NULL (which
-    // would trip chk_app_versions_branch_metadata, since workflow versions don't carry those
-    // fields). branch_id is NOT NULL in the DB — fall back to the org's default branch when the
-    // caller didn't forward one (e.g. older clients, non-builder paths).
-    let branchId: string | undefined;
-    if (app.type !== APP_TYPES.WORKFLOW) {
-      branchId =
-        versionCreateDto.branchId ??
-        (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch?.id ??
-        undefined;
-    }
+    const { versionName, versionType } = versionCreateDto;
+    const branchId = await this.resolveVersionBranchId(app, user, versionCreateDto);
+
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
@@ -333,71 +322,159 @@ export class VersionUtilService implements IVersionUtilService {
       }
     }
 
-    const result = await dbTransactionWrap(async (manager: EntityManager) => {
-      const versionFrom = await manager.findOneOrFail(AppVersion, {
-        where: { id: versionFromId, appId: app.id },
-        relations: ['dataSources', 'dataSources.dataQueries'],
+    return dbTransactionWrap((manager: EntityManager) =>
+      this.buildVersionFromParent(app, user, versionCreateDto, branchId, manager)
+    );
+  }
+
+  /**
+   * Atomically replace the single default-branch DRAFT with a fresh one cloned from a saved
+   * version. Git single-branch keeps exactly one draft on the default branch, so a naive
+   * delete-then-create is blocked by the last-draft delete guard and create-then-delete by the
+   * single-draft create guard. Doing both in one transaction sidesteps both: the existing DRAFT
+   * is dropped and the replacement created before anything commits. Only the DRAFT is touched —
+   * the released/current version is never removed.
+   */
+  async replaceDraftVersion(app: App, user: User, versionCreateDto: VersionCreateDto): Promise<any> {
+    const branchId = await this.resolveVersionBranchId(app, user, versionCreateDto);
+    if (!versionCreateDto.versionName || versionCreateDto.versionName.trim().length === 0) {
+      throw new BadRequestException('Version name cannot be empty.');
+    }
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      // The source must be a saved (published/released) version — a draft is created by patching a
+      // saved version, never by copying another draft.
+      const versionFrom = await manager.findOne(AppVersion, {
+        where: { id: versionCreateDto.versionFromId, appId: app.id },
+        select: ['id', 'status'],
       });
+      if (!versionFrom || versionFrom.status === AppVersionStatus.DRAFT) {
+        throw new BadRequestException('A draft can only be created from a saved version.');
+      }
 
-      const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
-
-      // Non-workflow metadata (slug/appName/icon/isPublic) lives on app_versions and
-      // every row carries the same values for a given branch. Carry them over from the
-      // parent version so the new row stays consistent with the rest of the app — the
-      // dashboard / overlay helpers can pick any row and get the right metadata.
-      // Workflows keep these on apps.*; their version rows leave them null.
-      const isWorkflow = app.type === APP_TYPES.WORKFLOW;
-      const appVersion = await manager.save(
-        AppVersion,
-        manager.create(AppVersion, {
-          name: versionName,
+      // Replace applies to a SYNCED app: git single-branch keeps exactly one draft tied to the
+      // default branch, so a new draft can only be made by swapping the existing one. (Unsynced apps
+      // are exempt from the single-draft rule and create drafts freely — they never take this path.)
+      const existingDraft = await manager.findOne(AppVersion, {
+        where: {
           appId: app.id,
-          definition: versionFrom?.definition,
-          currentEnvironmentId: firstPriorityEnv?.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
           status: AppVersionStatus.DRAFT,
-          parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
-          description: versionDescription ? versionDescription : null,
-          versionType: versionType ? versionType : AppVersionType.VERSION,
-          createdBy: user.id,
-          co_relation_id: app.co_relation_id,
-          // Inherit sync state from the source version — an app that's already synced to
-          // git should stay marked synced for its new draft, not reset to false and get
-          // treated as a never-pushed app.
-          isSynced: versionFrom?.isSynced ?? false,
-          ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
-          ...(branchId && { branchId }),
-          ...(!isWorkflow && {
-            slug: versionFrom?.slug ?? null,
-            appName: versionFrom?.appName ?? null,
-            icon: versionFrom?.icon ?? null,
-            isPublic: versionFrom?.isPublic ?? false,
-          }),
-        })
-      );
-
-      await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
-
-      //APP_VERSION_CREATE audit
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: app.id,
-        resourceName: app.name,
-        ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.CREATE }),
-        metadata: {
-          data: {
-            updatedAppVersionName: versionCreateDto.versionName,
-            updatedAppVersionFrom: versionCreateDto.versionFromId,
-            updatedAppVersionEnvironment: versionCreateDto.environmentId,
-          },
+          versionType: Not(AppVersionType.BRANCH),
+          branchId: branchId ?? IsNull(),
         },
       });
+      if (existingDraft && existingDraft.id !== app.currentVersionId) {
+        // Drop the current draft (deleteById cascades pages / components / queries;
+        // cleanupQueryFolderData removes the query-folder mappings first).
+        await this.cleanupQueryFolderData(manager, existingDraft.id);
+        await this.versionRepository.deleteById(existingDraft.id, manager);
+      }
 
-      return decamelizeKeys(appVersion);
+      const newDraft = await this.buildVersionFromParent(app, user, versionCreateDto, branchId, manager);
+      // When replacing an existing draft, keep ITS sync state (a synced app stays synced) rather than
+      // inheriting the source version's own flag — a saved version created before the app was synced
+      // would otherwise mark the draft unsynced. With no draft to replace, buildVersionFromParent's
+      // inherited value (from the source version) stands.
+      if (existingDraft && newDraft?.id) {
+        const replacementIsSynced = existingDraft.isSynced !== false;
+        await manager.update(AppVersion, { id: newDraft.id }, { isSynced: replacementIsSynced });
+        newDraft.is_synced = replacementIsSynced;
+      }
+      return newDraft;
     });
-    return result;
+  }
+
+  /**
+   * Resolve the branch id a new non-workflow version lands on: the forwarded branch id, else the
+   * org's default branch (branch_id is NOT NULL in the DB). Workflows never carry a branch id —
+   * setting one would trip chk_app_versions_branch_metadata since they don't carry app_name/slug.
+   */
+  private async resolveVersionBranchId(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto
+  ): Promise<string | undefined> {
+    if (app.type === APP_TYPES.WORKFLOW) return undefined;
+    return (
+      versionCreateDto.branchId ??
+      (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch?.id ??
+      undefined
+    );
+  }
+
+  /**
+   * Builds + persists a new DRAFT version cloned from versionFromId within the given transaction.
+   * Extracted from createVersion so the atomic replace flow can reuse it WITHOUT re-running the
+   * single-draft guard (replaceDraftVersion has already freed the slot in the same transaction).
+   */
+  private async buildVersionFromParent(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto,
+    branchId: string | undefined,
+    manager: EntityManager
+  ): Promise<any> {
+    const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
+    const { organizationId } = user;
+
+    const versionFrom = await manager.findOneOrFail(AppVersion, {
+      where: { id: versionFromId, appId: app.id },
+      relations: ['dataSources', 'dataSources.dataQueries'],
+    });
+
+    const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
+
+    // Non-workflow metadata (slug/appName/icon/isPublic) lives on app_versions and every row
+    // carries the same values for a given branch. Carry them over from the parent version so the
+    // new row stays consistent with the rest of the app. Workflows keep these on apps.*.
+    const isWorkflow = app.type === APP_TYPES.WORKFLOW;
+    const appVersion = await manager.save(
+      AppVersion,
+      manager.create(AppVersion, {
+        name: versionName,
+        appId: app.id,
+        definition: versionFrom?.definition,
+        currentEnvironmentId: firstPriorityEnv?.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        status: AppVersionStatus.DRAFT,
+        parentVersionId: versionFromId ? versionFromId : null,
+        description: versionDescription ? versionDescription : null,
+        versionType: versionType ? versionType : AppVersionType.VERSION,
+        createdBy: user.id,
+        co_relation_id: app.co_relation_id,
+        // Inherit sync state from the source version — an app that's already synced to git should
+        // stay marked synced for its new draft, not reset to false and treated as never-pushed.
+        isSynced: versionFrom?.isSynced ?? false,
+        ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
+        ...(branchId && { branchId }),
+        ...(!isWorkflow && {
+          slug: versionFrom?.slug ?? null,
+          appName: versionFrom?.appName ?? null,
+          icon: versionFrom?.icon ?? null,
+          isPublic: versionFrom?.isPublic ?? false,
+        }),
+      })
+    );
+
+    await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
+
+    //APP_VERSION_CREATE audit
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: app.id,
+      resourceName: app.name,
+      ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.CREATE }),
+      metadata: {
+        data: {
+          updatedAppVersionName: versionCreateDto.versionName,
+          updatedAppVersionFrom: versionCreateDto.versionFromId,
+          updatedAppVersionEnvironment: versionCreateDto.environmentId,
+        },
+      },
+    });
+
+    return decamelizeKeys(appVersion);
   }
 
   protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {

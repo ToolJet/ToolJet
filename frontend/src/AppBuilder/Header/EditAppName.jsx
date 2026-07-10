@@ -24,6 +24,7 @@ function EditAppName() {
   );
 
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
@@ -34,14 +35,17 @@ function EditAppName() {
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType !== 'branch';
   const isVersionUnsynced = selectedVersion?.isSynced === false;
-  // Workspace-level git sync: every app in a git-enabled org participates in git.
-  // Default branch is read-only (rename must happen on a feature branch); rename also
-  // requires a draft version regardless of git state.
-  // Exception: unsynced apps (pre-git / never pushed) may be renamed even on default branch.
-  const isRenameDisabled = !isGitSyncEnabled ? false : !isDraftVersion || (isOnDefaultBranch && !isVersionUnsynced);
+  // Workspace-level git sync: every app in a git-enabled org participates in git. Rename requires a
+  // draft version regardless of git state. The default branch is read-only ONLY in MULTI-branch mode
+  // (rename must happen on a feature branch); in single-branch the default branch is the working
+  // branch and rename is allowed (mirrors the dashboard app card — AppMenu isWorkspaceBranchLocked).
+  // Exception: unsynced apps (pre-git / never pushed) may be renamed even on the default branch.
+  const isRenameDisabled = !isGitSyncEnabled
+    ? false
+    : !isDraftVersion || (isMultiBranchingEnabled && isOnDefaultBranch && !isVersionUnsynced);
 
   const getDisabledTooltipMessage = () => {
-    if (isGitSyncEnabled && isOnDefaultBranch && !isVersionUnsynced) {
+    if (isGitSyncEnabled && isMultiBranchingEnabled && isOnDefaultBranch && !isVersionUnsynced) {
       return "Renaming isn't allowed on default branch. Switch branch to update name.";
     }
     if (!isDraftVersion && isGitSyncEnabled) {
