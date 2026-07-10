@@ -53,6 +53,7 @@ export function renderCustomStyles(
     componentConfig.component == 'Table' ||
     componentConfig.component == 'DropdownV2' ||
     componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'Cascader' ||
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Button' ||
