@@ -201,7 +201,7 @@ export const navigationConfig = {
     {
       handle: 'selectItem',
       displayName: 'Select item',
-      params: [{ handle: 'id', displayName: 'Item ID', defaultValue: '', type: 'text' }],
+      params: [{ handle: 'id', displayName: 'Item ID', defaultValue: '', type: 'code' }],
     },
   ],
   definition: {

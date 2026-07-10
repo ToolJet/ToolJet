@@ -1,3 +1,11 @@
+export const isItemVisible = (item) =>
+  typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
+
+export const isItemDisabled = (item) =>
+  typeof item.disable === 'object'
+    ? item.disable.value === '{{true}}' || item.disable.value === true
+    : item.disable === true;
+
 // Helper to find item by ID (including nested items)
 export const findItemById = (items, targetId) => {
   for (const item of items) {

@@ -185,9 +185,6 @@
       font-size: 11px;
       line-height: 14px;
       color: var(--cc-placeholder-text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     &:hover {
@@ -271,6 +268,19 @@
 
       .nav-chevron {
         color: var(--nav-item-label-color);
+      }
+    }
+
+    &.page-group-disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+
+      &:hover {
+        background-color: transparent;
+
+        .nav-chevron {
+          color: var(--nav-item-icon-color);
+        }
       }
     }
 

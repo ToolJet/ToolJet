@@ -4,29 +4,31 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { ToolTip } from '@/_components';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useCalculateOverflow } from './hooks/useCalculateOverflow';
-import { findItemById, findParentGroup } from './utils';
+import { findItemById, findParentGroup, isItemVisible, isItemDisabled } from './utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
 // Render individual nav item - uses tj-list-item class like page navigation
-const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
-  const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
-  const isDisabled =
-    typeof item.disable === 'object'
-      ? item.disable.value === '{{true}}' || item.disable.value === true
-      : item.disable === true;
+const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientation, isNested }) => {
+  if (!isItemVisible(item)) return null;
 
-  if (!isVisible) return null;
+  const isDisabled = isItemDisabled(item);
 
   const showIcon = displayStyle !== 'textOnly' && item.iconVisibility !== false;
   const showLabel = displayStyle !== 'iconOnly';
 
   const iconColor = isSelected ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
 
-  return (
+  const isHorizontalTopLevel = orientation === 'horizontal' && !isNested;
+  const showInlineCaption = !isHorizontalTopLevel && !!item.caption;
+  const showTooltip = isHorizontalTopLevel && !!item.caption;
+
+  const buttonEl = (
     <button
       className={cx('tj-list-item', {
         'tj-list-item-selected': isSelected,
@@ -57,14 +59,20 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
           <div className="page-name" data-cy={`nav-label-${item.id}`}>
             {item.label}
           </div>
-          {item.caption ? (
-            <div className="nav-item-caption" data-cy={`nav-caption-${item.id}`}>
-              {item.caption}
-            </div>
+          {showInlineCaption ? (
+            <OverflowTooltip childrenClassName="nav-item-caption">{item.caption}</OverflowTooltip>
           ) : null}
         </div>
       )}
     </button>
+  );
+
+  if (!showTooltip) return buttonEl;
+
+  return (
+    <ToolTip message={item.caption} placement="top">
+      {buttonEl}
+    </ToolTip>
   );
 };
 
@@ -81,13 +89,9 @@ const RenderNavGroup = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const isVisible = typeof group.visible === 'object' ? group.visible.value !== '{{true}}' : group.visible !== true;
-  const isDisabled =
-    typeof group.disable === 'object'
-      ? group.disable.value === '{{true}}' || group.disable.value === true
-      : group.disable === true;
+  if (!isItemVisible(group)) return null;
 
-  if (!isVisible) return null;
+  const isDisabled = isItemDisabled(group);
 
   const showIcon = displayStyle !== 'textOnly' && group.iconVisibility !== false;
   const showLabel = displayStyle !== 'iconOnly';
@@ -107,7 +111,7 @@ const RenderNavGroup = ({
   // Check if any child is selected
   const hasSelectedChild = deduplicatedChildren.some((child) => child.id === selectedItemId);
 
-  const TriggerBody = () => (
+  const triggerBody = (
     <div className="group-info">
       {showIcon && (
         <div className="custom-icon">
@@ -125,34 +129,36 @@ const RenderNavGroup = ({
     </div>
   );
 
-  // For horizontal orientation, use Radix DropdownMenu — native collision
-  // detection flips the dropdown above the trigger when there isn't enough
-  // space below. We skip Portal so the content stays inside .navigation-widget
-  // (keeps existing SCSS nesting working). `asChild` lets us keep our custom
-  // button styles and the group-[data-state] chevron rotation — Radix
-  // propagates data-state onto the delegated child element.
   if (orientation === 'horizontal') {
+    const triggerButton = (
+      <button
+        type="button"
+        className={cx('tw-group page-group-wrapper', {
+          'page-group-selected': hasSelectedChild,
+          'page-group-disabled': isDisabled,
+        })}
+        disabled={isDisabled}
+        {...(isDisabled ? { 'data-state': 'closed' } : {})}
+        aria-label={group.label}
+        data-cy={`nav-group-${group.id}`}
+      >
+        {triggerBody}
+        <TablerIcon
+          iconName="IconChevronUp"
+          size={16}
+          className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
+        />
+      </button>
+    );
+
+    if (isDisabled) {
+      return <NavigationMenuItem key={group.id}>{triggerButton}</NavigationMenuItem>;
+    }
+
     return (
       <NavigationMenuItem key={group.id}>
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <button
-              type="button"
-              className={cx('tw-group page-group-wrapper', {
-                'page-group-selected': hasSelectedChild,
-              })}
-              disabled={isDisabled}
-              aria-label={group.label}
-              data-cy={`nav-group-${group.id}`}
-            >
-              <TriggerBody />
-              <TablerIcon
-                iconName="IconChevronUp"
-                size={16}
-                className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
-              />
-            </button>
-          </DropdownMenu.Trigger>
+          <DropdownMenu.Trigger asChild>{triggerButton}</DropdownMenu.Trigger>
           <DropdownMenu.Content
             className={cx('page-menu-popup', childAlignment && `nav-subalign-${childAlignment}`, {
               'dark-theme': darkMode,
@@ -185,6 +191,7 @@ const RenderNavGroup = ({
       <button
         className={cx('tw-group page-group-wrapper', {
           'page-group-selected': hasSelectedChild,
+          'page-group-disabled': isDisabled,
         })}
         onClick={(e) => {
           e.stopPropagation();
@@ -195,7 +202,7 @@ const RenderNavGroup = ({
         aria-label={group.label}
         aria-expanded={isExpanded}
       >
-        <TriggerBody />
+        {triggerBody}
         <TablerIcon
           iconName="IconChevronUp"
           size={16}
@@ -301,10 +308,7 @@ export const Navigation = function Navigation(props) {
     }
 
     // Then filter by visibility
-    return deduplicatedItems.filter((item) => {
-      const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
-      return isVisible;
-    });
+    return deduplicatedItems.filter(isItemVisible);
   }, [menuItems]);
 
   // Overflow calculation for horizontal orientation
