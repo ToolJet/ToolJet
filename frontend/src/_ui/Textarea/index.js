@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import OrgConstantVariablesPreviewBox from '../../_components/OrgConstantsVariablesResolver';
+import DOMPurify from 'dompurify';
 
 const Textarea = ({ helpText, ...props }) => {
   const { workspaceVariables, workspaceConstants, value } = props;
@@ -14,7 +15,7 @@ const Textarea = ({ helpText, ...props }) => {
         isFocused={isFocused}
         value={value}
       />
-      {helpText && <small className="text-muted" dangerouslySetInnerHTML={{ __html: helpText }} />}
+      {helpText && <small className="text-muted" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(helpText) }} />}
     </div>
   );
 };

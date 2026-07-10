@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { noop } from 'lodash';
+import DOMPurify from 'dompurify';
 
 /**
  * StringRenderer - Pure string value renderer with editing support
@@ -120,7 +121,7 @@ export const StringRenderer = ({
               e.stopPropagation();
             }}
             suppressContentEditableWarning={true}
-            dangerouslySetInnerHTML={{ __html: value }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
           />
         ) : (
           <div
