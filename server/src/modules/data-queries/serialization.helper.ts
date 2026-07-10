@@ -25,14 +25,18 @@ export function serializePlugin(plugin: any): any {
 
   const out = decamelizeKeys(plugin);
 
-  // getAll ships the manifest/icon as raw DB buffers → base64-decode them (the original logic).
-  // Viewer paths (findVersion) pre-decode the manifest and don't load the icon, so we only
-  // touch raw buffers and leave already-decoded / absent values untouched.
-  if (Buffer.isBuffer(plugin.manifestFile?.data)) {
-    out['manifest_file'].data = JSON.parse(decode(plugin.manifestFile.data.toString('utf8')));
+  // `decamelizeKeys` recurses into the manifest/icon `data`, so RESTORE them here — the manifest
+  // is an opaque plugin-schema blob whose keys must stay verbatim. getAll ships a raw DB buffer
+  // → base64-decode it (original logic); findVersion pre-decodes it → keep the object as-is.
+  if (plugin.manifestFile) {
+    out['manifest_file'].data = Buffer.isBuffer(plugin.manifestFile.data)
+      ? JSON.parse(decode(plugin.manifestFile.data.toString('utf8')))
+      : plugin.manifestFile.data;
   }
-  if (Buffer.isBuffer(plugin.iconFile?.data)) {
-    out['icon_file'].data = plugin.iconFile.data.toString('utf8');
+  if (plugin.iconFile) {
+    out['icon_file'].data = Buffer.isBuffer(plugin.iconFile.data)
+      ? plugin.iconFile.data.toString('utf8')
+      : plugin.iconFile.data;
   }
 
   return out;
