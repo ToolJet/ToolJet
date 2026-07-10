@@ -79,6 +79,16 @@ export const useNotificationsStore = create(
           }));
           return { error: null };
         },
+        async remove(recipientId) {
+          const target = get().items.find((n) => n.recipientId === recipientId);
+          const res = await notificationsService.remove(recipientId);
+          if (res.error) return { error: res.error };
+          set((s) => ({
+            items: s.items.filter((n) => n.recipientId !== recipientId),
+            unreadCount: target && !target.readAt ? Math.max(0, s.unreadCount - 1) : s.unreadCount,
+          }));
+          return { error: null };
+        },
         async markAllRead() {
           const res = await notificationsService.markAllRead();
           if (res.error) return { error: res.error };

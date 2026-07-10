@@ -32,14 +32,26 @@ function MonoBody({ body, branchName }) {
   ));
 }
 
-export default function NotificationRow({ notification, onDismiss, onOpen, darkMode }) {
+export default function NotificationRow({ notification, onRemove, onMarkRead, onOpen, darkMode }) {
   const { type, title, body, createdAt, readAt, metadata } = notification;
   const { Icon, color } = ICON_BY_TYPE[type] || ICON_BY_TYPE.info;
-  // detail opens ONLY via the hover open-icon, never whole-row click
   const hasDetail = !!detailAction(notification);
 
+  const handleRowClick = () => {
+    if (hasDetail) onOpen(notification);
+    else if (!readAt) onMarkRead(notification.recipientId);
+  };
+
   return (
-    <div className={`notification-row ${readAt ? 'read' : 'unread'} ${darkMode ? 'dark' : ''}`}>
+    <div
+      className={`notification-row ${readAt ? 'read' : 'unread'} ${darkMode ? 'dark' : ''}`}
+      onClick={handleRowClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') handleRowClick();
+      }}
+    >
       <span className="notification-row-icon">
         <Icon size={14} style={{ color, flexShrink: 0 }} />
       </span>
@@ -56,19 +68,27 @@ export default function NotificationRow({ notification, onDismiss, onOpen, darkM
         {!readAt && <span className="notification-row-dot" aria-label="Unread" />}
         <div className="notification-row-actions">
           {hasDetail && (
-            <button className="notification-row-action" onClick={() => onOpen(notification)} aria-label="Open">
+            <button
+              className="notification-row-action"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpen(notification);
+              }}
+              aria-label="Open"
+            >
               <SquareArrowOutUpRight size={14} />
             </button>
           )}
-          {!readAt && (
-            <button
-              className="notification-row-action"
-              onClick={() => onDismiss(notification.recipientId)}
-              aria-label="Mark as read"
-            >
-              <X size={14} />
-            </button>
-          )}
+          <button
+            className="notification-row-action"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(notification.recipientId);
+            }}
+            aria-label="Remove"
+          >
+            <X size={14} />
+          </button>
         </div>
       </div>
     </div>

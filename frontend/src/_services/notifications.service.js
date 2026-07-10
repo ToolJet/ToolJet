@@ -24,4 +24,8 @@ function clearRead() {
   return adapter.delete(`/notifications/read`);
 }
 
-export const notificationsService = { list, unreadCount, markRead, markAllRead, clearRead };
+function remove(recipientId) {
+  return adapter.delete(`/notifications/${recipientId}`);
+}
+
+export const notificationsService = { list, unreadCount, markRead, markAllRead, clearRead, remove };

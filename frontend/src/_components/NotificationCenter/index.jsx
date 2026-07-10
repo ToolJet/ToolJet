@@ -47,6 +47,11 @@ export const NotificationCenter = ({ darkMode }) => {
     if (error) toast.error('Unable to clear notifications');
   };
 
+  const handleRemove = async (recipientId) => {
+    const { error } = await actions.remove(recipientId);
+    if (error) toast.error('Unable to remove notification');
+  };
+
   const hasRead = items.some((n) => n.readAt);
 
   const overlay = (
@@ -94,7 +99,8 @@ export const NotificationCenter = ({ darkMode }) => {
                 key={n.recipientId}
                 notification={n}
                 darkMode={darkMode}
-                onDismiss={actions.markRead}
+                onRemove={handleRemove}
+                onMarkRead={actions.markRead}
                 onOpen={actions.openDetail}
               />
             ))}

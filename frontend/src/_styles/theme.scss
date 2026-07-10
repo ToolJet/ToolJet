@@ -6493,6 +6493,7 @@ a.step-item-disabled {
   border-radius: 4px;
   font-family: 'Inter', 'IBM Plex Sans', sans-serif; // design family/regular: Inter
   transition: background 0.15s;
+  cursor: pointer;
 
   .notification-row-icon {
     width: 28px;

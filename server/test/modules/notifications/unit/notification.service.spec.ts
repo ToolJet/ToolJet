@@ -23,6 +23,7 @@ describe('NotificationService', () => {
             markRead: jest.fn(),
             markAllRead: jest.fn(),
             clearReadForUser: jest.fn(),
+            removeForUser: jest.fn(),
           },
         },
         { provide: NOTIFICATION_CHANNELS, useValue: [{ key: 'in_app', deliver: inAppDeliver }] },
@@ -92,6 +93,17 @@ describe('NotificationService', () => {
     repo.clearReadForUser.mockResolvedValue(3);
     await expect(service.clearRead('u1', 'org1')).resolves.toBe(3);
     expect(repo.clearReadForUser).toHaveBeenCalledWith('u1', 'org1');
+  });
+
+  it('should remove one notification scoped to the user', async () => {
+    repo.removeForUser.mockResolvedValue(true);
+    await expect(service.remove('r1', 'u1')).resolves.toBe(true);
+    expect(repo.removeForUser).toHaveBeenCalledWith('r1', 'u1');
+  });
+
+  it("should report failure when removing another user's recipient", async () => {
+    repo.removeForUser.mockResolvedValue(false);
+    await expect(service.remove('r-other', 'u1')).resolves.toBe(false);
   });
 
   it('should scope list and unread count to the active org', async () => {

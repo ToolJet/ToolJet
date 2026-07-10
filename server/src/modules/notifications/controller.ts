@@ -44,4 +44,11 @@ export class NotificationController implements INotificationController {
     const cleared = await this.notificationService.clearRead(user.id, user.organizationId);
     return { success: true, cleared };
   }
+
+  // must stay below @Delete('read') — param route would swallow it
+  @Delete(':recipientId')
+  async remove(@User() user, @Param('recipientId') recipientId: string) {
+    const removed = await this.notificationService.remove(recipientId, user.id);
+    return { success: removed };
+  }
 }

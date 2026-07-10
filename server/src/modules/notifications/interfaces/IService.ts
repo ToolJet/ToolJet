@@ -11,6 +11,7 @@ export interface INotificationService {
   ): Promise<NotificationListItem[]>;
   unreadCount(userId: string, organizationId: string): Promise<number>;
   markRead(recipientId: string, userId: string): Promise<void>;
+  remove(recipientId: string, userId: string): Promise<boolean>;
   markAllRead(userId: string, organizationId: string): Promise<void>;
   clearRead(userId: string, organizationId: string): Promise<number>;
 }

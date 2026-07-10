@@ -66,6 +66,10 @@ export class NotificationService implements INotificationService {
     return this.repository.markRead(recipientId, userId);
   }
 
+  remove(recipientId: string, userId: string) {
+    return this.repository.removeForUser(recipientId, userId);
+  }
+
   markAllRead(userId: string, organizationId: string) {
     return this.repository.markAllRead(userId, organizationId);
   }
