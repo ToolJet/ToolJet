@@ -12,6 +12,7 @@ import { gitSyncService } from '@/_services';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { AlertTriangle } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { getActiveBranch } from '@/_helpers/active-branch';
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -211,7 +212,13 @@ export function BranchDropdown({ appId, organizationId }) {
       // so we compare workspaceActiveBranch.id against versionBranchId directly.
       if (versionBranchId && workspaceActiveBranch?.id !== versionBranchId) {
         initialBranchSwitchDone.current = true;
-        useWorkspaceBranchesStore.getState().actions.switchBranch(versionBranchId);
+        const storedBranch = getActiveBranch(organizationId);
+        // storedBranch was explicitly written by a branch switch before page reload.
+        // If it differs from the version's branch, it is the source of truth — skip
+        // overwriting it. Let initialize() restore workspace from storage instead.
+        if (!storedBranch?.id || storedBranch.id === versionBranchId) {
+          useWorkspaceBranchesStore.getState().actions.switchBranch(versionBranchId);
+        }
       }
       return;
     }
