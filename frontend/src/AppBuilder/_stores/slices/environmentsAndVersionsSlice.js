@@ -354,6 +354,20 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure) => {
     try {
       const data = await appVersionService.getAppVersionData(appId, versionId, get().currentMode);
+      // getAppVersionData doesn't include the resolved branchName/branchId (those come from the
+      // environment-versions fetch). Carry them over from the already-enriched entry so the version
+      // selector keeps showing the branch name instead of falling back to the raw UUID version name.
+      const prevVersionEntry = get().versionsPromotedToEnvironment.find((v) => v.id === data?.editing_version?.id);
+      const branchId =
+        data.editing_version.branchId ??
+        data.editing_version.branch_id ??
+        prevVersionEntry?.branchId ??
+        prevVersionEntry?.branch_id;
+      const branchName =
+        data.editing_version.branchName ??
+        data.editing_version.branch_name ??
+        prevVersionEntry?.branchName ??
+        prevVersionEntry?.branch_name;
       const selectedVersion = {
         id: data.editing_version.id,
         name: data.editing_version.name,
@@ -362,6 +376,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         // Preserve versionType from API response to distinguish between regular versions and branch versions
         versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
         isSynced: data.editing_version.isSynced ?? data.editing_version.is_synced ?? false,
+        branchId,
+        branchName,
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
@@ -369,7 +385,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let updatedVersionsArray = [...get().versionsPromotedToEnvironment];
       const versionIndex = get().versionsPromotedToEnvironment.findIndex((v) => v.id === data?.editing_version?.id);
       if (versionIndex !== -1 && data?.editing_version) {
-        updatedVersionsArray[versionIndex] = data?.editing_version;
+        updatedVersionsArray[versionIndex] = { ...data.editing_version, branchId, branchName };
       }
       let optionsToUpdate = {
         selectedVersion,

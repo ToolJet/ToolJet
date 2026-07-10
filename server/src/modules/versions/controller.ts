@@ -1,6 +1,6 @@
 import { InitModule } from '@modules/app/decorators/init-module';
 import { VersionService } from './service';
-import { Body, Controller, Delete, Get, Headers, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
@@ -21,20 +21,15 @@ export class VersionController implements IVersionController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions')
-  fetchVersions(@App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
-    return this.versionService.getAllVersions(app, branchId);
+  fetchVersions(@User() user: UserEntity, @App() app: AppEntity) {
+    return this.versionService.getAllVersions(app, user.branchId);
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_CREATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/versions')
-  createVersion(
-    @User() user,
-    @App() app: AppEntity,
-    @Body() versionCreateDto: VersionCreateDto,
-    @Headers('x-branch-id') branchId?: string
-  ) {
-    versionCreateDto.branchId = branchId;
+  createVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() versionCreateDto: VersionCreateDto) {
+    versionCreateDto.branchId = user.branchId;
     return this.versionService.createVersion(app, user, versionCreateDto);
   }
 

@@ -27,7 +27,7 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
   async list(@User() user) {
-    return this.workspaceBranchService.list(user.organizationId);
+    return this.workspaceBranchService.list(user.organizationId, user.id);
   }
 
   @InitFeature(FEATURE_KEY.CHECK_UPDATES)
@@ -55,7 +55,7 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Put(':id/activate')
   async switchBranch(@User() user, @Param('id') branchId: string, @Body() body?: { appId?: string }) {
-    return this.workspaceBranchService.switchBranch(user.organizationId, branchId, body?.appId);
+    return this.workspaceBranchService.switchBranch(user.organizationId, branchId, body?.appId, user.id);
   }
 
   @InitFeature(FEATURE_KEY.DELETE_BRANCH)

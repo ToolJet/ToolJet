@@ -7,6 +7,7 @@ import * as requestIp from 'request-ip';
 import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
 import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
@@ -268,6 +269,23 @@ export class SessionUtilService {
 
   getAllGroupsOfUser(user: User, manager: EntityManager): Promise<GroupPermissions[]> {
     return this.groupPermissionsRepository.getAllUserGroups(user.id, user.organizationId, manager);
+  }
+
+  // Resolves the org's default branch id. Used by the JWT strategy to populate user.branchId
+  // when a request carries no explicit `branch_id` query param. Applies to git and non-git
+  // workspaces alike: git-sync-disabled orgs show no branch on the client, but the server still
+  // resolves the default branch so reads land on the default-branch rows (every org has exactly
+  // one default branch, seeded on creation / backfilled). folder_apps is unaffected — it reads
+  // the raw query param (absent → IS NULL for non-git), not user.branchId.
+  async getDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | null> {
+    if (!organizationId) return null;
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const branch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+      return branch?.id ?? null;
+    }, manager);
   }
 
   async checkUserWorkspaceStatus(userId: string, manager?: EntityManager): Promise<boolean> {

@@ -19,11 +19,14 @@ import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
-import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import {
+  assertGitSyncEditAllowedForOrg,
+  assertVersionEditable,
+} from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -33,7 +36,6 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly versionRepository: VersionRepository,
     protected readonly createVersionService: VersionsCreateService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
-    protected readonly organizationGitSyncRepository: OrganizationGitSyncRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
@@ -113,9 +115,33 @@ export class VersionUtilService implements IVersionUtilService {
       editableParams['description'] = appVersionUpdateDto.description;
     }
 
+    // A content edit (global/page settings, home page, viewer nav) to a git-synced draft on the
+    // default branch is not allowed — those changes must be made on a feature branch. A pure
+    // status change (publish/release) is NOT a content edit and stays allowed.
+    const hasContentEdit =
+      'globalSettings' in editableParams ||
+      'pageSettings' in editableParams ||
+      'homePageId' in editableParams ||
+      'showViewerNavigation' in editableParams;
+
     // DB write. Wrap in a transaction so the optional post-publish hook below
     // commits atomically with the status change.
     const runWrite = async (mgr: EntityManager) => {
+      if (hasContentEdit) {
+        // Saved (published/released) versions are immutable — block content edits regardless of git
+        // state. A pure status flip (publish/release) is not a content edit and is allowed through.
+        assertVersionEditable(appVersion.status);
+        const app = await mgr.findOne(App, { where: { id: appVersion.appId }, select: ['id', 'organizationId'] });
+        if (app) {
+          await assertGitSyncEditAllowedForOrg(
+            this.gitSyncConfigsUtilService,
+            app.organizationId,
+            { branchId: appVersion.branchId, status: appVersion.status, isSynced: appVersion.isSynced },
+            'version'
+          );
+        }
+      }
+
       await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);
 
       // Post-publish hook: when a default-branch DRAFT VERSION row flips to
@@ -258,41 +284,14 @@ export class VersionUtilService implements IVersionUtilService {
     });
   }
 
-  private async validateDraftVersionConstraints(
-    app: App,
-    versionType: AppVersionType,
-    organizationId: string,
-    manager?: EntityManager
-  ): Promise<void> {
-    const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
-      organizationId,
-      manager
-    );
-
-    if (organizationGit && organizationGit.isBranchingEnabled && versionType !== AppVersionType.BRANCH) {
-      const existingDraftVersion = await this.versionRepository.findOne({
-        where: {
-          appId: app.id,
-          status: AppVersionStatus.DRAFT,
-          versionType: Not(AppVersionType.BRANCH),
-        },
-      });
-
-      if (existingDraftVersion) {
-        throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
-      }
-    }
-  }
-
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
     const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
     // Workflows must always have branch_id NULL — they don't participate in branching.
-    // The controller forwards the x-branch-id header into versionCreateDto.branchId
-    // even for workflows; drop it here so the new row doesn't land with branch_id
-    // set + app_name/slug NULL (which would trip chk_app_versions_branch_metadata,
-    // since workflow versions don't carry those fields).
-    // branch_id is NOT NULL in the DB — fall back to the org's default branch when
-    // the caller didn't forward x-branch-id (e.g. older clients, non-builder paths).
+    // The controller forwards the branch id into versionCreateDto.branchId even for workflows;
+    // drop it here so the new row doesn't land with branch_id set + app_name/slug NULL (which
+    // would trip chk_app_versions_branch_metadata, since workflow versions don't carry those
+    // fields). branch_id is NOT NULL in the DB — fall back to the org's default branch when the
+    // caller didn't forward one (e.g. older clients, non-builder paths).
     let branchId: string | undefined;
     if (app.type !== APP_TYPES.WORKFLOW) {
       branchId =
@@ -304,13 +303,15 @@ export class VersionUtilService implements IVersionUtilService {
       throw new BadRequestException('Version name cannot be empty.');
     }
     const { organizationId } = user;
-    const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
-      organizationId,
-      manager
-    );
-    if (organizationGit && organizationGit.isBranchingEnabled) {
-      // Only allow one draft version of type 'version' (not branch) per branch.
-      // Scoping by branchId ensures drafts on different branches don't conflict.
+    // The single-draft-per-branch rule is a git-sync constraint, so enforce it only when git sync is
+    // actually ON (configured + a provider enabled + licensed). getDetails().isEnabled is false when
+    // git is turned off OR the license no longer covers it — so a stale/disabled org-git config row
+    // (which still exists in the DB) no longer wrongly blocks version creation.
+    const isGitSyncEnabled = (await this.gitSyncConfigsUtilService.getDetails(organizationId)).isEnabled;
+    if (isGitSyncEnabled) {
+      // Only allow one draft version of type 'version' (not branch) per branch. Runs for single-
+      // and multi-branch alike (branch_id is mandatory); scoping by branchId keeps drafts on
+      // different branches from conflicting.
       const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
 
       if (!isCreatingBranchVersion) {
@@ -649,25 +650,55 @@ export class VersionUtilService implements IVersionUtilService {
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionToDelete = app.appVersions[0];
-      const branchId = versionToDelete?.branchId ?? null;
+      const versionId = versionToDelete.id;
+      const resourceLabel = app.type === 'module' ? 'module' : 'app';
 
-      // For platform git sync apps, count only versions on the same branch so that
-      // versions on other branches don't inflate the count and bypass the guard.
-      // For all other apps (branchId=null), fall back to the original count across
-      // all versions - behaviour is unchanged.
-      const numVersions = branchId
-        ? await manager.count(AppVersion, { where: { appId: app.id, branchId } })
-        : await this.versionRepository.getCount(app.id);
-
-      if (numVersions <= 1) {
-        throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
-      }
-
-      if (app.currentVersionId === app.appVersions[0].id || app.appVersions[0].status === AppVersionStatus.RELEASED) {
+      // A released/current version can never be deleted, regardless of git state.
+      if (app.currentVersionId === versionId || versionToDelete.status === AppVersionStatus.RELEASED) {
         throw new BadRequestException('You cannot delete a released version');
       }
 
-      const versionId = app.appVersions[0].id;
+      // getDetails().isEnabled = git sync configured AND licensed. options.defaultBranch is always
+      // resolved (every org has a default branch), even when git is off.
+      const { isEnabled: isGitSyncEnabled, options } = await this.gitSyncConfigsUtilService.getDetails(
+        app.organizationId
+      );
+      const defaultBranchId = options?.defaultBranch?.id ?? null;
+
+      // An unsynced draft (never pushed to git) has no git footprint, so it can always be deleted —
+      // skip the git-sync checks entirely.
+      const isUnsyncedDraft = versionToDelete.status === AppVersionStatus.DRAFT && versionToDelete.isSynced === false;
+
+      if (isGitSyncEnabled && !isUnsyncedDraft) {
+        // Versions on a feature branch cannot be deleted from here — only default-branch versions.
+        if (versionToDelete.branchId && defaultBranchId && versionToDelete.branchId !== defaultBranchId) {
+          throw new ForbiddenException('Cannot delete a version on a feature branch');
+        }
+
+        // On the default branch, git sync needs a draft to push to. Block deleting the draft unless
+        // another (non-branch) draft still exists for the app.
+        if (versionToDelete.status === AppVersionStatus.DRAFT) {
+          const otherDraftCount = await manager.count(AppVersion, {
+            where: {
+              appId: app.id,
+              status: AppVersionStatus.DRAFT,
+              versionType: Not(AppVersionType.BRANCH),
+              id: Not(versionId),
+            },
+          });
+          if (otherDraftCount === 0) {
+            throw new ForbiddenException(
+              `Cannot delete the last draft version of ${resourceLabel} while git sync is enabled`
+            );
+          }
+        }
+      } else if (!isGitSyncEnabled) {
+        // Git off: only guard against removing the sole version of the app/module.
+        const numVersions = await this.versionRepository.getCount(app.id);
+        if (numVersions <= 1) {
+          throw new ForbiddenException(`Cannot delete only version of ${resourceLabel}`);
+        }
+      }
 
       if (app.type === 'module') {
         await this.checkModuleVersionInUse(versionId, manager);

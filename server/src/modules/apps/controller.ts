@@ -2,7 +2,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { AppsService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { Body, Controller, Delete, Get, Headers, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AppCountGuard } from '@modules/licensing/guards/app.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
@@ -75,7 +75,8 @@ export class AppsController implements IAppsController {
     @Ability() ability: AppAbility,
     @App() app: AppEntity,
     @User() user: UserEntity,
-    @Headers('x-branch-id') branchId?: string
+    // PrivateAppAuthGuard path — not the JWT strategy — so user.branchId isn't populated; read the query param directly.
+    @Query('branch_id') branchId?: string
   ) {
     return this.appsService.validatePrivateAppAccess(app, ability, user, {
       accessType,
@@ -97,26 +98,16 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id')
-  update(
-    @User() user: UserEntity,
-    @App() app: AppEntity,
-    @Body('app') appUpdateDto: AppUpdateDto,
-    @Headers('x-branch-id') branchId?: string
-  ) {
-    if (!appUpdateDto.branch_id && branchId) appUpdateDto.branch_id = branchId;
+  update(@User() user: UserEntity, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+    if (!appUpdateDto.branch_id && user.branchId) appUpdateDto.branch_id = user.branchId;
     return this.appsService.update(app, appUpdateDto, user);
   }
 
   @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/public')
-  updatePublic(
-    @User() user: UserEntity,
-    @App() app: AppEntity,
-    @Body('app') appUpdateDto: AppUpdateDto,
-    @Headers('x-branch-id') branchId?: string
-  ) {
-    if (!appUpdateDto.branch_id && branchId) appUpdateDto.branch_id = branchId;
+  updatePublic(@User() user: UserEntity, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+    if (!appUpdateDto.branch_id && user.branchId) appUpdateDto.branch_id = user.branchId;
     return this.appsService.update(app, appUpdateDto, user);
   }
 
@@ -130,13 +121,16 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
-  index(@User() user: UserEntity, @Query() query: any, @Headers('x-branch-id') headerBranchId?: string) {
+  index(@User() user: UserEntity, @Query() query: any) {
+    // Raw query param (not user.branchId): getAllApps -> resolveDashboardBranchId already
+    // fills the default branch for front-end apps and keeps workflows/non-git NULL. A
+    // default-filled user.branchId would break workflow/non-git listing.
     const AppListDto: AppListDto = {
       page: query.page,
       folderId: query.folder,
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
-      branchId: query.branch_id || headerBranchId,
+      branchId: query.branch_id,
     };
     return this.appsService.getAllApps(user, AppListDto, query.all === 'true');
   }
@@ -161,15 +155,10 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE_ICON)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/icons')
-  async updateIcon(
-    @User() user: UserEntity,
-    @App() app: AppEntity,
-    @Body('icon') icon: string,
-    @Headers('x-branch-id') branchId?: string
-  ) {
+  async updateIcon(@User() user: UserEntity, @App() app: AppEntity, @Body('icon') icon: string) {
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    if (branchId) appUpdateDto.branch_id = branchId;
+    if (user.branchId) appUpdateDto.branch_id = user.branchId;
     await this.appsService.update(app, appUpdateDto, user);
     return;
   }
@@ -185,8 +174,8 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
-  show(@User() user: UserEntity, @App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
-    return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, branchId));
+  show(@User() user: UserEntity, @App() app: AppEntity) {
+    return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, user.branchId));
   }
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)

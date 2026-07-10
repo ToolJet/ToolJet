@@ -43,17 +43,20 @@ export class AppsRepository extends Repository<App> {
     }
 
     if (branchId) {
-      // Explicit branch context: slug must resolve on that branch.
+      // Explicit branch context: prefer a version whose slug lives on that branch.
       const version = await this.dataSource.getRepository(AppVersion).findOne({
         where: { slug, branchId },
         relations: ['app'],
       });
-      if (!version?.app || version.app.organizationId !== organizationId) {
-        return null;
+      if (version?.app && version.app.organizationId === organizationId) {
+        const app = version.app;
+        this.overlayMetadata(app, version);
+        return app;
       }
-      const app = version.app;
-      this.overlayMetadata(app, version);
-      return app;
+      // Miss on a non-default branch is expected: app slugs are stored on the *default-branch*
+      // app_versions rows (see below), so a feature branch's versions don't carry the slug. A
+      // slug maps to exactly one app regardless of branch, so fall through to the default-branch
+      // slug resolution rather than 404-ing feature-branch previews / deep links.
     }
 
     // App slug lives on the default-branch app_versions rows in all cases (git on or off —

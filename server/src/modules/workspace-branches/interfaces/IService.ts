@@ -5,6 +5,9 @@ import { CreateBranchDto, WorkspacePushDto, PullConflictResolutionDto } from '..
 export interface WorkspaceBranchListResponse {
   branches: WorkspaceBranch[];
   activeBranchId: string | null;
+  // Whether the workspace supports multiple branches. When false (single-branch mode) only the
+  // default branch is returned and the UI disables branch create / switch.
+  isMultiBranchingEnabled?: boolean;
 }
 
 export interface CheckUpdatesResponse {
@@ -18,12 +21,13 @@ export interface CheckUpdatesResponse {
 }
 
 export interface IWorkspaceBranchService {
-  list(organizationId: string): Promise<WorkspaceBranchListResponse>;
+  list(organizationId: string, userId?: string): Promise<WorkspaceBranchListResponse>;
   createBranch(organizationId: string, dto: CreateBranchDto, user?: User): Promise<WorkspaceBranch>;
   switchBranch(
     organizationId: string,
     branchId: string,
-    appId?: string
+    appId?: string,
+    userId?: string
   ): Promise<{ success: boolean; resolvedAppId?: string }>;
   deleteBranch(organizationId: string, branchId: string, user?: User): Promise<void>;
   deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ jobId: string }>;

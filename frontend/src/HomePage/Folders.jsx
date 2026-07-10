@@ -13,6 +13,7 @@ import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
 import { validateName, handleHttpErrorMessages, getWorkspaceId, hasBuilderRole } from '@/_helpers/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getBranchNameFromUrl, getResolvedBranchName } from '@/_helpers/active-branch';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -154,13 +155,19 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    const search = `${name ? `?folder=${name}` : ''}`;
+    // Preserve the active Git branch (?branch=<name>) — apps/modules folders are branch-scoped, so
+    // rebuilding the query from scratch would drop it. Workflows are branch-agnostic (no branch).
+    const params = new URLSearchParams();
+    if (name) params.set('folder', name);
+    const branchName = getBranchNameFromUrl() || getResolvedBranchName();
+    if (branchName && appType !== 'workflow') params.set('branch', branchName);
+    const query = params.toString();
     navigate(
       {
         pathname: `/${getWorkspaceId()}${
           appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
         }`,
-        search,
+        search: query ? `?${query}` : '',
       },
       { replace: true }
     );

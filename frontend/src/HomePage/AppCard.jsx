@@ -18,6 +18,9 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService, gitSyncService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { appendBranchName } from '@/_helpers/active-branch';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
 const { defaultIcon } = configs;
@@ -43,10 +46,15 @@ export default function AppCard({
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { wsCurrentBranch, wsActions } = useWorkspaceBranchesStore((state) => ({
+  const { wsCurrentBranch, wsActions, isGitSyncConfigured } = useWorkspaceBranchesStore((state) => ({
     wsCurrentBranch: state.currentBranch,
     wsActions: state.actions,
+    isGitSyncConfigured: state.isGitSyncConfigured,
   }));
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
+  // Git configured but license expired/invalid → the workspace is read-only, so hide the card's
+  // options menu (rename, change icon, delete, …).
+  const isGitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(featureAccess);
   const cardRef = useRef();
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
@@ -88,7 +96,13 @@ export default function AppCard({
       } catch (_err) {
         // check failed (network error, etc.) — allow navigation
       }
-      navigate(getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }));
+      // Carry the dashboard's active branch into the editor so reload keeps the same branch.
+      navigate(
+        appendBranchName(
+          getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }),
+          wsCurrentBranch?.name
+        )
+      );
     }
     posthogHelper.captureEvent('click_edit_button_on_card', {
       workspace_id:
@@ -384,7 +398,7 @@ export default function AppCard({
                     </ToolTip>
                   ) : (
                     <div visible={focused ? true : undefined}>
-                      {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                      {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && !isGitLicenseLocked && (
                         <AppMenu
                           appId={app?.id}
                           appUserId={app?.user_id}
