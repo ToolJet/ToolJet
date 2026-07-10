@@ -646,7 +646,11 @@ const useAppData = (
           selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
           moduleId
         );
-        setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
+        setResolvedGlobals(
+          'appVersion',
+          { name: editingVersion?.display_name || editingVersion?.displayName || editingVersion?.name },
+          moduleId
+        );
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',
@@ -965,7 +969,11 @@ const useAppData = (
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
 
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
-        setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
+        setResolvedGlobals(
+          'appVersion',
+          { name: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name },
+          moduleId
+        );
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,

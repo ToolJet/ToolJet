@@ -48,4 +48,7 @@ export class DraftVersionDto {
 
   @IsOptional()
   versionType?: AppVersionType;
+
+  @IsOptional()
+  branchId?: string;
 }

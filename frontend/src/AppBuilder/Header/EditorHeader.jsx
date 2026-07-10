@@ -17,20 +17,34 @@ import SaveIndicator from './SaveIndicator';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion, isGitSyncLicenseLocked } =
-    useStore(
-      (state) => ({
-        isSaving: state.appStore.modules[moduleId].app.isSaving,
-        saveError: state.appStore.modules[moduleId].app.saveError,
-        isVersionReleased: state.isVersionReleased,
-        appId: state.appStore.modules[moduleId].app.appId,
-        organizationId: state.appStore.modules[moduleId].app.organizationId,
-        selectedVersion: state.selectedVersion,
-        isGitSyncLicenseLocked: state.isGitSyncLicenseLocked,
-      }),
-      shallow
-    );
-
+  const {
+    isSaving,
+    saveError,
+    isVersionReleased,
+    appId,
+    organizationId,
+    selectedVersion,
+    featureAccess,
+    isGitSyncConfigured,
+    orgGit,
+    developmentVersions,
+    isGitSyncLicenseLocked,
+  } = useStore(
+    (state) => ({
+      isSaving: state.appStore.modules[moduleId].app.isSaving,
+      saveError: state.appStore.modules[moduleId].app.saveError,
+      isVersionReleased: state.isVersionReleased,
+      appId: state.appStore.modules[moduleId].app.appId,
+      organizationId: state.appStore.modules[moduleId].app.organizationId,
+      selectedVersion: state.selectedVersion,
+      featureAccess: state?.license?.featureAccess,
+      isGitSyncConfigured: state.isGitSyncConfigured,
+      orgGit: state.orgGit,
+      developmentVersions: state.developmentVersions,
+      isGitSyncLicenseLocked: state.isGitSyncLicenseLocked,
+    }),
+    shallow
+  );
   // Git configured but unlicensed → freeze every header action (undo/redo, preview/share,
   // branch, version, release/commit). The logo/app-name nav stays clickable so the user can
   // still navigate to workspace settings and turn git off.
@@ -39,6 +53,18 @@ export const EditorHeader = ({ darkMode, appType }) => {
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isOnWorkspaceFeatureBranch =
     workspaceActiveBranch && !workspaceActiveBranch.is_default && !workspaceActiveBranch.isDefault;
+
+  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const isOnDefaultBranch = workspaceActiveBranch
+    ? workspaceActiveBranch.is_default ||
+      workspaceActiveBranch.isDefault ||
+      workspaceActiveBranch.name === defaultBranchName
+    : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
+  const isAppSyncedToGit = developmentVersions?.some(
+    (v) => v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  );
+  const showSyncButton =
+    featureAccess?.gitSync && isGitSyncConfigured && workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -97,7 +123,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   aria-disabled={isGitSyncLicenseLocked || undefined}
                 >
                   {!isModuleEditor && <PreviewAndShareIcons />}
-                  <BranchDropdown appId={appId} organizationId={organizationId} />
+                  {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
                   {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
                   {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
                     <VersionManagerErrorBoundary>
