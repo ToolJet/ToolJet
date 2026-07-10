@@ -240,9 +240,9 @@ export class VersionRepository extends Repository<AppVersion> {
       relations: ['app'],
     });
     const app = appVersion.app;
-    // Workflows keep metadata on apps.*; non-workflows carry it on the version row.
+    // Every app type, including workflows, carries metadata on the version row.
     // The version is already in scope — overlay its own metadata directly.
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app) {
       this.overlayMetadata(app, appVersion);
     }
     return app;
@@ -344,7 +344,7 @@ export class VersionRepository extends Repository<AppVersion> {
     if (!version) throw new BadRequestException('Wrong version Id');
 
     const app = version.app;
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app) {
       // The version is already in scope — its own row carries the metadata for this view,
       // so overlay directly instead of re-resolving.
       this.overlayMetadata(app, version);

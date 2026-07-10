@@ -1,6 +1,6 @@
 import { InitModule } from '@modules/app/decorators/init-module';
 import { VersionService } from './service';
-import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Post, UseGuards } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';

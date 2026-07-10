@@ -15,6 +15,9 @@ import {
   setupOrganizationAndUser,
   initTestApp,
   createCompleteWorkflow,
+  createWorkflowApplicationVersion,
+  releaseWorkflowVersion,
+  buildWorkflowDefinition,
   createBundle,
   login,
   WorkflowNode,
@@ -1608,6 +1611,82 @@ result = pydash.sum_(sorted_numbers)
         expect(responseNode).toBeDefined();
         expect(responseNode.executed).toBe(true);
       }, 180000);
+    });
+
+    describe('released version resolution', () => {
+      it('should execute the released version, not a newer draft, when appVersionId is omitted', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const buildNodes = (message: string): WorkflowNode[] => [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: `return { message: "${message}" }`,
+              nodeName: 'response1'
+            },
+            position: { x: 400, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const { app: workflow, appVersion: releasedVersion } = await createCompleteWorkflow(app, user, {
+          name: 'Released Version Workflow',
+          nodes: buildNodes('released'),
+          edges,
+          queries: []
+        });
+
+        const draftVersion = await createWorkflowApplicationVersion(app, workflow, {
+          definition: buildWorkflowDefinition({
+            nodes: buildNodes('draft'),
+            edges,
+            queries: []
+          })
+        });
+
+        await releaseWorkflowVersion(workflow, releasedVersion);
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: releasedVersion.currentEnvironmentId
+        });
+
+        expect(execution.appVersionId).toBe(releasedVersion.id);
+        expect(execution.appVersionId).not.toBe(draftVersion.id);
+
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+        expect(workflowExecution.executed).toBe(true);
+
+        const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
+        expect(responseNode).toBeDefined();
+        expect(responseNode.executed).toBe(true);
+
+        const responseResult = JSON.parse(responseNode.result);
+        expect(responseResult).toContain('released');
+      });
     });
   });
 

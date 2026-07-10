@@ -98,7 +98,7 @@ export class AppsUtilService implements IAppsUtilService {
       //                a front-end app "Foo" doesn't collide with a module "Foo" —
       //                apps and modules share the table but live in separate
       //                dashboards.
-      if (!isWorkflow && name) {
+      if (name) {
         const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         if (!isGitEnabled) {
           const conflictingNameVersion = await manager
@@ -139,8 +139,7 @@ export class AppsUtilService implements IAppsUtilService {
             type,
             // Workflows still carry name/icon on apps.*; non-workflows store metadata
             // on app_versions and leave apps.* fields null/placeholder.
-            name: isWorkflow ? name : null,
-            ...(isWorkflow && icon !== undefined && { icon }),
+            name: null,
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user.organizationId,
@@ -154,6 +153,12 @@ export class AppsUtilService implements IAppsUtilService {
           })
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+
+      // Workflows keep their historical slug placeholder (app.id, matching the
+      // pre-migration apps.subscriber.ts auto-fill and Task 1's backfill); every other
+      // type keeps the existing random-UUID placeholder (`slug`, declared above at
+      // line 84) — unchanged from before this task.
+      const versionSlug = isWorkflow ? app.id : slug;
 
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
 
@@ -209,14 +214,13 @@ export class AppsUtilService implements IAppsUtilService {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
-                // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-                // slug defaults to a random UUID placeholder; user can rename later.
-                ...(!isWorkflow && {
-                  appName: name,
-                  slug,
-                  icon: icon ?? null,
-                  isPublic: false,
-                }),
+                // Every type carries slug/appName/icon/isPublic on app_versions.
+                // slug defaults to a random UUID placeholder (or app.id for workflows,
+                // see versionSlug above); user can rename later.
+                appName: name,
+                slug: versionSlug,
+                icon: icon ?? null,
+                isPublic: false,
               })
             ),
           [
@@ -319,14 +323,12 @@ export class AppsUtilService implements IAppsUtilService {
               null,
               manager,
               effectiveBranchId,
-              !isWorkflow
-                ? {
-                    appName: name,
-                    slug,
-                    icon: icon ?? null,
-                    isPublic: false,
-                  }
-                : undefined
+              {
+                appName: name,
+                slug: versionSlug,
+                icon: icon ?? null,
+                isPublic: false,
+              }
             ),
           [
             {
@@ -396,14 +398,13 @@ export class AppsUtilService implements IAppsUtilService {
           );
         }
 
-        // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-        // slug defaults to a random UUID placeholder; user can rename later.
-        if (!isWorkflow) {
-          appVersion.appName = name;
-          appVersion.slug = slug;
-          appVersion.icon = icon ?? null;
-          appVersion.isPublic = false;
-        }
+        // Every type carries slug/appName/icon/isPublic on app_versions.
+        // slug defaults to a random UUID placeholder (or app.id for workflows,
+        // see versionSlug above); user can rename later.
+        appVersion.appName = name;
+        appVersion.slug = versionSlug;
+        appVersion.icon = icon ?? null;
+        appVersion.isPublic = false;
         appVersion.showViewerNavigation = type === 'module' ? false : true;
         appVersion.homePageId = defaultHomePage.id;
         appVersion.globalSettings = {
@@ -429,9 +430,7 @@ export class AppsUtilService implements IAppsUtilService {
 
       // Mirror the app_versions slug placeholder onto the in-memory App so callers
       // (e.g. AppsService.create's response) carry the value just written.
-      if (!isWorkflow) {
-        app.slug = slug;
-      }
+      app.slug = versionSlug;
 
       return app;
     }, manager);
@@ -513,32 +512,25 @@ export class AppsUtilService implements IAppsUtilService {
     const branchId = appUpdateDto.branch_id;
     const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
-    const isWorkflow = app.type === 'workflow';
-
-    // Version-level fields (for non-workflows, written to app_versions)
+    // Version-level fields, written to app_versions for every app type.
     const versionParams: Record<string, any> = {};
-    if (!isWorkflow) {
-      if (slug !== undefined) versionParams.slug = slug;
-      if (name !== undefined) versionParams.appName = name;
-      if (icon !== undefined) versionParams.icon = icon;
-      if (isPublic !== undefined) versionParams.isPublic = isPublic;
-    }
+    if (slug !== undefined) versionParams.slug = slug;
+    if (name !== undefined) versionParams.appName = name;
+    if (icon !== undefined) versionParams.icon = icon;
+    if (isPublic !== undefined) versionParams.isPublic = isPublic;
 
-    // App-level fields (always written to apps table)
-    const appParams: Record<string, any> = {
+    // App-level fields (always written to apps table) -- name/slug/icon/isPublic
+    // never land here for any type; they're version-level fields above.
+    let appParams: Record<string, any> = {
       isMaintenanceOn,
       currentVersionId,
       appBuilderMode,
     };
-    // For workflows, all fields stay on apps table
-    if (isWorkflow) {
-      appParams.name = name;
-      appParams.slug = slug;
-      appParams.isPublic = isPublic;
-      appParams.icon = icon;
-    }
 
-    cleanObject(appParams);
+    // cleanObject returns a new object; reassign, or the undefined-valued keys never get
+    // stripped and Object.keys(appParams) below fires a spurious manager.update(App, ...)
+    // on every call regardless of which fields the caller actually touched.
+    appParams = cleanObject(appParams);
     cleanObject(versionParams);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -595,14 +587,14 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      // Slug conflict check — query app_versions for non-workflows.
+      // Slug conflict check — query app_versions.
       // Slug is the public app handle, resolved by findAppBySlug only on
       // default-branch rows. Mirrors the case-insensitive, instance-wide,
       // type-scoped, cross-app slug-uniqueness triggers so a collision surfaces
       // here as a friendly message instead of bubbling up as a trigger exception
       // from the manager.update further down. Sub-branch rows aren't
       // slug-addressable until they merge to the default branch.
-      if (versionParams.slug && !isWorkflow) {
+      if (versionParams.slug) {
         // Same-branch collision (git-sync sub-branch path only). Without a
         // branchId we skip this — a non-git-sync update has no branch scope
         // and would otherwise scan unaddressable sub-branch rows on other
@@ -642,13 +634,6 @@ export class AppsUtilService implements IAppsUtilService {
         if (defaultBranchSlugCollision) {
           throw new BadRequestException('This slug is already taken.');
         }
-      } else if (isWorkflow && appParams.slug) {
-        const conflictingApp = await manager.findOne(App, {
-          where: { slug: appParams.slug, organizationId, id: Not(appId) },
-        });
-        if (conflictingApp) {
-          await manager.update(App, conflictingApp.id, { slug: uuidv4() });
-        }
       }
 
       // Cross-app app_name uniqueness on rename.
@@ -663,7 +648,7 @@ export class AppsUtilService implements IAppsUtilService {
       //                app.type so apps and modules can share names (separate
       //                dashboards, separate slug namespaces). Stubs are included —
       //                they carry the real app_name (only the slug is a placeholder).
-      if (versionParams.appName && !isWorkflow && !branchId) {
+      if (versionParams.appName && !branchId) {
         const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
         if (!isGitEnabled) {
           const conflictingNameVersion = await manager
@@ -682,11 +667,11 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      // Write version-level fields to app_versions for non-workflows. Route by git-sync
+      // Write version-level fields to app_versions. Route by git-sync
       // state, not just by whether branchId is supplied — the no-branchId case in a
       // git-enabled workspace should still go through the branch-aware path rather than
       // fanning the write out across NULL branch rows.
-      if (Object.keys(versionParams).length > 0 && !isWorkflow) {
+      if (Object.keys(versionParams).length > 0) {
         const details = await this.gitSyncConfigsUtilService.getDetails(organizationId);
         const isGitEnabled = details.isEnabled;
 
@@ -723,6 +708,10 @@ export class AppsUtilService implements IAppsUtilService {
               dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
               message: 'This slug is already taken.',
             },
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_WORKFLOW_SLUG_UNIQUE,
+              message: 'This slug is already taken.',
+            },
           ]);
         } else {
           // Non-git-sync flow: write metadata to the canonical default-branch DRAFT
@@ -752,6 +741,10 @@ export class AppsUtilService implements IAppsUtilService {
                 dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
                 message: 'This slug is already taken.',
               },
+              {
+                dbConstraint: DataBaseConstraints.APP_VERSION_WORKFLOW_SLUG_UNIQUE,
+                message: 'This slug is already taken.',
+              },
             ]);
           }
         }
@@ -765,7 +758,6 @@ export class AppsUtilService implements IAppsUtilService {
       }
     }, manager);
   }
-
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
     const { currentEnvironmentId, definition } = body;
@@ -967,11 +959,8 @@ export class AppsUtilService implements IAppsUtilService {
 
     if (searchKey) {
       viewableAppsQb.andWhere(
-        `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))`,
-        {
-          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-          workflowType: APP_TYPES.WORKFLOW,
-        }
+        `EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey)`,
+        { searchKey: `%${searchKey && searchKey.toLowerCase()}%` }
       );
     }
 
@@ -1487,7 +1476,8 @@ export class AppsUtilService implements IAppsUtilService {
   /**
    * Overlay name/slug/icon/isPublic from the right app_version row onto the App entity
    * in-memory so single-app reads (`getOne`, `getBySlug`, etc.) return the correct
-   * user-facing metadata. Workflows are skipped — they keep metadata on apps.* directly.
+   * user-facing metadata. Every type, including workflows, stores this metadata on
+   * app_versions post-migration.
    *
    * Source resolution (mirrors AppsRepository.resolveMetadataVersion):
    *   1. Detect git-sync state via the default-branch lookup.
@@ -1498,10 +1488,12 @@ export class AppsUtilService implements IAppsUtilService {
    *
    * DRAFT scoping in the git-enabled cases matches the metadata-write path
    * (AppsUtilService.update writes the DRAFT branch row) so published/released
-   * snapshots can't shadow the current metadata.
+   * snapshots can't shadow the current metadata. Workflows always have branch_id
+   * pinned to the org's default branch (Task 3.5), so they resolve through the
+   * same default-branch DRAFT lookup as every other type.
    */
   async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
-    if (!app || app.type === APP_TYPES.WORKFLOW) return;
+    if (!app) return;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);

@@ -27,21 +27,6 @@ export class AppsRepository extends Repository<App> {
     // Callers (e.g. createGitApp, findAppWithIdOrSlug, valid-app.guard) expect this
     // to return null/undefined on miss and throw only their own NotFoundException
     // upstream if appropriate. Don't throw from here.
-    const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
-    const workflow = await this.findOne({
-      ...(versionId ? { relations: ['appVersions'] } : {}),
-      where: {
-        ...versionCondition,
-        type: APP_TYPES.WORKFLOW,
-        slug,
-        organizationId,
-      },
-    });
-
-    if (workflow) {
-      return workflow;
-    }
-
     if (branchId) {
       // Explicit branch context: prefer a version whose slug lives on that branch.
       const version = await this.dataSource.getRepository(AppVersion).findOne({
@@ -89,19 +74,12 @@ export class AppsRepository extends Repository<App> {
   async findAppBySlug(slug: string): Promise<App> {
     // Caller (apps/guards/app-auth.guard.ts) checks `if (!app)` and throws its
     // own NotFoundException — return null on miss instead of throwing here.
-    // Workflows carry their slug on apps.slug; everything else moved to
-    // app_versions.slug after migration 1778000000000. This is a released-app
-    // resolution path (slug is the public URL handle), so the slug match is
-    // exact / case-sensitive — the trigger-level case-insensitive uniqueness
-    // already prevents same-LOWER(slug) duplicates from being created.
-    const workflow = await this.findOne({
-      where: { type: APP_TYPES.WORKFLOW, slug },
-    });
-
-    if (workflow) {
-      return workflow;
-    }
-
+    // Every app type resolves via app_versions.slug (workflows included, as of
+    // 1782300000000). This is a released-app resolution path (slug is the
+    // public URL handle), so the slug match is exact / case-sensitive — the
+    // trigger-level case-insensitive uniqueness already prevents same-LOWER(slug)
+    // duplicates from being created.
+    //
     // Slug uniqueness is enforced instance-wide on default-branch rows by
     // trg_app_versions_default_branch_slug_unique, so a default-branch slug resolves to
     // exactly one app across all workspaces. Dropping the org scope here is what enables
@@ -199,7 +177,7 @@ export class AppsRepository extends Repository<App> {
 
   async findOneById(id: string, branchId?: string): Promise<App> {
     const app = await this.findOne({ where: { id } });
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app) {
       const version = await this.resolveMetadataVersion(this.manager, app, { branchId });
       this.overlayMetadata(app, version);
     }
@@ -216,7 +194,7 @@ export class AppsRepository extends Repository<App> {
       where,
     });
 
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app) {
       const version = await this.resolveMetadataVersion(this.manager, app, { branchId });
       this.overlayMetadata(app, version);
     }
@@ -232,7 +210,7 @@ export class AppsRepository extends Repository<App> {
       },
     });
 
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app) {
       // resolveMetadataVersion no longer takes versionId — routes by git-sync state
       // (default branch DRAFT row, or any-row when git is off).
       const version = await this.resolveMetadataVersion(this.manager, app);
@@ -355,7 +333,7 @@ export class AppsRepository extends Repository<App> {
       where: { id: appId },
       relations: ['appVersions'],
     });
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app) {
       const version = await this.resolveMetadataVersion(mgr, app);
       this.overlayMetadata(app, version);
     }
@@ -370,7 +348,6 @@ export class AppsRepository extends Repository<App> {
         relations: ['appVersions'],
       });
       if (app) {
-        if (app.type === APP_TYPES.WORKFLOW) return app;
         const version = await this.resolveMetadataVersion(manager, app);
         this.overlayMetadata(app, version);
         return app;
@@ -399,8 +376,8 @@ export class AppsRepository extends Repository<App> {
       return app;
     }
 
-    // Fallback to apps.slug (workflows — metadata lives on apps.*)
-    return manager.findOne(App, { where: { slug: idOrSlug }, relations: ['appVersions'] });
+    // No app_versions row matched this slug for any type.
+    return null;
   }
 
   // ----- helpers ---------------------------------------------------------
