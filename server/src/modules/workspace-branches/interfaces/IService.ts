@@ -5,6 +5,9 @@ import { CreateBranchDto, WorkspacePushDto } from '../dto';
 export interface WorkspaceBranchListResponse {
   branches: WorkspaceBranch[];
   activeBranchId: string | null;
+  // Whether the workspace supports multiple branches. When false (single-branch mode) only the
+  // default branch is returned and the UI disables branch create / switch.
+  isMultiBranchingEnabled?: boolean;
 }
 
 export interface CheckUpdatesResponse {

@@ -1,7 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { createUser, initTestApp, logout, login, closeTestApp, ensureAppEnvironments } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  logout,
+  login,
+  closeTestApp,
+  ensureAppEnvironments,
+  setTestLicenseTerms,
+  restoreLicensePlan,
+} from 'test-helper';
 import * as request from 'supertest';
 
 // Real configuration pointing at a local Gitea / GitHub Enterprise instance.
@@ -490,7 +499,8 @@ describe('GitSyncController', () => {
         expect(featBranchId).toBeDefined();
 
         step(6, 'list workspace branches → main + feat-e2e');
-        // 6. List branches → main + feat-e2e; active is still main.
+        // 6. List branches → main + feat-e2e. Creating a branch switches the creator onto it
+        //    (persisted as OrganizationUser.lastBranchId), so the active branch is now feat-e2e.
         const twoBranchesResp = await request
           .agent(app.getHttpServer())
           .get('/api/workspace-branches')
@@ -499,7 +509,7 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .expect(200);
         expect(twoBranchesResp.body.branches).toHaveLength(2);
-        expect(twoBranchesResp.body.activeBranchId).toBe(mainBranchId);
+        expect(twoBranchesResp.body.activeBranchId).toBe(featBranchId);
         const featInList = twoBranchesResp.body.branches.find((b: any) => b.id === featBranchId);
         expect(featInList).toMatchObject({ name: 'feat-e2e', isDefault: false, sourceBranchId: mainBranchId });
 
@@ -3687,7 +3697,611 @@ describe('GitSyncController', () => {
         );
         expect(mainVersionsSyncState.length).toBeGreaterThan(0);
         expect(mainVersionsSyncState.every((r: any) => r.is_synced === true)).toBe(true);
+
+        // ────────────────────────────────────────────────────────────────────
+        // Active-branch resolution: last created/switched branch loads next time;
+        // an invalid/stale active branch or branching-off falls back to the default.
+        // ────────────────────────────────────────────────────────────────────
+        const getActiveBranch = async () =>
+          (
+            await request
+              .agent(app.getHttpServer())
+              .get('/api/workspace-branches')
+              .set('Cookie', tokenCookie)
+              .set('tj-workspace-id', orgId)
+              .expect(200)
+          ).body;
+
+        step(78, 'active-branch: switching persists → the switched branch loads on next list');
+        // Switch to the default branch, then to a feature branch; each list reflects the last switch.
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/workspace-branches/${mainBranchId}/activate`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({})
+          .expect(200);
+        expect((await getActiveBranch()).activeBranchId).toBe(mainBranchId);
+
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/workspace-branches/${featBranchId}/activate`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({})
+          .expect(200);
+        expect((await getActiveBranch()).activeBranchId).toBe(featBranchId);
+
+        step(79, 'active-branch: no valid active branch (removed / cleared) → default loads');
+        // A dangling last_branch_id can't exist — FK_organization_users_last_branch_id references
+        // organization_git_sync_branches with ON DELETE SET NULL, so deleting the active branch
+        // leaves last_branch_id NULL (not a stale id). Simulate that post-delete state directly
+        // (NULL is FK-safe and deterministic — the real DELETE endpoint clears it via a background
+        // job) and assert the list falls back to the default branch.
+        await dataSource.query(`UPDATE organization_users SET last_branch_id = NULL WHERE organization_id = $1`, [orgId]);
+        expect((await getActiveBranch()).activeBranchId).toBe(mainBranchId);
+
+        step(80, 'active-branch: branching OFF → only the default branch is exposed');
+        const gitConfigForBranching = await request
+          .agent(app.getHttpServer())
+          .get(`/api/git-sync/${orgId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .expect(200);
+        const orgGitIdForBranching: string = gitConfigForBranching.body.organization_git.id;
+
+        // Re-activate a feature branch first so the fallback below is attributable to branching-off,
+        // not to the stale id set in step 79.
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/workspace-branches/${featBranchId}/activate`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({})
+          .expect(200);
+
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/git-sync/${orgGitIdForBranching}/is-branching-enabled`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({ isBranchingEnabled: false })
+          .expect(200);
+
+        const singleBranchList = await getActiveBranch();
+        expect(singleBranchList.isMultiBranchingEnabled).toBe(false);
+        expect(singleBranchList.branches.every((b: any) => b.isDefault)).toBe(true);
+        expect(singleBranchList.activeBranchId).toBe(mainBranchId);
+
+        // Restore multi-branch so the shared org is left in its default (branching-on) state.
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/git-sync/${orgGitIdForBranching}/is-branching-enabled`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+
+        // ────────────────────────────────────────────────────────────────────
+        // Single-branch (branching disabled) unsynced-resource flow:
+        //   - app / module / data source can be created directly on the DEFAULT branch
+        //     (multi-branch rejects create-on-default; single-branch allows it),
+        //   - the unsynced app/module/data-source sit on the default branch and are
+        //     push-eligible (the DS is linked to the app via a query, so it would ride along
+        //     in the app's push commit).
+        // The actual git transport (direct push to the default branch) can't be exercised here:
+        // the shared test Gitea blocks direct pushes to the default branch (pre-receive hook), so
+        // every other step lands on it via feature-branch + admin merge. We validate at the
+        // app/authorization layer instead.
+        // ────────────────────────────────────────────────────────────────────
+        const sbRestapiOptions = [
+          { key: 'url', value: '' },
+          { key: 'auth_type', value: 'none' },
+          { key: 'headers', value: [['', '']] },
+          { key: 'ssl_certificate', value: 'none', encrypted: false },
+        ];
+
+        step(81, 'single-branch: disable branching, create app + module + data source on the DEFAULT branch');
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/git-sync/${orgGitIdForBranching}/is-branching-enabled`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({ isBranchingEnabled: false })
+          .expect(200);
+
+        // App on the default branch — rejected under multi-branch (step 9a), allowed in single-branch.
+        const sbAppResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .send({ icon: 'home', name: 'single-branch-app', type: 'front-end', branchId: mainBranchId })
+          .expect(201);
+        const sbAppId: string = sbAppResp.body.id;
+
+        const sbModuleResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/modules')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .send({ icon: 'folderupload', name: 'single-branch-module', type: 'module', branchId: mainBranchId })
+          .expect(201);
+        const sbModuleId: string = sbModuleResp.body.id;
+
+        const sbDsResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${mainBranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({ name: 'single-branch-ds', kind: 'restapi', options: sbRestapiOptions, scope: 'global' })
+          .expect(201);
+        const sbDsId: string = sbDsResp.body.id;
+
+        // Resolve the app's editing version, then link the data source via a query so the push
+        // carries the DS (serializeLinkedDataSourcesForApp finds DSes through queries on the version).
+        const sbAppDetail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${sbAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+        const sbAppVersionId: string = (sbAppDetail.body?.editing_version || sbAppDetail.body?.editingVersion).id;
+        expect(sbAppVersionId).toBeTruthy();
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-queries/data-sources/${sbDsId}/versions/${sbAppVersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .send({ kind: 'restapi', name: 'sb_q1', options: { method: 'get', url: '', headers: [], url_params: [], body: [] } })
+          .expect(201);
+
+        const sbModuleDetail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${sbModuleId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+        const sbModuleVersionId: string = (sbModuleDetail.body?.editing_version || sbModuleDetail.body?.editingVersion).id;
+        expect(sbModuleVersionId).toBeTruthy();
+
+        // NOTE on git transport: the shared test Gitea blocks DIRECT pushes to the default branch
+        // ("Direct pushes to 'main' are blocked by the simulator … land changes via the merge UI").
+        // The whole suite therefore lands changes on the default branch via feature-branch + admin
+        // merge. Single-branch pushes go STRAIGHT to the default branch, so the actual git transport
+        // (and thus git-file validation) can't be exercised against this repo. We assert the
+        // single-branch behaviour at the app/authorization layer instead: create-on-default is
+        // allowed (step 81), and the unsynced app/module/data-source sit on the default branch,
+        // unsynced, and are push-eligible.
+        step(82, 'single-branch: unsynced app on the default branch is push-eligible (validate-push)');
+        const sbValidatePush = await request
+          .agent(app.getHttpServer())
+          .get(`/api/app-git/validate-push/${sbAppId}`)
+          .query({ resourceType: 'app' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .expect(200);
+        expect(sbValidatePush.body).toEqual({ valid: true });
+
+        step(83, 'single-branch: app/module/data-source live on the DEFAULT branch, unsynced, with the DS linked');
+        // App + module versions: default branch, DRAFT, unsynced (never pushed).
+        const sbVersionRows = await dataSource.query(
+          `SELECT id, branch_id, status, is_synced FROM app_versions WHERE id = ANY($1)`,
+          [[sbAppVersionId, sbModuleVersionId]]
+        );
+        expect(sbVersionRows).toHaveLength(2);
+        expect(sbVersionRows.every((r: any) => r.branch_id === mainBranchId)).toBe(true);
+        expect(sbVersionRows.every((r: any) => r.status === 'DRAFT')).toBe(true);
+        expect(sbVersionRows.every((r: any) => r.is_synced === false)).toBe(true);
+
+        // Data source: an unsynced DSV on the default branch, linked to the app via a query
+        // (this is what serializeLinkedDataSourcesForApp would carry into the app's push commit).
+        const [sbDsvRow] = await dataSource.query(
+          `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+          [sbDsId, mainBranchId]
+        );
+        expect(sbDsvRow?.is_synced).toBe(false);
+        const [sbQueryLink] = await dataSource.query(
+          `SELECT 1 AS linked FROM data_queries WHERE data_source_id = $1 AND app_version_id = $2`,
+          [sbDsId, sbAppVersionId]
+        );
+        expect(sbQueryLink?.linked).toBe(1);
+
+        // Restore multi-branch so the shared org is left in its default (branching-on) state.
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/git-sync/${orgGitIdForBranching}/is-branching-enabled`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({ isBranchingEnabled: true })
+          .expect(200);
       }, 540000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Edit restrictions across git off / on and branching states.
+    //
+    // Exercises the git-sync edit guards end-to-end on a dedicated org (isolated from
+    // the shared lifecycle org above so its published/synced state can't bleed in):
+    //   1. Git OFF          → apps/modules/data-sources fully editable; a *saved*
+    //                          (published) version can no longer be edited.
+    //   2. Git ON (multi)   → resources created git-off are UNSYNCED, so still editable
+    //                          on the default branch.
+    //   3. After sync (push feature → merge main → pull) the default-branch draft is
+    //                          SYNCED → editing on the default branch is blocked.
+    //   4. Branching OFF    → feature-branch edits blocked; default-branch edits allowed.
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('git/non git edit restrictions', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      const MERGE_URL = `${GIT_BASE_URL}/admin/merge`;
+
+      let editOrgId: string;
+      let editCookie: string[];
+      let dataSource: DataSource;
+
+      beforeAll(async () => {
+        // Fresh org so this suite's git config / publish / sync state is fully isolated
+        // from the lifecycle test's shared org.
+        const { organization } = await createUser(app, {
+          email: 'git-edit-restrictions@tooljet.io',
+          firstName: 'git',
+          lastName: 'restrictions',
+        });
+        editOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-edit-restrictions@tooljet.io');
+        editCookie = tokenCookie;
+        await ensureAppEnvironments(app, editOrgId);
+        dataSource = app.get<DataSource>(getDataSourceToken('default'));
+        // createUser doesn't run the production org-onboarding that seeds the default
+        // WorkspaceBranch (nor the backfill migration), so seed it here — otherwise the first
+        // getDetails() call self-heals it with a noisy "No default branch found" error log.
+        await dataSource.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true)
+           ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [editOrgId]
+        );
+      });
+
+      it('enforces edit rules across git-off, git-on (unsynced/synced) and branching-off states', async () => {
+        const { randomUUID } = await import('crypto');
+        const step = (n: number, label: string) => {
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        };
+
+        // ── local helpers ──────────────────────────────────────────────────────
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', editCookie).set('tj-workspace-id', editOrgId);
+
+        const makeButtonDiff = (parent: string | null = null) => {
+          const id = randomUUID();
+          return {
+            id,
+            diff: {
+              [id]: {
+                name: `button_${id.slice(0, 6)}`,
+                layouts: {
+                  desktop: { top: 80, left: 15, width: 4, height: 40 },
+                  mobile: { top: 80, left: 15, width: 4, height: 40 },
+                },
+                type: 'Button',
+                general: {},
+                generalStyles: {},
+                others: {
+                  showOnDesktop: { value: '{{true}}' },
+                  showOnMobile: { value: '{{false}}' },
+                },
+                properties: {
+                  text: { value: 'Button' },
+                  visibility: { value: '{{true}}' },
+                  loadingState: { value: '{{false}}' },
+                },
+                styles: { backgroundColor: { value: 'var(--cc-primary-brand)' } },
+                parent,
+              },
+            },
+          };
+        };
+
+        // GET app detail → { versionId, envId, pageId } for the given branch.
+        const getEditingContext = async (appId: string, branchId?: string) => {
+          const detail = await auth(agent().get(`/api/apps/${appId}`))
+            .query(branchId ? { branch_id: branchId } : {})
+            .expect(200);
+          const ev = detail.body?.editing_version || detail.body?.editingVersion || detail.body?.app?.editing_version;
+          expect(ev).toBeDefined();
+          const pageId =
+            ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || detail.body?.pages?.[0]?.id;
+          const envId = ev.current_environment_id || ev.currentEnvironmentId;
+          return { versionId: ev.id as string, envId: envId as string, pageId: pageId as string, ev };
+        };
+
+        // Add a component to a version (returns the supertest response for status assertions).
+        const addComponent = (appId: string, versionId: string, pageId: string, branchId?: string, parent: string | null = null) => {
+          const { diff } = makeButtonDiff(parent);
+          return auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+            .query(branchId ? { branch_id: branchId } : {})
+            .send({ is_user_switched_version: false, pageId, diff });
+        };
+
+        // Add a restapi query to a version against the given (global) data source.
+        const restApiQueryOptions = {
+          method: 'get',
+          url: '',
+          url_params: [],
+          headers: [],
+          body: [],
+          json_body: null,
+          body_toggle: false,
+        };
+        const addQuery = (dsId: string, versionId: string, name: string, branchId?: string) =>
+          auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+            .query(branchId ? { branch_id: branchId } : {})
+            .send({ kind: 'restapi', name, options: restApiQueryOptions });
+
+        const restapiDsOptions = [
+          { key: 'url', value: '' },
+          { key: 'auth_type', value: 'none' },
+          { key: 'grant_type', value: 'authorization_code' },
+          { key: 'add_token_to', value: 'header' },
+          { key: 'header_prefix', value: 'Bearer ' },
+          { key: 'headers', value: [['', '']] },
+          { key: 'ssl_certificate', value: 'none', encrypted: false },
+        ];
+
+        // ══════════════════════════════════════════════════════════════════════
+        // PHASE 1 — GIT OFF: everything editable; a saved version becomes read-only.
+        // ══════════════════════════════════════════════════════════════════════
+        step(1, 'git-off: create app + module + data source');
+        const appResp = await auth(agent().post('/api/apps'))
+          .send({ icon: 'home', name: 'edit-rules-app', type: 'front-end' })
+          .expect(201);
+        const appId: string = appResp.body.id;
+
+        const moduleResp = await auth(agent().post('/api/modules'))
+          .send({ icon: 'folderupload', name: 'edit-rules-module', type: 'module' })
+          .expect(201);
+        const moduleId: string = moduleResp.body.id;
+
+        const dsResp = await auth(agent().post('/api/data-sources'))
+          .send({ name: 'edit-rules-ds', kind: 'restapi', options: restapiDsOptions, scope: 'global' })
+          .expect(201);
+        const dsId: string = dsResp.body.id;
+
+        step(2, 'git-off: add component + query to the app and the module (all allowed)');
+        const appCtx = await getEditingContext(appId);
+        const moduleCtx = await getEditingContext(moduleId);
+        // module home page carries an auto-created ModuleContainer; parent the button to it.
+        const moduleContainerId: string | undefined = Object.keys(moduleCtx.ev.pages?.[0]?.components || {}).find(
+          (id) => (moduleCtx.ev.pages?.[0]?.components || {})[id]?.component?.component === 'ModuleContainer'
+        );
+
+        await addComponent(appId, appCtx.versionId, appCtx.pageId).expect(201);
+        await addQuery(dsId, appCtx.versionId, 'app_q1').expect(201);
+        await addComponent(moduleId, moduleCtx.versionId, moduleCtx.pageId, undefined, moduleContainerId ?? null).expect(201);
+        await addQuery(dsId, moduleCtx.versionId, 'mod_q1').expect(201);
+
+        step(3, 'git-off: add another data source, edit it, rename app + module, add more component/query');
+        const ds2Resp = await auth(agent().post('/api/data-sources'))
+          .send({ name: 'edit-rules-ds-2', kind: 'restapi', options: restapiDsOptions, scope: 'global' })
+          .expect(201);
+        const ds2Id: string = ds2Resp.body.id;
+
+        // Edit a data source (dev env). Git off → GitSyncDataSourceEditGuard is a no-op.
+        const devEnv = (
+          await auth(agent().get('/api/app-environments')).expect(200)
+        ).body.environments.sort((a: any, b: any) => a.priority - b.priority)[0];
+        await auth(agent().put(`/api/data-sources/${dsId}?environment_id=${devEnv.id}`))
+          .send({ name: 'edit-rules-ds', options: restapiDsOptions })
+          .expect(200);
+
+        await auth(agent().put(`/api/apps/${appId}`))
+          .send({ app: { name: 'edit-rules-app-renamed', editingVersionId: appCtx.versionId } })
+          .expect(200);
+        await auth(agent().put(`/api/apps/${moduleId}`))
+          .send({ app: { name: 'edit-rules-module-renamed', editingVersionId: moduleCtx.versionId } })
+          .expect(200);
+
+        await addComponent(appId, appCtx.versionId, appCtx.pageId).expect(201);
+        await addQuery(dsId, appCtx.versionId, 'app_q2').expect(201);
+
+        step(4, 'git-off: save (publish) the app + module version → no draft remains');
+        await auth(agent().put(`/api/v2/apps/${appId}/versions/${appCtx.versionId}`))
+          .send({ is_user_switched_version: false, name: 'v1', description: 'saved', status: 'PUBLISHED' })
+          .expect(200);
+        await auth(agent().put(`/api/v2/apps/${moduleId}/versions/${moduleCtx.versionId}`))
+          .send({ is_user_switched_version: false, name: 'v1', description: 'saved', status: 'PUBLISHED' })
+          .expect(200);
+
+        // Git off + unsynced → publish does not seed a continuity draft: no DRAFT rows remain.
+        const appDraftCount = await dataSource.query(
+          `SELECT COUNT(*)::int AS c FROM app_versions WHERE app_id = $1 AND status = 'DRAFT'`,
+          [appId]
+        );
+        expect(appDraftCount[0].c).toBe(0);
+
+        step(5, 'git-off: editing the SAVED (published) version is rejected');
+        await addComponent(appId, appCtx.versionId, appCtx.pageId).expect(400);
+        await addQuery(dsId, appCtx.versionId, 'app_q_blocked').expect(400);
+        await addComponent(moduleId, moduleCtx.versionId, moduleCtx.pageId, undefined, moduleContainerId ?? null).expect(400);
+
+        // ══════════════════════════════════════════════════════════════════════
+        // PHASE 2 — CONFIGURE GIT + BRANCHING ON: unsynced resources stay editable.
+        // ══════════════════════════════════════════════════════════════════════
+        step(6, 'configure git sync (reset repo + save provider configs), enable branching');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+
+        const gitConfig = await auth(agent().get(`/api/git-sync/${editOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+
+        const branchesResp = await auth(agent().get('/api/workspace-branches')).expect(200);
+        const mainBranchId: string = branchesResp.body.activeBranchId;
+        expect(mainBranchId).toBeDefined();
+
+        // Pull main so the workspace is level with the freshly-reset repo.
+        await auth(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: mainBranchId })
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        step(7, 'git-on (multi-branch): unsynced app is still editable on the default branch');
+        // Publish left no draft; create a fresh DRAFT to edit. The app was authored git-off so it
+        // is unsynced (is_synced=false) → the guard exempts it from the "synced default branch" rule.
+        const newDraftResp = await auth(agent().post(`/api/apps/${appId}/versions`))
+          .query({ branch_id: mainBranchId })
+          .send({
+            versionName: 'draft-2',
+            versionFromId: appCtx.versionId,
+            environmentId: appCtx.envId,
+            versionType: 'version',
+          })
+          .expect(201);
+        const unsyncedDraftId: string = newDraftResp.body.id;
+        // The default branch now holds the published v1 + this new draft; the app-detail editing
+        // resolver may surface a different row, so target the draft we created directly and use ITS
+        // own home page (a page from another version wouldn't belong to this version).
+        const [draftPageRow] = await dataSource.query(
+          `SELECT COALESCE(av.home_page_id, (SELECT id FROM pages WHERE app_version_id = av.id LIMIT 1)) AS page_id,
+                  av.is_synced AS is_synced
+             FROM app_versions av WHERE av.id = $1`,
+          [unsyncedDraftId]
+        );
+        const unsyncedDraftPageId: string = draftPageRow.page_id;
+        expect(unsyncedDraftPageId).toBeTruthy();
+
+        // is_synced must be false on this default-branch draft (authored git-off).
+        expect(draftPageRow.is_synced).toBe(false);
+
+        // Editing the unsynced default-branch draft is allowed.
+        await addComponent(appId, unsyncedDraftId, unsyncedDraftPageId, mainBranchId).expect(201);
+        await addQuery(dsId, unsyncedDraftId, 'unsynced_q1', mainBranchId).expect(201);
+
+        // ══════════════════════════════════════════════════════════════════════
+        // PHASE 3 — SYNC the app to main (push feature → merge → pull) → default draft synced.
+        // ══════════════════════════════════════════════════════════════════════
+        step(8, 'sync app: create feature branch, push default-branch draft onto it');
+        const featResp = await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-edit-rules', sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId: string = featResp.body.id;
+
+        await auth(agent().post(`/api/app-git/gitpush/${appId}/${unsyncedDraftId}`))
+          .query({ branch_id: mainBranchId })
+          .send({
+            gitAppName: 'edit-rules-app-renamed',
+            versionId: unsyncedDraftId,
+            lastCommitMessage: 'sync app',
+            gitVersionName: 'feat-edit-rules',
+            sourceBranch: 'feat-edit-rules',
+            targetBranch: 'feat-edit-rules',
+          })
+          .expect(201);
+
+        step(9, 'sync app: pull feature, capture its branch version, merge feature → main, pull main');
+        await auth(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: featBranchId })
+          .send({ branchId: featBranchId })
+          .expect(201);
+        // Capture the feature-branch version id now (used later for the branching-off block check).
+        const featCtx = await getEditingContext(appId, featBranchId);
+        const featVersionId = featCtx.versionId;
+
+        const appMerge = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-edit-rules',
+            target: 'main',
+            message: 'Land feat-edit-rules',
+          }),
+        });
+        expect((await appMerge.json().catch(() => ({}))).ok).toBe(true);
+
+        await auth(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: mainBranchId })
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // The default-branch draft is now synced. Resolve it deterministically (the app-detail
+        // editing resolver can surface the published v1 instead of the draft) and reuse for the
+        // blocked/allowed edit checks below.
+        const [mainDraftRow] = await dataSource.query(
+          `SELECT av.id AS id,
+                  COALESCE(av.home_page_id, (SELECT id FROM pages WHERE app_version_id = av.id LIMIT 1)) AS page_id,
+                  av.is_synced AS is_synced
+             FROM app_versions av
+            WHERE av.app_id = $1 AND av.branch_id = $2 AND av.status = 'DRAFT' AND av.is_stub = false
+            ORDER BY av.updated_at DESC
+            LIMIT 1`,
+          [appId, mainBranchId]
+        );
+        expect(mainDraftRow?.id).toBeTruthy();
+        expect(mainDraftRow.is_synced).toBe(true);
+        const mainDraftId: string = mainDraftRow.id;
+        const mainDraftPageId: string = mainDraftRow.page_id;
+
+        // ══════════════════════════════════════════════════════════════════════
+        // PHASE 4 — SYNCED (multi-branch): default-branch edits blocked.
+        // ══════════════════════════════════════════════════════════════════════
+        step(10, 'git-on (multi-branch): editing the SYNCED default-branch draft is blocked');
+        await addComponent(appId, mainDraftId, mainDraftPageId, mainBranchId).expect(403);
+        await addQuery(dsId, mainDraftId, 'blocked_default_q', mainBranchId).expect(403);
+
+        step(11, 'git-on (multi-branch): editing on the feature branch is allowed');
+        await addComponent(appId, featVersionId, featCtx.pageId, featBranchId).expect(201);
+
+        // ══════════════════════════════════════════════════════════════════════
+        // PHASE 5 — BRANCHING OFF (single-branch): feature blocked, default allowed.
+        // ══════════════════════════════════════════════════════════════════════
+        step(12, 'branching OFF: feature-branch edits blocked, default-branch edits allowed');
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: false })
+          .expect(200);
+
+        // Feature-branch operations are rejected when branching is disabled.
+        await addComponent(appId, featVersionId, featCtx.pageId, featBranchId).expect(403);
+
+        // The default branch is the single working branch → edits allowed again (even though synced).
+        await addComponent(appId, mainDraftId, mainDraftPageId, mainBranchId).expect(201);
+        await addQuery(dsId, mainDraftId, 'single_branch_q', mainBranchId).expect(201);
+
+        // ══════════════════════════════════════════════════════════════════════
+        // PHASE 6 — LICENSE LOCK: git configured + license expired → every edit blocked.
+        // ══════════════════════════════════════════════════════════════════════
+        step(13, 'git configured + license expired: all edits blocked until git is turned off');
+        try {
+          // Simulate an expired plan at runtime (no restart): git is still configured, but the
+          // license no longer covers it, so the whole workspace is edit-locked.
+          setTestLicenseTerms(app, { features: { gitSync: true, gitSyncMultiBranch: true } } as any, { expired: true });
+
+          // Target the (DRAFT) default-branch version so the status guard passes and the
+          // license-lock (403) is what rejects the edit — not the saved-version guard (400).
+          await addComponent(appId, mainDraftId, mainDraftPageId, mainBranchId).expect(403);
+          await addQuery(dsId, mainDraftId, 'license_locked_q', mainBranchId).expect(403);
+        } finally {
+          // Always restore the enterprise plan so later suites/teardown aren't affected.
+          restoreLicensePlan(app, 'enterprise');
+        }
+      }, 600000);
     });
   });
 });

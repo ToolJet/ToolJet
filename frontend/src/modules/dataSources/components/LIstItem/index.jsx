@@ -11,6 +11,8 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { decodeEntities, getWorkspaceId } from '@/_helpers/utils';
 import { appendBranchName } from '@/_helpers/active-branch';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 
 const DUMMY_DS_LABEL = 'Undefined data source';
@@ -43,6 +45,11 @@ export const ListItem = ({
   const [rowHovered, setRowHovered] = useState(false);
   const [pushModalOpen, setPushModalOpen] = useState(false);
   const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isGitSyncConfigured = useWorkspaceBranchesStore((state) => state.isGitSyncConfigured);
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
+  // Git configured but the license is expired/invalid → data sources are read-only: can't open or
+  // delete them (the add button is disabled in GlobalDataSources).
+  const isGitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(featureAccess);
   const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
   const isUnsynced =
@@ -103,8 +110,12 @@ export const ListItem = ({
         >
           <div
             role="button"
-            onClick={() => handleActions(selectDataSource)}
+            onClick={() => {
+              if (isGitLicenseLocked) return;
+              handleActions(selectDataSource);
+            }}
             className="col d-flex align-items-center overflow-hidden"
+            style={isGitLicenseLocked ? { cursor: 'not-allowed', opacity: 0.6 } : undefined}
             data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
           >
             <div className="ds-svg-container">{icon}</div>
@@ -181,9 +192,12 @@ export const ListItem = ({
               <div className="col-auto">
                 <button
                   title={'Delete'}
-                  disabled={disableDelButton}
+                  disabled={disableDelButton || isGitLicenseLocked}
                   className="ds-delete-btn"
-                  onClick={() => onDelete(dataSource)}
+                  onClick={() => {
+                    if (isGitLicenseLocked) return;
+                    onDelete(dataSource);
+                  }}
                   data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
                 >
                   <div>
@@ -191,8 +205,8 @@ export const ListItem = ({
                       width="14"
                       height="14"
                       name="delete"
-                      fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
-                      className={disableDelButton ? 'disabled-button' : ''}
+                      fill={disableDelButton || isGitLicenseLocked ? '#E6E8EB' : '#E54D2E'}
+                      className={disableDelButton || isGitLicenseLocked ? 'disabled-button' : ''}
                     />
                   </div>
                 </button>

@@ -23,5 +23,10 @@ export interface IGitSyncConfigsService {
     organizationGitId: string,
     updateOrgGitDto: OrganizationGitStatusUpdateDto
   ): Promise<void>;
+  updateBranchingEnabled(
+    userOrganizationId: string,
+    organizationGitId: string,
+    isBranchingEnabled: boolean
+  ): Promise<void>;
   deleteConfig(organizationId: string, organizationGitId: string, gitType: string): Promise<void>;
 }

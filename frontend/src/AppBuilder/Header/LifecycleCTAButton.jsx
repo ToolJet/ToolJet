@@ -63,6 +63,8 @@ const LifecycleCTAButton = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const wsActions = useWorkspaceBranchesStore((state) => state.actions);
   // eslint-disable-next-line react-hooks/rules-of-hooks
+  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const orgGit = useStore((state) => state.orgGit);
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
   const isOnDefaultBranch = workspaceActiveBranch
@@ -105,8 +107,8 @@ const LifecycleCTAButton = () => {
       };
     }
 
-    if (isOnDefaultBranch) {
-      // Default branch - show "Pull commit" button
+    if (isOnDefaultBranch && isMultiBranchingEnabled) {
+      // Default branch (multi-branch) - show "Pull commit" button
       return {
         label: 'Pull commit',
         icon: 'commit',
@@ -115,7 +117,7 @@ const LifecycleCTAButton = () => {
         unsynced: false,
       };
     } else {
-      // Feature branch - show "Commit" button
+      // Feature branch, or single-branch mode on the default branch - show "Commit" button
       return {
         label: 'Commit',
         icon: 'commit',
@@ -169,7 +171,13 @@ const LifecycleCTAButton = () => {
           versionId={selectedVersion?.id}
           appName={appName}
           resourceType={appType === 'module' ? 'module' : 'app'}
-          onSuccess={() => setShowPushModal(false)}
+          onSuccess={() => {
+            setShowPushModal(false);
+            setTimeout(() => {
+              const pathParts = window.location.pathname.split('/');
+              window.location.href = `/${pathParts[1]}/apps/${appId}`;
+            }, 1500);
+          }}
         />
       )}
       {pushValidationError && (

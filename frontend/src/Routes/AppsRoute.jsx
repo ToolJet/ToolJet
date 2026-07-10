@@ -55,11 +55,19 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     // Hard reload / fresh viewer: no store yet — fetch and resolve, then sync both cache + store.
     try {
       const data = await workspaceBranchesService.list();
-      const branch = (data?.branches || []).find((b) => b.name === branchName);
-      setActiveBranch(branch || null);
+      const branches = data?.branches || [];
+      // Fall back to the default branch when the URL branch is unknown — e.g. a feature branch
+      // that no longer exists client-side in single-branch mode. setActiveBranch rewrites the URL
+      // to the resolved branch, so `?branch=<feature>` is redirected to the default.
+      const branch =
+        branches.find((b) => b.name === branchName) ||
+        branches.find((b) => b.is_default || b.isDefault) ||
+        branches[0] ||
+        null;
+      setActiveBranch(branch);
       if (branch) {
         useWorkspaceBranchesStore.setState({
-          branches: data.branches,
+          branches,
           activeBranchId: branch.id,
           currentBranch: branch,
         });

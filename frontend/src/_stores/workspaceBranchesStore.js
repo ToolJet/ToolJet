@@ -19,7 +19,66 @@ const initialState = {
   isDeletingBranch: false,
   deleteBranchError: null,
   hasUnsyncedDatasources: false,
+  // When false (single-branch mode) only the default branch is available; the UI hides feature
+  // branches and disables branch create / switch. Defaults to true (multi-branch).
+  isMultiBranchingEnabled: true,
+  // Git-sync license/configuration state, sourced from the git-sync status API (not the license
+  // store). isGitSyncConfigured = a provider is connected in the workspace (license-independent).
+  // isGitSyncLicensed = the git-sync license is active. When configured && !licensed the editor is
+  // frozen and the config page prompts the user to turn git off. Default licensed=true so we never
+  // flash a frozen state before the status has loaded.
+  isGitSyncConfigured: false,
+  isGitSyncLicensed: true,
 };
+
+// Reads the multi-branching flag from the list() response (snake_case via the API interceptor,
+// camelCase as a fallback). Defaults to true so non-git / older responses keep multi-branch UI.
+function readMultiBranchingEnabled(data) {
+  return data?.is_multi_branching_enabled ?? data?.isMultiBranchingEnabled ?? true;
+}
+
+// Git-sync configured/licensed flags from the git-sync status API. Licensed defaults to true when
+// there's no status yet so the editor never flashes a frozen state before the status loads.
+function readGitSyncLicenseState(gitStatus) {
+  return {
+    isGitSyncConfigured: !!(gitStatus?.is_git_sync_configured ?? gitStatus?.isGitSyncConfigured),
+    isGitSyncLicensed: gitStatus ? !!(gitStatus?.git_sync_licensed ?? gitStatus?.gitSyncLicensed) : true,
+  };
+}
+
+// The git-sync STATUS endpoint can be unavailable (e.g. it 400s on an expired license on an
+// un-updated server). The git CONFIG endpoint (getGitConfig) is never license-gated, so we use it
+// to (a) reliably detect "a provider is connected" and (b) synthesize an orgGitConfig for the UI
+// when the status payload is missing — so the dashboard still renders the git-sync UI (frozen).
+function resolveGitConfigState(gitStatus, gitConfigResp) {
+  const og = gitConfigResp?.organization_git || null;
+  const providerConnected = !!(og?.git_https?.is_enabled || og?.git_ssh?.is_enabled || og?.git_lab?.is_enabled);
+
+  let effectiveGitConfig = gitStatus || null;
+  // Only synthesize when a provider is actually CONNECTED. A config row can exist with the provider
+  // turned OFF (is_enabled=false) — in that case git sync is disabled and we must NOT render the
+  // git UI, so leave orgGitConfig null.
+  if (!effectiveGitConfig && og && providerConnected) {
+    effectiveGitConfig = {
+      id: og.id,
+      git_type: og.git_type,
+      repo_url: og.git_https?.https_url || og.git_ssh?.git_url || og.git_lab?.gitlab_url || '',
+      default_git_branch: og.git_https?.github_branch || og.git_ssh?.git_branch || og.git_lab?.gitlab_branch || 'main',
+      is_branching_enabled: og.is_branching_enabled,
+      is_git_sync_configured: providerConnected,
+    };
+  }
+
+  const isGitSyncConfigured =
+    !!(
+      gitStatus?.is_git_sync_configured ??
+      gitStatus?.isGitSyncConfigured ??
+      gitStatus?.isEnabled ??
+      gitStatus?.is_enabled
+    ) || providerConnected;
+
+  return { effectiveGitConfig, isGitSyncConfigured };
+}
 
 // Helper to resolve current branch from branches list + active ID
 function resolveCurrentBranch(branches, activeBranchId) {
@@ -58,13 +117,18 @@ export const useWorkspaceBranchesStore = create(
           if (get().isInitialized) return;
           set({ isLoading: true });
           try {
-            const [branchData, gitStatus] = await Promise.all([
+            const [branchData, gitStatus, gitConfigResp] = await Promise.all([
               workspaceBranchesService.list().catch(() => null),
               gitSyncService.getGitStatus(workspaceId).catch(() => null),
+              gitSyncService.getGitConfig(workspaceId).catch(() => null),
             ]);
 
             const branches = branchData?.branches || [];
-            const isGitSyncEnabled = !!(gitStatus?.isEnabled ?? gitStatus?.is_enabled);
+            // Git is "on" whenever a provider is CONNECTED (license-independent) — falls back to the
+            // config endpoint when the status endpoint is unavailable — so a configured-but-unlicensed
+            // workspace still renders the git-sync UI (branch selector, etc.), just frozen.
+            const { effectiveGitConfig, isGitSyncConfigured } = resolveGitConfigState(gitStatus, gitConfigResp);
+            const isGitSyncEnabled = isGitSyncConfigured;
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
             // URL (`?branch=<name>`) is the source of truth; fall back to server active/default.
             const currentBranch = isGitSyncEnabled ? resolveActiveBranch(branches, serverActiveBranchId) : null;
@@ -77,7 +141,12 @@ export const useWorkspaceBranchesStore = create(
               branches,
               activeBranchId: isGitSyncEnabled ? currentBranch?.id || null : null,
               currentBranch: isGitSyncEnabled ? currentBranch : null,
-              orgGitConfig: gitStatus,
+              isMultiBranchingEnabled: readMultiBranchingEnabled(branchData),
+              orgGitConfig: effectiveGitConfig,
+              ...readGitSyncLicenseState(gitStatus),
+              // "Configured" comes from the resolver (status OR config endpoint) so the dashboard git
+              // controls + data-source lock stay consistent with the branch selector.
+              isGitSyncConfigured,
               isLoading: false,
               isInitialized: true,
             });
@@ -94,7 +163,12 @@ export const useWorkspaceBranchesStore = create(
             // URL is the source of truth; fall back to server active/default.
             const currentBranch = resolveActiveBranch(branches, serverActiveBranchId);
             setActiveBranch(currentBranch);
-            set({ branches, activeBranchId: currentBranch?.id || null, currentBranch });
+            set({
+              branches,
+              activeBranchId: currentBranch?.id || null,
+              currentBranch,
+              isMultiBranchingEnabled: readMultiBranchingEnabled(data),
+            });
           } catch (error) {
             console.error('Failed to fetch branches:', error);
           }
@@ -261,13 +335,18 @@ export const useWorkspaceBranchesStore = create(
         async reinitialize(workspaceId) {
           set({ ...initialState, isLoading: true });
           try {
-            const [branchData, gitStatus] = await Promise.all([
+            const [branchData, gitStatus, gitConfigResp] = await Promise.all([
               workspaceBranchesService.list().catch(() => null),
               gitSyncService.getGitStatus(workspaceId).catch(() => null),
+              gitSyncService.getGitConfig(workspaceId).catch(() => null),
             ]);
 
             const branches = branchData?.branches || [];
-            const isGitSyncEnabled = !!(gitStatus?.isEnabled ?? gitStatus?.is_enabled);
+            // Git is "on" whenever a provider is CONNECTED (license-independent) — falls back to the
+            // config endpoint when the status endpoint is unavailable — so a configured-but-unlicensed
+            // workspace still renders the git-sync UI (branch selector, etc.), just frozen.
+            const { effectiveGitConfig, isGitSyncConfigured } = resolveGitConfigState(gitStatus, gitConfigResp);
+            const isGitSyncEnabled = isGitSyncConfigured;
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
             // URL (`?branch=<name>`) is the source of truth; fall back to server active/default.
             const currentBranch = isGitSyncEnabled ? resolveActiveBranch(branches, serverActiveBranchId) : null;
@@ -278,7 +357,12 @@ export const useWorkspaceBranchesStore = create(
               branches,
               activeBranchId: isGitSyncEnabled ? currentBranch?.id || null : null,
               currentBranch: isGitSyncEnabled ? currentBranch : null,
-              orgGitConfig: gitStatus,
+              isMultiBranchingEnabled: readMultiBranchingEnabled(branchData),
+              orgGitConfig: effectiveGitConfig,
+              ...readGitSyncLicenseState(gitStatus),
+              // "Configured" comes from the resolver (status OR config endpoint) so the dashboard git
+              // controls + data-source lock stay consistent with the branch selector.
+              isGitSyncConfigured,
               isLoading: false,
               isInitialized: true,
             });

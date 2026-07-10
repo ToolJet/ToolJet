@@ -204,6 +204,10 @@ export class AppsUtilService implements IAppsUtilService {
                 // editor recognises them as editable branch copies.
                 versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
                 branchId: branchId,
+                // A freshly created app/module on a feature branch has never been pushed to git —
+                // it must start unsynced so it's treated as new content until its first push
+                // (which flips is_synced=true). Explicit so it doesn't depend on the column default.
+                isSynced: false,
                 showViewerNavigation: type === 'module' ? false : true,
                 globalSettings: defaultSettings,
                 pageSettings: {},

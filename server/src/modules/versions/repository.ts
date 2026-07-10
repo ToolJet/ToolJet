@@ -219,7 +219,7 @@ export class VersionRepository extends Repository<AppVersion> {
   getVersionsInApp(appId: string, branchId?: string, manager?: EntityManager): Promise<AppVersion[]> {
     const m = manager ?? this.manager;
     const where = branchId ? { appId, branchId, isStub: false } : { appId, isStub: false };
-    return m.find(AppVersion, { where, order: { createdAt: 'DESC' } });
+    return m.find(AppVersion, { where, order: { createdAt: 'DESC' }, relations: ['branch'] });
   }
 
   getCount(appId: string): Promise<number> {
