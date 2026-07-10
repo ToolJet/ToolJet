@@ -30,6 +30,15 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * makes workflow slug re-validate on app_id reparenting, matching what
  * non-workflow rows already got from 1781741000000.
  *
+ * Lives in data-migrations/, not migrations/, despite being pure schema: schema
+ * migrations (server/migrations) all run to completion BEFORE any data migration
+ * runs (see package.json's db:migrate script). 1781741000000 (data-migrations)
+ * itself does `CREATE OR REPLACE FUNCTION enforce_app_versions_default_branch_
+ * slug_unique`, so on a fresh install it would silently clobber this merge back
+ * to its own older, workflow-unaware body if this migration stayed in the
+ * earlier-running schema phase. Placing it here — after 1781741000000 in
+ * timestamp order, within the same later phase — makes it the true final word.
+ *
  * No data changes — pure trigger consolidation.
  */
 export class MergeWorkflowSlugUniqueTrigger1782500000000 implements MigrationInterface {
