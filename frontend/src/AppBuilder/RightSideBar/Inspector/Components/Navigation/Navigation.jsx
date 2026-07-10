@@ -52,6 +52,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   const _renderMenuItems = () => {
     return (
       <NavItemsList
+        componentId={component?.id}
         menuItems={menuItems}
         darkMode={darkMode}
         hoveredItemIndex={hoveredItemIndex}
@@ -117,6 +118,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
           sourceId={component?.id}
           eventSourceType="component"
           eventMetaDefinition={componentMeta}
+          excludeRefEvents
           dataQueries={dataQueries}
           components={allComponents}
           eventsChanged={eventsChanged}

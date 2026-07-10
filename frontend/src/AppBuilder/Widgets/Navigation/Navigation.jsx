@@ -318,7 +318,8 @@ export const Navigation = function Navigation(props) {
   const handleItemClick = (item) => {
     if (disabledState) return;
     applySelection(item);
-    fireEvent('onClick');
+
+    fireEvent('onNavigationItemClicked', { itemId: item.id });
   };
 
   // Actions
