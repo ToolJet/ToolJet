@@ -29,11 +29,12 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
+import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
-  TOP_ALIGNMENT_HEIGHT_INCREMENT,
-  ROW_SCOPED_WIDGET_TYPES,
-  NESTING_LEVEL_LIMITS,
-} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+  calculateInputCanvasHeight,
+  INPUT_LABEL_HEIGHT_MODE_FIXED,
+  INPUT_LABEL_HEIGHT_MODE_PROPERTY,
+} from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
@@ -3129,23 +3130,25 @@ export const createComponentsSlice = (set, get) => ({
     const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
-    const resolvedLabelType = resolveDynamicValues(labelType?.value + '', getAllExposedValues(moduleId)) ?? 'auto';
-    if (resolvedLabelType === 'auto') {
-      resolvedLabel = 1;
-    }
+    const resolvedLabelType = labelType
+      ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
+      : undefined;
+    const inputLabelHeightMode =
+      componentDefinition?.component?.definition?.properties?.[INPUT_LABEL_HEIGHT_MODE_PROPERTY]?.value;
 
     const resolvedAlignment =
       alignment.value === 'top' || alignment.value === 'side'
         ? alignment.value
         : resolveDynamicValues(alignment.value + '');
-    let newHeight = layoutData?.height;
-
-    if (alignment.value && resolvedAlignment === 'top') {
-      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += TOP_ALIGNMENT_HEIGHT_INCREMENT;
-      }
-    }
-    return newHeight;
+    return calculateInputCanvasHeight({
+      height: layoutData?.height,
+      alignment: alignment.value && resolvedAlignment,
+      labelLength: resolvedLabel,
+      width: resolvedWidth,
+      auto: resolvedAuto,
+      labelType: resolvedLabelType,
+      preserveLegacyTopAlignment: inputLabelHeightMode !== INPUT_LABEL_HEIGHT_MODE_FIXED,
+    });
   },
   getIsAutoMobileLayout: (moduleId = 'canvas') => {
     const { getCurrentPage } = get();

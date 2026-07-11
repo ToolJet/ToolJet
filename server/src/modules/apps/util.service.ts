@@ -43,6 +43,8 @@ import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { isUUID } from 'class-validator';
 
+const INPUT_LABEL_HEIGHT_MODE_PROPERTY = '__inputLabelHeightMode';
+
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
   constructor(
@@ -584,36 +586,33 @@ export class AppsUtilService implements IAppsUtilService {
       const componentMeta = cloneDeep(
         componentTypes.find((comp) => currentComponentData.component.component === comp.component)
       );
+      const persistedProperties = currentComponentData?.component?.definition?.properties ?? {};
 
       const mergedDefinition = {
         // ...componentMeta.definition,
-        properties: mergeWith(
-          componentMeta.definition.properties,
-          currentComponentData?.component?.definition?.properties,
-          (objValue, srcValue) => {
-            if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
-              return srcValue;
-            } else if (
-              [
-                'DropdownV2',
-                'MultiselectV2',
-                'PopoverMenu',
-                'Steps',
-                'Tabs',
-                'RadioButtonV2',
-                'Tags',
-                'TagsInput',
-                'TreeSelect',
-                'Cascader',
-                'Navigation',
-                'ButtonGroupV2',
-              ].includes(currentComponentData?.component?.component) &&
-              isArray(objValue)
-            ) {
-              return isArray(srcValue) ? srcValue : Object.values(srcValue);
-            }
+        properties: mergeWith(componentMeta.definition.properties, persistedProperties, (objValue, srcValue) => {
+          if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
+            return srcValue;
+          } else if (
+            [
+              'DropdownV2',
+              'MultiselectV2',
+              'PopoverMenu',
+              'Steps',
+              'Tabs',
+              'RadioButtonV2',
+              'Tags',
+              'TagsInput',
+              'TreeSelect',
+              'Cascader',
+              'Navigation',
+              'ButtonGroupV2',
+            ].includes(currentComponentData?.component?.component) &&
+            isArray(objValue)
+          ) {
+            return isArray(srcValue) ? srcValue : Object.values(srcValue);
           }
-        ),
+        }),
         styles: merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
         generalStyles: merge(
           componentMeta.definition.generalStyles,
@@ -623,6 +622,13 @@ export class AppsUtilService implements IAppsUtilService {
         others: merge(componentMeta.definition.others, currentComponentData?.component.definition.others),
         general: merge(componentMeta.definition.general, currentComponentData?.component.definition.general),
       };
+
+      // The compatibility marker is opt-in. Do not inject the new default into
+      // components persisted before this behavior was introduced; otherwise
+      // legacy apps switch to the corrected sizing when they are loaded.
+      if (!Object.prototype.hasOwnProperty.call(persistedProperties, INPUT_LABEL_HEIGHT_MODE_PROPERTY)) {
+        delete mergedDefinition.properties[INPUT_LABEL_HEIGHT_MODE_PROPERTY];
+      }
 
       const mergedComponent = {
         component: {
