@@ -91,7 +91,23 @@
     font-size: 13px;
     color: var(--slate11);
     line-height: 1.5;
+    margin: 0 0 4px;
+  }
+
+  .conflict-description-list {
+    font-size: 13px;
+    color: var(--slate11);
+    line-height: 1.5;
     margin: 0 0 16px;
+    padding-left: 18px;
+
+    li {
+      margin-bottom: 6px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
   }
 
   .conflict-categories-list {
