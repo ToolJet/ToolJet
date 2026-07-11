@@ -4055,6 +4055,32 @@ describe('GitSyncController', () => {
           { key: 'ssl_certificate', value: 'none', encrypted: false },
         ];
 
+        // Other guarded mutation routes — the guard/inline check rejects before the body is
+        // processed, so the exact payload only needs to route (bodies are otherwise valid-shaped).
+        const updateComponent = (appId: string, versionId: string, pageId: string, branchId?: string) =>
+          auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+            .query(branchId ? { branch_id: branchId } : {})
+            .send({ is_user_switched_version: false, pageId, diff: makeButtonDiff(null).diff });
+        const deleteComponents = (appId: string, versionId: string, pageId: string, branchId?: string) =>
+          auth(agent().delete(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+            .query(branchId ? { branch_id: branchId } : {})
+            .send({ is_user_switched_version: false, pageId, diff: [randomUUID()] });
+        const createPage = (appId: string, versionId: string, branchId?: string) => {
+          const rid = randomUUID();
+          return auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/pages`))
+            .query(branchId ? { branch_id: branchId } : {})
+            .send({ id: rid, name: `Page ${rid.slice(0, 4)}`, handle: `page-${rid.slice(0, 4)}`, index: 5 });
+        };
+        // Version content edit (globalSettings) — a content edit, so subject to the same rules.
+        const editVersionContent = (appId: string, versionId: string, branchId?: string) =>
+          auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}`))
+            .query(branchId ? { branch_id: branchId } : {})
+            .send({ is_user_switched_version: false, globalSettings: { appMode: 'dark' } });
+        const editDataSource = (dsIdToEdit: string, environmentId: string, branchId?: string) =>
+          auth(agent().put(`/api/data-sources/${dsIdToEdit}`))
+            .query({ environment_id: environmentId, ...(branchId ? { branch_id: branchId } : {}) })
+            .send({ name: 'edit-rules-ds', options: restapiDsOptions });
+
         // ══════════════════════════════════════════════════════════════════════
         // PHASE 1 — GIT OFF: everything editable; a saved version becomes read-only.
         // ══════════════════════════════════════════════════════════════════════
@@ -4126,9 +4152,15 @@ describe('GitSyncController', () => {
         );
         expect(appDraftCount[0].c).toBe(0);
 
-        step(5, 'git-off: editing the SAVED (published) version is rejected');
+        step(5, 'git-off: editing the SAVED (published) version is rejected across all mutation routes');
+        // Component create/update/delete, query create, page create, and version content edit are all
+        // blocked (400) on a saved version — regardless of git — via assertVersionEditable.
         await addComponent(appId, appCtx.versionId, appCtx.pageId).expect(400);
+        await updateComponent(appId, appCtx.versionId, appCtx.pageId).expect(400);
+        await deleteComponents(appId, appCtx.versionId, appCtx.pageId).expect(400);
         await addQuery(dsId, appCtx.versionId, 'app_q_blocked').expect(400);
+        await createPage(appId, appCtx.versionId).expect(400);
+        await editVersionContent(appId, appCtx.versionId).expect(400);
         await addComponent(moduleId, moduleCtx.versionId, moduleCtx.pageId, undefined, moduleContainerId ?? null).expect(400);
 
         // ══════════════════════════════════════════════════════════════════════
@@ -4262,9 +4294,23 @@ describe('GitSyncController', () => {
         // ══════════════════════════════════════════════════════════════════════
         // PHASE 4 — SYNCED (multi-branch): default-branch edits blocked.
         // ══════════════════════════════════════════════════════════════════════
-        step(10, 'git-on (multi-branch): editing the SYNCED default-branch draft is blocked');
+        step(10, 'git-on (multi-branch): editing the SYNCED default-branch draft is blocked across all routes');
+        // Component create/update/delete, query create, page create, and version content edit are all
+        // blocked (403) on the synced default-branch draft under multi-branch.
         await addComponent(appId, mainDraftId, mainDraftPageId, mainBranchId).expect(403);
+        await updateComponent(appId, mainDraftId, mainDraftPageId, mainBranchId).expect(403);
+        await deleteComponents(appId, mainDraftId, mainDraftPageId, mainBranchId).expect(403);
         await addQuery(dsId, mainDraftId, 'blocked_default_q', mainBranchId).expect(403);
+        await createPage(appId, mainDraftId, mainBranchId).expect(403);
+        await editVersionContent(appId, mainDraftId, mainBranchId).expect(403);
+
+        // Data source edit: mark the DS's default-branch version synced, then editing it on the
+        // default branch (multi-branch) is blocked (403). An unsynced DS would stay editable.
+        await dataSource.query(
+          `UPDATE data_source_versions SET is_synced = true WHERE data_source_id = $1 AND branch_id = $2`,
+          [dsId, mainBranchId]
+        );
+        await editDataSource(dsId, devEnv.id, mainBranchId).expect(403);
 
         step(11, 'git-on (multi-branch): editing on the feature branch is allowed');
         await addComponent(appId, featVersionId, featCtx.pageId, featBranchId).expect(201);

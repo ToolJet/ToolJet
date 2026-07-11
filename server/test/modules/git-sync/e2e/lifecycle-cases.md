@@ -179,12 +179,12 @@ Dedicated isolated org. Exercises the git-sync edit guards
 | 2 | git-off: add component + query to the app **and** the module | all allowed (201) |
 | 3 | git-off: add another data source, **edit** it, rename app + module, add more component/query | all allowed (200/201) |
 | 4 | git-off: save (publish) the app + module version | 200; no DRAFT remains (no continuity draft when unsynced) |
-| 5 | git-off: edit the **SAVED (published)** version — add component + add query (app & module) | **400** (saved version is immutable) |
+| 5 | git-off: edit the **SAVED (published)** version — component create/update/delete, query create, page create, version content edit (+ module component) | **400** (saved version is immutable) |
 | 6 | Configure git sync (reset repo + save provider configs), enable branching, pull `main` | 201/200 |
 | 7 | git-on (multi-branch): **unsynced** app on default branch — create a fresh DRAFT (is_synced=false), edit it | allowed (201) — unsynced exemption |
 | 8 | Sync app: create feature branch, `gitpush` the default-branch draft onto it | 201 |
 | 9 | Pull feature (capture branch version), merge feature → `main`, pull `main` | default-branch draft becomes `is_synced=true` |
-| 10 | git-on (multi-branch): edit the **SYNCED** default-branch draft — component + query | **403** (synced default branch) |
+| 10 | git-on (multi-branch): edit the **SYNCED** default-branch draft — component create/update/delete, query create, page create, version content edit, **and data source edit** (DSV marked synced) | **403** (synced default branch) |
 | 11 | git-on (multi-branch): edit on the **feature branch** | allowed (201) |
 | 12 | **Branching OFF** (single-branch): edit on the feature branch | **403** (branching disabled) |
 | 12 | **Branching OFF** (single-branch): edit on the **default** branch — component + query | allowed (201) |
