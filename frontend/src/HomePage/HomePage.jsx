@@ -1090,9 +1090,10 @@ class HomePageComponent extends React.Component {
         if (error?.statusCode === 409) {
           try {
             const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
-            if (parsed?.conflictGroups?.length) {
+            if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
               this.setState({
-                gitImportConflictGroups: parsed.conflictGroups,
+                gitImportConflictGroups: parsed.conflictGroups || [],
+                gitImportMultiDraftResources: parsed.multiDraftResources || [],
                 importingApp: false,
                 showGitRepositoryImportModal: false,
               });
@@ -1863,9 +1864,10 @@ class HomePageComponent extends React.Component {
             }}
           />
           <PullConflictModal
-            show={!!this.state.gitImportConflictGroups}
+            show={!!(this.state.gitImportConflictGroups?.length || this.state.gitImportMultiDraftResources?.length)}
             conflictGroups={this.state.gitImportConflictGroups || []}
-            onClose={() => this.setState({ gitImportConflictGroups: null })}
+            multiDraftResources={this.state.gitImportMultiDraftResources || []}
+            onClose={() => this.setState({ gitImportConflictGroups: null, gitImportMultiDraftResources: [] })}
             onResolve={this.handleResolveImportConflicts}
             context="import"
           />

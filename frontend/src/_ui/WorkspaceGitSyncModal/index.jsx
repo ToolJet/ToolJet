@@ -38,6 +38,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
   const [selectedBranch, setSelectedBranch] = useState('');
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
+  const [multiDraftResources, setMultiDraftResources] = useState([]);
 
   const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
     (state) => ({
@@ -202,8 +203,9 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
-          if (parsed?.conflictGroups?.length) {
-            setPullConflictGroups(parsed.conflictGroups);
+          if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
+            setPullConflictGroups(parsed.conflictGroups || []);
+            setMultiDraftResources(parsed.multiDraftResources || []);
             return;
           }
         } catch {
@@ -251,8 +253,9 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
-          if (parsed?.conflictGroups?.length) {
-            setPullConflictGroups(parsed.conflictGroups);
+          if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
+            setPullConflictGroups(parsed.conflictGroups || []);
+            setMultiDraftResources(parsed.multiDraftResources || []);
             return;
           }
         } catch {
@@ -273,8 +276,9 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
-          if (parsed?.conflictGroups?.length) {
-            setPullConflictGroups(parsed.conflictGroups);
+          if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
+            setPullConflictGroups(parsed.conflictGroups || []);
+            setMultiDraftResources(parsed.multiDraftResources || []);
             return;
           }
         } catch {
@@ -289,6 +293,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
     try {
       await actions.resolveConflicts(resolutions);
       setPullConflictGroups(null);
+      setMultiDraftResources([]);
       onClose();
       // resolveConflicts hydrates the affected apps server-side (isSynced, content),
       // but the app builder/homepage's in-memory state doesn't know that happened —
@@ -714,9 +719,13 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       </Modal>
 
       <PullConflictModal
-        show={!!pullConflictGroups}
+        show={!!(pullConflictGroups?.length || multiDraftResources?.length)}
         conflictGroups={pullConflictGroups || []}
-        onClose={() => setPullConflictGroups(null)}
+        multiDraftResources={multiDraftResources}
+        onClose={() => {
+          setPullConflictGroups(null);
+          setMultiDraftResources([]);
+        }}
         onResolve={handleResolveConflicts}
       />
     </>

@@ -13,12 +13,12 @@ const TYPE_ICON_MAP = {
 };
 
 const CONFLICT_SECTION_HEADER_MAP = {
-  'app-name': 'Conflicting app name',
-  'app-slug': 'Conflicting app slug',
-  'module-name': 'Conflicting module name',
-  'module-slug': 'Conflicting module slug',
-  'folder-folder': 'Conflicting folder name',
-  'datasource-name': 'Conflicting data source name',
+  'app-name': 'App name',
+  'app-slug': 'App slug',
+  'module-name': 'Module name',
+  'module-slug': 'Module slug',
+  'folder-folder': 'Folder name',
+  'datasource-name': 'Data source name',
 };
 
 const LOCAL_STATUSES = ['existing', 'local'];
@@ -41,6 +41,44 @@ function getConflictItemBadge(item, group) {
     return hasLocalCounterpart ? { label: 'Remote', variant: 'remote' } : { label: 'Incoming', variant: 'local' };
   }
   return { label: item.status, variant: item.status };
+}
+
+function MultiDraftSection({ resources }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!resources?.length) return null;
+
+  return (
+    <div className="conflict-category">
+      <div className="conflict-category-header">
+        <span className="conflict-category-title">Apps with multiple draft versions</span>
+        <span className="conflict-count-badge conflict-count-badge--danger">{resources.length}</span>
+      </div>
+      <p className="conflict-category-subtext">All resources must have exactly one draft version to pull from git</p>
+      <div className="conflict-list-card">
+        <div className="conflict-row">
+          <button
+            type="button"
+            className={cx('conflict-row-header', { 'is-open': isExpanded })}
+            onClick={() => setIsExpanded((v) => !v)}
+          >
+            <span className="conflict-row-left">Resources</span>
+            <SolidIcon name="cheverondown" width="14" fill="var(--slate9)" />
+          </button>
+          {isExpanded && (
+            <div className="conflict-section-body">
+              {resources.map((resource, idx) => (
+                <div key={idx} className="conflict-item">
+                  <SolidIcon name={TYPE_ICON_MAP[resource.type] || 'apps'} width="16" fill="var(--slate9)" />
+                  <span className="conflict-item-name">{resource.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ConflictRow({ group, isExpanded, isSyncable, isChecked, onToggleExpanded, onToggleChecked, hideBadges }) {
@@ -95,7 +133,14 @@ function ConflictRow({ group, isExpanded, isSyncable, isChecked, onToggleExpande
   );
 }
 
-export function PullConflictModal({ show, onClose, conflictGroups = [], context, onResolve }) {
+export function PullConflictModal({
+  show,
+  onClose,
+  conflictGroups = [],
+  multiDraftResources = [],
+  context,
+  onResolve,
+}) {
   const [expandedManual, setExpandedManual] = useState(() => new Set());
   const [expandedSyncable, setExpandedSyncable] = useState(() => new Set([0]));
   const [selectedSyncable, setSelectedSyncable] = useState(() => new Set());
@@ -115,11 +160,11 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context,
   const hideBadges = !isSyncEligible;
 
   const title = (() => {
-    if (isBranchCreation) return 'Cannot create branch with duplicate data';
-    if (isBranchSwitch) return 'Cannot open branch with duplicate data';
-    if (isImport) return 'Cannot import duplicate data';
-    if (isPushConflict) return 'Cannot push duplicate data';
-    return 'Cannot pull branch with duplicate data';
+    if (isBranchCreation) return 'Cannot create branch';
+    if (isBranchSwitch) return 'Cannot open branch';
+    if (isImport) return 'Cannot import resources';
+    if (isPushConflict) return 'Cannot push resources';
+    return 'Cannot pull branch';
   })();
 
   const handleOverlayClick = (e) => {
@@ -191,16 +236,29 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context,
         <div className="pull-conflict-modal-body">
           <h3 className="conflict-title">{title}</h3>
 
-          <p className="conflict-description">
-            The following resources have the <strong>same data</strong> on this branch. ToolJet requires unique names &
-            slug for apps, data sources, modules, and folders within a branch.
-          </p>
+          <p className="conflict-description">Due to the following errors, this branch cannot be pulled:</p>
+          <ul className="conflict-description-list">
+            {multiDraftResources.length > 0 && (
+              <li>
+                Git allows only <strong>one draft version</strong> per resource which becomes the tip of your default
+                branch. There are resources with more or less than one draft version.
+              </li>
+            )}
+            {conflictGroups.length > 0 && (
+              <li>
+                There are resources with the <strong>duplicate data</strong> on this branch. ToolJet requires unique
+                names &amp; slug for apps, data sources, modules, and folders within a branch.
+              </li>
+            )}
+          </ul>
 
           <div className="conflict-categories-list">
+            {multiDraftResources.length > 0 && <MultiDraftSection resources={multiDraftResources} />}
+
             {manualGroups.length > 0 && (
               <div className="conflict-category">
                 <div className="conflict-category-header">
-                  <span className="conflict-category-title">Requires manual resolution</span>
+                  <span className="conflict-category-title">Duplicate data: Requires manual resolution</span>
                   <span className="conflict-count-badge conflict-count-badge--danger">{manualGroups.length}</span>
                 </div>
                 <p className="conflict-category-subtext">Read docs to resolve the conflict before trying again</p>
@@ -222,7 +280,7 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context,
             {syncableGroups.length > 0 && (
               <div className="conflict-category">
                 <div className="conflict-category-header">
-                  <span className="conflict-category-title">Sync from git remote</span>
+                  <span className="conflict-category-title">Duplicate data: Sync from git remote</span>
                   <span className="conflict-count-badge conflict-count-badge--primary">{syncableGroups.length}</span>
                 </div>
                 <p className="conflict-category-subtext">
@@ -262,7 +320,7 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context,
             Read docs
           </ButtonSolid>
 
-          {isSyncEligible && syncableGroups.length > 0 && (
+          {(isSyncEligible || syncableGroups.length > 0) && (
             <ButtonSolid
               variant="primary"
               size="md"
