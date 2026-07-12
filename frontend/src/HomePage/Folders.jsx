@@ -32,7 +32,7 @@ export const Folders = function Folders({
   canCreateApp,
   darkMode,
   appType,
-  isGitSyncEnabled,
+  isWorkspaceBranchLocked,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
   const [showInput, setShowInput] = useState(false);
@@ -75,11 +75,14 @@ export const Folders = function Folders({
   // Determine if user can update/delete a specific folder
   // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
   // Delete: requires master Delete OR ownership
+  // Git gate: folder mutations are blocked ONLY when the workspace branch is locked — i.e. multi-branch
+  // is enabled AND we're on the (read-only) default branch. Single-branch (branching off) and
+  // multi-branch feature branches are the working branches, so rename/delete stay allowed there.
   const canUpdateSpecificFolder = (folderId, folder) =>
-    !isGitSyncEnabled &&
+    !isWorkspaceBranchLocked &&
     (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
   const canDeleteSpecificFolder = (folderId, folder) =>
-    !isGitSyncEnabled && (canDeleteFolder || isOwnerOfFolder(folder));
+    !isWorkspaceBranchLocked && (canDeleteFolder || isOwnerOfFolder(folder));
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);

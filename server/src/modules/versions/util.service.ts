@@ -370,14 +370,25 @@ export class VersionUtilService implements IVersionUtilService {
       }
 
       const newDraft = await this.buildVersionFromParent(app, user, versionCreateDto, branchId, manager);
-      // When replacing an existing draft, keep ITS sync state (a synced app stays synced) rather than
-      // inheriting the source version's own flag — a saved version created before the app was synced
-      // would otherwise mark the draft unsynced. With no draft to replace, buildVersionFromParent's
-      // inherited value (from the source version) stands.
-      if (existingDraft && newDraft?.id) {
-        const replacementIsSynced = existingDraft.isSynced !== false;
-        await manager.update(AppVersion, { id: newDraft.id }, { isSynced: replacementIsSynced });
-        newDraft.is_synced = replacementIsSynced;
+      if (newDraft?.id) {
+        // A patched draft must look NEVER-PULLED so the next `pull latest` treats it as outdated and
+        // refreshes it. The pull staleness checks key off these two columns:
+        //   - classifyEntry skips an entry when pulled_at >= the remote commit timestamp
+        //   - lazy hydration only fires when remote_updated_at is set and newer than pulled_at
+        // Leaving a stale remote_updated_at/pulled_at (inherited from the replaced draft or a future
+        // build path) would make the pull skip this draft. Force both empty to guarantee a refresh.
+        const updates: Partial<AppVersion> = { remoteUpdatedAt: null, pulledAt: null };
+        // When replacing an existing draft, keep ITS sync state (a synced app stays synced) rather than
+        // inheriting the source version's own flag — a saved version created before the app was synced
+        // would otherwise mark the draft unsynced. With no draft to replace, buildVersionFromParent's
+        // inherited value (from the source version) stands.
+        if (existingDraft) {
+          updates.isSynced = existingDraft.isSynced !== false;
+          newDraft.is_synced = updates.isSynced;
+        }
+        await manager.update(AppVersion, { id: newDraft.id }, updates);
+        newDraft.remote_updated_at = null;
+        newDraft.pulled_at = null;
       }
       return newDraft;
     });
@@ -503,8 +514,8 @@ export class VersionUtilService implements IVersionUtilService {
       throw new BadRequestException('Version name cannot be empty.');
     }
     const { organizationId } = user;
-    const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
-    const defaultBranchId = options?.defaultBranch?.id ?? null;
+    const gitDetails = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+    const defaultBranchId = gitDetails.options?.defaultBranch?.id ?? null;
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOneOrFail(AppVersion, {
@@ -528,10 +539,12 @@ export class VersionUtilService implements IVersionUtilService {
           versionType: AppVersionType.VERSION,
           createdBy: user.id,
           co_relation_id: app.co_relation_id,
-          // Always false, regardless of the branch draft's own sync state: this row's
-          // content is a fresh DB-only clone that has never been written to git — the
-          // branch draft may carry local edits that were never pushed either.
-          isSynced: false,
+          // A version saved while git sync is on is committed to git (the feature-branch save flow
+          // pushes/tags its content), so the version surfaced on the default branch's version list
+          // must be marked synced — otherwise it wrongly shows as never-pushed. This branch-draft save
+          // path only runs in a multi-branch git-enabled workspace, so this is effectively always
+          // true; gating on isEnabled keeps it correct if the license has lapsed.
+          isSynced: gitDetails.isEnabled === true,
           // Target the default branch, not the source branch — see method doc.
           // chk_app_versions_branch_metadata requires appName/slug when branch_id
           // is set, and both are inherited below.

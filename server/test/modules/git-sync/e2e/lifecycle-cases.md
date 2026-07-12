@@ -180,15 +180,15 @@ Dedicated isolated org. Exercises the git-sync edit guards
 | 3 | git-off: add another data source, **edit** it, rename app + module, add more component/query | all allowed (200/201) |
 | 4 | git-off: save (publish) the app + module version | 200; no DRAFT remains (no continuity draft when unsynced) |
 | 5 | git-off: edit the **SAVED (published)** version — component create/update/delete, query create, page create, version content edit (+ module component) | **400** (saved version is immutable) |
-| 6 | Configure git sync (reset repo + save provider configs), enable branching, pull `main` | 201/200 |
-| 7 | git-on (multi-branch): **unsynced** app on default branch — create a fresh DRAFT (is_synced=false), edit it | allowed (201) — unsynced exemption |
-| 8 | Sync app: create feature branch, `gitpush` the default-branch draft onto it | 201 |
-| 9 | Pull feature (capture branch version), merge feature → `main`, pull `main` | default-branch draft becomes `is_synced=true` |
-| 10 | git-on (multi-branch): edit the **SYNCED** default-branch draft — component create/update/delete, query create, page create, version content edit, **and data source edit** (DSV marked synced) | **403** (synced default branch) |
-| 11 | git-on (multi-branch): edit on the **feature branch** | allowed (201) |
-| 12 | **Branching OFF** (single-branch): edit on the feature branch | **403** (branching disabled) |
-| 12 | **Branching OFF** (single-branch): edit on the **default** branch — component + query | allowed (201) |
-| 13 | git configured + **license expired** (runtime override): edit the default-branch draft — component + query | **403** (git license lock); enterprise plan restored afterwards |
+| 6 | git-off: **folder** create + add-to-folder + remove-from-folder | allowed (201/200) — folder-apps branch-lock is a no-op when git is off |
+| 7 | Configure git sync (reset repo + save provider configs), enable branching, pull `main` | 201/200 |
+| 8 | git-on (multi-branch): **unsynced** app on default branch — create a fresh DRAFT (is_synced=false), edit it | allowed (201) — unsynced exemption |
+| 9 | Sync app: create feature branch, `gitpush` the default-branch draft onto it | 201 |
+| 10 | Pull feature (capture branch version), merge feature → `main`, pull `main` | default-branch draft becomes `is_synced=true` |
+| 11 | git-on (multi-branch): edit the **SYNCED** default-branch draft — component create/update/delete, query create, page create, version content edit, **data source edit** (DSV marked synced), **and folder add/remove** | **403** (synced default branch) |
+| 12 | git-on (multi-branch): edit on the **feature branch** — component **and folder add/remove** | allowed (201/200) |
+| 13 | **Branching OFF** (single-branch): edit on the feature branch — component **and folder add** | **403** (branching disabled); default branch — component + query **and folder add/remove** allowed (201/200) |
+| 14 | git configured + **license expired** (runtime override): edit the default-branch draft — component + query **and folder add/remove** | **403** (git license lock); enterprise plan restored afterwards |
 
 ### Edit-restriction matrix (what the guards enforce)
 
@@ -197,8 +197,9 @@ Dedicated isolated org. Exercises the git-sync edit guards
 | **DRAFT, unsynced** | ✅ allow | ✅ allow | ✅ allow | ✅ allow | ⛔ 403 | ⛔ 403 |
 | **DRAFT, synced** | ✅ allow | ⛔ 403 | ✅ allow | ✅ allow | ⛔ 403 | ⛔ 403 |
 | **PUBLISHED / RELEASED (saved)** | ⛔ 400 | ⛔ 400 | ⛔ 400 | ⛔ 400 | ⛔ 400 | ⛔ 400 |
+| **Folder membership** (folder-apps add/remove, branch-scoped) | ✅ allow | ⛔ 403 | ✅ allow | ✅ allow | ⛔ 403 | ⛔ 403 |
 
-Guards apply uniformly to **components**, **queries**, **pages**, **version content edits**, and **data source create/edit** on the affected routes.
+Guards apply uniformly to **components**, **queries**, **pages**, **version content edits**, **data source create/edit**, and **folder membership (add-to-folder / remove-from-folder)** on the affected routes. Folder membership (`folder_apps`) is branch-scoped, so it follows the branch-lock; folders themselves are org-scoped and their rename/delete are gated in the dashboard UI only (enforced via `assertGitSyncCreateAllowedForOrg` on the `folder-apps` routes in `ee/folder-apps/controller.ts`).
 
 ---
 
@@ -215,14 +216,18 @@ create/publish/replace — so it runs against the protected-`main` repo.
 | Save v1 | Publish the app version (`PUT status=PUBLISHED`, name `v1`) | v1 has `[comp_A]` / `[query_A]` |
 | New draft | Create draft from `v1` (`replace:false`) → `d2` | `d2` is a clean copy of v1 (`[comp_A]` / `[query_A]`); it's the editing version |
 | Edit draft | Add `comp_B` + `query_B` to `d2` | `d2` = `[comp_A, comp_B]` / `[query_A, query_B]` |
-| **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version |
+| Stamp staleness | Set `remote_updated_at` + `pulled_at` to `now()` on both `d2` (draft being replaced) and `v1` (source version) | — |
+| **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version; `d3.remote_updated_at` and `d3.pulled_at` are **NULL** (never-pulled) so a later `pull latest` refreshes it instead of skipping |
 | Save v2 | Add `comp_C` + `query_C` to `d3`, publish as `v2` | `v2` = `[comp_A, comp_C]` |
 | **Patch from first version** | Create draft from `v1` again (`replace:true`) → `d4` | `d4` mirrors **v1** (`[comp_A]` / `[query_A]`), **not** v2 (no `comp_C`/`query_C`); `d4` is the editing version |
 
 Component/query assertions read the DB keyed by the version id resolved from `GET /apps/:id`
 (`editing_version`), so they're deterministic. Backend: `replaceDraftVersion` deletes the existing
 default-branch draft and clones the chosen published version in one transaction, preserving the
-replaced draft's sync state.
+replaced draft's sync state. It also forces the new draft's `remote_updated_at` / `pulled_at` to
+`NULL` — the pull staleness logic skips a draft whose `pulled_at >= remote commit` and only
+lazy-hydrates when `remote_updated_at` is set and newer than `pulled_at`, so a patched draft must
+look never-pulled to guarantee the next `pull latest` refreshes it.
 
 ---
 
@@ -241,6 +246,99 @@ created git-off and stays unsynced throughout; only the workspace git/branching 
 
 Draft count + sync state are read from the DB (`status='DRAFT' AND version_type='version'`, and
 `bool_and(is_synced=false)`), so the assertions are deterministic.
+
+---
+
+## 6. Resolve conflicts during workspace pull (`it: surfaces same-name pull conflicts and resolves them via relink / rename / delete`)
+
+Dedicated isolated org. A workspace pull that brings in a git resource whose **name** matches a local
+resource but whose **correlation id differs** raises a **409** with structured conflict details
+(`body.message` is a JSON string → parse `conflictGroups`; each group pairs the `incoming` git
+correlation id with the `existing` local one). It never silently duplicates. Three resolution
+strategies are exercised and the conflict response is asserted to **shrink** after each until the
+pull succeeds.
+
+**Setup** mirrors the proven sync-unsynced flow (section 2, steps 69-77): author resources git-off,
+enable git + branching, gitpush them onto ONE feature branch, merge → `main`. A data source rides into
+git via a query on a **carrier app** (`serializeLinkedDataSourcesForApp`); modules push through the
+same `gitpush` route as apps. Local correlation ids are then diverged with raw SQL to manufacture the
+conflicts (the carrier's corr-id is left untouched as a control).
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | git-off: create 4 apps (`relink`/`rename`/`delete`/`carrier`) + 1 module + 1 data source; add a component to each app; link the DS to the carrier via a query | 201 |
+| 2 | Configure git, enable branching, pull `main`; normalize the git-off versions/DSV onto the default branch | 201/200 |
+| 3 | Create `feat-conflicts`, gitpush all 4 apps + the module onto it, pull the feature branch | 201 |
+| 4 | Diverge LOCAL corr-ids (random uuid) for relink/rename/delete apps + module + data source | — (carrier untouched) |
+| 5 | Merge `feat-conflicts` → `main` | `ok: true` |
+| 6 | **Pull `main`** | **409**; `conflictGroups` = 3 apps + 1 module + 1 datasource (5); carrier **absent**; group pairs `incoming`=git corr-id / `existing`=local corr-id |
+| 7 | **Resolve #1 — rename**: rename local `cf-app-rename` — BOTH name AND slug (`→ cf-app-rename-local`), then pull | 200; pull **409** but the rename conflict **gone** |
+| 8 | **Resolve #2 — delete**: `DELETE /api/apps/:id` on `cf-app-delete`, then pull | 200; pull **409** but the `delete` conflict **gone** — only the relink app + module + datasource remain |
+| 9 | **Resolve #3 — relink**: `POST /workspace-branches/resolve-conflicts` for app + module + datasource (adopt remote corr-id) | 201; local corr-ids now equal the remote ones; versions marked synced |
+| 10 | Pull `main` | **201** — all conflicts resolved |
+
+**Name AND slug** — the conflict detector flags collisions on `name` **and** `slug` independently
+(`conflictField`), so one diverged resource can produce two groups. Git-off-authored apps get a UUID
+slug that still matches git after a name-only rename, so the rename resolution must change **both** the
+name and the slug. Assertions therefore key off the **diverged correlation id** each resource was given
+(present on the `existing` side of any group) rather than a `conflictKey`, so name/slug duplication is
+handled uniformly.
+
+**Resolution order** — relink is applied **last** on purpose: `resolve-conflicts` marks the relinked
+app/module version `is_stub=true` and relies on the **next** pull to hydrate it, so it must run
+immediately before the final (successful) pull. rename/delete clear a conflict without leaving a stub,
+so they go first while the other conflicts still block the pull — which also lets the test watch the
+conflict response shrink toward zero. Each pull's groups are logged (`ⓘ pull#n: …`) for diagnosis.
+
+**Resolution semantics** (`ee/workspace-branches/service.ts` → `applyConflictResolutions`):
+- **relink** — updates the local `apps.co_relation_id` (or `data_sources.co_relation_id`) to the
+  incoming/remote value and marks the version/DSV `is_synced=true` (apps also `is_stub=true` so the
+  next pull hydrates content). The subsequent pull then matches by correlation id and updates in place.
+- **rename** — the local name no longer collides, so the remote resource is imported as a separate row.
+- **delete** — the local resource is removed, so the remote resource is imported fresh.
+
+Correlation ids are read from the DB (`co_relation_id` on `apps` / `data_sources`) and cross-checked
+against the parsed conflict response, so the assertions are deterministic. Backend enforcement:
+`POST /api/workspace-branches/resolve-conflicts` (`ResolveConflictsDto`: `resolutions[]` of
+`{ type: 'app'|'module'|'datasource', existingCoRelationId, incomingCoRelationId }` + optional `branchId`).
+
+---
+
+## 7. Create a feature branch from a saved version (`it: branches from a saved version, saves a version on it, and surfaces it synced on main`)
+
+Dedicated isolated org. `POST /api/workspace-branches` accepts `{ appId, versionId }` to branch **from a
+specific saved version**. Verifies the full "branch from a saved version → fix on the branch → save a
+version → it appears synced in the main version list" flow, plus the `is_synced` bookkeeping on saved
+versions along the way. Setup reuses the proven sync-unsynced flow (section 2).
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | git-off: create app + component, publish **v1** (git-off saved version), create a draft | 201 |
+| 2 | Configure git + branching, pull `main`, normalize the git-off versions onto the default branch | 201/200 |
+| 3 | Sync the draft to main: branch `feat-sync` → gitpush the draft → pull → merge → pull `main` | 201 |
+| 4 | Assert sync state, then save the draft as **v2** (check-tag → publish → tag) | `v1.is_synced=false` (git-off saved, never pushed); the synced draft `is_synced=true`; `v2.is_synced=true` |
+| 5 | **Create a feature branch FROM v2**: `POST /workspace-branches { name, sourceBranchId, appId, versionId: v2 }` | 201; returns the new branch `id` |
+| 6 | Pull the new branch → the app is present; add a component on the branch | app listed on the feature branch; 201 |
+| 7 | **Save version v44 on the feature branch** (check-tag → publish → tag) | 200/201 — the BRANCH-type draft is cloned into a PUBLISHED VERSION-type row on the **default** branch |
+| 8 | Merge the feature branch → `main`, pull `main` | 201 |
+| 9 | `GET /api/apps/:id/versions` on `main` → find **v44** | present with **`is_synced=true`** (git holds its content) |
+
+**Two code fixes this test drove out:**
+- **Branch-from-synced-version 400** (`ee/workspace-branches/service.ts` → `createBranch`): the
+  `{ appId, versionId }` path called `gitPushApp` for *every* version, but a **synced** version is
+  already in git on the source-branch ref the new branch was cut from, and — being a VERSION-type row —
+  pushing it trips `gitPushApp`'s "only branch versions can be pushed" guard under multi-branch. Fixed to
+  push **only when the source version is unsynced** (`isSynced === false`), matching the code's own
+  documented intent (the push exists purely to seed a never-pushed version's content).
+- **Saved-from-branch version left unsynced** (`src/modules/versions/util.service.ts` →
+  `createPublishedVersionFromBranchDraft`): cloning a feature-branch draft into the PUBLISHED
+  default-branch version **hardcoded `is_synced=false`**, so a version saved from a feature branch showed
+  as never-pushed in main's version list. Fixed to `is_synced = (git sync enabled)` — a version saved
+  while git sync is on is committed to git, so it is synced (this branch-draft save path only runs in a
+  multi-branch git-enabled workspace; gating on `isEnabled` keeps it correct if the license has lapsed).
+
+Sync state is read from the DB (`is_synced` on `app_versions`) and cross-checked against the versions
+list API; the final assertion carries a full per-branch version dump on failure for diagnosis.
 
 ---
 

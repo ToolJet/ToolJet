@@ -880,12 +880,6 @@ class HomePageComponent extends React.Component {
     return authenticationService.currentSessionValue?.user_permissions?.folder_create;
   };
 
-  isGitEnabled = () => {
-    const state = useWorkspaceBranchesStore.getState();
-    if (!state.isInitialized || !state.orgGitConfig) return false;
-    return this.props.appType === 'front-end' || this.props.appType === 'module';
-  };
-
   isWorkspaceBranchLocked = (app) => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
@@ -2438,7 +2432,7 @@ class HomePageComponent extends React.Component {
                 canCreateFolder={this.canCreateFolder()}
                 canDeleteFolder={this.canDeleteFolder()}
                 canUpdateFolder={this.canUpdateFolder()}
-                isGitSyncEnabled={this.isGitEnabled()}
+                isWorkspaceBranchLocked={this.isWorkspaceBranchLocked()}
                 darkMode={this.props.darkMode}
                 canCreateApp={this.canCreateApp()}
                 appType={this.props.appType}
