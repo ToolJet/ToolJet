@@ -349,3 +349,47 @@ In e2e tests (which mock `LicenseTermsService`), use the helpers from `test-help
 
 - `setTestLicenseTerms(app, terms, { expired })` — override the license at runtime (no restart)
 - `restoreLicensePlan(app, plan = 'enterprise')` — revert
+
+---
+
+## GitLab e2e (`git-sync-gitlab.spec.ts`)
+
+Runs against the **same git-http-simulator** as the GitHub suite (its `/api/v4` router + `oauth2:<token>`
+git transport). One host, both providers. Covers: config save + connect (test-connection hits the
+simulator's `/api/v4`), a create → feature-branch → gitpush → merge → pull lifecycle, save-version
+(check-tag → publish → tag via `/api/v4/.../tags`), and remote-branch listing. Reuses the shared,
+provider-agnostic admin endpoints (`/admin/repos/:o/:r.git/reset`, `/admin/merge`).
+
+### Simulator side (repo is NOT public)
+
+Start the simulator with a GitLab token so `/api/v4` + git require it:
+
+```bash
+EXPECTED_GITLAB_TOKEN=glpat-e2e-secret \
+GIT_TRUST_WINDOW_SECONDS=0 \        # strict: git must carry oauth2:<token> (recommended for CI)
+PORT=3002 node server.js
+```
+
+(Or put `"gitlabToken": "glpat-e2e-secret"` in `auth.json`. With `EXPECTED_GITLAB_TOKEN` set, anonymous
+`/api/v4` → 401 and anonymous clone is rejected; only the matching PAT works. The GitHub `EXPECTED_*`
+knobs are independent — set only the GitLab token for a GitLab-only locked simulator.)
+
+### ToolJet test env
+
+| Env var | Value | Notes |
+|---|---|---|
+| `TEST_GIT_BASE_URL` | `http://localhost:3002` | The simulator host (shared with the GitHub suite) |
+| `TEST_GITLAB_TOKEN` | `glpat-e2e-secret` | **Must equal the simulator's `EXPECTED_GITLAB_TOKEN`** |
+| `TEST_GITLAB_REPO_PATH` | `gsmithun4/gitlab-e2e` (default) | Distinct repo from the GitHub suite; becomes `gitLabProjectId` |
+| `TEST_GITLAB_BRANCH` | `main` (default) | Default branch |
+| `TOOLJET_GIT_ADMIN_USER` / `TOOLJET_GIT_ADMIN_PASSWORD` | admin creds | Shared — for the `/admin/reset` + `/admin/merge` endpoints |
+
+The config payload the suite sends: `{ gitType: 'gitlab', gitUrl: <base>/<repo>, branchName,
+gitLabEnterpriseUrl: <base>, gitLabProjectId: <owner>/<repo>, gitLabProjectAccessToken: <token> }`.
+`gitLabProjectId = owner/repo` (the provider URL-encodes it → `owner%2Frepo`, which the simulator
+resolves to `repos/owner/repo.git`), and `gitLabEnterpriseUrl = <base>` makes the API base
+`<base>/api/v4`.
+
+```bash
+npm run test:e2e -- --testPathPatterns "git-sync-gitlab"
+```
