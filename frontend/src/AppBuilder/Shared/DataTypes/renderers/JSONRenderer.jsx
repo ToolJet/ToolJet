@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
@@ -64,7 +64,7 @@ export const JSONRenderer = ({
         const formattedJSON = format(JSON.parse(val));
         return formattedJSON;
       }
-    } catch (error) {
+    } catch {
       return val;
     }
   };
@@ -74,8 +74,9 @@ export const JSONRenderer = ({
       try {
         const parsedValue = JSON.stringify(JSON.parse(textContent.replace(/\n/g, '')));
         onChange?.(parsedValue);
-      } catch (e) {
-        // Invalid JSON, don't update
+      } catch {
+        // JSON columns can also contain primitive string values that are not JSON-encoded.
+        onChange?.(textContent);
       }
     }
   };
