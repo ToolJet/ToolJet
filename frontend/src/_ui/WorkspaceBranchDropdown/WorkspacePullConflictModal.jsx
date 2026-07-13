@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
 import '@/_styles/workspace-pull-conflict-modal.scss';
 
 const TYPE_ICON_MAP = {
@@ -81,19 +82,41 @@ function MultiDraftSection({ resources }) {
   );
 }
 
-function ConflictRow({ group, isExpanded, isSyncable, isChecked, onToggleExpanded, onToggleChecked, hideBadges }) {
+function ConflictRow({
+  group,
+  isExpanded,
+  isSyncable,
+  isChecked,
+  isCheckDisabled,
+  onToggleExpanded,
+  onToggleChecked,
+  hideBadges,
+}) {
   return (
     <div className="conflict-row">
       <button type="button" className={cx('conflict-row-header', { 'is-open': isExpanded })} onClick={onToggleExpanded}>
         <span className="conflict-row-left">
           {isSyncable && (
-            <input
-              type="checkbox"
-              className="conflict-row-checkbox"
-              checked={isChecked}
-              onClick={(e) => e.stopPropagation()}
-              onChange={onToggleChecked}
-            />
+            <ToolTip
+              message={isCheckDisabled ? 'Resolve multiple drafts before syncing this resource' : ''}
+              show={isCheckDisabled}
+              placement="top"
+            >
+              <span
+                style={{ display: 'inline-flex', cursor: isCheckDisabled ? 'not-allowed' : undefined }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input
+                  type="checkbox"
+                  className="conflict-row-checkbox"
+                  checked={isChecked}
+                  disabled={isCheckDisabled}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={isCheckDisabled ? undefined : onToggleChecked}
+                  style={isCheckDisabled ? { cursor: 'not-allowed', opacity: 0.4, pointerEvents: 'none' } : undefined}
+                />
+              </span>
+            </ToolTip>
           )}
           <span>
             {CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label}
@@ -295,6 +318,9 @@ export function PullConflictModal({
                       isExpanded={expandedSyncable.has(idx)}
                       isSyncable
                       isChecked={selectedSyncable.has(idx)}
+                      isCheckDisabled={multiDraftResources.some(
+                        (r) => r.name === group.conflictKey && r.type === group.type
+                      )}
                       hideBadges={hideBadges}
                       onToggleExpanded={() => toggleInSet(setExpandedSyncable, idx)}
                       onToggleChecked={() => toggleInSet(setSelectedSyncable, idx)}
