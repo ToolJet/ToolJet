@@ -3,16 +3,25 @@ id: open-webpage
 title: Open webpage
 ---
 
-You can use this action to open a webpage(on a new tab) for any event.
+The **Open webpage** action opens a URL in a new browser tab when an event occurs.
 
-Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`
+## Configuration
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| URL | The webpage URL to open | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
+
+<img className="screenshot-full img-s" src="/img/actions/open-webpage/open-v3.png" alt="ToolJet - Action reference - Open webpage"/>
+
+## Triggering via RunJS
+
+This action isn't exposed through the `actions.*` RunJS API. Since a RunJS query can run arbitrary JavaScript, you can open a webpage directly with the browser's native API instead:
+
+```js
+window.open('<url>', '_blank');
+```
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
 :::
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/open-webpage/open2.png" alt="ToolJet - Action reference - Open webpage" width="700" />
-
-</div>

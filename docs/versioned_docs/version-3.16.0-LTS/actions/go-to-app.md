@@ -3,16 +3,27 @@ id: go-to-app
 title: Go to app
 ---
 
-This action allows you to open any released ToolJet application when an event occurs. Only the apps that are released can be opened using this action.
+The **Go to app** action opens a different released ToolJet application when an event occurs. Only released apps can be opened this way.
 
-Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`
+## Configuration
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| App | The released app to navigate to | — |
+| Query params | Optional key-value pairs appended to the target app's URL | Empty |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
+
+<img className="screenshot-full img-s" src="/img/actions/gotoapp/gotoapp-v4.png" alt="ToolJet - Action reference - Go To App" />
+
+## Triggering via RunJS
+
+```js
+actions.goToApp('<slug>', queryParams);
+```
+
+- `slug` can be found in the URL of the released app after `application/`, or in the Share modal that opens when clicking the **Share** button at the top-right of the app builder.
+- `queryParams` is an array of key-value pairs in the format `[['key1', 'value1'], ['key2', 'value2']]`.
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
 :::
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/gotoapp/gotoapp3.png" alt="ToolJet - Action reference - Open webpage" width="700" />
-
-</div>

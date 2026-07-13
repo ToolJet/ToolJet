@@ -3,26 +3,28 @@ id: set-page-variable
 title: Set Page Variable
 ---
 
-Page variables are restricted to the page where they are created and cannot be accessed throughout the entire application like regular variables.
+Page variables are restricted to the page where they are created and cannot be accessed throughout the entire application like regular variables. Use this action to create a variable and assign a value to it within a [Multipage App](/docs/app-builder/building-ui/pages).
 
-Use this action to establish a variable and assign a value to it within the [Multipage Apps](/docs/app-builder/building-ui/pages).
+## Configuration
 
-By default, the debounce field is left empty. However, you can input a numeric value to indicate the time in milliseconds before the action is executed. For example, `300`.
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Key | Name (string) of the page variable | — |
+| Value | The value to assign to the variable | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<img className="screenshot-full" src="/img/actions/page/setpagevar2.png" alt="ToolJet - Action reference - Switch page" width="600"/>
+<img className="screenshot-full img-s" src="/img/actions/page/set-page-var-v2.png" alt="ToolJet - Action reference - Set Page Variable"/>
 
-## Using RunJS query to set page variable
-
-Alternatively, the set page variable action can be triggered via a RunJS query using the following syntax:
+## Triggering via RunJS
 
 ```js
-await actions.setPageVariable('<variablekey>',<variablevalue>)
+await actions.setPageVariable('<variableKey>', <variableValue>);
 ```
 
-`variablekey` must be provided as a string (enclosed in quotes), while the `variablevalue` does not require quotation marks if it is a numerical value.
+`variableKey` must be provided as a string (enclosed in quotes), while `variableValue` doesn't require quotation marks if it's a numerical value.
 
-<img className="screenshot-full" src="/img/actions/page/setpagevar33.png" alt="ToolJet - Action reference - Switch page" />
+<img className="screenshot-full" src="/img/actions/page/setpagevar33.png" alt="ToolJet - Action reference - Set Page Variable" />
 
 :::info
-For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
 :::

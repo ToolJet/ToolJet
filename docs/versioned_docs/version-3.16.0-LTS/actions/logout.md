@@ -13,7 +13,7 @@ The **Logout** action logs the current user out of their active ToolJet workspac
 
 Set a numeric value in the **Debounce** field to delay the logout. For example, entering `300` will trigger the logout after 300ms.
 
-<img className="screenshot-full img-l" src="/img/actions/logout/logout2.png" alt="ToolJet - Action reference - Logout" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-s" src="/img/actions/logout/logout-v3.png" alt="ToolJet - Action reference - Logout" />
 
 ## Behavior
 

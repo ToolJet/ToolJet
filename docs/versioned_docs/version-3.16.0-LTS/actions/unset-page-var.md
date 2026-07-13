@@ -3,26 +3,25 @@ id: unset-page-variable
 title: Unset page variable
 ---
 
-Utilize this action to clear a variable that was established using the [set page variable action](/docs/actions/set-page-variable).
+Use this action to clear a variable that was created using the [Set Page Variable](/docs/actions/set-page-variable) action.
 
-By default, the debounce field is left empty. However, you can input a numeric value to indicate the time in milliseconds before the action is executed. For example, `300`.
+## Configuration
 
-<div style={{textAlign: 'center'}}>
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Key | Name (string) of the page variable to clear | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<img className="screenshot-full" src="/img/actions/page/unsetpagevar2.png" alt="ToolJet - Action reference - Switch page" width="600"/>
+<img className="screenshot-full img-s" src="/img/actions/page/unset-page-var-v2.png" alt="ToolJet - Action reference - Unset Page Variable"/>
 
-</div>
-
-## Using RunJS query to unset variable
-
-Alternatively, the unset page variable action can be triggered via a RunJS query using the following syntax:
+## Triggering via RunJS
 
 ```js
-await actions.unsetPageVariable("<variablename>");
+await actions.unsetPageVariable('<variableName>');
 ```
 
-`variablename` is the key of the variable that was provided while creating the variable.
+`variableName` is the key of the variable that was provided while creating the variable.
 
 :::info
-For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
 :::
