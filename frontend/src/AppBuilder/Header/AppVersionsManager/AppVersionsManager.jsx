@@ -116,7 +116,10 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
           const selectedVersionObj = versionsPromotedToEnvironment.find((v) => v.id === id);
           if (selectedVersionObj) {
             const searchParams = new URLSearchParams(location.search);
-            searchParams.set('version', selectedVersionObj.name);
+            searchParams.set(
+              'version',
+              selectedVersionObj.display_name || selectedVersionObj.displayName || selectedVersionObj.name
+            );
             navigate(
               {
                 pathname: location.pathname,

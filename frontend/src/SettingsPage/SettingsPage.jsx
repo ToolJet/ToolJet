@@ -231,6 +231,12 @@ function SettingsPage(props) {
                         <input
                           onChange={(e) => {
                             const file = e.target.files[0];
+                            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                            if (!ALLOWED_TYPES.includes(file.type)) {
+                              toast.error('Only JPEG, PNG, GIF, and WebP images are allowed');
+                              e.target.value = null;
+                              return;
+                            }
                             if (Math.round(file.size / 1024) > 2048) {
                               toast.error('File size cannot exceed more than 2MB');
                               e.target.value = null;
@@ -238,7 +244,7 @@ function SettingsPage(props) {
                               setSelectedFile(file);
                             }
                           }}
-                          accept="image/*"
+                          accept="image/jpeg,image/png,image/gif,image/webp"
                           type="file"
                           className="form-control"
                           data-cy="avatar-upload-field"
