@@ -48,7 +48,7 @@ export function useAppPreviewLink() {
     // preview of a branch version needs the branch context to resolve — without it the guard's
     // slug lookup misses and the app can't be found.
     const previewQuery = queryString.stringify({
-      version: selectedVersion?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
       ...(currentBranch ? { branch: currentBranch.name } : {}),
     });

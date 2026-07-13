@@ -1343,6 +1343,49 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     </div>
                                   </div>
                                 </div>
+                                <div className="manage-groups-permission-apps">
+                                  <div data-cy="resource-tjdb">
+                                    {this.props.t(
+                                      'header.organization.menus.manageGroups.permissionResources.tooljetDatabase',
+                                      'ToolJet Database'
+                                    )}
+                                  </div>
+                                  <div className="text-muted">
+                                    <div className="d-flex apps-permission-wrap flex-column">
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              tjdbCRUD: !groupPermission.tjdbCRUD,
+                                            });
+                                            this.setState({
+                                              updateParam: { tjdbCRUD: !groupPermission.tjdbCRUD },
+                                            });
+                                          }}
+                                          checked={groupPermission.tjdbCRUD}
+                                          disabled={disableNonPromoteReleasePermissions}
+                                          data-cy="tjdb-create-checkbox"
+                                        />
+                                        <span className="form-check-label" data-cy="tjdb-create-label">
+                                          {this.props.t(
+                                            'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+                                            'Create/Update/Delete'
+                                          )}
+                                        </span>
+                                        <span
+                                          className={`tj-text-xxsm ${
+                                            disableNonPromoteReleasePermissions && 'check-label-disable'
+                                          }`}
+                                          data-cy="tjdb-helper-text"
+                                        >
+                                          All operations on ToolJet Database
+                                        </span>
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
                               </>
                             )}
                           </div>

@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
 import { gitSyncService } from '@/_services';
+import { appendBranchName } from '@/_helpers/active-branch';
 
 /**
  * LifecycleCTAButton - Dynamic button that shows git operations based on branch type
@@ -45,6 +46,7 @@ const LifecycleCTAButton = () => {
   );
 
   const developmentVersions = useStore((state) => state.developmentVersions);
+  const draftVersion = developmentVersions?.find((v) => v.status === 'DRAFT');
 
   const [showPushModal, setShowPushModal] = useState(false);
   const [pushValidationError, setPushValidationError] = useState(null);
@@ -168,14 +170,17 @@ const LifecycleCTAButton = () => {
           show={showPushModal}
           onClose={() => setShowPushModal(false)}
           appGitId={appId}
-          versionId={selectedVersion?.id}
+          versionId={draftVersion?.id ?? selectedVersion?.id}
           appName={appName}
           resourceType={appType === 'module' ? 'module' : 'app'}
           onSuccess={() => {
             setShowPushModal(false);
             setTimeout(() => {
+              // switchBranch() already stamped `?branch=<target>` onto the current URL — carry it
+              // into the redirect so the reloaded editor resolves the target branch, not the
+              // default branch (which doesn't have this app's draft yet and hangs the loader).
               const pathParts = window.location.pathname.split('/');
-              window.location.href = `/${pathParts[1]}/apps/${appId}`;
+              window.location.href = appendBranchName(`/${pathParts[1]}/apps/${appId}`);
             }, 1500);
           }}
         />

@@ -1,4 +1,5 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -746,6 +747,26 @@ export class VersionUtilService implements IVersionUtilService {
       // A released/current version can never be deleted, regardless of git state.
       if (app.currentVersionId === versionId || versionToDelete.status === AppVersionStatus.RELEASED) {
         throw new BadRequestException('You cannot delete a released version');
+      }
+
+      // For platform git sync apps, count only versions on the same branch so that
+      // versions on other branches don't inflate the count and bypass the guard.
+      // For all other apps (branchId=null), fall back to the original count across
+      // all versions - behaviour is unchanged.
+      const branchId = versionToDelete.branchId;
+      const numVersions = branchId
+        ? await manager.count(AppVersion, { where: { appId: app.id, branchId } })
+        : await this.versionRepository.getCount(app.id);
+
+      if (numVersions <= 1) {
+        if (branchId) {
+          const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
+          const branchName = branch?.name ?? 'this';
+          throw new ForbiddenException(
+            `${branchName} (Draft) version is the head of the ${branchName} branch and cannot be deleted`
+          );
+        }
+        throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
       }
 
       // getDetails().isEnabled = git sync configured AND licensed. options.defaultBranch is always
