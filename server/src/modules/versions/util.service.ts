@@ -1,4 +1,5 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -571,7 +572,7 @@ export class VersionUtilService implements IVersionUtilService {
 
       if (numVersions <= 1) {
         if (branchId) {
-          const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId }, select: ['name'] });
+          const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
           const branchName = branch?.name ?? 'this';
           throw new ForbiddenException(
             `${branchName} (Draft) version is the head of the ${branchName} branch and cannot be deleted`

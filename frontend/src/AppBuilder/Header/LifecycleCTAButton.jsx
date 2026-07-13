@@ -45,6 +45,7 @@ const LifecycleCTAButton = () => {
   );
 
   const developmentVersions = useStore((state) => state.developmentVersions);
+  const draftVersion = developmentVersions?.find((v) => v.status === 'DRAFT');
 
   const [showPushModal, setShowPushModal] = useState(false);
   const [pushValidationError, setPushValidationError] = useState(null);
@@ -166,7 +167,7 @@ const LifecycleCTAButton = () => {
           show={showPushModal}
           onClose={() => setShowPushModal(false)}
           appGitId={appId}
-          versionId={selectedVersion?.id}
+          versionId={draftVersion?.id ?? selectedVersion?.id}
           appName={appName}
           resourceType={appType === 'module' ? 'module' : 'app'}
           onSuccess={() => {

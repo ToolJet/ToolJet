@@ -469,7 +469,9 @@ export default function AppCard({
           resourceName={app.name}
           appName={app.name}
           appGitId={app.id}
-          versionId={app.editing_version?.id ?? app.app_versions?.[0]?.id}
+          versionId={
+            app.app_versions?.find((v) => v.status === 'DRAFT' || v.status === 'draft')?.id ?? app.editing_version?.id
+          }
           onSuccess={() => setPushModalOpen(false)}
         />
       )}
