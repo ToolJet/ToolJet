@@ -114,7 +114,7 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
-# Styles
+## Styles
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div>                                               | <div style={{ width:"250px"}}> Configuration Options </div>                                                                        |
 | :--------------------------------------------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
@@ -124,3 +124,13 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | Border radius                                        | Modifies the border radius of the component.                                                    | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.                                  |
 | Visibility                                           | Sets the visibility of the component.                                                           | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disables                                             | Allows you to enable/disable a component. The component is not interactive when it is disabled. | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::

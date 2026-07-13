@@ -7,13 +7,13 @@ The **Date Time Picker** component can be used for selecting dates with time inp
 
 ## Properties
 
-| Property          | Description                                                                      | Expected Value                                                                                                               |
-| :---------------- | :------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Label             | Text to display as the label for the field.                                      | String (e.g., `Date and Time of Arrival`).                                                                                   |
-| Date Format       | Select the date format from the dropdown. Default date format is **DD/MM/YYYY**. | Select from dropdown (e.g. `MM/DD/YYYY`).                                                                                    |
-| Time Format       | Select the time format from the dropdown. Default time format is **HH:mm**.      | Select from dropdown (e.g. `hh:mm A`).                                                                                       |
-| Manage time zones | Use the toggle to manage the time zone.                                          | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Default value     | The default value that the component will hold when the app is loaded.           | String (e.g., `01/01/2022 16:00`).                                                                                           |
+| Property | Description | Expected Value |
+| :------- | :---------- | :------------- |
+| Label | Text to display as the label for the field. | String (e.g., `Date and Time of Arrival`). |
+| Date Format | Select the date format from the dropdown. Default date format is **DD/MM/YYYY**. | Select from dropdown (e.g. `MM/DD/YYYY`). |
+| Time Format | Select the time format from the dropdown. Default time format is **HH:mm**. | Select from dropdown (e.g. `hh:mm A`). |
+| Manage time zones | Use the toggle to manage the time zone. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Default value | The default value that the component will hold when the app is loaded. | String (e.g., `01/01/2022 16:00`). |
 
 ## Events
 
@@ -80,29 +80,29 @@ Following exposed variables can be dynamically accessed using the given JS query
 
 ## Validation
 
-| Validation Option         | <div style={{ width:"200px"}}> Description </div>                           | Expected Value                                                                                                                      |
-| :------------------------ | :-------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
-| Min Date                  | Sets the minimum date allowed.                                              | Date in correct format (e.g. `01/01/2020`).                                                                                         |
-| Max Date                  | Sets the maximum date allowed.                                              | Date in correct format (e.g. `31/12/2026`).                                                                                         |
-| Min Time                  | Specifies the earliest selectable time.                                     | String (for e.g., `05:35`)                                                                                                          |
-| Max Time                  | Specifies the latest selectable time.                                       | String (for e.g., `15:45`)                                                                                                          |
-| Disabled dates            | Sets the dates that are not acceptable.                                     | Date in correct format (e.g. `23/07/2024`).                                                                                         |
-| Custom validation         | Add a custom validation for the date time input using the ternary operator. | Custom Validation Statement (for e.g., `{{ moment(components.datetimepicker1.value).isAfter(moment()) ? true : 'You are late!' }}`) |
-| Make this field mandatory | Makes the field mandatory.                                                  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.        |
+| Validation Option | <div style={{ width:"200px"}}> Description </div> | Expected Value |
+| :---------------- | :------------------------------------------------ | :------------- |
+| Min Date | Sets the minimum date allowed. | Date in correct format (e.g. `01/01/2020`). |
+| Max Date | Sets the maximum date allowed. | Date in correct format (e.g. `31/12/2026`). |
+| Min Time | Specifies the earliest selectable time. | String (for e.g., `05:35`) |
+| Max Time | Specifies the latest selectable time. | String (for e.g., `15:45`) |
+| Disabled dates | Sets the dates that are not acceptable. | Date in correct format (e.g. `23/07/2024`). |
+| Custom validation | Add a custom validation for the date time input using the ternary operator. | Custom Validation Statement (for e.g., `{{ moment(components.datetimepicker1.value).isAfter(moment()) ? true : 'You are late!' }}`) | 
+| Make this field mandatory | Makes the field mandatory. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Additional Actions
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                            | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
-| :------------------------------------------- | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility                                   | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable                                      | Enables or disables the component.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip                                      | Provides additional information on hover.                                    | String (e.g., `Select the date & time of arrival.`).                                                                         |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. | String (e.g., `Select the date & time of arrival.`). |
 
 ## Devices
 
-| Property        | Description                                  | Expected Value                                                                                                                    |
-| :-------------- | :------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Property | Description | Expected Value |
+| :------- | :---------- | :------------- |
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 

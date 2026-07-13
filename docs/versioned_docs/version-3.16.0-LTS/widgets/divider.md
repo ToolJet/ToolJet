@@ -5,23 +5,13 @@ title: Divider
 
 The **Divider** component is used to add a separator between components.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Component Specific Actions (CSA)
 
 There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Exposed variables
 
 There are currently no exposed variables for the component.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## General
 
@@ -31,22 +21,12 @@ A Tooltip is often used to specify extra information about something when the us
 
 Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Layout
 
 | Layout | Description | Expected Value  |
 | :-------------- | :-----------------| :------------------ |
 | Show on Desktop  | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on Mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
-</div>
-
----
-
-<div style={{paddingTop:'24px'}}>
 
 ## Styles
 
@@ -69,5 +49,3 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 :::info
 The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
 :::
-
-</div>

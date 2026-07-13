@@ -7,19 +7,19 @@ The **Password Input** component allows users to enter passwords securely. In th
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div>                      | <div style={{width: "200px"}}> Expected Value </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div> |
 | :--------------------------------------------- | :--------------------------------------------------------------------- | :--------------------------------------------------- |
-| Label                                          | Text to display as the label for the field.                            | String (e.g., `Enter Your Password`).                |
-| Placeholder                                    | A hint displayed to guide the user on what to enter.                   | String (e.g., `SecurePassword123`).                  |
-| Default value                                  | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`).                       |
+| Label | Text to display as the label for the field. | String (e.g., `Enter Your Password`). |
+| Placeholder | A hint displayed to guide the user on what to enter. | String (e.g., `SecurePassword123`). |
+| Default value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
 
 ## Events
 
-| Event            | Description                                                                                                      |
-| :--------------- | :--------------------------------------------------------------------------------------------------------------- |
-| On change        | Triggers whenever the user types something in the input field.                                                   |
-| On focus         | Triggers whenever the user clicks inside the input field.                                                        |
-| On blur          | Triggers whenever the user clicks outside the input field.                                                       |
+| Event | Description |
+| :---- | :---------- |
+| On change | Triggers whenever the user types something in the input field. |
+| On focus | Triggers whenever the user clicks inside the input field. |
+| On blur | Triggers whenever the user clicks outside the input field. |
 | On enter pressed | Triggers whenever the user presses the enter button on the keyboard after entering some text in the input field. |
 
 :::info
@@ -32,13 +32,13 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div>     | <div style={{width: "200px"}}> How To Access </div> |
 | :------------------------------------------- | :---------------------------------------------------- | :-------------------------------------------------- |
-| setText()                                    | Sets the value of the input field.                    | `components.passwordinput1.setText()`               |
-| clear()                                      | Clears the entered text in the input field.           | `components.passwordinput1.clear()`                 |
-| setFocus()                                   | Sets the focus of the cursor on the input field.      | `components.passwordinput1.setFocus()`              |
-| setBlur()                                    | Removes the focus of the cursor from the input field. | `components.passwordinput1.setBlur()`               |
-| setVisibility()                              | Sets the visibility of the component.                 | `components.passwordinput1.setVisibility(false)`    |
-| setLoading()                                 | Sets the loading state of the component.              | `components.passwordinput1.setLoading(true)`        |
-| setDisable()                                 | Disables the component.                               | `components.passwordinput1.setDisable(true)`        |
+| setText() | Sets the value of the input field. | `components.passwordinput1.setText()` |
+| clear() | Clears the entered text in the input field. | `components.passwordinput1.clear()` |
+| setFocus() | Sets the focus of the cursor on the input field. | `components.passwordinput1.setFocus()` |
+| setBlur() | Removes the focus of the cursor from the input field. | `components.passwordinput1.setBlur()` |
+| setVisibility() | Sets the visibility of the component. | `components.passwordinput1.setVisibility(false)` |
+| setLoading() | Sets the loading state of the component. | `components.passwordinput1.setLoading(true)` |
+| setDisable() | Disables the component. | `components.passwordinput1.setDisable(true)` |
 
 ## Exposed Variables
 
