@@ -16,8 +16,8 @@ export const Timeline = function Timeline({
   subContainerIndex,
   componentType,
 }) {
-  const { visibility, boxShadow } = styles;
-  const { data, hideDate } = properties;
+  const { boxShadow } = styles;
+  const { data, hideDate, visibility } = properties;
 
   const darkModeStyle = darkMode && 'text-white-50';
 

@@ -216,6 +216,7 @@ export const baseComponentProperties = (
       'FlexContainer',
       'ModalV2',
       'Container',
+      'Timeline',
     ],
     Layout: [],
   };

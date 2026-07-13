@@ -32,6 +32,34 @@ export const timelineConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   defaultSize: {
     width: 20,
@@ -43,10 +71,14 @@ export const timelineConfig = {
   },
   events: {},
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: { schema: { type: 'boolean' } },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -65,10 +97,13 @@ export const timelineConfig = {
       hideDate: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
