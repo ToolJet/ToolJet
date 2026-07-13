@@ -1056,7 +1056,18 @@ export class AppsUtilService implements IAppsUtilService {
     viewableApps: string[]
   ): SelectQueryBuilder<AppBase> {
     const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
-    if (isAllEditable) return query;
+    const { hiddenAppsId } = userAppPermissions;
+
+    if (isAllEditable) {
+      // Builder with "all apps editable" — still respect hideFromDashboard settings.
+      if (hideAll) {
+        // All apps hidden from dashboard; none should appear.
+        query.andWhere('1 = 0');
+      } else if (hiddenAppsId.length > 0) {
+        query.andWhere('apps.id NOT IN (:...hiddenApps)', { hiddenApps: hiddenAppsId });
+      }
+      return query;
+    }
 
     if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll)) {
       query.andWhere('apps.id IN (:...viewableApps)', {
@@ -1065,8 +1076,8 @@ export class AppsUtilService implements IAppsUtilService {
       return query;
     }
 
-    const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
-    if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0) {
+    const hiddenApps = hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
+    if (!hideAll && isAllViewable && hiddenApps.length > 0) {
       query.andWhere('apps.id NOT IN (:...hiddenApps)', {
         hiddenApps,
       });
@@ -1130,6 +1141,7 @@ export class AppsUtilService implements IAppsUtilService {
                 'Tags',
                 'TagsInput',
                 'TreeSelect',
+                'Cascader',
                 'Navigation',
                 'ButtonGroupV2',
               ].includes(currentComponentData?.component?.component) &&

@@ -314,7 +314,8 @@
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
                         "folder": "Folder",
-                        "dataSource": "Data sources"
+                        "dataSource": "Data sources",
+                        "tooljetDatabase": "ToolJet Database"
                     },
                     "groupOptions": {
                         "deleteGroup": "Delete Group",

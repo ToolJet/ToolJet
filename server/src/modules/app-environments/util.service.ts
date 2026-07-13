@@ -3,8 +3,9 @@ import { EntityManager, FindOptionsOrderValue } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap, getConnectionInstance } from 'src/helpers/database.helper';
 import { IAppEnvironmentUtilService } from './interfaces/IUtilService';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { App } from '@entities/app.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { FindOneOptions } from 'typeorm';
 import { defaultAppEnvironments } from '@helpers/utils.helper';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
@@ -149,7 +150,15 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
 
     const result = await manager
       .createQueryBuilder(AppVersion, 'appVersion')
-      .select(['appVersion.name', 'appVersion.id', 'appVersion.currentEnvironmentId'])
+      .select([
+        'appVersion.name',
+        'appVersion.id',
+        'appVersion.currentEnvironmentId',
+        'appVersion.versionType',
+        'appVersion.branchId',
+      ])
+      .addSelect('branch.branch_name', 'branch_name')
+      .leftJoin(WorkspaceBranch, 'branch', 'appVersion.branch_id = branch.id')
       .innerJoin(AppEnvironment, 'env', 'appVersion.currentEnvironmentId = env.id')
       .where(`env.priority >= (${subquery.getQuery()})`)
       .setParameters(subquery.getParameters())
@@ -162,10 +171,16 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       return null;
     }
 
+    const versionType = result.appVersion_version_type;
+    const branchName = result.branch_name;
+
     return {
       name: result.appVersion_name,
       id: result.appVersion_id,
       currentEnvironmentId: result.appVersion_current_environment_id,
+      current_environment_id: result.appVersion_current_environment_id,
+      versionType,
+      ...(versionType === AppVersionType.BRANCH && branchName ? { displayName: branchName } : {}),
     };
   }
 
