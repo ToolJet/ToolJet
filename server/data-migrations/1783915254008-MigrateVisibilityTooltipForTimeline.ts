@@ -57,7 +57,7 @@ export class MigrateVisibilityTooltipForTimeline1783915254008 implements Migrati
       MIGRATION_NAME
     );
 
-    console.log(`${MIGRATION_NAME}: completed. Updated ${totalUpdated} components.`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Migrate Timeline visibility/tooltip/boxShadow + backfill tooltipFormat finished. Updated ${totalUpdated} components.`);
   }
 
   private async processUpdates(
