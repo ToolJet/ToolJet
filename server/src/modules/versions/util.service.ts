@@ -452,8 +452,7 @@ export class VersionUtilService implements IVersionUtilService {
             return `Module "${name}" has active draft pinned. Pin a saved version.`;
           }
           // pin-hit + DRAFT remaining.
-          const versionName = m.resolved?.versionName ?? 'draft';
-          return `Module "${name}" version "${versionName}" is still in draft. Save the module first.`;
+          return `Module "${name}" has active draft pinned. Pin a saved version.`;
         };
         const moduleList = unique.map(formatEntry).join(' ');
         const message =
@@ -550,6 +549,13 @@ export class VersionUtilService implements IVersionUtilService {
         : await this.versionRepository.getCount(app.id);
 
       if (numVersions <= 1) {
+        if (branchId) {
+          const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId }, select: ['name'] });
+          const branchName = branch?.name ?? 'this';
+          throw new ForbiddenException(
+            `${branchName} (Draft) version is the head of the ${branchName} branch and cannot be deleted`
+          );
+        }
         throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
       }
 
