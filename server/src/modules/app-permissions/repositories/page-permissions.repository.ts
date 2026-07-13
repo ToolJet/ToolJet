@@ -1,6 +1,6 @@
 import { PagePermission } from '@entities/page_permissions.entity';
 import { Injectable } from '@nestjs/common';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { PageUsersRepository } from './page-users.repository';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { PAGE_PERMISSION_TYPE } from '../constants';
@@ -27,6 +27,16 @@ export class PagePermissionsRepository extends Repository<PagePermission> {
           };
         }
         return permission;
+      });
+    }, manager || this.manager);
+  }
+
+  async getPagePermissionsForPages(pageIds: string[], manager?: EntityManager): Promise<PagePermission[]> {
+    if (!pageIds.length) return [];
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.find(PagePermission, {
+        where: { pageId: In(pageIds) },
+        relations: ['users', 'users.user'],
       });
     }, manager || this.manager);
   }
