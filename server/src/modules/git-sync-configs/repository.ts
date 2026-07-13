@@ -5,6 +5,7 @@ import { OrganizationGitSsh } from '@entities/gitsync_entities/organization_git_
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
 import { OrganizationGitCreateDto } from '@dto/organization_git.dto';
+import { getProviderDescriptor } from './provider-descriptors';
 
 // CRUD on organization_git_sync and the three per-provider sibling tables.
 // Pure DB access — no encryption, no git network calls, no env-registry reads.
@@ -106,15 +107,7 @@ export class GitSyncConfigsRepository extends Repository<OrganizationGitSync> {
   private providerEntity(
     gitType: GITConnectionType
   ): { new (): OrganizationGitSsh | OrganizationGitHttps | OrganizationGitLab } | null {
-    switch (gitType) {
-      case GITConnectionType.GITHUB_SSH:
-        return OrganizationGitSsh;
-      case GITConnectionType.GITHUB_HTTPS:
-        return OrganizationGitHttps;
-      case GITConnectionType.GITLAB:
-        return OrganizationGitLab;
-      default:
-        return null;
-    }
+    // Data-driven via the shared descriptor registry — adding a provider needs no edit here.
+    return getProviderDescriptor(gitType)?.entity ?? null;
   }
 }
