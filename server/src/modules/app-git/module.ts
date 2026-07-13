@@ -74,6 +74,14 @@ export class AppGitModule extends SubModule {
         AppsRepository,
         AppGitService,
         { provide: GitTagInterface, useExisting: AppGitService },
+        // Registry of app-git provider adapters — the SINGLE place a new provider (e.g. Bitbucket) is
+        // added. The dispatcher resolves by gitType from this list, so no dispatcher/base/adapter file
+        // changes are needed to add a provider.
+        {
+          provide: 'APP_GIT_PROVIDER_ADAPTERS',
+          useFactory: (ssh, https, gitlab) => [ssh, https, gitlab],
+          inject: [SSHAppGitService, HTTPSAppGitService, GitLabAppGitService],
+        },
         SourceControlProviderService,
         SSHAppGitService,
         HTTPSAppGitService,
