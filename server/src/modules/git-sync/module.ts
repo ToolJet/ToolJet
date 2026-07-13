@@ -97,6 +97,7 @@ export class GitSyncModule extends SubModule {
         SourceControlProviderService,
         GitObjectCacheService,
         RemoteBranchCacheService,
+        GitMirrorWarmerService,
       ],
     });
   }
