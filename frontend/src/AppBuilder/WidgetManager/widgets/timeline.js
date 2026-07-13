@@ -20,6 +20,18 @@ export const timelineConfig = {
         defaultValue: false,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   defaultSize: {
     width: 20,
@@ -51,6 +63,8 @@ export const timelineConfig = {
           "{{ [ \n\t\t{ title: 'Product Launched', subTitle: 'First version of our product released to public', date: '20/10/2021', iconBackgroundColor: 'var(--cc-primary-brand)'},\n\t\t { title: 'First Signup', subTitle: 'Congratulations! We got our first signup', date: '22/10/2021', iconBackgroundColor: 'var(--cc-primary-brand)'}, \n\t\t { title: 'First Payment', subTitle: 'Hurray! We got our first payment', date: '01/11/2021', iconBackgroundColor: 'var(--cc-primary-brand)'} \n] }}",
       },
       hideDate: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {
