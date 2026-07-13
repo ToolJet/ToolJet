@@ -3,7 +3,7 @@ id: cascader
 title: Cascader
 ---
 
-The Cascader component lets users select a single value from a hierarchical (nested) set of options by drilling down through levels, such as **Continent > Country > City**. Only the last-level items (leaf nodes) in a branch can be selected.
+The Cascader component lets users select a single value from a hierarchical (nested) set of options by drilling down through levels, such as **Continent > Country > City**. 
 
 ## Data
 
