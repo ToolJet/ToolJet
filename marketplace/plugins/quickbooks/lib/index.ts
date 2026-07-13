@@ -130,6 +130,7 @@ export default class QuickBooks implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     const accessToken = sourceOptions['access_token'];
+    const companyId = sourceOptions['company_id'];
 
     if (!accessToken) {
       throw new QueryError(
@@ -139,16 +140,26 @@ export default class QuickBooks implements QueryService {
       );
     }
 
+    if (!companyId) {
+      throw new QueryError(
+        'Invalid configuration',
+        'Missing QuickBooks Company ID. Please add it in the datasource configuration.',
+        { code: 'MISSING_COMPANY_ID' }
+      );
+    }
+
     const operation = queryOptions?.operation?.toLowerCase?.();
     const path = queryOptions['path'];
-    const pathParams = queryOptions['params']?.['path'] || {};
+    // companyid always comes from the datasource connection, never from the query itself —
+    // this overrides any companyid a query might still set in params.path.
+    const pathParams = { ...(queryOptions['params']?.['path'] || {}), companyid: companyId };
     const queryParams = queryOptions['params']?.['query'] || {};
     const bodyParams = queryOptions['params']?.['request'] || {};
 
     // Build URL — always use sandbox for development apps
     let url = `${SANDBOX_URL}${path}`;
     for (const param in pathParams) {
-      url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
+      url = url.split(`{${param}}`).join(encodeURIComponent(pathParams[param]));
     }
 
     console.log('[QuickBooks] Request:', operation?.toUpperCase(), url);
@@ -176,11 +187,12 @@ export default class QuickBooks implements QueryService {
 
     // Add body for non-GET/DELETE operations
     if (operation && !['get', 'delete'].includes(operation) && bodyParams && Object.keys(bodyParams).length > 0) {
-      // QuickBooks /query endpoint expects a raw SQL string as text/plain, not JSON
+      // QuickBooks /query endpoint expects a raw SQL string with Content-Type: application/text
+      // (Intuit's API rejects the standard text/plain MIME type here).
       if (path?.endsWith('/query')) {
         const queryString = bodyParams['body'] ?? Object.values(bodyParams)[0];
         requestOptions.body = String(queryString);
-        requestOptions.headers['Content-Type'] = 'text/plain';
+        requestOptions.headers['Content-Type'] = 'application/text';
       } else {
         const parsedBody: Record<string, any> = {};
         for (const [key, value] of Object.entries(bodyParams)) {

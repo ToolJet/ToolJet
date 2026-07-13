@@ -112,20 +112,20 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/account/1:
+  /v3/company/{companyid}/account/{id}:
     get:
       tags:
         - Account
       summary: Account-ReadById
-      description: Get the Account which has accountId as 1
+      description: Get the Account by Id
       operationId: accountReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1'
         - name: minorversion
           in: query
           schema:
@@ -141,12 +141,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/query:
     post:
       tags:
@@ -176,7 +170,7 @@ paths:
               'INR') and asofdate='2017-07-07'
       requestBody:
         content:
-          text/plain:
+          application/text:
             examples:
               Account-ReadAll:
                 value: |
@@ -250,12 +244,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/attachable:
     post:
       tags:
@@ -378,13 +366,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/attachable/5000000000000029383:
+  /v3/company/{companyid}/attachable/{id}:
     get:
       tags:
         - Attachable
@@ -395,6 +377,12 @@ paths:
         Method - GET
       operationId: attachableReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '5000000000000029383'
         - name: minorversion
           in: query
           schema:
@@ -410,12 +398,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/upload:
     post:
       tags:
@@ -643,12 +625,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/batch:
     post:
       tags:
@@ -771,12 +747,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/bill:
     post:
       tags:
@@ -845,12 +815,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/bill?operation=delete:
     post:
       tags:
@@ -897,13 +861,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/bill/1:
+  /v3/company/{companyid}/bill/{id}:
     get:
       tags:
         - Bill
@@ -914,6 +872,12 @@ paths:
         Method - GET
       operationId: billGetbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1'
         - name: minorversion
           in: query
           schema:
@@ -929,12 +893,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/billpayment:
     post:
       tags:
@@ -1068,13 +1026,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/billpayment/118:
+  /v3/company/{companyid}/billpayment/{id}:
     get:
       tags:
         - BillPayment
@@ -1084,6 +1036,12 @@ paths:
         Method - GET
       operationId: billpaymentReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '118'
         - name: minorversion
           in: query
           schema:
@@ -1099,12 +1057,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/cdc:
     get:
       tags:
@@ -1135,12 +1087,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/class:
     post:
       tags:
@@ -1201,13 +1147,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/class/5000000000000018727:
+  /v3/company/{companyid}/class/{id}:
     get:
       tags:
         - Class
@@ -1217,6 +1157,12 @@ paths:
         Method - GET
       operationId: classReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '5000000000000018727'
         - name: minorversion
           in: query
           schema:
@@ -1232,12 +1178,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/companyinfo/{companyid}:
     get:
       tags:
@@ -1261,17 +1201,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/creditmemo:
     post:
       tags:
@@ -1392,13 +1321,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/creditmemo/160:
+  /v3/company/{companyid}/creditmemo/{id}:
     get:
       tags:
         - CreditMemo
@@ -1408,6 +1331,12 @@ paths:
         Method : GET
       operationId: creditmemoReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '160'
         - name: minorversion
           in: query
           schema:
@@ -1423,12 +1352,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/customer:
     post:
       tags:
@@ -1530,13 +1453,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/customer/63:
+  /v3/company/{companyid}/customer/{id}:
     get:
       tags:
         - Customer
@@ -1546,6 +1463,12 @@ paths:
         Method : GET
       operationId: customerReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '63'
         - name: minorversion
           in: query
           schema:
@@ -1561,12 +1484,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/department:
     post:
       tags:
@@ -1646,13 +1563,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/department/1:
+  /v3/company/{companyid}/department/{id}:
     get:
       tags:
         - Department
@@ -1662,6 +1573,12 @@ paths:
         Method : GET
       operationId: departmentReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1'
         - name: minorversion
           in: query
           schema:
@@ -1677,12 +1594,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/deposit:
     post:
       tags:
@@ -1766,13 +1677,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/deposit/162:
+  /v3/company/{companyid}/deposit/{id}:
     get:
       tags:
         - Deposit
@@ -1782,6 +1687,12 @@ paths:
         Method : POST
       operationId: depositReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '162'
         - name: minorversion
           in: query
           schema:
@@ -1797,12 +1708,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/employee:
     post:
       tags:
@@ -1963,13 +1868,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/employee/68:
+  /v3/company/{companyid}/employee/{id}:
     get:
       tags:
         - Employee
@@ -1980,6 +1879,12 @@ paths:
 
       operationId: employeeReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '68'
         - name: minorversion
           in: query
           schema:
@@ -1995,12 +1900,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/estimate:
     post:
       tags:
@@ -2160,13 +2059,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/estimate/163:
+  /v3/company/{companyid}/estimate/{id}:
     get:
       tags:
         - Estimate
@@ -2176,6 +2069,12 @@ paths:
         Method : POST
       operationId: estimateReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '163'
         - name: minorversion
           in: query
           schema:
@@ -2191,12 +2090,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/exchangerate:
     get:
       tags:
@@ -2232,12 +2125,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/inventoryadjustment:
     post:
       tags:
@@ -2352,12 +2239,6 @@ paths:
       security:
         - oauth2:
             - com.intuit.quickbooks.accounting
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   
   /v3/company/{companyid}/invoice:
     post:
@@ -2485,13 +2366,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/invoice/147:
+  /v3/company/{companyid}/invoice/{id}:
     get:
       tags:
         - Invoice
@@ -2501,6 +2376,12 @@ paths:
         Method : POST
       operationId: invoiceReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '147'
         - name: minorversion
           in: query
           schema:
@@ -2516,12 +2397,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/item:
     post:
       tags:
@@ -2689,12 +2564,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/item/<ID>:
     get:
       tags:
@@ -2720,12 +2589,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/journalentry:
     post:
       tags:
@@ -2825,13 +2688,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/journalentry/8:
+  /v3/company/{companyid}/journalentry/{id}:
     get:
       tags:
         - JournalEntry
@@ -2841,6 +2698,12 @@ paths:
         Method : POST
       operationId: journalentryReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '8'
         - name: minorversion
           in: query
           schema:
@@ -2856,12 +2719,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/payment:
     post:
       tags:
@@ -2973,13 +2830,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/payment/174:
+  /v3/company/{companyid}/payment/{id}:
     get:
       tags:
         - Payment
@@ -2989,6 +2840,12 @@ paths:
         Method : GET
       operationId: paymentReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '174'
         - name: minorversion
           in: query
           schema:
@@ -3004,12 +2861,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/paymentmethod:
     post:
       tags:
@@ -3099,13 +2950,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/paymentmethod/8:
+  /v3/company/{companyid}/paymentmethod/{id}:
     get:
       tags:
         - PaymentMethod
@@ -3115,6 +2960,12 @@ paths:
         Method : GET
       operationId: paymentmethodReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '8'
         - name: minorversion
           in: query
           schema:
@@ -3130,12 +2981,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/preferences:
     get:
       tags:
@@ -3715,12 +3560,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/purchase:
     post:
       tags:
@@ -3824,13 +3663,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/purchase/175:
+  /v3/company/{companyid}/purchase/{id}:
     get:
       tags:
         - Purchase
@@ -3840,6 +3673,12 @@ paths:
         Method : POST
       operationId: purchaseReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '175'
         - name: minorversion
           in: query
           schema:
@@ -3855,12 +3694,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/purchaseorder:
     post:
       tags:
@@ -3977,13 +3810,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/purchaseorder/178:
+  /v3/company/{companyid}/purchaseorder/{id}:
     get:
       tags:
         - PurchaseOrder
@@ -3993,6 +3820,12 @@ paths:
         Method : POST
       operationId: purchaseorderReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '178'
         - name: minorversion
           in: query
           schema:
@@ -4008,12 +3841,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/refundreceipt:
     post:
       tags:
@@ -4116,13 +3943,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/refundreceipt/66:
+  /v3/company/{companyid}/refundreceipt/{id}:
     get:
       tags:
         - RefundReceipt
@@ -4132,6 +3953,12 @@ paths:
         Method : GET
       operationId: refundreceiptReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '66'
         - name: minorversion
           in: query
           schema:
@@ -4147,12 +3974,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/AccountList:
     get:
       tags:
@@ -4184,12 +4005,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/AgedPayableDetail:
     get:
       tags:
@@ -4223,12 +4038,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/AgedPayables:
     get:
       tags:
@@ -4263,12 +4072,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/AgedReceivableDetail:
     get:
       tags:
@@ -4303,12 +4106,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/AgedReceivables:
     get:
       tags:
@@ -4344,12 +4141,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/BalanceSheet:
     get:
       tags:
@@ -4386,12 +4177,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/CashFlow:
     get:
       tags:
@@ -4428,12 +4213,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/ClassSales:
     get:
       tags:
@@ -4466,12 +4245,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/CustomerBalance:
     get:
       tags:
@@ -4504,12 +4277,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/CustomerBalanceDetail:
     get:
       tags:
@@ -4549,12 +4316,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/CustomerIncome:
     get:
       tags:
@@ -4590,12 +4351,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/CustomerSales:
     get:
       tags:
@@ -4631,12 +4386,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/DepartmentSales:
     get:
       tags:
@@ -4672,12 +4421,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/GeneralLedger:
     get:
       tags:
@@ -4713,12 +4456,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/InventoryValuationSummary:
     get:
       tags:
@@ -4757,12 +4494,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/ItemSales:
     get:
       tags:
@@ -4801,12 +4532,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/ProfitAndLoss:
     get:
       tags:
@@ -4845,12 +4570,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/ProfitAndLossDetail:
     get:
       tags:
@@ -4889,12 +4608,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/TrialBalance:
     get:
       tags:
@@ -4929,12 +4642,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/TransactionList:
     get:
       tags:
@@ -4972,12 +4679,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/VendorBalance:
     get:
       tags:
@@ -5011,12 +4712,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/VendorBalanceDetail:
     get:
       tags:
@@ -5052,12 +4747,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/reports/VendorExpenses:
     get:
       tags:
@@ -5093,12 +4782,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/salesreceipt:
     post:
       tags:
@@ -5219,13 +4902,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/salesreceipt/181:
+  /v3/company/{companyid}/salesreceipt/{id}:
     get:
       tags:
         - SalesReceipt
@@ -5235,6 +4912,12 @@ paths:
         Method : POST
       operationId: salesreceiptReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '181'
         - name: minorversion
           in: query
           schema:
@@ -5250,12 +4933,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/taxagency:
     post:
       tags:
@@ -5305,13 +4982,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/taxagency/3:
+  /v3/company/{companyid}/taxagency/{id}:
     get:
       tags:
         - TaxAgency
@@ -5321,6 +4992,12 @@ paths:
         Method : GET
       operationId: taxagencyReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '3'
         - name: minorversion
           in: query
           schema:
@@ -5336,13 +5013,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/taxcode/2:
+  /v3/company/{companyid}/taxcode/{id}:
     get:
       tags:
         - TaxCode
@@ -5352,6 +5023,12 @@ paths:
         Method : POST
       operationId: taxcodeReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '2'
         - name: minorversion
           in: query
           schema:
@@ -5367,13 +5044,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/taxrate/1:
+  /v3/company/{companyid}/taxrate/{id}:
     get:
       tags:
         - TaxRate
@@ -5383,6 +5054,12 @@ paths:
         Method : POST
       operationId: taxrateReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '1'
         - name: minorversion
           in: query
           schema:
@@ -5398,12 +5075,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/taxservice/taxcode:
     post:
       tags:
@@ -5469,12 +5140,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/term:
     post:
       tags:
@@ -5560,13 +5225,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/term/8:
+  /v3/company/{companyid}/term/{id}:
     get:
       tags:
         - Term
@@ -5577,6 +5236,12 @@ paths:
 
       operationId: termReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '8'
         - name: minorversion
           in: query
           schema:
@@ -5592,12 +5257,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/timeactivity:
     post:
       tags:
@@ -5692,12 +5351,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/transfer:
     post:
       tags:
@@ -5773,13 +5426,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/transfer/184:
+  /v3/company/{companyid}/transfer/{id}:
     get:
       tags:
         - Transfer
@@ -5790,6 +5437,12 @@ paths:
 
       operationId: transferReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '184'
         - name: minorversion
           in: query
           schema:
@@ -5805,12 +5458,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/vendor:
     post:
       tags:
@@ -6055,13 +5702,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/vendor/70:
+  /v3/company/{companyid}/vendor/{id}:
     get:
       tags:
         - Vendor
@@ -6072,6 +5713,12 @@ paths:
 
       operationId: vendorReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '70'
         - name: minorversion
           in: query
           schema:
@@ -6087,12 +5734,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
   /v3/company/{companyid}/vendorcredit:
     post:
       tags:
@@ -6220,13 +5861,7 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
-  /v3/company/{companyid}/vendorcredit/185:
+  /v3/company/{companyid}/vendorcredit/{id}:
     get:
       tags:
         - VendorCredit
@@ -6241,6 +5876,12 @@ paths:
         objectId which exists in your QBO account
       operationId: vendorcreditReadbyid
       parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '185'
         - name: minorversion
           in: query
           schema:
@@ -6256,12 +5897,6 @@ paths:
           description: ''
       security:
         - oauth2: []
-    parameters:
-      - name: companyid
-        in: path
-        required: true
-        schema:
-          type: string
 components:
   securitySchemes:
     oauth2:

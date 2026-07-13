@@ -34,6 +34,7 @@ const Authentication = ({
   client_id,
   client_secret,
   client_auth,
+  company_id,
   audience,
   custom_auth_params,
   custom_query_params,
@@ -77,6 +78,7 @@ const Authentication = ({
             client_id,
             client_secret,
             client_auth,
+            company_id,
           }}
           tokenConfig={{
             access_token_url,
