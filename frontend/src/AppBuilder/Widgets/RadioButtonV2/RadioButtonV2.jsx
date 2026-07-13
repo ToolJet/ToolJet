@@ -257,7 +257,7 @@ export const RadioButtonV2 = ({
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
         ) : (
           <div
-            className="d-flex tw-align-middle"
+            className="d-flex tw-items-center tw-px-0"
             ref={radioBtnRef}
             style={{
               ...computedLayoutStyles,
