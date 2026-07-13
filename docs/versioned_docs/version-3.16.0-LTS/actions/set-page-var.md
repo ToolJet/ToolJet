@@ -13,7 +13,7 @@ Page variables are restricted to the page where they are created and cannot be a
 | Value | The value to assign to the variable | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<img className="screenshot-full" src="/img/actions/page/setpagevar2.png" alt="ToolJet - Action reference - Set Page Variable" width="600"/>
+<img className="screenshot-full img-s" src="/img/actions/page/set-page-var-v2.png" alt="ToolJet - Action reference - Set Page Variable"/>
 
 ## Triggering via RunJS
 

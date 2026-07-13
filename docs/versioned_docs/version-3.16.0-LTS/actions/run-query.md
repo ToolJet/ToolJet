@@ -12,11 +12,7 @@ The **Run Query** action fires a query when an event occurs. Use it to load or m
 | Query | The query to run | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/run-query/run-query2.png" alt="ToolJet - Action reference -  Run Query" width="700" />
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/run-query/run-query-v3.png" alt="ToolJet - Action reference -  Run Query" />
 
 ## Triggering via RunJS
 

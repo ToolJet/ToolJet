@@ -14,6 +14,8 @@ The **Generate file** action constructs a CSV, text, or PDF file on the fly and 
 | Data      | Data that will be used to construct the file. Its format will depend on the file type, as specified in the following section                                | — |
 | Debounce  | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
+<img className="screenshot-full img-s" src="/img/actions/generate-file/generate-file.png" alt="ToolJet - Action reference - generate-file" />
+
 ### CSV Data Format
 
 To use the `CSV` file format, the data field should contain an array of objects. ToolJet assumes that the keys in each object are the same and represent the column headers of the CSV file.

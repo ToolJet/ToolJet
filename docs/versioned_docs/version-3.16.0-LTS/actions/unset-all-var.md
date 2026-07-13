@@ -12,7 +12,7 @@ Use this action to unset all app-level variables at once.
 | Run Only If | Optional condition that determines whether this action runs | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<img className="screenshot-full img-full" src="/img/actions/unsetAllVar/unsetAllVar.png" alt="ToolJet - Action reference - Unset All Variables" />
+<img className="screenshot-full img-s" src="/img/actions/unsetAllVar/unsetAllVar-v2.png" alt="ToolJet - Action reference - Unset All Variables" />
 
 ## Triggering via RunJS
 

@@ -13,11 +13,7 @@ The **Switch Page** action navigates to a different page within a [Multipage App
 | Query params | Optional key-value pairs appended to the switched page's URL | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/page/switchpage2.png" alt="ToolJet - Action Reference - Page Switching" width="500"/>
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/switch-page/switch-page.png" alt="ToolJet - Action Reference - Page Switching"/>
 
 ## Query params
 

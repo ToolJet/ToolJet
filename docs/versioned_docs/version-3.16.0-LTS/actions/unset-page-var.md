@@ -12,11 +12,7 @@ Use this action to clear a variable that was created using the [Set Page Variabl
 | Key | Name (string) of the page variable to clear | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/page/unsetpagevar2.png" alt="ToolJet - Action reference - Unset Page Variable" width="600"/>
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/page/unset-page-var-v2.png" alt="ToolJet - Action reference - Unset Page Variable"/>
 
 ## Triggering via RunJS
 

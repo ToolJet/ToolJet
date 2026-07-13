@@ -12,11 +12,7 @@ The **Unset variable** action removes an app-level variable that was created usi
 | Key | Name (string) of the variable to remove | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/unsetvar/unsetvar2.png" alt="ToolJet - Action reference -Unset variable" width="700" />
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/unsetvar/unsetvar-v2.png" alt="ToolJet - Action reference -Unset variable"/>
 
 ## Triggering via RunJS
 

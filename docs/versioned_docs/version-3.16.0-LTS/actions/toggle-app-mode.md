@@ -16,6 +16,8 @@ This action only has an effect when the app's global **App mode** setting (App B
 | App mode | The theme to switch to: **Light** or **Dark**. If left empty, the action flips to the opposite of the app's current theme. | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
+<img className="screenshot-full img-s" src="/img/actions/toggle-app-mode/toggle-app-mode.png" alt="ToolJet - Action reference - Toggle App Mode" />
+
 ## Behavior
 
 - Only takes effect when the app's **App mode** global setting is **Auto** — otherwise the action is a no-op.

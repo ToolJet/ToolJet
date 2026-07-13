@@ -7,12 +7,14 @@ Use this action to scroll a specific component into the visible area of the app.
 
 ## Configuration
 
-| Parameter | Description                                                                                                                                                                                                                    |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Component | Select the target component from the dropdown. Components nested inside a Modal aren't listed here, since they're only rendered when the modal is open.                                                                      |
-| Behaviour | Controls the scrolling animation. **Smooth** (default) animates the scroll, **Instant** jumps to the component with no animation, and **Auto** defers to the browser's default scrolling behavior.                           |
-| Block     | Controls where the component lands in the viewport once scrolled into view. **Nearest** (default) scrolls the minimum distance needed to bring it into view, **Start** aligns it to the top, **Center** aligns it to the middle, and **End** aligns it to the bottom. |
-| Debounce  | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`                                                                  |
+| Parameter | Description |
+| --------- | ----------- |
+| Component | Select the target component from the dropdown. Components nested inside a Modal aren't listed here, since they're only rendered when the modal is open. |
+| Behaviour | Controls the scrolling animation. **Smooth** (default) animates the scroll, **Instant** jumps to the component with no animation, and **Auto** defers to the browser's default scrolling behavior. |
+| Block | Controls where the component lands in the viewport once scrolled into view. **Nearest** (default) scrolls the minimum distance needed to bring it into view, **Start** aligns it to the top, **Center** aligns it to the middle, and **End** aligns it to the bottom. |
+| Debounce  | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300` |
+
+<img className="screenshot-full img-s" src="/img/actions/scroll-component-into-view/scroll-component-into-view.png" alt="ToolJet - Action reference - Scroll Component into View" />
 
 :::info
 You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).

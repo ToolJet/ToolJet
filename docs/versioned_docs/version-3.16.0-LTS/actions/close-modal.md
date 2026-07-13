@@ -12,11 +12,7 @@ The **Close modal** action closes a Modal component that is currently open.
 | Modal | The Modal component to close | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/closemodal/closemodal2.png" alt="ToolJet - Action reference - Close modal" width="700" />
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/closemodal/closemodal-v2.png" alt="ToolJet - Action reference - Close modal"/>
 
 ## Triggering via RunJS
 

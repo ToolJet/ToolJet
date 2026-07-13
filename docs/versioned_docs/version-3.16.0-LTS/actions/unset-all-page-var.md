@@ -12,7 +12,7 @@ Use this action to unset all page-level variables on the current page at once.
 | Run Only If | Optional condition that determines whether this action runs | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<img className="screenshot-full img-full" src="/img/actions/unsetAllPageVar/unsetAllPageVar.png" alt="ToolJet - Action reference - Unset All Page Variables" />
+<img className="screenshot-full img-s" src="/img/actions/unsetAllPageVar/unsetAllPageVar-v2.png" alt="ToolJet - Action reference - Unset All Page Variables" />
 
 ## Triggering via RunJS
 

@@ -13,11 +13,7 @@ The **Set variable** action creates an app-level variable and assigns a value to
 | Value | A string, number, boolean, expression, array, or object | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/setvar/setvar2.png" alt="ToolJet - Action reference -Set variable" width="700" />
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/setvar/setvar-v2.png" alt="ToolJet - Action reference -Set variable" />
 
 ## Triggering via RunJS
 

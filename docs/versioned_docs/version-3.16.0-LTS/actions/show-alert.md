@@ -13,11 +13,7 @@ The **Show alert** action displays an alert message on the app's canvas. Use it 
 | Message | The text to display in the alert | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/show-alert/alert2.png" alt="ToolJet - Action reference -  Show Alert" width="700" />
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/show-alert/show-alert-v2.png" alt="ToolJet - Action reference -  Show Alert"/>
 
 ## Triggering via RunJS
 

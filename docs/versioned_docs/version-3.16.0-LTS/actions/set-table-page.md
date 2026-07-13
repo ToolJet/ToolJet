@@ -13,11 +13,7 @@ The **Set Table Page** action changes the current page index of a Table componen
 | Page Index | Numerical value for the page index, e.g. `{{2}}` | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/settablepage/page2.png" alt="ToolJet - Action reference - Open webpage" width="700" />
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/settablepage/settablepage-v2.png" alt="ToolJet - Action reference - Open webpage" />
 
 ## Triggering via RunJS
 

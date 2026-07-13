@@ -12,6 +12,8 @@ This action stops an in-flight query, one that was triggered via **Run** or **Pr
 | Query | The query to abort | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
+<img className="screenshot-full img-s" src="/img/actions/abort-query/abort-query.png" alt="ToolJet - Action reference -  Abort Query" />
+
 ## Behavior
 
 - Abort only cancels the pending request on the client. If the data source (for example, a database) has already started processing the query, it may continue running on its end until it completes on its own.

@@ -12,11 +12,7 @@ The **Copy to clipboard** action copies text to the user's clipboard.
 | Content to copy | The text to copy to the clipboard | — |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/copytoclipboard/copy2.png" alt="ToolJet - Action reference - Copy to clipboard" width="700" />
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/copytoclipboard/copy-v3.png" alt="ToolJet - Action reference - Copy to clipboard" />
 
 ## Triggering via RunJS
 

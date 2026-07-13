@@ -13,11 +13,7 @@ The **Go to app** action opens a different released ToolJet application when an 
 | Query params | Optional key-value pairs appended to the target app's URL | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/gotoapp/gotoapp3.png" alt="ToolJet - Action reference - Open webpage" width="700" />
-
-</div>
+<img className="screenshot-full img-s" src="/img/actions/gotoapp/gotoapp-v4.png" alt="ToolJet - Action reference - Go To App" />
 
 ## Triggering via RunJS
 
