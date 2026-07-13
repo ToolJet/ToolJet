@@ -1,5 +1,6 @@
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
+import { getQueryCodeAnalyses, ScriptAnalysis } from '@/AppBuilder/_utils/scriptAnalysis';
 
 /**
  * Read-only usage selectors for the Dependency Viewer.
@@ -264,13 +265,25 @@ export function getComponentUsage(state: any, componentId: string, moduleId = 'c
     });
   }
 
-  // Queries whose options reference this component (works regardless of runOnDependencyChange)
+  // Queries whose options reference this component (works regardless of runOnDependencyChange),
+  // plus RunJS bodies / JS transformations that reference it by name (no {{}} — invisible
+  // to the reactive engine).
+  const componentName = getComponentName(state, componentId, moduleId);
   getQueries(state, moduleId).forEach((query: any) => {
     getQueryRefs(state, query, moduleId).forEach((ref: any) => {
       if (ref.entityType === 'components' && ref.entityNameOrId === componentId) {
         addQueryEntry(state, moduleId, usedBy, query.id, ref.entityKey, query.name);
       }
     });
+    if (componentName) {
+      const { script, transformation } = getQueryCodeAnalyses(query);
+      if (script?.componentRefs.includes(componentName)) {
+        addQueryEntry(state, moduleId, usedBy, query.id, 'code', query.name);
+      }
+      if (transformation?.componentRefs.includes(componentName)) {
+        addQueryEntry(state, moduleId, usedBy, query.id, 'transformation', query.name);
+      }
+    }
   });
 
   // Event handlers: the component's full trigger inventory (every action it fires),
@@ -331,13 +344,36 @@ export function getQueryUsage(state: any, queryId: string, moduleId = 'canvas') 
 
   const queries = getQueries(state, moduleId);
 
-  // What this query references in its own options
+  // What this query references in its own options — {{}} refs plus, for RunJS /
+  // JS transformations, plain-JS refs extracted from the code body.
   const self = queries.find((q: any) => q.id === queryId);
   if (self) {
     getQueryRefs(state, self, moduleId).forEach((ref: any) => addRefEntry(state, moduleId, uses, ref));
+
+    const componentNameIdMapping = state.modules?.[moduleId]?.componentNameIdMapping ?? {};
+    const queryNameIdMapping = state.modules?.[moduleId]?.queryNameIdMapping ?? {};
+    const { script, transformation } = getQueryCodeAnalyses(self);
+    [
+      { analysis: script, detail: 'code' },
+      { analysis: transformation, detail: 'transformation' },
+    ].forEach(({ analysis, detail }) => {
+      if (!analysis) return;
+      analysis.componentRefs.forEach((name) => {
+        const cid = componentNameIdMapping[name];
+        if (cid) addComponentEntry(state, moduleId, uses, cid, detail);
+        else addEntry(uses, 'unknown', null, name, detail);
+      });
+      analysis.queryRefs.forEach((name) => {
+        const qid = queryNameIdMapping[name];
+        if (qid && qid !== queryId) addQueryEntry(state, moduleId, uses, qid, detail);
+        else if (!qid) addEntry(uses, 'unknown', null, name, detail);
+      });
+    });
   }
 
-  // Other queries whose options reference this query
+  // Other queries whose options reference this query — {{}} refs plus RunJS /
+  // transformation code refs (queries.<name>.run(), actions.runQuery('<name>')).
+  const selfName = getQueryName(state, queryId, moduleId) ?? self?.name;
   queries.forEach((query: any) => {
     if (query.id === queryId) return;
     getQueryRefs(state, query, moduleId).forEach((ref: any) => {
@@ -345,6 +381,15 @@ export function getQueryUsage(state: any, queryId: string, moduleId = 'canvas') 
         addQueryEntry(state, moduleId, usedBy, query.id, ref.entityKey, query.name);
       }
     });
+    if (selfName) {
+      const { script, transformation } = getQueryCodeAnalyses(query);
+      if (script?.queryRefs.includes(selfName)) {
+        addQueryEntry(state, moduleId, usedBy, query.id, 'code', query.name);
+      }
+      if (transformation?.queryRefs.includes(selfName)) {
+        addQueryEntry(state, moduleId, usedBy, query.id, 'transformation', query.name);
+      }
+    }
   });
 
   // Events that run/reset/abort this query — sources are components, other queries, or pages
@@ -486,4 +531,167 @@ export function getPageDependencyGraph(state: any, moduleId = 'canvas') {
   getQueries(state, moduleId).forEach((query: any) => addNode('query', query.id, query.name));
 
   return { nodes: Array.from(nodes.values()), edges: Array.from(edges.values()) };
+}
+
+export type CustomCodeScript = { id: string; name: string; kind: 'runjs' | 'runpy'; analysis: ScriptAnalysis | null };
+export type CustomCodeTransformation = { queryId: string; name: string; language: string; analysis: ScriptAnalysis | null };
+export type FxComponent = {
+  componentId: string;
+  name: string;
+  entries: { section: string; prop: string; expression: string }[];
+};
+
+/**
+ * Everywhere custom code lives on the current page:
+ * - scripts: RunJS/RunPy queries (RunPy is listed but never parsed)
+ * - transformations: queries with enableTransformation (analysis for JS only)
+ * - fxByComponent: component properties/styles switched to fx mode
+ */
+export function getCustomCodeInventory(state: any, moduleId = 'canvas') {
+  const scripts: CustomCodeScript[] = [];
+  const transformations: CustomCodeTransformation[] = [];
+
+  getQueries(state, moduleId).forEach((query: any) => {
+    const { script, transformation } = getQueryCodeAnalyses(query);
+    if (query.kind === 'runjs' || query.kind === 'runpy') {
+      scripts.push({ id: query.id, name: query.name, kind: query.kind, analysis: script });
+    }
+    if (query.options?.enableTransformation) {
+      transformations.push({
+        queryId: query.id,
+        name: query.name,
+        language: query.options.transformationLanguage ?? 'javascript',
+        analysis: transformation,
+      });
+    }
+  });
+
+  const fxByComponent: FxComponent[] = [];
+  const pageComponents = state.getCurrentPageComponents?.(moduleId) ?? {};
+  Object.entries(pageComponents).forEach(([componentId, definition]: [string, any]) => {
+    const sections = definition?.component?.definition ?? {};
+    const entries: FxComponent['entries'] = [];
+    PARAM_TYPES.forEach((section) => {
+      const params = sections[section];
+      if (!params || typeof params !== 'object') return;
+      Object.entries(params).forEach(([prop, param]: [string, any]) => {
+        if (param?.fxActive === true) {
+          entries.push({ section, prop, expression: String(param.value ?? '') });
+        }
+      });
+    });
+    if (entries.length) {
+      fxByComponent.push({ componentId, name: definition?.component?.name ?? componentId, entries });
+    }
+  });
+
+  scripts.sort((a, b) => a.name.localeCompare(b.name));
+  transformations.sort((a, b) => a.name.localeCompare(b.name));
+  fxByComponent.sort((a, b) => a.name.localeCompare(b.name));
+  return { scripts, transformations, fxByComponent };
+}
+
+export type VariableUsage = {
+  name: string;
+  scope: 'app' | 'page';
+  setBy: UsageEntry[];
+  readBy: UsageEntry[];
+};
+
+/**
+ * Variable-centric view: who sets / reads each app and page variable.
+ * Sources: script analyses (RunJS + JS transformations), {{}} refs in query
+ * options, component bindings (via getComponentUsage), and event-handler
+ * variable writes. Runtime-only variables (set but never referenced
+ * statically) are included via exposedValues keys.
+ * Current values are NOT returned — the UI reads them live via selectors.
+ */
+export function getVariableUsage(state: any, moduleId = 'canvas') {
+  type Row = { name: string; scope: 'app' | 'page'; setBy: Map<string, UsageEntry>; readBy: Map<string, UsageEntry> };
+  const rows = new Map<string, Row>();
+  const dynamicAccessors = new Map<string, UsageEntry>();
+
+  const row = (scope: 'app' | 'page', name: string): Row => {
+    const key = `${scope}:${name}`;
+    let r = rows.get(key);
+    if (!r) {
+      r = { name, scope, setBy: new Map(), readBy: new Map() };
+      rows.set(key, r);
+    }
+    return r;
+  };
+
+  const applyAnalysis = (analysis: ScriptAnalysis | null, queryId: string, queryName: string, detail: string) => {
+    if (!analysis) return;
+    analysis.variableWrites.forEach((n) => addQueryEntry(state, moduleId, row('app', n).setBy, queryId, detail, queryName));
+    analysis.variableReads.forEach((n) => addQueryEntry(state, moduleId, row('app', n).readBy, queryId, detail, queryName));
+    analysis.pageVariableWrites.forEach((n) =>
+      addQueryEntry(state, moduleId, row('page', n).setBy, queryId, detail, queryName)
+    );
+    analysis.pageVariableReads.forEach((n) =>
+      addQueryEntry(state, moduleId, row('page', n).readBy, queryId, detail, queryName)
+    );
+    if (analysis.dynamicVariableOps) {
+      addQueryEntry(state, moduleId, dynamicAccessors, queryId, detail, queryName);
+    }
+  };
+
+  // 1. Scripts and transformations
+  getQueries(state, moduleId).forEach((query: any) => {
+    const { script, transformation } = getQueryCodeAnalyses(query);
+    applyAnalysis(script, query.id, query.name, 'code');
+    applyAnalysis(transformation, query.id, query.name, 'transformation');
+
+    // 2. {{}} refs in query options read variables
+    getQueryRefs(state, query, moduleId).forEach((ref: any) => {
+      if (ref.entityType === 'variables') addQueryEntry(state, moduleId, row('app', ref.entityKey).readBy, query.id, undefined, query.name);
+      else if (ref.entityType === 'page' && ref.entityNameOrId === 'variables')
+        addQueryEntry(state, moduleId, row('page', ref.entityKey).readBy, query.id, undefined, query.name);
+    });
+  });
+
+  // 3. Component bindings that read variables
+  const pageComponents = state.getCurrentPageComponents?.(moduleId) ?? {};
+  Object.keys(pageComponents).forEach((componentId) => {
+    const usage = getComponentUsage(state, componentId, moduleId);
+    usage.uses.forEach((entry) => {
+      if (entry.kind === 'variable') {
+        addComponentEntry(state, moduleId, row('app', entry.name).readBy, componentId, entry.details[0]);
+      } else if (entry.kind === 'pageVariable') {
+        addComponentEntry(state, moduleId, row('page', entry.name).readBy, componentId, entry.details[0]);
+      }
+    });
+  });
+
+  // 4. Event-handler variable actions (writers only — variable READS by scripts are
+  // captured via script analysis; there is no persisted "get variable" event action)
+  getEvents(state, moduleId).forEach((evt: any) => {
+    const action = evt?.event;
+    if (!action) return;
+    const writeKind = VARIABLE_EVENT_TARGETS[action.actionId];
+    if (!writeKind) return;
+    const key = action.key;
+    if (typeof key !== 'string' || !key.length || key.includes('{{')) return; // dynamic key
+    const scope: 'app' | 'page' = writeKind === 'variable' ? 'app' : 'page';
+    const bucket = row(scope, key).setBy;
+    const sourceId = evt?.sourceId;
+    const detail = action.eventId;
+    if (getComponentName(state, sourceId, moduleId)) addComponentEntry(state, moduleId, bucket, sourceId, detail);
+    else if (getQueryName(state, sourceId, moduleId)) addQueryEntry(state, moduleId, bucket, sourceId, detail);
+    else {
+      const page = state.modules?.[moduleId]?.pages?.find((p: any) => p.id === sourceId);
+      if (page) addEntry(bucket, 'page', sourceId, page.name, detail);
+    }
+  });
+
+  // 5. Runtime-only variables (exist in exposedValues but never referenced statically)
+  const exposed = state.resolvedStore?.modules?.[moduleId]?.exposedValues;
+  Object.keys(exposed?.variables ?? {}).forEach((n) => row('app', n));
+  Object.keys(exposed?.page?.variables ?? {}).forEach((n) => row('page', n));
+
+  const variables: VariableUsage[] = Array.from(rows.values())
+    .map((r) => ({ name: r.name, scope: r.scope, setBy: sorted(r.setBy), readBy: sorted(r.readBy) }))
+    .sort((a, b) => a.scope.localeCompare(b.scope) || a.name.localeCompare(b.name));
+
+  return { variables, dynamicAccessors: sorted(dynamicAccessors) };
 }

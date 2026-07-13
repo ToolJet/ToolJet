@@ -8,6 +8,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { getComponentUsage, getPageLoadQueries } from '@/AppBuilder/_utils/entityUsage';
 import EntityUsageList from '@/AppBuilder/Shared/EntityUsage/EntityUsageList';
 import DependencyGraphOverlay from './DependencyGraphOverlay';
+import CustomCodeSection from './CustomCode/CustomCodeSection';
 import './styles.scss';
 
 // Left sidebar "Dependencies" panel: lists the current page's components, each
@@ -163,6 +164,7 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }) => {
             )}
           </div>
         )}
+        <CustomCodeSection moduleId={moduleId} darkMode={darkMode} />
         {componentList.length === 0 && (
           <div className="dependency-viewer-empty" data-cy="dependency-viewer-empty">
             No components on this page yet.

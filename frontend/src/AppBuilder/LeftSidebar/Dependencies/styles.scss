@@ -106,3 +106,101 @@
     }
   }
 }
+
+// Custom code section
+.dependency-viewer-custom-code {
+  .custom-code-body {
+    padding-top: 2px;
+  }
+
+  .custom-code-subsection-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-placeholder);
+    padding: 6px 8px 2px;
+  }
+
+  .custom-code-tag {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-placeholder);
+    background: var(--surfaces-surface-03);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    flex-shrink: 0;
+  }
+
+  .custom-code-error-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tomato9);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .custom-code-value {
+    margin-left: auto;
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--text-placeholder);
+    max-width: 40%;
+  }
+
+  .custom-code-detail {
+    font-size: 11px;
+    padding: 4px 8px 6px 28px;
+
+    .custom-code-summary {
+      color: var(--text-placeholder);
+      margin-bottom: 2px;
+    }
+
+    .custom-code-error {
+      color: var(--tomato9);
+      word-break: break-word;
+    }
+
+    .custom-code-fx-entry {
+      display: flex;
+      gap: 8px;
+      padding: 2px 0;
+
+      .custom-code-fx-prop {
+        font-weight: 500;
+        flex-shrink: 0;
+      }
+
+      .custom-code-fx-expression {
+        font-family: monospace;
+        color: var(--text-placeholder);
+      }
+    }
+  }
+}
+
+.dependency-viewer-custom-code .custom-code-summary-hover {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  width: fit-content;
+}
+
+.custom-code-fx-popover-content {
+  .custom-code-fx-popover-expression {
+    font-family: monospace;
+    font-size: 11px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 280px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+}
+
+.dependency-viewer-custom-code .custom-code-fx-entry {
+  cursor: help;
+}
