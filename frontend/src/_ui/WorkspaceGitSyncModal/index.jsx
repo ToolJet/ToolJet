@@ -160,7 +160,9 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         // Creation (incl. hydrate) runs as a background job — no branch to
         // switch to yet, so the import ends here with a toast
         await actions.createBranch(selectedBranch);
-        toast.success(`Importing ${selectedBranch}. It will show up in the branch list once ready.`);
+        toast.success(`Importing ${selectedBranch}. It will show up in the branch list once ready.`, {
+          style: { maxWidth: '640px' },
+        });
         onClose();
         return;
       }
@@ -182,7 +184,9 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       // Pull from that branch (now active) — hydrate runs in the background
       await actions.pullWorkspace();
 
-      toast.success(`Importing ${selectedBranch}. Your changes will load in a moment.`);
+      toast.success(`Importing ${selectedBranch}. Your changes will load in a moment.`, {
+        style: { maxWidth: '640px' },
+      });
       onClose();
 
       // Navigate based on whether the current app exists in the target branch

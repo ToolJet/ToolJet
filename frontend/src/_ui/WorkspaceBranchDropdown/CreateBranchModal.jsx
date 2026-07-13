@@ -87,7 +87,8 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
       toast.success(
         ack?.isImport
           ? 'Importing branch. It will show up in the list once ready.'
-          : 'Creating branch. It will show up in the list once ready.'
+          : 'Creating branch. It will show up in the list once ready.',
+        { style: { maxWidth: '640px' } }
       );
       onSuccess?.();
       onClose();

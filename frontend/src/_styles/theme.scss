@@ -6669,19 +6669,26 @@ a.step-item-disabled {
 }
 
 // "View details" action inside notification arrival toasts (standard react-hot-toast look)
+// design 70:6926: message + secondary-button action on one row
+.notification-toast-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .notification-toast-view {
-  margin-left: 8px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--indigo9, #4368e3);
+  padding: 4px 12px;
+  border: 1px solid var(--borders-default, #ccd1d5);
+  border-radius: 6px;
+  background: var(--surfaces-surface-01, #fff);
+  color: var(--text-default, #1b1f24);
   font-size: inherit;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
 
   &:hover {
-    text-decoration: underline;
+    background: var(--interactive-overlays-fill-hover, #f6f8fa);
   }
 }
 
