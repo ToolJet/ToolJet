@@ -88,3 +88,13 @@ The following actions of the Button component can be controlled using the compon
 | :------------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Hover background | Controls the background color when the button is hovered. Only available for `Solid` type. | Select `Auto` to derive the hover color automatically, or `Manual` to set a custom color using the color picker or **fx**. |
 | Padding | Controls the padding around the button. | Select `Default` to maintain standard padding or `None` to remove all padding. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
