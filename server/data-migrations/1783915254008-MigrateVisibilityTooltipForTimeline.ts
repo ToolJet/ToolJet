@@ -15,12 +15,14 @@ export class MigrateVisibilityTooltipForTimeline1783915254008 implements Migrati
     const totalComponents = parseInt(countResult[0].count, 10);
 
     if (totalComponents === 0) {
-      console.log(`${MIGRATION_NAME}: no Timeline components found.`);
+      console.log(`${MIGRATION_NAME}: [SUCCESS] No Timeline components found. | Total: 0`);
       return;
     }
 
+    console.log(
+      `${MIGRATION_NAME}: [START] Migrate Timeline visibility/tooltip/boxShadow + backfill tooltipFormat | Total: ${totalComponents}`
+    );
     const migrationProgress = new MigrationProgress(MIGRATION_NAME, totalComponents);
-
     while (hasMoreData) {
       // Fetch components in batches using raw SQL
       const components = await queryRunner.query(
