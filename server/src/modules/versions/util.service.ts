@@ -452,8 +452,7 @@ export class VersionUtilService implements IVersionUtilService {
             return `Module "${name}" has active draft pinned. Pin a saved version.`;
           }
           // pin-hit + DRAFT remaining.
-          const versionName = m.resolved?.versionName ?? 'draft';
-          return `Module "${name}" version "${versionName}" is still in draft. Save the module first.`;
+          return `Module "${name}" has active draft pinned. Pin a saved version.`;
         };
         const moduleList = unique.map(formatEntry).join(' ');
         const message =
