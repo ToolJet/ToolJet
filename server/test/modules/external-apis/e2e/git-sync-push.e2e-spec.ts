@@ -209,4 +209,104 @@ describe('External API — POST /ext/apps/:appId/versions/:versionId/git-sync/pu
       expect(response.body.message).toBe('Git is not enabled');
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // 201 — happy path
+  // ---------------------------------------------------------------------------
+
+  describe('201 — happy path', () => {
+    it('pushes the version and calls gitPushApp with the expected payload', async () => {
+      const { user, organization } = await seedOrg();
+      const app = await seedApp(user);
+      const version = await seedPublishedVersion(app as any, 'v1');
+      await versionRepo.update(version.id, { appName: 'custom-app-name' });
+      await seedOrgGit(organization.id);
+
+      const scProvider = nestApp.get(SourceControlProviderService);
+      const mockStrategy = { gitPushApp: jest.fn().mockResolvedValue({ success: true }) };
+      jest.spyOn(scProvider, 'getSourceControlService').mockResolvedValue(mockStrategy as any);
+
+      await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/${version.id}/git-sync/push`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ commitMessage: 'release commit' })
+        .expect(201);
+
+      expect(mockStrategy.gitPushApp).toHaveBeenCalledWith(
+        expect.objectContaining({ organizationId: organization.id }),
+        app.id,
+        expect.objectContaining({
+          lastCommitMessage: 'release commit',
+          versionId: version.id,
+          gitAppName: 'custom-app-name',
+          gitVersionName: version.name,
+        }),
+        expect.objectContaining({ id: version.id })
+      );
+    });
+
+    it('falls back to app.name for gitAppName when the version has no appName', async () => {
+      const { user, organization } = await seedOrg();
+      const app = await seedApp(user);
+      const version = await seedPublishedVersion(app as any, 'v1');
+      await seedOrgGit(organization.id);
+
+      const scProvider = nestApp.get(SourceControlProviderService);
+      const mockStrategy = { gitPushApp: jest.fn().mockResolvedValue({ success: true }) };
+      jest.spyOn(scProvider, 'getSourceControlService').mockResolvedValue(mockStrategy as any);
+
+      await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/${version.id}/git-sync/push`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ commitMessage: 'release commit' })
+        .expect(201);
+
+      expect(mockStrategy.gitPushApp).toHaveBeenCalledWith(
+        expect.anything(),
+        app.id,
+        expect.objectContaining({ gitAppName: app.name }),
+        expect.anything()
+      );
+    });
+
+    it('uses the branch name for gitVersionName when the version is on a branch', async () => {
+      const { user, organization } = await seedOrg();
+      const app = await seedApp(user);
+      // Not seedPublishedVersion: chk_app_versions_branched_implies_draft
+      // requires branch_id IS NULL OR status = 'DRAFT' — a published,
+      // branched version can't exist. pushVersionToGit doesn't gate on
+      // status (unlike autoDeployApp), so a DRAFT version exercises the
+      // same gitVersionName fallback with a realistic, constructable row.
+      const version = await createApplicationVersion(nestApp, app as any, { name: 'v1' });
+      const branch = await saveEntity(WorkspaceBranch, {
+        organizationId: organization.id,
+        name: 'feature-push',
+        isDefault: false,
+      });
+      await versionRepo.update(version.id, {
+        status: AppVersionStatus.DRAFT,
+        branchId: branch.id,
+        appName: 'app-name',
+        slug: `app-name-${version.id}`,
+      });
+      await seedOrgGit(organization.id);
+
+      const scProvider = nestApp.get(SourceControlProviderService);
+      const mockStrategy = { gitPushApp: jest.fn().mockResolvedValue({ success: true }) };
+      jest.spyOn(scProvider, 'getSourceControlService').mockResolvedValue(mockStrategy as any);
+
+      await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/${version.id}/git-sync/push`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ commitMessage: 'release commit' })
+        .expect(201);
+
+      expect(mockStrategy.gitPushApp).toHaveBeenCalledWith(
+        expect.anything(),
+        app.id,
+        expect.objectContaining({ gitVersionName: 'feature-push' }),
+        expect.anything()
+      );
+    });
+  });
 });
