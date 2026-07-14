@@ -71,6 +71,14 @@ export class GitSyncModule extends SubModule {
         HTTPSGitSyncUtilityService,
         SSHGitSyncUtilityService,
         GitLabGitSyncUtilityService,
+        // Registry of git-sync provider adapters — the SINGLE place a new provider (e.g. Bitbucket)
+        // is added. The dispatcher (SourceControlProviderService) resolves by gitType from this list,
+        // so no dispatcher/base/adapter file changes are needed to add a provider.
+        {
+          provide: 'GIT_SYNC_PROVIDER_ADAPTERS',
+          useFactory: (ssh, https, gitlab) => [ssh, https, gitlab],
+          inject: [SSHGitSyncService, HTTPSGitSyncService, GitLabGitSyncService],
+        },
         SourceControlProviderService,
         FeatureAbilityFactory,
         GitSyncAdapter,
