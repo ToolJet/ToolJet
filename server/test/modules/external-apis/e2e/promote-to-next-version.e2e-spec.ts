@@ -236,4 +236,88 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
       expect(versions).toHaveLength(1);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Full lifecycle: save -> release -> push
+  // ---------------------------------------------------------------------------
+
+  describe('full lifecycle', () => {
+    // Release can never itself be the DRAFT -> PUBLISHED transition that fires
+    // this hook: autoDeployApp rejects DRAFT targets outright, and any version
+    // that's already PUBLISHED has status === PUBLISHED before the write, so
+    // the hook's pre-check (`status !== PUBLISHED`) is false. Only save can
+    // trigger it. This chain proves the realistic sequence: save publishes +
+    // seeds the next draft, release promotes that published version to prod,
+    // push pushes its commit — closing the "save then release" claim that
+    // used to be a stale comment in save-version.e2e-spec.ts.
+    it('chains save -> release -> push through a full git-sync lifecycle', async () => {
+      const { user, organization } = await seedOrgWithGit();
+      const branch = await seedDefaultBranch(organization.id);
+      const app = await seedApp(user);
+      const draft = await seedDefaultBranchDraft(app as any, branch.id, 'v1');
+
+      const devEnv = await envRepo.findOne({
+        where: { organizationId: organization.id },
+        order: { priority: 'ASC' },
+      });
+      const prodEnv = await envRepo.findOne({
+        where: { organizationId: organization.id },
+        order: { priority: 'DESC' },
+      });
+
+      const scProvider = nestApp.get(SourceControlProviderService);
+      const mockStrategy = {
+        createGitTag: jest.fn().mockResolvedValue({ success: true, tagName: 'co_rel/v1' }),
+        gitPushApp: jest.fn().mockResolvedValue({ success: true }),
+      };
+      jest.spyOn(scProvider, 'getSourceControlService').mockResolvedValue(mockStrategy as any);
+
+      // Step 1: save
+      const saveRes = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/save`)
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(201);
+
+      expect(saveRes.body.status).toBe(AppVersionStatus.PUBLISHED);
+      expect(saveRes.body.currentEnvironmentId).toBe(devEnv.id);
+
+      const newDraft = await versionRepo.findOne({ where: { appId: app.id, branchId: branch.id } });
+      expect(newDraft).toBeDefined();
+      expect(newDraft.status).toBe(AppVersionStatus.DRAFT);
+
+      // Step 2: release the just-published version to prod
+      const releaseRes = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/git-sync/release`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ versionId: draft.id })
+        .expect(201);
+
+      expect(releaseRes.body.currentVersionId).toBe(draft.id);
+      const releasedVersion = await versionRepo.findOne({ where: { id: draft.id } });
+      expect(releasedVersion.currentEnvironmentId).toBe(prodEnv.id);
+      // Still detached from the save step — release does not re-fire the hook
+      // (the version was already PUBLISHED going into the release call).
+      expect(releasedVersion.branchId).toBeNull();
+
+      // Step 3: push the released version's commit
+      await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/${draft.id}/git-sync/push`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ commitMessage: 'release v1' })
+        .expect(201);
+
+      expect(mockStrategy.gitPushApp).toHaveBeenCalledWith(
+        expect.objectContaining({ organizationId: organization.id }),
+        app.id,
+        expect.objectContaining({
+          lastCommitMessage: 'release v1',
+          versionId: draft.id,
+          gitAppName: app.name,
+          gitVersionName: releasedVersion.name,
+        }),
+        expect.objectContaining({ id: draft.id })
+      );
+    });
+  });
 });
