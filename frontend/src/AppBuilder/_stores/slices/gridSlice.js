@@ -187,14 +187,17 @@ export const createGridSlice = (set, get) => {
     // `contextPrefix` scopes to a branch (e.g., a Listview nested inside a
     // parent row passes the parent row context so sibling rows stay untouched).
     // `null`/empty matches the container's key at any context.
-    clearContainerTempLayouts: (containerId, contextPrefix = null) => {
+    clearContainerTempLayouts: (containerId, contextPrefix = null, moduleId = 'canvas') => {
       const normalizedPrefix = normalizeLayoutContext(contextPrefix);
       const prefix = normalizedPrefix ? normalizedPrefix.join('.') : null;
+      // Keys are moduleId-scoped for embedded modules (see getDynamicLayoutKey);
+      // build the same scoped base so a module container's temps are matched (an unscoped base would never match).
+      const base = moduleId && moduleId !== 'canvas' ? `${moduleId}::${containerId}` : containerId;
       const matches = (key) => {
         if (!prefix) {
-          return key === containerId || key.startsWith(`${containerId}-`);
+          return key === base || key.startsWith(`${base}-`);
         }
-        return key === `${containerId}-${prefix}` || key.startsWith(`${containerId}-${prefix}.`);
+        return key === `${base}-${prefix}` || key.startsWith(`${base}-${prefix}.`);
       };
 
       set((state) => {
@@ -304,6 +307,7 @@ export const createGridSlice = (set, get) => {
             getContainerChildrenMapping,
             getExposedPropertyForAdditionalActions: boundGetExposedPropertyForAdditionalActions,
             calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+            moduleId,
           });
 
           const newHeight = resolveWidgetMeasuredHeight({
@@ -317,23 +321,26 @@ export const createGridSlice = (set, get) => {
             visibility,
             containerHeight,
             calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+            moduleId,
           });
 
           if (componentType === 'ModalV2' && isContainer) {
-            mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '-body')] = {
+            mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '-body', moduleId)] = {
               ...changedComponent.layouts[currentLayout],
-              ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body')],
+              ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body', moduleId)],
               height: newHeight,
             };
             return;
           }
 
           if (componentType === 'Listview' && contextIndices && isContainer) {
-            const scopedElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+            const scopedElement = document.querySelector(
+              getDynamicElementSelector(componentId, contextIndices, moduleId)
+            );
             if (!scopedElement) {
-              mergedPatch[getDynamicLayoutKey(componentId, contextIndices)] = {
+              mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)] = {
                 ...changedComponent.layouts[currentLayout],
-                ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)],
+                ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)],
                 height: newHeight,
               };
               const nextCtx = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
@@ -376,7 +383,7 @@ export const createGridSlice = (set, get) => {
           }, {});
 
           const resolvedHeights = siblingIds.reduce((acc, siblingId) => {
-            const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices)];
+            const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices, '', moduleId)];
             if (existingTemp?.height != null && existingTemp.height > 0) {
               acc[siblingId] = existingTemp.height;
               return acc;
@@ -403,12 +410,13 @@ export const createGridSlice = (set, get) => {
             collapseWhenHiddenMap,
             calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
             getComponentDefinition: boundGetComponentDefinition,
+            moduleId,
           });
 
           if (Object.keys(temporaryLayoutPatch).length === 0) return;
 
           if (isContainer && componentType !== 'Listview') {
-            const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+            const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId));
             if (element && visibility) element.style.height = `${newHeight}px`;
           }
 
@@ -416,7 +424,7 @@ export const createGridSlice = (set, get) => {
           // pin its temp top to 0 so the transform & canvas-height math match.
           // moduleId === 'canvas' is the module editor, where it keeps canonical top.
           if (componentType === 'ModuleContainer' && moduleId !== 'canvas') {
-            const moduleContainerKey = getDynamicLayoutKey(componentId, contextIndices);
+            const moduleContainerKey = getDynamicLayoutKey(componentId, contextIndices, '', moduleId);
             if (temporaryLayoutPatch[moduleContainerKey]) {
               temporaryLayoutPatch[moduleContainerKey] = { ...temporaryLayoutPatch[moduleContainerKey], top: 0 };
             }
@@ -425,7 +433,7 @@ export const createGridSlice = (set, get) => {
           Object.assign(mergedPatch, temporaryLayoutPatch);
 
           const scopedElement = contextIndices
-            ? document.querySelector(getDynamicElementSelector(componentId, contextIndices))
+            ? document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId))
             : null;
           const nextBubbleTargetId = getNextBubbleTargetId({
             componentId,

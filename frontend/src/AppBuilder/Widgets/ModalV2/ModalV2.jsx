@@ -332,6 +332,7 @@ export const ModalV2 = function Modal({
           customStyles,
           parentRef,
           id,
+          moduleId,
           title,
           titleAlignment,
           hideTitleBar,
