@@ -173,7 +173,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
   // ---------------------------------------------------------------------------
 
   describe('no-op guards', () => {
-    it('does not seed a new draft when the version is on a non-default branch', async () => {
+    it('publishes the version and detaches branchId, but does not seed a new draft, when the version is on a non-default branch', async () => {
       const { user, organization } = await seedOrgWithGit();
       await seedDefaultBranch(organization.id, 'main');
       const featureBranch = await saveEntity(WorkspaceBranch, {
@@ -193,10 +193,11 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
       const versions = await versionRepo.find({ where: { appId: app.id } });
       expect(versions).toHaveLength(1);
       expect(versions[0].id).toBe(draft.id);
-      expect(versions[0].branchId).toBe(featureBranch.id);
+      expect(versions[0].status).toBe(AppVersionStatus.PUBLISHED);
+      expect(versions[0].branchId).toBeNull();
     });
 
-    it('does not seed a new draft when the org has no default branch', async () => {
+    it('publishes the version and detaches branchId, but does not seed a new draft, when the org has no default branch', async () => {
       const { user, organization } = await seedOrgWithGit();
       const nonDefaultBranch = await saveEntity(WorkspaceBranch, {
         organizationId: organization.id,
@@ -204,7 +205,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
         isDefault: false,
       });
       const app = await seedApp(user);
-      await seedDefaultBranchDraft(app as any, nonDefaultBranch.id, 'v1');
+      const draft = await seedDefaultBranchDraft(app as any, nonDefaultBranch.id, 'v1');
 
       await request(nestApp.getHttpServer())
         .post(`/api/ext/apps/${app.id}/versions/save`)
@@ -214,6 +215,9 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
 
       const versions = await versionRepo.find({ where: { appId: app.id } });
       expect(versions).toHaveLength(1);
+      expect(versions[0].id).toBe(draft.id);
+      expect(versions[0].status).toBe(AppVersionStatus.PUBLISHED);
+      expect(versions[0].branchId).toBeNull();
     });
 
     it('does not seed a new draft when the version has no branchId', async () => {
