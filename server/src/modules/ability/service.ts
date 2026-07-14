@@ -69,6 +69,7 @@ export class AbilityService extends IAbilityService {
           folderCreate: acc.folderCreate || group.folderCreate,
           folderDelete: acc.folderDelete || group.folderDelete,
           orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
+          tjdbCRUD: acc.tjdbCRUD || group.tjdbCRUD,
           orgVariableCRUD: acc.orgVariableCRUD,
           workflowCreate: acc.workflowCreate || group.workflowCreate,
           workflowDelete: acc.workflowDelete || group.workflowDelete,
