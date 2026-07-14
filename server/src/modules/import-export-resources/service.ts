@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
@@ -10,6 +10,7 @@ import { InternalTableRepository } from '@modules/tooljet-db/repository';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { AppsRepository } from '@modules/apps/repository';
+import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 
 @Injectable()
@@ -23,7 +24,8 @@ export class ImportExportResourcesService {
 
   async export(
     user: User,
-    exportResourcesDto: ExportResourcesDto
+    exportResourcesDto: ExportResourcesDto,
+    branchId?: string
   ): Promise<{
     tooljet_database?: Array<ImportTooljetDatabaseDto>;
     app?: Array<Record<string, any>>; // TODO: Define the type for app
@@ -51,7 +53,7 @@ export class ImportExportResourcesService {
       const exportedApps: Record<string, unknown>[] = [];
       for (const app of exportResourcesDto.app) {
         const exportedApp = {
-          definition: await this.appImportExportService.export(user, app.id, app.search_params),
+          definition: await this.appImportExportService.export(user, app.id, app.search_params, branchId),
         };
         exportedApps.push(exportedApp);
       }
@@ -61,7 +63,7 @@ export class ImportExportResourcesService {
 
     if (exportResourcesDto.app?.length) {
       const appData = await this.appsRepository.findOne({
-        where: { id: exportResourcesDto.app[0].id }
+        where: { id: exportResourcesDto.app[0].id },
       });
       //APP_EXPORT audit
       const auditLogsData = {
@@ -80,7 +82,8 @@ export class ImportExportResourcesService {
     importResourcesDto: ImportResourcesDto,
     cloning = false,
     isGitApp = false,
-    isTemplateApp = false
+    isTemplateApp = false,
+    manager?: EntityManager
   ) {
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };
@@ -95,13 +98,13 @@ export class ImportExportResourcesService {
           const pages = appParams?.pages;
           const queries = appParams?.dataQueries;
           const components = appParams?.components;
-          (pages?.length || queries?.length || components?.length) &&
-            (await this.appImportExportService.checkIfGroupPermissionsExist(
+          if (pages?.length || queries?.length || components?.length)
+            await this.appImportExportService.checkIfGroupPermissionsExist(
               pages,
               queries,
               components,
               user.organizationId
-            ));
+            );
         }
       }
     }
@@ -127,7 +130,8 @@ export class ImportExportResourcesService {
             isGitApp,
             importResourcesDto.tooljet_version,
             cloning,
-            manager
+            manager,
+            importResourcesDto.branchId
           );
 
           imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });
@@ -142,7 +146,7 @@ export class ImportExportResourcesService {
       }
 
       return imports;
-    });
+    }, manager);
   }
 
   async legacyImport(user: User, templateDefinition: any, appName: string) {
@@ -153,7 +157,7 @@ export class ImportExportResourcesService {
     };
   }
 
-  async clone(user: User, { organization_id, app: [{ id: appId, name: newAppName }] }: CloneResourcesDto) {
+  async clone(user: User, { organization_id, app: [{ id: appId, name: newAppName }], branchId }: CloneResourcesDto) {
     const tablesForApp = await this.internalTableRepository.findTables(appId);
     const exportResourcesDto: ExportResourcesDto = {
       organization_id,
@@ -162,13 +166,33 @@ export class ImportExportResourcesService {
     };
 
     const resourceExport = await this.export(user, exportResourcesDto);
+
+    // Prevent cloning a stub app (pulled from git but not yet hydrated — has no pages).
+    // AppVersion.isStub is a real DB column (is_stub, default false) — reliable to check here.
+    const exportedVersions: any[] = resourceExport.app?.[0]?.definition?.appV2?.appVersions ?? [];
+    const hasNonStubVersion = exportedVersions.some((v: any) => !v.isStub);
+    if (exportedVersions.length > 0 && !hasNonStubVersion) {
+      throw new BadRequestException(
+        'App contents are still syncing from Git. Open the app to finish loading, then try again.'
+      );
+    }
+
     // TODO: Verify if this is required as we always pass name on imports
     // Without this appImportExportService.import will throw an error
     resourceExport.app[0].definition.appV2.name = newAppName;
 
+    // Clear the source app's slug so the import generates a fresh one from the
+    // new app's id. Without this the (slug, branch_id) unique index is violated
+    // because the source and clone live on the same branch.
+    delete resourceExport.app[0].definition.appV2.slug;
+    for (const ver of exportedVersions) {
+      delete ver.slug;
+    }
+
     const importResourcesDto: ImportResourcesDto = {
       organization_id,
       tooljet_version: globalThis.TOOLJET_VERSION,
+      ...(branchId && { branchId }),
       app: [
         {
           appName: newAppName,

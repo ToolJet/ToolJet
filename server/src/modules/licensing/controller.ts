@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { ILicenseController } from './interfaces/IController';
 import { Terms } from './interfaces/terms';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -9,6 +9,7 @@ import { FEATURE_KEY } from './constants';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { User as UserEntity } from '@entities/user.entity';
 import { User } from '@modules/app/decorators/user.decorator';
+import { UpdateEnvLicenseSettingDto } from '@modules/licensing/dto/update-env-license-setting.dto';
 
 @InitModule(MODULES.LICENSING)
 @Controller('license')
@@ -38,6 +39,9 @@ export class LicenseController implements ILicenseController {
     throw new Error('Method not implemented.');
   }
   updateLicense(licenseUpdateDto: LicenseUpdateDto, @User() user: UserEntity): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  async updateEnvLicenseSetting(@Body() dto: UpdateEnvLicenseSettingDto): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

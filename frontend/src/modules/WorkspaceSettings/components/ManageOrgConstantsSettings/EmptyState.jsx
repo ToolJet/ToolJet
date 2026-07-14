@@ -1,7 +1,7 @@
 import React from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen, isLoading, searchTerm = '' }) => {
+const EmptyState = ({ activeTab, canCreateVariable, setIsManageVarDrawerOpen, isLoading, searchTerm = '' }) => {
   if (isLoading) return null;
 
   return (
@@ -12,11 +12,18 @@ const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen, isLoading, se
             <img src="assets/images/icons/org-constants.svg" width="64" height="64" data-cy="empty-state-image" />
             <div className="w-50 mt-2">
               <h3 data-cy="empty-state-header">
-                {searchTerm === '' ? 'No Workspace constants yet' : 'No workspace constants found'}
+                {searchTerm === ''
+                  ? activeTab === 'Global'
+                    ? 'No global constants yet'
+                    : 'No workspace secrets yet'
+                  : activeTab === 'Global'
+                  ? 'No global constants found'
+                  : 'No workspace secrets found'}
               </h3>
               <p className="info mt-2" data-cy="empty-state-text">
-                Use workspace constants seamlessly within both the app builder and data source connections across the
-                platform.
+                {activeTab === 'Global'
+                  ? 'Use global workspace constants seamlessly within the app builder and data source connections across the platform.'
+                  : 'Use workspace secrets seamlessly within the app builder and data source connections across the platform.'}
               </p>
               {canCreateVariable && searchTerm === '' && (
                 <ButtonSolid
@@ -26,7 +33,7 @@ const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen, isLoading, se
                   className="add-new-constant-button"
                   customStyles={{ minWidth: '200px', height: '32px' }}
                 >
-                  Create new constant
+                  Create new {activeTab === 'Global' ? 'constant' : 'secret'}
                 </ButtonSolid>
               )}
             </div>

@@ -14,6 +14,7 @@ const Googlesheets = ({
   selectedDataSource,
   currentAppEnvironmentId,
   isDisabled,
+  isWorkspaceBranchLocked = false,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const whiteLabelText = retrieveWhiteLabelText();
@@ -74,7 +75,7 @@ const Googlesheets = ({
             <div>
               <Radio
                 checked={options?.access_type?.value === 'read'}
-                disabled={authStatus === 'waiting_for_token' || isDisabled}
+                disabled={authStatus === 'waiting_for_token' || isDisabled || isWorkspaceBranchLocked}
                 onClick={() => optionchanged('access_type', 'read')}
                 text={t('googleSheets.readOnly', 'Read only')}
                 helpText={t(
@@ -85,7 +86,7 @@ const Googlesheets = ({
               />
               <Radio
                 checked={options?.access_type?.value === 'write'}
-                disabled={authStatus === 'waiting_for_token' || isDisabled}
+                disabled={authStatus === 'waiting_for_token' || isDisabled || isWorkspaceBranchLocked}
                 onClick={() => optionchanged('access_type', 'write')}
                 text={t('googleSheets.readWrite', 'Read and write')}
                 helpText={t(

@@ -23,6 +23,10 @@ export class TooljetDbModule extends SubModule {
   }
 
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       TooljetDbController,
       TooljetDbTableOperationsService,
@@ -39,7 +43,7 @@ export class TooljetDbModule extends SubModule {
       'services/postgrest-proxy.service',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: TooljetDbModule,
       imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser, RolesRepository])],
       controllers: isMainImport ? [TooljetDbController] : [],
@@ -59,6 +63,6 @@ export class TooljetDbModule extends SubModule {
         TooljetDbDataOperationsService,
         TooljetDbImportExportService,
       ],
-    };
+    });
   }
 }

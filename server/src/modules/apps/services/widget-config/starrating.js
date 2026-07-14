@@ -373,8 +373,6 @@ export const starratingConfig = {
       textColor: { value: '#EFB82D' },
       labelFontSize: { value: '{{12}}' },
       labelColor: { value: 'var(--cc-primary-text)' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       labelStyle: { value: 'standard' },

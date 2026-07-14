@@ -13,7 +13,6 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
-import { AppGitSync } from './app_git_sync.entity';
 import { GroupPermission } from './group_permission.entity';
 import { User } from './user.entity';
 import { GroupApps } from './group_apps.entity';
@@ -74,6 +73,9 @@ export class App extends BaseEntity {
 
   @Column({ name: 'app_generated_from_prompt', default: false })
   appGeneratedFromPrompt: boolean;
+
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
 
   @Column({
     type: 'enum',
@@ -146,11 +148,6 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
-  @OneToOne(() => AppGitSync, (appGitSync) => appGitSync.app, {
-    onDelete: 'CASCADE',
-  })
-  appGitSync: AppGitSync;
-
   @OneToMany(() => GroupApps, (groupApps) => groupApps.app, {
     onDelete: 'CASCADE',
   })
@@ -166,4 +163,5 @@ export class App extends BaseEntity {
   aiConversations: AiConversation[];
 
   public editingVersion;
+  public isStub: boolean;
 }

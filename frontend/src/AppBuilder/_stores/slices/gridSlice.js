@@ -48,7 +48,7 @@ const initialState = {
 };
 
 export const createGridSlice = (set, get) => {
-  // Batch reflow scheduler. Collects reflow requests that
+  // Batch reflow scheduler. Collects adjustComponentPositions requests that
   // arrive in the same JS tick (e.g. 50 Tables in a ListView all reporting
   // height changes on data load), fires them in one shared rAF, and lets
   // flushReflows process them together — one setTemporaryLayouts write and
@@ -73,6 +73,18 @@ export const createGridSlice = (set, get) => {
   return {
     ...initialState,
     scheduleReflow,
+    setFlexContainerDropTarget: (payload) =>
+      set((state) => {
+        const current = state.flexContainerDropTarget;
+        if (
+          current === payload ||
+          (current?.flexContainerId === payload?.flexContainerId && current?.index === payload?.index)
+        ) {
+          return;
+        }
+
+        state.flexContainerDropTarget = payload;
+      }),
     checkHoveredComponentDynamicHeight: (id) => {
       const { getResolvedComponent } = get();
       const resolvedProperties = getResolvedComponent(id)?.properties;
@@ -86,18 +98,6 @@ export const createGridSlice = (set, get) => {
     debouncedIncrementCanvasUpdater: debounce(() => {
       get().incrementCanvasUpdater();
     }, 200),
-    setFlexContainerDropTarget: (payload) =>
-      set((state) => {
-        const current = state.flexContainerDropTarget;
-        if (
-          current === payload ||
-          (current?.flexContainerId === payload?.flexContainerId && current?.index === payload?.index)
-        ) {
-          return;
-        }
-
-        state.flexContainerDropTarget = payload;
-      }),
     setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
     setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
     setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
@@ -190,7 +190,6 @@ export const createGridSlice = (set, get) => {
     clearContainerTempLayouts: (containerId, contextPrefix = null) => {
       const normalizedPrefix = normalizeLayoutContext(contextPrefix);
       const prefix = normalizedPrefix ? normalizedPrefix.join('.') : null;
-
       const matches = (key) => {
         if (!prefix) {
           return key === containerId || key.startsWith(`${containerId}-`);

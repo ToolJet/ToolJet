@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { toast } from 'react-hot-toast';
@@ -7,6 +7,7 @@ import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { Modal } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -42,6 +43,7 @@ const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => 
 );
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
+  const { isModuleEditor } = useModuleContext();
   const queryNameEleRef = useRef(null);
 
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
@@ -52,7 +54,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   const renamingQueryId = useStore((state) => state.queryPanel.renamingQueryId);
   const deletingQueryId = useStore((state) => state.queryPanel.deletingQueryId);

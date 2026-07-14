@@ -21,11 +21,16 @@ const OAuthWrapper = ({
   workspaceConstants,
   optionsChanged,
   isDisabled,
+  isWorkspaceBranchLocked = false,
   multiple_auth_enabled,
   scopes,
   oauth_configs,
   currentAppEnvironmentId,
 }) => {
+  // Inner OAuth fields stay locked when the workspace branch is locked (default
+  // branch + branching enabled). The save button uses `isDisabled` alone so an
+  // edit to an encrypted field on the default branch can still be saved.
+  const isFieldsDisabled = isDisabled || isWorkspaceBranchLocked;
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
   const [initialOptions, setInitialOptions] = useState(null);
@@ -136,7 +141,7 @@ const OAuthWrapper = ({
           multiple_auth_enabled={options?.multiple_auth_enabled?.value}
           optionchanged={optionchanged}
           workspaceConstants={workspaceConstants}
-          isDisabled={isDisabled}
+          isDisabled={isFieldsDisabled}
           options={options}
           optionsChanged={optionsChanged}
           selectedDataSource={selectedDataSource}
@@ -178,6 +183,7 @@ const OAuthWrapper = ({
               type="checkbox"
               checked={multiple_auth_enabled}
               onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
+              disabled={isFieldsDisabled}
             />
             <div>
               <span className="form-check-label">Authentication required for all users</span>

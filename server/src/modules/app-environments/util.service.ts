@@ -1,27 +1,61 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, FindOptionsOrderValue } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { DataSourceOptions } from 'src/entities/data_source_options.entity';
-import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from 'src/helpers/database.helper';
 import { IAppEnvironmentUtilService } from './interfaces/IUtilService';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { App } from '@entities/app.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { FindOneOptions } from 'typeorm';
 import { defaultAppEnvironments } from '@helpers/utils.helper';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { RequestContext } from '@modules/request-context/service';
+
+const ENV_MEMO_KEY = 'tj_appenv_memo';
 
 @Injectable()
 export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
-  constructor(protected readonly licenseTermsService: LicenseTermsService) { }
+  constructor(protected readonly licenseTermsService: LicenseTermsService) {}
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const defaultDsv = await manager.findOne(DataSourceVersion, {
+        where: { dataSourceId, isDefault: true },
+      });
+      if (defaultDsv) {
+        const dsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: defaultDsv.id, environmentId },
+        });
+        if (dsvo) {
+          await manager.update(DataSourceVersionOptions, { id: dsvo.id }, { options, updatedAt: new Date() });
+        } else {
+          await manager.save(
+            manager.create(DataSourceVersionOptions, {
+              dataSourceVersionId: defaultDsv.id,
+              environmentId,
+              options,
+            })
+          );
+        }
+      }
+    }, manager);
+  }
+
+  async updateVersionOptions(
+    options: object,
+    dataSourceVersionId: string,
+    environmentId: string,
+    manager?: EntityManager
+  ) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(
-        DataSourceOptions,
+        DataSourceVersionOptions,
         {
+          dataSourceVersionId,
           environmentId,
-          dataSourceId,
         },
         { options, updatedAt: new Date() }
       );
@@ -47,27 +81,41 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
   }
 
   async getByPriority(organizationId: string, ASC = true, manager?: EntityManager): Promise<AppEnvironment> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const condition = {
-        where: { organizationId },
-        order: { priority: ASC ? 'ASC' : ('DESC' as FindOptionsOrderValue) },
-      };
-      return manager.findOneOrFail(AppEnvironment, condition);
-    }, manager);
+    const memoKey = `byPriority:${organizationId}:${ASC ? 'ASC' : 'DESC'}`;
+    const cached = this.#getMemo(memoKey);
+    if (cached) return cached;
+
+    const m = manager ?? getConnectionInstance().manager;
+    const env = await m.findOneOrFail(AppEnvironment, {
+      where: { organizationId },
+      order: { priority: ASC ? 'ASC' : ('DESC' as FindOptionsOrderValue) },
+    });
+    this.#setMemo(memoKey, env);
+    return env;
   }
 
   async getEnvironmentByName(name: string, organizationId: string, manager?: EntityManager): Promise<AppEnvironment> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.findOne(AppEnvironment, {
-        where: { name, organizationId },
-      });
-    }, manager);
+    const m = manager ?? getConnectionInstance().manager;
+    return m.findOne(AppEnvironment, { where: { name, organizationId } });
   }
 
   async getAllEnvironments(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.find(AppEnvironment, { where: { organizationId } });
-    }, manager);
+    const m = manager ?? getConnectionInstance().manager;
+    return m.find(AppEnvironment, { where: { organizationId } });
+  }
+
+  #getMemo(key: string): AppEnvironment | undefined {
+    const ctx = RequestContext.currentContext;
+    const memo = ctx?.res?.locals?.[ENV_MEMO_KEY] as Record<string, AppEnvironment> | undefined;
+    return memo?.[key];
+  }
+
+  #setMemo(key: string, env: AppEnvironment): void {
+    const ctx = RequestContext.currentContext;
+    if (!ctx) return;
+    const memo = (ctx.res?.locals?.[ENV_MEMO_KEY] as Record<string, AppEnvironment>) ?? {};
+    memo[key] = env;
+    RequestContext.setLocals(ENV_MEMO_KEY, memo);
   }
 
   async calculateButtonVisibility(
@@ -103,7 +151,15 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
 
     const result = await manager
       .createQueryBuilder(AppVersion, 'appVersion')
-      .select(['appVersion.name', 'appVersion.id', 'appVersion.currentEnvironmentId'])
+      .select([
+        'appVersion.name',
+        'appVersion.id',
+        'appVersion.currentEnvironmentId',
+        'appVersion.versionType',
+        'appVersion.branchId',
+      ])
+      .addSelect('branch.branch_name', 'branch_name')
+      .leftJoin(WorkspaceBranch, 'branch', 'appVersion.branch_id = branch.id')
       .innerJoin(AppEnvironment, 'env', 'appVersion.currentEnvironmentId = env.id')
       .where(`env.priority >= (${subquery.getQuery()})`)
       .setParameters(subquery.getParameters())
@@ -116,10 +172,16 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       return null;
     }
 
+    const versionType = result.appVersion_version_type;
+    const branchName = result.branch_name;
+
     return {
       name: result.appVersion_name,
       id: result.appVersion_id,
       currentEnvironmentId: result.appVersion_current_environment_id,
+      current_environment_id: result.appVersion_current_environment_id,
+      versionType,
+      ...(versionType === AppVersionType.BRANCH && branchName ? { displayName: branchName } : {}),
     };
   }
 
@@ -160,16 +222,21 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       organizationId
     );
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const condition: FindOneOptions<AppEnvironment> = {
-        where: {
-          organizationId,
-          ...(id ? { id } : !isMultiEnvironmentEnabled ? { priority: 1 } : !priorityCheck ? { isDefault: true } : {}),
-        },
-        ...(priorityCheck && { order: { priority: 'ASC' } }),
-      };
-      return await manager.findOneOrFail(AppEnvironment, condition);
-    }, manager);
+    const memoKey = `get:${organizationId}:${id ?? '_'}:${isMultiEnvironmentEnabled ? 'multi' : 'single'}:${priorityCheck ? 'pri' : 'def'}`;
+    const cached = this.#getMemo(memoKey);
+    if (cached) return cached;
+
+    const m = manager ?? getConnectionInstance().manager;
+    const condition: FindOneOptions<AppEnvironment> = {
+      where: {
+        organizationId,
+        ...(id ? { id } : !isMultiEnvironmentEnabled ? { priority: 1 } : !priorityCheck ? { isDefault: true } : {}),
+      },
+      ...(priorityCheck && { order: { priority: 'ASC' } }),
+    };
+    const env = await m.findOneOrFail(AppEnvironment, condition);
+    this.#setMemo(memoKey, env);
+    return env;
   }
 
   async getAll(organizationId: string, appId?: string, manager?: EntityManager): Promise<AppEnvironment[]> {
@@ -203,7 +270,12 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     }, manager);
   }
 
-  async getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions> {
+  async getOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId?: string,
+    branchId?: string
+  ): Promise<DataSourceVersionOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       let envName: string;
@@ -221,14 +293,59 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
         envName = environment?.name || 'unknown';
       }
 
-      const dataSourceOptions = await manager.findOneOrFail(DataSourceOptions, {
-        where: { environmentId: envId, dataSourceId },
+      // Branch-aware path: read from data_source_version_options for a specific branch
+      if (branchId) {
+        const dsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId, branchId, isActive: true },
+        });
+        if (dsv) {
+          const dsvo = await manager.findOne(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: dsv.id, environmentId: envId },
+          });
+          if (dsvo) {
+            const result = {
+              id: dsvo.id,
+              options: dsvo.options,
+              environmentId: envId,
+              dataSourceId,
+              createdAt: dsvo.createdAt,
+              updatedAt: dsvo.updatedAt,
+              environmentName: envName,
+            } as any;
+            return result;
+          }
+        }
+      }
+
+      // Removed: appVersionId-specific DSV lookup (app_version_id dropped from data_source_versions).
+      // Released versions now fall through to the default DSV path below.
+      // if (appVersionId) { ... where: { dataSourceId, appVersionId, isActive: true } ... }
+
+      // Default version path: read from data_source_version_options via default DSV
+      const defaultDsv = await manager.findOne(DataSourceVersion, {
+        where: { dataSourceId, isDefault: true },
       });
+      if (defaultDsv) {
+        const dsvo = await manager.findOne(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: defaultDsv.id, environmentId: envId },
+        });
+        if (dsvo) {
+          const result = {
+            id: dsvo.id,
+            options: dsvo.options,
+            environmentId: envId,
+            dataSourceId,
+            createdAt: dsvo.createdAt,
+            updatedAt: dsvo.updatedAt,
+            environmentName: envName,
+          } as any;
+          return result;
+        }
+      }
 
-      // Add environment name to the returned object
-      (dataSourceOptions as any).environmentName = envName;
-
-      return dataSourceOptions;
+      throw new ForbiddenException(
+        `No data source version options found for dataSourceId=${dataSourceId}, environmentId=${envId}`
+      );
     });
   }
 

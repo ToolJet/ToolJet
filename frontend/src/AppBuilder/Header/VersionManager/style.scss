@@ -6,6 +6,7 @@
   }
 
   .versions-list {
+
     // Custom scrollbar styling
     &::-webkit-scrollbar {
       width: 6px;
@@ -114,6 +115,10 @@
     cursor: not-allowed;
     opacity: 1;
 
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
     .tj-text-sm,
     .tj-text-xsm,
     * {
@@ -126,6 +131,22 @@
       color: var(--text-disabled) !important;
       cursor: not-allowed;
       pointer-events: none;
+    }
+
+    .version-pull-btn {
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      color: var(--text-default) !important;
+      background-color: var(--surfaces-surface-01) !important;
+      border-color: var(--border-weak) !important;
+    }
+  }
+
+  &.git-only {
+    cursor: default;
+
+    &:hover {
+      background-color: var(--interactive-hover);
     }
   }
 
@@ -191,7 +212,7 @@
     transition: all 0.2s ease;
     outline: none !important;
     padding: 0px !important;
-    border: none;
+    border: 1px solid var(--border-accent-weak) !important;
     box-shadow: none;
 
     &:hover:not(:disabled) {
@@ -299,6 +320,7 @@
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -306,10 +328,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -323,13 +347,16 @@
 .version-item-skeleton {
   animation: pulse 1.5s ease-in-out infinite;
 
-  > div {
+  >div {
     pointer-events: none;
   }
 }
-.create-draft-button-tooltip{
-display: flex;
-.tooltip-inner{
-  width: 323px !important;
+
+.create-draft-button-tooltip {
+  display: flex;
+
+  .tooltip-inner {
+    max-width: 323px !important;
+    width: auto !important;
   }
 }

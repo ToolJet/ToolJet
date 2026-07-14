@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { DEFAULT_USER_DATA_SOURCE_PERMISSIONS, DEFAULT_USER_PERMISSIONS } from './constants';
-import { ResourcePermissionQueryObject, UserDataSourcePermissions, UserPermissions } from './types';
+import {
+  DEFAULT_USER_DATA_SOURCE_PERMISSIONS,
+  DEFAULT_USER_FOLDER_PERMISSIONS,
+  DEFAULT_USER_PERMISSIONS,
+} from './constants';
+import {
+  ResourcePermissionQueryObject,
+  UserDataSourcePermissions,
+  UserFolderPermissions,
+  UserPermissions,
+} from './types';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { AbilityUtilService } from './util.service';
 import { AbilityService as IAbilityService } from './interfaces/IService';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 
 @Injectable()
 export class AbilityService extends IAbilityService {
@@ -34,8 +44,11 @@ export class AbilityService extends IAbilityService {
     resourcePermissionsObject: ResourcePermissionQueryObject,
     manager?: EntityManager
   ): Promise<UserPermissions> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const permissions = await this.getResourcePermission(user, resourcePermissionsObject, manager);
+    // skipAppEditingVersionHydration: permissions load all org apps; afterLoad
+    // would fire AppVersion N+1 per row. Read-only — no txn needed.
+    const m = manager || getConnectionInstance().manager;
+    return skipAppEditingVersionHydration.run(true, async () => {
+      const permissions = await this.getResourcePermission(user, resourcePermissionsObject, m);
 
       const adminGroup = permissions.some((group) => group.name === USER_ROLE.ADMIN);
       const allGranularPermissions = permissions.flatMap((item) => item.groupGranularPermissions);
@@ -52,7 +65,9 @@ export class AbilityService extends IAbilityService {
           appRelease: acc.appRelease || group.appRelease,
           dataSourceCreate: acc.dataSourceCreate || group.dataSourceCreate,
           dataSourceDelete: acc.dataSourceDelete || group.dataSourceDelete,
-          folderCRUD: acc.folderCRUD || group.folderCRUD,
+
+          folderCreate: acc.folderCreate || group.folderCreate,
+          folderDelete: acc.folderDelete || group.folderDelete,
           orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
           tjdbCRUD: acc.tjdbCRUD || group.tjdbCRUD,
           orgVariableCRUD: acc.orgVariableCRUD,
@@ -78,10 +93,12 @@ export class AbilityService extends IAbilityService {
         // Load app permissions for both MODULES.APP and MODULES.MODULES since modules use app permissions
         if (resources.some((item) => item.resource === MODULES.APP || item.resource === MODULES.MODULES)) {
           const appsGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.APP);
+          const foldersGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.FOLDER);
           userPermissions[MODULES.APP] = await this.abilityUtilService.createUserAppsPermissions(
             appsGranularPermissions,
+            foldersGranularPermissions,
             user,
-            manager
+            m
           );
         }
         if (resources.some((item) => item.resource === MODULES.GLOBAL_DATA_SOURCE)) {
@@ -94,10 +111,58 @@ export class AbilityService extends IAbilityService {
             userPermissions[MODULES.GLOBAL_DATA_SOURCE].isAllUsable = true;
           }
         }
+        if (resources.some((item) => item.resource === MODULES.FOLDER)) {
+          const folderGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.FOLDER);
+          userPermissions[MODULES.FOLDER] = this.createUserFolderPermissions(folderGranularPermissions);
+        }
       }
 
       return userPermissions;
-    }, manager);
+    });
+  }
+
+  createUserFolderPermissions(folderGranularPermissions: GranularPermissions[]): UserFolderPermissions {
+    const userFolderPermissions: UserFolderPermissions = {
+      ...DEFAULT_USER_FOLDER_PERMISSIONS,
+      editableFoldersId: [],
+      viewableFoldersId: [],
+      editAppsInFoldersId: [],
+    };
+
+    for (const gp of folderGranularPermissions) {
+      const folderPerms = gp.foldersGroupPermissions;
+      if (!folderPerms) continue;
+
+      // Permission hierarchy: canEditFolder > canEditApps > canViewApps
+      // Each higher permission implies all lower permissions
+      const canEditFolder = folderPerms.canEditFolder;
+      const canEditApps = folderPerms.canEditFolder || folderPerms.canEditApps;
+      const canViewApps = folderPerms.canEditFolder || folderPerms.canEditApps || folderPerms.canViewApps;
+
+      if (gp.isAll) {
+        if (canEditFolder) userFolderPermissions.isAllEditable = true;
+        if (canViewApps) userFolderPermissions.isAllViewable = true;
+        if (canEditApps) userFolderPermissions.isAllEditApps = true;
+      } else {
+        const folderIds = folderPerms.groupFolders?.map((gf) => gf.folderId) || [];
+        if (canEditFolder) {
+          userFolderPermissions.editableFoldersId.push(...folderIds);
+        }
+        if (canViewApps) {
+          userFolderPermissions.viewableFoldersId.push(...folderIds);
+        }
+        if (canEditApps) {
+          userFolderPermissions.editAppsInFoldersId.push(...folderIds);
+        }
+      }
+    }
+
+    // Deduplicate folder IDs
+    userFolderPermissions.editableFoldersId = [...new Set(userFolderPermissions.editableFoldersId)];
+    userFolderPermissions.viewableFoldersId = [...new Set(userFolderPermissions.viewableFoldersId)];
+    userFolderPermissions.editAppsInFoldersId = [...new Set(userFolderPermissions.editAppsInFoldersId)];
+
+    return userFolderPermissions;
   }
 
   async createUserDataSourcesPermissions(

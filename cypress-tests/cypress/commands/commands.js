@@ -97,46 +97,156 @@ Cypress.Commands.add(
     widgetName2 = widgetName,
     canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
   ) => {
-    // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-components-button"]').click();
-    cy.get(commonSelectors.searchField)
-      .should("be.visible")
-      .first()
-      .clear()
-      .type(widgetName);
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
+    // The react-dnd connector ref sits on `.draggable-box`, ancestor of the
+    // widget-list-box. `:has()` lets the source selector resolve straight to
+    // it. Don't reuse `widgetBox()` here — its trailing `:eq(0)` doesn't nest
+    // cleanly inside `:has()`. Require `draggable="true"`: react-dnd sets that
+    // attribute on the connector node only once mounted/connected, and dragging
+    // before it's set makes cypress-real-dnd throw "source may not be a real
+    // HTML5 draggable" (no dragIntercepted event).
+    const sourceSelector = `.draggable-box[draggable="true"]:has([data-cy=widget-list-box-${cyParamName(widgetName2)}])`;
+    const placedWidget = '[data-cy^="draggable-widget-"]';
+
+    const countWidgets = () =>
+      cy.get("body").then(($b) => $b.find(placedWidget).length);
+
+    // Self-healing panel open. The search box is only RENDERED when the
+    // components tab is active (RightSidebar renders it under
+    // `activeTab === COMPONENTS`), so its DOM *presence* — not jQuery
+    // `:visible`, flaky mid-transition — is the reliable "panel open" signal.
+    // The components button is a TOGGLE and a drag's own `isDragging` effect
+    // flips the sidebar asynchronously, so a single click can race the toggle
+    // and land on the wrong state. Click → verify the search box appeared →
+    // re-click if it didn't, until the panel is open (bounded retries).
+    const ensureComponentsPanelOpen = (tries = 5) => {
+      cy.get("body").then(($b) => {
+        if ($b.find(commonSelectors.searchField).length > 0) return; // already open
+        cy.get('[data-cy="right-sidebar-components-button"]').click();
+        cy.wait(500); // let the toggle settle before re-checking
+        cy.get("body").then(($b2) => {
+          if ($b2.find(commonSelectors.searchField).length === 0 && tries > 1) {
+            ensureComponentsPanelOpen(tries - 1);
+          }
+        });
+      });
+    };
+
+    const openPanelAndSearch = () => {
+      ensureComponentsPanelOpen();
+      cy.get(commonSelectors.searchField)
+        .should("be.visible")
+        .first()
+        .clear()
+        .type(widgetName);
+      cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
+    };
 
     // `[data-cy=real-canvas]` is reused by every SubContainer — `cy.get` picks
     // the FIRST match which can be a sidebar/preview surface, not the actual
     // editing canvas. Resolve by id instead:
-    //   - module editor → ModuleContainer's sub-canvas (`#canvas-{uuid}`) —
-    //     the root canvas rejects drops in that mode.
+    //   - module editor → ModuleContainer's sub-canvas (`#canvas-{uuid}`).
     //   - app editor   → `#real-canvas` (unique).
-    // Caller can override via `canvas` arg if they need a specific sub-canvas.
-    cy.get("body").then(($body) => {
-      let resolvedCanvas = canvas;
-      if (!resolvedCanvas) {
-        const mc = $body.find('[component-type="ModuleContainer"]')[0];
-        resolvedCanvas = mc?.id ? `#${mc.id}` : "#real-canvas";
-      }
+    const resolveCanvas = ($body) => {
+      if (canvas) return canvas;
+      const mc = $body.find('[component-type="ModuleContainer"]')[0];
+      return mc?.id ? `#${mc.id}` : "#real-canvas";
+    };
 
-      // The react-dnd connector ref sits on `.draggable-box`, ancestor of the
-      // widget-list-box. `:has()` lets the source selector resolve straight to
-      // it. Don't reuse `widgetBox()` here — its trailing `:eq(0)` doesn't
-      // nest cleanly inside `:has()`.
-      const sourceSelector = `.draggable-box:has([data-cy=widget-list-box-${cyParamName(widgetName2)}])`;
-      // Re-prime the drag pipeline for the freshly-navigated app document.
-      // Each test creates+opens an app in beforeEach, which resets the
-      // renderer's intercept state; without this the first drag goes cold and
-      // the plugin's retry loop can overrun the 15s task timeout. Priming here
-      // lands the drag on the first attempt.
-      cy.realDragRewarm();
-      cy.realDragAndDrop(sourceSelector, resolvedCanvas, {
-        targetX: positionX,
-        targetY: positionY,
+    // Poll for the new widget instead of checking once after a fixed wait: a
+    // fixed delay races the render+autosave and triggers a SPURIOUS retry that
+    // double-drops the widget (button1 + button2). Only re-drag if no new widget
+    // appears within the poll window (a genuine cold-intercept SILENT miss).
+    const confirmDropOrRetry = (before, pollsLeft, triesLeft) => {
+      countWidgets().then((now) => {
+        if (now > before) return; // drop succeeded
+        if (pollsLeft <= 0) {
+          if (triesLeft > 1) attempt(triesLeft - 1);
+          return;
+        }
+        cy.wait(500);
+        confirmDropOrRetry(before, pollsLeft - 1, triesLeft);
       });
-      cy.waitForAutoSave();
-    });
+    };
+
+    // ----------------------------------------------------------------------
+    // THE COLD-FIRST-DRAG THROW (suite-wide #1 blocker) and how this recovers.
+    //
+    // `cy.realDragAndDrop` → `cy.task("cdpRealDrag")`. On a cold pipeline (spec's
+    // first drag, and re-cold after every apiCreateApp+openApp AUT navigation in
+    // beforeEach) the plugin's CDP `Input.setInterceptDrags` arming is silently
+    // absorbed by Cypress's still-settling automation/snapshot CDP traffic. The
+    // plugin retries ONCE internally, but its warmup (getClient's cached
+    // cdpPromise) runs only ONCE per spec run — NOT per navigation — so a freshly
+    // navigated AUT can exhaust both internal attempts and the task REJECTS:
+    //   "[cypress-real-dnd] No Input.dragIntercepted ...".
+    // A rejected cy.task is a command-queue failure that `.then()` cannot catch,
+    // so the old count-based retry never ran and beforeEach died.
+    //
+    // FIX: drive the drag under a scoped, single-shot `cy.on('fail')` trap. When
+    // the cold-intercept throw fires, the trap re-arms via cy.realDragInit()
+    // (re-runs the plugin warmup), settles, and re-drives the FULL attempt
+    // (open→search→drag→count-poll). Returning false from the trap stops Cypress
+    // from failing the test; the re-queued attempt resumes the command queue.
+    // Any non-cold-intercept error, or exhausting throwTriesLeft, re-throws so we
+    // never mask a genuine failure.
+    //
+    // We use a module-scoped flag (not a closure return) because Cypress invokes
+    // `fail` handlers synchronously at error time; the handler enqueues recovery
+    // commands and returns false. The handler is re-installed on every attempt so
+    // it stays single-shot per drag.
+    // Hold the current trap so we can detach a stale one before installing the
+    // next (a never-fired `once` would otherwise stack and all fire together).
+    let currentTrap = null;
+    const installFailTrap = (throwTriesLeft) => {
+      if (currentTrap) cy.removeListener("fail", currentTrap);
+      const onFail = (err) => {
+        currentTrap = null; // this handler has now fired
+        const msg = (err && err.message) || "";
+        const isColdIntercept = /dragIntercepted|cdpRealDrag/i.test(msg);
+        if (isColdIntercept && throwTriesLeft > 1) {
+          // Recover the cold-intercept THROW: re-arm + re-drive the whole
+          // attempt. The re-armed init re-runs the plugin's mouse-cycle warmup.
+          cy.realDragInit();
+          cy.wait(900);
+          attempt(throwTriesLeft - 1);
+          return false; // swallow this failure; the re-driven attempt continues
+        }
+        throw err; // unrecoverable or out of retries — fail honestly
+      };
+      currentTrap = onFail;
+      cy.on("fail", onFail);
+    };
+
+    const attempt = (triesLeft) => {
+      installFailTrap(triesLeft);
+      countWidgets().then((before) => {
+        openPanelAndSearch();
+        // Wait for react-dnd to mark the source draggable before initiating.
+        cy.get(sourceSelector, { timeout: 15000 }).should("exist");
+        // Re-arm immediately before each drag: heavy ops since the last arm
+        // (panel toggle, search render) can clear the renderer's intercept.
+        cy.realDragInit();
+        cy.wait(300);
+        cy.get("body").then(($body) => {
+          cy.realDragAndDrop(sourceSelector, resolveCanvas($body), {
+            targetX: positionX,
+            targetY: positionY,
+          });
+          // Silent-miss recovery (intercept armed, but react-dnd made no
+          // component). The THROW path is handled by the fail-trap above.
+          confirmDropOrRetry(before, 16, triesLeft);
+        });
+      });
+    };
+
+    // Arm the CDP drag intercept before the first drag (re-runs plugin warmup
+    // for THIS navigation; the plugin only auto-warms once per spec run).
+    cy.realDragInit();
+    cy.wait(500);
+    // triesLeft doubles as the THROW retry budget — 4 gives the cold intercept
+    // up to 4 re-arm+re-drive cycles before failing for real.
+    attempt(4);
+    cy.waitForAutoSave();
   }
 );
 
@@ -520,8 +630,8 @@ Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
   cy.intercept("GET", API_ENDPOINT).as("library_apps");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait(2000);
 });
 
@@ -560,7 +670,7 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
   const isPublicValue = isPublic ? "true" : "false";
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE name = '${appName}';`,
+    sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE id = (SELECT app_id FROM app_versions WHERE app_name='${appName}' LIMIT 1);`,
   });
 });
 
@@ -594,9 +704,9 @@ Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
 Cypress.Commands.add("getAppId", (appName) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `select id from apps where name='${appName}';`,
+    sql: `select app_id from app_versions where app_name='${appName}';`,
   }).then((resp) => {
-    const appId = resp.rows[0]?.id;
+    const appId = resp.rows[0]?.app_id;
     return appId;
   });
 });

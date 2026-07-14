@@ -3,6 +3,7 @@ import { IExternalApiUtilService } from './Interfaces/IUtilService';
 import { ValidateEditUserGroupAdditionObject } from './types';
 import { UserDetailKeyValueDto } from './dto';
 import { EntityManager } from 'typeorm';
+
 @Injectable()
 export class ExternalApiUtilService implements IExternalApiUtilService {
   generateRandomPassword(length?: number): string {

@@ -19,7 +19,8 @@ export class DataSourcesRepository extends Repository<DataSource> {
     organizationId: string,
     queryVars: GetQueryVariables
   ): Promise<DataSource[]> {
-    const { appVersionId, environmentId, types } = queryVars;
+    const { environmentId, types, branchId } = queryVars;
+    // appVersionId removed from queryVars: released versions now use is_default DSV
     // Data source options are attached only if selectedEnvironmentId is passed
     // Returns global data sources + sample data sources
     // If version Id is passed, then data queries under each are also returned
@@ -27,18 +28,87 @@ export class DataSourcesRepository extends Repository<DataSource> {
     const isAllUsableConfigurable = dataSourcePermissions.isAllConfigurable || dataSourcePermissions.isAllUsable;
     const canPerformCreateOrDelete = userPermissions.dataSourceCreate || userPermissions.dataSourceDelete;
     const isSuperAdmin = userPermissions.isSuperAdmin;
-    const isAdmin = userPermissions.isSuperAdmin;
+    const isAdmin = userPermissions.isAdmin;
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const query = manager
-        .createQueryBuilder(DataSource, 'data_source')
+    const manager = this.manager;
+    const query = manager
+      .createQueryBuilder(DataSource, 'data_source')
         .leftJoinAndSelect('data_source.plugin', 'plugin')
         .leftJoinAndSelect('plugin.iconFile', 'iconFile')
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
-      if (environmentId) {
-        query.innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options');
+      const useBranchPath = !!(branchId && environmentId);
+
+      if (useBranchPath) {
+        // Branch-aware: prefer branch-specific DSV, fall back to default DSV
+        // query.leftJoin(
+        //   'data_source_versions',
+        //   'dsv',
+        //   `dsv.data_source_id = data_source.id AND (
+        //     (dsv.branch_id = :branchId AND dsv.is_active = true)
+        //     OR (
+        //       dsv.is_default = true
+        //       AND NOT EXISTS (
+        //         SELECT 1 FROM data_source_versions dsv2
+        //         WHERE dsv2.data_source_id = data_source.id
+        //           AND dsv2.branch_id = :branchId
+        //       )
+        //     )
+        //   )`,
+        //   { branchId }
+        // );
+        query.leftJoin(
+         'data_source_versions',
+         'dsv',
+         `dsv.data_source_id = data_source.id
+          AND dsv.branch_id = :branchId
+          AND dsv.is_active = true`,
+         { branchId }
+       );
+        query.leftJoin(
+          'data_source_version_options',
+          'dsvo',
+          'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
+          { environmentId }
+        );
+        // Select version-specific columns so they appear in raw results
+        query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
+      } else if (branchId) {
+        // Branch-aware but no environmentId: prefer branch DSV, fall back to default
+        query.leftJoin(
+          'data_source_versions',
+          'dsv',
+          `dsv.data_source_id = data_source.id AND (
+            (dsv.branch_id = :branchId AND dsv.is_active = true)
+            OR (
+              dsv.is_default = true
+              AND NOT EXISTS (
+                SELECT 1 FROM data_source_versions dsv2
+                WHERE dsv2.data_source_id = data_source.id
+                  AND dsv2.branch_id = :branchId
+              )
+            )
+          )`,
+          { branchId }
+        );
+        query.addSelect(['dsv.id', 'dsv.name']);
+      } else if (environmentId) {
+        // Released versions now read from the main-branch default DSV (is_default = true).
+        // Removed: appVersionId-specific DSV lookup (app_version_id dropped from data_source_versions).
+        // if (appVersionId) { ... dsv.app_version_id = :appVersionId ... }
+        query.leftJoin(
+          'data_source_versions',
+          'dsv',
+          'dsv.data_source_id = data_source.id AND dsv.is_default = true'
+        );
+        query.leftJoin(
+          'data_source_version_options',
+          'dsvo',
+          'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
+          { environmentId }
+        );
+        query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
       }
 
       query.where('data_source.type != :sampleType', { sampleType: DataSourceTypes.SAMPLE });
@@ -54,10 +124,11 @@ export class DataSourcesRepository extends Repository<DataSource> {
                   ...dataSourcePermissions.configurableDataSourceId,
                 ],
               });
-              if (appVersionId) {
-                query.leftJoin('data_source.dataQueries', 'data_queries');
-                qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
-              }
+              // Removed: appVersionId-based data query join (app_version_id dropped from data_source_versions).
+              // if (appVersionId) {
+              //   query.leftJoin('data_source.dataQueries', 'data_queries');
+              //   qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
+              // }
             })
           );
         }
@@ -70,10 +141,29 @@ export class DataSourcesRepository extends Repository<DataSource> {
       if (types && types.length > 0) {
         query.andWhere('data_source.type IN (:...types)', { types });
       }
-      if (environmentId) {
-        query.andWhere('data_source_options.environmentId = :environmentId', { environmentId });
+      if (environmentId && !useBranchPath && !branchId) {
+        // Filter: DS must have options in version table for this env
+        query.andWhere('dsvo.id IS NOT NULL');
       }
-      const result = await query.getMany();
+      if (useBranchPath || branchId) {
+        // Filter: DS must have at least a DSV (branch-specific or default fallback)
+        // Static data sources don't have DSV entries, so always allow them through
+        query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {
+          staticType: DataSourceTypes.STATIC,
+        });
+      }
+      let result: DataSource[];
+      let rawResults: any[] = [];
+
+      if (useBranchPath || branchId || environmentId) {
+        // Use getRawAndEntities to get both entity data and raw dsv/dsvo columns
+        const rawAndEntities = await query.getRawAndEntities();
+        result = rawAndEntities.entities;
+        rawResults = rawAndEntities.raw;
+      } else {
+        result = await query.getMany();
+      }
+
       result.forEach((dataSource) => {
         if (dataSource.plugin) {
           if (dataSource.plugin.iconFile) {
@@ -101,34 +191,79 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       const dataSourceList = [...result, ...sampleDataSource];
 
+      const rawById = new Map<string, any>();
+      for (const r of rawResults) {
+        if (!rawById.has(r.data_source_id)) rawById.set(r.data_source_id, r);
+      }
+
       //remove tokenData from restapi datasources
       const dataSources = dataSourceList?.map((ds) => {
-        if (ds.kind === 'restapi') {
-          const options = {};
-          Object.keys(ds.dataSourceOptions?.[0]?.options || {}).filter((key) => {
-            if (key !== 'tokenData') {
-              return (options[key] = ds.dataSourceOptions[0].options[key]);
+        if (useBranchPath || branchId) {
+          const rawRow = rawById.get(ds.id);
+          if (rawRow) {
+            // Overlay version-specific name from data_source_versions
+            if (rawRow.dsv_name) {
+              ds.name = rawRow.dsv_name;
             }
-          });
-          ds.options = options;
+            // Attach version id for frontend reference
+            (ds as any).versionId = rawRow.dsv_id || null;
+          }
+
+          if (useBranchPath && rawRow) {
+            // Options from data_source_version_options
+            const rawOptions = rawRow.dsvo_options || {};
+            const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
+            if (ds.kind === 'restapi') {
+              const options = {};
+              Object.keys(parsedOptions).filter((key) => {
+                if (key !== 'tokenData') {
+                  return (options[key] = parsedOptions[key]);
+                }
+              });
+              ds.options = options;
+            } else {
+              ds.options = { ...parsedOptions };
+            }
+          }
+        } else if (environmentId) {
+          // Non-branch with environmentId: use version options
+          const rawRow = rawById.get(ds.id);
+          const rawOptions = rawRow?.dsvo_options;
+          if (rawOptions) {
+            const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
+            if (ds.kind === 'restapi') {
+              const options = {};
+              Object.keys(parsedOptions).filter((key) => {
+                if (key !== 'tokenData') {
+                  return (options[key] = parsedOptions[key]);
+                }
+              });
+              ds.options = options;
+            } else {
+              ds.options = { ...parsedOptions };
+            }
+            if (rawRow?.dsv_name) {
+              ds.name = rawRow.dsv_name;
+            }
+          } else {
+            ds.options = {};
+          }
         } else {
-          ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
+          ds.options = {};
         }
         delete ds['dataSourceOptions'];
         return ds;
       });
 
-      return dataSources;
-    });
+    return dataSources;
   }
 
   async findById(dataSourceId: string, organizationId: string, manager?: EntityManager): Promise<DataSource> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOneOrFail(DataSource, {
-        where: { id: dataSourceId, organizationId },
-        relations: ['plugin', 'apps', 'dataSourceOptions'],
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.findOneOrFail(DataSource, {
+      where: { id: dataSourceId, organizationId },
+      relations: ['plugin', 'apps'],
+    });
   }
 
   async convertToGlobalSource(dataSourceId: string, organizationId: string, manager?: EntityManager) {
@@ -167,41 +302,35 @@ export class DataSourcesRepository extends Repository<DataSource> {
     kind: DefaultDataSourceKind,
     manager?: EntityManager
   ): Promise<DataSource> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.findOneOrFail(DataSource, {
-        where: { organizationId, type: DataSourceTypes.STATIC, kind },
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.findOneOrFail(DataSource, { where: { organizationId, type: DataSourceTypes.STATIC, kind } });
   }
 
   findByQuery(dataQueryId: string, organizationId: string, dataSourceId?: string, manager?: EntityManager) {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.findOne(DataSource, {
-        where: { ...(dataSourceId ? { id: dataSourceId } : {}), dataQueries: { id: dataQueryId }, organizationId },
-        relations: ['dataQueries', 'plugin'],
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.findOne(DataSource, {
+      where: { ...(dataSourceId ? { id: dataSourceId } : {}), dataQueries: { id: dataQueryId }, organizationId },
+      relations: ['dataQueries', 'plugin'],
+    });
   }
 
   getDatasourceByPluginId(pluginId: string) {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(DataSource, {
-        where: {
-          pluginId: pluginId,
-        },
-        relations: ['dataQueries'],
-      });
-    });
+    return this.manager.find(DataSource, { where: { pluginId }, relations: ['dataQueries'] });
   }
 
-  getQueriesByDatasourceId(datasourceId) {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(DataSource, {
-        where: {
-          id: datasourceId,
-        },
-        relations: ['dataQueries'],
-      });
-    });
+  getQueriesByDatasourceId(datasourceId: string, branchId?: string | null) {
+    if (branchId) {
+      return this.manager
+        .createQueryBuilder(DataSource, 'ds')
+        .leftJoinAndSelect(
+          'ds.dataQueries',
+          'dq',
+          'dq.app_version_id IN (SELECT av.id FROM app_versions av WHERE av.branch_id = :branchId)',
+          { branchId }
+        )
+        .where('ds.id = :datasourceId', { datasourceId })
+        .getMany();
+    }
+    return this.manager.find(DataSource, { where: { id: datasourceId }, relations: ['dataQueries'] });
   }
 }

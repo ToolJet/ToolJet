@@ -299,3 +299,13 @@
     }
   }
 }
+
+.dependent-apps-modal {
+  .modal-body {
+    padding: 0;
+  }
+
+  &.modal-dialog {
+    max-width: 459px;
+  }
+}

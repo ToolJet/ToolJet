@@ -58,10 +58,14 @@ function createSDK(): NodeSDK {
   // Define the metric exporter
   // Dynatrace (and many other backends) require DELTA temporality.
   // The OTLPMetricExporter defaults to CUMULATIVE, which Dynatrace silently drops.
+  // Set OTEL_METRICS_TEMPORALITY=cumulative for backends like Prometheus' OTLP receiver.
   const metricExporter = new OTLPMetricExporter({
     url: metricsUrl,
     ...(process.env.OTEL_HEADER ? { headers: authHeader } : {}),
-    temporalityPreference: AggregationTemporality.DELTA,
+    temporalityPreference:
+      process.env.OTEL_METRICS_TEMPORALITY === 'cumulative'
+        ? AggregationTemporality.CUMULATIVE
+        : AggregationTemporality.DELTA,
   });
 
   // Define the log exporter

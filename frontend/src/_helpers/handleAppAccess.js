@@ -117,6 +117,10 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
           return;
         }
         case 404: {
+          if (error?.data?.message === ERROR_TYPES.APP_NOT_READY) {
+            redirectToErrorPage(ERROR_TYPES.APP_NOT_READY, {});
+            return;
+          }
           redirectToErrorPage(ERROR_TYPES.INVALID, {});
           return;
         }

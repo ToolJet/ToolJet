@@ -224,21 +224,22 @@ describe("dashboard", () => {
       commonSelectors.appCardOptions(commonText.addToFolderOption)
     ).click();
     verifyModal(
-      dashboardText.addToFolderTitle,
+      dashboardText.updateFolderTitle,
       dashboardText.addToFolderButton,
       dashboardSelector.selectFolder
     );
-    cy.get(dashboardSelector.moveAppText).verifyVisibleElement(
-      "have.text",
-      dashboardText.moveAppText(data.appName)
-    );
+    cy.get(dashboardSelector.moveAppText).should("be.visible");
+    cy.get(dashboardSelector.moveAppText).within(() => {
+      cy.get("label").first().should("have.text", "Move selected apps");
+      cy.get(".selected-value").should("contain.text", data.appName);
+    });
 
     cy.get(dashboardSelector.selectFolder).click();
     cy.get(commonSelectors.folderList).contains(data.folderName).click();
     cy.get(dashboardSelector.addToFolderButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      commonText.AddedToFolderToast,
+      dashboardText.bulkMoveSuccessToast(data.folderName),
       false
     );
 
@@ -299,7 +300,7 @@ describe("dashboard", () => {
 
     cy.exec("ls ./cypress/downloads/").then((result) => {
       const downloadedAppExportFileName = result.stdout.split("\n")[0];
-      expect(downloadedAppExportFileName).to.contain.string("app");
+      expect(downloadedAppExportFileName).to.contain.string("App");
     });
 
     viewAppCardOptions(data.appName);

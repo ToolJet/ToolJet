@@ -9,7 +9,7 @@ import { RIGHT_SIDE_BAR_TAB } from './rightSidebarConstants';
 
 export const RightSideBar = ({ darkMode }) => {
   const { isModuleEditor } = useModuleContext();
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const activeTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
 

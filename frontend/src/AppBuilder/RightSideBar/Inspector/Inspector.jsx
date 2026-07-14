@@ -55,6 +55,7 @@ import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Cascader } from './Components/Cascader/Cascader';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
@@ -163,10 +164,11 @@ export const Inspector = ({
   selectedComponentId,
   handleRightSidebarToggle,
 }) => {
+  const { isModuleEditor } = useModuleContext();
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
@@ -454,7 +456,7 @@ export const Inspector = ({
       setTimeout(() => setInputFocus(), 0);
     }
     if (value === 'delete') {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
     if (value === 'permission') {
       if (!hasAppPermissionComponent) return;

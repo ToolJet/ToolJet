@@ -12,7 +12,6 @@ import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
-  // This guard will allow access for unauthenticated user if the app is public
   constructor(
     protected readonly appUtilService: AppsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
@@ -29,17 +28,17 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       throw new NotFoundException('App not found. Invalid app id');
     }
 
-    // unauthenticated users should be able to to view public apps
-    const app = await this.appRepository.findOne({
-      where: {
-        slug,
-      },
-    });
+    // Slug-based lookup is a released-app resolution path — the slug is the
+    // public URL handle and resolves the app instance-wide via its canonical
+    // (default-branch or branchless) row. The requester's editor x-branch-id
+    // is the wrong scope here; ignore it and let findAppBySlug do the global
+    // resolution.
+    const app = await this.appRepository.findAppBySlug(slug);
+
     if (!app) throw new NotFoundException('App not found. Invalid app id');
+
     const organization = await this.organizationRepository.findOne({
-      where: {
-        id: app.organizationId,
-      },
+      where: { id: app.organizationId },
     });
     if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
       throw new BadRequestException('Organization is Archived');
@@ -54,7 +53,6 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    // Fall back to JWT authentication
     try {
       const authResult = await super.canActivate(context);
       return authResult;

@@ -42,10 +42,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (!isEmpty(dataQueryId)) {
       dataQuery = await this.manager.findOne(DataQuery, {
         where: { id: dataQueryId },
-        relations: ['apps'],
+        relations: ['apps', 'appVersion'],
       });
     }
-    const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && dataQuery.app.isPublic;
+    // Non-workflow apps and modules carry is_public on app_versions; workflows keep it on apps.
+    const isQueryPublic =
+      dataQuery?.app?.type === 'workflow' ? dataQuery?.app?.isPublic : dataQuery?.appVersion?.isPublic;
+    const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && isQueryPublic;
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
 
     if (superAdmin || isAdmin || userPermission.tjdbCRUD) {

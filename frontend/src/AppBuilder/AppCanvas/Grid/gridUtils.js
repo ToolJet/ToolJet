@@ -291,11 +291,13 @@ export const handleWidgetResize = (e, list, boxes, gridWidth) => {
   e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
 };
 
-export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
+export function getMouseDistanceFromParentDiv(event, id, parentWidgetType, frozenTargetRect) {
   let parentDiv = document.getElementById('canvas-' + id) || document.getElementById('real-canvas');
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
-  const targetDivRect = event.target.getBoundingClientRect();
+  // Use the pre-snapshotted rect when available (e.g. after async stub hydration the
+  // ghost element is already detached and getBoundingClientRect returns all-zeros).
+  const targetDivRect = frozenTargetRect ?? event.target.getBoundingClientRect();
 
   const mouseX = targetDivRect.left - parentDivRect.left;
   const mouseY = targetDivRect.top - parentDivRect.top;

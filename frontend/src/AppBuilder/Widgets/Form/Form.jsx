@@ -246,6 +246,13 @@ const FormComponent = (props) => {
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
 
+  // When this Form is nested inside another Form, inherit the parent's submit
+  // attempts. A failed submit on the parent must surface validation errors on
+  // this child form's inputs too, even though they live under this form's own
+  // FormValidationContext.Provider (which would otherwise shadow the parent's).
+  const parentSubmitAttemptCount = useContext(FormValidationContext);
+  const effectiveSubmitAttemptCount = submitAttemptCount + parentSubmitAttemptCount;
+
   useEffect(() => {
     const exposedVariables = {
       resetForm: async function () {
@@ -474,7 +481,7 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            <FormValidationContext.Provider value={submitAttemptCount}>
+            <FormValidationContext.Provider value={effectiveSubmitAttemptCount}>
               {!advanced && (
                 <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                   <SubContainer
