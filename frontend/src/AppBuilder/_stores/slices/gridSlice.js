@@ -190,9 +190,9 @@ export const createGridSlice = (set, get) => {
     clearContainerTempLayouts: (containerId, contextPrefix = null, moduleId = 'canvas') => {
       const normalizedPrefix = normalizeLayoutContext(contextPrefix);
       const prefix = normalizedPrefix ? normalizedPrefix.join('.') : null;
-      // Keys are moduleId-scoped for embedded modules (see getDynamicLayoutKey);
+      // Keys are moduleId-scoped for embedded modules;
       // build the same scoped base so a module container's temps are matched (an unscoped base would never match).
-      const base = moduleId && moduleId !== 'canvas' ? `${moduleId}::${containerId}` : containerId;
+      const base = getDynamicLayoutKey(containerId, null, '', moduleId);
       const matches = (key) => {
         if (!prefix) {
           return key === base || key.startsWith(`${base}-`);
