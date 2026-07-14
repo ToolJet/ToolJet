@@ -28,6 +28,7 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'Timeline',
   'FilePicker',
   'ReorderableList',
+  'ButtonGroupV2',
 ];
 
 const WidgetWrapper = memo(
