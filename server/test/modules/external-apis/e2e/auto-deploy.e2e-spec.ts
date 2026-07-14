@@ -263,6 +263,21 @@ describe('External API — POST /ext/apps/:appIdOrSlug/git-sync/release', () => 
       expect(response.body.currentVersionId).toBe(version.id);
     });
 
+    it('resolves app by slug when versionName is also given', async () => {
+      const { user } = await seedOrg();
+      const slug = `my-app-${Date.now()}`;
+      const app = await createApplication(nestApp, { user, name: `App-${Date.now()}`, isPublic: false, slug });
+      const version = await seedVersion(app as any, 'v1', AppVersionStatus.PUBLISHED);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${slug}/git-sync/release`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ versionName: version.name })
+        .expect(201);
+
+      expect(response.body.currentVersionId).toBe(version.id);
+    });
+
     it('updates the app row currentVersionId in the database', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
