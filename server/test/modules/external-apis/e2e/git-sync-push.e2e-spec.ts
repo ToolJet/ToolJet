@@ -51,7 +51,10 @@ describe('External API — POST /ext/apps/:appId/versions/:versionId/git-sync/pu
   });
 
   afterEach(async () => {
-    jest.resetAllMocks();
+    // resetAllMocks clears a spy's mock implementation but leaves it a bare
+    // mock (resolving undefined) instead of restoring the real method — a
+    // spy from one test would otherwise silently poison every later test.
+    jest.restoreAllMocks();
     await resetDB();
   });
 
@@ -131,6 +134,79 @@ describe('External API — POST /ext/apps/:appId/versions/:versionId/git-sync/pu
         .set('Authorization', 'Basic wrong-token')
         .send({ commitMessage: 'msg' })
         .expect(403);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 400 — validation
+  // ---------------------------------------------------------------------------
+
+  describe('400 — validation', () => {
+    it('returns 400 when versionId does not belong to appId', async () => {
+      // Two separate orgs/users, not two apps under one user: the check under
+      // test (service.ts's `version.appId != appId`) has no org relationship
+      // requirement, and ensureAppEnvironments (seed.ts) isn't idempotent per
+      // org — seeding a second app for the same user re-inserts that org's
+      // environments and hits unique_organization_id_priority.
+      const { user: userA } = await seedOrg();
+      const { user: userB } = await seedOrg();
+      const appA = await seedApp(userA);
+      const appB = await seedApp(userB);
+      const versionOnB = await seedPublishedVersion(appB as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${appA.id}/versions/${versionOnB.id}/git-sync/push`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ commitMessage: 'msg' })
+        .expect(400);
+
+      expect(response.body.message).toContain('Wrong version Id');
+    });
+
+    it('returns 400 when the app cannot be resolved', async () => {
+      const { user } = await seedOrg();
+      const app = await seedApp(user);
+      const version = await seedPublishedVersion(app as any);
+
+      const appsUtilService = nestApp.get(AppsUtilService);
+      jest.spyOn(appsUtilService, 'findByAppId').mockResolvedValueOnce(null);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/${version.id}/git-sync/push`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ commitMessage: 'msg' })
+        .expect(400);
+
+      expect(response.body.message).toContain('App not found');
+    });
+
+    it('returns 400 when the organization has no git configuration', async () => {
+      const { user } = await seedOrg();
+      const app = await seedApp(user);
+      const version = await seedPublishedVersion(app as any);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/${version.id}/git-sync/push`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ commitMessage: 'msg' })
+        .expect(400);
+
+      expect(response.body.message).toContain('No git configuration found');
+    });
+
+    it('returns 400 when git is configured but not enabled', async () => {
+      const { user, organization } = await seedOrg();
+      const app = await seedApp(user);
+      const version = await seedPublishedVersion(app as any);
+      await seedOrgGit(organization.id, false);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/${version.id}/git-sync/push`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ commitMessage: 'msg' })
+        .expect(400);
+
+      expect(response.body.message).toBe('Git is not enabled');
     });
   });
 });
