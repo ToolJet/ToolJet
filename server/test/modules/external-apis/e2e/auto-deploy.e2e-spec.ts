@@ -133,6 +133,18 @@ describe('External API — POST /ext/apps/:appIdOrSlug/git-sync/release', () => 
         .expect(404);
     });
 
+    // findByIdOrSlug branches on isUUID(idOrSlug): a UUID-format id takes the
+    // id lookup above; a non-UUID string skips straight to the slug query.
+    // Neither the UUID-format 404 case above nor any other test in this file
+    // exercises that slug-only branch when it resolves to nothing.
+    it('returns 404 when app slug does not exist', async () => {
+      await request(nestApp.getHttpServer())
+        .post('/api/ext/apps/does-not-exist-slug/git-sync/release')
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(404);
+    });
+
     it('returns 404 when versionId does not belong to the app', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
