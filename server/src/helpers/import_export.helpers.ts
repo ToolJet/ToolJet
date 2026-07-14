@@ -91,7 +91,7 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
       }
 
       try {
-        const { processedExpression, uuidMappings } = preprocessExpression(
+        const { processedExpression, uuidMappings, placeholderOriginals } = preprocessExpression(
           expression,
           uuidRegex,
           componentIdNameMapping,
@@ -112,14 +112,16 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
           componentIdNameMapping,
           queryIdNameMapping,
           false,
-          uuidMappings
+          uuidMappings,
+          placeholderOriginals
         );
         const bracketNotationExpression = replaceIdsInExpression(
           processedExpression,
           componentIdNameMapping,
           queryIdNameMapping,
           true,
-          uuidMappings
+          uuidMappings,
+          placeholderOriginals
         );
 
         replacedString += `{{${replacedExpression}}}`;
@@ -168,7 +170,7 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
     }
 
     try {
-      const { processedExpression, uuidMappings } = preprocessExpression(
+      const { processedExpression, uuidMappings, placeholderOriginals } = preprocessExpression(
         expression,
         uuidRegex,
         componentIdNameMapping,
@@ -189,14 +191,16 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
         componentIdNameMapping,
         queryIdNameMapping,
         false,
-        uuidMappings
+        uuidMappings,
+        placeholderOriginals
       );
       const bracketNotationExpression = replaceIdsInExpression(
         processedExpression,
         componentIdNameMapping,
         queryIdNameMapping,
         true,
-        uuidMappings
+        uuidMappings,
+        placeholderOriginals
       );
 
       replacedString += `{{${replacedExpression}}}`;
@@ -232,16 +236,28 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
 
 function preprocessExpression(expression, uuidRegex, componentIdNameMapping, queryIdNameMapping) {
   const uuidMappings = {};
+  const placeholderOriginals = {};
   let placeholderCounter = 0;
 
   const processedExpression = expression.replace(uuidRegex, (match, p1, p2, p3, p4) => {
     const placeholder = `__UUID_PLACEHOLDER_${placeholderCounter}__`;
     uuidMappings[placeholder] = (p1 === 'components' ? componentIdNameMapping[p3] : queryIdNameMapping[p3]) || p3;
+    placeholderOriginals[placeholder] = p3;
     placeholderCounter++;
     return `${p1}${p2}${placeholder}${p4 || ''}`;
   });
 
-  return { processedExpression, uuidMappings };
+  return { processedExpression, uuidMappings, placeholderOriginals };
+}
+
+// A processed expression must never escape with `__UUID_PLACEHOLDER_N__` text in it —
+// on any bail-out path the placeholders are swapped back to the original UUIDs.
+function restoreUuidPlaceholders(expression: string, placeholderOriginals: Record<string, string> = {}): string {
+  let result = expression;
+  for (const [placeholder, original] of Object.entries(placeholderOriginals)) {
+    result = result.split(placeholder).join(original);
+  }
+  return result;
 }
 
 function replaceIdsInExpression(
@@ -249,7 +265,8 @@ function replaceIdsInExpression(
   componentIdNameMapping,
   queryIdNameMapping,
   useBracketNotation,
-  uuidMappings
+  uuidMappings,
+  placeholderOriginals
 ) {
   try {
     const ast = acorn.parse(expression, { ecmaVersion: 2020 });
@@ -307,7 +324,7 @@ function replaceIdsInExpression(
       },
     });
 
-    if (replacements.length === 0) return expression;
+    if (replacements.length === 0) return restoreUuidPlaceholders(expression, placeholderOriginals);
 
     replacements.sort((a, b) => b.start - a.start);
 
@@ -318,7 +335,7 @@ function replaceIdsInExpression(
 
     return result;
   } catch {
-    return expression;
+    return restoreUuidPlaceholders(expression, placeholderOriginals);
   }
 }
 
@@ -337,13 +354,11 @@ function parseExpression(expression, componentIdNameMapping, queryIdNameMapping,
       MemberExpression: handleMemberExpression,
     });
 
-    // eslint-disable-next-line no-inner-declarations
     function handleMemberExpression(node) {
       const reference = extractPath(node);
       if (reference) references.push(reference);
     }
 
-    // eslint-disable-next-line no-inner-declarations
     function extractPath(node) {
       const path = [];
       let current = node;
