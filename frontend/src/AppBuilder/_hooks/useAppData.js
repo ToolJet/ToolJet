@@ -76,7 +76,7 @@ const useAppData = (
   moduleId,
   darkMode,
   mode = 'edit',
-  { environmentId, versionId } = {},
+  { environmentId, versionId, componentName } = {},
   moduleMode = false,
   appSlug
 ) => {
@@ -195,6 +195,11 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
+  const moduleAppNameFromList = useStore((state) => {
+    if (!moduleMode) return null;
+    const list = state.modulesStore?.modulesList ?? [];
+    return list.find((m) => (m.co_relation_id ?? m.id) === appId)?.name ?? null;
+  });
 
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
@@ -320,27 +325,19 @@ const useAppData = (
           // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
         } else {
-          // versionId is the version's module_reference_id (uuid) when pinned, '' when unpinned.
-          // The server resolver handles either; the URL builder omits the `ref` param when empty.
+          // versionId is a versionName string (cross-workspace stable, git-tag-backed) when the
+          // bridge field is populated, a UUID module_reference_id for legacy same-workspace-only
+          // pins, or '' when unpinned. The server resolver handles all three cases.
           appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
         }
       } else if (versionId) {
         // Pinned: call the by-correlation endpoint with the module_reference_id ref.
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
-        // Unpinned: in git-sync mode, prefer the parent app's cached module definition
-        // (already loaded for the parent's branch context — matches "follow my branch" semantics).
-        // In non-git-sync mode, skip the cache — it may hold a released version rather than
-        // the active draft. Always hit the server so the draft-preference resolver runs.
-        const orgGit = useStore.getState().orgGit;
-        const isGitSyncEnabled =
-          orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-        const cachedDefinition = isGitSyncEnabled ? getModuleDefinition(appId) : null;
-        if (cachedDefinition) {
-          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
-        } else {
-          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
-        }
+        // Unpinned: always hit the backend — cached definition may be from the default branch,
+        // not the consumer's feature branch. Server resolver correctly returns the current
+        // branch's draft (or 404 if nothing is available there).
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       }
     } else {
       if (isPublicAccess) {
@@ -476,6 +473,7 @@ const useAppData = (
             isReleasedApp: isReleasedApp,
             appType: appData.type,
             currentVersionId: appData.editing_version?.id || appData.current_version_id,
+            co_relation_id: appData.co_relation_id,
           },
           moduleId
         );
@@ -646,7 +644,11 @@ const useAppData = (
           selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
           moduleId
         );
-        setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
+        setResolvedGlobals(
+          'appVersion',
+          { name: editingVersion?.display_name || editingVersion?.displayName || editingVersion?.name },
+          moduleId
+        );
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',
@@ -693,6 +695,22 @@ const useAppData = (
         console.error('Error loading app data', _error);
         setEditorLoading(false, moduleId);
         if (moduleMode) {
+          const versionLabel = versionId || 'unpinned';
+          const widgetName = componentName ?? moduleId;
+          useStore.getState().debugger.log({
+            logLevel: 'error',
+            type: 'module',
+            kind: 'module',
+            key: widgetName,
+            message: 'Module version not found, re-select the version to load it',
+            errorTarget: 'Modules',
+            error: {
+              description: _error?.data?.message || 'Module version not found',
+              module: appName || moduleAppNameFromList || widgetName,
+              version: versionLabel,
+            },
+            timestamp: new Date().toISOString(),
+          });
           toast.error('Error fetching module data');
           return;
         }
@@ -861,6 +879,7 @@ const useAppData = (
           appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
           aiGenerationMetadata: appData.ai_generation_metadata || {},
           appBuilderMode: appData.appBuilderMode || 'visual',
+          co_relation_id: appData.co_relation_id,
         });
 
         setGlobalSettings(
@@ -949,7 +968,11 @@ const useAppData = (
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
 
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
-        setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
+        setResolvedGlobals(
+          'appVersion',
+          { name: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name },
+          moduleId
+        );
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,
@@ -987,7 +1010,7 @@ const useAppData = (
         { timeout: 2000 }
       ); // Adding a timeout of 2 seconds as fallback
     }
-  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode]);
+  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode, restoreTimestamp]);
 
   return appTypeRef.current;
 };

@@ -73,7 +73,10 @@ export const addNewWidgetToTheEditor = (
     // the module has no version yet. Users can opt into follow-latest semantics via the
     // inspector ("Current branch" option writes '' back to value).
     componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
-    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId ?? '' };
+    componentData.definition.properties.moduleVersionId = {
+      value: moduleInfo.versionId ?? '',
+      versionName: moduleInfo.versionName ?? '',
+    };
     componentData.definition.properties.visibility = { value: true };
     customLayouts = moduleInfo?.moduleContainer?.layouts;
 
