@@ -25,10 +25,10 @@ function EditAppName() {
 
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
-  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
-  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isGitSyncEnabled = orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
       workspaceActiveBranch.isDefault ||

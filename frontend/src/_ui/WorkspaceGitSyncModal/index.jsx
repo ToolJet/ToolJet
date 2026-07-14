@@ -63,10 +63,6 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
 
   const gitSyncUrl = (() => {
     if (gitType === 'gitlab') return repoUrl;
-    if (gitType === 'github_ssh') {
-      const match = repoUrl.match(/github\.com[:/](.+?)(?:\.git)?$/);
-      return match ? `https://github.com/${match[1]}` : repoUrl;
-    }
     return repoUrl;
   })();
 

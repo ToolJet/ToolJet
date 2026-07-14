@@ -1,11 +1,10 @@
 import { GITConnectionType } from '@entities/organization_git_sync.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
-import { OrganizationGitSsh } from '@entities/gitsync_entities/organization_git_ssh.entity';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
 
-type ProviderRelationKey = 'gitSsh' | 'gitHttps' | 'gitLab';
-type ProviderRow = OrganizationGitSsh | OrganizationGitHttps | OrganizationGitLab;
+type ProviderRelationKey = 'gitHttps' | 'gitLab';
+type ProviderRow = OrganizationGitHttps | OrganizationGitLab;
 
 /**
  * Data-only description of where each git provider keeps its config on OrganizationGitSync. This is
@@ -17,7 +16,7 @@ type ProviderRow = OrganizationGitSsh | OrganizationGitHttps | OrganizationGitLa
  * Both the CE repository and the EE services import this, so it lives in CE and holds only data
  * (relation key, entity class, field names) — no EE/provider-service coupling.
  *
- * Array order defines the "first configured provider wins" priority (SSH → HTTPS → GitLab today).
+ * Array order defines the "first configured provider wins" priority (HTTPS → GitLab today).
  */
 export interface GitProviderConfigDescriptor {
   gitType: GITConnectionType;
@@ -29,14 +28,6 @@ export interface GitProviderConfigDescriptor {
 }
 
 export const GIT_PROVIDER_CONFIG_DESCRIPTORS: readonly GitProviderConfigDescriptor[] = [
-  {
-    gitType: GITConnectionType.GITHUB_SSH,
-    relationKey: 'gitSsh',
-    entity: OrganizationGitSsh,
-    repoUrlField: 'gitUrl',
-    branchField: 'gitBranch',
-    secretField: 'sshPrivateKey',
-  },
   {
     gitType: GITConnectionType.GITHUB_HTTPS,
     relationKey: 'gitHttps',

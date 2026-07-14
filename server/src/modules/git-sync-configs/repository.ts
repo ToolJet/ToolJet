@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
-import { OrganizationGitSsh } from '@entities/gitsync_entities/organization_git_ssh.entity';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
 import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
 import { OrganizationGitCreateDto } from '@dto/organization_git.dto';
@@ -24,7 +23,7 @@ export class GitSyncConfigsRepository extends Repository<OrganizationGitSync> {
   findOrgGitByOrganizationId(organizationId: string, manager?: EntityManager): Promise<OrganizationGitSync | null> {
     return this.getRepo(OrganizationGitSync, manager).findOne({
       where: { organizationId },
-      relations: ['gitSsh', 'gitHttps', 'gitLab'],
+      relations: ['gitHttps', 'gitLab'],
     });
   }
 
@@ -106,7 +105,7 @@ export class GitSyncConfigsRepository extends Repository<OrganizationGitSync> {
 
   private providerEntity(
     gitType: GITConnectionType
-  ): { new (): OrganizationGitSsh | OrganizationGitHttps | OrganizationGitLab } | null {
+  ): { new (): OrganizationGitHttps | OrganizationGitLab } | null {
     // Data-driven via the shared descriptor registry — adding a provider needs no edit here.
     return getProviderDescriptor(gitType)?.entity ?? null;
   }

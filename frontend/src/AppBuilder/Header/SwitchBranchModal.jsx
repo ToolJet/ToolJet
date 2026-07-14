@@ -49,7 +49,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     branchingEnabled: state.branchingEnabled,
   }));
 
-  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
   const { workspaceActiveBranch, wsBranches, wsActions, wsRemoteBranches, wsVisibleCount, wsActiveBranchId } =
     useWorkspaceBranchesStore((state) => ({
       workspaceActiveBranch: state.currentBranch,
@@ -285,11 +285,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
 
   const handleViewInGitRepo = () => {
     // Get repository URL from orgGit (check https_url, ssh_url, or repository fields)
-    const repoUrl =
-      orgGit?.git_https?.https_url ||
-      orgGit?.git_https?.repository ||
-      orgGit?.git_ssh?.ssh_url ||
-      orgGit?.git_ssh?.repository;
+    const repoUrl = orgGit?.git_https?.https_url || orgGit?.git_https?.repository;
 
     if (!repoUrl) {
       console.error('No repository URL found in orgGit:', orgGit);

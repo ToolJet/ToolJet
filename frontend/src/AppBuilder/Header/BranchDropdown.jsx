@@ -69,15 +69,11 @@ export function BranchDropdown({ appId, organizationId }) {
 
   // Helper function to build PR creation URL
   const buildPRCreationURL = () => {
-    const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+    const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
     const sourceBranch = currentBranchName;
 
     // Get repository URL from orgGit (check https_url, ssh_url, or repository fields)
-    const repoUrl =
-      orgGit?.git_https?.https_url ||
-      orgGit?.git_https?.repository ||
-      orgGit?.git_ssh?.ssh_url ||
-      orgGit?.git_ssh?.repository;
+    const repoUrl = orgGit?.git_https?.https_url || orgGit?.git_https?.repository;
 
     if (!repoUrl) {
       console.error('No repository URL found in orgGit:', orgGit);
@@ -235,7 +231,7 @@ export function BranchDropdown({ appId, organizationId }) {
       return;
     }
 
-    const defaultBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+    const defaultBranch = orgGit?.git_https?.github_branch || 'main';
     const currentVersionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
 
     // Get all branch-type versions
@@ -295,7 +291,7 @@ export function BranchDropdown({ appId, organizationId }) {
   // Manual fetch last commit function
   const fetchLastCommit = async () => {
     const currentBranchName = workspaceActiveBranch?.name || selectedVersion?.name || currentBranch?.name;
-    const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+    const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
     const isOnDefaultBranch = currentBranchName === defaultBranchName;
 
     // Only fetch commit if on non-default branch
@@ -358,7 +354,7 @@ export function BranchDropdown({ appId, organizationId }) {
 
     try {
       // Check if this is the default branch (main/master/etc from config)
-      const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+      const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
       const isDefaultBranch = branch.name === defaultBranchName;
 
       if (isDefaultBranch) {
@@ -406,7 +402,7 @@ export function BranchDropdown({ appId, organizationId }) {
   };
 
   // Check if current branch is the default branch
-  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
   // Branch-type versions have UUID names (intentional) — never use them as branch display name.
   // Use workspace branch name first, then AppBuilder currentBranch, then version name only for non-branch versions.
   const isBranchTypeVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';

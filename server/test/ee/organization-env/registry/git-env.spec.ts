@@ -86,26 +86,6 @@ describe('GitSyncEnvUtilService', () => {
       });
     });
 
-    it('sets SSH provider isEnabled=true independently when SSH key is mapped', async () => {
-      const orgEnvService = makeOrgEnvService({
-        getResolvedOrganizationIds: jest.fn().mockReturnValue([ORG_ID]),
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.SSH.GIT_URL,
-        ),
-      });
-      const service = makeService(orgEnvService);
-
-      await service.initialize();
-
-      expect(service.getProviderState(ORG_ID, GITConnectionType.GITHUB_SSH)).toEqual({
-        isEnabled: true,
-        isFinalized: false,
-      });
-      expect(service.getProviderState(ORG_ID, GITConnectionType.GITHUB_HTTPS)).toEqual({
-        isEnabled: false,
-        isFinalized: false,
-      });
-    });
 
     it('sets GitLab provider isEnabled=true when GitLab key is mapped', async () => {
       const orgEnvService = makeOrgEnvService({

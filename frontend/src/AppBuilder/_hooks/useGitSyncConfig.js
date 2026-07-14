@@ -10,7 +10,6 @@ export const useGitSyncConfig = () => {
   // A provider connected in the workspace — license-independent (git_https/ssh/lab.is_enabled and
   // is_git_sync_configured both reflect DB state, not the license).
   const isGitSyncConfigured =
-    orgGit?.git_ssh?.is_enabled ||
     orgGit?.git_https?.is_enabled ||
     orgGit?.git_lab?.is_enabled ||
     !!(orgGitConfig?.is_git_sync_configured ?? orgGitConfig?.isGitSyncConfigured);
@@ -25,6 +24,6 @@ export const useGitSyncConfig = () => {
   // the user turns git off (from workspace settings → configure git).
   const isGitSyncLicenseLocked = isGitSyncConfigured && !isGitSyncLicensed;
 
-  const defaultBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranch = orgGit?.git_https?.github_branch || 'main';
   return { isGitSyncEnabled, isGitSyncConfigured, isGitSyncLicensed, isGitSyncLicenseLocked, defaultBranch };
 };

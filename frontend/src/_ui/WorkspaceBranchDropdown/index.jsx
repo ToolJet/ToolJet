@@ -117,14 +117,6 @@ export function WorkspaceBranchDropdown() {
       return `https://bitbucket.org/${owner}/${repo}/pull-requests/new?source=${sourceBranch}&dest=${defaultGitBranch}`;
     }
 
-    // GitHub SSH fallback
-    if (gitType === 'github_ssh') {
-      const match = repoUrl.match(/github\.com[:/](.+?)(?:\.git)?$/);
-      if (match) {
-        return `https://github.com/${match[1]}/compare/${defaultGitBranch}...${sourceBranch}?expand=1`;
-      }
-    }
-
     return null;
   };
 

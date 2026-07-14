@@ -52,7 +52,7 @@ function readGitSyncLicenseState(gitStatus) {
 // when the status payload is missing — so the dashboard still renders the git-sync UI (frozen).
 function resolveGitConfigState(gitStatus, gitConfigResp) {
   const og = gitConfigResp?.organization_git || null;
-  const providerConnected = !!(og?.git_https?.is_enabled || og?.git_ssh?.is_enabled || og?.git_lab?.is_enabled);
+  const providerConnected = !!(og?.git_https?.is_enabled || og?.git_lab?.is_enabled);
 
   let effectiveGitConfig = gitStatus || null;
   // Only synthesize when a provider is actually CONNECTED. A config row can exist with the provider
@@ -62,8 +62,8 @@ function resolveGitConfigState(gitStatus, gitConfigResp) {
     effectiveGitConfig = {
       id: og.id,
       git_type: og.git_type,
-      repo_url: og.git_https?.https_url || og.git_ssh?.git_url || og.git_lab?.gitlab_url || '',
-      default_git_branch: og.git_https?.github_branch || og.git_ssh?.git_branch || og.git_lab?.gitlab_branch || 'main',
+      repo_url: og.git_https?.https_url || og.git_lab?.gitlab_url || '',
+      default_git_branch: og.git_https?.github_branch || og.git_lab?.gitlab_branch || 'main',
       is_branching_enabled: og.is_branching_enabled,
       is_git_sync_configured: providerConnected,
     };

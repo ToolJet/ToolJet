@@ -54,7 +54,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
   const isOnWorkspaceFeatureBranch =
     workspaceActiveBranch && !workspaceActiveBranch.is_default && !workspaceActiveBranch.isDefault;
 
-  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
       workspaceActiveBranch.isDefault ||

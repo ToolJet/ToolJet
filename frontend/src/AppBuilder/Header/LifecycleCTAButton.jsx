@@ -68,7 +68,7 @@ const LifecycleCTAButton = () => {
   const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const orgGit = useStore((state) => state.orgGit);
-  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
       workspaceActiveBranch.isDefault ||
