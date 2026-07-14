@@ -1,7 +1,7 @@
 import { App } from '@entities/app.entity';
-import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
@@ -14,7 +14,16 @@ export class AppsRepository extends Repository<App> {
     super(App, dataSource.createEntityManager());
   }
 
-  async findBySlug(slug: string, organizationId: string, versionId?: string, branchId?: string): Promise<App> {
+  // defaultBranchId — the workspace's default-branch id, or null when git-sync is off.
+  // Caller (service layer) computes this via GitSyncConfigsUtilService.getDetails to keep
+  // this repository service-free.
+  async findBySlug(
+    slug: string,
+    organizationId: string,
+    defaultBranchId: string | null,
+    versionId?: string,
+    branchId?: string
+  ): Promise<App> {
     // Callers (e.g. createGitApp, findAppWithIdOrSlug, valid-app.guard) expect this
     // to return null/undefined on miss and throw only their own NotFoundException
     // upstream if appropriate. Don't throw from here.
@@ -47,22 +56,24 @@ export class AppsRepository extends Repository<App> {
       return app;
     }
 
-    const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
-    let resolvedVersion: AppVersion | null = null;
+    // App slug lives on the default-branch app_versions rows in all cases (git on or off —
+    // every org has a default branch now). Match there; when git is on the is_synced=true
+    // row sorts first. Some callers (e.g. private-app-auth.guard) don't resolve the default
+    // branch themselves and pass null/undefined; resolve it here so the slug still matches
+    // its default-branch row. Without this the query becomes `av.branch_id = NULL` and every
+    // git-off app (whose rows live on the default branch) 404s.
+    const resolvedDefaultBranchId = defaultBranchId ?? (await this.getDefaultBranchId(this.manager, organizationId));
+    if (!resolvedDefaultBranchId) return null;
 
-    if (defaultBranchId) {
-      // Git sync enabled and no branch id — pick from default branch only.
-      resolvedVersion = await this.dataSource.getRepository(AppVersion).findOne({
-        where: { slug, branchId: defaultBranchId },
-        relations: ['app'],
-      });
-    } else {
-      // Git sync disabled — find any slug match across all versions in the workspace.
-      resolvedVersion = await this.dataSource.getRepository(AppVersion).findOne({
-        where: { slug },
-        relations: ['app'],
-      });
-    }
+    const resolvedVersion = await this.dataSource
+      .getRepository(AppVersion)
+      .createQueryBuilder('av')
+      .innerJoinAndSelect('av.app', 'app')
+      .where('av.slug = :slug', { slug })
+      .andWhere('av.branch_id = :branchId', { branchId: resolvedDefaultBranchId })
+      .orderBy('av.is_synced', 'DESC')
+      .addOrderBy('av.updated_at', 'DESC')
+      .getOne();
 
     if (!resolvedVersion?.app || resolvedVersion.app.organizationId !== organizationId) {
       return null;
@@ -88,64 +99,21 @@ export class AppsRepository extends Repository<App> {
       return workflow;
     }
 
-    let resolvedVersion: AppVersion = null;
     // Slug uniqueness is enforced instance-wide on default-branch rows by
-    // trg_app_versions_default_branch_slug_unique (migration 1779400000000),
-    // so a default-branch slug resolves to exactly one app across all
-    // workspaces. Dropping the org scope here is what enables cross-workspace
-    // slug lookup (e.g. public app sharing where the requesting user is in a
-    // different workspace than the app's owner).
-    if (await this.checkIfGitEnabled(this.manager)) {
-      // 1) Prefer a default-branch row anywhere on the instance — that's the
-      //    canonical released slug for git-enabled workspaces.
-      resolvedVersion = await this.dataSource
-        .getRepository(AppVersion)
-        .createQueryBuilder('av')
-        .innerJoinAndSelect('av.app', 'app')
-        .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
-        .where('av.slug = :slug', { slug })
-        .orderBy('av.updated_at', 'DESC')
-        .getOne();
-
-      // 2) Fall back to a branchless row — but only when the candidate app's
-      //    own workspace has no default branch (git sync still off for that
-      //    org). The branchless row is the canonical slug holder in that
-      //    case; if the org has since enabled git, step 1 would have found
-      //    the default-branch row already and this fallback would (correctly)
-      //    not apply.
-      //    Feature-branch rows are deliberately excluded here: the same slug
-      //    can appear on multiple orgs' feature branches (pulled from the same
-      //    git source), so accepting them without org context risks returning
-      //    the wrong workspace's app. The caller (PrivateAppAuthGuard) handles
-      //    feature-branch slugs via a workspace-scoped findBySlug call first.
-      if (!resolvedVersion) {
-        const candidate = await this.dataSource
-          .getRepository(AppVersion)
-          .createQueryBuilder('av')
-          .innerJoinAndSelect('av.app', 'app')
-          .where('av.slug = :slug', { slug })
-          .andWhere('av.branch_id IS NULL')
-          .orderBy('av.updated_at', 'DESC')
-          .getOne();
-
-        if (candidate?.app) {
-          const orgDefaultBranchId = await this.getDefaultBranchId(this.manager, candidate.app.organizationId);
-          if (!orgDefaultBranchId) {
-            resolvedVersion = candidate;
-          }
-        }
-      }
-    } else {
-      // No default branch exists anywhere on the instance — pick any
-      // app_versions row whose slug matches.
-      resolvedVersion = await this.dataSource
-        .getRepository(AppVersion)
-        .createQueryBuilder('av')
-        .innerJoinAndSelect('av.app', 'app')
-        .where('av.slug = :slug', { slug })
-        .orderBy('av.updated_at', 'DESC')
-        .getOne();
-    }
+    // trg_app_versions_default_branch_slug_unique, so a default-branch slug resolves to
+    // exactly one app across all workspaces. Dropping the org scope here is what enables
+    // cross-workspace slug lookup (e.g. public app sharing where the requesting user is in a
+    // different workspace than the app's owner). Every org has a default branch now, so the
+    // slug always resolves on a default-branch row (is_synced=true sorts first when git on).
+    const resolvedVersion = await this.dataSource
+      .getRepository(AppVersion)
+      .createQueryBuilder('av')
+      .innerJoinAndSelect('av.app', 'app')
+      .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+      .where('av.slug = :slug', { slug })
+      .orderBy('av.is_synced', 'DESC')
+      .addOrderBy('av.updated_at', 'DESC')
+      .getOne();
 
     if (!resolvedVersion?.app) {
       return null;
@@ -157,21 +125,17 @@ export class AppsRepository extends Repository<App> {
   }
 
   async retrieveAppDataUsingSlug(slug: string): Promise<SessionAppData> {
-    const candidate = await this.dataSource.getRepository(AppVersion).findOne({
-      where: { slug },
-      relations: ['app'],
-    });
-
-    let resolved: AppVersion | null = candidate;
-    if (candidate?.app) {
-      const defaultBranchId = await this.getDefaultBranchId(this.manager, candidate.app.organizationId);
-      if (defaultBranchId && candidate.branchId !== defaultBranchId) {
-        resolved = await this.dataSource.getRepository(AppVersion).findOne({
-          where: { slug, branchId: defaultBranchId },
-          relations: ['app'],
-        });
-      }
-    }
+    // Resolve the app by its default-branch slug row (git on or off — every org has a
+    // default branch). is_synced=true sorts first when git is on.
+    const resolved = await this.dataSource
+      .getRepository(AppVersion)
+      .createQueryBuilder('av')
+      .innerJoinAndSelect('av.app', 'app')
+      .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+      .where('av.slug = :slug', { slug })
+      .orderBy('av.is_synced', 'DESC')
+      .addOrderBy('av.updated_at', 'DESC')
+      .getOne();
 
     if (resolved?.app) {
       return {
@@ -185,7 +149,7 @@ export class AppsRepository extends Repository<App> {
     let app: App;
     try {
       app = await this.findOneOrFail({ where: { slug } });
-    } catch (error) {
+    } catch {
       app = await this.findOne({ where: { slug } });
     }
 
@@ -196,38 +160,30 @@ export class AppsRepository extends Repository<App> {
     };
   }
 
-  async findByAppName(name: string, organizationId: string, versionId?: string): Promise<App> {
-    // Candidate row: most recent VERSION-type row carrying this name in the workspace.
-    const candidate = await this.dataSource
+  // defaultBranchId — caller-supplied; null when git-sync is off. See findBySlug.
+  async findByAppName(
+    name: string,
+    organizationId: string,
+    defaultBranchId: string | null,
+    versionId?: string
+  ): Promise<App> {
+    // app_name lives on the default-branch version rows; match there (is_synced=true first).
+    const resolved = await this.dataSource
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
       .where('av.app_name = :name', { name })
       .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
+      .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
       .andWhere('app.organization_id = :organizationId', { organizationId })
+      .orderBy('av.is_synced', 'DESC')
+      .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
-    if (candidate?.app) {
-      const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
-      let resolved: AppVersion | null = candidate;
-
-      if (defaultBranchId && candidate.branchId !== defaultBranchId) {
-        // Git enabled — re-resolve on the default branch (matches by name there).
-        resolved = await this.dataSource
-          .getRepository(AppVersion)
-          .createQueryBuilder('av')
-          .innerJoinAndSelect('av.app', 'app')
-          .where('av.app_name = :name', { name })
-          .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
-          .andWhere('app.organization_id = :organizationId', { organizationId })
-          .getOne();
-      }
-
-      if (resolved?.app) {
-        const app = resolved.app;
-        this.overlayMetadata(app, resolved);
-        return app;
-      }
+    if (resolved?.app) {
+      const app = resolved.app;
+      this.overlayMetadata(app, resolved);
+      return app;
     }
 
     // Fallback to apps table (for workflows — they keep name on apps.*)
@@ -282,7 +238,13 @@ export class AppsRepository extends Repository<App> {
     return app;
   }
 
-  async findAllOrganizationApps(organizationId: string, branchId?: string): Promise<WorkspaceAppsResponseDto[]> {
+  // defaultBranchId — caller-supplied; null when git-sync is off. Ignored when branchId
+  // is given (branchId pins the metadata source).
+  async findAllOrganizationApps(
+    organizationId: string,
+    defaultBranchId: string | null,
+    branchId?: string
+  ): Promise<WorkspaceAppsResponseDto[]> {
     const qb = this.createQueryBuilder('app')
       .select([
         'app.id AS id',
@@ -298,7 +260,7 @@ export class AppsRepository extends Repository<App> {
     // Source resolution for the per-app metadata join (av_meta):
     //   - branchId supplied:        most recent row on that exact branch
     //   - no branchId, git enabled: most recent row on the workspace's default branch
-    //   - no branchId, git off:     most recent slug-bearing row across all versions
+    //   - no branchId, git off:     most recent VERSION-type row under the app (any branch_id)
     // Workflows COALESCE through to apps.* since they don't carry metadata on versions.
     if (branchId) {
       qb.addSelect('av_meta.app_name AS name')
@@ -317,37 +279,28 @@ export class AppsRepository extends Repository<App> {
           { branchId }
         );
     } else {
-      const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
-
       qb.addSelect(`COALESCE(av_meta.app_name, app.name) AS name`)
         .addSelect(`COALESCE(av_meta.slug, app.slug) AS slug`)
         .addSelect(`COALESCE(av_meta.icon, app.icon) AS icon`)
         .addSelect(`COALESCE(av_meta.is_public, app.is_public) AS "isPublic"`);
 
-      if (defaultBranchId) {
-        qb.leftJoin(
-          'app_versions',
-          'av_meta',
-          `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId AND av_meta.id = (
-            SELECT av_inner.id FROM app_versions av_inner
-            WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
-            ORDER BY av_inner.updated_at DESC
-            LIMIT 1
-          )`,
-          { defaultBranchId }
-        );
-      } else {
-        qb.leftJoin(
-          'app_versions',
-          'av_meta',
-          `av_meta.app_id = app.id AND av_meta.slug IS NOT NULL AND av_meta.id = (
-            SELECT av_inner.id FROM app_versions av_inner
-            WHERE av_inner.app_id = app.id AND av_inner.slug IS NOT NULL
-            ORDER BY av_inner.updated_at DESC
-            LIMIT 1
-          )`
-        );
-      }
+      // Default (no explicit branch): metadata from the canonical default-branch DRAFT
+      // version row. is_synced=true sorts first (the authoritative row when git is on);
+      // git-off falls back to the latest such row. COALESCE handles workflows (apps.*).
+      qb.leftJoin(
+        'app_versions',
+        'av_meta',
+        `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
+           AND av_meta.version_type = 'version' AND av_meta.status = 'DRAFT' AND av_meta.is_stub = false
+           AND av_meta.id = (
+             SELECT av_inner.id FROM app_versions av_inner
+             WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+               AND av_inner.version_type = 'version' AND av_inner.status = 'DRAFT' AND av_inner.is_stub = false
+             ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
+             LIMIT 1
+           )`,
+        { defaultBranchId }
+      );
     }
 
     return await qb.orderBy('app.created_At', 'ASC').addOrderBy('version.created_at', 'ASC').getRawMany();
@@ -355,15 +308,15 @@ export class AppsRepository extends Repository<App> {
 
   // Lists every module in a workspace with branch-aware metadata overlay.
   //   - git enabled (workspace has a default branch) → metadata from the default branch row
-  //   - git off                                      → metadata from any slug-bearing row
+  //   - git off                                      → metadata from any VERSION-type row
   // No branchId parameter: modules are workspace-wide listings, not branch-scoped lookups.
+  // defaultBranchId — caller-supplied; null when git-sync is off.
   async findAllOrganizationModules(
-    organizationId: string
+    organizationId: string,
+    defaultBranchId: string | null
   ): Promise<
     { id: string; name: string; icon: string; slug: string; isPublic: boolean; createdAt: Date; updatedAt: Date }[]
   > {
-    const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
-
     const qb = this.createQueryBuilder('app')
       .select(['app.id AS id', 'app.created_at AS "createdAt"', 'app.updated_at AS "updatedAt"'])
       .addSelect('COALESCE(av_meta.app_name, app.name) AS name')
@@ -373,30 +326,22 @@ export class AppsRepository extends Repository<App> {
       .where('app.organizationId = :organizationId', { organizationId })
       .andWhere('app.type = :type', { type: APP_TYPES.MODULE });
 
-    if (defaultBranchId) {
-      qb.leftJoin(
-        'app_versions',
-        'av_meta',
-        `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId AND av_meta.id = (
-          SELECT av_inner.id FROM app_versions av_inner
-          WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
-          ORDER BY av_inner.updated_at DESC
-          LIMIT 1
-        )`,
-        { defaultBranchId }
-      );
-    } else {
-      qb.leftJoin(
-        'app_versions',
-        'av_meta',
-        `av_meta.app_id = app.id AND av_meta.slug IS NOT NULL AND av_meta.id = (
-          SELECT av_inner.id FROM app_versions av_inner
-          WHERE av_inner.app_id = app.id AND av_inner.slug IS NOT NULL
-          ORDER BY av_inner.updated_at DESC
-          LIMIT 1
-        )`
-      );
-    }
+    // Metadata from the canonical default-branch DRAFT version row (is_synced=true first;
+    // git-off falls back to the latest such row). COALESCE handles workflows (apps.*).
+    qb.leftJoin(
+      'app_versions',
+      'av_meta',
+      `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
+         AND av_meta.version_type = 'version' AND av_meta.status = 'DRAFT' AND av_meta.is_stub = false
+         AND av_meta.id = (
+           SELECT av_inner.id FROM app_versions av_inner
+           WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+             AND av_inner.version_type = 'version' AND av_inner.status = 'DRAFT' AND av_inner.is_stub = false
+           ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
+           LIMIT 1
+         )`,
+      { defaultBranchId }
+    );
 
     return await qb.orderBy('app.updated_at', 'DESC').getRawMany();
   }
@@ -434,32 +379,18 @@ export class AppsRepository extends Repository<App> {
     // autoDeployApp) get a shape consistent with the UUID/workflow paths — no
     // separate re-fetch. The av.slug filter only narrows the matched version
     // row; app.appVersions still hydrates the app's full version collection.
-    const candidate = await manager
+    const resolved = await manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
       .leftJoinAndSelect('app.appVersions', 'appVersions')
+      .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
       .where('av.slug = :slug', { slug: idOrSlug })
-      .orderBy('av.updated_at', 'DESC')
+      .orderBy('av.is_synced', 'DESC')
+      .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
-    if (candidate?.app) {
-      const defaultBranchId = await this.getDefaultBranchId(manager, candidate.app.organizationId);
-      let resolved: AppVersion | null = candidate;
-
-      if (defaultBranchId && candidate.branchId !== defaultBranchId) {
-        // Git enabled — only default-branch rows are authoritative for slug lookup
-        resolved = await manager
-          .getRepository(AppVersion)
-          .createQueryBuilder('av')
-          .innerJoinAndSelect('av.app', 'app')
-          .leftJoinAndSelect('app.appVersions', 'appVersions')
-          .where('av.slug = :slug', { slug: idOrSlug })
-          .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
-          .getOne();
-        if (!resolved?.app) resolved = candidate;
-      }
-
+    if (resolved?.app) {
       const app = resolved.app;
       this.overlayMetadata(app, resolved);
       return app;
@@ -481,58 +412,38 @@ export class AppsRepository extends Repository<App> {
     return branch?.id ?? null;
   }
 
-  // TODO: Check configs instead of searching default branch
-  private async checkIfGitEnabled(manager: EntityManager): Promise<boolean> {
-    const branch = await manager.findOne(WorkspaceBranch, {
-      where: { isDefault: true },
-      select: ['id'],
-    });
-    return !!branch?.id;
-  }
-
   // Picks the app_version row whose metadata should be overlaid onto `app`.
   //
-  // Resolution order:
-  //   1. Detect branching state via getDefaultBranchId (= workspace_branches row
-  //      with is_default=true). Presence of the row = "git sync enabled".
-  //   2. Git enabled + explicit branchId → DRAFT row on that branch.
-  //   3. Git enabled + no branchId       → DRAFT row on the default branch.
-  //   4. Git disabled                    → any version row (most recently
-  //                                        updated, slug-bearing).
-  //
-  // DRAFT scoping in the git-enabled cases mirrors the metadata-write paths
-  // (AppsUtilService.update writes the DRAFT BRANCH-type row on sub-branches)
-  // and matches the canonical "editor working state" row, so released/published
-  // historical snapshots don't shadow the current metadata.
+  // App identity (app_name / slug / icon / is_public) is now an instance-level,
+  // default-branch concept: the canonical row is the non-stub DRAFT version_type='version'
+  // row on the org's DEFAULT branch. When git sync is ON exactly one such row carries
+  // is_synced=true (the authoritative row); ORDER BY is_synced DESC picks it, and when
+  // git is off it falls back to the latest such row. This mirrors the DB metadata trigger's
+  // own canonical-row selection (sync_published_app_version_metadata_from_draft), so code and
+  // trigger agree. branchId is intentionally ignored — meta is always the default-branch row
+  // even while editing a feature branch.
   private async resolveMetadataVersion(
     manager: EntityManager,
     app: App,
     options: { branchId?: string } = {}
   ): Promise<AppVersion | null> {
     const { branchId } = options;
-    const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
-    const gitEnabled = !!defaultBranchId;
+    // A branch in scope → that branch's row carries the metadata for the view. Otherwise
+    // the default branch, where every non-stub row carries the same app_name/slug/icon/
+    // is_public (propagation triggers). Read from any non-stub row — no version_type /
+    // status / git-on-off branching; is_synced sorts the canonical row first.
+    const targetBranchId = branchId ?? (await this.getDefaultBranchId(manager, app.organizationId));
+    if (!targetBranchId) return null;
 
-    const qb = manager
+    return manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
-      .where('av.app_id = :appId', { appId: app.id });
-
-    if (gitEnabled) {
-      const targetBranchId = branchId ?? defaultBranchId;
-      qb.andWhere('av.branch_id = :branchId', { branchId: targetBranchId }).andWhere('av.status = :status', {
-        status: AppVersionStatus.DRAFT,
-      });
-    } else {
-      qb.andWhere('av.slug IS NOT NULL');
-    }
-
-    const version = await qb.orderBy('av.updated_at', 'DESC').getOne();
-
-    if (!version && gitEnabled && branchId) {
-      throw new NotFoundException(`No app version found for app ${app.id} on branch ${branchId}`);
-    }
-    return version;
+      .where('av.app_id = :appId', { appId: app.id })
+      .andWhere('av.branch_id = :branchId', { branchId: targetBranchId })
+      .andWhere('av.is_stub = false')
+      .orderBy('av.is_synced', 'DESC')
+      .addOrderBy('av.updated_at', 'DESC')
+      .getOne();
   }
 
   private overlayMetadata(app: App, version: AppVersion | null): void {

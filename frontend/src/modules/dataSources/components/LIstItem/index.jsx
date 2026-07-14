@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import cx from 'classnames';
 import { useNavigate } from 'react-router-dom';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
@@ -9,6 +9,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { decodeEntities, getWorkspaceId } from '@/_helpers/utils';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 
 const DUMMY_DS_LABEL = 'Undefined data source';
 const buildDummyDsTooltip = (coRelationId) =>
@@ -36,6 +38,14 @@ export const ListItem = ({
   const { handleActions } = useGlobalDatasourceUnsavedChanges();
   const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
+  const [syncIconHovered, setSyncIconHovered] = useState(false);
+  const [rowHovered, setRowHovered] = useState(false);
+  const [pushModalOpen, setPushModalOpen] = useState(false);
+  const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
+  const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
+  const isUnsynced =
+    wsCurrentBranch && isOnDefaultBranch && (dataSource?.is_synced === false || dataSource?.isSynced === false);
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
@@ -71,10 +81,11 @@ export const ListItem = ({
     navigate(`/${workspaceId}/data-sources/${dataSource.id}`, { replace: true });
   };
 
-  const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
+  //const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
   const showDeleteButton = !isSampleDb && canDeleteDataSource();
 
   return (
+    <>
     <ToolTip
       placement="right"
       show={toolTipText ? true : false}
@@ -86,6 +97,8 @@ export const ListItem = ({
         className={cx('mx-3 rounded-3 datasources-list', {
           'datasources-list-item': active,
         })}
+        onMouseEnter={() => setRowHovered(true)}
+        onMouseLeave={() => setRowHovered(false)}
       >
         <div
           role="button"
@@ -115,29 +128,87 @@ export const ListItem = ({
             )}
           </div>
         </div>
-        {showDeleteButton && (
+        {/* On hover: refresh icon appears to the left of the delete button */}
+        {isUnsynced && rowHovered && (
           <div className="col-auto">
-            {}
-            <button
-              title={'Delete'}
-              disabled={disableDelButton}
-              className="ds-delete-btn"
-              onClick={() => onDelete(dataSource)}
-              data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
-            >
-              <div>
-                <SolidIcon
-                  width="14"
-                  height="14"
-                  name="delete"
-                  fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
-                  className={disableDelButton ? 'disabled-button' : ''}
-                />
+            <ToolTip message="Click to push datasource to git" placement="top">
+              <div
+                onMouseEnter={() => setSyncIconHovered(true)}
+                onMouseLeave={() => setSyncIconHovered(false)}
+                onClick={() => setPushModalOpen(true)}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  backgroundColor: syncIconHovered ? '#FFEEF0' : 'transparent',
+                  transition: 'background-color 0.15s',
+                  cursor: 'pointer',
+                }}
+                data-cy="ds-unsynced-badge"
+              >
+                <SolidIcon name="refresh" width="14" fill="#E54D2E" />
               </div>
-            </button>
+            </ToolTip>
           </div>
+        )}
+        {/* Right slot: refresh icon when not hovering (unsynced), delete button when hovering */}
+        {isUnsynced && !rowHovered ? (
+          <div className="col-auto">
+            <ToolTip message="Datasource not synced in remote git" placement="top">
+              <div
+                onClick={() => setPushModalOpen(true)}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+                data-cy="ds-unsynced-badge-idle"
+              >
+                <SolidIcon name="refresh" width="14" fill="#E54D2E" />
+              </div>
+            </ToolTip>
+          </div>
+        ) : (
+          showDeleteButton && (
+            <div className="col-auto">
+              <button
+                title={'Delete'}
+                disabled={disableDelButton}
+                className="ds-delete-btn"
+                onClick={() => onDelete(dataSource)}
+                data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
+              >
+                <div>
+                  <SolidIcon
+                    width="14"
+                    height="14"
+                    name="delete"
+                    fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
+                    className={disableDelButton ? 'disabled-button' : ''}
+                  />
+                </div>
+              </button>
+            </div>
+          )
         )}
       </div>
     </ToolTip>
+    {PushAppsModal && isUnsynced && (
+      <PushAppsModal
+        show={pushModalOpen}
+        onClose={() => setPushModalOpen(false)}
+        resourceType="datasource"
+        resourceName={dataSource.name}
+        onSuccess={() => setPushModalOpen(false)}
+      />
+    )}
+    </>
   );
 };

@@ -20,7 +20,17 @@ export class AppEnvironmentService implements IAppEnvironmentService {
   async init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editorVersion = await manager.findOne(AppVersion, {
-        select: ['id', 'name', 'description', 'status', 'versionType', 'currentEnvironmentId', 'appId', 'branchId'],
+        select: [
+          'id',
+          'name',
+          'description',
+          'status',
+          'versionType',
+          'currentEnvironmentId',
+          'appId',
+          'isSynced',
+          'branchId',
+        ],
         relations: ['branch'],
         where: { id: editingVersionId },
       });
@@ -236,6 +246,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'updatedAt',
           'publishedAt',
           'releasedAt',
+          'isSynced',
         ],
       });
 

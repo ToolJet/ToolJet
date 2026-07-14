@@ -258,14 +258,10 @@ export class VersionRepository extends Repository<AppVersion> {
       relations: ['app'],
     });
     const app = appVersion.app;
-    // Workflows keep metadata on apps.*; non-workflows must overlay from the
-    // canonical version row resolved by git-sync state. Forward the loaded
-    // version's branchId so the overlay picks that branch's row directly.
+    // Workflows keep metadata on apps.*; non-workflows carry it on the version row.
+    // The version is already in scope — overlay its own metadata directly.
     if (app && app.type !== APP_TYPES.WORKFLOW) {
-      const metadataVersion = await this.resolveMetadataVersion(m, app, {
-        branchId: appVersion.branchId ?? undefined,
-      });
-      this.overlayMetadata(app, metadataVersion);
+      this.overlayMetadata(app, appVersion);
     }
     return app;
   }
@@ -284,45 +280,35 @@ export class VersionRepository extends Repository<AppVersion> {
   // Mirrors AppsRepository.resolveMetadataVersion — same rules.
   //
   // Resolution order:
-  //   1. Detect git-sync state via getDefaultBranchId (presence of a default
-  //      workspace_branches row).
-  //   2. Git enabled + explicit branchId → DRAFT row on that branch.
-  //   3. Git enabled + no branchId       → DRAFT row on the default branch.
-  //   4. Git disabled                    → any version row (most recent,
-  //                                        slug-bearing).
-  //
-  // DRAFT scoping matches the metadata-write paths (AppsUtilService.update
-  // writes the DRAFT row) so published/released snapshots don't shadow current
-  // metadata.
+  //   1. Explicit branchId (sub-branch context, git-on) → DRAFT row on that branch.
+  //      version_type='branch' rows are NOT mirrored by the metadata triggers, so the
+  //      branch's own DRAFT is the source.
+  //   2. Default branch (git-on or git-off) → any non-stub row. The propagate /
+  //      sync-published triggers mirror app_name/slug/icon/is_public across all
+  //      non-stub version_type='version' rows, so every default-branch row carries the
+  //      same metadata — no need to single out the DRAFT.
   async resolveMetadataVersion(
     manager: EntityManager,
     app: App,
     options: { branchId?: string } = {}
   ): Promise<AppVersion | null> {
     const { branchId } = options;
-    const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
-    const gitEnabled = !!defaultBranchId;
+    // A branch in scope → that branch's row carries the metadata for the view. Otherwise
+    // the default branch, where every non-stub row carries the same app_name/slug/icon/
+    // is_public (propagation triggers). Read from any non-stub row — no version_type /
+    // status / git-on-off branching; is_synced sorts the canonical row first.
+    const targetBranchId = branchId ?? (await this.getDefaultBranchId(manager, app.organizationId));
+    if (!targetBranchId) return null;
 
-    const qb = manager
+    return manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
-      .where('av.app_id = :appId', { appId: app.id });
-
-    if (gitEnabled) {
-      const targetBranchId = branchId ?? defaultBranchId;
-      qb.andWhere('av.branch_id = :branchId', { branchId: targetBranchId }).andWhere('av.status = :status', {
-        status: AppVersionStatus.DRAFT,
-      });
-    } else {
-      qb.andWhere('av.slug IS NOT NULL');
-    }
-
-    const version = await qb.orderBy('av.updated_at', 'DESC').getOne();
-
-    if (!version && gitEnabled && branchId) {
-      throw new NotFoundException(`No app version found for app ${app.id} on branch ${branchId}`);
-    }
-    return version;
+      .where('av.app_id = :appId', { appId: app.id })
+      .andWhere('av.branch_id = :branchId', { branchId: targetBranchId })
+      .andWhere('av.is_stub = false')
+      .orderBy('av.is_synced', 'DESC')
+      .addOrderBy('av.updated_at', 'DESC')
+      .getOne();
   }
 
   overlayMetadata(app: App, version: AppVersion | null): void {
@@ -378,13 +364,9 @@ export class VersionRepository extends Repository<AppVersion> {
 
     const app = version.app;
     if (app && app.type !== APP_TYPES.WORKFLOW) {
-      // Prefer the caller's explicit branchId; fall back to the loaded version's
-      // own branchId so overlay still picks the right branch when no header was
-      // supplied. versionId is no longer accepted by resolveMetadataVersion.
-      const metadataVersion = await this.resolveMetadataVersion(this.manager, app, {
-        branchId: branchId ?? version.branchId ?? undefined,
-      });
-      this.overlayMetadata(app, metadataVersion);
+      // The version is already in scope — its own row carries the metadata for this view,
+      // so overlay directly instead of re-resolving.
+      this.overlayMetadata(app, version);
     }
 
     return version;

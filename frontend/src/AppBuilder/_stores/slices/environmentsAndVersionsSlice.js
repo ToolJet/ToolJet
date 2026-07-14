@@ -219,6 +219,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       displayName: newVersion.display_name || newVersion.displayName || newVersion.name,
       current_environment_id: newVersion.current_environment_id,
       status: newVersion.status,
+      isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
     };
     set((state) => ({
       ...state,
@@ -259,6 +260,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         id: newVersion.id,
         name: newVersion.name,
         current_environment_id: newVersion.current_environment_id,
+        isSynced: false,
       };
       set((state) => ({
         ...state,
@@ -359,6 +361,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         status: data.editing_version.status,
         // Preserve versionType from API response to distinguish between regular versions and branch versions
         versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
+        isSynced: data.editing_version.isSynced ?? data.editing_version.is_synced ?? false,
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id

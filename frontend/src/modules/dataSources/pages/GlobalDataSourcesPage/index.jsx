@@ -39,6 +39,7 @@ export const GlobalDataSourcesPage = (props) => {
   const initialUrlSelectionHandled = useRef(false);
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
+  const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
 
   // Refetch datasources when the active branch changes (without hard reload)
@@ -197,6 +198,7 @@ export const GlobalDataSourcesPage = (props) => {
             }
           });
         setDataSources([...(orderedDataSources ?? [])]);
+        setHasUnsyncedDatasources(orderedDataSources.some((ds) => ds?.is_synced === false || ds?.isSynced === false));
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
         if (!resetSelection && ds) {
           setEditing(true);
@@ -262,7 +264,13 @@ export const GlobalDataSourcesPage = (props) => {
   const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
     setEnvironmentLoading(true);
     globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
-      setSelectedDataSource({ ...data });
+      // Preserve isSynced flags: the environment endpoint doesn't include them, but we need them
+      // to correctly gate credential editing on the default branch (synced DSes must stay locked).
+      setSelectedDataSource((prev) => ({
+        ...data,
+        isSynced: prev?.isSynced,
+        is_synced: prev?.is_synced,
+      }));
       setEnvironmentLoading(false);
     });
   };

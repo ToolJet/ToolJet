@@ -13,6 +13,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SessionModule } from '@modules/session/module';
 import { SubModule } from '@modules/app/sub-module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 
 export class DataSourcesModule extends SubModule {
@@ -47,6 +48,7 @@ export class DataSourcesModule extends SubModule {
         await TooljetDbModule.register(configs),
         await SessionModule.register(configs),
         await InMemoryCacheModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
         await AppPermissionsModule.register(configs!),
       ],
       providers: [

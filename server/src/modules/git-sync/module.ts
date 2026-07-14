@@ -5,11 +5,11 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
 import { PluginsModule } from '@modules/plugins/module';
-import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 
 export class GitSyncModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -31,8 +31,6 @@ export class GitSyncModule extends SubModule {
       BaseGitSyncService,
       GitSyncAdapter,
       WorkspaceGitSyncAdapter,
-      RemoteBranchCacheService,
-      GitObjectCacheService,
     } = await this.getProviders(configs, 'git-sync', [
       'controller',
       'service',
@@ -47,13 +45,12 @@ export class GitSyncModule extends SubModule {
       'base-git.service',
       'git-sync-adapter',
       'workspace-git-sync-adapter',
-      'remote-branch-cache.service',
-      'git-object-cache.service',
     ]);
 
     return this.cacheModule(cacheKey, {
       module: GitSyncModule,
       imports: [
+        await GitSyncConfigsModule.register(configs),
         await EncryptionModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await TooljetDbModule.register(configs),
@@ -78,9 +75,6 @@ export class GitSyncModule extends SubModule {
         FeatureAbilityFactory,
         GitSyncAdapter,
         WorkspaceGitSyncAdapter,
-        RemoteBranchCacheService,
-        EncryptionService,
-        GitObjectCacheService,
       ],
       exports: [
         HTTPSGitSyncUtilityService,
@@ -92,8 +86,6 @@ export class GitSyncModule extends SubModule {
         WorkspaceGitSyncAdapter,
         OrganizationGitSyncRepository,
         SourceControlProviderService,
-        RemoteBranchCacheService,
-        GitObjectCacheService,
       ],
     });
   }

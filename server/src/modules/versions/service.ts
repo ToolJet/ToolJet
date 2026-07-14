@@ -3,7 +3,6 @@ import { BadRequestException, Injectable, NotAcceptableException, NotFoundExcept
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -20,6 +19,7 @@ import { OrganizationThemesUtilService } from '@modules/organization-themes/util
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
 import { listModuleVersions, resolveModuleRef } from './module-ref.util';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -48,7 +48,8 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
-    protected readonly organizationGitRepository: OrganizationGitSyncRepository
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   /**
@@ -125,9 +126,16 @@ export class VersionService implements IVersionService {
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
-    const result =
+    let gitEnabled = false;
+    let defaultBranchId: string | null = null;
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+      gitEnabled = details.isEnabled;
+      defaultBranchId = details.options.defaultBranch?.id ?? null;
+    }
+    let result =
       app.type === APP_TYPES.MODULE
-        ? await listModuleVersions(this.versionRepository.manager, app, branchId, app.organizationId)
+        ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
     // For branch-type versions, the `name` column holds a UUID used as an internal
@@ -136,6 +144,16 @@ export class VersionService implements IVersionService {
     for (const version of result) {
       if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
         version.displayName = version.branch.name;
+      }
+    }
+
+    // Git-sync on: once a synced (gitsync-origin) DRAFT exists, hide the non-synced
+    // DRAFT versions — those are locally-created drafts not yet pushed to git. Synced
+    // drafts and all non-DRAFT (published) versions are kept. Git-off: unchanged.
+    if (gitEnabled && result?.length) {
+      const hasSyncedDraft = result.some((v) => v.status === AppVersionStatus.DRAFT && v.isSynced);
+      if (hasSyncedDraft) {
+        result = result.filter((v) => v.status !== AppVersionStatus.DRAFT || v.isSynced);
       }
     }
 
@@ -295,12 +313,14 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module not found');
     }
 
+    const defaultBranchId =
+      (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch?.id ?? null;
     const version = await resolveModuleRef(
       this.versionRepository.manager,
       moduleApp,
       moduleReferenceId,
       branchId,
-      user.organizationId
+      defaultBranchId
     );
     if (!version) {
       // NotFoundException (not findOneOrFail) so drift surfaces as 404, not 500.

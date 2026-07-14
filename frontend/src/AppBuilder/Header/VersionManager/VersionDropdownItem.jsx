@@ -42,7 +42,17 @@ const VersionDropdownItem = ({
 
   const isDraft = version.status === 'DRAFT';
   const isPublished = version.status === 'PUBLISHED';
-  const isGitSyncDraft = isDraft && isGitSyncEnabled;
+  // Unsynced apps (never pushed to git) behave like a non-git workspace — show the real
+  // version name instead of the default-branch label. isSynced propagates from the source
+  // version at creation time (see `createVersion` in versions/util.service.ts).
+  const isGitSyncDraft = isDraft && isGitSyncEnabled && version.isSynced !== false;
+  // True when any default-branch version has been pushed to git. Feature-branch
+  // versions have isSynced=false by default, so scoping to versionType='version'
+  // avoids false negatives on apps that only have branch versions locally.
+  const isAppSyncedToGit = developmentVersions?.some(
+    (v) =>
+      (v.isSynced === true || v.is_synced === true) && (v.versionType === 'version' || v.version_type === 'version')
+  );
   const displayName = isGitSyncDraft ? defaultBranch : version.name;
   const effectiveDescription = isGitSyncDraft ? 'Latest commit to main will appear here' : version.description;
   // A version is released when it matches the releasedVersionId
@@ -119,7 +129,7 @@ const VersionDropdownItem = ({
       style={{ minWidth: '160px', zIndex: 1065 }}
     >
       <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
-        {!isGitSyncEnabled && isDraft && (
+        {!isGitSyncDraft && isDraft && (
           <ToolTip message="Saved versions cannot be edited" placement="left" show={isEditDisabled}>
             <div
               className={cx('dropdown-item tj-text-xsm', {
@@ -277,6 +287,22 @@ const VersionDropdownItem = ({
                 >
                   Released
                 </span>
+              )}
+
+              {/* Unsynced indicator: this saved version is a local copy that hasn't been
+                  pushed to git yet. Purely informational — no click action, hover-only.
+                  Only meaningful when git sync is actually configured for the org — in a
+                  non-git workspace isSynced isn't a signal worth surfacing. */}
+              {!isDraft && isGitSyncEnabled && isAppSyncedToGit && version.isSynced === false && (
+                <ToolTip message="Version not synced in remote git" placement="top">
+                  <div
+                    className="d-flex align-items-center"
+                    style={{ flexShrink: 0, visibility: isHoveringItem ? 'visible' : 'hidden' }}
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-unsynced-icon`}
+                  >
+                    <SolidIcon name="warning" width="14" fill="#E54D2E" />
+                  </div>
+                </ToolTip>
               )}
             </div>
 

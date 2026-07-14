@@ -230,16 +230,26 @@ export class DataSourcesService implements IDataSourcesService {
       throw new BadRequestException(`Datasource can't be deleted, queries are in use`);
     }
 
-    // Branch-aware: soft-delete via DataSourceVersion.isActive = false
+    // Branch-aware deletion. On a FEATURE branch the delete is branch-scoped and mergeable,
+    // so it soft-deletes (is_active = false). On the DEFAULT branch the row is hard-deleted:
+    // gitsync-off reads resolve the active default-branch row, so a lingering inactive row
+    // serves no purpose — remove it outright. With no branch context the whole DS is deleted.
     const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
 
     if (effectiveBranchId) {
       await dbTransactionWrap(async (manager: EntityManager) => {
-        await manager.update(
-          DataSourceVersion,
-          { dataSourceId, branchId: effectiveBranchId },
-          { isActive: false, updatedAt: new Date() }
-        );
+        const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, user.organizationId);
+        if (effectiveBranchId === defaultBranchId) {
+          // Default branch: hard-delete the DSV row (no soft-delete).
+          await manager.delete(DataSourceVersion, { dataSourceId, branchId: effectiveBranchId });
+        } else {
+          // Feature branch: soft-delete so the deletion stays branch-scoped.
+          await manager.update(
+            DataSourceVersion,
+            { dataSourceId, branchId: effectiveBranchId },
+            { isActive: false, updatedAt: new Date() }
+          );
+        }
       });
     } else {
       await this.dataSourcesRepository.delete(dataSourceId);

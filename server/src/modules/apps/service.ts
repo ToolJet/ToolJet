@@ -61,8 +61,7 @@ import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.enti
 import { DataQuery } from '@entities/data_query.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { GitSyncEnvUtilService } from '@modules/organization-env/services/gitsync.util.service';
-import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
@@ -83,7 +82,7 @@ export class AppsService implements IAppsService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly abilityService: AbilityService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository,
-    protected readonly organizationEnvRegistryService: GitSyncEnvUtilService
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
@@ -96,13 +95,8 @@ export class AppsService implements IAppsService {
       // trips chk_app_versions_branch_metadata.
       let branchId = type === APP_TYPES.WORKFLOW ? undefined : appCreateDto.branchId;
       if (!branchId && type !== APP_TYPES.WORKFLOW) {
-        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-        if (orgGit) {
-          const defaultBranch = await manager.findOne(WorkspaceBranch, {
-            where: { organizationId: user.organizationId, isDefault: true },
-          });
-          branchId = defaultBranch?.id;
-        }
+        const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        branchId = options.defaultBranch?.id;
       }
 
       // Reject app creation on the default branch when branching is enabled.
@@ -131,7 +125,8 @@ export class AppsService implements IAppsService {
       // workflows these fields are already populated on apps.*.
       if (app.type !== APP_TYPES.WORKFLOW) {
         app.name = name;
-        app.slug = app.id;
+        // slug is set by appsUtilService.create (a random UUID placeholder mirrored
+        // onto the returned app) — do not override it with app.id here.
         app.icon = icon ?? null;
         app.isPublic = false;
       }
@@ -314,24 +309,10 @@ export class AppsService implements IAppsService {
     };
   }
 
-  private resolveGitSyncEnabled(orgGit: OrganizationGitSync | null | undefined): boolean {
-    if (!orgGit) return false;
-
-    if (orgGit.useEnvConfig) {
-      const providers = [GITConnectionType.GITHUB_SSH, GITConnectionType.GITHUB_HTTPS, GITConnectionType.GITLAB];
-      return providers.some(
-        (provider) => this.organizationEnvRegistryService.getProviderState(orgGit.organizationId, provider).isEnabled
-      );
-    }
-
-    return Boolean(orgGit.gitSsh?.isEnabled || orgGit.gitHttps?.isEnabled || orgGit.gitLab?.isEnabled);
-  }
-
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
-    const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
-    const isGitSyncEnabled = this.resolveGitSyncEnabled(orgGit);
+    const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
 
     // Block metadata edits on the default branch when git-sync is enabled. These fields
     // (name/slug/icon/is_public) must be edited from a feature branch — the change then
@@ -359,27 +340,46 @@ export class AppsService implements IAppsService {
           where: { id: appUpdateDto.branch_id, organizationId: app.organizationId },
           select: ['id', 'isDefault'],
         });
-        // Unknown branch → treat as block. Default branch → block (must edit from a
-        // feature branch and let push + merge flow the change to default).
+        // Unknown branch → treat as block. Default branch → block unless the app version
+        // is unsynced (pre-git / never pushed) — those are always editable.
         if (!branch || branch.isDefault) {
-          throw new BadRequestException(
-            `Editing ${blockedFields.join(', ')} isn't allowed on the default branch. Switch to a feature branch in app builder to update.`
-          );
+          const versionToCheck = editingVersionId
+            ? await this.versionRepository.findOne({ where: { id: editingVersionId }, select: ['id', 'isSynced'] })
+            : await this.versionRepository.findOne({
+                where: { appId: app.id, branchId: appUpdateDto.branch_id },
+                select: ['id', 'isSynced'],
+                order: { createdAt: 'DESC' },
+              });
+          if (versionToCheck?.isSynced !== false) {
+            throw new BadRequestException(
+              `Editing ${blockedFields.join(', ')} isn't allowed on the default branch. Switch to a feature branch in app builder to update.`
+            );
+          }
         }
       }
     }
 
     // Rename additionally requires a draft version when git-sync is on (so the new name
     // lands on an editable version, not a published one).
+    // Unsynced apps are exempt — they haven't been pushed to git so they're always editable.
     if (name && name !== app.name && isGitSyncEnabled) {
-      const draftVersion = await this.versionRepository.findOne({
-        where: {
-          appId: app.id,
-          status: AppVersionStatus.DRAFT,
-        },
-      });
-      if (!draftVersion) {
-        throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
+      const versionForRename = editingVersionId
+        ? await this.versionRepository.findOne({ where: { id: editingVersionId }, select: ['id', 'isSynced'] })
+        : await this.versionRepository.findOne({
+            where: { appId: app.id, branchId: appUpdateDto.branch_id },
+            select: ['id', 'isSynced'],
+            order: { createdAt: 'DESC' },
+          });
+      if (versionForRename?.isSynced !== false) {
+        const draftVersion = await this.versionRepository.findOne({
+          where: { 
+            appId: app.id,
+             status: AppVersionStatus.DRAFT,
+             },
+        });
+        if (!draftVersion) {
+          throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
+        }
       }
     }
 
@@ -529,10 +529,8 @@ export class AppsService implements IAppsService {
         //   - Git off:     any version row works (every row carries identical metadata).
         const nonWorkflowAppIds = apps.filter((a) => a.type !== APP_TYPES.WORKFLOW).map((a) => a.id);
         if (nonWorkflowAppIds.length > 0) {
-          const defaultBranch = await manager.findOne(WorkspaceBranch, {
-            where: { organizationId: user.organizationId, isDefault: true },
-            select: ['id'],
-          });
+          const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+          const defaultBranchId = options.defaultBranch?.id;
           const qb = manager
             .createQueryBuilder()
             .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
@@ -542,8 +540,8 @@ export class AppsService implements IAppsService {
             .addSelect('av.is_public', 'is_public')
             .from('app_versions', 'av')
             .where('av.app_id IN (:...appIds)', { appIds: nonWorkflowAppIds });
-          if (defaultBranch?.id) {
-            qb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id });
+          if (defaultBranchId) {
+            qb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId });
           }
           const rows: {
             app_id: string;
@@ -596,13 +594,8 @@ export class AppsService implements IAppsService {
     providedBranchId?: string
   ): Promise<string | undefined> {
     if (providedBranchId || type !== APP_TYPES.FRONT_END) return providedBranchId;
-    const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-    if (!orgGit) return undefined;
-    const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
-      where: { organizationId: user.organizationId, isDefault: true },
-      select: ['id'],
-    });
-    return defaultBranch?.id;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+    return options.defaultBranch?.id;
   }
 
   private async fetchDashboardApps(
@@ -729,13 +722,11 @@ export class AppsService implements IAppsService {
     if (app.editingVersion) return; // subscriber already set it (workflow / git-off)
     if (app.type === APP_TYPES.WORKFLOW) return;
 
-    const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
-      where: { organizationId: app.organizationId, isDefault: true },
-      select: ['id'],
-    });
-    if (!defaultBranch) return; // git off — subscriber should have handled it
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+    const defaultBranchId = options.defaultBranch?.id;
+    if (!defaultBranchId) return; // git off — subscriber should have handled it
 
-    const targetBranchId = branchId ?? defaultBranch.id;
+    const targetBranchId = branchId ?? defaultBranchId;
     const version = await this.versionRepository.findOne({
       where: { appId: app.id, branchId: targetBranchId, isStub: false },
       relations: ['branch'],
@@ -995,51 +986,30 @@ export class AppsService implements IAppsService {
 
       // Validate slug uniqueness against other released apps (non-workflow only)
       if (app.type !== 'workflow') {
-        // Resolve canonical slug. Git-sync enabled (org has a default branch row in
-        // organization_git_sync_branches): read the slug off the app_versions row tied
-        // to that default branch — feature-branch rows can carry a different in-flight
-        // slug and must not drive the uniqueness check. Otherwise pick any version row
-        // (every row carries identical metadata when git-sync is off).
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId: user.organizationId, isDefault: true },
-          select: ['id'],
-        });
-
-        const slugVersion = defaultBranch
-          ? await manager
-              .createQueryBuilder(AppVersion, 'av')
-              .where('av.app_id = :appId', { appId })
-              .andWhere('av.branch_id = :branchId', { branchId: defaultBranch.id })
-              .select('av.slug')
-              .getOne()
-          : await manager
-              .createQueryBuilder(AppVersion, 'av')
-              .where('av.app_id = :appId', { appId })
-              .andWhere('av.slug IS NOT NULL')
-              .select('av.slug')
-              .getOne();
+        // Canonical slug = the metadata source-of-truth row, resolved the same way as
+        // everywhere else (resolveMetadataVersion): git-on → the non-stub DRAFT
+        // version_type='version' row on the default branch; git-off → any non-stub row
+        // on the default branch. Feature-branch in-flight slugs and stub placeholder
+        // slugs are excluded, so they can't drive the uniqueness check.
+        const slugVersion = await this.versionRepository.resolveMetadataVersion(manager, app);
 
         if (slugVersion?.slug) {
-          // Slug uniqueness is instance-wide, not scoped to an organization — drop
-          // the organization filter. Git-sync on: pin to the default-branch DRAFT
-          // VERSION row of each other released app; feature-branch / snapshot rows
-          // may temporarily hold a colliding slug and must not block this release.
-          // Git-sync off: any row of any other released app is canonical.
-          const conflictingReleasedAppQb = manager
+          // Mirror the canonical slug model (schema-changes.md): a released app's
+          // public slug is resolved instance-wide and type-scoped by findAppBySlug,
+          // so the release gate must reject the slug if any OTHER released app of the
+          // SAME type holds it anywhere on the instance — case-insensitively. Org
+          // scope would miss cross-workspace routing clashes; type scope lets an app
+          // and a module share a slug, as the write triggers allow. Stubs are skipped
+          // (they carry only a random-UUID placeholder slug).
+          const conflictingReleasedApp = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin('apps', 'a', 'a.id = av.app_id')
-            .where('av.slug = :slug', { slug: slugVersion.slug })
+            .where('LOWER(av.slug) = LOWER(:slug)', { slug: slugVersion.slug })
+            .andWhere('a.type = :appType', { appType: app.type })
             .andWhere('a.id != :appId', { appId })
-            .andWhere('a.current_version_id IS NOT NULL');
-
-          if (defaultBranch) {
-            conflictingReleasedAppQb
-              .andWhere('av.branch_id = :branchId', { branchId: defaultBranch.id })
-              .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
-              .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT });
-          }
-
-          const conflictingReleasedApp = await conflictingReleasedAppQb.getOne();
+            .andWhere('a.current_version_id IS NOT NULL')
+            .andWhere('av.is_stub = false')
+            .getOne();
           if (conflictingReleasedApp) {
             throw new BadRequestException('Cannot release — slug conflicts with another released app.');
           }

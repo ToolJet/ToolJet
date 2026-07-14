@@ -3,6 +3,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const gitSyncService = {
   create,
+  validatePush,
   getGitConfig,
   updateConfig,
   setFinalizeConfig,
@@ -391,4 +392,16 @@ function checkTagExists(appId, versionName) {
     requestOptions
   ).then(handleResponse);
 }
+function validatePush(appId, resourceType = 'app') {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(
+    `${config.apiUrl}/app-git/validate-push/${appId}?resourceType=${resourceType}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
 // Remove all app-git api's to separate service from here.

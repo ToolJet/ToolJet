@@ -24,6 +24,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -34,7 +35,8 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly createVersionService: VersionsCreateService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly organizationGitSyncRepository: OrganizationGitSyncRepository,
-    protected readonly appHistoryUtilService: AppHistoryUtilService
+    protected readonly appHistoryUtilService: AppHistoryUtilService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
@@ -100,15 +102,9 @@ export class VersionUtilService implements IVersionUtilService {
 
     if (appVersionUpdateDto?.status && appVersion.status !== appVersionUpdateDto.status) {
       editableParams['status'] = appVersionUpdateDto.status;
-      // chk_app_versions_branched_implies_draft (1779300000000) requires
-      // non-DRAFT rows to be branchless. Detach branch_id in the SAME UPDATE
-      // as the status flip so the row never lands in the violating state
-      // mid-transaction. handleDefaultBranchPublish below still fires for the
-      // default-branch publish path; its own branch_id detach (line 245)
-      // becomes an idempotent no-op once we've done it inline here.
-      if (appVersionUpdateDto.status !== AppVersionStatus.DRAFT && appVersion.branchId) {
-        editableParams['branchId'] = null;
-      }
+      // branch_id is NOT NULL now and the old chk_app_versions_branched_implies_draft CHECK
+      // was dropped — PUBLISHED version rows live on the default branch, so the status flip
+      // no longer detaches branch_id (the row keeps its default-branch id).
     }
     if (
       appVersionUpdateDto?.description !== undefined &&
@@ -169,6 +165,10 @@ export class VersionUtilService implements IVersionUtilService {
   private async handleDefaultBranchPublish(appVersion: AppVersion, manager: EntityManager): Promise<void> {
     if (appVersion.versionType !== AppVersionType.VERSION) return;
     if (!appVersion.branchId) return;
+    // Unsynced apps (never pushed to git) behave like a non-git workspace — publishing
+    // shouldn't auto-seed a continuity draft. The user explicitly creates a new draft
+    // when ready, same as in a non-git workspace.
+    if (appVersion.isSynced === false) return;
 
     const parentApp = await manager.findOne(App, {
       where: { id: appVersion.appId },
@@ -176,11 +176,8 @@ export class VersionUtilService implements IVersionUtilService {
     });
     if (!parentApp?.organizationId) return;
 
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId: parentApp.organizationId, isDefault: true },
-      select: ['id'],
-    });
-    if (!defaultBranch || defaultBranch.id !== appVersion.branchId) return;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(parentApp.organizationId);
+    if (!options.defaultBranch || options.defaultBranch.id !== appVersion.branchId) return;
 
     // Source from the latest version row by updated_at — the just-published
     // row has the freshest updated_at after the UPDATE that triggered this
@@ -210,7 +207,7 @@ export class VersionUtilService implements IVersionUtilService {
         appId: appVersion.appId,
         status: AppVersionStatus.DRAFT,
         versionType: AppVersionType.VERSION,
-        branchId: defaultBranch.id,
+        branchId: options.defaultBranch.id,
         // Modules pin to a version via module_reference_id. Each new version gets a
         // fresh uuid (mirrors createVersion line 347) — never leave it NULL for a
         // module, or ModuleViewer pin resolution against this draft fails.
@@ -218,6 +215,9 @@ export class VersionUtilService implements IVersionUtilService {
         co_relation_id: sourceVersion?.co_relation_id ?? appVersion.co_relation_id,
         parentVersionId: sourceVersion?.id ?? appVersion.id,
         currentEnvironmentId: firstPriorityEnv?.id ?? sourceVersion?.currentEnvironmentId ?? null,
+        // Inherit sync state — the just-published row was synced, so the continuity
+        // draft seeded from it should stay marked synced too.
+        isSynced: sourceVersion?.isSynced ?? appVersion.isSynced ?? false,
         isStub: false,
         appName: (sourceVersion as any)?.appName ?? (appVersion as any)?.appName ?? null,
         slug: (sourceVersion as any)?.slug ?? (appVersion as any)?.slug ?? null,
@@ -243,9 +243,11 @@ export class VersionUtilService implements IVersionUtilService {
       await this.createVersionService.setupNewVersion(newDraft, sourceVersion, parentApp.organizationId, manager);
     }
 
-    // Step 2: detach branch_id from the just-published row. Delegated via the
-    // repository to keep the DB write centralised.
-    await this.versionRepository.updateVersion(appVersion.id, { branchId: null }, manager);
+    // The just-published row stays on the default branch (branch_id is no longer detached
+    // to NULL — published version rows now live on the default branch). Cross-version
+    // metadata is kept consistent by the DB triggers: the new DRAFT propagates its metadata
+    // to all version_type='version' rows, and published rows pull from the DRAFT — so no
+    // manual branch_id detach or metadata fan-out is needed here.
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
@@ -290,7 +292,15 @@ export class VersionUtilService implements IVersionUtilService {
     // even for workflows; drop it here so the new row doesn't land with branch_id
     // set + app_name/slug NULL (which would trip chk_app_versions_branch_metadata,
     // since workflow versions don't carry those fields).
-    const branchId = app.type === APP_TYPES.WORKFLOW ? undefined : versionCreateDto.branchId;
+    // branch_id is NOT NULL in the DB — fall back to the org's default branch when
+    // the caller didn't forward x-branch-id (e.g. older clients, non-builder paths).
+    let branchId: string | undefined;
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      branchId =
+        versionCreateDto.branchId ??
+        (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch?.id ??
+        undefined;
+    }
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
@@ -313,7 +323,11 @@ export class VersionUtilService implements IVersionUtilService {
             branchId: branchId ?? IsNull(),
           },
         });
-        if (existingDraftVersion) {
+        // Unsynced apps (never pushed to git) are exempt from the single-draft rule —
+        // they behave like a non-git workspace until their first push/tag makes them
+        // synced, at which point isSynced propagates to future drafts and this reverts
+        // to enforcing one draft at a time.
+        if (existingDraftVersion && existingDraftVersion.isSynced !== false) {
           throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
         }
       }
@@ -348,6 +362,10 @@ export class VersionUtilService implements IVersionUtilService {
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
           co_relation_id: app.co_relation_id,
+          // Inherit sync state from the source version — an app that's already synced to
+          // git should stay marked synced for its new draft, not reset to false and get
+          // treated as a never-pushed app.
+          isSynced: versionFrom?.isSynced ?? false,
           ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
           ...(branchId && { branchId }),
           ...(!isWorkflow && {
@@ -421,7 +439,9 @@ export class VersionUtilService implements IVersionUtilService {
       //   orphan-fallback    — UUID pin matched no row; runtime drifts to active draft
       //   unpinned-fallback  — pin empty; runtime drifts to active draft
       //   pin-hit + DRAFT    — pin points directly at the editing draft
-      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId, defaultBranchId);
       const offenders = resolved.filter(
         (v) =>
           v.matchKind === 'no-row' ||
@@ -480,7 +500,9 @@ export class VersionUtilService implements IVersionUtilService {
     try {
       // Resolve pins; flag row below target env priority. Strict: no-row, orphan-fallback,
       // unpinned-fallback also block — runtime fallback isn't a stable promote target.
-      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId, defaultBranchId);
       const offenders = resolved.filter((v) => {
         if (
           v.matchKind === 'no-row' ||
@@ -550,7 +572,7 @@ export class VersionUtilService implements IVersionUtilService {
 
       if (numVersions <= 1) {
         if (branchId) {
-          const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId }, select: ['name'] });
+          const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId } });
           const branchName = branch?.name ?? 'this';
           throw new ForbiddenException(
             `${branchName} (Draft) version is the head of the ${branchName} branch and cannot be deleted`
