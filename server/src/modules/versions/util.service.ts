@@ -164,6 +164,14 @@ export class VersionUtilService implements IVersionUtilService {
       ...extraParams,
     };
 
+    // chk_app_versions_branched_implies_draft requires non-DRAFT rows to be
+    // branchless. Detach branch_id in the SAME UPDATE as the status flip so
+    // the row never lands in the violating state, even momentarily within
+    // this statement.
+    if (appVersion.branchId) {
+      editableParams.branchId = null;
+    }
+
     const runWrite = async (mgr: EntityManager) => {
       await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);
 
