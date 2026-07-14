@@ -484,3 +484,41 @@ export class ExportTjdbTableAsCsvDto {
   @Min(0)
   offset?: number;
 }
+
+export class BanUserDto {
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class BanWorkspaceDto {
+  @ValidateIf((o) => !o.slug)
+  @IsNotEmpty()
+  @IsUUID()
+  workspaceId?: string;
+
+  @ValidateIf((o) => !o.workspaceId)
+  @IsNotEmpty()
+  @IsString()
+  slug?: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class UnbanWorkspaceDto {
+  @ValidateIf((o) => !o.slug)
+  @IsNotEmpty()
+  @IsUUID()
+  workspaceId?: string;
+
+  @ValidateIf((o) => !o.workspaceId)
+  @IsNotEmpty()
+  @IsString()
+  slug?: string;
+}
+

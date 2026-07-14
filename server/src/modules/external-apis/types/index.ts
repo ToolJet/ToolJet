@@ -27,6 +27,10 @@ interface Features {
   [FEATURE_KEY.EXPORT_TJDB_TABLE_AS_CSV]: FeatureConfig;
   [FEATURE_KEY.UPDATE_USER_METADATA]: FeatureConfig;
   [FEATURE_KEY.GET_USER_METADATA]: FeatureConfig;
+  [FEATURE_KEY.BAN_USER]: FeatureConfig;
+  [FEATURE_KEY.UNBAN_USER]: FeatureConfig;
+  [FEATURE_KEY.BAN_WORKSPACE]: FeatureConfig;
+  [FEATURE_KEY.UNBAN_WORKSPACE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
