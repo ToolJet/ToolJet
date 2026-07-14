@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from './dto';
 import { IExternalApisService } from './Interfaces/IService';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 
 @Injectable()
 export class ExternalApisService implements IExternalApisService {
   constructor() {}
-  async getAllUsers(lookupKey?: string, groupNamesString?: string, manager?: EntityManager) {
+  async getAllUsers(lookupKey?: string, groupNamesString?: string, statuses?: USER_STATUS[], manager?: EntityManager) {
     throw new Error('Method not implemented.');
   }
   async createUser(userDto: CreateUserDto) {
