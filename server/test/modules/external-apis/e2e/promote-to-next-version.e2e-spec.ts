@@ -62,7 +62,11 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
   });
 
   afterEach(async () => {
-    jest.resetAllMocks();
+    // restoreAllMocks (not resetAllMocks): resetAllMocks clears a spy's mock
+    // implementation but leaves it a bare mock resolving undefined instead of
+    // restoring the real method — a spy from one test would otherwise
+    // silently poison any later test appended to this file.
+    jest.restoreAllMocks();
     await resetDB();
   });
 
