@@ -197,11 +197,7 @@ export const createGridSlice = (set, get) => {
         if (!prefix) {
           return key === base || key.startsWith(`${base}-`);
         }
-        // `.` catches nested row contexts (`base-2.0`);
-        // `-` catches suffixed keys at this exact context (`base-2-body`, the ModalV2 body).
-        return (
-          key === `${base}-${prefix}` || key.startsWith(`${base}-${prefix}.`) || key.startsWith(`${base}-${prefix}-`)
-        );
+        return key === `${base}-${prefix}` || key.startsWith(`${base}-${prefix}.`);
       };
 
       set((state) => {

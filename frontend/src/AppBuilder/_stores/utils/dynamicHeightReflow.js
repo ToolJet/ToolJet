@@ -126,16 +126,6 @@ export const getDynamicElementSelector = (componentId, contextIndices = null, mo
   );
 };
 
-/* Content-marker class (`.dynamic-<id>`) that container widgets render and the reflow queries to measure their inner canvas.
- * - ModalV2 is portaled to document.body with no module-scoped ancestor to disambiguate it, so its class must carry the module scope itself;
- * - every other container is scoped by its ancestor wrapper selector, so this is only needed for the modal path.
- *
- * NOTE: uses '-' (valid in a CSS class), NOT the '::' used by getDynamicLayoutKey (which is a map key, not a class).
- */
-export const getDynamicClassName = (componentId, moduleId = 'canvas') => {
-  return moduleId && moduleId !== 'canvas' ? `dynamic-${moduleId}-${componentId}` : `dynamic-${componentId}`;
-};
-
 // Canonical layout merged with any temporary override. "Effective" = what the
 // widget currently renders as, including reflow results. Use this anywhere you
 // need the widget's CURRENT top/height.
@@ -641,7 +631,7 @@ export const resolveContainerHeight = ({
   // scoped selector.
   const dynamicSelector =
     componentType === 'ModalV2'
-      ? `.${getDynamicClassName(componentId, moduleId)}`
+      ? `.dynamic-${componentId}`
       : `${getDynamicElementSelector(componentId, context, moduleId)} .dynamic-${componentId}`;
   const element = document.querySelector(dynamicSelector);
 
