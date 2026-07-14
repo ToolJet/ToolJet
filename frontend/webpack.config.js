@@ -398,6 +398,11 @@ module.exports = {
         use: ['file-loader'],
       },
       {
+        test: /\.svg$/i,
+        type: 'asset/resource',
+        resourceQuery: /url/, // SVGs with path has *.svg?url
+      },
+      {
         test: /\.svg$/,
         // `use` is called once per matched resource, so `info.resource` gives the full
         // file path. We hash it here and pass a plain string to svgo's `prefixIds` plugin.
@@ -428,6 +433,7 @@ module.exports = {
             },
           };
         },
+        resourceQuery: { not: [/url/] }, // exclude react component if path has *.svg?url
       },
       {
         test: /\.css$/,

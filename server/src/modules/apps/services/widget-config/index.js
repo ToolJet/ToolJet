@@ -53,6 +53,7 @@ import {
   kanbanConfig,
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
@@ -150,6 +151,7 @@ const widgets = {
   kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,

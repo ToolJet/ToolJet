@@ -53,6 +53,7 @@ export { stepsConfig } from './widgets/steps.js';
 export { kanbanConfig } from './widgets/kanban.js';
 export { colorPickerConfig } from './widgets/colorPicker.js';
 export { treeSelectConfig } from './widgets/treeSelect.js';
+export { cascaderConfig } from './widgets/cascader.js';
 export { linkConfig } from './widgets/link.js';
 export { iconConfig } from './widgets/icon.js';
 export { boundedBoxConfig } from './widgets/boundedBox.js';

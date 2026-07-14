@@ -91,6 +91,7 @@ const PDF = lazy(() => import('@/AppBuilder/Widgets/PDF'));
 const QrScanner = lazy(() => import('@/AppBuilder/Widgets/QrScanner/QrScanner'));
 const RichTextEditor = lazy(() => import('@/AppBuilder/Widgets/RichTextEditor'));
 const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect/TreeSelect'));
+const Cascader = lazy(() => import('@/AppBuilder/Widgets/Cascader/Cascader'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
 
@@ -121,6 +122,7 @@ export const AllComponents = {
   RichTextEditor,
   DropDown,
   DropdownV2,
+  Cascader,
   Checkbox,
   Datepicker,
   DatetimePickerV2,

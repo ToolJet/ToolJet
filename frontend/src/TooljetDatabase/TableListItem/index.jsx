@@ -25,6 +25,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     setColumns,
     setForeignKeys,
     setConfigurations,
+    canEditTjdb,
   } = useTooljetDatabaseContext();
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -187,6 +188,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
               setShowDropDownMenu(false);
               setIsAddNewColumnDrawerOpen(true);
             }}
+            canEditTjdb={canEditTjdb}
           />
         </div>
       )}

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode, Dispatch, SetStateAction } from 'react';
 
 export type TooljetDatabaseContextValue = {
+  canEditTjdb: boolean;
   organizationId: string | null;
   setOrganizationId: Dispatch<SetStateAction<string | null>>;
   selectedTable: string;
@@ -45,6 +46,7 @@ type TooljetDatabaseProviderProps = {
 };
 
 const TooljetDatabaseContext = createContext<TooljetDatabaseContextValue>({
+  canEditTjdb: false,
   organizationId: null,
   setOrganizationId: () => {},
   selectedTable: '',

@@ -25,6 +25,7 @@ export interface UserPermissions {
   dataSourceDelete: boolean;
   folderCRUD: boolean;
   orgConstantCRUD: boolean;
+  tjdbCRUD: boolean;
   orgVariableCRUD: boolean;
   [MODULES.APP]?: UserAppsPermissions;
   [MODULES.GLOBAL_DATA_SOURCE]?: UserDataSourcePermissions;

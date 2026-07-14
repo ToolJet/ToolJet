@@ -30,8 +30,9 @@ const TooljetDatabase = () => {
 
   const { collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar } = useOutletContext();
   const navigate = useNavigate();
-  const { admin } = authenticationService.currentSessionValue;
+  const { admin, user_permissions } = authenticationService.currentSessionValue;
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
+  const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
 
   if (!admin && !isBuilder) {
     navigate('/');
@@ -62,6 +63,7 @@ const TooljetDatabase = () => {
 
   const value = useMemo(
     () => ({
+      canEditTjdb,
       searchParam,
       setSearchParam,
       organizationId,
