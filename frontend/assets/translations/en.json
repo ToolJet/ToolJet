@@ -1066,5 +1066,12 @@
             "november": "November",
             "december": "December"
         }
+    },
+    "notifications": {
+        "empty": "No notifications",
+        "markAllRead": "Mark all as read",
+        "technicalDetails": "Technical details",
+        "copy": "Copy",
+        "copied": "Copied"
     }
 }
