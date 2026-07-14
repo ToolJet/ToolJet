@@ -6481,6 +6481,26 @@ a.step-item-disabled {
   .spinner {
     min-height: 100px;
   }
+
+  // dark panel (Figma 282:4776) — --borders-weak has no dark token and --slate3
+  // stays light inside .dark-theme, so both need explicit dark values
+  &.dark-theme {
+    background: var(--surfaces-surface-01, #1e2226);
+    border-color: #2b3036 !important;
+
+    .card-header {
+      border-bottom-color: #2b3036 !important;
+    }
+
+    .notification-new-pill {
+      background: #3c434b;
+      color: #ffffff;
+    }
+
+    .notification-load-more {
+      border-top-color: #2b3036;
+    }
+  }
 }
 
 // notification row — Figma "Notif types and states": unread = right blue dot; read = grey
