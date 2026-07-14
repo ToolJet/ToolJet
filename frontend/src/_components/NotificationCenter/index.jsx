@@ -32,7 +32,6 @@ export const NotificationCenter = ({ darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Called when dropdown opens
   const handleOpen = () => {
     actions.fetch('all');
   };
