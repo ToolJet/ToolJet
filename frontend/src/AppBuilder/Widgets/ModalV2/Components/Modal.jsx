@@ -10,7 +10,7 @@ import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import Spinner from '@/_ui/Spinner';
 import classNames from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { getDynamicLayoutKey, getDynamicClassName } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 export const ModalWidget = ({ ...restProps }) => {
   const {
@@ -141,7 +141,7 @@ export const ModalWidget = ({ ...restProps }) => {
       {...restProps}
       contentClassName={classNames(
         `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`,
-        isDynamicHeightEnabled && `dynamic-${id}`,
+        isDynamicHeightEnabled && getDynamicClassName(id, moduleId),
         isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
       )}
       animation={true}
