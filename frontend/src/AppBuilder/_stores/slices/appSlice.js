@@ -32,6 +32,7 @@ const initialState = {
       canvas: {
         canvasHeight: null,
         app: {},
+        linkedApps: {}, // Map<correlationId, { slug }> of apps referenced by go-to-app pages/events
         isViewer: false,
         isComponentLayoutReady: false,
       },
@@ -66,6 +67,25 @@ export const createAppSlice = (set, get) => ({
       },
       false,
       'setApp'
+    ),
+  setLinkedApps: (linkedApps, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].linkedApps = linkedApps ?? {};
+      },
+      false,
+      'setLinkedApps'
+    ),
+  upsertLinkedApp: (correlationId, info, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        if (!correlationId) return;
+        const current = state.appStore.modules[moduleId].linkedApps ?? {};
+        current[correlationId] = { ...(current[correlationId] ?? {}), ...info };
+        state.appStore.modules[moduleId].linkedApps = current;
+      },
+      false,
+      'upsertLinkedApp'
     ),
   setAppName: (name, moduleId = 'canvas') =>
     set(

@@ -1318,26 +1318,6 @@ class HomePageComponent extends React.Component {
         }
       }
 
-      // OLD: fetch remote branches for branch picker
-      // this.setState({
-      //   showGitRepositoryImportModal: true,
-      //   fetchingRemoteBranches: true,
-      //   selectedImportBranch: null,
-      //   appsFromRepos: {},
-      //   selectedAppRepo: null,
-      //   importingGitAppOperations: {},
-      //   latestCommitData: null,
-      //   selectedVersionOption: null,
-      // });
-      // useWorkspaceBranchesStore
-      //   .getState()
-      //   .actions.fetchRemoteBranches()
-      //   .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
-      //   .catch(() => {
-      //     toast.error('Failed to fetch remote branches');
-      //     this.setState({ fetchingRemoteBranches: false });
-      //   });
-
       // Auto-set branch to current workspace branch and immediately fetch apps
       const branchName = currentBranch?.name || null;
       this.setState({

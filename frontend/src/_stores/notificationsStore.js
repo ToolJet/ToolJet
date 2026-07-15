@@ -101,7 +101,7 @@ export const useNotificationsStore = create(
         async clearRead() {
           const res = await notificationsService.clearRead();
           if (res.error) return { error: res.error };
-          set((s) => ({ items: s.items.filter((n) => !n.readAt) })); // unread stay
+          set((s) => ({ items: s.items.filter((n) => !n.readAt) }));
           return { error: null };
         },
         // Opening a notification marks it read, then routes per detailAction (modal / link / nothing)

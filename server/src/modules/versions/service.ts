@@ -228,6 +228,12 @@ export class VersionService implements IVersionService {
 
       const editingVersion = camelizeKeys(appCurrentEditingVersion);
 
+      // For branch-type versions, expose the human-readable branch name so
+      // globals.appVersion.name resolves correctly on the frontend.
+      if (appVersion?.versionType === AppVersionType.BRANCH && appVersion.branch?.name) {
+        editingVersion['displayName'] = appVersion.branch.name;
+      }
+
       // Inject app theme
       const appTheme = await this.organizationThemesUtilService.getTheme(
         user.organizationId,
@@ -268,6 +274,17 @@ export class VersionService implements IVersionService {
 
     response['modules'] = await Promise.all(
       modules.map((module) => prepareResponse(module, module.editingVersion?.id))
+    );
+
+    // Top-level linkedApps map: covers main app + every module
+    // Helps frontend to resolve go-to-app link for any correlationId referenced
+    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
+    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
+    response['linkedApps'] = await this.appUtilService.collectLinkedAppsForResponse(
+      allPages,
+      allEvents,
+      app.organizationId,
+      app.appVersions?.[0]?.branchId
     );
 
     return response;
