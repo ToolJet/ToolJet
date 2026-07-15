@@ -342,6 +342,49 @@ list API; the final assertion carries a full per-branch version dump on failure 
 
 ---
 
+## 8. Push unsynced datasources only (`it: pushes only unsynced datasources, leaving already-synced ones untouched in git`)
+
+Dedicated isolated org. Verifies the bulk "Sync unsynced datasources" push (`POST
+/workspace-branches/push` with `scope: 'datasource'`, used by the homepage/data-sources page's "Sync"
+button) only serializes and commits datasources that are actually unsynced — a synced datasource must
+be left completely untouched in git (same file content, never deleted), not just excluded from the
+diff by coincidence.
+
+Everything runs on a single feature branch — the shared test Gitea blocks direct pushes to the
+protected default branch (see the test-env note under §2), and `serializeDataSources` doesn't care
+which branch it's serializing for, so a feature branch exercises the same code path as a push to main.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Configure git, enable branching, pull `main` | 201/200 |
+| 2 | Create `feat-ds-scope`; create `ds-scope-synced` + `ds-scope-unsynced` on it | 201 |
+| 3 | Full push (no `scope`) → both DS committed | both DSVs `is_synced=true` on `feat-ds-scope` |
+| 4 | Edit `ds-scope-unsynced`'s option value (real content change) + flip its DSV back to `is_synced=false` (simulates a local, un-pushed edit) | — |
+| 5 | Push with `scope: 'datasource'` | 201 |
+| 6 | Re-clone `feat-ds-scope`, read `ds-scope-synced`'s file | byte-identical to before step 5 — untouched, **not deleted** |
+| 7 | Re-clone, read `ds-scope-unsynced`'s file | reflects the edit; its DSV is now `is_synced=true` |
+| 8 | Re-check `ds-scope-synced`'s DSV | still `is_synced=true` — unaffected by the unsynced-only push |
+
+**Why step 4 edits real content, not just the `is_synced` flag:** a raw `is_synced=false` flip alone
+produces a serialized JSON byte-identical to what's already committed, so `pushWorkspace`'s
+`status.files.length === 0` early-return fires before it ever reaches the isSynced=true marking step —
+verified while writing this test, it looked like a regression until the setup was corrected to include
+a genuine content change (mirroring how a real "locally edited but not yet pushed" datasource behaves).
+
+**Two bugs this test guards against** (`ee/git-sync/workspace-git-sync-adapter.ts` →
+`serializeDataSources`):
+- **Pushed everything, not just unsynced** — when a branch DSV already existed, it was always
+  re-serialized regardless of `isSynced`, so a "sync unsynced only" push re-committed every
+  already-synced datasource too. Fixed: skip when `dsv.isSynced && scope === 'datasource'`.
+- **Wiped and re-deleted untouched files** — `serializeDataSources` unconditionally wiped the whole
+  `data-sources/` directory before rewriting it; combined with the fix above (which now *skips*
+  already-synced DS), their files were wiped and never rewritten, so git staged them as deleted. Fixed:
+  for `scope === 'datasource'`, only `mkdir` (no wipe) so untouched files survive.
+
+Both fixes were verified live against the real test Gitea server before being locked in as this test.
+
+---
+
 ## Test-only license control
 
 `ee/licensing/configs/License.ts` reads `TEST_LICENSE_TERMS` (JSON) under `NODE_ENV=test` instead of decrypting a key.

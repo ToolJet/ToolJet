@@ -5365,5 +5365,190 @@ describe('GitSyncController', () => {
         expect(v44.is_synced ?? v44.isSynced).toBe(true);
       }, 600000);
     });
+
+    describe('push unsynced datasources only (scope: datasource)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+
+      let dsScopeOrgId: string;
+      let dsScopeCookie: string[];
+      let dsScopeDataSource: DataSource;
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-ds-scope@tooljet.io',
+          firstName: 'git',
+          lastName: 'dsscope',
+        });
+        dsScopeOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-ds-scope@tooljet.io');
+        dsScopeCookie = tokenCookie;
+        await ensureAppEnvironments(app, dsScopeOrgId);
+        dsScopeDataSource = app.get<DataSource>(getDataSourceToken('default'));
+        await dsScopeDataSource.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [dsScopeOrgId]
+        );
+      });
+
+      it('pushes only unsynced datasources, leaving already-synced ones untouched in git', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', dsScopeCookie).set('tj-workspace-id', dsScopeOrgId);
+
+        const restapiOptions = (url: string) => [
+          { key: 'url', value: url },
+          { key: 'auth_type', value: 'none' },
+          { key: 'headers', value: [['', '']] },
+          { key: 'ssl_certificate', value: 'none', encrypted: false },
+        ];
+
+        const createDataSource = (name: string, branchId: string, url: string) =>
+          auth(agent().post(`/api/data-sources?branch_id=${branchId}`))
+            .send({ name, kind: 'restapi', options: restapiOptions(url), scope: 'global' })
+            .expect(201);
+
+        const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+          auth(agent().post('/api/workspace-branches/push'))
+            .query({ branch_id: branchId })
+            .send({ commitMessage, branchId, ...(scope && { scope }) });
+
+        const pull = (branchId: string) =>
+          auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+
+        // Shallow-clone a branch and read a file's raw content off disk — the Gitea
+        // simulator at this host doesn't serve a raw/contents API.
+        const readGitFile = async (branch: string, relPath: string): Promise<string | null> => {
+          const simpleGit = (await import('simple-git')).default;
+          const fs = await import('fs');
+          const path = await import('path');
+          const os = await import('os');
+          const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-ds-scope-'));
+          try {
+            const git = simpleGit({
+              baseDir: tmpDir,
+              timeout: { block: 30000 },
+              unsafe: { allowUnsafeCredentialHelper: true },
+            });
+            await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
+              '--branch',
+              branch,
+              '--depth',
+              '1',
+              '--single-branch',
+            ]);
+            const filePath = path.join(tmpDir, relPath);
+            return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : null;
+          } finally {
+            await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+          }
+        };
+
+        const isSyncedOnBranch = async (dsId: string, branchId: string) =>
+          (
+            await dsScopeDataSource.query(
+              `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+              [dsId, branchId]
+            )
+          )[0]?.is_synced;
+
+        // Everything below stays on a single feature branch — the shared test Gitea
+        // blocks direct pushes to the protected default branch (see test-env note in
+        // lifecycle-cases.md), and serializeDataSources doesn't care which branch it's
+        // serializing for, so a feature branch exercises the same code path.
+        step(1, 'reset gitea repo, configure git + branching, pull main');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs')).send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false }).expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${dsScopeOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`)).send({ isBranchingEnabled: true }).expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body.activeBranchId;
+        await pull(mainBranchId).expect(201);
+
+        step(2, 'create feat-ds-scope; create ds-scope-synced + ds-scope-unsynced on it');
+        const createBranchResp = await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-ds-scope', sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId: string = createBranchResp.body.id;
+
+        const syncedDsId: string = (await createDataSource('ds-scope-synced', featBranchId, 'http://synced.example.com'))
+          .body.id;
+        const unsyncedDsId: string = (
+          await createDataSource('ds-scope-unsynced', featBranchId, 'http://unsynced-v1.example.com')
+        ).body.id;
+
+        step(3, 'full push (both DS) → both files committed and marked is_synced=true on feat-ds-scope');
+        const push1 = await pushWorkspace(featBranchId, 'commit both datasources');
+        if (push1.status !== 201) {
+          throw new Error(`initial push failed: ${push1.status} ${JSON.stringify(push1.body)}`);
+        }
+
+        const syncedCorrId = (
+          await dsScopeDataSource.query(`SELECT co_relation_id FROM data_sources WHERE id = $1`, [syncedDsId])
+        )[0].co_relation_id;
+        const unsyncedCorrId = (
+          await dsScopeDataSource.query(`SELECT co_relation_id FROM data_sources WHERE id = $1`, [unsyncedDsId])
+        )[0].co_relation_id;
+
+        expect(await isSyncedOnBranch(syncedDsId, featBranchId)).toBe(true);
+        expect(await isSyncedOnBranch(unsyncedDsId, featBranchId)).toBe(true);
+
+        // Capture the exact committed content for the DS that will stay synced —
+        // it must be byte-identical after the unsynced-only push below.
+        const syncedFileBefore = await readGitFile('feat-ds-scope', `data-sources/${syncedCorrId}.json`);
+        expect(syncedFileBefore).not.toBeNull();
+
+        step(4, 'edit ds-scope-unsynced (real content change) and flip it back to unsynced');
+        // A raw is_synced=false flip alone isn't representative: the serialized JSON would be
+        // byte-identical to what's already committed, so pushWorkspace's `status.files.length === 0`
+        // early-return would fire before it ever reaches the isSynced=true marking step. Give it a
+        // genuine content change too, matching a real "locally edited but not yet pushed" DS.
+        const unsyncedDsvId = (
+          await dsScopeDataSource.query(
+            `SELECT id FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+            [unsyncedDsId, featBranchId]
+          )
+        )[0].id;
+        await dsScopeDataSource.query(
+          `UPDATE data_source_version_options
+             SET options = REPLACE(options::text, 'unsynced-v1', 'unsynced-v2-edited')::jsonb
+             WHERE data_source_version_id = $1`,
+          [unsyncedDsvId]
+        );
+        await dsScopeDataSource.query(
+          `UPDATE data_source_versions SET is_synced = false WHERE data_source_id = $1 AND branch_id = $2`,
+          [unsyncedDsId, featBranchId]
+        );
+        expect(await isSyncedOnBranch(syncedDsId, featBranchId)).toBe(true);
+        expect(await isSyncedOnBranch(unsyncedDsId, featBranchId)).toBe(false);
+
+        step(5, "push scope='datasource' → only ds-scope-unsynced should be (re)committed");
+        const push2 = await pushWorkspace(featBranchId, 'sync unsynced datasources', 'datasource');
+        if (push2.status !== 201) {
+          throw new Error(`scoped push failed: ${push2.status} ${JSON.stringify(push2.body)}`);
+        }
+
+        step(6, 'ds-scope-synced file in git is byte-identical (untouched) and NOT deleted');
+        const syncedFileAfter = await readGitFile('feat-ds-scope', `data-sources/${syncedCorrId}.json`);
+        expect(syncedFileAfter).not.toBeNull();
+        expect(syncedFileAfter).toBe(syncedFileBefore);
+
+        step(7, 'ds-scope-unsynced file exists in git, reflects the edit, and its DSV is marked synced again');
+        const unsyncedFileAfter = await readGitFile('feat-ds-scope', `data-sources/${unsyncedCorrId}.json`);
+        expect(unsyncedFileAfter).not.toBeNull();
+        expect(unsyncedFileAfter).toContain('unsynced-v2-edited');
+        expect(unsyncedFileAfter).not.toBe(syncedFileBefore); // sanity: not comparing against the wrong file
+        expect(await isSyncedOnBranch(unsyncedDsId, featBranchId)).toBe(true);
+
+        step(8, 'ds-scope-synced remains synced in the DB too — untouched by the unsynced-only push');
+        expect(await isSyncedOnBranch(syncedDsId, featBranchId)).toBe(true);
+      }, 300000);
+    });
   });
 });
