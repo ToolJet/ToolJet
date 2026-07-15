@@ -292,7 +292,9 @@ export const TableExposedVariables = ({
     // onRowClicked event will be fired when a row is clicked
     // it should be triggered even when allowSelection is false which is handled in the handleRowClick()
     if (allowSelection && Object.keys(lastClickedRow).length > 0) {
-      fireEvent('onRowClicked');
+      setTimeout(() => {
+        fireEvent('onRowClicked');
+      }, 0);
     }
   }, [lastClickedRow, fireEvent, allowSelection]);
 
