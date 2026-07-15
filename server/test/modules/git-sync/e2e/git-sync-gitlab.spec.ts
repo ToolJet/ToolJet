@@ -4210,9 +4210,15 @@ describe('GitSyncController — GitLab', () => {
           headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: '{}',
         });
-        await auth(agent().post('/api/git-sync/configs'))
-          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
-          .expect(201);
+        const cfgSaveRes = await auth(agent().post('/api/git-sync/configs')).send({
+          ...GITLAB_PAYLOAD,
+          useEnvConfig: false,
+        });
+        if (cfgSaveRes.status !== 201) {
+          throw new Error(
+            `config save -> ${cfgSaveRes.status}: ${cfgSaveRes.text || JSON.stringify(cfgSaveRes.body)} | token.len=${GITLAB_PAYLOAD.gitLabProjectAccessToken.length} projectId=${GITLAB_PAYLOAD.gitLabProjectId} base=${GITLAB_PAYLOAD.gitLabEnterpriseUrl}`
+          );
+        }
 
         const gitConfig = await auth(agent().get(`/api/git-sync/${editOrgId}`)).expect(200);
         const orgGitId: string = gitConfig.body.organization_git.id;
