@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { compact, correctBounds } from './Grid/gridUtils';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { computeAutoMobileLayout } from './Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import useConfirm from '@/_hooks/useConfirm';
@@ -14,9 +13,20 @@ export default function AutoComputeMobileLayoutAlert({ currentLayout, darkMode, 
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(), shallow);
   const turnOffAutoComputeLayout = useStore((state) => state.turnOffAutoComputeLayout, shallow);
-  const currentPageComponentsRef = useRef();
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
+  const lastComputedRef = useRef();
   const { confirm, ConfirmDialog } = useConfirm();
+
+  useEffect(() => {
+    if (currentLayout === 'mobile' && isAutoMobileLayout) {
+      const updatedBoxes = computeAutoMobileLayout(currentPageComponents);
+      if (!isEmpty(diff(lastComputedRef.current, updatedBoxes))) {
+        lastComputedRef.current = updatedBoxes;
+        setComponentLayout(updatedBoxes);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLayout, currentPageComponents, isAutoMobileLayout]);
 
   const handleDisableAutoAlignment = async () => {
     const result = await confirm(
@@ -27,40 +37,6 @@ export default function AutoComputeMobileLayoutAlert({ currentLayout, darkMode, 
       turnOffAutoComputeLayout();
     }
   };
-
-  const updatedLayout = () => {
-    const mobLayouts = Object.keys(currentPageComponents)
-      .filter((key) => !currentPageComponents[key]?.component?.parent)
-      .map((key) => {
-        return { ...deepClone(currentPageComponents[key]?.layouts?.desktop), i: key };
-      });
-    let updatedBoxes = {};
-    let newmMobLayouts = correctBounds(mobLayouts, { cols: 43 });
-    newmMobLayouts = compact(newmMobLayouts, 'vertical', 43);
-    Object.keys(currentPageComponents).forEach((id) => {
-      const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
-      updatedBoxes[id] = mobLayout
-        ? {
-            left: mobLayout.left,
-            height: mobLayout.height,
-            top: mobLayout.top,
-            width: mobLayout.width,
-          }
-        : currentPageComponents[id]?.layouts?.desktop ?? {};
-    });
-    return updatedBoxes;
-  };
-
-  useEffect(() => {
-    if (currentLayout === 'mobile' && isAutoMobileLayout) {
-      const updatedBoxes = updatedLayout();
-      if (!isEmpty(diff(currentPageComponentsRef.current, updatedBoxes))) {
-        currentPageComponentsRef.current = updatedBoxes;
-        setComponentLayout(updatedBoxes);
-      }
-    }
-    //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentLayout, currentPageComponents, isAutoMobileLayout]);
 
   if (currentLayout !== 'mobile' || !isAutoMobileLayout) {
     return '';
