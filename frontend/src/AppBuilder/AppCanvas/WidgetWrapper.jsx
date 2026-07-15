@@ -25,6 +25,8 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'Text',
   'Table',
   'ModuleViewer',
+  'Image',
+  'Statistics',
 ];
 
 const WidgetWrapper = memo(

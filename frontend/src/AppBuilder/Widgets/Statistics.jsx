@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { cn } from '@/lib/utils';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 
 export const Statistics = function Statistics({
+  id,
   width,
   height,
   properties,
@@ -15,6 +18,10 @@ export const Statistics = function Statistics({
   dataCy,
   setExposedVariable,
   setExposedVariables,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
+  componentType,
 }) {
   const {
     primaryValueLabel,
@@ -58,6 +65,25 @@ export const Statistics = function Statistics({
     secondaryValue: secondaryValue,
     isLoading: loadingState,
     isVisible: visibility,
+  });
+
+  // ===== DYNAMIC HEIGHT =====
+  // The card's values/labels wrap (word-break) and depend on width, so measure the
+  // rendered card rather than deriving from data. Enabled only in view mode.
+  const statRef = useRef(null);
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(statRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
   });
 
   const updateExposedVariablesState = (key, value) => {
@@ -155,8 +181,9 @@ export const Statistics = function Statistics({
     display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     gap: '1.5rem 2rem',
     wordBreak: 'break-all',
-    overflow: 'hidden',
-    height: padding === 'default' ? height : height + BOX_PADDING * 2,
+    overflow: isDynamicHeightEnabled ? 'visible' : 'hidden',
+    height: isDynamicHeightEnabled ? 'auto' : padding === 'default' ? height : height + BOX_PADDING * 2,
+    ...(isDynamicHeightEnabled && { minHeight: padding === 'default' ? height : height + BOX_PADDING * 2 }),
     boxShadow,
     padding: '1.5rem',
     ...((dataAlignment === 'center' || exposedVariablesTemporaryState.isLoading === true) && {
@@ -211,7 +238,7 @@ export const Statistics = function Statistics({
   const trendIconSize = (secondaryValueSize ?? 14) * 1.3;
 
   return (
-    <div style={baseStyle} data-cy={dataCy}>
+    <div style={baseStyle} data-cy={dataCy} ref={statRef}>
       {exposedVariablesTemporaryState.isLoading === true ? (
         <div style={{ width }} className="p-2">
           <center>
