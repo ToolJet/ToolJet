@@ -19,6 +19,7 @@ export enum ResourceType {
   DATA_SOURCE = 'data_source',
   WORKFLOWS = 'workflow',
   FOLDER = 'folder',
+  WORKFLOW_FOLDER = 'workflow_folder',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -103,6 +104,13 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEditApps: false,
       canViewApps: false,
     },
+    [ResourceType.WORKFLOW_FOLDER]: {
+      // Radio button selection: Admin has "Edit folder" permission
+      // Only set the selected permission level to true; implied permissions are derived at runtime
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
@@ -119,6 +127,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canView: true,
     },
     [ResourceType.FOLDER]: {
+      canEditFolder: false,
+      canEditApps: false,
+      canViewApps: true,
+    },
+    [ResourceType.WORKFLOW_FOLDER]: {
       canEditFolder: false,
       canEditApps: false,
       canViewApps: true,
@@ -145,6 +158,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canView: false,
     },
     [ResourceType.FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
+    [ResourceType.WORKFLOW_FOLDER]: {
       canEditFolder: true,
       canEditApps: false,
       canViewApps: false,
@@ -176,6 +194,10 @@ export enum FEATURE_KEY {
   UPDATE_GRANULAR_FOLDER_PERMISSIONS = 'update_granular_folder_permissions',
   DELETE_GRANULAR_FOLDER_PERMISSIONS = 'delete_granular_folder_permissions',
   GET_ADDABLE_FOLDERS = 'get_addable_folders',
+  GET_ADDABLE_WORKFLOW_FOLDERS = 'get_addable_workflow_folders',
+  CREATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'create_granular_workflow_folder_permissions',
+  UPDATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'update_granular_workflow_folder_permissions',
+  DELETE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'delete_granular_workflow_folder_permissions',
   USER_ROLE_CHANGE = 'change_user_role',
   ASSIGN_GROUP_ADMIN = 'assign_group_admin',
   REVOKE_GROUP_ADMIN = 'revoke_group_admin',

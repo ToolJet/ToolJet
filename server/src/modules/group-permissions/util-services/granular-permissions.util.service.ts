@@ -125,6 +125,14 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
             manager
           );
           break;
+        case ResourceType.WORKFLOW_FOLDER:
+          await this.createFolderGroupPermission(
+            organizationId,
+            granularPermissions,
+            createResourcePermissionsObj as CreateResourcePermissionObject<ResourceType.WORKFLOW_FOLDER>,
+            manager
+          );
+          break;
         default:
           break;
       }
@@ -468,6 +476,9 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
           await this.updateAppsGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
           break;
         case ResourceType.FOLDER:
+          await this.updateFoldersGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
+          break;
+        case ResourceType.WORKFLOW_FOLDER:
           await this.updateFoldersGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
           break;
         default:

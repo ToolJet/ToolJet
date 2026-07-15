@@ -49,6 +49,12 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'folder_delete', default: false })
   folderDelete: boolean;
 
+  @Column({ name: 'workflow_folder_create', default: false })
+  workflowFolderCreate: boolean;
+
+  @Column({ name: 'workflow_folder_delete', default: false })
+  workflowFolderDelete: boolean;
+
   @Column({ name: 'org_constant_crud', default: false })
   orgConstantCRUD: boolean;
 

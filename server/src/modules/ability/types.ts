@@ -33,6 +33,7 @@ export interface UserPermissions {
   [MODULES.GLOBAL_DATA_SOURCE]?: UserDataSourcePermissions;
   [MODULES.WORKFLOWS]?: UserWorkflowPermissions;
   [MODULES.FOLDER]?: UserFolderPermissions;
+  [MODULES.WORKFLOW_FOLDER]?: UserFolderPermissions;
 }
 export interface UserWorkflowPermissions {
   editableWorkflowsId: string[];

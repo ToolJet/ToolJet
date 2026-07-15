@@ -112,8 +112,16 @@ export class AbilityService extends IAbilityService {
           }
         }
         if (resources.some((item) => item.resource === MODULES.FOLDER)) {
-          const folderGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.FOLDER);
-          userPermissions[MODULES.FOLDER] = this.createUserFolderPermissions(folderGranularPermissions);
+          userPermissions[MODULES.FOLDER] = this.createUserContainerFolderPermissions(
+            allGranularPermissions,
+            ResourceType.FOLDER
+          );
+        }
+        if (resources.some((item) => item.resource === MODULES.WORKFLOW_FOLDER)) {
+          userPermissions[MODULES.WORKFLOW_FOLDER] = this.createUserContainerFolderPermissions(
+            allGranularPermissions,
+            ResourceType.WORKFLOW_FOLDER
+          );
         }
       }
 
@@ -121,7 +129,11 @@ export class AbilityService extends IAbilityService {
     });
   }
 
-  createUserFolderPermissions(folderGranularPermissions: GranularPermissions[]): UserFolderPermissions {
+  createUserContainerFolderPermissions(
+    allGranularPermissions: GranularPermissions[],
+    resourceType: ResourceType
+  ): UserFolderPermissions {
+    const folderGranularPermissions = allGranularPermissions.filter((perm) => perm.type === resourceType);
     const userFolderPermissions: UserFolderPermissions = {
       ...DEFAULT_USER_FOLDER_PERMISSIONS,
       editableFoldersId: [],

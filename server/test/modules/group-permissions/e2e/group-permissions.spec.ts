@@ -709,5 +709,99 @@ describe('GroupPermissionsControllerV2', () => {
         expect(groupFolders.length).toBeGreaterThan(0);
       });
     });
+
+    // -------------------------------------------------------------------------
+    // GET /api/v2/group-permissions/granular-permissions/addable-workflow-folders
+    // -------------------------------------------------------------------------
+
+    describe('GET /api/v2/group-permissions/granular-permissions/addable-workflow-folders | List addable workflow folders', () => {
+      it('should return only workflow folders and hide front-end/module folders', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const appFolder = await createFolder(nestApp, {
+          name: 'App Folder For Workflow Check',
+          type: APP_TYPES.FRONT_END,
+          organizationId: organization.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .get('/api/v2/group-permissions/granular-permissions/addable-workflow-folders')
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie);
+
+        expect(response.statusCode).toBe(200);
+
+        const folderIds = response.body.map((folder: any) => folder.id);
+        expect(folderIds).toContain(workflowFolder.id);
+        expect(folderIds).not.toContain(appFolder.id);
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // POST /api/v2/group-permissions/:id/granular-permissions/workflow-folder
+    // -------------------------------------------------------------------------
+
+    describe('POST /api/v2/group-permissions/:id/granular-permissions/workflow-folder | Create workflow folder granular permissions', () => {
+      it('creates a workflow folder granular permission scoped to the given workflow folders', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const customGroupResponse = await createGroupViaApi(
+          cookie,
+          adminUser.defaultOrganizationId,
+          'workflow-folder-access'
+        );
+        expect(customGroupResponse.statusCode).toBe(201);
+
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'workflow-folder-access',
+        } as any);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder - direct grant',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            name: 'Workflow Folder Access',
+            groupId: group.id,
+            type: 'workflow_folder',
+            isAll: false,
+            createResourcePermissionObject: {
+              canEditFolder: false,
+              canEditApps: false,
+              canViewApps: true,
+              resourcesToAdd: [{ folderId: workflowFolder.id }],
+            },
+          });
+
+        expect(response.statusCode).toBe(201);
+
+        const groupFolders = await findEntities(GroupFolders, {
+          where: {
+            folderId: workflowFolder.id,
+          },
+        });
+
+        expect(groupFolders.length).toBeGreaterThan(0);
+      });
+    });
   });
 });
