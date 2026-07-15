@@ -173,7 +173,7 @@ describe("dashboard", () => {
       commonSelectors.workspaceConstantsIcon,
       "Workspace constants"
     );
-    verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
+    verifyTooltip(commonSelectors.notificationsIcon, "Notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
   });
 
