@@ -3,6 +3,67 @@ import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
 import { NO_OF_GRIDS } from '../appCanvasConstants';
+
+export const MOBILE_GRID_COLUMNS = NO_OF_GRIDS;
+
+// Stack each parent's children (page root + every container/slot) into a full-width
+// mobile column, bottom-up so containers grow to fit. Pure — returns { [id]: box }.
+export function computeAutoMobileLayout(currentPageComponents) {
+  const ids = Object.keys(currentPageComponents);
+
+  // Bucket ids by parent key: ROOT for top-level, `${id}` / `${id}-${slot}` for children.
+  const ROOT = '__root__';
+  const childrenByParent = {};
+  ids.forEach((id) => {
+    const parent = currentPageComponents[id]?.component?.parent ?? ROOT;
+    (childrenByParent[parent] = childrenByParent[parent] || []).push(id);
+  });
+
+  const updatedBoxes = {};
+  const visited = new Set(); // guard against cyclic parent refs (corrupt data)
+
+  // Stack a parent's direct children into one full-width column (children recursed first).
+  const stackGroup = (parentKey) => {
+    const layouts = (childrenByParent[parentKey] || []).map((id) => {
+      const desktop = currentPageComponents[id]?.layouts?.desktop || {};
+      const nestedExtent = stackContainer(id);
+      return {
+        i: id,
+        top: desktop.top ?? 0,
+        left: 0,
+        width: MOBILE_GRID_COLUMNS,
+        height: nestedExtent != null ? Math.max(desktop.height ?? 0, nestedExtent) : desktop.height ?? 0,
+      };
+    });
+
+    const stacked = compact(correctBounds(layouts, { cols: MOBILE_GRID_COLUMNS }), 'vertical', MOBILE_GRID_COLUMNS);
+
+    let extent = 0;
+    stacked.forEach((l) => {
+      updatedBoxes[l.i] = { left: l.left, top: l.top, width: l.width, height: l.height };
+      extent = Math.max(extent, l.top + l.height);
+    });
+    return extent;
+  };
+
+  // Stack a component's own groups (direct + slots); returns max extent, or null if a leaf.
+  const stackContainer = (id) => {
+    if (visited.has(id)) return null;
+    visited.add(id);
+    const groupKeys = Object.keys(childrenByParent).filter((k) => k === id || k.startsWith(`${id}-`));
+    if (groupKeys.length === 0) return null;
+    return groupKeys.reduce((max, key) => Math.max(max, stackGroup(key)), 0);
+  };
+
+  stackGroup(ROOT);
+
+  // Fallback: anything not reached keeps its desktop layout.
+  ids.forEach((id) => {
+    if (!updatedBoxes[id]) updatedBoxes[id] = currentPageComponents[id]?.layouts?.desktop ?? {};
+  });
+
+  return updatedBoxes;
+}
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,

@@ -415,6 +415,30 @@ const getListviewRenderedRowCount = (componentProperties = {}) => {
   return Math.min(Number(rowsPerPage) || 10, totalRows);
 };
 
+// Real height one Listview row occupies = max bottom of its template children
+// (temp-aware) — so a Listview measures content like other containers, not a rowHeight guess.
+const getListviewTemplateHeight = ({
+  componentId,
+  currentLayout,
+  currentPageComponents,
+  temporaryLayouts,
+  context,
+  getContainerChildrenMapping,
+}) => {
+  // Prefer the canonical child accessor; fall back to a parent lookup when unavailable.
+  const childIds = getContainerChildrenMapping
+    ? getContainerChildrenMapping(componentId) || []
+    : Object.keys(currentPageComponents).filter(
+        (childId) => currentPageComponents[childId]?.component?.parent === componentId
+      );
+  return childIds.reduce((max, childId) => {
+    const childLayout =
+      getEffectiveLayout(childId, currentLayout, currentPageComponents, temporaryLayouts, context) ||
+      getCanonicalLayout(childId, currentLayout, currentPageComponents);
+    return childLayout ? Math.max(max, (childLayout.top ?? 0) + (childLayout.height ?? 0)) : max;
+  }, 0);
+};
+
 // Compute a Listview widget's height from its rows' temporary layouts. Why
 // not from the DOM? In deeply nested contexts (Textarea → ListView → Tabs →
 // ListView), an outer Listview's DOM may not reflect inner growth yet, but
@@ -432,8 +456,19 @@ export const resolveListviewHeightFromRows = ({
   const componentProperties = component?.properties || {};
   const rowCount = getListviewRenderedRowCount(componentProperties);
   const context = normalizeLayoutContext(contextIndices);
+  // Fallback height for rows that were never measured (e.g. off-screen rows).
+  const templateRowHeight = getListviewTemplateHeight({
+    componentId,
+    currentLayout,
+    currentPageComponents,
+    temporaryLayouts,
+    context,
+  });
   const baseRowHeight =
-    componentProperties.rowHeight ?? getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+    templateRowHeight ||
+    componentProperties.rowHeight ||
+    getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ||
+    0;
   const mode = componentProperties.mode ?? 'list';
   const positiveColumns = Math.max(Number(componentProperties.columns) || 1, 1);
   const rowHeights = Array.from({ length: rowCount }, (_, rowIndex) => {
@@ -499,11 +534,19 @@ export const resolveContainerHeight = ({
   const scopedWrapperElement = document.querySelector(getDynamicElementSelector(componentId, context));
   const isScopedContextRenderable = !!scopedWrapperElement;
 
-  // A Listview inside a context whose DOM isn't available (e.g., inactive tab)
-  // falls back to the configured row height.
+  // Listview row with no queryable DOM (e.g. mobile): size it from its children instead of guessing rowHeight; fall back to rowHeight only when there are no children.
   if (componentType === 'Listview' && context && !isScopedContextRenderable) {
     const component = getResolvedComponent(componentId, context);
-    containerHeight = component?.properties?.rowHeight ?? containerHeight;
+    const rowHeightFallback = component?.properties?.rowHeight ?? containerHeight;
+    const childrenBottom = getListviewTemplateHeight({
+      componentId,
+      currentLayout,
+      currentPageComponents,
+      temporaryLayouts,
+      context,
+      getContainerChildrenMapping,
+    });
+    return childrenBottom > 0 ? childrenBottom : rowHeightFallback;
   }
 
   // Explicit dynamic-height opt-out: the container stays at its authored
@@ -748,14 +791,9 @@ export const resolveContainerHeight = ({
 };
 
 // The changed widget's target height:
-//   - Container-like widget: delegate to `containerHeight` (already computed).
-//   - Leaf widget: DOM `offsetHeight`, falling back to the last temp height,
-//     then canonical, then zero.
-//   - Hidden: return the existing stored height so the widget's last known
-//     size is preserved (needed for show-restore and for container height
-//     calculations that skip 0-flow children).
-// Note: Listview widget (no row context) is always treated as a container;
-// Listview in a row context is treated as a leaf from this function's POV.
+//   - Any container (Listview included): delegate to the computed `containerHeight`.
+//   - Leaf widget: DOM `offsetHeight`, falling back to last temp, then canonical, then zero.
+//   - Hidden: keep the existing stored height so the last known size is preserved.
 export const resolveWidgetMeasuredHeight = ({
   componentId,
   componentType,
@@ -768,7 +806,8 @@ export const resolveWidgetMeasuredHeight = ({
   containerHeight,
   calculateMoveableBoxHeightWithId,
 }) => {
-  if (isContainer && (componentType !== 'Listview' || normalizeLayoutContext(contextIndices))) {
+  // Every container (Listview included) uses its computed containerHeight; measuring the Listview's own DOM here gave a stale short box, so siblings overlapped it.
+  if (isContainer) {
     return containerHeight;
   }
 
