@@ -34,6 +34,7 @@ export const TableExposedVariables = ({
   const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch, shallow);
 
   const mounted = useMounted();
 
@@ -292,11 +293,10 @@ export const TableExposedVariables = ({
     // onRowClicked event will be fired when a row is clicked
     // it should be triggered even when allowSelection is false which is handled in the handleRowClick()
     if (allowSelection && Object.keys(lastClickedRow).length > 0) {
-      setTimeout(() => {
-        fireEvent('onRowClicked');
-      }, 0);
+      flushExposedValueBatch();
+      fireEvent('onRowClicked');
     }
-  }, [lastClickedRow, fireEvent, allowSelection]);
+  }, [lastClickedRow, fireEvent, allowSelection, flushExposedValueBatch]);
 
   useEffect(() => {
     function selectRow(key, value) {

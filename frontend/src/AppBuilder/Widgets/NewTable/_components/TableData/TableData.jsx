@@ -33,6 +33,7 @@ export const TableData = ({
   canvasWidth,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch, shallow);
 
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const rowStyle = useTableStore((state) => state.getTableStyles(id)?.rowStyle, shallow);
@@ -136,9 +137,10 @@ export const TableData = ({
         selectedRow: row?.original ?? {},
         selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
       });
-      setTimeout(() => {
-        fireEvent('onRowClicked');
-      }, 0);
+      // Flush the pending exposed-value batch so {{table.selectedRow}} resolves to the just-clicked
+      // row before the event's actions run — the dep resolution is otherwise deferred to a microtask.
+      flushExposedValueBatch();
+      fireEvent('onRowClicked');
       return;
     }
     if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
@@ -227,6 +229,7 @@ export const TableData = ({
                 highlightSelectedRow={highlightSelectedRow}
                 setExposedVariables={setExposedVariables}
                 fireEvent={fireEvent}
+                flushExposedValueBatch={flushExposedValueBatch}
                 rowStyles={rowStyles}
                 measureElement={rowVirtualizer.measureElement}
                 componentName={componentName}

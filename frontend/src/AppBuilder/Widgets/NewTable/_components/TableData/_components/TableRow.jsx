@@ -19,6 +19,7 @@ export const TableRow = ({
   highlightSelectedRow,
   setExposedVariables,
   fireEvent,
+  flushExposedValueBatch,
   rowStyles,
   measureElement,
   componentName,
@@ -142,19 +143,6 @@ export const TableRow = ({
             })}
             onClick={(e) => {
               const columnType = cell.column.columnDef?.meta?.columnType;
-              // if the cell is an action button and the row is selected, don't unselect the row and fire the onRowClicked event
-              if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) {
-                e.stopPropagation();
-                fireEvent('onRowClicked');
-              } else if (columnType === 'button' && allowSelection && row.getIsSelected()) {
-                // if the cell is a button column and the row is selected, don't unselect the row and fire the onRowClicked event
-                e.stopPropagation();
-                fireEvent('onRowClicked');
-              } else if (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected())) {
-                // if the cell is editable and the row is selected, don't unselect the row
-                e.stopPropagation();
-                fireEvent('onRowClicked');
-              }
 
               setExposedVariables({
                 selectedCell: {
@@ -163,6 +151,20 @@ export const TableRow = ({
                   value: cell.getValue(),
                 },
               });
+
+              // These cell clicks keep the current selection (already-selected action/button cells,
+              // or an editable cell) and fire onRowClicked directly. Flush the exposed-value batch
+              // first so selectedCell (just set) and selectedRow resolve fresh for the event's actions.
+              const keepsSelectionAndFires =
+                (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) ||
+                (columnType === 'button' && allowSelection && row.getIsSelected()) ||
+                (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected()));
+
+              if (keepsSelectionAndFires) {
+                e.stopPropagation();
+                flushExposedValueBatch();
+                fireEvent('onRowClicked');
+              }
             }}
           >
             <div
