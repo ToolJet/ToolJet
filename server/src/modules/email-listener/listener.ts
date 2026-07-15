@@ -32,6 +32,14 @@ export class EmailListener {
           await this.emailService.sendCommentMentionEmail(payload);
           break;
 
+        case EMAIL_EVENTS.SEND_USER_BANNED_EMAIL:
+          await this.emailService.sendUserBannedEmail(payload);
+          break;
+
+        case EMAIL_EVENTS.SEND_WORKSPACE_BANNED_EMAIL:
+          await this.emailService.sendWorkspaceBannedEmail(payload);
+          break;
+
         default:
           this.logger.warn(`Unhandled email event type: ${type}`);
       }
