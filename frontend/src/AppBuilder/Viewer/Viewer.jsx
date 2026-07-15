@@ -74,7 +74,8 @@ export const Viewer = ({
   const deviceWindowWidth = window.screen.width - 5;
 
   // Stack the current page's mobile layout on the fly (no persist) so every page aligns.
-  useAutoMobileLayout(currentLayout);
+  // Pass moduleId explicitly — this runs above Viewer's own ModuleProvider.
+  useAutoMobileLayout(currentLayout, moduleId);
 
   const hideSidebar = moduleMode || isPagesSidebarHidden || appType === 'module';
 
