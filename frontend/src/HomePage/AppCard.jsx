@@ -486,7 +486,12 @@ export default function AppCard({
           versionId={
             app.app_versions?.find((v) => v.status === 'DRAFT' || v.status === 'draft')?.id ?? app.editing_version?.id
           }
-          onSuccess={() => setPushModalOpen(false)}
+          onSuccess={() => {
+            setPushModalOpen(false);
+            // The dashboard's in-memory app list doesn't know is_app_synced flipped
+            // server-side — reload so the card's unsynced icon clears immediately.
+            window.location.reload();
+          }}
         />
       )}
       {pushValidationError && (
