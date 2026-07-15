@@ -42,12 +42,16 @@ const VARIANT_CONFIG = {
     titleKey: 'linkExpiredCard.inviteTitle',
     titleDefault: 'Invite link expired',
     descriptionKey: 'linkExpiredCard.inviteDescription',
-    descriptionDefault: 'This invite link has expired. Please contact your admin for a new invite.',
-    ctaKey: 'linkExpiredCard.inviteCta',
-    ctaDefault: 'Back to login',
-    ctaPath: '/login',
-    ctaState: { from: '/reset-password' },
+    descriptionDefault: 'This invite link has expired. Contact your workspace admin to get a new one.',
+    signInPath: '/login',
     dataCy: 'invite-link-expired',
+  },
+  invalid: {
+    titleKey: 'linkExpiredCard.invalidTitle',
+    titleDefault: 'Invalid verification link',
+    descriptionKey: 'linkExpiredCard.invalidDescription',
+    descriptionDefault: 'The link is invalid.',
+    dataCy: 'invalid-link',
   },
 };
 
@@ -73,9 +77,23 @@ const LinkExpiredCard = ({ variant = 'reset' }) => {
         <p className="link-expired-card-description" data-cy="link-expired-description">
           {t(config.descriptionKey, config.descriptionDefault)}
         </p>
-        <button className="link-expired-card-cta" onClick={handleCtaClick} data-cy="link-expired-cta">
-          <span>{t(config.ctaKey, config.ctaDefault)}</span>
-        </button>
+        {config.ctaDefault && (
+          <button className="link-expired-card-cta" onClick={handleCtaClick} data-cy="link-expired-cta">
+            <span>{t(config.ctaKey, config.ctaDefault)}</span>
+          </button>
+        )}
+        {config.signInPath && (
+          <p className="link-expired-card-signin" data-cy="link-expired-signin-prompt">
+            {t('linkExpiredCard.alreadyHaveAccount', 'Already have an account?')}{' '}
+            <span
+              className="link-expired-card-signin-link"
+              onClick={() => navigate(`${getSubpath() ? getSubpath() : ''}${config.signInPath}`)}
+              data-cy="link-expired-signin"
+            >
+              {t('linkExpiredCard.signIn', 'Sign in')}
+            </span>
+          </p>
+        )}
       </div>
     </div>
   );

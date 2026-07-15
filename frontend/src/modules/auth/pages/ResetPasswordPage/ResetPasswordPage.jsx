@@ -11,7 +11,7 @@ import { LinkExpiredCard } from '@/modules/common/components';
 const ResetPasswordPage = () => {
   const { token } = useParams();
   const [showResponseScreen, setShowResponseScreen] = useState(false);
-  const [tokenStatus, setTokenStatus] = useState('loading'); // 'loading' | 'valid' | 'expired'
+  const [tokenStatus, setTokenStatus] = useState('loading'); // 'loading' | 'valid' | 'expired' | 'invalid'
 
   useEffect(() => {
     const fetchWhiteLabel = async () => {
@@ -24,7 +24,7 @@ const ResetPasswordPage = () => {
   useEffect(() => {
     authenticationService
       .verifyResetToken(token)
-      .then((data) => setTokenStatus(data.valid ? 'valid' : 'expired'))
+      .then((data) => setTokenStatus(data.valid ? 'valid' : data.reason || 'expired'))
       .catch(() => setTokenStatus('valid')); // on network error, let the form handle it
   }, [token]);
 
@@ -36,6 +36,10 @@ const ResetPasswordPage = () => {
 
   if (tokenStatus === 'expired') {
     return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant="reset" />} />;
+  }
+
+  if (tokenStatus === 'invalid') {
+    return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant="invalid" />} />;
   }
 
   if (showResponseScreen) {

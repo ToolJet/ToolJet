@@ -315,6 +315,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           organizationId: organizationUser.organizationId,
           organizationName: organization.name,
           sender: inviterName,
+          invitationTokenExpiry: organizationUser.invitationTokenExpiry,
         },
       });
     } else {
@@ -327,6 +328,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           invitationtoken: organizationUser.invitationToken,
           organizationName: organization.name,
           organizationId: organizationUser.organizationId,
+          invitationTokenExpiry: organizationUser.invitationTokenExpiry,
         },
       });
     }

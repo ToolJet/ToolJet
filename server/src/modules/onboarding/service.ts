@@ -457,6 +457,7 @@ export class OnboardingService implements IOnboardingService {
             invitationtoken: user.invitationToken,
             organizationInvitationToken: `${organizationUser.invitationToken}`,
             organizationId: organizationUser?.organizationId,
+            invitationTokenExpiry: organizationUser.invitationTokenExpiry,
           },
         });
         throw new UnauthorizedException(
@@ -725,6 +726,7 @@ export class OnboardingService implements IOnboardingService {
           invitationTokenExpiry: newExpiry,
         });
         organizationUser.invitationToken = newToken;
+        organizationUser.invitationTokenExpiry = newExpiry;
       }
 
       const invitedOrganization = await this.organizationRepository.findOne({
@@ -744,6 +746,7 @@ export class OnboardingService implements IOnboardingService {
             organizationName: invitedOrganization.name,
             sender: null,
             redirectTo: redirectTo,
+            invitationTokenExpiry: organizationUser.invitationTokenExpiry,
           },
         });
         return;
@@ -759,6 +762,7 @@ export class OnboardingService implements IOnboardingService {
             organizationName: invitedOrganization.name,
             organizationId: organizationUser.organizationId,
             redirectTo: redirectTo,
+            invitationTokenExpiry: organizationUser.invitationTokenExpiry,
           },
         });
         return;
@@ -773,6 +777,7 @@ export class OnboardingService implements IOnboardingService {
           name: existingUser.firstName,
           invitationtoken: existingUser.invitationToken,
           organizationId: existingUser.defaultOrganizationId,
+          invitationTokenExpiry: existingUser.invitationTokenExpiry,
         },
       });
       return;

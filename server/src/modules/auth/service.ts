@@ -10,7 +10,7 @@ import { User } from '@entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { EntityManager } from 'typeorm';
-import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
+import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { isSuperAdmin, generateNextNameAndSlug, validatePasswordDomain } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
@@ -282,6 +282,9 @@ export class AuthService implements IAuthService {
       // No need to throw error - To prevent Username Enumeration vulnerability
       return;
     }
+    if (user.status === USER_STATUS.ARCHIVED) {
+      throw new BadRequestException('You have been archived from this instance. Contact super admin to know more');
+    }
     const forgotPasswordToken = uuid.v4();
     const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
     const forgotPasswordTokenExpiry =
@@ -308,12 +311,12 @@ export class AuthService implements IAuthService {
     });
   }
 
-  async verifyResetToken(token: string): Promise<{ valid: boolean }> {
+  async verifyResetToken(token: string): Promise<{ valid: boolean; reason?: string }> {
     // Check forgot password token (has expiry)
     const userByForgot = await this.userRepository.getUser({ forgotPasswordToken: token });
     if (userByForgot) {
       if (userByForgot.forgotPasswordTokenExpiry && new Date() > userByForgot.forgotPasswordTokenExpiry) {
-        return { valid: false };
+        return { valid: false, reason: 'expired' };
       }
       return { valid: true };
     }
@@ -322,7 +325,8 @@ export class AuthService implements IAuthService {
     const userByExpired = await this.userRepository.getUser({ expiredPasswordToken: token });
     if (userByExpired) return { valid: true };
 
-    return { valid: false };
+    // Token not found — already used or never existed
+    return { valid: false, reason: 'invalid' };
   }
 
   async passwordExpiredReset(email: string): Promise<void> {

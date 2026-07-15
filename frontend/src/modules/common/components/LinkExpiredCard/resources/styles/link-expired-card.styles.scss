@@ -92,6 +92,24 @@
             background-color: #f0f0f0;
         }
     }
+
+    .link-expired-card-signin {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        color: var(--text-placeholder, #6A727C);
+        margin-bottom: 0;
+
+        .link-expired-card-signin-link {
+            color: var(--indigo-9, #3E63DD);
+            cursor: pointer;
+            font-weight: 500;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
 }
 
 .dark-theme {
@@ -125,6 +143,14 @@
 
             &:active {
                 background-color: #1E2226;
+            }
+        }
+
+        .link-expired-card-signin {
+            color: var(--text-medium, #CFD3D8);
+
+            .link-expired-card-signin-link {
+                color: #7B9EE8;
             }
         }
     }

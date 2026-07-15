@@ -253,6 +253,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           organizationId: organizationUser.organizationId,
           organizationName: organizationUser.organization.name,
           sender: user.firstName,
+          invitationTokenExpiry: invitationTokenExpiry,
         },
       });
 
@@ -268,6 +269,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         invitationtoken: invitationToken,
         organizationName: organizationUser.organization.name,
         organizationId: organizationUser.organizationId,
+        invitationTokenExpiry: invitationTokenExpiry,
       },
     });
 

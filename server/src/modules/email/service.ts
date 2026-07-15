@@ -103,21 +103,18 @@ export class EmailService implements IEmailService {
       ? 'You have received this email as an invitation to join ToolJet’s workspace'
       : 'You have received this email to confirm your email address';
 
-    // Compute expiry date for Cloud signup verification emails only
+    // Format expiry date from the stored token expiry in the DB
     let expiryDate: string | null = null;
-    if (!isOrgInvite && this.tooljetEdition === 'cloud') {
-      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
-      if (!isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0) {
-        expiryDate = new Date(Date.now() + linkExpiryMinutes * 60 * 1000).toLocaleString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'UTC',
-          timeZoneName: 'short',
-        });
-      }
+    if (payload.invitationTokenExpiry) {
+      expiryDate = new Date(payload.invitationTokenExpiry).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+        timeZoneName: 'short',
+      });
     }
 
     const templateData = {
@@ -150,16 +147,29 @@ export class EmailService implements IEmailService {
   }
 
   async sendOrganizationUserWelcomeEmail(payload: SendOrganizationUserWelcomeEmailPayload) {
-    const { to, name, sender, invitationtoken, organizationName, organizationId, redirectTo } = payload;
+    const { to, name, sender, invitationtoken, organizationName, organizationId, redirectTo, invitationTokenExpiry } = payload;
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const subject = `Welcome to ${organizationName || 'ToolJet'}`;
     const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo, host);
+    let expiryDate: string | null = null;
+    if (invitationTokenExpiry) {
+      expiryDate = new Date(invitationTokenExpiry).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+        timeZoneName: 'short',
+      });
+    }
     const templateData = {
       name: name || '',
       inviteUrl,
       sender,
       organizationName,
+      expiryDate,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
       tooljetEdition: this.tooljetEdition,
