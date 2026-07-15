@@ -2,7 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } fro
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { WorkspaceBranchService } from './service';
-import { CreateBranchDto, WorkspacePushDto, WorkspacePullDto, EnsureDraftDto } from './dto';
+import { CreateBranchDto, WorkspacePushDto, WorkspacePullDto, PullAppDto, EnsureDraftDto, PullModuleDto } from './dto';
 import { IWorkspaceBranchController } from './interfaces/IController';
 import { FEATURE_KEY } from './constants';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -27,6 +27,13 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @Get('check-updates')
   async checkForUpdates(@User() user, @Query('branch') branch?: string) {
     return this.workspaceBranchService.checkForUpdates(user.organizationId, branch);
+  }
+
+  @InitFeature(FEATURE_KEY.GET_ENTITY_TAGS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get('entity-tags')
+  async getEntityTags(@User() user, @Query('coRelationId') coRelationId: string) {
+    return this.workspaceBranchService.getEntityTags(user.organizationId, coRelationId);
   }
 
   @InitFeature(FEATURE_KEY.CREATE_BRANCH)
@@ -62,6 +69,30 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @Post('pull')
   async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto) {
     return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch, dto?.branchId);
+  }
+
+  @InitFeature(FEATURE_KEY.PULL_APP)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Post('pull-app')
+  async pullApp(@User() user, @Body() dto: PullAppDto) {
+    return this.workspaceBranchService.pullApp(
+      user.organizationId, user, dto.appId, dto.branchId, dto.tagSha, dto.tagName, dto.tagDescription
+    );
+  }
+
+  @InitFeature(FEATURE_KEY.PULL_MODULE)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Post('pull-module')
+  async pullModule(@User() user, @Body() dto: PullModuleDto) {
+    return this.workspaceBranchService.pullModule(
+      user.organizationId,
+      user,
+      dto.moduleId,
+      dto.branchId,
+      dto.tagSha,
+      dto.tagName,
+      dto.tagDescription,
+    );
   }
 
   @InitFeature(FEATURE_KEY.ENSURE_DRAFT)
