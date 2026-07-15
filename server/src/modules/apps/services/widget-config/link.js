@@ -60,6 +60,12 @@ export const linkConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
@@ -227,6 +233,7 @@ export const linkConfig = {
       targetType: { value: 'new' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       collapseWhenHidden: { value: '{{false}}' },
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },
