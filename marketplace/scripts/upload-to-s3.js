@@ -54,6 +54,7 @@ const uploadToS3 = async () => {
   const start = Date.now();
   const errors = [];
   const newFiles = [];
+  const newPlugins = new Set();
   const existingPlugins = new Set();
   let successCount = 0;
 
@@ -107,6 +108,7 @@ const uploadToS3 = async () => {
           console.log(chalk.greenBright(`${indexStr} ✅ Uploaded (already existed): ${file}`));
         } else {
           newFiles.push(file);
+          newPlugins.add(plugin);
           console.log(chalk.greenBright(`${indexStr} ✅ Uploaded ${chalk.bold('(new)')}: ${file}`));
         }
         console.log(
@@ -147,11 +149,20 @@ const uploadToS3 = async () => {
     console.log(`[${new Date().toLocaleTimeString()}] ❌ Failed uploads: ${errors.length}/${fileArray.length} files`);
     console.log(`[${new Date().toLocaleTimeString()}] ℹ Total time: ${duration}s`);
 
+    const brandNewPlugins = [...newPlugins].filter((plugin) => !existingPlugins.has(plugin));
+
     console.log(chalk.cyanBright(`\n🆕 New files pushed (${newFiles.length}):`));
     if (newFiles.length > 0) {
       newFiles.forEach((file) => console.log(chalk.green(`  + ${file}`)));
     } else {
       console.log(chalk.gray('  (none — every key already existed in the bucket)'));
+    }
+
+    console.log(chalk.cyanBright(`\n✨ New plugins pushed (${brandNewPlugins.length}):`));
+    if (brandNewPlugins.length > 0) {
+      brandNewPlugins.sort().forEach((plugin) => console.log(chalk.green(`  • ${plugin}`)));
+    } else {
+      console.log(chalk.gray('  (none — no brand-new plugin in this run)'));
     }
 
     console.log(chalk.cyanBright(`\n📁 Plugins already present in the bucket (${existingPlugins.size}):`));
