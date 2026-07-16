@@ -316,7 +316,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             new Date() > existingUser.invitationTokenExpiry
           ) {
             instanceInviteToken = uuid.v4();
-            const linkExpiryMins = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+            const linkExpiryMins = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
             const newExpiry =
               !isNaN(linkExpiryMins) && linkExpiryMins > 0
                 ? new Date(Date.now() + linkExpiryMins * 60 * 1000)
@@ -429,7 +429,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             new Date() > existingUser.invitationTokenExpiry
           ) {
             instanceInviteToken = uuid.v4();
-            const linkExpiryMins = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+            const linkExpiryMins = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
             const newExpiry =
               !isNaN(linkExpiryMins) && linkExpiryMins > 0
                 ? new Date(Date.now() + linkExpiryMins * 60 * 1000)
@@ -591,8 +591,9 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       const isCloudEdition = edition === 'cloud';
       if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
         const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-        const passwordExpiryDays = !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? rawExpiryDays : 30;
-        const passwordExpiry = new Date(Date.now() + passwordExpiryDays * 24 * 60 * 60 * 1000);
+        const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
+          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+          : null;
         await this.userRepository.updateOne(
           user.id,
           {
@@ -756,7 +757,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       if (!existingUser) {
         const newInvitationToken = isInvite ? uuid.v4() : null;
         const isCloud = getTooljetEdition() === 'cloud';
-        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
         const newInvitationTokenExpiry =
           isInvite && isCloud && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
             ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
@@ -894,8 +895,9 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       const isCloudEdition = edition === 'cloud';
       if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
         const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-        const passwordExpiryDays = !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? rawExpiryDays : 30;
-        const passwordExpiry = new Date(Date.now() + passwordExpiryDays * 24 * 60 * 60 * 1000);
+        const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
+          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+          : null;
         await this.userRepository.updateOne(
           user.id,
           {

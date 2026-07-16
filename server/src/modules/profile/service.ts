@@ -58,8 +58,9 @@ export class ProfileService implements IProfileService {
         where: { id: userId },
       });
       const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-      const passwordExpiryDays = !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? rawExpiryDays : 30;
-      const passwordExpiry = new Date(Date.now() + passwordExpiryDays * 24 * 60 * 60 * 1000);
+      const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
+        ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+        : null;
       await this.userRepository.updateOne(
         userId,
         {

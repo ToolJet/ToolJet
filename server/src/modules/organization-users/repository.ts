@@ -29,7 +29,7 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newInvitationToken = isInvite ? uuid.v4() : null;
-      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
       const newInvitationTokenExpiry =
         isInvite && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
           ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)

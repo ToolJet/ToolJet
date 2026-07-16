@@ -603,8 +603,9 @@ export class OnboardingService implements IOnboardingService {
       }
 
       const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-      const passwordExpiryDays = !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? rawExpiryDays : 30;
-      const passwordExpiry = password ? new Date(Date.now() + passwordExpiryDays * 24 * 60 * 60 * 1000) : null;
+      const passwordExpiry = (password && !isNaN(rawExpiryDays) && rawExpiryDays > 0)
+        ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+        : null;
 
       await this.userRepository.updateOne(
         signupUser.id,
@@ -684,7 +685,7 @@ export class OnboardingService implements IOnboardingService {
   }
 
   async resendEmail(body: ResendInviteDto) {
-    const { email, organizationId, redirectTo } = body;
+    const { email, organizationId, redirectTo, senderName } = body;
     if (!email) {
       throw new BadRequestException();
     }
@@ -716,7 +717,7 @@ export class OnboardingService implements IOnboardingService {
       // Regenerate workspace invite token if it has expired
       if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
         const newToken = uuid.v4();
-        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
         const newExpiry =
           !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
             ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
@@ -744,7 +745,7 @@ export class OnboardingService implements IOnboardingService {
             organizationInvitationToken: organizationUser.invitationToken,
             organizationId: organizationUser.organizationId,
             organizationName: invitedOrganization.name,
-            sender: null,
+            sender: senderName || null,
             redirectTo: redirectTo,
             invitationTokenExpiry: organizationUser.invitationTokenExpiry,
           },
@@ -757,7 +758,7 @@ export class OnboardingService implements IOnboardingService {
           payload: {
             to: existingUser.email,
             name: existingUser.firstName,
-            sender: null,
+            sender: senderName || null,
             invitationtoken: organizationUser.invitationToken,
             organizationName: invitedOrganization.name,
             organizationId: organizationUser.organizationId,

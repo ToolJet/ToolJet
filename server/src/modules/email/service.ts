@@ -188,7 +188,7 @@ export class EmailService implements IEmailService {
   }
 
   async sendPasswordResetEmail(payload: SendPasswordResetEmailPayload) {
-    const { to, token, firstName, organizationId, redirectTo } = payload;
+    const { to, token, firstName, organizationId, redirectTo, forgotPasswordTokenExpiry } = payload;
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const effectiveHost = this.stripTrailingSlash(host);
@@ -199,10 +199,9 @@ export class EmailService implements IEmailService {
       ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
       : `${effectiveHost}${basePath}reset-password/${token}`;
 
-    const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
     let expiryDate: string | null = null;
-    if (!isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0) {
-      expiryDate = new Date(Date.now() + linkExpiryMinutes * 60 * 1000).toLocaleString('en-US', {
+    if (forgotPasswordTokenExpiry) {
+      expiryDate = new Date(forgotPasswordTokenExpiry).toLocaleString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

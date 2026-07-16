@@ -256,8 +256,9 @@ export class AuthService implements IAuthService {
     }
 
     const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-    const passwordExpiryDays = !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? rawExpiryDays : 30;
-    const passwordExpiry = new Date(Date.now() + passwordExpiryDays * 24 * 60 * 60 * 1000);
+    const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
+      ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+      : null;
 
     await this.userRepository.updateOne(user.id, {
       password,
@@ -286,7 +287,7 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('You have been archived from this instance. Contact super admin to know more');
     }
     const forgotPasswordToken = uuid.v4();
-    const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+    const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
     const forgotPasswordTokenExpiry =
       !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0 ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000) : null;
 
@@ -306,6 +307,7 @@ export class AuthService implements IAuthService {
         token: forgotPasswordToken,
         firstName: user.firstName,
         organizationId: user.defaultOrganizationId,
+        forgotPasswordTokenExpiry,
         ...(redirectTo && { redirectTo }),
       },
     });

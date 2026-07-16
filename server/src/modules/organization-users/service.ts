@@ -202,7 +202,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
     }
 
     const invitationToken = uuid.v4();
-    const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+    const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
     const invitationTokenExpiry =
       !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0 ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000) : null;
 

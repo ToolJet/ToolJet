@@ -84,6 +84,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
       const errorMessage = errorObj?.error?.error || 'Something went wrong';
       switch (errorStatus) {
         case 410: {
+          updateCurrentSession({ authentication_status: false });
           setLinkExpired(true);
           setLoading(false);
           break;
