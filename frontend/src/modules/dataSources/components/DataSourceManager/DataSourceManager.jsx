@@ -16,6 +16,7 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
+  AiSources,
 } from '../../../common/components/DataSourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
@@ -609,6 +610,7 @@ class DataSourceManagerComponent extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      ais: AiSources,
       plugins: this.state.plugins,
       filteredDatasources: this.state.filteredDatasources,
     };
@@ -641,6 +643,12 @@ class DataSourceManagerComponent extends React.Component {
         key: '#cloudstorage',
         list: allDataSourcesList.cloudStorages,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+      },
+      {
+        type: 'AI',
+        key: '#ai',
+        list: allDataSourcesList.ais,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.ais, 'AI'),
       },
       {
         type: 'Plugins',

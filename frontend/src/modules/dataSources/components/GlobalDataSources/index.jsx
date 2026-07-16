@@ -10,7 +10,8 @@ import {
   DataBaseSources,
   ApiSources,
   CloudStorageSources,
-  CommonlyUsedDataSources,
+  AiSources,
+  getCommonlyUsedDataSources,
 } from '../../../common/components/DataSourceComponents';
 import { pluginsService, globalDatasourceService, authenticationService, marketplaceService } from '@/_services';
 import { Card } from '@/_ui/Card';
@@ -29,6 +30,7 @@ import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { MarketplaceBanner } from '../MarketplaceBanner';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { getDataSourceGroupLabel } from './utils';
 
 export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -445,13 +447,24 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
 
   const datasourcesGroups = () => {
     const allDataSourcesList = {
-      common: CommonlyUsedDataSources,
+      common: getCommonlyUsedDataSources(plugins),
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      ais: AiSources,
       plugins: plugins,
       filteredDatasources: filteredDataSources,
     };
+
+    const pluginGroups = plugins.reduce((acc, plugin) => {
+      const groupLabel = getDataSourceGroupLabel(plugin);
+      if (!acc[groupLabel]) {
+        acc[groupLabel] = [];
+      }
+      acc[groupLabel].push(plugin);
+      return acc;
+    }, {});
+
     const dataSourceList = [
       {
         type: 'Commonly used',
@@ -463,27 +476,42 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       {
         type: 'Databases',
         key: '#databases',
-        list: allDataSourcesList.databases,
-        renderDatasources: () => renderCardGroup(allDataSourcesList.databases, 'Databases'),
+        list: [...allDataSourcesList.databases, ...(pluginGroups.Databases || [])],
+        renderDatasources: () =>
+          renderCardGroup([...allDataSourcesList.databases, ...(pluginGroups.Databases || [])], 'Databases'),
       },
       {
         type: 'APIs',
         key: '#apis',
-        list: allDataSourcesList.apis,
-        renderDatasources: () => renderCardGroup(allDataSourcesList.apis, 'APIs'),
+        list: [...allDataSourcesList.apis, ...(pluginGroups.APIs || [])],
+        renderDatasources: () => renderCardGroup([...allDataSourcesList.apis, ...(pluginGroups.APIs || [])], 'APIs'),
       },
       {
         type: 'Cloud Storages',
         key: '#cloudstorage',
-        list: allDataSourcesList.cloudStorages,
-        renderDatasources: () => renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+        list: [...allDataSourcesList.cloudStorages, ...(pluginGroups['Cloud Storages'] || [])],
+        renderDatasources: () =>
+          renderCardGroup(
+            [...allDataSourcesList.cloudStorages, ...(pluginGroups['Cloud Storages'] || [])],
+            'Cloud Storages'
+          ),
       },
       {
-        type: 'Plugins',
-        key: '#plugins',
-        list: allDataSourcesList.plugins,
-        renderDatasources: () => renderCardGroup(allDataSourcesList.plugins, 'Plugins'),
+        type: 'AI',
+        key: '#ai',
+        list: [...allDataSourcesList.ais, ...(pluginGroups.AI || [])],
+        renderDatasources: () => renderCardGroup([...allDataSourcesList.ais, ...(pluginGroups.AI || [])], 'AI'),
       },
+      ...(!isCloudEdition
+        ? [
+            {
+              type: 'Plugins',
+              key: '#plugins',
+              list: pluginGroups.Plugins || [],
+              renderDatasources: () => renderCardGroup(pluginGroups.Plugins || [], 'Plugins'),
+            },
+          ]
+        : []),
     ];
 
     return dataSourceList;

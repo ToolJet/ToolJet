@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Weaviate Plugin",
   "description": "A schema defining Weaviate datasource",
-  "type": "api",
+  "type": "ai",
   "source": {
     "name": "Weaviate",
     "kind": "weaviate",
