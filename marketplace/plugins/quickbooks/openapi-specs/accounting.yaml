@@ -460,6 +460,24 @@ paths:
       requestBody:
         content:
           text/plain:
+            schema:
+              type: object
+              properties:
+                file_metadata_0:
+                  type: string
+                  description: >-
+                    JSON string for the Attachable metadata object (AttachableRef,
+                    FileName, ContentType, etc). This is sent as the
+                    "file_metadata_0" part of the multipart upload.
+                  example: >-
+                    {"AttachableRef":[{"EntityRef":{"type":"Invoice","value":"173"}}],"FileName":"receipt_nov15.jpg","ContentType":"image/jpg"}
+                file_content_0:
+                  type: string
+                  description: >-
+                    The file to upload. Bind this to a File Picker component
+                    (e.g. {{components.filepicker1.file[0]}}) so the actual
+                    file bytes are sent as the "file_content_0" part of the
+                    multipart upload; a plain base64 string is also accepted.
             examples:
               Upload-Attachments:
                 value: >-

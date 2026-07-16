@@ -2,9 +2,18 @@ import { QueryError, QueryService, OAuthUnauthorizedClientError } from '@tooljet
 import { SourceOptions, QueryOptions, QueryResult } from './types';
 import got from 'got';
 import crypto from 'crypto';
+const FormData = require('form-data');
 
 const SANDBOX_URL = 'https://sandbox-quickbooks.api.intuit.com';
 const TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
+
+// File Picker components resolve to { name, type, base64Data } — used to tell a real
+// uploaded file apart from a plain string/object body param.
+function isFileObject(value: unknown): value is { name?: string; type?: string; base64Data?: string } {
+  if (typeof value !== 'object' || value === null) return false;
+  const keys = Object.keys(value);
+  return keys.includes('name') && keys.includes('type') && keys.includes('base64Data');
+}
 
 export default class QuickBooks implements QueryService {
   authUrl(source_options: SourceOptions): string {
@@ -193,6 +202,29 @@ export default class QuickBooks implements QueryService {
         const queryString = bodyParams['body'] ?? Object.values(bodyParams)[0];
         requestOptions.body = String(queryString);
         requestOptions.headers['Content-Type'] = 'application/text';
+      } else if (path?.endsWith('/upload')) {
+        // QuickBooks' upload endpoint requires a real multipart/form-data body: the
+        // Attachable metadata (file_metadata_0) paired with the file bytes (file_content_0).
+        // Letting `form-data` set Content-Type (with boundary) instead of forcing JSON is
+        // what fixes the 415 "Cannot consume content type" error on this endpoint.
+        const form = new FormData();
+        for (const [key, value] of Object.entries(bodyParams)) {
+          if (isFileObject(value)) {
+            const fileValue = value as { name?: string; type?: string; base64Data?: string };
+            const fileBuffer = Buffer.from(fileValue.base64Data || '', 'base64');
+            form.append(key, fileBuffer, {
+              filename: fileValue.name || 'file',
+              contentType: fileValue.type || 'application/octet-stream',
+              knownLength: fileBuffer.length,
+            });
+          } else if (key.startsWith('file_metadata') && typeof value === 'string') {
+            form.append(key, value, { contentType: 'application/json' });
+          } else if (value != null) {
+            form.append(key, typeof value === 'string' ? value : JSON.stringify(value));
+          }
+        }
+        requestOptions.body = form;
+        requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
       } else {
         const parsedBody: Record<string, any> = {};
         for (const [key, value] of Object.entries(bodyParams)) {
