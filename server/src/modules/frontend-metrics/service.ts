@@ -7,7 +7,7 @@ const MAX_ATTR_VALUE_LENGTH = 200;
 
 // Bounded keyspace — prevents unbounded OTEL cardinality from arbitrary client keys.
 const ALLOWED_ATTR_KEYS = new Set([
-  'app_context', 'app_id', 'query_id',
+  'app_name', 'app_context', 'app_id', 'query_id',
   'error_type', 'widget_type', 'error_message', 'component_stack',
 ]);
 // Server injects these — strip from client payload so clients cannot pre-empt them.

@@ -37,13 +37,21 @@ function getCurrentWorkspaceId() {
 
 function getAppContext() {
   const path = window.location.pathname;
-  return path.startsWith('/applications/') || path.startsWith('/embed-apps/') ? 'released_app' : 'platform';
+  if (path.startsWith('/applications/') || path.startsWith('/embed-apps/')) return 'released_app';
+  if (path.match(/^\/apps\/[^/]+(\/preview)?$/)) return path.includes('/preview') ? 'preview' : 'edit';
+  return 'platform';
 }
 
 function getAppIdFromUrl() {
   const path = window.location.pathname;
   const match = path.match(/^\/(?:apps|applications|embed-apps)\/([^/]+)/);
   return match ? match[1] : null;
+}
+
+// Called by AppBuilder/Viewer on mount so errors carry the human-readable name.
+let _currentAppName = '';
+export function setCurrentAppName(name) {
+  _currentAppName = name || '';
 }
 
 function recordMetricEvent(fingerprint, type, attrs = {}) {
@@ -110,6 +118,7 @@ export function teardownFrontendMetrics() {
 export function recordJsError(errorMessage, componentStack = '') {
   const msg = String(errorMessage).slice(0, 200);
   recordMetricEvent(`js_error:${msg}`, 'js_error', {
+    app_name: _currentAppName,
     app_context: getAppContext(),
     error_message: msg,
     component_stack: componentStack.slice(0, 500),
@@ -119,6 +128,7 @@ export function recordJsError(errorMessage, componentStack = '') {
 export function recordWidgetError(widgetType, errorMessage = '') {
   const msg = String(errorMessage).slice(0, 200);
   recordMetricEvent(`widget_error:${widgetType}:${msg}`, 'widget_error', {
+    app_name: _currentAppName,
     app_context: getAppContext(),
     widget_type: widgetType,
     error_message: msg,
@@ -127,6 +137,7 @@ export function recordWidgetError(widgetType, errorMessage = '') {
 
 export function recordQueryError(queryId, appId, errorType = 'unknown') {
   recordMetricEvent(`query_error:${queryId}:${errorType}`, 'query_error', {
+    app_name: _currentAppName,
     app_context: getAppContext(),
     query_id: queryId,
     app_id: appId ?? getAppIdFromUrl(),
