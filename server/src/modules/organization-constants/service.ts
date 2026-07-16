@@ -37,7 +37,9 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
                 if (constant.type === OrganizationConstantType.SECRET) {
                   resolvedValue = decryptSecretValue
                     ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
-                    : secretValue;
+                    : value.value
+                    ? secretValue
+                    : '';
                 } else {
                   resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
                     organizationId,
