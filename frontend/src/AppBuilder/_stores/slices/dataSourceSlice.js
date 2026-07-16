@@ -9,6 +9,10 @@ const initialState = {
   isFetchingGlobalDataSource: false,
   globalDataSourceList: null,
   sampleDataSourceList: null,
+  // Set of datasource ids the user may tag in the AI prompt (RBAC-filtered). `null` = not loaded
+  // yet → the AI list falls back to the full RBAC list; the server still drops inaccessible tags.
+  aiTaggableDataSourceIds: null,
+  isFetchingAiTaggableDataSources: false,
 };
 
 export const createDataSourceSlice = (set) => ({
@@ -42,6 +46,22 @@ export const createDataSourceSlice = (set) => ({
 
       options?.onSuccess?.(data);
     });
+  },
+  getAiTaggableDataSourceIds: () => {
+    set({ isFetchingAiTaggableDataSources: true });
+
+    globalDatasourceService
+      .getAiTaggableDataSources()
+      .then((data) => {
+        set({ aiTaggableDataSourceIds: new Set((data ?? []).map((ds) => ds.id)) });
+      })
+      .catch(() => {
+        // Fail open: leave ids null so the AI list falls back to the full RBAC list. The server
+        // still drops inaccessible tags before they reach the agent (AiService.sendUserMessage).
+      })
+      .finally(() => {
+        set({ isFetchingAiTaggableDataSources: false });
+      });
   },
   getAllGlobalDataSourceList: (organizationId, options) => {
     set({ isFetchingGlobalDataSource: true });
