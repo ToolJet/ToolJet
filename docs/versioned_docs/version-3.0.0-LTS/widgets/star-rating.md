@@ -29,7 +29,7 @@ The **Star Rating** component can be used to display as well as input ratings. T
 | On change | Triggers whenever the user clicks a star. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

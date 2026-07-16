@@ -32,7 +32,7 @@ To connect to your PrestoDB database, the following details are required:
 2. Write your SQL query in the query editor.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/2.50.0-LTS/tutorial/transformations)**
 :::
 
 ## Supported Operations

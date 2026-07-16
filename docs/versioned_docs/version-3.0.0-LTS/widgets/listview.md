@@ -87,7 +87,7 @@ The **Record clicked** event is similar to the row click event, as it is trigger
 When a record is clicked in the List View component, relevant data is exposed through the **selectedRecordId** and **selectedRecord** variables. For the List View component's available exposed variables, refer to the **[here](#exposed-variables)** section.
 
 :::info
-To get detailed information about all the **Actions**, please consult the [Action Reference](/docs/category/actions-reference) documentation.
+To get detailed information about all the **Actions**, please consult the [Action Reference](/docs/3.0.0-LTS/tutorial/actions) documentation.
 :::
 
 </div>
@@ -219,7 +219,7 @@ components.listview1.children[0].button1.disable(true) // disables the button1 c
 <br/>
 
 :::caution
-Currently, only those child components can be controlled using the javascript queries that have component specific actions implemented. To check if a component has component specific actions implemented, refer to the document of that **[specific component](/docs/widgets/overview)**.
+Currently, only those child components can be controlled using the javascript queries that have component specific actions implemented. To check if a component has component specific actions implemented, refer to the document of that **[specific component](/docs/3.0.0-LTS/widgets/overview)**.
 :::
 
 </div>

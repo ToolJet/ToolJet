@@ -5,7 +5,7 @@ title: Overview
 
 # Components: Overview
 
-Components are used to build the user interface(UI) of the applications. They can be dragged onto the canvas from the **Component Library** and can be modified from the **Properties Panel** without needing to write any code. **[Event Handlers](/docs/widgets/overview#component-event-handlers)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/category/actions-reference)**.
+Components are used to build the user interface(UI) of the applications. They can be dragged onto the canvas from the **Component Library** and can be modified from the **Properties Panel** without needing to write any code. **[Event Handlers](/docs/2.50.0-LTS/widgets/overview#component-event-handlers)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/2.50.0-LTS/tutorial/actions)**.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -51,7 +51,7 @@ You can also use many other **[Keyboard Shortcuts](/docs/tutorial/keyboard-short
 
 ## Component Properties
 
-Components can be customized and styled using the **Properties Panel** such as the data field, a toggle for disabling the component, or styling like a background color. Properties can be modified directly or programmatically by using **[Bindings](/docs/widgets/overview/#bindings)**, which enables you to write JavaScript code.
+Components can be customized and styled using the **Properties Panel** such as the data field, a toggle for disabling the component, or styling like a background color. Properties can be modified directly or programmatically by using **[Bindings](/docs/2.50.0-LTS/widgets/overview#bindings)**, which enables you to write JavaScript code.
 
 </div>
 
@@ -59,13 +59,13 @@ Components can be customized and styled using the **Properties Panel** such as t
 
 ## Component Event Handlers
 
-Event Handlers can be found in the Component's **Property Panel** or in the **Advanced** section of the Query. Event handlers can be used to trigger **[Actions](/docs/category/actions-reference)** such as executing the queries, performing Component Specific Actions(CSA) or for setting a variable.
+Event Handlers can be found in the Component's **Property Panel** or in the **Advanced** section of the Query. Event handlers can be used to trigger **[Actions](/docs/2.50.0-LTS/tutorial/actions)** such as executing the queries, performing Component Specific Actions(CSA) or for setting a variable.
 
 Event handlers for components have the following properties:
 
 1. **Event**: Each component has its own set of exclusive events. You can refer to the component reference to find the specific events available for each component. These events are triggered by user interactions or other actions within the application.
 
-2. **Action**: Actions are the operations that can be performed when an event is triggered. There is a comprehensive list of available actions, which can be found in the **[actions reference documentation](/docs/category/actions-reference)**. In addition to general actions, each component may also have its own set of **Component Specific Actions (CSA)** that are specific to that particular component. The CSA can be found in the respective component reference.
+2. **Action**: Actions are the operations that can be performed when an event is triggered. There is a comprehensive list of available actions, which can be found in the **[actions reference documentation](/docs/2.50.0-LTS/tutorial/actions)**. In addition to general actions, each component may also have its own set of **Component Specific Actions (CSA)** that are specific to that particular component. The CSA can be found in the respective component reference.
 
 3. **Run Only If**: This property allows you to define a condition that must be satisfied before the event handler's action is executed. By specifying a condition, you can control the flow of execution and ensure that the action is only performed when the condition is met. 
 
@@ -132,7 +132,7 @@ Any arbitrary JavaScript code can be written inside **`{{}}`**:
 ```
 
 :::tip
-Check out the How-to guides like **[changing color of text in table column](/docs/how-to/access-cellvalue-rowdata)**, **[Enable/Disable a component using JavaScript](/docs/how-to/access-currentuser)**, and more.
+Check out the How-to guides like **[changing color of text in table column](/docs/2.50.0-LTS/how-to/access-cellvalue-rowdata)**, **[Enable/Disable a component using JavaScript](/docs/2.50.0-LTS/how-to/access-currentuser)**, and more.
 :::
 
 </div>

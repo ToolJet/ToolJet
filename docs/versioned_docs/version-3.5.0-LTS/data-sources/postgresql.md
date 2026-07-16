@@ -164,7 +164,7 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 
 :::tip
 
-- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/tutorial/transformations)**
+- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/3.5.0-LTS/tutorial/transformations)**
 - Check out this how-to guide on **[bulk updating multiple rows](/docs/widgets/table/bulk-row-operations#bulk-update-rows)** from a table component.
   :::
 

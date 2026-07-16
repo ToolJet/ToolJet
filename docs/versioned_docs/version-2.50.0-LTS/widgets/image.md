@@ -29,7 +29,7 @@ The **Image** component is used to display images in your app.
 | On click | Triggers whenever the user clicks on an image. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

@@ -236,14 +236,14 @@ The above code will return success or failure message based on the output we rec
 </div>
 <br/>
 
-We've now successfully used a workflow in our ToolJet Application. You can also use **[webhooks](/docs/workflows/workflow-triggers#webhooks)** to execute workflows from third party apps.
+We've now successfully used a workflow in our ToolJet Application. You can also use **[webhooks](/docs/2.50.0-LTS/workflows/workflow-triggers#webhooks)** to execute workflows from third party apps.
 
 Continue learning about the different elements of ToolJet Workflows using the below links:
 
-**[Types of Nodes](/docs/workflows/nodes)** <br/>
-**[Triggers](/docs/workflows/workflow-triggers)** <br/>
-**[Configuring Results](/docs/workflows/results)** <br/>
-**[Permissions](/docs/workflows/permissions)**<br/>
-**[Overview of Logs](/docs/workflows/logs)** <br/>
+**[Types of Nodes](/docs/2.50.0-LTS/workflows/nodes)** <br/>
+**[Triggers](/docs/2.50.0-LTS/workflows/workflow-triggers)** <br/>
+**[Configuring Results](/docs/2.50.0-LTS/workflows/results)** <br/>
+**[Permissions](/docs/2.50.0-LTS/workflows/permissions)**<br/>
+**[Overview of Logs](/docs/2.50.0-LTS/workflows/logs)** <br/>
 
 </div>

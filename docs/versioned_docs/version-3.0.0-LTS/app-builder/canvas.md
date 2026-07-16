@@ -13,8 +13,8 @@ Canvas is the center area of the ToolJet app builder where the application is bu
 <br/>
 
 :::info
-- The Canvas height and width can be adjusted from the [Global Settings](/docs/app-builder/left-sidebar#global-settings).
-- When the [Pages drawer](/docs/tutorial/pages) on the left is opened or pinned, the canvas becomes horizontally scrollable.
+- The Canvas height and width can be adjusted from the [Global Settings](/docs/3.0.0-LTS/app-builder/left-sidebar#global-settings).
+- When the [Pages drawer](/docs/3.0.0-LTS/tutorial/pages) on the left is opened or pinned, the canvas becomes horizontally scrollable.
 
 <div style={{textAlign: 'center'}}>
 

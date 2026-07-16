@@ -107,7 +107,7 @@ GUI mode can be used to query Oracle database without writing queries.
 <img className="screenshot-full" src="/img/datasource-reference/oracledb/gui.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/2.50.0-LTS/tutorial/transformations)**
 :::
 
 </div>

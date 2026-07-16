@@ -63,7 +63,7 @@ To display employees in the application, you will first have to fetch the data f
 </div>
 <br/>
 
-- Click on the **Add** button in the **[Query Panel](/docs/app-builder/query-panel/)** to create a new query.
+- Click on the **Add** button in the **[Query Panel](/docs/2.50.0-LTS/app-builder/query-panel)** to create a new query.
 - Select **ToolJet Database** as the data source for the query.
 - Rename the query to *getEmployees*.
 - Choose *employees* as the Table name, and List rows as the Operation.

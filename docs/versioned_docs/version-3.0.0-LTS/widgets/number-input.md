@@ -30,7 +30,7 @@ The **Number Input** component allows users to enter numeric values. It can be u
 | On enter pressed | Triggers whenever the user presses the enter button on the keyboard after entering some text in the input field. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get detailed information about all the **Actions**.
 :::
 
 </div>

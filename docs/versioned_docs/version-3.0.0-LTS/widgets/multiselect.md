@@ -98,7 +98,7 @@ components.multiselect1.selectOptions([2, 3])
 | On select | The **On select** event is triggered when a particular option is chosen. |
 
 :::info
-For comprehensive information on all available **Actions**, refer to the [Action Reference](/docs/category/actions-reference) documentation.
+For comprehensive information on all available **Actions**, refer to the [Action Reference](/docs/3.0.0-LTS/tutorial/actions) documentation.
 :::
 
 ## Validation

@@ -41,7 +41,7 @@ If you are utilizing the self-hosted version of ToolJet, it is necessary to conf
 | On polygon click | Triggers when the user clicks on the polygon on the map. |
 
 :::info
-For detailed information about all the available **Actions**, please refer to the [Action Reference](/docs/category/actions-reference) documentation.
+For detailed information about all the available **Actions**, please refer to the [Action Reference](/docs/2.50.0-LTS/tutorial/actions) documentation.
 :::
 
 </div>

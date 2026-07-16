@@ -35,7 +35,7 @@ Elastic search data source is also providing an option for connecting services w
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/2.50.0-LTS/tutorial/transformations)**
 :::
 
 #### Supported Operations

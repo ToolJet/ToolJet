@@ -5,7 +5,7 @@ title: Set page variable
 
 Page variables are restricted to the page where they are created and cannot be accessed throughout the entire application like regular variables.
 
-Use this action to establish a variable and assign a value to it within the [Multipage Apps](/docs/tutorial/pages).
+Use this action to establish a variable and assign a value to it within the [Multipage Apps](/docs/3.5.0-LTS/tutorial/pages).
 
 By default, the debounce field is left empty. However, you can input a numeric value to indicate the time in milliseconds before the action is executed. For example, `300`.
 

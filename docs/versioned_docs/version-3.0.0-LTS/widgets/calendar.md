@@ -165,7 +165,7 @@ Determines whether to display a popover whenever an event is clicked. Click on `
 | **On View Change** | This event is fired when a different view is selected by the user. The current view is exposed as `currentView`. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

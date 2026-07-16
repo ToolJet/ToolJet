@@ -251,7 +251,7 @@ Super Admins can enable comments from the Manage Settings page. Once enabled, us
 ## White Labelling
 This feature allows you to customize the ToolJet instance with your own branding. You can change the logo, favicon, and the name of the instance.
 
-Check out the [White labelling](/docs/enterprise/white-label/) page for more details.
+Check out the [White labelling](/docs/3.0.0-LTS/Enterprise/white-label) page for more details.
 
 </div>
 
@@ -330,6 +330,6 @@ If the URL provided is invalid, ToolJet will redirect users to the default logou
 
 Manage the instance license via the **Settings** page. Super Admins have the capability to update the instance's license key from this page.
 
-Check out the [License](/docs/org-management/licensing/self-hosted) page for more details.
+Check out the [License](/docs/3.0.0-LTS/org-management/licensing/self-hosted) page for more details.
 
 </div>

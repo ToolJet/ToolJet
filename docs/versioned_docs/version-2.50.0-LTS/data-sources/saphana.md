@@ -42,6 +42,6 @@ select * from PRODUCTS
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/2.50.0-LTS/tutorial/transformations)**
 :::
 </div>
