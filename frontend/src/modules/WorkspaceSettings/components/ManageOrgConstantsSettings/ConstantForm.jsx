@@ -304,7 +304,7 @@ const ConstantForm = ({
                   onChange={handleFieldChange}
                   name="value"
                   value={getDisplayedValue()}
-                  placeholder={isSecretValueLocked ? '**************' : 'Enter value'}
+                  placeholder={isSecretEditMode ? '**************' : 'Enter value'}
                   onKeyDown={(e) => textAreaEnterOnSave(e, handlecreateOrUpdate)}
                   readOnly={!showValue || isSecretValueLocked}
                   disabled={isSecretValueLocked}
