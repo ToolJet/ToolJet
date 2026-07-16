@@ -61,6 +61,8 @@ import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedM
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
+import { getActiveBranchId } from '@/_helpers/active-branch';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { TriangleAlert } from 'lucide-react';
 
@@ -256,6 +258,12 @@ class HomePageComponent extends React.Component {
       }
     });
 
+    // Store is a singleton — refetch on dashboard return; active branch may have been deleted while away.
+    if (useWorkspaceBranchesStore.getState().isInitialized) {
+      useWorkspaceBranchesStore.getState().actions.fetchBranches();
+    }
+    this._liveNotificationsUnsubscribe = subscribeLiveNotifications(this.handleGitSyncNotification);
+
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
@@ -268,7 +276,40 @@ class HomePageComponent extends React.Component {
     if (this._branchStoreUnsubscribe) {
       this._branchStoreUnsubscribe();
     }
+    if (this._liveNotificationsUnsubscribe) {
+      this._liveNotificationsUnsubscribe();
+    }
   }
+
+  // Aftermath for git-sync background jobs — live WS arrivals only, REST backfill never reaches here.
+  handleGitSyncNotification = (n) => {
+    const meta = n?.metadata;
+    if (meta?.source !== 'git-sync' || n?.type !== 'success') return;
+    const branchActions = useWorkspaceBranchesStore.getState().actions;
+    switch (meta.action) {
+      case 'git-delete-branch': {
+        const wasActive = meta.branchId && meta.branchId === getActiveBranchId();
+        // fetchBranches self-heals to default; the activeBranchId change triggers the apps refetch above
+        branchActions.fetchBranches().then(() => {
+          if (wasActive) {
+            const healed = useWorkspaceBranchesStore.getState().currentBranch;
+            toast.success(`Branch '${meta.branchName}' was deleted. Switched to '${healed?.name || 'default'}'`);
+          }
+        });
+        break;
+      }
+      case 'git-pull-branch':
+        // same branch id — subscription won't fire, refetch directly
+        this.fetchApps(1, this.state.currentFolder.id);
+        this.fetchFolders();
+        break;
+      case 'git-create-branch':
+        branchActions.fetchBranches();
+        break;
+      default:
+        break;
+    }
+  };
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.appType != this.props.appType) {
