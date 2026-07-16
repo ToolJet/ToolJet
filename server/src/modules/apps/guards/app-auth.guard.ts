@@ -4,9 +4,12 @@ import {
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { DataSource } from 'typeorm';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
+import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
@@ -15,7 +18,8 @@ export class AppAuthGuard extends AuthGuard('jwt') {
   constructor(
     protected readonly appUtilService: AppsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
-    protected readonly appRepository: AppsRepository
+    protected readonly appRepository: AppsRepository,
+    protected readonly dataSource: DataSource
   ) {
     super();
   }
@@ -40,8 +44,17 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     const organization = await this.organizationRepository.findOne({
       where: { id: app.organizationId },
     });
-    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE) {
+      const banned = await this.dataSource
+        .getRepository(WorkspaceBanList)
+        .findOne({ where: { organizationId: app.organizationId } });
+      if (banned) {
+        throw new ForbiddenException({
+          message: JSON.stringify({ errorType: 'WORKSPACE_BANNED', workspaceName: organization.name }),
+        });
+      }
       throw new BadRequestException('Organization is Archived');
+    }
 
     request.tj_app = app;
     request.tj_resource_id = app.id;
