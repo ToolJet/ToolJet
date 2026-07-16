@@ -6,7 +6,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 import { CreateBranchModal } from './CreateBranchModal';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
-import { setActiveBranch } from '@/_helpers/active-branch';
+import { setActiveBranch, appendBranchName } from '@/_helpers/active-branch';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import '@/_styles/switch-branch-modal.scss';
 import { DeleteBranchConfirmModal } from '@/_ui/WorkspaceBranchDropdown/DeleteBranchConfirmModal';
@@ -228,14 +228,19 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
             currentBranch: branchObj,
           });
 
-          // Don't close modal — let the dimmed/spinner state persist until page navigates
+          // Don't close modal — let the dimmed/spinner state persist until page navigates.
+          // Always include ?branch=<target> so the page loads on the correct branch regardless of
+          // what the server's lastBranchId says (the DB update may have been rolled back or the
+          // store may race to overwrite the URL before the reload completes).
           const pathParts = window.location.pathname.split('/');
           if (resolvedAppId) {
             // Navigate to the corresponding app on the target branch using slug for clean URL.
             // Use location.replace so the previous branch's URL doesn't stay in the back stack
             // (clicking Back would navigate to a slug that doesn't exist on the new branch).
             toast.success(`Switched to ${branch.name}`);
-            window.location.replace(`/${pathParts[1]}/apps/${resolvedSlug || resolvedAppId}`);
+            window.location.replace(
+              appendBranchName(`/${pathParts[1]}/apps/${resolvedSlug || resolvedAppId}`, branch.name)
+            );
           } else {
             // App doesn't exist on target branch — go to dashboard
             sessionStorage.setItem('git_sync_toast', `${appName || 'This app'} does not exist on this branch`);
