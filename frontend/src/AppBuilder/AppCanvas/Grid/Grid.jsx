@@ -1185,8 +1185,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let top = e.translate[1] + scrollDelta.y;
 
             if (currentDragCanvasId === 'canvas') {
-              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
-              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
+              // Snap the scroll-compensated position so the ghost stays on the grid.
+              // scrollDelta (from autoscroll) is generally NOT a multiple of the grid
+              // width, so adding it AFTER snapping would push the ghost a constant
+              // (scrollDelta % gridWidth) px off the grid lines. Fold it into the
+              // value being rounded instead.
+              left = Math.round((e.translate[0] + scrollDelta.x) / _gridWidth) * _gridWidth || 0;
+              top = Math.round((e.translate[1] + scrollDelta.y) / GRID_HEIGHT) * GRID_HEIGHT || 0;
 
               const _canvasWidth = NO_OF_GRIDS * _gridWidth;
               left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
@@ -1246,9 +1251,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
           // Get scroll delta from autoscroll hook
           const scrollDelta = getScrollDelta();
-          // Snap to grid + add scroll delta to keep widget under cursor
-          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
-          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
+          // Snap the scroll-compensated position so the widget stays on the grid.
+          // scrollDelta is generally not a multiple of the grid width, so adding it
+          // after snapping would push the widget (scrollDelta % gridWidth) px off the
+          // grid lines. Fold it into the value being rounded instead.
+          let left = Math.round((e.translate[0] + scrollDelta.x) / _gridWidth) * _gridWidth || 0;
+          let top = Math.round((e.translate[1] + scrollDelta.y) / GRID_HEIGHT) * GRID_HEIGHT || 0;
           const draggingWidgetWidth = getDraggingWidgetWidth(e.target.clientWidth, _gridWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
