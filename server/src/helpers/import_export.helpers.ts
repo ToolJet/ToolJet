@@ -333,7 +333,10 @@ function replaceIdsInExpression(
       result = result.slice(0, start) + replacement + result.slice(end);
     }
 
-    return result;
+    // Restore any placeholders that were not in a MemberExpression position (e.g. a UUID
+    // sequence inside a string literal) — the AST walk only replaces member expressions,
+    // so those would otherwise leak as __UUID_PLACEHOLDER_N__ text on this success path.
+    return restoreUuidPlaceholders(result, placeholderOriginals);
   } catch {
     return restoreUuidPlaceholders(expression, placeholderOriginals);
   }

@@ -42,8 +42,10 @@ const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export function dfs(node, oldRef, newRef) {
   if (typeof node === 'object') {
     // Match every standalone occurrence: the boundary guards keep a ref from matching
-    // inside a longer identifier (renaming `run` must not touch `runjs1`).
-    const pattern = new RegExp(`(^|[^\\w$])${escapeRegExp(oldRef)}(?![\\w$])`, 'g');
+    // inside a longer identifier (renaming `run` must not touch `runjs1`). `-` is included
+    // in the boundary classes because entity names may contain hyphens (validateQueryName
+    // allows [A-Za-z0-9_-]), so renaming `abc` must not rewrite a distinct `abc-def`.
+    const pattern = new RegExp(`(^|[^\\w$-])${escapeRegExp(oldRef)}(?![\\w$-])`, 'g');
     for (let key in node) {
       const value = node[key];
       if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {
