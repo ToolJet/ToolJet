@@ -37,6 +37,9 @@ describe("user invite flow cases", () => {
       enableInstanceSignup();
     });
     cy.apiConfigureSmtp(smtpConfig);
+    // cy.mhDeleteAll();
+  });
+  after(() => {
     cy.mhDeleteAll();
   });
 
