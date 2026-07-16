@@ -87,6 +87,8 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'notificationDuration',
   'disableQuery',
   'disabledMessage',
+  'workflowId',
+  'workflowVersionId',
 ];
 
 const toSnakeCase = (camel: string): string => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
