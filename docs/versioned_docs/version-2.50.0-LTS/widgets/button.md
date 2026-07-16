@@ -21,7 +21,7 @@ title: Button
 | On hover | Triggers whenever the user moves the mouse cursor over the button. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get detailed information about all the **Actions**.
 :::
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |

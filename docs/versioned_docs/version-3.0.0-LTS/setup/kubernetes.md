@@ -55,7 +55,7 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
    - [GKE Ingress for HTTP(S) Load Balancing](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)
 
 :::tip
-If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client Setup documentation **[here](/docs/setup/client)**.
+If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client Setup documentation **[here](/docs/3.0.0-LTS/setup/client)**.
 :::
 
 ## ToolJet Database

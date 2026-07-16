@@ -34,7 +34,7 @@ NOTE: For generating keys visit admin dashboard of woocommerce , more info: http
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/2.50.0-LTS/tutorial/transformations)**
 :::
 
 </div>

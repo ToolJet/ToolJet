@@ -28,7 +28,7 @@ The **Text Input** component allows users to enter a single line of text. It can
 | On blur      | Triggers whenever the user clicks outside the text input field.                               |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get detailed information about all the **Actions**.
 :::
 
 </div>

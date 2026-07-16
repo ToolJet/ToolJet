@@ -66,7 +66,7 @@ This property is enabled by default. When enabled, only the active tab will be r
 | On tab switch | This event is triggered when the tab is switched. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

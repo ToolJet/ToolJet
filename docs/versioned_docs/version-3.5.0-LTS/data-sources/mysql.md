@@ -155,7 +155,7 @@ GUI mode can be used to query MySQL database without writing queries.
 </div>
 
 :::tip
-Query results can be transformed using transformations. Learn more about transformations [here](/docs/tutorial/transformations).
+Query results can be transformed using transformations. Learn more about transformations [here](/docs/3.5.0-LTS/tutorial/transformations).
 :::
 
 </div>

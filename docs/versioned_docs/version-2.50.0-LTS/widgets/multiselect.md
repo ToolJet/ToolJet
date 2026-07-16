@@ -29,7 +29,7 @@ The **Multiselect** widget can be used to collect multiple user inputs from a li
 | On search text changed | This event is triggered when a user modifies the search text on the Multiselect component. This event also updates the value of the `searchText` **[exposed variable](#exposed-variables)**. |
 
 :::info
-For comprehensive information on all available **Actions**, refer to the [Action Reference](/docs/category/actions-reference) documentation.
+For comprehensive information on all available **Actions**, refer to the [Action Reference](/docs/2.50.0-LTS/tutorial/actions) documentation.
 :::
 
 </div>

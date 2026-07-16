@@ -19,7 +19,7 @@ If the builder attempts to add any of the aforementioned components inside the M
 
 ## Add Widgets to Modal
 
-To add widgets to the Modals please refer to **[Tutorial - Adding widgets to a modal](/docs/tutorial/adding-widget#adding-widgets-to-modal)**
+To add widgets to the Modals please refer to **[Tutorial - Adding widgets to a modal](/docs/3.5.0-LTS/tutorial/adding-widget#adding-widgets-to-modal)**
 
 </div>
 

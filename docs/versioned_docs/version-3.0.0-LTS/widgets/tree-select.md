@@ -91,7 +91,7 @@ Similar to checked values, expanded values is an array of values passed to expan
 ## Events
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 | <div style={{ width:"100px"}}> Event </div>     | <div style={{ width:"100px"}}> Description </div> |

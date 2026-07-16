@@ -35,7 +35,7 @@ The **Button Group** component is used to group a series of buttons together in 
 | On click | Triggers whenever the user clicks on the button in the Button Group. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

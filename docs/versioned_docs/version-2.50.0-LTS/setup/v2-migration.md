@@ -29,7 +29,7 @@ Server may take some time to be ready to handle the HTTP request as v2 changes r
 
 #### Deployments
 
-- Docker compose deployments with [auto SSL](/docs/1.x.x/setup/docker) is deprecated
+- Docker compose deployments with [auto SSL](/docs/2.50.0-LTS/setup/docker) is deprecated
 
 ## Help and Support
 

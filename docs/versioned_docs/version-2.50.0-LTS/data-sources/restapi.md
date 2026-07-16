@@ -41,7 +41,7 @@ Once you have connected to the REST API data source, follow these steps to write
 4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-Query results can be transformed using the **[Transformations](/docs/tutorial/transformations)** feature.
+Query results can be transformed using the **[Transformations](/docs/2.50.0-LTS/tutorial/transformations)** feature.
 :::
 
 ToolJet supports the following REST HTTP methods 
@@ -163,7 +163,7 @@ You can also use JS methods like **map** to load data on components like **dropd
 
 </details>
 
-Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**
+Read the guide on **[loading base64 data](/docs/2.50.0-LTS/how-to/loading-image-pdf-from-db)**
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/base64.png" alt="ToolJet - Data source - REST API" />
 

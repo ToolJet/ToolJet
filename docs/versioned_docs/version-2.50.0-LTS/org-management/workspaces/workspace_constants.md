@@ -103,7 +103,7 @@ You can use workspace constants in the **[datasource connection](/docs/data-sour
 
 ### Using Workspace Constants in App Builder
 
-Inside the App Builder, you will find the **[Inspector](/docs/app-builder/left-sidebar#inspector)** on the left sidebar. The inspector will have a Constants section which will be updated dynamically to display all the available constant values.
+Inside the App Builder, you will find the **[Inspector](/docs/2.50.0-LTS/app-builder/left-sidebar#inspector)** on the left sidebar. The inspector will have a Constants section which will be updated dynamically to display all the available constant values.
 
  <div style={{textAlign: 'center'}}>
 

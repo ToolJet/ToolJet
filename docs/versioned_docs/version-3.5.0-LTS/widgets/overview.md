@@ -5,7 +5,7 @@ title: Overview
 
 # Components: Overview
 
-Components are used to build the user interface(UI) of the applications. They can be dragged onto the canvas from the **Component Library** and can be modified from the **Properties Panel** without needing to write any code. **[Event Handlers](/docs/widgets/overview#component-event-handlers)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/3.5.0-LTS/actions/show-alert)**.
+Components are used to build the user interface(UI) of the applications. They can be dragged onto the canvas from the **Component Library** and can be modified from the **Properties Panel** without needing to write any code. **[Event Handlers](/docs/3.5.0-LTS/widgets/overview#component-event-handlers)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/3.5.0-LTS/actions/show-alert)**.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -51,7 +51,7 @@ You can also use many other **[Keyboard Shortcuts](/docs/tutorial/keyboard-short
 
 ## Component Properties
 
-Components can be customized and styled using the **Properties Panel** such as the data field, a toggle for disabling the component, or styling like a background color. Properties can be modified directly or programmatically by using **[Bindings](/docs/widgets/overview/#bindings)**, which enables you to write JavaScript code.
+Components can be customized and styled using the **Properties Panel** such as the data field, a toggle for disabling the component, or styling like a background color. Properties can be modified directly or programmatically by using **[Bindings](/docs/3.5.0-LTS/widgets/overview#bindings)**, which enables you to write JavaScript code.
 
 </div>
 

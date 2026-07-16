@@ -35,7 +35,7 @@ You can generate a personal access token from your Jira account **Manage account
 2. Choose the resource and operation you want to perform on your Jira instance.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/3.5.0-LTS/tutorial/transformations)**
 :::
 
 ## Supported Resources and Operations

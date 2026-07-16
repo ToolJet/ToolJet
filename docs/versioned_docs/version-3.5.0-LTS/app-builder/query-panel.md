@@ -3,7 +3,7 @@ id: query-panel
 title: Query Panel
 ---
 
-The Query Panel, located at the bottom of the app-builder, allows you to create and manage queries to interact with connected **data sources**. It provides the capability to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
+The Query Panel, located at the bottom of the app-builder, allows you to create and manage queries to interact with connected **data sources**. It provides the capability to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/3.5.0-LTS/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
 
 The Query Panel consists of two sections:
 
@@ -116,7 +116,7 @@ In cases where multiple data sources of the same type are connected, easily swit
 
 ### Transformation
 
-Queries can be enhanced with transformations to modify the query results. ToolJet supports transformations using two programming languages: JavaScript & Python. Refer to the detailed documentation on **[Transformations](/docs/tutorial/transformations)** for more information.
+Queries can be enhanced with transformations to modify the query results. ToolJet supports transformations using two programming languages: JavaScript & Python. Refer to the detailed documentation on **[Transformations](/docs/3.5.0-LTS/tutorial/transformations)** for more information.
 
 <img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/transform-v2.png" alt="Query Editor" style={{marginBottom:'15px'}}/>
 
@@ -150,7 +150,7 @@ The Result:
 - The component displaying the to-do data will be update with the lates data.
 
 :::info
-Learn more about [Event Handlers and Actions](/docs/widgets/overview#component-event-handlers).
+Learn more about [Event Handlers and Actions](/docs/3.5.0-LTS/widgets/overview#component-event-handlers).
 :::
 
 <img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/events-v2.png" alt="Query Editor" />
