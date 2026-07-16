@@ -17,27 +17,19 @@ This approach supports two primary use cases:
 * **Static configuration:** Credentials are defined once via environment variables, making it easy to spin up new ToolJet instances with preconfigured GitSync settings.
 * **Dynamic credential management:** Sensitive credentials such as GitHub App private keys or access tokens are often rotated periodically due to security and compliance requirements. Managing these through environment variables enables seamless integration with external secret management systems (e.g., AWS Secrets Manager, Vault, CI/CD pipelines), allowing automated rotation without manual updates through the UI.
 
-## Setup
+There are two ways to supply these environment variables:
 
-### 1. Create the Environment File
+* **[Single environment variable](#option-1-single-environment-variable)** (`WORKSPACE_GIT_CONFIGS`) — a single stringified JSON object holding the configuration for all workspaces.
+* **[Per-workspace environment files](#option-2-per-workspace-environment-files)** (`.tj_env.<workspace-slug-or-uuid>`) — one dotenv-style file per workspace.
 
-On your host machine, create a file named `.tj_env.<workspace-slug-or-uuid>`. This file uses the standard dotenv format (`KEY=VALUE`) and holds the git credentials for a specific workspace.
+Both approaches accept the same set of provider-specific credentials, described below.
 
-You can name the file using the workspace **slug** or **UUID**:
- 
-| Naming style | Example |
-| --- | --- |
-| By workspace slug | `.tj_env.my-workspace` |
-| By workspace UUID | `.tj_env.550e8400-e29b-41d4-a716-446655440000` |
+## Supported Git Providers
 
-You can place multiple `.tj_env.*` files in the same directory which will be one per workspace.
+ToolJet supports the following providers:
 
-### 2. Add Your Git Provider Credentials
-
-Populate the file with the required keys for your git provider. ToolJet supports the following providers:
- 
 #### GitHub (HTTPS)
- 
+
 | **Key** | **Description** |
 | --- | --- |
 | `GITHUB_URL` | The HTTPS URL of your GitHub repository. (e.g. `https://github.com/your-org/your-repo`) |
@@ -45,25 +37,25 @@ Populate the file with the required keys for your git provider. ToolJet supports
 | `GITHUB_APP_ID` | Your GitHub App ID. |
 | `GITHUB_INSTALLATION_ID` | The installation ID for your GitHub App. |
 | `GITHUB_PRIVATE_KEY` | The private key generated when creating the GitHub App. Escape newlines as `\n`. |
- 
+
 For self-hosted GitHub Enterprise, you can additionally include:
- 
+
 | **Key** | **Description** |
 | --- | --- |
 | `GITHUB_ENTERPRISE_URL` | The domain of your self-hosted GitHub instance. (e.g. `https://github.your-company.com`) |
 | `GITHUB_ENTERPRISE_API_URL` | The API endpoint of your self-hosted GitHub instance. (e.g. `https://api.github.your-company.com`) |
 
 #### GitLab
- 
+
 | **Key** | **Description** |
 | --- | --- |
 | `GITLAB_URL` | The URL of your GitLab repository. (e.g. `https://gitlab.com/your-org/your-repo`) |
 | `GITLAB_BRANCH` | The branch to sync with. Defaults to `main`. |
 | `GITLAB_PROJECT_ID` | Your GitLab project ID. |
 | `GITLAB_PROJECT_ACCESS_TOKEN` | A project access token with read/write permissions. |
- 
+
 For self-hosted GitLab, you can additionally include:
- 
+
 | **Key** | **Description** |
 | --- | --- |
 | `GITLAB_ENTERPRISE_URL` | The domain of your self-hosted GitLab instance. (e.g. `https://gitlab.your-company.com`) |
@@ -77,30 +69,86 @@ For self-hosted GitLab, you can additionally include:
 | `GIT_SSH_PUBLIC_KEY`  | The corresponding SSH public key.                                                 |
 | `GIT_SSH_KEY_TYPE`    | The SSH key type (e.g. `ed25519`, `rsa`).                                         |
 
- 
 :::note
-Only one provider can be active per workspace at a time. If any required key for a provider is missing, ToolJet will skip that provider. Double check your key list if the configuration does not activate.
+Only one provider can be active per workspace at a time. If any required key for a provider is missing, ToolJet will skip that provider. Double-check your key list if the configuration does not activate.
 :::
 
+## Option 1: Single Environment Variable
+
+Configure Git Sync for all workspaces using a single environment variable, `WORKSPACE_GIT_CONFIGS`.
+
+### 1. Define the Environment Variable
+
+Set `WORKSPACE_GIT_CONFIGS` to a stringified JSON object. Each top-level key is a workspace **slug** or **UUID**, and its value is an object containing the provider-specific keys listed in [Supported Git Providers](#supported-git-providers) (GitHub, GitLab, or Git SSH).
+
+The entire JSON value must be on a single line, with private key newlines escaped as `\n`.
+
+```
+WORKSPACE_GIT_CONFIGS='{"nexus-workspace":{"GITHUB_URL":"https://github.com/acme-corp/internal-tools.git","GITHUB_BRANCH":"master","GITHUB_APP_ID":"123456","GITHUB_INSTALLATION_ID":"98765432","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----"}}'
+```
+
+To configure multiple workspaces, add more keys to the top-level object, one per workspace:
+
+```
+WORKSPACE_GIT_CONFIGS='{"workspace-one":{...},"workspace-two":{...}}'
+```
+
+### 2. Make the Variable Available to the Server
+
+Add `WORKSPACE_GIT_CONFIGS` wherever you manage the server's environment variables, for example your `.env` file, or the `environment` section of your Docker Compose file:
+
+```yaml
+services:
+  tooljet:
+    image: tooljet/tooljet:latest
+    environment:
+      WORKSPACE_GIT_CONFIGS: '{"nexus-workspace":{"GITHUB_URL":"https://github.com/acme-corp/internal-tools.git","GITHUB_BRANCH":"master","GITHUB_APP_ID":"123456","GITHUB_INSTALLATION_ID":"98765432","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----"}}'
+```
+
+### 3. Restart the Server
+
+Restart the ToolJet server for the change to take effect. This variable is only read at startup — changes made while the server is running will not take effect until the server is restarted.
+
+## Option 2: Per-Workspace Environment Files
+
+Instead of a single environment variable, you can configure Git Sync using one dotenv-style file per workspace.
+
+### 1. Create the Environment File
+
+On your host machine, create a file named `.tj_env.<workspace-slug-or-uuid>`. This file uses the standard dotenv format (`KEY=VALUE`) and holds the git credentials for a specific workspace.
+
+You can name the file using the workspace **slug** or **UUID**:
+
+| Naming style | Example |
+| --- | --- |
+| By workspace slug | `.tj_env.my-workspace` |
+| By workspace UUID | `.tj_env.550e8400-e29b-41d4-a716-446655440000` |
+
+You can place multiple `.tj_env.*` files in the same directory which will be one per workspace.
+
+### 2. Add Your Git Provider Credentials
+
+Populate the file with the required keys for your git provider, listed in [Supported Git Providers](#supported-git-providers) above.
+
 ### 3. Make the File Available to the Server
- 
+
 The `.tj_env.*` file must be accessible at `/app/` inside the container at the time the server starts. How you get it there depends on your deployment setup. For Docker Compose, refer to the [Docker Compose setup guide](#docker-compose-setup).
 
 ### 4. Restart the Server
 
 Once the file is mounted, restart the ToolJet server.
-On startup, ToolJet reads all `.tj_env.*` files from `/app/` and maps them to their respective workspaces.  
- 
+On startup, ToolJet reads all `.tj_env.*` files from `/app/` and maps them to their respective workspaces.
+
 If the file is removed, ToolJet will automatically deactivate the configuration on the next restart.
- 
+
 :::note
 Environment files are only read at startup. Any changes made to a `.tj_env.*` file while the server is running will not take effect until the server is restarted.
 :::
- 
+
 ## Docker Compose Setup
 
 Mount the `.tj_env.*` file from your host machine into the container at `/app/`. You can mount individual files or an entire directory.
- 
+
 **To mount a single workspace file:**
 
 ```yaml
@@ -110,9 +158,9 @@ services:
     volumes:
       - ./.tj_env.my-workspace:/app/.tj_env.my-workspace
 ```
- 
+
 **To mount multiple workspace files at once:**
- 
+
 ```yaml
 services:
   tooljet:
@@ -123,10 +171,10 @@ services:
 
 <details id="tj-dropdown">
 <summary>Sample Docker Compose configuration</summary>
- 
+
 ```yaml
 name: tooljet-production
- 
+
 services:
   tooljet:
     image: tooljet/tj:v1
@@ -144,7 +192,7 @@ services:
     command: npm run start:prod
     volumes:
       - ./.tj_env.devs-workspace:/app/.tj_env.devs-workspace
- 
+
   postgres:
     container_name: postgres
     image: postgres:16
@@ -156,7 +204,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
- 
+
 volumes:
   postgres_data:
     driver: local
