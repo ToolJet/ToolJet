@@ -33,12 +33,11 @@ export class PagePermissionsRepository extends Repository<PagePermission> {
 
   async getPagePermissionsForPages(pageIds: string[], manager?: EntityManager): Promise<PagePermission[]> {
     if (!pageIds.length) return [];
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.find(PagePermission, {
-        where: { pageId: In(pageIds) },
-        relations: ['users', 'users.user'],
-      });
-    }, manager || this.manager);
+    const m = manager || this.manager;
+    return m.find(PagePermission, {
+      where: { pageId: In(pageIds) },
+      relations: ['users', 'users.user'],
+    });
   }
 
   async createPagePermissions(
