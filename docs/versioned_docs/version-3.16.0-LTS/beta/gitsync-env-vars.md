@@ -84,7 +84,7 @@ Set `WORKSPACE_GIT_CONFIGS` to a stringified JSON object. Each top-level key is 
 The entire JSON value must be on a single line, with private key newlines escaped as `\n`.
 
 ```
-WORKSPACE_GIT_CONFIGS='{"nexus-workspace":{"GITHUB_URL":"https://github.com/acme-corp/internal-tools.git","GITHUB_BRANCH":"master","GITHUB_APP_ID":"1571896","GITHUB_INSTALLATION_ID":"75191473","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAo14xtsT1Nfv/Fd3qethwmr72AUQ8MWSH8ACriVLwmtDDYL7S\n8bRvf0JloosQ0mbY2mPf38tjMCXl4DkRz6hHTNRn+o7dWd7kqsTVEu5R747zsA4nnJ/O0+Or2JaMa+Kg==\n-----END RSA PRIVATE KEY-----"}}'
+WORKSPACE_GIT_CONFIGS='{"nexus-workspace":{"GITHUB_URL":"https://github.com/acme-corp/internal-tools.git","GITHUB_BRANCH":"master","GITHUB_APP_ID":"123456","GITHUB_INSTALLATION_ID":"98765432","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----"}}'
 ```
 
 To configure multiple workspaces, add more keys to the top-level object, one per workspace:
@@ -102,7 +102,7 @@ services:
   tooljet:
     image: tooljet/tooljet:latest
     environment:
-      WORKSPACE_GIT_CONFIGS: '{"nexus-workspace":{"GITHUB_URL":"https://github.com/acme-corp/internal-tools.git","GITHUB_BRANCH":"master","GITHUB_APP_ID":"1571896","GITHUB_INSTALLATION_ID":"75191473","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----"}}'
+      WORKSPACE_GIT_CONFIGS: '{"nexus-workspace":{"GITHUB_URL":"https://github.com/acme-corp/internal-tools.git","GITHUB_BRANCH":"master","GITHUB_APP_ID":"123456","GITHUB_INSTALLATION_ID":"98765432","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----"}}'
 ```
 
 ### 3. Restart the Server
