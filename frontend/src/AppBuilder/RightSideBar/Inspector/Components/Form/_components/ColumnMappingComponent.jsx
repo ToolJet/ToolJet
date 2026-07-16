@@ -454,21 +454,6 @@ const ColumnMappingComponent = ({
     setShowLoader(isDataLoading);
   }, [isDataLoading]);
 
-  // Track body height when content is loaded
-  useEffect(() => {
-    if (!showLoader && bodyContainerRef.current) {
-      // Use setTimeout to ensure DOM is fully rendered
-      setTimeout(() => {
-        if (bodyContainerRef.current) {
-          const height = Math.min(bodyContainerRef.current.scrollHeight, 500);
-          if (height > 0) {
-            lastBodyHeightRef.current = height;
-          }
-        }
-      }, 0);
-    }
-  }, [showLoader, groupedColumns]);
-
   const currentStatus = currentStatusRef.current;
 
   const columnsToUse = useColumnBuilder(
@@ -484,6 +469,21 @@ const ColumnMappingComponent = ({
   );
 
   const { groupedColumns, sectionTypes, updateSectionColumns } = useGroupedColumns(columnsToUse, currentStatus);
+
+  // Track body height when content is loaded
+  useEffect(() => {
+    if (!showLoader && bodyContainerRef.current) {
+      // Use setTimeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (bodyContainerRef.current) {
+          const height = Math.min(bodyContainerRef.current.scrollHeight, 500);
+          if (height > 0) {
+            lastBodyHeightRef.current = height;
+          }
+        }
+      }, 0);
+    }
+  }, [showLoader, groupedColumns]);
 
   const refreshData = useCallback(async () => {
     setShowLoader(true);
