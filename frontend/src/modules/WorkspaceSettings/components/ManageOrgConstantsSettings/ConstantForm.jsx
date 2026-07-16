@@ -268,13 +268,13 @@ const ConstantForm = ({
             </div>
             <div className="col tj-app-input">
               <div className="d-flex justify-content-between align-items-center w-100">
-                <label className="form-label" data-cy="value-label">
-                  Value
-                </label>
                 <div className="d-flex align-items-center">
+                  <label className="form-label mb-0 me-2" data-cy="value-label">
+                    Value
+                  </label>
                   {isSecretEditMode && (
                     <ButtonSolid
-                      className="datasource-edit-btn mb-2 me-2"
+                      className="datasource-edit-btn mb-2"
                       type="button"
                       variant="tertiary"
                       onClick={handleEditSecretValueToggle}
@@ -283,17 +283,17 @@ const ConstantForm = ({
                       {isSecretValueLocked ? 'Edit' : 'Cancel'}
                     </ButtonSolid>
                   )}
-                  <small className="text-green d-flex align-items-center" data-cy="encrypted-label">
-                    <img
-                      className="encrypted-icon me-1"
-                      src="assets/images/icons/padlock.svg"
-                      alt="Encrypted"
-                      width="12"
-                      height="12"
-                    />
-                    Encrypted
-                  </small>
                 </div>
+                <small className="text-green d-flex align-items-center" data-cy="encrypted-label">
+                  <img
+                    className="encrypted-icon me-1"
+                    src="assets/images/icons/padlock.svg"
+                    alt="Encrypted"
+                    width="12"
+                    height="12"
+                  />
+                  Encrypted
+                </small>
               </div>
 
               <div className="position-relative">
