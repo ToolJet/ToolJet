@@ -166,3 +166,35 @@ volumes:
 :::note
 Only one git provider (GitHub HTTPS, Git SSH, or GitLab) can be active per workspace at a time.
 :::
+
+## Alternative: Configure via a Single Environment Variable
+
+Instead of creating one `.tj_env.<workspace-slug-or-uuid>` file per workspace, you can configure Git Sync for all workspaces using a single environment variable, `WORKSPACE_GIT_CONFIGS`.
+
+### 1. Define the Environment Variable
+
+Set `WORKSPACE_GIT_CONFIGS` to a stringified JSON object. Each top-level key is a workspace **slug** or **UUID**, and its value is an object containing the same provider-specific keys described above (GitHub, GitLab, or Git SSH).
+
+The entire JSON value must be on a single line, with private key newlines escaped as `\n`.
+
+```
+WORKSPACE_GIT_CONFIGS='{"git-wkspc":{"GITHUB_URL":"https://github.com/ajith-k-v/git_sync_branching.git","GITHUB_BRANCH":"master","GITHUB_APP_ID":"1571896","GITHUB_INSTALLATION_ID":"75191473","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAo14xtsT1Nfv/Fd3qethwmr72AUQ8MWSH8ACriVLwmtDDYL7S\n8bRvf0JloosQ0mbY2mPf38tjMCXl4DkRz6hHTNRn+o7dWd7kqsTVEu5R747zsA4nnJ/O0+Or2JaMa+Kg==\n-----END RSA PRIVATE KEY-----"}}'
+```
+
+To configure multiple workspaces, add more keys to the top-level object, one per workspace:
+
+```
+WORKSPACE_GIT_CONFIGS='{"workspace-one":{...},"workspace-two":{...}}'
+```
+
+### 2. Make the Variable Available to the Server
+
+Add `WORKSPACE_GIT_CONFIGS` wherever you manage the server's environment variables (e.g. your `.env` file, or the `environment` section of your Docker Compose file).
+
+### 3. Restart the Server
+
+Restart the ToolJet server for the change to take effect. As with `.tj_env.*` files, this variable is only read at startup — changes made while the server is running require a restart.
+
+:::note
+Only one provider (GitHub, GitLab, or Git SSH) can be configured per workspace at a time — the same restriction as the `.tj_env.*` file approach applies here.
+:::
