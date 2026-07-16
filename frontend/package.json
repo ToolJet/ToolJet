@@ -292,7 +292,7 @@
   "scripts": {
     "start": "rspack serve --hot --port 8082 --host 0.0.0.0",
     "start:webpack": "webpack serve --hot --port 8082 --host 0.0.0.0",
-    "build": "NODE_ENV=production rspack build --mode=production && cp -a ./assets/. ./build/assets/",
+    "build": "rspack build --mode=production && cp -a ./assets/. ./build/assets/",
     "build:webpack": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
     "build:cloud": "webpack --mode=production && cp -a ./assets/. ./build/assets/ && rm -rf ./build/assets/libs/pyodide-0.23.2",
     "analyze": "ANALYZE=true NODE_ENV=production rspack build --mode=production",
