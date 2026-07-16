@@ -444,8 +444,13 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
         existingComponents = Object.values(components);
       }
 
-      // Add already processed components to existingComponents
-      const processedComponents = finalComponentWithUpdatedLayout || [];
+      // NOTE: this used to read `finalComponentWithUpdatedLayout || []` — a TDZ
+      // self-reference (this .map callback runs while that const is still being
+      // initialized) that ES5 output evaluated as `undefined`. So already-pasted
+      // components were never actually included in position calculations. Historical
+      // behavior preserved; to make the original intent work, accumulate processed
+      // components in a separate array declared before this map.
+      const processedComponents = [];
       existingComponents = [...existingComponents, ...processedComponents];
       if (isGroup) {
         // Handle group positioning

@@ -71,6 +71,29 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, co
     debouncedFilterChanged(newFilters);
   };
 
+  const debouncedApplyFilters = useMemo(
+    () =>
+      debounce((filters) => {
+        const currentTableFilters = table.getState().columnFilters;
+        if (!isEqual(filters, currentTableFilters)) {
+          setFilters(
+            filters.map((filter) => ({
+              id: filter.id,
+              value: filter.value,
+            }))
+          );
+        }
+      }, 500),
+    [setFilters, table]
+  );
+
+  const applyFilters = useCallback(
+    (filters) => {
+      debouncedApplyFilters(filters);
+    },
+    [debouncedApplyFilters]
+  );
+
   const debouncedFilterChanged = useCallback(
     (newFilters) => {
       const validFilters = newFilters.filter(isFilterComplete);
@@ -109,29 +132,6 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, co
     setLocalFilters(newFilters);
     applyFilters(newFilters.filter((filter) => filter.id !== ''));
   };
-
-  const debouncedApplyFilters = useMemo(
-    () =>
-      debounce((filters) => {
-        const currentTableFilters = table.getState().columnFilters;
-        if (!isEqual(filters, currentTableFilters)) {
-          setFilters(
-            filters.map((filter) => ({
-              id: filter.id,
-              value: filter.value,
-            }))
-          );
-        }
-      }, 500),
-    [setFilters, table]
-  );
-
-  const applyFilters = useCallback(
-    (filters) => {
-      debouncedApplyFilters(filters);
-    },
-    [debouncedApplyFilters]
-  );
 
   // Cleanup debounce on unmount
   useEffect(() => {

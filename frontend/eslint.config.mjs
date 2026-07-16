@@ -10,6 +10,14 @@ import configPrettier from 'eslint-config-prettier';
 import pluginStorybook from 'eslint-plugin-storybook';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import noTdzCrash from './eslint-rules/no-tdz-crash.cjs';
+
+// Local project-specific rules
+const tooljetPlugin = {
+  rules: {
+    'no-tdz-crash': noTdzCrash,
+  },
+};
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -80,6 +88,7 @@ export default [
       import: pluginImportX,
       jest: pluginJest,
       prettier: pluginPrettier,
+      tooljet: tooljetPlugin,
     },
 
     settings: {
@@ -114,6 +123,10 @@ export default [
 
       // prettier config (disables conflicting rules)
       ...configPrettier.rules,
+
+      // Catches let/const/class uses that throw a TDZ ReferenceError at runtime —
+      // a bug class formerly masked by ES5 transpilation (see eslint-rules/no-tdz-crash.cjs)
+      'tooljet/no-tdz-crash': 'error',
 
       // Re-enable prettier/prettier as error (after configPrettier may disable it)
       'prettier/prettier': [
@@ -185,6 +198,10 @@ export default [
       react: pluginReact,
       'react-hooks': pluginReactHooks,
       prettier: pluginPrettier,
+      // Registered under 'import' (not 'import-x') to match the rule names and
+      // existing eslint-disable directives — same as the JS/JSX block above
+      import: pluginImportX,
+      tooljet: tooljetPlugin,
     },
 
     settings: {
@@ -207,7 +224,12 @@ export default [
       // @typescript-eslint recommended
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/ban-types': 'error',
+      // 'ban-types' was removed in @typescript-eslint v8; these are its successors
+      '@typescript-eslint/no-unsafe-function-type': 'error',
+      '@typescript-eslint/no-wrapper-object-types': 'error',
+      // Catches let/const/class uses that throw a TDZ ReferenceError at runtime —
+      // a bug class formerly masked by ES5 transpilation (see eslint-rules/no-tdz-crash.cjs)
+      'tooljet/no-tdz-crash': 'error',
       '@typescript-eslint/no-array-constructor': 'error',
       '@typescript-eslint/no-empty-interface': 'error',
       '@typescript-eslint/no-extra-non-null-assertion': 'error',
