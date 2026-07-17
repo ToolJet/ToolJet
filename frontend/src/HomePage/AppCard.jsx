@@ -15,9 +15,14 @@ import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
 import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
+import { authenticationService, gitSyncService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { appendBranchName } from '@/_helpers/active-branch';
+import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
+import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -41,14 +46,40 @@ export default function AppCard({
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { wsCurrentBranch, wsActions } = useWorkspaceBranchesStore((state) => ({
+  const { wsCurrentBranch, wsActions, isGitSyncConfigured } = useWorkspaceBranchesStore((state) => ({
     wsCurrentBranch: state.currentBranch,
     wsActions: state.actions,
+    isGitSyncConfigured: state.isGitSyncConfigured,
   }));
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
+  // Git configured but license expired/invalid → the workspace is read-only, so hide the card's
+  // options menu (rename, change icon, delete, …).
+  const isGitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(featureAccess);
   const cardRef = useRef();
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
+  const [syncIconHovered, setSyncIconHovered] = useState(false);
+  const [pushModalOpen, setPushModalOpen] = useState(false);
+  const [pushValidationError, setPushValidationError] = useState(null);
   const tooltipRef = useRef(null);
+
+  const handlePushClick = async () => {
+    try {
+      const rt = appType === 'module' ? 'module' : 'app';
+      const result = await gitSyncService.validatePush(app.id, rt);
+      if (!result.valid) {
+        setPushValidationError({
+          errorType: result.errorType,
+          resourceType: result.resourceType || rt,
+          affectedResources: result.affectedResources || [],
+        });
+        return;
+      }
+    } catch {
+      // validation endpoint unavailable — fall through to push modal
+    }
+    setPushModalOpen(true);
+  };
 
   const handleEditClick = async (e) => {
     // When workspace branching is active, verify current branch still exists on remote
@@ -65,7 +96,13 @@ export default function AppCard({
       } catch (_err) {
         // check failed (network error, etc.) — allow navigation
       }
-      navigate(getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }));
+      // Carry the dashboard's active branch into the editor so reload keeps the same branch.
+      navigate(
+        appendBranchName(
+          getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }),
+          wsCurrentBranch?.name
+        )
+      );
     }
     posthogHelper.captureEvent('click_edit_button_on_card', {
       workspace_id:
@@ -290,102 +327,182 @@ export default function AppCard({
     );
   }
   const isStub = app?.app_versions?.[0]?.is_stub;
+  const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
+  const isUnsynced = wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced && appType !== 'workflow';
   return (
-    <ToolTip
-      message="Modules are not available on your current plan."
-      placement="bottom"
-      show={appType === 'module' && !props.moduleEnabled}
-    >
-      <div className="card homepage-app-card card--clickable" ref={cardRef}>
-        <div
-          className={appType === 'module' && !props.moduleEnabled ? 'disabled-module' : ''}
-          key={app?.id}
-          ref={hoverRef}
-          data-cy={`${app?.name?.toLowerCase().replace(/\s+/g, '-')}-card`}
-        >
-          <div className="row home-app-card-header">
-            <div className="col-12 d-flex justify-content-between">
-              <div>
-                <div className="app-icon-main">
-                  <div className="app-icon d-flex" data-cy={`app-card-${app?.icon}-icon`}>
-                    {AppIcon && AppIcon}
+    <>
+      <ToolTip
+        message="Modules are not available on your current plan."
+        placement="bottom"
+        show={appType === 'module' && !props.moduleEnabled}
+      >
+        <div className="card homepage-app-card card--clickable" ref={cardRef}>
+          <div
+            className={appType === 'module' && !props.moduleEnabled ? 'disabled-module' : ''}
+            key={app?.id}
+            ref={hoverRef}
+            data-cy={`${app?.name?.toLowerCase().replace(/\s+/g, '-')}-card`}
+          >
+            <div className="row home-app-card-header">
+              <div className="col-12 d-flex justify-content-between">
+                <div>
+                  <div className="app-icon-main">
+                    <div className="app-icon d-flex" data-cy={`app-card-${app?.icon}-icon`}>
+                      {AppIcon && AppIcon}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div visible={focused ? true : undefined}>
-                {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
-                  <AppMenu
-                    appId={app?.id}
-                    appUserId={app?.user_id}
-                    onMenuOpen={onMenuToggle}
-                    openAppActionModal={appActionModalCallBack}
-                    canCreateApp={canCreateApp()}
-                    canDeleteApp={canDeleteApp(app)}
-                    canUpdateApp={canUpdateApp(app)}
-                    deleteApp={() => deleteApp(app)}
-                    exportApp={() => {
-                      if (isStub && appType !== 'workflow') {
-                        toast.error(
-                          'App contents are still syncing from Git. Open the app to finish loading, then try again.',
-                          { position: 'top-center' }
-                        );
-                        return;
-                      }
-                      exportApp(app);
-                    }}
-                    isMenuOpen={setMenuOpen}
-                    popoverVisible={popoverVisible}
-                    setMenuOpen={setMenuOpen}
-                    darkMode={darkMode}
-                    currentFolder={currentFolder}
-                    appType={appType}
-                    appCreationMode={app?.creation_mode || app?.creationMode}
-                    ownedFolders={ownedFolders}
-                  />
-                )}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}>
+                  {/* On hover: refresh icon appears to the left of the 3-dots */}
+                  {isUnsynced && focused && (
+                    <ToolTip message="Click to push app to git" placement="top">
+                      <div
+                        onMouseEnter={() => setSyncIconHovered(true)}
+                        onMouseLeave={() => setSyncIconHovered(false)}
+                        onClick={handlePushClick}
+                        style={{
+                          width: '28px',
+                          height: '28px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '6px',
+                          backgroundColor: syncIconHovered ? '#FFEEF0' : 'transparent',
+                          transition: 'background-color 0.15s',
+                          cursor: 'pointer',
+                        }}
+                        data-cy="unsynced-badge"
+                      >
+                        <SolidIcon name="refresh" width="16" fill="#E54D2E" />
+                      </div>
+                    </ToolTip>
+                  )}
+                  {/* Right slot: refresh icon when not hovering (unsynced), 3-dots when hovering */}
+                  {isUnsynced && !focused ? (
+                    <ToolTip message="App not synced in remote git" placement="top">
+                      <div
+                        onClick={handlePushClick}
+                        style={{
+                          width: '28px',
+                          height: '28px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                        }}
+                        data-cy="unsynced-badge-idle"
+                      >
+                        <SolidIcon name="refresh" width="16" fill="#E54D2E" />
+                      </div>
+                    </ToolTip>
+                  ) : (
+                    <div visible={focused ? true : undefined}>
+                      {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && !isGitLicenseLocked && (
+                        <AppMenu
+                          appId={app?.id}
+                          appUserId={app?.user_id}
+                          onMenuOpen={onMenuToggle}
+                          openAppActionModal={appActionModalCallBack}
+                          canCreateApp={canCreateApp()}
+                          canDeleteApp={canDeleteApp(app)}
+                          canUpdateApp={canUpdateApp(app)}
+                          deleteApp={() => deleteApp(app)}
+                          exportApp={() => {
+                            if (isStub && appType !== 'workflow') {
+                              toast.error(
+                                'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                                { position: 'top-center' }
+                              );
+                              return;
+                            }
+                            exportApp(app);
+                          }}
+                          isMenuOpen={setMenuOpen}
+                          popoverVisible={popoverVisible}
+                          setMenuOpen={setMenuOpen}
+                          darkMode={darkMode}
+                          currentFolder={currentFolder}
+                          appType={appType}
+                          appCreationMode={app?.creation_mode || app?.creationMode}
+                          ownedFolders={ownedFolders}
+                          isUnsynced={isUnsynced}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          <div>
-            <AppNameDisplay tooltipRef={tooltipRef} />
-          </div>
-          <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
-            {canUpdate && (
-              <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
-                <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-                  <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
-                </ToolTip>
-              </div>
-            )}
-          </div>
-          <div className="appcard-buttons-wrap">
-            {(canUpdate || appType === 'module') && (
-              <div>
-                <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
-                  <Link
-                    to={getPrivateRoute('editor', {
-                      slug: isValidSlug(app.slug) ? app.slug : app.id,
-                    })}
-                    onClick={handleEditClick}
-                  >
-                    <button
-                      type="button"
-                      className="tj-primary-btn tj-text-xsm edit-button"
-                      style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
-                      data-cy="edit-button"
+            <div>
+              <AppNameDisplay tooltipRef={tooltipRef} />
+            </div>
+            <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
+              {canUpdate && (
+                <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
+                  <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+                    <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
+                  </ToolTip>
+                </div>
+              )}
+            </div>
+            <div className="appcard-buttons-wrap">
+              {(canUpdate || appType === 'module') && (
+                <div>
+                  <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
+                    <Link
+                      to={getPrivateRoute('editor', {
+                        slug: isValidSlug(app.slug) ? app.slug : app.id,
+                      })}
+                      onClick={handleEditClick}
                     >
-                      <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
-                      &nbsp;{t('globals.edit', 'Edit')}
-                    </button>
-                  </Link>
-                </ToolTip>
-              </div>
-            )}
-            {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
-            {!isStub && appType !== 'module' && LaunchButton}
+                      <button
+                        type="button"
+                        className="tj-primary-btn tj-text-xsm edit-button"
+                        style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+                        data-cy="edit-button"
+                      >
+                        <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                        &nbsp;{t('globals.edit', 'Edit')}
+                      </button>
+                    </Link>
+                  </ToolTip>
+                </div>
+              )}
+              {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
+              {!isStub && appType !== 'module' && LaunchButton}
+            </div>
           </div>
         </div>
-      </div>
-    </ToolTip>
+      </ToolTip>
+      {PushAppsModal && isUnsynced && (
+        <PushAppsModal
+          show={pushModalOpen}
+          onClose={() => setPushModalOpen(false)}
+          resourceType={appType === 'module' ? 'module' : 'app'}
+          resourceName={app.name}
+          appName={app.name}
+          appGitId={app.id}
+          versionId={
+            app.app_versions?.find((v) => v.status === 'DRAFT' || v.status === 'draft')?.id ?? app.editing_version?.id
+          }
+          onSuccess={() => {
+            setPushModalOpen(false);
+            // The dashboard's in-memory app list doesn't know is_app_synced flipped
+            // server-side — reload so the card's unsynced icon clears immediately.
+            window.location.reload();
+          }}
+        />
+      )}
+      {pushValidationError && (
+        <PushValidationErrorModal
+          show={!!pushValidationError}
+          onClose={() => setPushValidationError(null)}
+          errorType={pushValidationError.errorType}
+          resourceType={pushValidationError.resourceType}
+          affectedResources={pushValidationError.affectedResources}
+        />
+      )}
+    </>
   );
 }

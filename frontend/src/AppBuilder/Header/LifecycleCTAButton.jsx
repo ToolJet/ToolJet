@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { toast } from 'react-hot-toast';
+import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
+import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
+import { gitSyncService } from '@/_services';
+import { appendBranchName } from '@/_helpers/active-branch';
 
 /**
  * LifecycleCTAButton - Dynamic button that shows git operations based on branch type
@@ -17,16 +22,34 @@ import { toast } from 'react-hot-toast';
 const LifecycleCTAButton = () => {
   const { moduleId } = useModuleContext();
 
-  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isGitSyncConfigured } = useStore(
+  const {
+    selectedVersion,
+    toggleGitSyncModal,
+    creationMode,
+    featureAccess,
+    isGitSyncConfigured,
+    appId,
+    appName,
+    appType,
+  } = useStore(
     (state) => ({
       selectedVersion: state.selectedVersion,
       toggleGitSyncModal: state.toggleGitSyncModal,
       creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
       featureAccess: state?.license?.featureAccess,
       isGitSyncConfigured: state.isGitSyncConfigured,
+      appId: state.appStore.modules[moduleId]?.app?.appId,
+      appName: state.appStore.modules[moduleId]?.app?.appName,
+      appType: state.appStore.modules[moduleId]?.app?.appType,
     }),
     shallow
   );
+
+  const developmentVersions = useStore((state) => state.developmentVersions);
+  const draftVersion = developmentVersions?.find((v) => v.status === 'DRAFT');
+
+  const [showPushModal, setShowPushModal] = useState(false);
+  const [pushValidationError, setPushValidationError] = useState(null);
 
   const isGitSyncEnabled = featureAccess?.gitSync;
 
@@ -42,13 +65,25 @@ const LifecycleCTAButton = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const wsActions = useWorkspaceBranchesStore((state) => state.actions);
   // eslint-disable-next-line react-hooks/rules-of-hooks
+  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const orgGit = useStore((state) => state.orgGit);
-  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
       workspaceActiveBranch.isDefault ||
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
+
+  // App is synced only when its main-branch draft (status=DRAFT, versionType=version) has
+  // isSynced=true. Filtering to DRAFT+version-type excludes feature-branch versions
+  // (versionType=branch) — getVersionsByEnvironment has no branchId filter, so feature-branch
+  // drafts with isSynced=true (set on push) would otherwise falsely mark the app as synced
+  // on main before it has ever been pulled there.
+  const isAppSyncedToGit = developmentVersions?.some(
+    (v) => v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  );
+  const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {
@@ -59,24 +94,38 @@ const LifecycleCTAButton = () => {
         icon: 'commit',
         variant: 'secondary',
         disabled: false,
+        unsynced: false,
       };
     }
 
-    if (isOnDefaultBranch) {
-      // Default branch - show "Pull commit" button
+    if (isUnsynced) {
+      // App has never been pushed to git — show "Sync" with red indicator
+      return {
+        label: 'Sync',
+        icon: 'refresh',
+        variant: 'secondary',
+        disabled: false,
+        unsynced: true,
+      };
+    }
+
+    if (isOnDefaultBranch && isMultiBranchingEnabled) {
+      // Default branch (multi-branch) - show "Pull commit" button
       return {
         label: 'Pull commit',
         icon: 'commit',
         variant: 'secondary',
         disabled: false,
+        unsynced: false,
       };
     } else {
-      // Feature branch - show "Commit" button
+      // Feature branch, or single-branch mode on the default branch - show "Commit" button
       return {
         label: 'Commit',
         icon: 'commit',
         variant: 'secondary',
         disabled: false,
+        unsynced: false,
       };
     }
   };
@@ -84,6 +133,24 @@ const LifecycleCTAButton = () => {
   const config = getButtonConfig();
   const handleClick = async () => {
     // Guard Commit button on feature branches — check remote branch still exists
+    if (isUnsynced) {
+      try {
+        const rt = appType === 'module' ? 'module' : 'app';
+        const result = await gitSyncService.validatePush(appId, rt);
+        if (!result.valid) {
+          setPushValidationError({
+            errorType: result.errorType,
+            resourceType: result.resourceType || rt,
+            affectedResources: result.affectedResources || [],
+          });
+          return;
+        }
+      } catch {
+        // validation endpoint unavailable — fall through to push modal
+      }
+      setShowPushModal(true);
+      return;
+    }
     if (!isOnDefaultBranch && isGitSyncConfigured && workspaceActiveBranch?.name) {
       const existsOnRemote = await wsActions.checkBranchExistsOnRemote(workspaceActiveBranch.name);
       if (!existsOnRemote) {
@@ -97,19 +164,62 @@ const LifecycleCTAButton = () => {
   };
 
   return (
-    <div className="lifecycle-cta-button">
-      <Button
-        variant={config.variant}
-        onClick={handleClick}
-        disabled={config.disabled}
-        data-tooltip-id="editor-header-tooltip"
-        data-tooltip-content={config.tooltip}
-        data-cy="lifecycle-cta-button"
-      >
-        <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name={config.icon} width="16" />
-        <span>{config.label}</span>
-      </Button>
-    </div>
+    <>
+      {showPushModal && (
+        <PushAppsModal
+          show={showPushModal}
+          onClose={() => setShowPushModal(false)}
+          appGitId={appId}
+          versionId={draftVersion?.id ?? selectedVersion?.id}
+          appName={appName}
+          resourceType={appType === 'module' ? 'module' : 'app'}
+          onSuccess={() => {
+            setShowPushModal(false);
+            setTimeout(() => {
+              // switchBranch() already stamped `?branch=<target>` onto the current URL — carry it
+              // into the redirect so the reloaded editor resolves the target branch, not the
+              // default branch (which doesn't have this app's draft yet and hangs the loader).
+              const pathParts = window.location.pathname.split('/');
+              window.location.href = appendBranchName(`/${pathParts[1]}/apps/${appId}`);
+            }, 1500);
+          }}
+        />
+      )}
+      {pushValidationError && (
+        <PushValidationErrorModal
+          show={!!pushValidationError}
+          onClose={() => setPushValidationError(null)}
+          errorType={pushValidationError.errorType}
+          resourceType={pushValidationError.resourceType}
+          affectedResources={pushValidationError.affectedResources}
+        />
+      )}
+      <div className="lifecycle-cta-button">
+        <ToolTip
+          message={config.unsynced ? 'App not synced in remote git' : ''}
+          placement="bottom"
+          show={config.unsynced}
+        >
+          <Button
+            variant={config.variant}
+            onClick={handleClick}
+            disabled={config.disabled}
+            data-tooltip-id="editor-header-tooltip"
+            data-tooltip-content={config.tooltip}
+            data-cy="lifecycle-cta-button"
+            style={config.unsynced ? { borderColor: '#E54D2E' } : undefined}
+          >
+            <SolidIcon
+              fill={config.unsynced ? '#E54D2E' : 'var(--icon-accent)'}
+              viewBox="0 0 16 16"
+              name={config.icon}
+              width="16"
+            />
+            <span>{config.label}</span>
+          </Button>
+        </ToolTip>
+      </div>
+    </>
   );
 };
 

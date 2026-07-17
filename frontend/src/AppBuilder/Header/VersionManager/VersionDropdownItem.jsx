@@ -8,6 +8,7 @@ import {
 } from '@/modules/common/components/BasePromoteReleaseButton/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
@@ -42,7 +43,17 @@ const VersionDropdownItem = ({
 
   const isDraft = version.status === 'DRAFT';
   const isPublished = version.status === 'PUBLISHED';
-  const isGitSyncDraft = isDraft && isGitSyncEnabled;
+  // Unsynced apps (never pushed to git) behave like a non-git workspace — show the real
+  // version name instead of the default-branch label. isSynced propagates from the source
+  // version at creation time (see `createVersion` in versions/util.service.ts).
+  const isGitSyncDraft = isDraft && isGitSyncEnabled && version.isSynced !== false;
+  // True when any default-branch version has been pushed to git. Feature-branch
+  // versions have isSynced=false by default, so scoping to versionType='version'
+  // avoids false negatives on apps that only have branch versions locally.
+  const isAppSyncedToGit = developmentVersions?.some(
+    (v) =>
+      (v.isSynced === true || v.is_synced === true) && (v.versionType === 'version' || v.version_type === 'version')
+  );
   const displayName = isGitSyncDraft ? defaultBranch : version.name;
   const effectiveDescription = isGitSyncDraft ? 'Latest commit to main will appear here' : version.description;
   // A version is released when it matches the releasedVersionId
@@ -56,6 +67,17 @@ const VersionDropdownItem = ({
       developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
+
+  // Versions saved from a feature branch (see createPublishedVersionFromBranchDraft in
+  // versions/util.service.ts) have a BRANCH-type parent whose own `name` is a random
+  // UUID, not a human name — the real branch name lives on WorkspaceBranch. Surface
+  // that as a tag instead of the generic "created from <uuid>" line.
+  const parentIsBranchVersion = parentVersion?.versionType === 'branch' || parentVersion?.version_type === 'branch';
+  const workspaceBranches = useWorkspaceBranchesStore((state) => state.branches);
+  const sourceBranchId = parentVersion?.branchId || parentVersion?.branch_id;
+  const sourceBranchName = parentIsBranchVersion
+    ? workspaceBranches.find((b) => b.id === sourceBranchId)?.name ?? 'feature-branch'
+    : null;
 
   const metadataRef = useRef(null);
   const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
@@ -119,7 +141,7 @@ const VersionDropdownItem = ({
       style={{ minWidth: '160px', zIndex: 1065 }}
     >
       <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
-        {!isGitSyncEnabled && isDraft && (
+        {!isGitSyncDraft && isDraft && (
           <ToolTip message="Saved versions cannot be edited" placement="left" show={isEditDisabled}>
             <div
               className={cx('dropdown-item tj-text-xsm', {
@@ -177,7 +199,7 @@ const VersionDropdownItem = ({
         {version.name}
       </div>
       <div style={{ padding: '12px 12px 8px' }}>
-        {createdFromVersionName && (
+        {sourceBranchName ? (
           <div
             style={{
               fontSize: '12px',
@@ -187,8 +209,22 @@ const VersionDropdownItem = ({
               fontWeight: 400,
             }}
           >
-            Version created from {createdFromVersionName}
+            Version created from {sourceBranchName}
           </div>
+        ) : (
+          createdFromVersionName && (
+            <div
+              style={{
+                fontSize: '12px',
+                lineHeight: '18px',
+                color: 'var(--text-default)',
+                marginBottom: '4px',
+                fontWeight: 400,
+              }}
+            >
+              created from {createdFromVersionName}
+            </div>
+          )
         )}
         {version.description && (
           <div
@@ -241,6 +277,33 @@ const VersionDropdownItem = ({
                 {displayName}
               </div>
 
+              {/* Source branch tag — this version was saved from a feature branch draft */}
+              {sourceBranchName && (
+                <ToolTip message={`Version created from ${sourceBranchName}`} placement="top">
+                  <span
+                    className="tj-text-xsm"
+                    style={{
+                      backgroundColor: 'var(--slate3)',
+                      color: 'var(--slate11)',
+                      padding: '0 8px',
+                      borderRadius: '4px',
+                      fontWeight: 500,
+                      lineHeight: '18px',
+                      flexShrink: 0,
+                      display: 'inline-block',
+                      maxWidth: '100px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      verticalAlign: 'middle',
+                    }}
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-source-branch-tag`}
+                  >
+                    {sourceBranchName}
+                  </span>
+                </ToolTip>
+              )}
+
               {/* Draft tag */}
               {isDraft && (
                 <span
@@ -277,6 +340,22 @@ const VersionDropdownItem = ({
                 >
                   Released
                 </span>
+              )}
+
+              {/* Unsynced indicator: this saved version is a local copy that hasn't been
+                  pushed to git yet. Purely informational — no click action, hover-only.
+                  Only meaningful when git sync is actually configured for the org — in a
+                  non-git workspace isSynced isn't a signal worth surfacing. */}
+              {!isDraft && isGitSyncEnabled && isAppSyncedToGit && version.isSynced === false && (
+                <ToolTip message="Version not synced in remote git" placement="top">
+                  <div
+                    className="d-flex align-items-center"
+                    style={{ flexShrink: 0, visibility: isHoveringItem ? 'visible' : 'hidden' }}
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-unsynced-icon`}
+                  >
+                    <SolidIcon name="warning" width="14" fill="#E54D2E" />
+                  </div>
+                </ToolTip>
               )}
             </div>
 
@@ -394,8 +473,11 @@ const VersionDropdownItem = ({
               }}
               data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-creation-details`}
             >
-              {!isGitSyncDraft && createdFromVersionName && `created from ${createdFromVersionName}`}
-              {!isGitSyncDraft && createdFromVersionName && version.description && ' | '}
+              {!isGitSyncDraft &&
+                !sourceBranchName &&
+                createdFromVersionName &&
+                `created from ${createdFromVersionName}`}
+              {!isGitSyncDraft && !sourceBranchName && createdFromVersionName && version.description && ' | '}
               {effectiveDescription}
             </div>
           )}

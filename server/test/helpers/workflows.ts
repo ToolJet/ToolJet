@@ -5,11 +5,13 @@ import { INestApplication } from '@nestjs/common';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
 import { App } from '@entities/app.entity';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { DataQuery } from '@entities/data_query.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
@@ -204,19 +206,50 @@ export const createWorkflowApplicationVersion = async (
   const ds = getDefaultDataSource();
   const appVersionRepository = ds.getRepository(AppVersion);
   const envRepository = ds.getRepository(AppEnvironment);
+  const workspaceBranchRepository = ds.getRepository(WorkspaceBranch);
 
   const developmentEnv = await envRepository.findOne({
     where: { organizationId: application.organizationId, name: 'development' },
   });
+
+  // branch_id is NOT NULL for every app type, including workflows (Task 3.5 dropped the
+  // workflow exemption) -- resolve (or seed) the org's default branch so a plain call
+  // succeeds. chk_app_versions_branch_metadata then requires appName + slug whenever
+  // branch_id is set; production workflow app_versions rows use the app's own name/id
+  // for these (see AppsUtilService: versionSlug = isWorkflow ? app.id : slug), so mirror
+  // that convention here instead of seed.ts's random-uuid placeholder.
+  let defaultBranch = await workspaceBranchRepository.findOne({
+    where: { organizationId: application.organizationId, isDefault: true },
+  });
+  if (!defaultBranch) {
+    defaultBranch = await workspaceBranchRepository.save(
+      workspaceBranchRepository.create({
+        organizationId: application.organizationId,
+        name: 'main',
+        isDefault: true,
+      })
+    );
+  }
 
   const version = appVersionRepository.create({
     name: name + Date.now(),
     appId: application.id,
     definition: definition || {},
     currentEnvironmentId: developmentEnv?.id || null,
+    branchId: defaultBranch.id,
+    appName: application.name,
+    slug: application.id,
   });
 
   return await appVersionRepository.save(version);
+};
+
+/** Marks a version as the app's released version (mirrors the release() write path: status=PUBLISHED + apps.current_version_id). */
+export const releaseWorkflowVersion = async (application: App, version: AppVersion): Promise<void> => {
+  const ds = getDefaultDataSource();
+
+  await ds.getRepository(AppVersion).update({ id: version.id }, { status: AppVersionStatus.PUBLISHED });
+  await ds.getRepository(App).update({ id: application.id }, { currentVersionId: version.id });
 };
 
 // ---------------------------------------------------------------------------
@@ -255,13 +288,36 @@ export const createWorkflowDataSource = async (
 
   const savedDataSource = await dataSourceRepository.save(dataSource);
 
-  const dataSourceOptionsRepository = ds.getRepository(DataSourceOptions);
-  const dataSourceOptions = dataSourceOptionsRepository.create({
+  // DataSourceOptions/data_source_options was dropped (migration DropDataSourceOptionsTable);
+  // options now live on a DataSourceVersion (one per data source per branch) via
+  // DataSourceVersionOptions, keyed by (dataSourceVersionId, environmentId).
+  const workspaceBranchRepository = ds.getRepository(WorkspaceBranch);
+  let defaultBranch = await workspaceBranchRepository.findOne({
+    where: { organizationId, isDefault: true },
+  });
+  if (!defaultBranch) {
+    defaultBranch = await workspaceBranchRepository.save(
+      workspaceBranchRepository.create({ organizationId, name: 'main', isDefault: true })
+    );
+  }
+
+  const dataSourceVersionRepository = ds.getRepository(DataSourceVersion);
+  const dataSourceVersion = await dataSourceVersionRepository.save(
+    dataSourceVersionRepository.create({
+      dataSourceId: savedDataSource.id,
+      branchId: defaultBranch.id,
+      name: savedDataSource.name,
+      isActive: true,
+    })
+  );
+
+  const dataSourceVersionOptionsRepository = ds.getRepository(DataSourceVersionOptions);
+  const dataSourceVersionOptions = dataSourceVersionOptionsRepository.create({
+    dataSourceVersionId: dataSourceVersion.id,
     environmentId: environmentId,
-    dataSourceId: savedDataSource.id,
     options: {},
   });
-  await dataSourceOptionsRepository.save(dataSourceOptions);
+  await dataSourceVersionOptionsRepository.save(dataSourceVersionOptions);
 
   return savedDataSource;
 };

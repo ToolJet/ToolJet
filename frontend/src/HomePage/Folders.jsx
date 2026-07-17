@@ -13,6 +13,7 @@ import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
 import { validateName, handleHttpErrorMessages, getWorkspaceId, hasBuilderRole } from '@/_helpers/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getBranchNameFromUrl, getResolvedBranchName } from '@/_helpers/active-branch';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -31,7 +32,7 @@ export const Folders = function Folders({
   canCreateApp,
   darkMode,
   appType,
-  isGitSyncEnabled,
+  isWorkspaceBranchLocked,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
   const [showInput, setShowInput] = useState(false);
@@ -74,11 +75,14 @@ export const Folders = function Folders({
   // Determine if user can update/delete a specific folder
   // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
   // Delete: requires master Delete OR ownership
+  // Git gate: folder mutations are blocked ONLY when the workspace branch is locked — i.e. multi-branch
+  // is enabled AND we're on the (read-only) default branch. Single-branch (branching off) and
+  // multi-branch feature branches are the working branches, so rename/delete stay allowed there.
   const canUpdateSpecificFolder = (folderId, folder) =>
-    !isGitSyncEnabled &&
+    !isWorkspaceBranchLocked &&
     (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
   const canDeleteSpecificFolder = (folderId, folder) =>
-    !isGitSyncEnabled && (canDeleteFolder || isOwnerOfFolder(folder));
+    !isWorkspaceBranchLocked && (canDeleteFolder || isOwnerOfFolder(folder));
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
@@ -154,13 +158,19 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    const search = `${name ? `?folder=${name}` : ''}`;
+    // Preserve the active Git branch (?branch=<name>) — apps/modules folders are branch-scoped, so
+    // rebuilding the query from scratch would drop it. Workflows are branch-agnostic (no branch).
+    const params = new URLSearchParams();
+    if (name) params.set('folder', name);
+    const branchName = getBranchNameFromUrl() || getResolvedBranchName();
+    if (branchName && appType !== 'workflow') params.set('branch', branchName);
+    const query = params.toString();
     navigate(
       {
         pathname: `/${getWorkspaceId()}${
           appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
         }`,
-        search,
+        search: query ? `?${query}` : '',
       },
       { replace: true }
     );

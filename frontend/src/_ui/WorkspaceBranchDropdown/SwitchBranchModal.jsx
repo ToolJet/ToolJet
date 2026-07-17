@@ -20,14 +20,13 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [branchToDelete, setBranchToDelete] = useState(null);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
 
-  const { branches, activeBranchId, orgGitConfig, currentBranch, remoteBranches, hasMoreRemote, visibleCount } =
+  const { branches, activeBranchId, orgGitConfig, currentBranch, remoteBranches, visibleCount } =
     useWorkspaceBranchesStore((state) => ({
       branches: state.branches,
       activeBranchId: state.activeBranchId,
       orgGitConfig: state.orgGitConfig,
       currentBranch: state.currentBranch,
       remoteBranches: state.remoteBranches,
-      hasMoreRemote: state.hasMoreRemote,
       visibleCount: state.visibleCount,
     }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
@@ -71,12 +70,27 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
     },
     [activeBranchId]
   );
-  // Full list is always in store — just sort and slice to visibleCount
-  const filteredBranches = useMemo(() => {
-    const all = (remoteBranches || []).filter((branch) => !(onBranchSwitch && (branch.is_default || branch.isDefault)));
-    return [...all].sort(branchSorter).slice(0, visibleCount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [remoteBranches, onBranchSwitch, branchSorter, visibleCount]);
+  // Combined idle list: all ToolJet DB branches, enriched with git-remote metadata (commit
+  // dates, author) where the branch also exists on the remote. Ensures branches still show when
+  // the remote list is empty/unavailable (e.g. a git simulator); search already reads the DB
+  // list. DB fields win the merge (authoritative id / isDefault / createdAt), remote-only fields
+  // like lastCommitAt survive. Clicking a branch not on the remote is handled by
+  // handleBranchClick's checkBranchExistsOnRemote guard.
+  const combinedBranches = useMemo(() => {
+    const byName = new Map();
+    (remoteBranches || []).forEach((b) => byName.set(b.name, b));
+    (branches || []).forEach((b) => byName.set(b.name, { ...byName.get(b.name), ...b }));
+    return Array.from(byName.values());
+  }, [remoteBranches, branches]);
+
+  const sortedIdleBranches = useMemo(() => {
+    const all = combinedBranches.filter((branch) => !(onBranchSwitch && (branch.is_default || branch.isDefault)));
+    return [...all].sort(branchSorter);
+  }, [combinedBranches, onBranchSwitch, branchSorter]);
+
+  // Sort/slice to visibleCount; "Load more" is driven by the combined count.
+  const filteredBranches = useMemo(() => sortedIdleBranches.slice(0, visibleCount), [sortedIdleBranches, visibleCount]);
+  const hasMoreIdle = sortedIdleBranches.length > visibleCount;
 
   // Fuse instance over all branches (DB-loaded, no commit dates) — rebuilt only when branches list changes
   const fuse = useMemo(
@@ -311,7 +325,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
                   );
                 })}
                 <Tooltip id="delete-branch-tooltip" place="right" />
-                {hasMoreRemote && !searchTerm && (
+                {hasMoreIdle && !searchTerm && (
                   <button
                     className="load-more-btn"
                     onClick={() => actions.loadMoreRemoteBranches()}

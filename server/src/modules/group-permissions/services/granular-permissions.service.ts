@@ -1,5 +1,4 @@
 import { AppBase } from '@entities/app_base.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -19,6 +18,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { APP_TYPES } from '@modules/apps/constants';
 import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 @Injectable()
 export class GranularPermissionsService implements IGranularPermissionsService {
@@ -26,7 +26,8 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     protected readonly groupPermissionRepository: GroupPermissionsRepository,
     protected readonly granularPermissionUtilService: GranularPermissionsUtilService,
     protected readonly licenseUserService: LicenseUserService,
-    protected readonly licenseUtilService: GroupPermissionLicenseUtilService
+    protected readonly licenseUtilService: GroupPermissionLicenseUtilService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   async create(user: User, createGranularPermissionsDto: CreateGranularPermissionDto) {
@@ -66,24 +67,22 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     // sub-branches use BRANCH-type — don't filter on version_type). For non-git-sync
     // workspaces every version row carries the same metadata, so any version row works.
     // Workflows keep name on apps.*.
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId, isDefault: true },
-      select: ['id'],
-    });
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+    const defaultBranchId = options.defaultBranch?.id;
 
     const qb = manager
       .createQueryBuilder(AppBase, 'app')
       .where('app.organizationId = :organizationId', { organizationId })
       .select(['app.id AS id', 'app.type AS type']);
 
-    if (defaultBranch?.id) {
+    if (defaultBranchId) {
       qb.leftJoin(
         (sub) =>
           sub
             .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
             .addSelect('av.app_name', 'app_name')
             .from('app_versions', 'av')
-            .where('av.branch_id = :branchId', { branchId: defaultBranch.id }),
+            .where('av.branch_id = :branchId', { branchId: defaultBranchId }),
         'av',
         'av.app_id = app.id'
       ).addSelect('COALESCE(av.app_name, app.name) AS name');
@@ -150,12 +149,14 @@ export class GranularPermissionsService implements IGranularPermissionsService {
 
   /**
    * The nested `groupApps.app` rows under each granular permission come back with
-   * NULL `name/slug/icon/isPublic` for non-workflow apps (metadata lives on
-   * app_versions post-migration). Resolve the canonical version per app in a single
-   * batched query and mirror the values onto each App entity in-place.
+   * NULL `name/slug/icon/isPublic` for every app type, including workflows (metadata
+   * lives on app_versions post-migration). Resolve the canonical version per app in a
+   * single batched query and mirror the values onto each App entity in-place.
    *
    * Source priority (per app):
    *   - Git-sync workspaces: BRANCH-type version on the workspace's default branch.
+   *     Workflows always resolve here too — their branch_id is pinned to the org's
+   *     default branch (Task 3.5), so they fall into the same default-branch match.
    *   - Non-git-sync workspaces: any version row (all rows carry identical metadata).
    */
   private async overlayGranularPermissionAppMetadata(
@@ -167,19 +168,17 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     for (const perm of permissions) {
       const groupApps = perm.appsGroupPermissions?.groupApps ?? [];
       for (const ga of groupApps) {
-        if (ga.app && ga.app.type !== APP_TYPES.WORKFLOW) apps.push(ga.app);
+        if (ga.app) apps.push(ga.app);
       }
     }
     if (apps.length === 0) return;
 
     const appIds = Array.from(new Set(apps.map((a) => a.id)));
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId, isDefault: true },
-      select: ['id'],
-    });
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+    const defaultBranchId = options.defaultBranch?.id;
 
     let metadataRows: Pick<AppVersion, 'appId' | 'appName' | 'slug' | 'icon' | 'isPublic'>[];
-    if (defaultBranch?.id) {
+    if (defaultBranchId) {
       // Git-sync: pick one row per app on the default branch. Default branch rows are
       // VERSION-type, sub-branches use BRANCH-type — don't filter on version_type here.
       const rows: {
@@ -197,7 +196,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         .addSelect('av.is_public', 'is_public')
         .from('app_versions', 'av')
         .where('av.app_id IN (:...appIds)', { appIds })
-        .andWhere('av.branch_id = :branchId', { branchId: defaultBranch.id })
+        .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
         .getRawMany();
       metadataRows = rows.map((r) => ({
         appId: r.app_id,

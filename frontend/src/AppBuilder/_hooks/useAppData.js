@@ -26,6 +26,7 @@ import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorURL } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
+import { whenBranchResolved } from '@/_helpers/active-branch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -342,9 +343,12 @@ const useAppData = (
       if (isPublicAccess) {
         appDataPromise = appService.fetchAppBySlug(slug);
       } else {
-        appDataPromise = isPreviewForVersion
-          ? appVersionService.getAppVersionData(appId, versionId, mode)
-          : appService.fetchApp(appId);
+        // Gate on branch resolution so the app-load (and its hydration) carries the right
+        // branch_id. The branch is resolved async (URL name -> id) by AppsRoute; without this
+        // gate the load can race ahead with no branch_id and hydrate on the default branch.
+        appDataPromise = whenBranchResolved().then(() =>
+          isPreviewForVersion ? appVersionService.getAppVersionData(appId, versionId, mode) : appService.fetchApp(appId)
+        );
       }
     }
 

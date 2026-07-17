@@ -21,6 +21,7 @@ import {
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { TransactionLogger } from '@modules/logging/service';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -53,7 +54,6 @@ import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
-import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
@@ -348,7 +348,8 @@ export class AppImportExportService {
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager,
     protected appsRepository: AppsRepository,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -467,9 +468,15 @@ export class AppImportExportService {
           if (!(dq as any).dataSourceType) (dq as any).dataSourceType = dsTypeById.get(dq.dataSourceId);
         }
 
+        const exportDefaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, user?.organizationId);
         const rawAndEntities = await manager
           .createQueryBuilder(DataSourceVersionOptions, 'dsvo')
-          .innerJoin(DataSourceVersion, 'dsv', 'dsv.id = dsvo.dataSourceVersionId AND dsv.isDefault = true')
+          .innerJoin(
+            DataSourceVersion,
+            'dsv',
+            'dsv.id = dsvo.dataSourceVersionId AND dsv.branch_id = :exportDefaultBranchId',
+            { exportDefaultBranchId }
+          )
           .where('dsvo.environmentId IN(:...environmentId) AND dsv.dataSourceId IN(:...dataSourceId)', {
             environmentId: appEnvironments.map((v) => v.id),
             dataSourceId: dataSources.map((v) => v.id),
@@ -642,12 +649,10 @@ export class AppImportExportService {
             if (branchRow) {
               versionDbId = branchRow.id;
             } else {
-              const defaultBranch = await manager.findOne(WorkspaceBranch, {
-                where: { organizationId: appToExport.organizationId, isDefault: true },
-              });
-              if (defaultBranch) {
+              const { options } = await this.gitSyncConfigsUtilService.getDetails(appToExport.organizationId);
+              if (options.defaultBranch?.id) {
                 const defaultRow = await manager.findOne(AppVersion, {
-                  where: { appId: resolvedId, branchId: defaultBranch.id, isStub: false },
+                  where: { appId: resolvedId, branchId: options.defaultBranch.id, isStub: false },
                   order: { createdAt: 'DESC' },
                 });
                 versionDbId = defaultRow?.id;
@@ -695,19 +700,30 @@ export class AppImportExportService {
           ? await manager.find(DataQueryFolderMapping, { where: { childId: In(allChildIds) } })
           : [];
 
-      // Non-workflow apps store name/slug/icon/isPublic on app_versions, not on apps.*.
+      // All app types store name/slug/icon/isPublic on app_versions, not on apps.*.
       // Project the metadata onto the top-level export object so the consumer sees it on
       // app.json, then strip those fields from the version rows so they don't duplicate
-      // into per-version files. Workflows leave the export unchanged — apps.* already
-      // carries the canonical metadata for them.
-      if (appToExport?.type !== APP_TYPES.WORKFLOW) {
-        // this.appsRepository.findById sets app meta data from versions to app
-        for (const v of appVersions) {
-          delete (v as any).appName;
-          delete (v as any).slug;
-          delete (v as any).icon;
-          delete (v as any).isPublic;
-        }
+      // into per-version files.
+      //
+      // The exported app-level metadata must reflect the VERSION being exported
+      // (e.g. a feature-branch row), not the default-branch canonical overlay that
+      // findById/overlayAppMetadata applies. For an app that only exists on a
+      // feature branch the default-branch row is still a stub, so the overlay
+      // resolves nothing and would serialize null name/icon/slug into git. Read the
+      // metadata from the primary exported version row (the raw app_versions columns)
+      // before stripping the per-version copies so the pushed JSON always carries it.
+      const primary = (versionId && appVersions.find((v) => v.id === versionId)) || appVersions[0];
+      if (primary) {
+        if ((primary as any).appName != null) appToExport.name = (primary as any).appName;
+        if ((primary as any).slug != null) appToExport.slug = (primary as any).slug;
+        if ((primary as any).icon != null) appToExport.icon = (primary as any).icon;
+        if ((primary as any).isPublic != null) appToExport.isPublic = (primary as any).isPublic;
+      }
+      for (const v of appVersions) {
+        delete (v as any).appName;
+        delete (v as any).slug;
+        delete (v as any).icon;
+        delete (v as any).isPublic;
       }
 
       appToExport['components'] = componentsWithPermissionGroups;
@@ -779,10 +795,8 @@ export class AppImportExportService {
     // git-sync workspaces. Non-git-sync workspaces have no default branch — the lookup
     // falls back to "any version's app_name" since every version row carries the metadata.
     // Workflows are unaffected because modules can never be type=workflow.
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId: user.organizationId, isDefault: true },
-      select: ['id'],
-    });
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+    const defaultBranchId = options.defaultBranch?.id;
 
     const existingModules =
       moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
@@ -792,7 +806,7 @@ export class AppImportExportService {
             .andWhere(
               new Brackets((qb: any) => {
                 if (moduleAppNames.length > 0) {
-                  if (defaultBranch?.id) {
+                  if (defaultBranchId) {
                     qb.where(
                       `EXISTS (
                          SELECT 1 FROM app_versions av
@@ -800,7 +814,7 @@ export class AppImportExportService {
                            AND av.branch_id = :defaultBranchId
                            AND av.app_name IN (:...moduleAppNames)
                        )`,
-                      { defaultBranchId: defaultBranch.id, moduleAppNames }
+                      { defaultBranchId, moduleAppNames }
                     );
                   } else {
                     // Non-git-sync workspace: no branches. Match against any version's app_name.
@@ -831,8 +845,8 @@ export class AppImportExportService {
         .select(['av.app_id AS app_id', 'av.app_name AS app_name'])
         .where('av.app_id IN (:...appIds)', { appIds: existingModules.map((m) => m.id) })
         .andWhere('av.app_name IN (:...moduleAppNames)', { moduleAppNames });
-      if (defaultBranch?.id) {
-        nameQb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id });
+      if (defaultBranchId) {
+        nameQb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId });
       }
       const moduleNameRows: { app_id: string; app_name: string }[] = await nameQb.getRawMany();
       const appById = new Map(existingModules.map((m) => [m.id, m]));
@@ -1123,16 +1137,9 @@ export class AppImportExportService {
 
       await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
 
-      // NOTE: App slug updation callback doesn't work while wrapped in transaction
-      // hence updating slug explicitly. Only workflows carry slug on apps.* —
-      // non-workflows keep apps.slug NULL (the real slug lives on app_versions).
       const newApp = await manager.findOne(App, {
         where: { id: importedApp.id },
       });
-      if (newApp.type === APP_TYPES.WORKFLOW) {
-        newApp.slug = importedApp.slug || importedApp.id;
-        await manager.save(newApp);
-      }
       return { newApp, resourceMapping };
     }, manager);
   }
@@ -1365,26 +1372,23 @@ export class AppImportExportService {
     existingAppId?
   ): Promise<App> {
     return await catchDbException(async () => {
-      const isWorkflow = appParams?.type === APP_TYPES.WORKFLOW;
-
-      // Non-workflows store the user-facing name on app_versions.app_name and apps.name
-      // stays NULL — so the table-level APP_NAME_UNIQUE constraint doesn't catch cross-app
-      // collisions. Scoped to git-disabled workspaces only: git-enabled workspaces enforce
-      // uniqueness via the partial unique index on (app_name, branch_id) WHERE
-      // version_type='branch'.
-      if (!isWorkflow && appParams?.name) {
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId: user?.organizationId, isDefault: true },
-          select: ['id'],
-        });
-        if (!defaultBranch) {
+      // Name lives on app_versions.app_name for every type; apps.name stays NULL — so the
+      // table-level APP_NAME_UNIQUE constraint doesn't catch cross-app collisions. Scoped to
+      // git-disabled workspaces only: git-enabled workspaces enforce uniqueness via the
+      // app_name trigger on the imported branch row. The imported row lands on the org's
+      // default branch (branch_id is NOT NULL now), so pre-flight there. Type-scoped so an
+      // app and a module may share a name (separate dashboards).
+      if (appParams?.name) {
+        const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
+        if (!isGitEnabled) {
           const conflictingNameVersion = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin(App, 'app', 'app.id = av.appId')
+            .innerJoin('organization_git_sync_branches', 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
             .where('av.app_name = :appName', { appName: appParams.name })
-            .andWhere('av.branch_id IS NULL')
             .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
             .andWhere('app.organization_id = :organizationId', { organizationId: user?.organizationId })
+            .andWhere('app.type = :type', { type: appParams.type || APP_TYPES.FRONT_END })
             .getOne();
           if (conflictingNameVersion) {
             throw new BadRequestException('This app name is already taken.');
@@ -1393,20 +1397,20 @@ export class AppImportExportService {
       }
 
       const appId = uuid();
-      // Workflows still carry name/slug/icon/isPublic on apps.*; non-workflow metadata
-      // lives on app_versions. apps.slug stays NULL for non-workflows — Postgres allows
-      // multiple NULLs on a UNIQUE column so this doesn't violate uniqueness.
+      // Metadata lives on app_versions for every type; apps.* stays NULL/null placeholder.
+      // Postgres allows multiple NULLs on apps.slug's UNIQUE column so this doesn't violate
+      // uniqueness.
       const importedApp = manager.create(App, {
         id: appId,
-        name: isWorkflow ? appParams.name : null,
+        name: null,
         type: appParams.type || APP_TYPES.FRONT_END,
         isMaintenanceOn: appParams.isMaintenanceOn || false,
         organizationId: user?.organizationId,
         userId: user.id, //fetch super admin user id for EE
         slug: null,
-        icon: isWorkflow ? appParams.icon : null,
+        icon: null,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
-        isPublic: isWorkflow ? false : null,
+        isPublic: null,
         co_relation_id: appParams?.id,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -1416,13 +1420,11 @@ export class AppImportExportService {
 
       // Stage metadata for downstream (createAppVersionsForImportedApp,
       // performLegacyAppImport) so they can write it to app_versions.
-      if (!isWorkflow) {
-        (importedApp as any).__importMetadata = {
-          appName: appParams.name || null,
-          icon: appParams.icon || null,
-          isPublic: appParams.isPublic ?? false,
-        };
-      }
+      (importedApp as any).__importMetadata = {
+        appName: appParams.name || null,
+        icon: appParams.icon || null,
+        isPublic: appParams.isPublic ?? false,
+      };
 
       return importedApp;
     }, [
@@ -1983,17 +1985,18 @@ export class AppImportExportService {
                 manager
               );
               // Find-or-create default DSV, then create DSVO
-              let defaultDsv = await manager.findOne(DataSourceVersion, {
-                where: { dataSourceId: dataSourceForAppVersion.id, isDefault: true },
-              });
+              let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceForAppVersion.id);
               if (!defaultDsv) {
+                const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(
+                  manager,
+                  dataSourceForAppVersion.id
+                );
                 defaultDsv = await manager.save(
                   manager.create(DataSourceVersion, {
                     dataSourceId: dataSourceForAppVersion.id,
                     name: dataSourceForAppVersion.name || importingDataSource.name || 'v1',
-                    isDefault: true,
                     isActive: true,
-                    branchId: null,
+                    branchId: defaultBranchId,
                   })
                 );
               }
@@ -2617,9 +2620,7 @@ export class AppImportExportService {
       );
       for (const otherEnvironmentId of otherEnvironmentsIds) {
         // Check if DSVO already exists for this env
-        const defaultDsv = await manager.findOne(DataSourceVersion, {
-          where: { dataSourceId: dataSourceForAppVersion.id, isDefault: true },
-        });
+        const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceForAppVersion.id);
         const existing = defaultDsv
           ? await manager.findOne(DataSourceVersionOptions, {
               where: { dataSourceVersionId: defaultDsv.id, environmentId: otherEnvironmentId },
@@ -2640,9 +2641,7 @@ export class AppImportExportService {
     for (const importingDataSourceOption of importingDatasourceOptionsForAppVersion) {
       if (importingDataSourceOption?.environmentId in appResourceMappings.appEnvironmentMapping) {
         const mappedEnvId = appResourceMappings.appEnvironmentMapping[importingDataSourceOption.environmentId];
-        const defaultDsv = await manager.findOne(DataSourceVersion, {
-          where: { dataSourceId: dataSourceForAppVersion.id, isDefault: true },
-        });
+        const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceForAppVersion.id);
         const existing = defaultDsv
           ? await manager.findOne(DataSourceVersionOptions, {
               where: { dataSourceVersionId: defaultDsv.id, environmentId: mappedEnvId },
@@ -2894,18 +2893,18 @@ export class AppImportExportService {
     // trigger the branch path below — so without ensuring it here the DS ends up
     // with zero DSVs (queries bound, but the DS unusable on the data source page).
     // Find-or-create keeps it idempotent: option-bearing DSes already created their
-    // default DSV upstream and just match here.
-    let defaultDsv = await manager.findOne(DataSourceVersion, {
-      where: { dataSourceId: dataSource.id, isDefault: true },
-    });
+    // default DSV upstream and just match here. Resolve via the repository helper —
+    // this branch's DataSourceVersion has no `isDefault` column; the helper encodes
+    // the canonical-default lookup.
+    let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
     if (!defaultDsv) {
+      const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(manager, dataSource.id);
       defaultDsv = await manager.save(
         manager.create(DataSourceVersion, {
           dataSourceId: dataSource.id,
           name: dataSource.name || 'v1',
-          isDefault: true,
           isActive: true,
-          branchId: null,
+          branchId: defaultBranchId,
         })
       );
       // Create an empty DSVO for every org environment so the datasource page
@@ -3228,11 +3227,10 @@ export class AppImportExportService {
     });
     let currentEnvironmentId: string;
 
-    // Check if git sync is configured for the workspace
-    const orgGitSync = await manager.findOne(OrganizationGitSync, {
-      where: { organizationId: user?.organizationId },
-    });
-    const isGitSyncConfigured = !!orgGitSync;
+    // Check if git sync is fully enabled for the workspace (license + provider + branch).
+    const { isEnabled: isGitSyncConfigured, options: gitSyncOptions } =
+      await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
+    const importDefaultBranchId = gitSyncOptions.defaultBranch?.id ?? null;
     // Workflows are branch-agnostic — they are not synced to git and must not be
     // scoped to a branch or use the BRANCH version type, otherwise the versions
     // list (which filters by default branch / VERSION type) will hide them.
@@ -3313,20 +3311,21 @@ export class AppImportExportService {
         }
 
         const isLastVersion = appVersion === appVersions[appVersions.length - 1];
-        // Non-workflows carry slug/appName/icon/isPublic on app_versions. Source the
+        // Every type carries slug/appName/icon/isPublic on app_versions. Source the
         // values from the staged importMetadata, falling back to per-version values
         // in the import payload.
-        const importMeta = !isWorkflow ? (importedApp as any).__importMetadata : null;
+        const importMeta = (importedApp as any).__importMetadata;
 
         // chk_app_versions_branch_metadata requires app_name AND slug to be non-null
         // whenever branch_id IS NOT NULL. Imports may carry NULL metadata (e.g. hydrate
-        // temp apps, partial exports) — fall back to deterministic placeholders so the
-        // INSERT doesn't violate the CHECK. Skipped for workflows (they store metadata
-        // on apps.* and the constraint is exempt for branch_id=NULL rows).
-        const resolvedSlug = !isWorkflow ? (appVersion.slug ?? importedApp.id) : undefined;
-        const resolvedAppName = !isWorkflow
-          ? (appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id)
-          : undefined;
+        // temp apps, partial exports) — fall back to a random UUID placeholder for the
+        // slug so the INSERT doesn't violate the CHECK. Workflows are exempt from the
+        // CHECK itself (branch_id is always NULL for them) but still get real metadata
+        // here now. importMeta?.slug carries the git-sync-preserved slug for workflow
+        // re-imports (see EE createImportedAppForUser); everything else falls through to
+        // a fresh random slug, same as before this migration.
+        const resolvedSlug = appVersion.slug ?? importMeta?.slug ?? uuid();
+        const resolvedAppName = appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id;
 
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
@@ -3340,22 +3339,22 @@ export class AppImportExportService {
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id || null,
-          // Only DRAFT rows may carry a branch_id (chk_app_versions_branched_implies_draft).
-          // PUBLISHED versions are branchless workspace history — e.g. hydrating a released
-          // module produces a PUBLISHED temp row, which the git-pull re-parent later forces
-          // back to DRAFT + branchId. Without this guard the INSERT violates the CHECK.
-          branchId: isWorkflow || versionStatus !== AppVersionStatus.DRAFT ? null : branchId,
+          // branch_id is NOT NULL now and every app_version lives on a branch. A DRAFT on a
+          // feature branch uses that branch; everything else (workflows, PUBLISHED snapshots,
+          // and DRAFTs with no explicit branch) lands on the org's default branch.
+          branchId:
+            isWorkflow || versionStatus !== AppVersionStatus.DRAFT
+              ? importDefaultBranchId
+              : branchId ?? importDefaultBranchId,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
             moduleReferenceId: appVersion.moduleReferenceId || uuid(),
           }),
-          ...(!isWorkflow && {
-            slug: resolvedSlug,
-            appName: resolvedAppName,
-            icon: appVersion.icon ?? importMeta?.icon ?? null,
-            isPublic: appVersion.isPublic ?? importMeta?.isPublic ?? false,
-          }),
+          slug: resolvedSlug,
+          appName: resolvedAppName,
+          icon: appVersion.icon ?? importMeta?.icon ?? null,
+          isPublic: appVersion.isPublic ?? importMeta?.isPublic ?? false,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
@@ -3449,18 +3448,16 @@ export class AppImportExportService {
     const newOptions = await this.dataSourcesUtilService.parseOptionsForCreate(convertedOptions, true, manager);
 
     // Find-or-create default DSV, then create DSVO
-    let defaultDsv = await manager.findOne(DataSourceVersion, {
-      where: { dataSourceId, isDefault: true },
-    });
+    let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceId);
     if (!defaultDsv) {
       const ds = await manager.findOne(DataSource, { where: { id: dataSourceId }, select: ['id', 'name'] });
+      const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(manager, dataSourceId);
       defaultDsv = await manager.save(
         manager.create(DataSourceVersion, {
           dataSourceId,
           name: ds?.name || 'v1',
-          isDefault: true,
           isActive: true,
-          branchId: null,
+          branchId: defaultBranchId,
         })
       );
     }
@@ -3590,7 +3587,7 @@ export class AppImportExportService {
     const dataQueries = appParams?.dataQueries || [];
     let currentEnvironmentId = null;
 
-    const importMeta = importedApp.type !== APP_TYPES.WORKFLOW ? (importedApp as any).__importMetadata : null;
+    const importMeta = (importedApp as any).__importMetadata;
     const version = manager.create(AppVersion, {
       appId: importedApp.id,
       definition: appParams.definition,
@@ -3600,7 +3597,7 @@ export class AppImportExportService {
       updatedAt: new Date(),
       ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
       ...(importMeta && {
-        slug: importedApp.id,
+        slug: uuid(),
         appName: importMeta.appName,
         icon: importMeta.icon,
         isPublic: importMeta.isPublic,
@@ -3666,17 +3663,15 @@ export class AppImportExportService {
           }
 
           // Find-or-create default DSV, then create DSVO
-          let defaultDsv = await manager.findOne(DataSourceVersion, {
-            where: { dataSourceId: newSource.id, isDefault: true },
-          });
+          let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, newSource.id);
           if (!defaultDsv) {
+            const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(manager, newSource.id);
             defaultDsv = await manager.save(
               manager.create(DataSourceVersion, {
                 dataSourceId: newSource.id,
                 name: newSource.name || source.name || 'v1',
-                isDefault: true,
                 isActive: true,
-                branchId: null,
+                branchId: defaultBranchId,
               })
             );
           }

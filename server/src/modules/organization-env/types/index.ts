@@ -8,14 +8,6 @@ export interface GitHttpsEnvConfig {
   githubEnterpriseApiUrl?: string;
 }
 
-export interface GitSshEnvConfig {
-  gitUrl: string;
-  gitBranch: string;
-  sshPrivateKey: string;
-  sshPublicKey: string;
-  keyType: string;
-}
-
 export interface GitLabEnvConfig {
   gitlabUrl: string;
   gitlabBranch: string;
