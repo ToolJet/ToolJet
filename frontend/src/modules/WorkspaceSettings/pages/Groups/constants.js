@@ -3,6 +3,7 @@ export const RESOURCE_TYPE = {
   DATA_SOURCES: 'data_source',
   WORKFLOWS: 'workflow',
   FOLDERS: 'folder',
+  WORKFLOW_FOLDERS: 'workflow_folder',
 };
 
 export const APP_TYPES = {
@@ -15,4 +16,5 @@ export const RESOURCE_NAME_MAPPING = {
   [RESOURCE_TYPE.DATA_SOURCES]: 'Data Sources',
   [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
   [RESOURCE_TYPE.FOLDERS]: 'Folder',
+  [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'Workflow folders',
 };
