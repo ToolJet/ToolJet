@@ -62,7 +62,6 @@ import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
-import { getActiveBranchId } from '@/_helpers/active-branch';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { TriangleAlert } from 'lucide-react';
 
@@ -287,17 +286,12 @@ class HomePageComponent extends React.Component {
     if (meta?.source !== 'git-sync' || n?.type !== 'success') return;
     const branchActions = useWorkspaceBranchesStore.getState().actions;
     switch (meta.action) {
-      case 'git-delete-branch': {
-        const wasActive = meta.branchId && meta.branchId === getActiveBranchId();
-        // fetchBranches self-heals to default; the activeBranchId change triggers the apps refetch above
-        branchActions.fetchBranches().then(() => {
-          if (wasActive) {
-            const healed = useWorkspaceBranchesStore.getState().currentBranch;
-            toast.success(`Branch '${meta.branchName}' was deleted. Switched to '${healed?.name || 'default'}'`);
-          }
-        });
+      case 'git-delete-branch':
+        // fetchBranches self-heals a deleted active branch to default; the
+        // activeBranchId change triggers the apps refetch above. Silent — the
+        // notification toast already announces the deletion.
+        branchActions.fetchBranches();
         break;
-      }
       case 'git-pull-branch':
         // same branch id — subscription won't fire, refetch directly
         this.fetchApps(1, this.state.currentFolder.id);
