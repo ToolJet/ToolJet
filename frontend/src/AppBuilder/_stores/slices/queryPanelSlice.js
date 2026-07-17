@@ -720,6 +720,12 @@ export const createQueryPanelSlice = (set, get) => ({
             // Change this conditional to async query type check for other
             // async queries in the future
             if (query.kind === 'workflows' && data?.data?.type !== 'tj-401') {
+              if (data.status === 'failed') {
+                const errorData = handleFailure({ status: 'failed', message: data.message });
+                resolve(errorData);
+                return;
+              }
+
               // Handle sync execution response — no SSE needed
               if (data?.data?.syncExecution) {
                 const executionStatus = data.data.executionStatus;
@@ -755,7 +761,8 @@ export const createQueryPanelSlice = (set, get) => ({
               });
 
               if (error) {
-                resolve({ status: 'failed', message: error });
+                const errorData = handleFailure({ status: 'failed', message: error });
+                resolve(errorData);
                 return;
               }
 
@@ -980,6 +987,14 @@ export const createQueryPanelSlice = (set, get) => ({
             // Change this conditional to async query type check for other
             // async queries in the future
             if (query.kind === 'workflows') {
+              if (data.status === 'failed') {
+                setPreviewLoading(false);
+                setIsPreviewQueryLoading(false);
+                if (!calledFromQuery) setPreviewData(data);
+                resolve({ status: 'failed', data });
+                return;
+              }
+
               // Handle sync execution response — no SSE needed
               if (data?.data?.syncExecution) {
                 const executionStatus = data.data.executionStatus;
@@ -1551,7 +1566,11 @@ export const createQueryPanelSlice = (set, get) => ({
         );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
-        return { data: e?.message, status: 'failed' };
+        return {
+          data: undefined,
+          status: 'failed',
+          message: e?.error || e?.data?.message || 'Workflow execution failed',
+        };
       }
     },
 
