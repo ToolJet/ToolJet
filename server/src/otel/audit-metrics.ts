@@ -1,5 +1,5 @@
 import { metrics } from '@opentelemetry/api';
-import { AuditLogFields } from '@modules/audit-logs/types';
+import { getWorkspaceLabel } from './org-plan-cache';
 
 /**
  * OTEL Metrics for app-level activity (sourced from audit log events).
@@ -159,154 +159,19 @@ export const initializeAuditLogMetrics = () => {
 };
 
 /**
- * Record an audit log event to OTEL metrics
- *
- * @param auditLogData - The audit log data to record
+ * Direct session metric emission — called at login/logout without waiting for the audit log pipeline.
  */
-export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?: boolean) => {
-   if (!isOtelEnabled) {
-   return;
- }
-  if (!userSessionsCounter) {
-    console.warn('Audit log metrics not initialized. Skipping metric recording.');
-    return;
-  }
-
-  try {
-    const { userId, actionType } = auditLogData;
-
-    // Record user session metrics
-    if (actionType === 'USER_LOGIN' || actionType === 'USER_LOGOUT') {
-      recordUserSessionMetrics(auditLogData);
-    }
-
-    // App + datasource lifecycle metrics disabled — will route to Google Analytics
-    // if (actionType === 'APP_CREATE' || actionType === 'APP_UPDATE' || actionType === 'APP_DELETE' || actionType === 'APP_RELEASE') {
-    //   recordAppLifecycleMetrics(auditLogData);
-    // }
-    // if (actionType === 'DATA_SOURCE_CREATE' || actionType === 'DATA_SOURCE_UPDATE' || actionType === 'DATA_SOURCE_DELETE') {
-    //   recordDataSourceLifecycleMetrics(auditLogData);
-    // }
-
-    // Log for debugging (optional, can be removed in production)
-    if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.log(`[OTEL Audit Metric] Recorded: ${actionType} by user ${userId}`);
-    }
-  } catch (error) {
-    console.error('Error recording audit log metric:', error);
-  }
-};
-
-/**
- * Record query execution metrics
- */
-function recordQueryMetrics(auditLogData: AuditLogFields) {
-  if (!queryExecutionsCounter) return;
-
-  const { metadata = {}, resourceData = {}, resourceId, resourceName, organizationId, userId } = auditLogData;
-
-  const appId = metadata['appId'] || resourceData['appId'] || 'unknown';
-  const appName = metadata['appName'] || resourceData['appName'] || 'unknown';
-  const dataSourceType = resourceData['dataSourceType'] || metadata['dataSourceType'] || 'unknown';
-  const status = metadata['status'] || 'success';
-  const duration = metadata['duration'];
-  const error = metadata['error'];
-  const errorType = metadata['errorType'] || categorizeError(error);
-
-  const appMode = metadata['mode'] || resourceData['mode'] || 'unknown'; // 'edit', 'view', or 'released'
-  const environment = metadata['environment'] || resourceData['environment'] || 'unknown';
-  const isPublished = (appMode === 'view' || appMode === 'released') ? 'true' : 'false';
-
-  // Only include query text if explicitly enabled (to avoid high cardinality in Prometheus)
-  const includeQueryText = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true';
-  const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
-  const queryText = includeQueryText ? (parsedQueryOptions['query'] || '') : '';
-  const queryType = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, raw, etc.
-  const versionName = (metadata as Record<string, any>)?.['versionName'] || (resourceData as Record<string, any>)?.['versionName'] || 'unknown';
-
-  const labels = {
-    app_id: appId,
-    app_name: appName,
-    query_id: resourceId,
-    query_name: resourceName || 'unknown',
-    data_source_type: dataSourceType,
-    organization_id: organizationId,
-    status: status,
-    app_mode: appMode,
-    environment: environment,
-    is_published: isPublished,
-    query_text: queryText,
-    query_type: queryType,
-    version_name: versionName,
-  };
-
-  // Count query execution
-  queryExecutionsCounter.add(1, labels);
-
-  // Record query duration if available
-  if (duration && typeof duration === 'number') {
-    queryDurationHistogram.record(duration, labels);
-  }
-
-  // Record failure if present
-  if (status === 'failure' || error) {
-    queryFailuresCounter.add(1, {
-      app_id: appId,
-      app_name: appName,
-      query_name: resourceName || 'unknown',
-      error_type: errorType,
-      data_source_type: dataSourceType,
-      organization_id: organizationId,
-      app_mode: appMode,
-      environment: environment,
-      is_published: isPublished,
-      query_text: queryText,
-      query_type: queryType,
-      version_name: versionName,
-    });
-
-    // Record app-level error
-    if (appErrorsCounter) {
-      appErrorsCounter.add(1, {
-        app_id: appId,
-        app_name: appName,
-        error_type: errorType,
-        app_mode: appMode,
-        environment: environment,
-        organization_id: organizationId,
-      });
-    }
-  }
-
-  // Track active users per app
-  if (appId !== 'unknown') {
-    trackAppActiveUser(appId, userId, appName);
-  }
-
-  // Track app success rate
-  if (appId !== 'unknown' && appMode !== 'unknown' && environment !== 'unknown') {
-    trackAppSuccess(appId, appMode, environment, status === 'success', appName);
-  }
-}
-
-/**
- * Record user session metrics (login/logout)
- */
-function recordUserSessionMetrics(auditLogData: AuditLogFields) {
+export function recordSessionEventDirect(
+  organizationId: string,
+  eventType: 'login' | 'logout',
+  authMethod = 'unknown'
+): void {
   if (!userSessionsCounter) return;
-
-  const { actionType, resourceData = {}, organizationId } = auditLogData;
-
-  const eventType = actionType === 'USER_LOGIN' ? 'login' : 'logout';
-  const authMethod = resourceData['auth_method'] || 'unknown';
-
-  const labels = {
+  userSessionsCounter.add(1, {
     event_type: eventType,
     auth_method: authMethod,
     organization_id: organizationId,
-  };
-
-  userSessionsCounter.add(1, labels);
+  });
 }
 
 /**
@@ -428,7 +293,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
       query_id: queryId,
       query_name: queryName,
       data_source_type: dataSourceType,
-      organization_id: organizationId,
+      organization_id: getWorkspaceLabel(organizationId),
       status,
       app_mode,
       environment,
@@ -452,7 +317,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
           query_name: queryName,
           error_type: errorType,
           data_source_type: dataSourceType,
-          organization_id: organizationId,
+          organization_id: getWorkspaceLabel(organizationId),
           app_mode,
           environment,
           is_published: isPublished,
@@ -468,7 +333,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
           error_type: errorType,
           app_mode,
           environment,
-          organization_id: organizationId,
+          organization_id: getWorkspaceLabel(organizationId),
         });
       }
     }

@@ -1,4 +1,5 @@
 import { metrics } from '@opentelemetry/api';
+import { getWorkspaceLabel } from './org-plan-cache';
 
 let frontendMeter: any;
 let frontendJsErrorCounter: any;
@@ -54,11 +55,16 @@ export const recordFrontendMetricsBatch = (
 ) => {
   if (!initialized) return;
 
-  const workspaceId = context.organizationId || 'unknown';
+  const orgId = context.organizationId || 'unknown';
   const userId = context.userId || 'anonymous';
 
   for (const event of batch.events) {
     try {
+      // Platform events (app_context = 'platform') always use the real org ID —
+      // we need full platform visibility. App events are gated on cloud.
+      const isPlatform = event.attrs?.['app_context'] === 'platform';
+      const workspaceId = isPlatform ? orgId : getWorkspaceLabel(orgId);
+
       const attrs = {
         ...event.attrs,
         'workspace.id': workspaceId,

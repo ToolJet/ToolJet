@@ -6,6 +6,8 @@ import { trace, context } from '@opentelemetry/api';
 import { NextFunction } from 'express';
 import { Request, Response } from 'express';
 import { recordApiDuration, recordApiHit } from '@otel/tracing';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 @Injectable()
 export class OtelMiddleware implements NestMiddleware {
@@ -26,7 +28,10 @@ export class OtelMiddleware implements NestMiddleware {
       return next();
     }
     const isDev = this.configService.get<string>('NODE_ENV') === 'development';
-    if (!isDev && !(await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.OBSERVABILITY_ENABLED))) {
+    // Cloud: ToolJet controls the platform — ENABLE_OTEL=true is the only gate, no license check.
+    // EE: check the instance license before streaming HTTP metrics and traces.
+    const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
+    if (!isDev && !isCloud && !(await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.OBSERVABILITY_ENABLED))) {
       return next();
     }
 

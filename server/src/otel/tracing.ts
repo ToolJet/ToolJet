@@ -134,17 +134,11 @@ let meter: any;
 let apiHitCounter: any;
 let apiDurationHistogram: any;
 let concurrentUsersCounter: any;
-let activeSessionsCounter: any;
 let concurrentUsersGauge: any;
-let sessionsActiveGauge: any;
 
 // Track active users per workspace with last activity timestamp
 // Key format: "workspaceId:userId", Value: { lastSeen: timestamp, role: string }
-const activeUsersByWorkspace = new Map<string, { lastSeen: number; role?: string; sessionId?: string }>();
-
-// Track active sessions per workspace with last activity timestamp
-// Key format: "workspaceId:sessionId", Value: { lastSeen: timestamp, userId: string, role?: string }
-const activeSessionsByWorkspace = new Map<string, { lastSeen: number; userId: string; role?: string }>();
+const activeUsersByWorkspace = new Map<string, { lastSeen: number; role?: string }>();
 
 // Configurable activity window - default 5 minutes
 const ACTIVITY_WINDOW_MINUTES = parseInt(process.env.OTEL_ACTIVE_USER_WINDOW_MINUTES || '5', 10);
@@ -161,9 +155,8 @@ const cleanupInactiveUsers = () => {
     const now = Date.now();
     const cutoffTime = now - ACTIVE_USER_WINDOW_MS * 2; // Inactive for 2x the window
     let cleanedUsers = 0;
-    let cleanedSessions = 0;
 
-    // Cleanup users: Collect entries to delete (don't modify during iteration)
+    // Collect entries to delete (don't modify during iteration)
     const usersToDelete: string[] = [];
     for (const [key, data] of activeUsersByWorkspace.entries()) {
       if (data.lastSeen < cutoffTime) {
@@ -171,39 +164,21 @@ const cleanupInactiveUsers = () => {
       }
     }
 
-    // Delete collected user entries
     for (const key of usersToDelete) {
       activeUsersByWorkspace.delete(key);
       cleanedUsers++;
     }
 
-    // Cleanup sessions: Collect entries to delete
-    const sessionsToDelete: string[] = [];
-    for (const [key, data] of activeSessionsByWorkspace.entries()) {
-      if (data.lastSeen < cutoffTime) {
-        sessionsToDelete.push(key);
-      }
-    }
-
-    // Delete collected session entries
-    for (const key of sessionsToDelete) {
-      activeSessionsByWorkspace.delete(key);
-      cleanedSessions++;
-    }
-
-    if ((cleanedUsers > 0 || cleanedSessions > 0) && process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.log(
-        `[OTEL] Cleaned up ${cleanedUsers} inactive user entries and ${cleanedSessions} inactive session entries from memory`
-      );
+    if (cleanedUsers > 0 && process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.log(`[OTEL] Cleaned up ${cleanedUsers} inactive user entries from memory`);
     }
 
     // Log memory stats if debug enabled
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
       const totalUsers = activeUsersByWorkspace.size;
-      const totalSessions = activeSessionsByWorkspace.size;
-      const memoryEstimateMB = (((totalUsers + totalSessions) * 100) / (1024 * 1024)).toFixed(2);
+      const memoryEstimateMB = ((totalUsers * 100) / (1024 * 1024)).toFixed(2);
       console.log(
-        `[OTEL] Active tracking: ${totalUsers} users, ${totalSessions} sessions (~${memoryEstimateMB} MB), window: ${ACTIVITY_WINDOW_MINUTES}min`
+        `[OTEL] Active tracking: ${totalUsers} users (~${memoryEstimateMB} MB), window: ${ACTIVITY_WINDOW_MINUTES}min`
       );
     }
   } catch (error) {
@@ -225,12 +200,6 @@ const initializeCustomMetrics = () => {
   concurrentUsersCounter = meter.createUpDownCounter('users.concurrent', {
     description: 'Number of concurrent users by workspace (login/logout based)',
     unit: '{users}',
-  });
-
-  // UpDownCounter for active sessions
-  activeSessionsCounter = meter.createUpDownCounter('sessions.active', {
-    description: 'Number of active user sessions',
-    unit: '{sessions}',
   });
 
   // ObservableGauge for request-based concurrent users
@@ -267,84 +236,24 @@ const initializeCustomMetrics = () => {
       }
 
       // Report metrics for each workspace
+      // Note: per-user series intentionally not emitted — user.id as a label is
+      // unbounded cardinality and would grow Prometheus TSDB with every active user.
+      const totalUniqueUsers = new Set<string>();
       for (const [workspaceId, users] of usersByWorkspace.entries()) {
-        // Report workspace-level aggregate
         observableResult.observe(users.size, {
           'workspace.id': workspaceId,
           metric_type: 'workspace_total',
         });
-
-        // Report individual user metrics
-        for (const userId of users) {
-          observableResult.observe(1, {
-            'workspace.id': workspaceId,
-            'user.id': userId,
-            metric_type: 'per_user',
-          });
-        }
+        for (const userId of users) totalUniqueUsers.add(userId);
       }
 
-      // Also report total active users across all workspaces
-      const totalUniqueUsers = new Set<string>();
-      for (const key of activeUsersByWorkspace.keys()) {
-        const userId = key.split(':')[1];
-        if (userId) totalUniqueUsers.add(userId);
-      }
+      // Also report total active users across all workspaces (deduped across workspaces)
       observableResult.observe(totalUniqueUsers.size, {
         'workspace.id': 'all',
         metric_type: 'workspace_total',
       });
     } catch (error) {
       console.error('[OTEL] Error in concurrentUsersGauge callback:', error);
-    }
-  });
-
-  // ObservableGauge for request-based concurrent sessions
-  sessionsActiveGauge = meter.createObservableGauge('sessions.concurrent.active', {
-    description: 'Number of concurrent sessions by workspace based on request activity',
-    unit: '{sessions}',
-  });
-
-  sessionsActiveGauge.addCallback((observableResult: any) => {
-    try {
-      const now = Date.now();
-      const cutoffTime = now - ACTIVE_USER_WINDOW_MS;
-
-      // Group active sessions by workspace
-      const sessionsByWorkspace = new Map<string, Set<string>>();
-      const entriesToDelete: string[] = [];
-
-      // First pass: collect inactive entries and group active ones (don't modify during iteration)
-      for (const [key, data] of activeSessionsByWorkspace.entries()) {
-        if (data.lastSeen < cutoffTime) {
-          entriesToDelete.push(key);
-        } else {
-          const [workspaceId, sessionId] = key.split(':');
-          if (!sessionsByWorkspace.has(workspaceId)) {
-            sessionsByWorkspace.set(workspaceId, new Set());
-          }
-          sessionsByWorkspace.get(workspaceId)!.add(sessionId);
-        }
-      }
-
-      // Second pass: delete inactive entries
-      for (const key of entriesToDelete) {
-        activeSessionsByWorkspace.delete(key);
-      }
-
-      // Report metrics for each workspace
-      for (const [workspaceId, sessions] of sessionsByWorkspace.entries()) {
-        observableResult.observe(sessions.size, {
-          'workspace.id': workspaceId,
-        });
-      }
-
-      // Also report total active sessions across all workspaces
-      observableResult.observe(activeSessionsByWorkspace.size, {
-        'workspace.id': 'all',
-      });
-    } catch (error) {
-      console.error('[OTEL] Error in sessionsActiveGauge callback:', error);
     }
   });
 
@@ -412,7 +321,7 @@ export const startOpenTelemetry = async (): Promise<void> => {
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
       console.log('OpenTelemetry instrumentation initialized');
       console.log(
-        'Custom metrics initialized: api.hits, api.duration, users.concurrent, sessions.active, users.concurrent.active, sessions.concurrent.active'
+        'Custom metrics initialized: api.hits, api.duration, users.concurrent, users.concurrent.active'
       );
       console.log(`Active user tracking window: ${ACTIVITY_WINDOW_MINUTES} minutes`);
     }
@@ -422,12 +331,14 @@ export const startOpenTelemetry = async (): Promise<void> => {
   }
 };
 
-export { recordAuditLogMetric, recordDirectQueryMetric } from './audit-metrics';
+export { recordDirectQueryMetric, recordSessionEventDirect } from './audit-metrics';
 export { recordFrontendMetricsBatch } from './frontend-metrics';
 // Helper function to track user activity on each authenticated request
 export const trackUserActivity = (attributes: {
   workspaceId: string;
   userId: string;
+  // sessionId accepted for call-site compatibility (jwt.strategy.ts passes it) but no
+  // longer tracked — session-level dedup was removed, see activeUsersByWorkspace comment above.
   sessionId?: string;
   userRole?: string;
 }) => {
@@ -443,14 +354,13 @@ export const trackUserActivity = (attributes: {
     // Sanitize and limit lengths to prevent memory issues
     const workspaceId = String(attributes.workspaceId).slice(0, 100);
     const userId = String(attributes.userId).slice(0, 100);
-    const sessionId = attributes.sessionId ? String(attributes.sessionId).slice(0, 100) : undefined;
 
     const now = Date.now();
 
     // Track unique users (workspaceId:userId)
     const userKey = `${workspaceId}:${userId}`;
 
-    // Safety cap to prevent unbounded memory growth for users
+    // Safety cap to prevent unbounded memory growth
     if (activeUsersByWorkspace.size >= MAX_TRACKED_USERS && !activeUsersByWorkspace.has(userKey)) {
       const oldestKey = activeUsersByWorkspace.keys().next().value;
       if (oldestKey) {
@@ -464,30 +374,7 @@ export const trackUserActivity = (attributes: {
     activeUsersByWorkspace.set(userKey, {
       lastSeen: now,
       role: attributes.userRole,
-      sessionId: sessionId,
     });
-
-    // Track unique sessions (workspaceId:sessionId) if sessionId is provided
-    if (sessionId) {
-      const sessionKey = `${workspaceId}:${sessionId}`;
-
-      // Safety cap to prevent unbounded memory growth for sessions
-      if (activeSessionsByWorkspace.size >= MAX_TRACKED_USERS && !activeSessionsByWorkspace.has(sessionKey)) {
-        const oldestKey = activeSessionsByWorkspace.keys().next().value;
-        if (oldestKey) {
-          activeSessionsByWorkspace.delete(oldestKey);
-          if (process.env.OTEL_LOG_LEVEL === 'debug') {
-            console.warn('[OTEL] Max tracked sessions reached, removed oldest entry');
-          }
-        }
-      }
-
-      activeSessionsByWorkspace.set(sessionKey, {
-        lastSeen: now,
-        userId: userId,
-        role: attributes.userRole,
-      });
-    }
   } catch (error) {
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
       console.error('[OTEL] Error tracking user activity:', error);
@@ -516,35 +403,6 @@ export const decrementConcurrentUsers = (attributes: { workspaceId?: string; use
     concurrentUsersCounter.add(-1, metricAttributes);
   }
 };
-
-export const incrementActiveSessions = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  sessionType?: string;
-}) => {
-  if (activeSessionsCounter) {
-    const metricAttributes: any = {};
-    if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
-    if (attributes.sessionType) metricAttributes['session.type'] = attributes.sessionType;
-
-    activeSessionsCounter.add(1, metricAttributes);
-  }
-};
-
-export const decrementActiveSessions = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  sessionType?: string;
-}) => {
-  if (activeSessionsCounter) {
-    const metricAttributes: any = {};
-    if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
-    if (attributes.sessionType) metricAttributes['session.type'] = attributes.sessionType;
-
-    activeSessionsCounter.add(-1, metricAttributes);
-  }
-};
-
 
 // ============================================================================
 // AUTO-START: Initialize OTEL SDK immediately when this module is imported
