@@ -31,4 +31,7 @@ export enum FEATURE_KEY {
   // AI MFA
   AI_MFA_REQUEST_OTP = 'aiMfaRequestOtp', // GET 'request-otp/:identifier'
   AI_MFA_VERIFY_OTP = 'aiMfaVerifyOtp', // POST 'verify-otp/:identifier'
+
+  // Login MFA (authenticator app 2FA, EE only)
+  MFA_VERIFY = 'mfaVerify', // POST 'authenticate/mfa/verify'
 }

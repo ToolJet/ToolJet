@@ -4,6 +4,7 @@ import { SessionModule } from '@modules/session/module';
 import { FeatureAbilityFactory } from './ability';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { UserMfaRepository } from '@modules/auth/mfa/repository';
 
 export class UsersModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -17,7 +18,14 @@ export class UsersModule extends SubModule {
       module: UsersModule,
       imports: [await SessionModule.register(configs)],
       controllers: isMainImport ? [UsersController] : [],
-      providers: [UsersService, UserRepository, UsersUtilService, FeatureAbilityFactory, OrganizationUsersRepository],
+      providers: [
+        UsersService,
+        UserRepository,
+        UsersUtilService,
+        FeatureAbilityFactory,
+        OrganizationUsersRepository,
+        UserMfaRepository,
+      ],
       exports: [UsersUtilService],
     };
   }

@@ -1,0 +1,55 @@
+.trouble-signing-in-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 8px 4px;
+
+    .trouble-signing-in-modal-close {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-placeholder, #6a727c);
+        padding: 4px;
+    }
+
+    .trouble-signing-in-modal-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--indigo3, #e6e9fe);
+        margin-bottom: 16px;
+    }
+
+    .trouble-signing-in-modal-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .trouble-signing-in-modal-body {
+        font-size: 13px;
+        line-height: 20px;
+        color: var(--text-placeholder, #6a727c);
+
+        p {
+            margin-bottom: 12px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        a {
+            color: var(--indigo9, #4368e3);
+            text-decoration: underline;
+        }
+    }
+}

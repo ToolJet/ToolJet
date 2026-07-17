@@ -1,0 +1,15 @@
+.mfa-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--slate3, #f1f3f5);
+    color: var(--slate11, #687076);
+
+    &.active {
+        background: #ecfdf3;
+        color: #027a48;
+    }
+}

@@ -69,5 +69,9 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.AI_MFA_VERIFY_OTP]: {
       isPublic: true,
     },
+    [FEATURE_KEY.MFA_VERIFY]: {
+      isPublic: true,
+      auditLogsKey: 'USER_LOGIN',
+    },
   },
 };

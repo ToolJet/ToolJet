@@ -124,6 +124,12 @@ export class User extends BaseEntity {
   @Column({ name: 'password_retry_count' })
   passwordRetryCount: number;
 
+  @Column({ name: 'mfa_enabled', default: false })
+  mfaEnabled: boolean;
+
+  @Column({ name: 'mfa_setup_completed_at', type: 'timestamptz', nullable: true })
+  mfaSetupCompletedAt: Date | null;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

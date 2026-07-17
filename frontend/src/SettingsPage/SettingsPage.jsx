@@ -6,6 +6,7 @@ import Layout from '@/_ui/Layout';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
 import { decodeEntities } from '@/_helpers/utils';
+import { TwoFactorAuthCard } from './TwoFactorAuthCard';
 
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
@@ -336,6 +337,7 @@ function SettingsPage(props) {
                   <div></div>
                 </div>
               </div>
+              <TwoFactorAuthCard darkMode={props.darkMode} />
             </div>
           </div>
         </div>

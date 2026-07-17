@@ -13,6 +13,7 @@ import { NoActiveWorkspaceModal } from './components/NoActiveWorkspaceModal';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToolTip } from '@/_components/ToolTip';
 import { fetchEdition } from '../../helpers/utils';
+import './resources/styles/users-table.styles.scss';
 const UsersTable = ({
   isLoading,
   users,
@@ -33,6 +34,8 @@ const UsersTable = ({
   toggleEditUserDrawer,
   resetPassword = false,
   wsSettings = false,
+  toggleMfa = false,
+  onToggleMfaClick,
 }) => {
   const [isResetPasswordModalVisible, setIsResetPasswordModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -102,6 +105,11 @@ const UsersTable = ({
                   </th>
                 ) : (
                   <th className="w-1"></th>
+                )}
+                {isLoadingAllUsers && toggleMfa && (
+                  <th data-cy="users-table-mfa-column-header" data-name="mfa-header">
+                    2FA
+                  </th>
                 )}
                 {isLoadingAllUsers && (
                   <th data-cy="users-table-workspaces-column-header">
@@ -225,6 +233,16 @@ const UsersTable = ({
                           )}
                         </td>
                       )}
+                      {isLoadingAllUsers && toggleMfa && (
+                        <td className="text-muted" data-name="mfa-header">
+                          <span
+                            className={cx('mfa-status-pill', { active: user.mfa_enabled })}
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-mfa-status`}
+                          >
+                            {user.mfa_enabled ? 'Enabled' : 'Disabled'}
+                          </span>
+                        </td>
+                      )}
                       {isLoadingAllUsers && (
                         <td className="text-muted !tw-w-[230px] tw-max-w-[230px]">
                           <a
@@ -252,6 +270,8 @@ const UsersTable = ({
                           toggleEditUserDrawer={() => toggleEditUserDrawer(user)}
                           onResetPasswordClick={() => handleResetPasswordClick(user)}
                           resetPassword={resetPassword}
+                          toggleMfa={toggleMfa}
+                          onToggleMfaClick={() => onToggleMfaClick(user)}
                         />
                       </td>
                     </tr>

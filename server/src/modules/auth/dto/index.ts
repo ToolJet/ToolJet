@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, Length, Matches, MaxLength, MinLength } from 'class-validator';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
@@ -68,6 +68,17 @@ export class AppPasswordResetDto {
   @IsString()
   @IsNotEmpty()
   token: string;
+}
+
+export class MfaVerifyDto {
+  @IsString()
+  @IsNotEmpty()
+  mfa_token: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 6)
+  otp: string;
 }
 
 export class ChangePasswordDto {

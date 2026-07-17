@@ -15,6 +15,8 @@ export default function UsersActionMenu({
   user,
   onResetPasswordClick,
   resetPassword = false,
+  toggleMfa = false,
+  onToggleMfaClick,
 }) {
   const closeMenu = () => {
     document.body.click();
@@ -62,6 +64,21 @@ export default function UsersActionMenu({
                   data-cy="reset-password-button"
                 >
                   Reset password
+                </ButtonSolid>
+              )}
+              {toggleMfa && user.mfa_enabled && (
+                <ButtonSolid
+                  onClick={() => {
+                    closeMenu();
+                    onToggleMfaClick();
+                  }}
+                  className="tj-text-xsm edit-user-btn"
+                  variant="tertiary"
+                  leftIcon="lock"
+                  iconWidth="12"
+                  data-cy="reset-mfa-button"
+                >
+                  Reset MFA
                 </ButtonSolid>
               )}
               <ButtonSolid

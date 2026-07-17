@@ -9,7 +9,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
-import { LoginForm } from '..';
+import { LoginForm, MfaVerifyForm } from '..';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
@@ -19,6 +19,8 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
   const navigate = useNavigate();
   const params = useParams();
   const [redirectTo, setRedirectTo] = useState(null);
+  const [mfaChallenge, setMfaChallenge] = useState(null);
+  const [pendingEmail, setPendingEmail] = useState(null);
   const whiteLabelText = retrieveWhiteLabelText();
 
   useEffect(() => {
@@ -59,16 +61,31 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
     setRedirectTo(redirectPath);
   };
 
+  const handleLoginSuccess = (user, email) => {
+    updateCurrentSession({ isUserLoggingIn: true });
+    posthogHelper.initPosthog(user);
+    posthogHelper.captureEvent('signin_email', {
+      email,
+      workspace_id: organizationId || currentOrganizationName,
+    });
+    onLoginSuccess(user, navigate);
+  };
+
   const handleLogin = (email, password, onError) => {
     authenticationService.login(email, password, organizationId).then(
       (user) => {
-        updateCurrentSession({ isUserLoggingIn: true });
-        posthogHelper.initPosthog(user);
-        posthogHelper.captureEvent('signin_email', {
-          email,
-          workspace_id: organizationId || currentOrganizationName,
-        });
-        onLoginSuccess(user, navigate);
+        if (user?.mfa_required) {
+          setPendingEmail(email);
+          setMfaChallenge({
+            mfaToken: user.mfa_token,
+            setupRequired: user.setup_required,
+            otpauthUrl: user.otpauth_url,
+            secret: user.secret,
+          });
+          onError();
+          return;
+        }
+        handleLoginSuccess(user, email);
       },
       (error) => {
         onError();
@@ -83,18 +100,26 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
 
   return (
     <OnboardingBackgroundWrapper
-      LeftSideComponent={() => (
-        <LoginForm
-          configs={configs}
-          organizationId={organizationId}
-          paramOrganizationSlug={params?.organizationId}
-          redirectTo={redirectTo}
-          setRedirectUrlToCookie={setRedirectUrlToCookie}
-          onSubmit={handleLogin}
-          currentOrganizationName={currentOrganizationName}
-          whiteLabelText={whiteLabelText}
-        />
-      )}
+      LeftSideComponent={() =>
+        mfaChallenge ? (
+          <MfaVerifyForm
+            mfaChallenge={mfaChallenge}
+            onVerified={(session) => handleLoginSuccess(session, pendingEmail)}
+            onError={() => {}}
+          />
+        ) : (
+          <LoginForm
+            configs={configs}
+            organizationId={organizationId}
+            paramOrganizationSlug={params?.organizationId}
+            redirectTo={redirectTo}
+            setRedirectUrlToCookie={setRedirectUrlToCookie}
+            onSubmit={handleLogin}
+            currentOrganizationName={currentOrganizationName}
+            whiteLabelText={whiteLabelText}
+          />
+        )
+      }
       RightSideComponent={LoginPageRightPanel}
     />
   );
