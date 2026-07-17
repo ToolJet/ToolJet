@@ -394,6 +394,26 @@ export class UpdateUserMetadataDto {
   userDetails: UserDetailKeyValueDto[];
 }
 
+export enum GroupMatchMode {
+  ALL = 'all',
+  ANY = 'any',
+}
+
+export class GetWorkspaceUsersByGroupsDto {
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  group_names: string[];
+
+  @IsEnum(GroupMatchMode)
+  @IsOptional()
+  match?: GroupMatchMode = GroupMatchMode.ALL;
+
+  @IsEnum(Status)
+  @IsOptional()
+  status?: Status;
+}
+
 export enum TjdbFilterOperator {
   EQUALS = 'equals',
   GREATER_THAN = 'greater than',

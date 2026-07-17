@@ -29,6 +29,7 @@ export enum FEATURE_KEY {
   EXPORT_TJDB_TABLE_AS_CSV = 'EXPORT_TJDB_TABLE_AS_CSV',
   UPDATE_USER_METADATA = 'UPDATE_USER_METADATA',
   GET_USER_METADATA = 'GET_USER_METADATA',
+  GET_WORKSPACE_USERS_BY_GROUPS = 'GET_WORKSPACE_USERS_BY_GROUPS',
 }
 
 export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
