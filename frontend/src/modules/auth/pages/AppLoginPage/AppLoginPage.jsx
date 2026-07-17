@@ -130,6 +130,12 @@ const AppLoginPage = () => {
       },
       (err) => {
         onError();
+        if (err.data?.message === 'PASSWORD_EXPIRED') {
+          window.location.href = `${getSubpath() ?? ''}/password-expired?email=${encodeURIComponent(
+            err.data?.email || email
+          )}`;
+          return;
+        }
         toast.error(err.error || 'Invalid email or password', {
           id: 'toast-login-auth-error',
           position: 'top-center',

@@ -735,19 +735,30 @@ export class OnboardingService implements IOnboardingService {
         select: ['name', 'id'],
       });
       if (existingUser.invitationToken) {
-        /* Not activated. */
+        /* Not activated. Regenerate User-level token on re-invite. */
+        const isCloud = getTooljetEdition() === 'cloud';
+        const newUserToken = uuid.v4();
+        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+        const newUserTokenExpiry =
+          isCloud && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+            ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+            : null;
+        await this.userRepository.updateOne(existingUser.id, {
+          invitationToken: newUserToken,
+          ...(isCloud && { invitationTokenExpiry: newUserTokenExpiry }),
+        });
         this.eventEmitter.emit('emailEvent', {
           type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
           payload: {
             to: existingUser.email,
             name: existingUser.firstName,
-            invitationtoken: existingUser.invitationToken,
+            invitationtoken: newUserToken,
             organizationInvitationToken: organizationUser.invitationToken,
             organizationId: organizationUser.organizationId,
             organizationName: invitedOrganization.name,
             sender: senderName || null,
             redirectTo: redirectTo,
-            invitationTokenExpiry: organizationUser.invitationTokenExpiry,
+            invitationTokenExpiry: isCloud ? newUserTokenExpiry : organizationUser.invitationTokenExpiry,
           },
         });
         return;
@@ -771,14 +782,24 @@ export class OnboardingService implements IOnboardingService {
     }
 
     if (existingUser?.invitationToken) {
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+      const newUserTokenExpiry =
+        !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+          ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+          : null;
+      const newUserToken = uuid.v4();
+      await this.userRepository.updateOne(existingUser.id, {
+        invitationToken: newUserToken,
+        invitationTokenExpiry: newUserTokenExpiry,
+      });
       this.eventEmitter.emit('emailEvent', {
         type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
         payload: {
           to: existingUser.email,
           name: existingUser.firstName,
-          invitationtoken: existingUser.invitationToken,
+          invitationtoken: newUserToken,
           organizationId: existingUser.defaultOrganizationId,
-          invitationTokenExpiry: existingUser.invitationTokenExpiry,
+          invitationTokenExpiry: newUserTokenExpiry,
         },
       });
       return;

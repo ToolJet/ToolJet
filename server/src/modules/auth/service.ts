@@ -69,6 +69,9 @@ export class AuthService implements IAuthService {
       if (!isPasswordMatching) {
         throw new UnauthorizedException('Invalid credentials');
       }
+      if (user.passwordExpiry && new Date() > user.passwordExpiry) {
+        throw new ForbiddenException({ message: 'PASSWORD_EXPIRED', email: user.email });
+      }
       organizationId = undefined;
     } else {
       user = await this.authUtilService.validateLoginUser(email, password, organizationId);
