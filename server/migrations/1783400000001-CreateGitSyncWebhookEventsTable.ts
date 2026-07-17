@@ -29,8 +29,8 @@ export class CreateGitSyncWebhookEventsTable1783400000001 implements MigrationIn
     `);
 
     await queryRunner.query(`
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_webhook_events_delivery
-        ON git_sync_webhook_events(delivery_id)
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_webhook_events_org_delivery
+        ON git_sync_webhook_events(organization_id, delivery_id)
     `);
 
     await queryRunner.query(`
