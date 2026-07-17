@@ -73,3 +73,11 @@ export function getEntityRepository<T extends ObjectLiteral>(
   const ds = getDefaultDataSource();
   return ds.getRepository(EntityClass);
 }
+
+/** Placeholder UUID guaranteed not to exist in the test database — for 400/404 validation tests. */
+export const NONEXISTENT_UUID = '00000000-0000-0000-0000-000000000001';
+
+/** Generates a collision-free test email for parallel/repeated test runs. */
+export function uniqueEmail(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@tooljet.io`;
+}
