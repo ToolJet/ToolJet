@@ -35,6 +35,7 @@ const GENERATE_QUERY_SUPPORTED_KINDS = [
   'runjs',
   'databricks',
   'servicenow',
+  'quickbooks',
   'hubspot',
 ];
 
