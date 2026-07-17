@@ -28,13 +28,6 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
-          // Skip processing values if type is SECRET and decryptSecretValue is false
-          if (constant.type === OrganizationConstantType.SECRET && !decryptSecretValue) {
-            return {
-              name: constant.constantName,
-            };
-          }
-
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
               let resolvedValue = '';
@@ -44,7 +37,9 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
                 if (constant.type === OrganizationConstantType.SECRET) {
                   resolvedValue = decryptSecretValue
                     ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
-                    : secretValue;
+                    : value.value
+                    ? secretValue
+                    : '';
                 } else {
                   resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
                     organizationId,
