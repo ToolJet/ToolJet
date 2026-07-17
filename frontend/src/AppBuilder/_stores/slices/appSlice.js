@@ -6,6 +6,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import { getDynamicLayoutKey } from '../utils/dynamicHeightReflow';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,6 +33,7 @@ const initialState = {
       canvas: {
         canvasHeight: null,
         app: {},
+        linkedApps: {}, // Map<correlationId, { slug }> of apps referenced by go-to-app pages/events
         isViewer: false,
         isComponentLayoutReady: false,
       },
@@ -66,6 +68,25 @@ export const createAppSlice = (set, get) => ({
       },
       false,
       'setApp'
+    ),
+  setLinkedApps: (linkedApps, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        state.appStore.modules[moduleId].linkedApps = linkedApps ?? {};
+      },
+      false,
+      'setLinkedApps'
+    ),
+  upsertLinkedApp: (correlationId, info, moduleId = 'canvas') =>
+    set(
+      (state) => {
+        if (!correlationId) return;
+        const current = state.appStore.modules[moduleId].linkedApps ?? {};
+        current[correlationId] = { ...(current[correlationId] ?? {}), ...info };
+        state.appStore.modules[moduleId].linkedApps = current;
+      },
+      false,
+      'upsertLinkedApp'
     ),
   setAppName: (name, moduleId = 'canvas') =>
     set(
@@ -143,7 +164,7 @@ export const createAppSlice = (set, get) => ({
       if (currentMode === 'view' && !visibility) {
         return max;
       }
-      const temporaryLayout = temporaryLayouts?.[component.id];
+      const temporaryLayout = temporaryLayouts?.[getDynamicLayoutKey(component.id, null, '', moduleId)];
       const top = temporaryLayout?.top ?? layout.top;
       const height = visibility ? temporaryLayout?.height ?? layout.height : 10;
       return Math.max(max, top + height);
@@ -181,7 +202,7 @@ export const createAppSlice = (set, get) => ({
           if (!visibility) {
             return max;
           }
-          const temp = temporaryLayouts?.[component.id];
+          const temp = temporaryLayouts?.[getDynamicLayoutKey(component.id, null, '', moduleId)];
           const top = temp?.top ?? canonical.top;
           const height = temp?.height ?? canonical.height;
           return Math.max(max, top + height);

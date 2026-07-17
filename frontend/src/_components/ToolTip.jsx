@@ -22,6 +22,7 @@ export function ToolTip({
       trigger={trigger}
       placement={placement}
       delay={delay}
+      popperConfig={rest?.popperConfig}
       overlay={
         <Tooltip
           className={tooltipClassName}

@@ -7,6 +7,7 @@ import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { isUUID } from 'class-validator';
 import { APP_TYPES } from './constants';
+import { dbTransactionWrap } from '@helpers/database.helper';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {

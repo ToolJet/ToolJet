@@ -155,31 +155,38 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     try {
       // Check if branch already exists locally — if so, update it; if not, create it
       const existingBranch = branches.find((b) => b.name === selectedBranch);
-      let branchId;
 
-      if (existingBranch) {
-        branchId = existingBranch.id;
-      } else {
-        const newBranch = await actions.createBranch(selectedBranch);
-        branchId = newBranch.id;
+      if (!existingBranch) {
+        // Creation (incl. hydrate) runs as a background job — no branch to
+        // switch to yet, so the import ends here with a toast
+        await actions.createBranch(selectedBranch);
+        toast.success(`Importing ${selectedBranch}. It will show up in the branch list once ready.`, {
+          style: { maxWidth: '640px' },
+        });
+        onClose();
+        return;
       }
+
+      const branchId = existingBranch.id;
 
       // Switch to the target branch — pass appId for co_relation_id resolution
       const appId = getAppIdFromUrl();
       const switchResult = await workspaceBranchesService.switchBranch(branchId, appId);
 
       // Also update localStorage + workspace store
-      const branchObj = existingBranch || { id: branchId, name: selectedBranch };
+      const branchObj = existingBranch;
       setActiveBranch(branchObj);
       useWorkspaceBranchesStore.setState({
         activeBranchId: branchId,
         currentBranch: branchObj,
       });
 
-      // Pull from that branch (now active) — creates stubs for all apps
+      // Pull from that branch (now active) — hydrate runs in the background
       await actions.pullWorkspace();
 
-      toast.success(`Imported ${selectedBranch} successfully`);
+      toast.success(`Importing ${selectedBranch}. Your changes will load in a moment.`, {
+        style: { maxWidth: '640px' },
+      });
       onClose();
 
       // Navigate based on whether the current app exists in the target branch
@@ -261,10 +268,10 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
   const handlePull = async () => {
     try {
+      // Pull hydrates in the background — reloading now would only show stale data
       await actions.pullWorkspace();
-      toast.success('Commit pulled successfully!');
+      toast.success('Pulling latest changes.');
       onClose();
-      window.location.reload();
     } catch (error) {
       if (error?.statusCode === 409) {
         try {
