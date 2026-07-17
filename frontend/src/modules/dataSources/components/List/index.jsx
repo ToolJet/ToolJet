@@ -12,6 +12,7 @@ import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import Modal from '@/HomePage/Modal';
 import { Button } from '@/components/ui/Button/Button';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 
 export const List = ({ updateSelectedDatasource }) => {
@@ -56,6 +57,16 @@ export const List = ({ updateSelectedDatasource }) => {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [environments]);
+
+  // pulled content lands in a background job — refetch when it succeeds
+  useEffect(() => {
+    return subscribeLiveNotifications((n) => {
+      if (n?.metadata?.source === 'git-sync' && n?.type === 'success' && n?.metadata?.action === 'git-pull-branch') {
+        fetchDataSources(false).catch(() => {});
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchDataSources]);
 
   useEffect(() => {
     setFilteredData([...dataSources]);
