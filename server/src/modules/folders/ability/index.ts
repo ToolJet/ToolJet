@@ -4,6 +4,7 @@ import { AbilityFactory } from '@modules/app/ability-factory';
 import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { Folder } from '@entities/folder.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 type Subjects = InferSubjects<typeof Folder> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
 
@@ -20,8 +21,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     request?: any
   ): void {
     const { superAdmin, userPermission, isAdmin, isBuilder } = UserAllPermissions;
-    const canCreateFolder = userPermission.folderCreate;
-    const canDeleteFolder = userPermission.folderDelete;
+    const isWorkflowFolder = request?.tj_folder_type === APP_TYPES.WORKFLOW;
+    const canCreateFolder = isWorkflowFolder ? userPermission.workflowFolderCreate : userPermission.folderCreate;
+    const canDeleteFolder = isWorkflowFolder ? userPermission.workflowFolderDelete : userPermission.folderDelete;
     const ownerCanManageFolder = !!request?.tj_allow_owner_folder_manage;
 
     if (superAdmin || isAdmin) {

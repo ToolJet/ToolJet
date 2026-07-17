@@ -34,10 +34,8 @@ export class FeatureAbilityGuard extends AbilityGuard {
     return FolderApp;
   }
 
-  protected getResource(): ResourceDetails {
-    return {
-      resourceType: MODULES.FOLDER,
-    };
+  protected getResource(): ResourceDetails | ResourceDetails[] {
+    return [{ resourceType: MODULES.FOLDER }, { resourceType: MODULES.WORKFLOW_FOLDER }];
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -62,6 +60,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
       });
 
       const folderOwnedByUser = !!folder && folder.createdBy === request.user.id;
+      request.tj_folder_type = folder?.type;
 
       if (request.body?.app_id) {
         // Single-app path: require both folder and app to be owned by the user.

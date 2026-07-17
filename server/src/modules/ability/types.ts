@@ -26,6 +26,8 @@ export interface UserPermissions {
 
   folderCreate: boolean;
   folderDelete: boolean;
+  workflowFolderCreate: boolean;
+  workflowFolderDelete: boolean;
   orgConstantCRUD: boolean;
   tjdbCRUD: boolean;
   orgVariableCRUD: boolean;

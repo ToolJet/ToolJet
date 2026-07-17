@@ -83,7 +83,7 @@ export class FoldersService implements IFoldersService {
     const userPermissions = await this.abilityService.resourceActionsPermission(
       user,
       {
-        resources: [{ resource: MODULES.FOLDER }],
+        resources: [{ resource: MODULES.FOLDER }, { resource: MODULES.WORKFLOW_FOLDER }],
         organizationId: user.organizationId,
       },
       manager
@@ -97,11 +97,14 @@ export class FoldersService implements IFoldersService {
       return;
     }
 
-    if (action === 'delete' && userPermissions.folderDelete) {
+    const isWorkflowFolder = folder.type === APP_TYPES.WORKFLOW;
+
+    if (action === 'delete' && (isWorkflowFolder ? userPermissions.workflowFolderDelete : userPermissions.folderDelete)) {
       return;
     }
 
-    const folderPerms = userPermissions[MODULES.FOLDER];
+    const folderResourceType = isWorkflowFolder ? MODULES.WORKFLOW_FOLDER : MODULES.FOLDER;
+    const folderPerms = userPermissions[folderResourceType];
     if (action === 'update' && folderPerms) {
       if (folderPerms.isAllEditable) {
         return;

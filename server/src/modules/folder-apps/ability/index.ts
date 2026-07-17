@@ -5,6 +5,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { FolderApp } from '@entities/folder_app.entity';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 type Subjects = InferSubjects<typeof FolderApp> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
 
@@ -26,7 +27,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const { superAdmin, userPermission, isAdmin } = UserAllPermissions;
     const folderCreate = userPermission.folderCreate;
-    const folderPermissions = userPermission[MODULES.FOLDER];
+    const folderResourceType =
+      request?.tj_folder_type === APP_TYPES.WORKFLOW ? MODULES.WORKFLOW_FOLDER : MODULES.FOLDER;
+    const folderPermissions = userPermission[folderResourceType];
     const ownerCanCreateFolderApp =
       request?.tj_allow_owner_folder_app_create && extractedMetadata.features?.includes(FEATURE_KEY.CREATE_FOLDER_APP);
     const ownerCanDeleteFolderApp =
