@@ -81,6 +81,7 @@ const useAppData = (
   mode = 'edit',
   { environmentId, versionId, componentName } = {},
   moduleMode = false,
+  isModuleEditor = false,
   appSlug
 ) => {
   const mounted = useMounted();
@@ -316,7 +317,14 @@ const useAppData = (
       (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
-    if (moduleMode) {
+    if (moduleMode && isModuleEditor) {
+      // Editing the module itself directly — appId is the module's real DB id (from the
+      // route), not its co_relation_id, so this must use the same id-based fetch as a
+      // regular app rather than the by-correlation endpoint (which expects co_relation_id).
+      appDataPromise = isPreviewForVersion
+        ? appVersionService.getAppVersionData(appId, versionId, mode)
+        : appService.fetchApp(appId);
+    } else if (moduleMode) {
       // The moduleDefinition cached by the parent app reflects the module from the parent's current
       // branch — not the specific version pinned on this ModuleViewer. Authenticated viewers call the
       // version API directly to get the correct pinned version. Public (unauthenticated) viewers
@@ -854,6 +862,15 @@ const useAppData = (
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
+    // Tried extending this to the standalone module editor (isModuleEditor) too, since it
+    // used to run unconditionally here before AppBuilder.jsx started passing moduleMode for
+    // direct module edits. Reverted: changeEditorVersionAction's onSuccess callers set
+    // currentVersionId a beat after changeEditorVersionAction's own atomic state update
+    // (mirroring the non-module VersionManagerDropdown pattern) — for modules that second
+    // write re-triggers this effect on top of the refresh changeEditorVersionAction already
+    // did, racing cleanUpStore/setApp/initDependencyGraph against themselves. The targeted
+    // fix lives in changeEditorVersionAction itself (pages/freeze/environment sync in one
+    // pass) instead of relying on this effect for modules.
     if (moduleMode) return;
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';

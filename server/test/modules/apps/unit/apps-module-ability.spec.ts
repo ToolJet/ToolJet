@@ -93,6 +93,10 @@ describe('defineAppAbility — MODULES.MODULES resource', () => {
     it('can(VALIDATE_PRIVATE_APP_ACCESS, App, appId) = true', () => {
       expect(ability.can(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS, App, MODULE_APP_ID)).toBe(true);
     });
+
+    it('can(RELEASE, App, appId) = true — module editor can release', () => {
+      expect(ability.can(FEATURE_KEY.RELEASE, App, MODULE_APP_ID)).toBe(true);
+    });
   });
 
   describe('Case 2: viewable-only (viewableAppsId includes appId, not in editable)', () => {
@@ -121,6 +125,10 @@ describe('defineAppAbility — MODULES.MODULES resource', () => {
 
     it('can(VALIDATE_PRIVATE_APP_ACCESS, App, appId) = true', () => {
       expect(ability.can(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS, App, MODULE_APP_ID)).toBe(true);
+    });
+
+    it('can(RELEASE, App, appId) = false — Build-with cannot release', () => {
+      expect(ability.can(FEATURE_KEY.RELEASE, App, MODULE_APP_ID)).toBe(false);
     });
   });
 

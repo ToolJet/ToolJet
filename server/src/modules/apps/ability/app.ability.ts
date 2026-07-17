@@ -78,6 +78,7 @@ export function defineAppAbility(
           FEATURE_KEY.GET_BY_SLUG,
           FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
           FEATURE_KEY.UPDATE_ICON,
+          FEATURE_KEY.RELEASE,
         ],
         App
       );

@@ -28,7 +28,7 @@ import { useNavigate } from 'react-router-dom';
 export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, appType = 'front-end' }) => {
   const isModuleEditor = appType === 'module';
   // Module read-only (Build-with vs Edit) is resolved inside useAppData from the session.
-  useAppData(appId, moduleId, darkMode, 'edit', {}, isModuleEditor);
+  useAppData(appId, moduleId, darkMode, 'edit', {}, isModuleEditor, isModuleEditor);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
