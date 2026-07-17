@@ -73,6 +73,12 @@ describe('AppsRepository', () => {
 
         expect(result).toBeNull();
       });
+
+      it('should return null for an unknown UUID', async () => {
+        const result = await appsRepository.findByIdOrSlug('00000000-0000-0000-0000-000000000000');
+
+        expect(result).toBeNull();
+      });
     });
   });
 

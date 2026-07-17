@@ -39,13 +39,17 @@ fmt_duration() {
 mode="sequential"   # sequential | ci
 coverage=false
 jest_extra_args=()
-
-for arg in "$@"; do
-  case "$arg" in
-    --ci)       mode="ci" ;;
-    --coverage) coverage=true ;;
-    *) jest_extra_args+=("$arg") ;;
+json_output_dir=""
+_args=("$@")
+_i=0
+while [[ $_i -lt ${#_args[@]} ]]; do
+  case "${_args[$_i]}" in
+    --ci)              mode="ci" ;;
+    --coverage)        coverage=true ;;
+    --json-output-dir) _i=$((_i + 1)); json_output_dir="${_args[$_i]}" ;;
+    *)                 jest_extra_args+=("${_args[$_i]}") ;;
   esac
+  _i=$((_i + 1))
 done
 
 # ---------------------------------------------------------------------------
@@ -115,12 +119,15 @@ collect_shard_results() {
 # ---------------------------------------------------------------------------
 if [ "$mode" = "sequential" ]; then
   for s in $(seq 1 $SHARDS); do
+    json_args=()
+    [[ -n "$json_output_dir" ]] && json_args=(--json --outputFile "$json_output_dir/shard-$s.json")
+
     printf "\033[1m━━━ Running shard %d/%d ━━━\033[0m\n" "$s" "$SHARDS"
 
     SKIP_GLOBAL_SETUP=1 NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" npx jest \
       --config "$JEST_CONFIG" --shard="$s/$SHARDS" \
       --coverageDirectory=.coverage/shard-$s \
-      "${SHARD_JEST_ARGS[@]}" "${jest_extra_args[@]}" 2>&1 | tee "$SHARD_LOG_DIR/shard-$s.log"
+      "${SHARD_JEST_ARGS[@]}" "${json_args[@]}" "${jest_extra_args[@]}" 2>&1 | tee "$SHARD_LOG_DIR/shard-$s.log"
 
     shard_exit=${PIPESTATUS[0]}
     [ $shard_exit -ne 0 ] && exit_code=1
@@ -171,12 +178,15 @@ if [ "$mode" = "ci" ]; then
 
   pids=()
   for s in $(seq 1 $SHARDS); do
+    json_args=()
+    [[ -n "$json_output_dir" ]] && json_args=(--json --outputFile "$json_output_dir/shard-$s.json")
+
     printf "\033[1m━━━ Launching shard %d/%d ━━━\033[0m\n" "$s" "$SHARDS"
     PG_DB="${shard_dbs[$((s-1))]}" TOOLJET_DB="${shard_tjdbs[$((s-1))]}" \
     SKIP_GLOBAL_SETUP=1 NODE_ENV=test NODE_OPTIONS="$NODE_OPTS" \
     npx jest --config "$JEST_CONFIG" --shard="$s/$SHARDS" \
       --coverageDirectory=.coverage/shard-$s \
-      "${SHARD_JEST_ARGS[@]}" "${jest_extra_args[@]}" \
+      "${SHARD_JEST_ARGS[@]}" "${json_args[@]}" "${jest_extra_args[@]}" \
       > "$SHARD_LOG_DIR/shard-$s.log" 2>&1 &
     pids+=($!)
     [ "$s" -lt "$SHARDS" ] && sleep 30
