@@ -87,9 +87,9 @@ export const groupsSelector = {
   appHideLabel: '[data-cy="app-hide-from-dashboard-label"]',
 
   workflowsText: '[data-cy="workflows-text"]',
-  workflowsBuildRadio: '[data-cy="workflow-build-radio"]',
-  workflowsBuildLabel: '[data-cy="workflow-build-label"]',
-  workflowsBuildHelperText: '[data-cy="workflow-build-helper-text"]',
+  workflowsEditRadio: '[data-cy="workflow-edit-radio"]',
+  workflowsEditLabel: '[data-cy="workflow-edit-label"]',
+  workflowsEditHelperText: '[data-cy="workflow-edit-helper-text"]',
   workflowsExecuteRadio: '[data-cy="workflow-execute-radio"]',
   workflowsExecuteLabel: '[data-cy="workflow-execute-label"]',
   workflowsExecuteHelperText: '[data-cy="workflow-execute-helper-text"]',
