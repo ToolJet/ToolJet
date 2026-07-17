@@ -383,8 +383,15 @@ export const EventManager = ({
     });
   }
 
-  function getDefaultEventName() {
-    return `Event #${events.length + 1}`;
+  function getDefaultEventName(sourceEvents) {
+    const existingNumbers = (sourceEvents ?? events)
+      .map((event) => {
+        const match = /^Event #(\d+)$/.exec(event?.name ?? '');
+        return match ? parseInt(match[1], 10) : null;
+      })
+      .filter((number) => number !== null);
+    const nextNumber = existingNumbers.length ? Math.max(...existingNumbers) + 1 : 1;
+    return `Event #${nextNumber}`;
   }
 
   function removeHandler(index) {
@@ -406,8 +413,14 @@ export const EventManager = ({
   }
 
   async function addHandler(eventId) {
-    let newEvents = events;
-    const eventIndex = newEvents.length;
+    const sourceEvents = useStore
+      .getState()
+      .eventsSlice.getModuleEvents(moduleId)
+      .filter((event) => {
+        if (customEventRefs && event.event?.ref !== customEventRefs.ref) return false;
+        return event.sourceId === sourceId && event.target === eventSourceType;
+      });
+    const eventIndex = sourceEvents.reduce((max, event) => (event.index > max ? event.index : max), -1);
     const selectedEventId = eventId || Object.keys(eventMetaDefinition?.events)[0];
     //----------------- Posthog Analytics for event handlers -----------------//
     let postHogEventType = 'Event Handler';
@@ -433,7 +446,6 @@ export const EventManager = ({
     //----------------- Posthog Analytics -----------------//
     markEventCreationPending();
     const createdEvent = await createAppVersionEventHandlers({
-      name: getDefaultEventName(),
       event: {
         eventId: selectedEventId,
         actionId: 'show-alert',
@@ -442,10 +454,12 @@ export const EventManager = ({
         component: eventMetaDefinition.name,
         ...customEventRefs,
       },
+      name: getDefaultEventName(sourceEvents),
       eventType: eventSourceType,
       attachedTo: sourceId,
-      index: eventIndex,
+      index: eventIndex + 1,
     });
+
     if (!createdEvent) cancelPendingEventCreation();
   }
 
