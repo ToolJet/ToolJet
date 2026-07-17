@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const globalDatasourceService = {
   create,
   getAll,
+  getAiTaggableDataSources,
   save,
   deleteDataSource,
   convertToGlobal,
@@ -12,6 +13,14 @@ export const globalDatasourceService = {
   getQueriesLinkedToDatasource,
   getQueriesLinkedToMarketplacePlugin,
 };
+
+// Datasources the current user may tag in the AI prompt — RBAC-filtered server-side to the AI
+// use/configure gate (organization is derived from the session). Returns [{ id, name, kind }].
+function getAiTaggableDataSources() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+
+  return fetch(`${config.apiUrl}/ai/taggable-datasources`, requestOptions).then(handleResponse);
+}
 
 function getForApp(organizationId, appVersionId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
