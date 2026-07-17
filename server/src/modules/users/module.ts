@@ -1,5 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { UserRepository } from './repositories/repository';
+import { UserBanListRepository } from './repositories/user-ban-list.repository';
 import { SessionModule } from '@modules/session/module';
 import { FeatureAbilityFactory } from './ability';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
@@ -21,12 +22,13 @@ export class UsersModule extends SubModule {
       providers: [
         UsersService,
         UserRepository,
+        UserBanListRepository,
         UsersUtilService,
         FeatureAbilityFactory,
         OrganizationUsersRepository,
         UserMfaRepository,
       ],
-      exports: [UsersUtilService],
+      exports: [UsersUtilService, UserBanListRepository],
     };
   }
 }

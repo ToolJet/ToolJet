@@ -40,7 +40,7 @@ describe("Instance Settings - All Users UI", () => {
         cy.clearAndType(instanceWorkspaceSelectors.userSearchBar, data.userEmail);
 
         verifyUserRow(data.userName, data.userEmail, "workspace", "active");
-        verifyUserActionMenu(data.userName);
+        verifyUserActionMenu(data.userEmail);
 
         verifyResetPasswordModalUI(data.userEmail);
 

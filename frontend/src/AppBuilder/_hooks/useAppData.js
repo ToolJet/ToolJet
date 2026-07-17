@@ -17,6 +17,7 @@ import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
@@ -51,6 +52,8 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'notificationDuration',
   'disableQuery',
   'disabledMessage',
+  'workflowId',
+  'workflowVersionId',
 ];
 
 const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
@@ -101,6 +104,7 @@ const useAppData = (
   const setCurrentPageId = useStore((state) => state.setCurrentPageId);
   const updateEventsField = useEventActions().updateEventsField;
   const setCurrentMode = useStore((state) => state.setCurrentMode);
+  const setIsEditorReadOnly = useStore((state) => state.setIsEditorReadOnly);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
@@ -149,7 +153,7 @@ const useAppData = (
     let totalPages = 1;
 
     while (currentPage <= totalPages) {
-      const data = await appsService.getAll(currentPage, '', '', 'module');
+      const data = await appsService.getAll(currentPage, '', '', 'module', 'picker');
       const pageModules = data?.apps || [];
 
       allModules.push(...pageModules);
@@ -512,6 +516,20 @@ const useAppData = (
         if (!moduleMode) {
           updateFeatureAccess();
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          setIsEditorReadOnly(false); // non-module editors are never gated by module read-only
+        } else if (moduleId === 'canvas') {
+          // Module opened as the main editor (not a nested module): AppLoader resets all
+          // stores on mount, so feature access must be reloaded here too — otherwise
+          // modulesEnabled stays false and the ModuleContainer renders with the `disabled`
+          // class (opacity + pointer-events:none), breaking drops/move inside the module.
+          updateFeatureAccess();
+          // Needs its own currentVersionId so saveComponentChanges can reach the correct version endpoint.
+          setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          // Build-with (view-only) access → read-only editor. Security is enforced server-side;
+          // this only switches the editor UI into read-only (see getShouldFreeze).
+          const moduleOwnerId = appData?.user_id ?? appData?.editing_version?.app?.user_id ?? appData?.app?.user_id;
+          const canEdit = canEditModule(authenticationService.currentSessionValue, appId, moduleOwnerId);
+          setIsEditorReadOnly(!canEdit);
         }
         setAppHomePageId(homePageId, moduleId);
         if (!moduleMode && appData.modules) {
@@ -542,6 +560,11 @@ const useAppData = (
               setFolderMappings(folderData.folderMappings ?? []);
             })
             .catch(() => {});
+        } else if (moduleMode && moduleId === 'canvas' && setFolders) {
+          // Modules have no folder structure. Signal foldersReady so the EE QueryFolderTree
+          // renders the flat query list instead of returning null while waiting for fetch.
+          setFolders([]);
+          setFolderMappings([]);
         }
 
         const constants = constantsResp?.constants;
@@ -592,8 +615,16 @@ const useAppData = (
           const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
           useStore.getState().init(versionIdToInit, envFromQueryParams);
           fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+        } else if (!isPublicAccess && moduleMode && moduleId === 'canvas') {
+          // Standalone module editor: load static data sources (RunJS, RestAPI, RunPy) the same
+          // way a regular app editor does. Embedded modules skip this — they inherit the parent's.
+          const versionIdToInit = appData.editing_version?.id || appData.current_version_id;
+          // init() populates selectedVersion and selectedEnvironment, which useAppPreviewLink
+          // needs to build the preview URL with correct ?version=...&env=... params.
+          useStore.getState().init(versionIdToInit);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
-        if (!moduleMode) {
+        if (!moduleMode || moduleId === 'canvas') {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
           updateReleasedVersionId(appData.current_version_id);
         }
