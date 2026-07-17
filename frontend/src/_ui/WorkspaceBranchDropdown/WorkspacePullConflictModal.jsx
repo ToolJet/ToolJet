@@ -41,6 +41,10 @@ function getConflictItemBadge(item, group) {
   if (item.status === 'remote') {
     return hasLocalCounterpart ? { label: 'Remote', variant: 'remote' } : { label: 'Incoming', variant: 'local' };
   }
+  // Push name conflict statuses
+  if (item.status === 'unsynced') return { label: 'Unsynced', variant: 'local' };
+  if (item.status === 'on-branch')
+    return { label: item.targetBranchName ? `On ${item.targetBranchName}` : 'On branch', variant: 'remote' };
   return { label: item.status, variant: item.status };
 }
 
@@ -171,18 +175,23 @@ export function PullConflictModal({
   if (!show) return null;
 
   const isImport = context === 'import';
+  const isPushNameConflict = context === 'push-name';
   const isPushConflict =
-    !isImport && conflictGroups.some((g) => g.conflicts?.some((c) => c.status === 'local' || c.status === 'remote'));
+    !isImport &&
+    !isPushNameConflict &&
+    conflictGroups.some((g) => g.conflicts?.some((c) => c.status === 'local' || c.status === 'remote'));
   const isBranchCreation = context === 'branch-creation';
   const isBranchSwitch = context === 'branch-switch';
-  const isPullOnly = !isBranchCreation && !isBranchSwitch && !isPushConflict && !isImport;
+  const isPullOnly = !isBranchCreation && !isBranchSwitch && !isPushConflict && !isImport && !isPushNameConflict;
   // Pull and import both bring in resources from git and can selectively sync a
   // conflicting one; push/branch-creation/branch-switch have no "remote version to
   // take" concept for a name conflict, so they stay manual-only.
   const isSyncEligible = isPullOnly || isImport;
-  const hideBadges = !isSyncEligible;
+  // Show badges for push-name conflicts so Unsynced/On-branch labels are visible.
+  const hideBadges = !isSyncEligible && !isPushNameConflict;
 
   const title = (() => {
+    if (isPushNameConflict) return 'Cannot push duplicate data';
     if (isBranchCreation) return 'Cannot create branch';
     if (isBranchSwitch) return 'Cannot open branch';
     if (isImport) return 'Cannot import resources';
@@ -259,7 +268,11 @@ export function PullConflictModal({
         <div className="pull-conflict-modal-body">
           <h3 className="conflict-title">{title}</h3>
 
-          <p className="conflict-description">Due to the following errors, this branch cannot be pulled:</p>
+          <p className="conflict-description">
+            {isPushNameConflict
+              ? 'Due to the following errors, this cannot be pushed:'
+              : 'Due to the following errors, this branch cannot be pulled:'}
+          </p>
           <ul className="conflict-description-list">
             {multiDraftResources.length > 0 && (
               <li>

@@ -194,7 +194,7 @@
     color: var(--slate12);
 
     .conflict-item-name {
-      width: 80px;
+      max-width: 220px;
       flex-shrink: 0;
       font-size: 13px;
       color: var(--slate12);
