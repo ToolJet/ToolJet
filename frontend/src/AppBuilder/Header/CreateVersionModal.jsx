@@ -22,13 +22,14 @@ const CreateVersionModal = ({
   versionId,
   onVersionCreated,
   isBranchingEnabled,
+  getSuccessMessage,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
-  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isGitSyncEnabled = orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
 
   const {
@@ -221,7 +222,21 @@ const CreateVersionModal = ({
 
       // Apps never pushed to git (isSynced === false) have no commit history to tag —
       // treat the save like a non-git workspace and skip tagging silently.
-      if (isGitSyncEnabled && effectiveIsBranchingEnabled && selectedVersionForCreation?.isSynced !== false) {
+      //
+      // Saving FROM a feature-branch draft (versionType 'branch') is a separate case:
+      // the backend (createPublishedVersionFromBranchDraft) clones the draft into a new,
+      // deliberately isSynced:false row on the default branch — but selectedVersionForCreation
+      // here is still the ORIGINAL branch draft object, whose own isSynced can be true (it
+      // was pushed to git as a draft earlier). Tagging it directly would tag the wrong row
+      // under its random UUID placeholder name, so skip tagging for this case too.
+      const isBranchDraftSave =
+        selectedVersionForCreation?.versionType === 'branch' || selectedVersionForCreation?.version_type === 'branch';
+      if (
+        isGitSyncEnabled &&
+        effectiveIsBranchingEnabled &&
+        !isBranchDraftSave &&
+        selectedVersionForCreation?.isSynced !== false
+      ) {
         gitSyncService
           .createGitTag(
             appId,
@@ -237,7 +252,7 @@ const CreateVersionModal = ({
           });
       }
 
-      toast.success('Version Created successfully');
+      toast.success(getSuccessMessage ? getSuccessMessage(versionName.trim()) : 'Version Created successfully');
       setVersionName('');
       setVersionDescription('');
       setSelectedVersionForCreation(null);

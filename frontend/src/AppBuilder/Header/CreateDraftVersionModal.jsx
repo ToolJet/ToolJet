@@ -11,6 +11,7 @@ import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
   const { moduleId } = useModuleContext();
@@ -41,6 +42,8 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     shallow
   );
 
+  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
+
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
@@ -49,6 +52,21 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
   // no branch-name auto-fill, user picks their own draft name. isSynced propagates from
   // the source version being created from (see `createVersion` in versions/util.service.ts).
   const isAppGitTracked = isGitSyncEnabled && selectedVersionForCreation?.isSynced !== false;
+
+  // Git single-branch replace flow: git enabled + branching disabled (by license or manually) +
+  // the app is SYNCED (a synced draft already exists). Git keeps exactly one draft tied to the
+  // default branch, so creating a new draft from a saved version REPLACES it (backend swaps it
+  // atomically via `replace: true`). Unsynced apps (is_synced=false) are exempt from the single-draft
+  // rule — they behave like git-off (unlimited drafts) and use the normal create flow below.
+  const hasSyncedDraft = developmentVersions.some(
+    (v) => v.versionType === 'version' && v.status === 'DRAFT' && v.isSynced !== false
+  );
+  const isReplaceFlow = isGitSyncEnabled && !isMultiBranchingEnabled && hasSyncedDraft;
+
+  // Use git draft naming (auto name = default branch, no name input/validation) whenever the
+  // resulting draft is git-tracked: either the source version is synced, or this is the single-branch
+  // replace flow (the draft is the default-branch working draft regardless of the source's own flag).
+  const useGitDraftName = isAppGitTracked || isReplaceFlow;
 
   useEffect(() => {
     if (appId) {
@@ -101,7 +119,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       return;
     }
 
-    if (!isAppGitTracked) {
+    if (!useGitDraftName) {
       if (!versionName || versionName.trim() === '') {
         toast.error('Version name should not be empty');
         return;
@@ -118,8 +136,8 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
 
     setIsCreatingVersion(true);
 
-    const draftName = isAppGitTracked ? defaultBranch : versionName.trim();
-    const draftDescription = isAppGitTracked ? 'Latest commit to main will appear here' : '';
+    const draftName = useGitDraftName ? defaultBranch : versionName.trim();
+    const draftDescription = useGitDraftName ? 'Latest commit to main will appear here' : '';
 
     //TODO: pass environmentId to the func
     createNewVersionAction(
@@ -128,7 +146,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       selectedVersionForCreation.id,
       draftDescription,
       (newVersion) => {
-        toast.success('Version Created');
+        toast.success(isReplaceFlow ? 'Draft replaced' : 'Version Created');
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
         // Refresh development versions to update the list with the new draft
@@ -154,7 +172,9 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
           toast.error(error?.message || error?.error || 'Error while creating version. Please try again.');
         }
         setIsCreatingVersion(false);
-      }
+      },
+      'version',
+      isReplaceFlow
     );
   };
 
@@ -167,6 +187,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       }}
       title={t('editor.appVersionManager.createDraftVersion', 'Create draft version')}
       customClassName="create-draft-version-modal"
+      dialogClassName="create-draft-version-dialog"
     >
       {fetchingOrgGit ? (
         <div className="loader-container">
@@ -180,7 +201,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
           }}
         >
           <div className="create-draft-version-body">
-            {!isAppGitTracked && (
+            {!useGitDraftName && (
               <div className="col mt-3 mb-3">
                 <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                   {t('editor.appVersionManager.versionName', 'Version Name')}
@@ -226,7 +247,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
             <Alert
               placeSvgTop={true}
               svg="warning-icon"
-              cls={`create-draft-version-alert ${isAppGitTracked ? 'git-sync-enabled' : 'git-sync-disabled'}`}
+              cls={`create-draft-version-alert ${useGitDraftName ? 'git-sync-enabled' : 'git-sync-disabled'}`}
             >
               <div
                 className="d-flex align-items-center"
@@ -242,7 +263,9 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
                   style={{ marginBottom: '12px' }}
                   data-cy="create-draft-version-helper-text"
                 >
-                  Draft version can only be created from saved versions.{' '}
+                  {isReplaceFlow
+                    ? `This app uses git, which keeps a single draft tied to the ${defaultBranch} branch at all times. Creating a new draft will replace your current one.`
+                    : 'Draft version can only be created from saved versions.'}{' '}
                 </div>
               </div>
             </Alert>
@@ -261,17 +284,19 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
                 className="mx-2"
                 data-cy="create-draft-version-cancel-button"
               >
-                {t('globals.cancel', 'Cancel')}
+                {isReplaceFlow ? 'Keep current draft' : t('globals.cancel', 'Cancel')}
               </ButtonSolid>
               <ButtonSolid
                 size="lg"
                 variant="primary"
                 className=""
                 type="submit"
-                disabled={!selectedVersionForCreation}
+                disabled={!selectedVersionForCreation || isCreatingVersion}
                 data-cy="create-draft-version-create-button"
               >
-                {t('editor.appVersionManager.createVersion', 'Create Version')}
+                {isReplaceFlow
+                  ? 'Replace with new draft'
+                  : t('editor.appVersionManager.createVersion', 'Create Version')}
               </ButtonSolid>
             </div>
           </div>

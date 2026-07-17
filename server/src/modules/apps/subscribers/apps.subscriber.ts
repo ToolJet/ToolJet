@@ -22,14 +22,11 @@ export class AppsSubscriber implements EntitySubscriberInterface {
   }
 
   async afterInsert(event: InsertEvent<any>): Promise<void> {
-    const entity = event.entity;
-    if (!(entity instanceof App)) return;
-    // Workflows keep slug on apps.* — auto-fill the placeholder if not provided.
-    // Non-workflows store slug on app_versions; leave apps.slug as NULL. Postgres
-    // allows multiple NULLs on a UNIQUE column so this doesn't violate the constraint.
-    if (entity.type === APP_TYPES.WORKFLOW && !entity.slug) {
-      await this.appRepository.update(entity.id, { slug: entity.id });
-    }
+    // No-op: apps.slug is never auto-filled at insert time for any app type.
+    // Workflows previously got their placeholder filled here because they read
+    // apps.slug as their functional slug; now they use app_versions.slug like
+    // every other type and apps.slug stays NULL (Postgres allows multiple NULLs
+    // on the UNIQUE column).
   }
 
   async afterUpdate(event: UpdateEvent<any>): Promise<void> {
@@ -58,9 +55,9 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     if (skipAppEditingVersionHydration.getStore()) return;
 
     // Git-sync detection via the central util — gates on license + provider + branch.
-    // Workflows are exempt — they don't participate in branching (branch_id always NULL),
-    // so the subscriber falls through and picks their single VERSION row even when git
-    // is on for the org.
+    // Workflows are exempt — they only ever use the org's default branch (no feature
+    // branches), so the subscriber falls through and picks their single VERSION row even
+    // when git is on for the org.
     const isWorkflow = app.type === APP_TYPES.WORKFLOW;
     let isGitEnabled = false;
     if (!isWorkflow) {

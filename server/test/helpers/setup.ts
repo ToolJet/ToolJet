@@ -319,7 +319,9 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   permissions: { customGroups: true },
   observability: { enabled: true },
   workflows: {
-    enabled: true, execution_timeout: 0,
+    // execution_timeout is consumed as a literal timeout ceiling (workflow-executions.service.ts:732),
+    // not a sentinel like the 'UNLIMITED' fields above -- 0 means "time out immediately", not "no limit".
+    enabled: true, execution_timeout: 3600,
     workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
     instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
   },
@@ -391,6 +393,41 @@ function configurePlanMock(app: INestApplication, plan: string) {
   const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
   if (!lts._licenseInstance) return; // not our mock — skip
   lts._licenseInstance = createLicenseInstance(plan);
+}
+
+/** Builds a LicenseBase from arbitrary Terms. `expired` sets a past expiry → basic-plan fallback. */
+function buildTestLicenseInstance(terms: Partial<Terms>, expired = false): LicenseBase {
+  const expiry = new Date();
+  if (expired) expiry.setDate(expiry.getDate() - 1);
+  else expiry.setMinutes(expiry.getMinutes() + 30);
+  return new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, terms, new Date(), new Date(), expiry, (terms as any).type ?? 'enterprise');
+}
+
+/**
+ * Overrides the license terms on the running app's (mocked) LicenseTermsService at runtime — no
+ * restart. Use it to drive license-dependent scenarios mid-test (e.g. gitSync unlicensed,
+ * multi-branch unlicensed, or an expired plan). Call restoreLicensePlan() afterwards to revert.
+ *
+ * The terms are also mirrored into the TEST_LICENSE_TERMS env var so the real License path
+ * (ee/licensing/configs/License.ts, which reads it under NODE_ENV=test) stays consistent for any
+ * code that resolves through the real License instance instead of the mock.
+ */
+export function setTestLicenseTerms(
+  app: INestApplication,
+  terms: Partial<Terms>,
+  opts: { expired?: boolean } = {}
+): void {
+  const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
+  if (!lts?._licenseInstance) return; // not our mock — skip
+  // Mirror into the env the real License path reads (kept consistent with the expired flag).
+  process.env.TEST_LICENSE_TERMS = JSON.stringify({ expiry: opts.expired ? '2000-01-01' : '2999-12-31', ...terms });
+  lts._licenseInstance = buildTestLicenseInstance(terms, opts.expired);
+}
+
+/** Restores the license mock to a plan (default enterprise) and clears TEST_LICENSE_TERMS. */
+export function restoreLicensePlan(app: INestApplication, plan = 'enterprise'): void {
+  delete process.env.TEST_LICENSE_TERMS;
+  configurePlanMock(app, plan);
 }
 
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {

@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
 import { gitSyncService } from '@/_services';
+import { appendBranchName } from '@/_helpers/active-branch';
 
 /**
  * LifecycleCTAButton - Dynamic button that shows git operations based on branch type
@@ -64,8 +65,10 @@ const LifecycleCTAButton = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const wsActions = useWorkspaceBranchesStore((state) => state.actions);
   // eslint-disable-next-line react-hooks/rules-of-hooks
+  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const orgGit = useStore((state) => state.orgGit);
-  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
       workspaceActiveBranch.isDefault ||
@@ -106,8 +109,8 @@ const LifecycleCTAButton = () => {
       };
     }
 
-    if (isOnDefaultBranch) {
-      // Default branch - show "Pull commit" button
+    if (isOnDefaultBranch && isMultiBranchingEnabled) {
+      // Default branch (multi-branch) - show "Pull commit" button
       return {
         label: 'Pull commit',
         icon: 'commit',
@@ -116,7 +119,7 @@ const LifecycleCTAButton = () => {
         unsynced: false,
       };
     } else {
-      // Feature branch - show "Commit" button
+      // Feature branch, or single-branch mode on the default branch - show "Commit" button
       return {
         label: 'Commit',
         icon: 'commit',
@@ -173,8 +176,11 @@ const LifecycleCTAButton = () => {
           onSuccess={() => {
             setShowPushModal(false);
             setTimeout(() => {
+              // switchBranch() already stamped `?branch=<target>` onto the current URL — carry it
+              // into the redirect so the reloaded editor resolves the target branch, not the
+              // default branch (which doesn't have this app's draft yet and hangs the loader).
               const pathParts = window.location.pathname.split('/');
-              window.location.href = `/${pathParts[1]}/apps/${appId}`;
+              window.location.href = appendBranchName(`/${pathParts[1]}/apps/${appId}`);
             }, 1500);
           }}
         />

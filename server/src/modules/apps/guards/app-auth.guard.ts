@@ -30,9 +30,9 @@ export class AppAuthGuard extends AuthGuard('jwt') {
 
     // Slug-based lookup is a released-app resolution path — the slug is the
     // public URL handle and resolves the app instance-wide via its canonical
-    // (default-branch or branchless) row. The requester's editor x-branch-id
-    // is the wrong scope here; ignore it and let findAppBySlug do the global
-    // resolution.
+    // (default-branch or branchless) row. The requester's active branch is the
+    // wrong scope here; ignore it and let findAppBySlug do the global resolution.
+    // (The client also omits branch_id on this endpoint — see fetchAppBySlug.)
     const app = await this.appRepository.findAppBySlug(slug);
 
     if (!app) throw new NotFoundException('App not found. Invalid app id');

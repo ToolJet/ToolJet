@@ -165,7 +165,20 @@ export class VersionService implements IVersionService {
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
     const context = await this.beforeVersionCreate(app, user, versionCreateDto);
-    const result = await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    let result;
+    // Git single-branch keeps exactly one draft on the default branch. When the caller opts to
+    // replace (the "Replace with new draft" action), atomically swap the existing draft for a fresh
+    // one cloned from versionFromId instead of tripping the single-draft guard. Only applies to git
+    // single-branch (git-off allows many drafts; multi-branch patches via feature branches).
+    if (versionCreateDto.replace) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      if (details.isEnabled && !details.isMultiBranchingEnabled) {
+        result = await this.versionsUtilService.replaceDraftVersion(app, user, versionCreateDto);
+      }
+    }
+    if (!result) {
+      result = await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    }
     await this.afterVersionCreate(context, result, app, user);
     return result;
   }
@@ -336,6 +349,30 @@ export class VersionService implements IVersionService {
     const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
 
+      // Saving a version from a feature-branch draft: the branch row must stay a
+      // DRAFT (chk_app_versions_branch_type_implies_draft_branched), so "publish"
+      // here clones its content into a new VERSION-type row instead of flipping
+      // the branch row itself. The branch's own draft is left untouched.
+      if (
+        appVersion.versionType === AppVersionType.BRANCH &&
+        appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED
+      ) {
+        if (app.type !== 'module') {
+          await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+        }
+        return this.versionsUtilService.createPublishedVersionFromBranchDraft(
+          app,
+          user,
+          {
+            versionName: appVersionUpdateDto.name,
+            versionFromId: appVersion.id,
+            versionDescription: appVersionUpdateDto.description,
+            environmentId: undefined,
+          },
+          manager
+        );
+      }
+
       if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
       }
@@ -493,6 +530,22 @@ export class VersionService implements IVersionService {
       versionDescription: '',
       versionType: versionType,
     };
+
+    // Git single-branch keeps exactly one draft on the default branch. When the caller opts to
+    // replace (the "Replace with new draft" action from the version selector), atomically swap the
+    // existing draft for a fresh one cloned from the chosen saved version instead of tripping the
+    // single-draft guard. Only applies to git single-branch (git-off allows many drafts; multi-branch
+    // patches via feature branches). Runs through the same before/after hooks so history is captured.
+    if (draftVersionDto.replace) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      if (details.isEnabled && !details.isMultiBranchingEnabled) {
+        const context = await this.beforeVersionCreate(app, user, createVersionDto);
+        const replaced = await this.versionsUtilService.replaceDraftVersion(app, user, createVersionDto);
+        await this.afterVersionCreate(context, replaced, app, user);
+        return replaced;
+      }
+    }
+
     const draftVersion = await this.createVersion(app, user, createVersionDto);
     return draftVersion;
   }

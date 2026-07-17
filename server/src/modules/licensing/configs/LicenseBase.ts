@@ -54,6 +54,7 @@ export default class LicenseBase {
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
+  private _isGitSyncMultiBranch: boolean;
   private _aiPlan: 'byok' | 'selfhostai' | 'credits';
 
   constructor(
@@ -142,6 +143,7 @@ export default class LicenseBase {
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
+    this._isGitSyncMultiBranch = this.getFeatureValue('gitSyncMultiBranch');
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
@@ -569,6 +571,7 @@ export default class LicenseBase {
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
       gitSync: this.gitSync,
+      gitSyncMultiBranch: this.gitSyncMultiBranch,
       comments: this.comments,
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
@@ -709,5 +712,12 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.jsLibraries;
+  }
+
+  public get gitSyncMultiBranch(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS?.features?.gitSync && !!this.BASIC_PLAN_TERMS?.features?.gitSyncMultiBranch;
+    }
+    return !!this._isGitSync && !!this._isGitSyncMultiBranch;
   }
 }

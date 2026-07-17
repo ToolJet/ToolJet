@@ -26,8 +26,8 @@ export class ValidateQueryAppGuard implements CanActivate {
       const { id, versionId } = request.params;
       const appId = request.body?.app_id;
       const user: User = request.user;
-      // Forward x-branch-id so metadata overlay reflects the caller's active branch.
-      const branchId = (request.headers['x-branch-id'] as string) || undefined;
+      // user.branchId (resolved in the JWT strategy) so metadata overlay reflects the caller's active branch.
+      const branchId = user?.branchId || undefined;
 
       if (!id && !versionId && !appId) {
         throw new BadRequestException();

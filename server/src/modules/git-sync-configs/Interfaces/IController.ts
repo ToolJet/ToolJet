@@ -2,6 +2,7 @@ import {
   OrganizationGitCreateDto,
   OrganizationGitStatusUpdateDto,
   OrganizationGitUpdateDto,
+  UpdateBranchingEnabledDto,
 } from '@dto/organization_git.dto';
 import { User as UserEntity } from 'src/entities/user.entity';
 
@@ -19,6 +20,11 @@ export interface IGitSyncConfigsController {
     user: UserEntity,
     organizationGitId: string,
     organizationGitStatusUpdateDto: OrganizationGitStatusUpdateDto
+  ): Promise<any>;
+  updateBranchingEnabled(
+    user: UserEntity,
+    organizationGitId: string,
+    updateBranchingEnabledDto: UpdateBranchingEnabledDto
   ): Promise<any>;
   deleteConfig(user: UserEntity, organizationGitId: string, gitType: string): Promise<any>;
 }

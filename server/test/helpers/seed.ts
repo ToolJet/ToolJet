@@ -32,6 +32,7 @@ import { Credential } from '@entities/credential.entity';
 import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { getDefaultDataSource } from './setup';
 import { login } from './api';
 
@@ -608,6 +609,7 @@ export async function createApplicationVersion(
   const appVersionsRepository: Repository<AppVersion> = ds.getRepository(AppVersion);
   const appEnvironmentsRepository: Repository<AppEnvironment> = ds.getRepository(AppEnvironment);
   const pageRepository: Repository<Page> = ds.getRepository(Page);
+  const workspaceBranchRepository: Repository<WorkspaceBranch> = ds.getRepository(WorkspaceBranch);
 
   const environments = await appEnvironmentsRepository.find({
     where: {
@@ -621,12 +623,37 @@ export async function createApplicationVersion(
       ? environments.find((env) => env.priority === 1)?.id
       : environments[0].id;
 
+  // branch_id is NOT NULL for every app type, including workflow (Task 3.5 dropped the
+  // workflow exemption on trg_app_versions_branch_id_required / column-level NOT NULL)
+  // -- resolve (or seed) the org's default branch so a plain call succeeds. Tests that
+  // need a specific branch override it afterwards via updateEntity, same as before this
+  // was required.
+  // chk_app_versions_branch_metadata requires app_name + slug whenever branch_id is set,
+  // so every type's default also needs placeholder metadata -- mirrors the placeholder
+  // AppsUtilService.create writes in production (random-uuid slug, app name as app_name).
+  let defaultBranch = await workspaceBranchRepository.findOne({
+    where: { organizationId: application.organizationId, isDefault: true },
+  });
+  if (!defaultBranch) {
+    defaultBranch = await workspaceBranchRepository.save(
+      workspaceBranchRepository.create({
+        organizationId: application.organizationId,
+        name: 'main',
+        isDefault: true,
+      })
+    );
+  }
+  const branchId: string = defaultBranch.id;
+  const placeholderMeta: { appName: string; slug: string } = { appName: application.name ?? name, slug: uuidv4() };
+
   const version = await appVersionsRepository.save(
     appVersionsRepository.create({
       appId: application.id,
       name: name + Date.now(),
       currentEnvironmentId: envId,
       definition,
+      branchId,
+      ...placeholderMeta,
     })
   );
 
@@ -680,14 +707,17 @@ export async function createDataSource(
     })
   );
 
-  // Create default DataSourceVersion required by DataSourceVersionOptions
+  // Create default DataSourceVersion required by DataSourceVersionOptions.
+  // data_source_versions.branch_id is column-level NOT NULL (no workflow carve-out,
+  // unlike app_versions) — mirror the app version's already-resolved branchId rather
+  // than hardcoding null, which trips the NOT NULL constraint for every non-workflow app.
   await ds.manager.save(
     ds.manager.create(DataSourceVersion, {
       dataSourceId: dataSource.id,
       name: dataSource.name,
       isDefault: true,
       isActive: true,
-      branchId: null,
+      branchId: appVersion?.branchId ?? null,
     })
   );
 
@@ -734,8 +764,12 @@ export async function createDataSourceOption(_nestApp: INestApplication, { dataS
     Object.assign(parsedOptions, options);
   }
 
+  // DataSourceVersion.isDefault was dropped by MakeDataSourceVersionBranchIdNotNullAndDropIsDefault
+  // — createDataSource only ever creates one DSV row per data source in these fixtures, so
+  // dataSourceId alone identifies it (mirrors the migration's "role now carried by the org's
+  // default-branch row" note; there's no branching here to disambiguate further).
   const dsv = await ds.manager.findOneOrFail(DataSourceVersion, {
-    where: { dataSourceId: dataSource.id, isDefault: true },
+    where: { dataSourceId: dataSource.id },
   });
 
   return await ds.manager.save(

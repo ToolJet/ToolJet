@@ -21,33 +21,30 @@ const LockedBranchBanner = ({
     return null;
   }
   const pageContextText = pageContext ? `edit ${pageContext}` : '';
+  const isLicenseLock = reason === 'git_sync_license_off';
 
   const reasonText =
     reason === 'released'
       ? 'This branch has been released and is now read-only'
+      : isLicenseLock
+      ? 'Your plan has expired. Renew your plan or disable git sync to continue.'
       : reason === 'main_config_branch'
       ? `Master is locked. Create a branch to add or ${pageContextText}.`
       : 'This branch has been merged and is now read-only';
 
   return (
-    <div className={`locked-branch-banner locked-branch-banner--${variant}`} data-cy="locked-branch-banner">
+    <div
+      className={`locked-branch-banner locked-branch-banner--${variant}${
+        isLicenseLock ? ' locked-branch-banner--warning' : ''
+      }`}
+      data-cy="locked-branch-banner"
+    >
       <div className="locked-branch-banner-content">
-        {/* <svg
-          className="locked-branch-banner-icon"
+        <SolidIcon
+          name={isLicenseLock ? 'warning' : variant === 'floating' ? 'information' : 'lock'}
+          fill={isLicenseLock ? 'var(--icon-warning, #BF4F03)' : 'var(--icon-default)'}
           width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M12.6667 7.33333H12V5.33333C12 3.49238 10.5076 2 8.66667 2C6.82572 2 5.33333 3.49238 5.33333 5.33333V7.33333H4.66667C3.93029 7.33333 3.33333 7.93029 3.33333 8.66667V12.6667C3.33333 13.403 3.93029 14 4.66667 14H12.6667C13.403 14 14 13.403 14 12.6667V8.66667C14 7.93029 13.403 7.33333 12.6667 7.33333ZM6.66667 5.33333C6.66667 4.22876 7.56209 3.33333 8.66667 3.33333C9.77124 3.33333 10.6667 4.22876 10.6667 5.33333V7.33333H6.66667V5.33333Z"
-            // fill="currentColor"
-            stroke='currentColor'
-            strokeWidth="1.2"
-          /> 
-        </svg> */}
-        <SolidIcon name={variant === 'floating' ? 'information' : 'lock'} fill="var(--icon-default)" width="16" />
+        />
         <div className="locked-branch-banner-text">
           <span className="locked-branch-banner-message">{reasonText}</span>
           {/* {branchName && (

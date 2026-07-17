@@ -103,6 +103,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.organizationIds = payload.organizationIds;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.organizationId = user.organizationId ?? organizationId;
+        user.branchId = await this.resolveBranchId(req, user.organizationId);
 
         return user;
       }
@@ -151,6 +153,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        // Resolve the active Git branch once per request: explicit `branch_id` query
+        // param, else the org's default branch. Consumers read user.branchId instead
+        // of the old x-branch-id header.
+        user.branchId = await this.resolveBranchId(req, user.organizationId);
         if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
 
         // Track user activity for metrics (every authenticated request)
@@ -174,6 +180,36 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         `JwtStrategy validate completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
       );
     }
+  }
+
+  /**
+   * Resolves the active Git branch id for a request. Precedence:
+   *   1. The explicit `branch_id` query param (current mechanism).
+   *   2. The legacy `x-branch-id` header — transitional fallback for clients not yet migrated
+   *      to the query param (cached SPAs, mobile, external API callers).
+   *   3. The organization's default branch.
+   * Returns null when none are available (e.g. no org context). NULL-convention consumers
+   * (folder-apps for non-git orgs / workflows) read the raw query param directly instead.
+   */
+  private async resolveBranchId(req: Request, organizationId?: string): Promise<string | null> {
+    // Callers that want the NULL branch (workflows, non-git contexts) send an empty/`null`
+    // value and read the raw query/header themselves; normalize those to "absent" here so
+    // user.branchId is never the literal string "null".
+    const normalize = (value?: string): string | undefined => {
+      const v = value?.trim();
+      return v && v !== 'null' && v !== 'undefined' ? v : undefined;
+    };
+
+    const rawQuery = req.query?.['branch_id'];
+    const queryBranchId = normalize(typeof rawQuery === 'string' ? rawQuery : undefined);
+    if (queryBranchId) return queryBranchId;
+
+    const rawHeader = req.headers['x-branch-id'];
+    const headerBranchId = normalize(Array.isArray(rawHeader) ? rawHeader[0] : rawHeader);
+    if (headerBranchId) return headerBranchId;
+
+    if (!organizationId) return null;
+    return this.sessionUtilService.getDefaultBranchId(organizationId);
   }
 
   /**
