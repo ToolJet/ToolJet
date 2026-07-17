@@ -3,6 +3,14 @@
 }
 
 .pages-settings {
+    // Keep tab bar pinned below the sticky panel-header while the panel scrolls
+    .nav-tabs {
+        position: sticky;
+        top: 52px; // panel-header height
+        z-index: 10;
+        background: var(--background-surface-layer-01);
+    }
+
     .label-style {
         width: unset !important;
 
