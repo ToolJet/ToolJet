@@ -93,7 +93,9 @@ export function registerBranchFocusSync(isKnownBranchId) {
   document.addEventListener('visibilitychange', _focusSyncListener);
 }
 
-// Cross-tab heal: adopt another tab's localStorage write into this tab's sessionStorage.
+// Cross-tab heal: another tab changed the shared branch value — reconcile from THIS
+// tab's own sessionStorage (valid id keeps the tab's branch; deleted id self-heals).
+// Never copy the other tab's value in: deliberate switches must not propagate.
 let _storageSyncListener = null;
 export function registerBranchStorageSync(onBranchChanged) {
   if (_storageSyncListener) {
@@ -102,13 +104,8 @@ export function registerBranchStorageSync(onBranchChanged) {
   _storageSyncListener = (e) => {
     const id = getOrgId();
     if (!id || e.key !== `${BRANCH_KEY_PREFIX}${id}` || !e.newValue) return;
-    try {
-      if (e.newValue === sessionStorage.getItem(e.key)) return;
-      sessionStorage.setItem(e.key, e.newValue);
-      onBranchChanged?.(JSON.parse(e.newValue));
-    } catch {
-      // ignore storage errors
-    }
+    if (e.newValue === sessionStorage.getItem(e.key)) return;
+    onBranchChanged?.();
   };
   window.addEventListener('storage', _storageSyncListener);
 }
