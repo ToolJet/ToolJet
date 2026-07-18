@@ -1,0 +1,60 @@
+{
+  "_readme": "Copy to clr.config.json in your project root. Everything defaults to ON — only add the keys you want to change. This file mirrors the built-in defaults; each _doc key documents its sibling and is ignored by the plugin.",
+
+  "enabled": true,
+  "_enabled_doc": "Master switch. false disables the reporter entirely (no warning).",
+
+  "debug": false,
+  "_debug_doc": "Log every send + swallowed error to the console. CLR_DEBUG=1 env var does the same.",
+
+  "events": {
+    "runLifecycle": true,
+    "_runLifecycle_doc": "run:start / spec:start / spec:end / run:end from the Node side.",
+    "liveTests": true,
+    "_liveTests_doc": "test:start / test:attempt:end from the browser — the live per-it-block feed."
+  },
+
+  "screenshots": {
+    "enabled": true,
+    "_enabled_doc": "Ship failure screenshots as artifact:screenshot events.",
+    "storage": "db",
+    "_storage_doc": "\"db\" = base64 inside the event payload (default). \"s3\" = upload, payload carries `url` instead."
+  },
+
+  "commands": {
+    "enabled": true,
+    "_enabled_doc": "On failure, ship the last N Cypress commands (name + args + pass/fail + ms) as an artifact:commands event — a lightweight command log, like Cypress Cloud. Cheap (no DOM), so it defaults ON.",
+    "depth": 20,
+    "_depth_doc": "How many commands to keep in the ring before failure (1–50)."
+  },
+
+  "dom": {
+    "enabled": true,
+    "_enabled_doc": "Serialize the DOM at the moment of failure (artifact:dom).",
+    "storage": "db",
+    "_storage_doc": "\"db\" (default) or \"s3\" — independent of screenshots.storage.",
+    "backtrackDepth": 0,
+    "_backtrackDepth_doc": "0 = off (recommended for CI gates). 1–5 = also keep a ring of DOM snapshots from the last N commands before the failure (artifact:dom-backtrack). Costs 10–50ms per command."
+  },
+
+  "s3": {
+    "bucket": null,
+    "_bucket_doc": "Required for any \"s3\" storage mode. Missing bucket → warn once, fall back to db.",
+    "region": "ap-south-1",
+    "prefix": "clr/",
+    "_prefix_doc": "Key layout: {prefix}{runId}/{sanitized testId}/attempt-N/{name}",
+    "endpoint": null,
+    "_endpoint_doc": "Set for R2 / MinIO (enables forcePathStyle). Credentials come from the standard AWS env vars.",
+    "publicBaseUrl": null,
+    "_publicBaseUrl_doc": "Optional CDN/public base used to build artifact links instead of the raw bucket URL."
+  },
+
+  "performance": {
+    "maxParallelUploads": 3,
+    "_maxParallelUploads_doc": "Concurrency gate for in-flight sends; overflow queues FIFO.",
+    "timeoutMs": 4000,
+    "_timeoutMs_doc": "Per-send timeout (webhook abort / pg statement timeout).",
+    "finalFlushMs": 10000,
+    "_finalFlushMs_doc": "Hard cap on the one and only wait: draining the queue in after:run."
+  }
+}
