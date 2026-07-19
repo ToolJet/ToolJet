@@ -298,33 +298,13 @@
     "format": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:unit": "jest --runInBand",
+    "test:unit:changed": "jest --onlyChanged",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --runInBand",
+    "test:ci:changed": "jest --ci --coverage --findRelatedTests",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npx storybook build"
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.js?$": "babel-jest",
-      "^.+\\.jsx?$": "babel-jest",
-      "^.+\\.tsx?$": "babel-jest",
-      "^.+\\.svg$": "<rootDir>/__mocks__/svg.js"
-    },
-    "transformIgnorePatterns": [
-      "node_modules/(?!(react|mpx-error-boundary)/)"
-    ],
-    "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/src/$1"
-    },
-    "testEnvironment": "jest-environment-jsdom",
-    "moduleDirectories": [
-      "node_modules",
-      "src"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "json",
-      "jsx"
-    ]
   }
 }

@@ -21,14 +21,12 @@ export interface CascaderNode {
 }
 
 export interface CascaderPathMaps {
-  valuePathObj: Record<string, CascaderValue[]>;
-  labelPathObj: Record<string, string[]>;
-  leafSet: Set<string>;
-  valueToNode: Record<string, CascaderNode>;
+  valuePathObj: Record<string | number, CascaderValue[]>;
+  labelPathObj: Record<string | number, string[]>;
+  leafSet: Set<CascaderValue>;
 }
 
 export interface CascaderSelection {
-  value: CascaderValue | null;
   selectedOption: { label: string | undefined; value: CascaderValue | undefined } | null;
   pathArray: CascaderValue[];
   pathLabels: string[];
