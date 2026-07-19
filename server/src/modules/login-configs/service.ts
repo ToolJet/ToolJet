@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { ConfigService } from '@nestjs/config';
 import { LoginConfigsUtilService } from './util.service';
@@ -14,6 +14,8 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SsoConfigOidcGroupSyncRepository } from './oidc-group-sync.repository';
 import { PinoLogger } from 'nestjs-pino';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class LoginConfigsService implements ILoginConfigsService {
@@ -24,7 +26,8 @@ export class LoginConfigsService implements ILoginConfigsService {
     protected encryptionService: EncryptionService,
     protected loginConfigsUtilService: LoginConfigsUtilService,
     protected oidcGroupSyncRepository: SsoConfigOidcGroupSyncRepository,
-    protected logger: PinoLogger
+    protected logger: PinoLogger,
+    protected licenseTermsService: LicenseTermsService
   ) {}
 
   async getProcessedOrganizationDetails(organizationId?: string) {
@@ -157,6 +160,17 @@ export class LoginConfigsService implements ILoginConfigsService {
     };
 
     if (automaticSsoLogin === true) {
+      const isAutomaticSsoLoginLicensed = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.AUTOMATIC_SSO_LOGIN,
+        organizationId
+      );
+      if (!isAutomaticSsoLoginLicensed) {
+        throw new HttpException(
+          `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
+          451
+        );
+      }
+
       const result = await this.loginConfigsUtilService.fetchOrganizationDetails(
         organizationId,
         [true, false],

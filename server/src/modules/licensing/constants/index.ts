@@ -145,6 +145,7 @@ export enum LICENSE_FIELD {
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
   MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
   QUERY_FOLDERS = 'queryFoldersEnabled',
+  AUTOMATIC_SSO_LOGIN = 'automaticSsoLoginEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

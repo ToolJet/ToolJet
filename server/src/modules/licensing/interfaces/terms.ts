@@ -38,6 +38,7 @@ export interface Terms {
     observability?: boolean;
     queryFolders?: boolean;
     appPublic?: boolean;
+    automaticSsoLogin?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {

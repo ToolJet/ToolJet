@@ -246,7 +246,7 @@ class ManageAppUsersComponent extends React.Component {
                           className="form-check-input"
                           type="checkbox"
                           onClick={this.toggleAppVisibility}
-                          checked={this?.props?.isPublic}
+                          checked={!!this?.props?.isPublic && !!this.props.appPublicEnabled}
                           disabled={this.state.ischangingVisibility || !this.props.appPublicEnabled}
                           data-cy="make-application-public-toggle"
                         />

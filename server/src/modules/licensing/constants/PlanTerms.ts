@@ -30,6 +30,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     scim: false,
     observability: false,
     appPublic: false,
+    automaticSsoLogin: false,
   },
   domains: [],
   workflows: {
