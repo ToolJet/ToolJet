@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from 'react';
 
-export type CascaderValue = string | number;
+export type CascaderValue = unknown;
 
 export type CascaderOptionControlValue = { value?: unknown } | unknown;
 
@@ -24,11 +24,9 @@ export interface CascaderPathMaps {
   valuePathObj: Record<string | number, CascaderValue[]>;
   labelPathObj: Record<string | number, string[]>;
   leafSet: Set<CascaderValue>;
-  valueToNode: Record<string | number, CascaderNode>;
 }
 
 export interface CascaderSelection {
-  value: CascaderValue | null;
   selectedOption: { label: string | undefined; value: CascaderValue | undefined } | null;
   pathArray: CascaderValue[];
   pathLabels: string[];

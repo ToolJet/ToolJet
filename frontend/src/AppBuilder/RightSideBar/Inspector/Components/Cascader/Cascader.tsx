@@ -5,6 +5,7 @@ import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { EventManager } from '../../EventManager';
 import { TreeSelectOptionsList } from '../TreeSelect/components';
 import { useTreeSelectItemsManager } from '../TreeSelect/hooks';
+import { getCascaderAdvancedToggleUpdates } from './utils';
 import '../TreeSelect/treeSelect.scss';
 
 const EventManagerComponent = EventManager as React.ComponentType<any>;
@@ -26,6 +27,8 @@ interface CascaderInspectorSection {
   extraProps?: (property: string) => Record<string, any>;
 }
 
+type ParamUpdate = (param: Record<string, any>, attr: string, value: unknown, paramType: string) => void;
+
 export const Cascader = ({ componentMeta, darkMode, ...restProps }: CascaderInspectorProps) => {
   const {
     layoutPropertyChanged,
@@ -34,6 +37,7 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }: CascaderInsp
     paramUpdated,
     currentState,
     eventsChanged,
+    paramsUpdated,
     apps,
     allComponents,
     pages,
@@ -110,6 +114,14 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }: CascaderInsp
   });
 
   const isAdvanced = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
+  const handleAdvancedParamUpdated: ParamUpdate = (param, attr, value, paramType) => {
+    if (attr === 'value' && value === false && paramsUpdated) {
+      paramsUpdated(getCascaderAdvancedToggleUpdates(value));
+      return;
+    }
+
+    paramUpdated(param, attr, value, paramType);
+  };
 
   const sections: CascaderInspectorSection[] = [
     {
@@ -121,7 +133,7 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }: CascaderInsp
       title: 'Options',
       custom: () => (
         <>
-          {createRenderElement('advanced')}
+          {createRenderElement('advanced', 'properties', { paramUpdated: handleAdvancedParamUpdated })}
           {isAdvanced ? createRenderElement('data') : _renderTreeItems()}
           {/* Default value (static only) renders after the option UI; hidden when dynamic. */}
           {!isAdvanced && createRenderElement('value')}

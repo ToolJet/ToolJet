@@ -431,6 +431,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }, manager);
   }
 
+  async findAllByOrganization(organizationId: string): Promise<Pick<DataSource, 'id' | 'name' | 'kind'>[]> {
+    return this.dataSourceRepository.find({
+      where: { organizationId },
+      select: ['id', 'name', 'kind'],
+    });
+  }
+
   async findOneWithName(name: string, organizationId: string): Promise<DataSource> {
     return this.dataSourceRepository.findOneOrFail({
       where: { name: ILike(name), organizationId },
@@ -644,6 +651,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'xero',
         'bigquery',
         'databricks',
+        'asana',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(

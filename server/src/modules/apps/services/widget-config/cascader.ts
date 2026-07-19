@@ -42,8 +42,8 @@ export const cascaderConfig = {
     value: {
       type: 'code',
       displayName: 'Default value',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+       validation: {
+        schema: { type: 'any' },
       },
       conditionallyRender: {
         key: 'advanced',
