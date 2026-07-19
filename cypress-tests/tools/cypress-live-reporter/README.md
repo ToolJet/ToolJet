@@ -2,6 +2,8 @@
 
 [![test](https://github.com/emidhun/cypress-live-reporter/actions/workflows/test.yml/badge.svg)](https://github.com/emidhun/cypress-live-reporter/actions/workflows/test.yml)
 
+> **This is the package reference** (install, config, event & dashboard details). For the project overview and the concept guides, start at the [root README](../../README.md) and [docs/](../../docs/): [Architecture](../../docs/ARCHITECTURE.md) · [Events](../../docs/EVENTS.md) · [CI](../../docs/CI.md) · [Dashboard](../../docs/DASHBOARD.md).
+
 Self-hosted live reporting for Cypress. Streams run/spec/test lifecycle events and failure evidence (screenshots + a serialized DOM snapshot) to **Postgres** or a **webhook**, so you can build a real-time dashboard (e.g. in ToolJet) on a free stack — a replacement for Cypress Cloud's live status and failure artifacts.
 
 - **Zero-config**: two `require` lines + one env var. Every feature defaults to **ON**.
@@ -44,6 +46,30 @@ CLR_WEBHOOK_TOKEN=optional-bearer-token
 
 If **neither** env var is set, the plugin prints one warning and self-disables — it never throws and never breaks the run.
 
+**4. Postgres only — create the schema (required).** The plugin does not create tables. Sink errors are swallowed, so a missing table means every insert is silently dropped (empty dashboard, no error). Run this once before your first run:
+
+```bash
+psql "$CLR_PG_URL" -f tools/cypress-live-reporter/schema.sql
+```
+
+It creates the append-only `clr_events` table + indexes and the four dashboard views. The core table, if you prefer to run the DDL by hand:
+
+```sql
+CREATE TABLE IF NOT EXISTS clr_events (
+  id      bigserial   PRIMARY KEY,
+  run_id  uuid        NOT NULL,
+  seq     int         NOT NULL,
+  type    text        NOT NULL,
+  ts      timestamptz NOT NULL DEFAULT now(),
+  payload jsonb       NOT NULL,
+  UNIQUE (run_id, seq)
+);
+CREATE INDEX IF NOT EXISTS clr_events_run_type_idx ON clr_events (run_id, type);
+CREATE INDEX IF NOT EXISTS clr_events_ts_idx       ON clr_events (ts DESC);
+```
+
+The dashboard views live in [`schema.sql`](./schema.sql) — running that file is the simplest path. (Webhook mode needs no schema.)
+
 ---
 
 ## Configuration (`clr.config.json`, optional)
@@ -60,6 +86,10 @@ Everything is **ON by default**. Create `clr.config.json` in your project root o
 | `screenshots.storage` | `"db"` | `"db"` = base64 in payload · `"s3"` = upload, payload carries `url`. |
 | `commands.enabled` | `true` | On failure, ship the last N commands (name + args + state + ms) — a command log like Cypress Cloud. Cheap (no DOM). |
 | `commands.depth` | `20` | How many commands to keep before failure (1–50). |
+| `console.enabled` | `true` | On failure, ship the last N browser console lines (the app's `console.*`) as `artifact:console`. |
+| `console.depth` | `8` | How many console lines to keep before failure (1–200). Default 8 = the sweet spot. |
+| `stdout.enabled` | `true` | For failing specs, ship node/task terminal output (plugin-process stdout) as `artifact:stdout`. Not the Cypress reporter block (separate process). |
+| `stdout.maxBytes` | `65536` | Cap on captured stdout per spec (keeps the tail). |
 | `dom.enabled` | `true` | Serialize the DOM at the moment of failure. |
 | `dom.storage` | `"db"` | Independent of `screenshots.storage`. |
 | `dom.backtrackDepth` | `0` | 1–5: also keep DOM snapshots of the last N commands before failure. **Keep 0 in CI gates** (see Performance). |
@@ -123,7 +153,9 @@ Every event carries `runId` (uuid), a **monotonic per-run `seq`** (assigned on t
 | `artifact:screenshot` | Node | `after:screenshot` | `testId` (from the running test — reliable even when Cypress sends empty titles), `name`, `attempt`, `width`, `height`, `takenAt`, `base64` **or** `url` |
 | `artifact:dom` | browser | `Cypress.on('fail')` | `testId`, `attempt`, `error`, `pageUrl`, `viewportWidth/Height`, `htmlGzipBase64` **or** `url`. The failure is always rethrown — never swallowed. |
 | `artifact:dom-backtrack` | browser | on fail, if `backtrackDepth > 0` | One event per ring snapshot: `command`, `stepsBeforeFailure` (1 = last command before failure), plus the DOM fields above |
-| `artifact:commands` | browser | `Cypress.on('fail')` | `testId`, `attempt`, `error`, and `commands[]` — the last N commands, each `{ name, args, state, ms }`. The in-flight command at failure is the final entry with `state: "failed"`. |
+| `artifact:commands` | browser | `Cypress.on('fail')` | `testId`, `attempt`, `error`, `totalCommands`, and `commands[]` — the last N commands, each `{ i, name, args, state, ms, stepsBeforeFailure }`. The in-flight command at failure is the final entry with `state: "failed"`. |
+| `artifact:console` | browser | `Cypress.on('fail')` | `testId`, `attempt`, `totalLogs`, and `logs[]` — the last N browser console lines, each `{ i, level, text }`. |
+| `artifact:stdout` | Node | `after:spec` (failing specs) | `spec`, `failures`, `bytes`, `stdout` — node/plugin-process terminal output during the spec. |
 
 CI metadata is read from GitHub Actions (`GITHUB_REF_NAME`, `GITHUB_SHA`, `GITHUB_ACTOR`, PR number from `GITHUB_REF` = `refs/pull/<n>/merge`, run URL) and GitLab CI (`CI_COMMIT_REF_NAME`, `CI_COMMIT_SHA`, `GITLAB_USER_LOGIN`, `CI_MERGE_REQUEST_IID`, `CI_JOB_URL`) env vars, plus the machine hostname. Surfaced on `clr_runs` as `pr` / `triggered_by`.
 

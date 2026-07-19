@@ -28,6 +28,20 @@
     "_depth_doc": "How many commands to keep in the ring before failure (1–50)."
   },
 
+  "console": {
+    "enabled": true,
+    "_enabled_doc": "On failure, ship the last N browser console lines (console.log/info/warn/error from the app) as an artifact:console event. Also feeds the reconstructed terminal log.",
+    "depth": 8,
+    "_depth_doc": "How many console lines to keep before failure (1–200). Default 8 — the sweet spot: enough pre-failure context without noise."
+  },
+
+  "stdout": {
+    "enabled": true,
+    "_enabled_doc": "For FAILING specs only, ship the node-side terminal output (cy.task / plugin / server logs printed in the Cypress plugin process) as an artifact:stdout event. NOTE: this is NOT the Cypress reporter block (test tree + error stack) — that runs in a separate process and is already captured structurally in spec:end / test errors.",
+    "maxBytes": 65536,
+    "_maxBytes_doc": "Cap on captured stdout per spec (keeps the tail)."
+  },
+
   "dom": {
     "enabled": true,
     "_enabled_doc": "Serialize the DOM at the moment of failure (artifact:dom).",

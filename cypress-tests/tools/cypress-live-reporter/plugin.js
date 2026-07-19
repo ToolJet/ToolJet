@@ -36,6 +36,8 @@ const DEFAULTS = {
   events: { runLifecycle: true, liveTests: true },
   screenshots: { enabled: true, storage: 'db' },
   commands: { enabled: true, depth: 20 },
+  console: { enabled: true, depth: 8 },
+  stdout: { enabled: true, maxBytes: 65536 },
   dom: { enabled: true, storage: 'db', backtrackDepth: 0 },
   s3: { bucket: null, region: 'ap-south-1', prefix: 'clr/', endpoint: null, publicBaseUrl: null },
   performance: { maxParallelUploads: 3, timeoutMs: 4000, finalFlushMs: 10000 },
@@ -152,6 +154,44 @@ function setup(on, config, opts) {
   // even when Cypress hands us empty titles.
   let lastTest = { testId: null, attempt: 1 };
 
+  // ---- terminal stdout capture (spec-level, failures only, like Cloud) ----
+  // Tee process.stdout/stderr into a per-spec ring; on a failing spec, ship
+  // the tail as artifact:stdout. Teeing always calls the original write, so
+  // the terminal output is never suppressed, and it can never throw.
+  const stdoutEnabled = cfg.stdout.enabled !== false;
+  const stdoutMaxBytes = Math.max(4096, cfg.stdout.maxBytes || 65536);
+  let specStdout = [];
+  let specStdoutBytes = 0;
+  let stdoutCapturing = false;
+  if (stdoutEnabled) {
+    for (const streamName of ['stdout', 'stderr']) {
+      try {
+        const stream = process[streamName];
+        const orig = stream.write.bind(stream);
+        stream.write = function (chunk, enc, cb) {
+          try {
+            if (stdoutCapturing && chunk) {
+              const str = typeof chunk === 'string' ? chunk : chunk.toString('utf8');
+              // don't capture our own debug lines — that would be self-noise
+              if (str.indexOf(TAG) === -1) {
+                specStdout.push(str);
+                specStdoutBytes += str.length;
+                while (specStdoutBytes > stdoutMaxBytes && specStdout.length > 1) {
+                  specStdoutBytes -= specStdout.shift().length;
+                }
+              }
+            }
+          } catch (e) {
+            /* never break terminal output */
+          }
+          return orig(chunk, enc, cb);
+        };
+      } catch (e) {
+        /* leave the stream untouched */
+      }
+    }
+  }
+
   // seq is assigned here, on the Node side, for every event — including
   // browser-originated ones — so (run_id, seq) is a true monotonic order.
   function emit(type, payload) {
@@ -192,6 +232,10 @@ function setup(on, config, opts) {
 
     on('before:spec', (spec) => {
       try {
+        // start a fresh stdout capture window for this spec
+        specStdout = [];
+        specStdoutBytes = 0;
+        stdoutCapturing = stdoutEnabled;
         emit('spec:start', { spec: (spec && spec.relative) || null });
       } catch (err) {
         log('before:spec failed:', err && err.message);
@@ -224,6 +268,21 @@ function setup(on, config, opts) {
           tests,
           video: (results && results.video) || null,
         });
+
+        // terminal stdout — only for failing specs, like Cypress Cloud
+        if (stdoutEnabled) {
+          stdoutCapturing = false;
+          if ((stats.failures || 0) > 0 && specStdout.length) {
+            emit('artifact:stdout', {
+              spec: (spec && spec.relative) || null,
+              failures: stats.failures,
+              bytes: specStdoutBytes,
+              stdout: specStdout.join('').slice(-stdoutMaxBytes),
+            });
+          }
+          specStdout = [];
+          specStdoutBytes = 0;
+        }
       } catch (err) {
         log('after:spec failed:', err && err.message);
       }
@@ -341,6 +400,10 @@ function setup(on, config, opts) {
     commands: {
       enabled: cfg.commands.enabled !== false,
       depth: Math.min(Math.max(1, Math.floor(cfg.commands.depth || 20)), 50),
+    },
+    console: {
+      enabled: cfg.console.enabled !== false,
+      depth: Math.min(Math.max(1, Math.floor(cfg.console.depth || 8)), 200),
     },
     dom: {
       enabled: cfg.dom.enabled !== false,

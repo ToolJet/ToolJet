@@ -26,13 +26,21 @@
   // command-log capture is cheap (no DOM) so it defaults ON
   var commandsEnabled = !cfg.commands || cfg.commands.enabled !== false;
   var commandsDepth = Math.min(Math.max(1, (cfg.commands && cfg.commands.depth) || 20), 50);
+  // browser console capture (console.log/info/warn/error from the app)
+  var consoleEnabled = !cfg.console || cfg.console.enabled !== false;
+  var consoleDepth = Math.min(Math.max(1, (cfg.console && cfg.console.depth) || 50), 200);
   // commands that never change the AUT — not worth a DOM snapshot
   var BACKTRACK_SKIP = { task: 1, log: 1, wrap: 1, then: 1, wait: 1 };
 
   var buffer = [];
   var ring = []; // DOM snapshots (backtrack)
-  var cmdRing = []; // command log
+  var cmdRing = []; // command log (only the last `commandsDepth` are kept)
+  var cmdCount = 0; // TOTAL commands this attempt — gives each its true ordinal
   var currentCmd = null; // command in flight (the one that fails)
+  var conRing = []; // browser console lines (last `consoleDepth`)
+  var conCount = 0; // TOTAL console lines this attempt
+  var assertRing = []; // assertions (.should/expect) — logs, not commands
+  var seenAsserts = {}; // log ids already recorded (log:changed fires repeatedly)
 
   function push(type, payload) {
     try {
@@ -156,6 +164,29 @@
     return name === 'task' && args && args[0] === 'clr:events';
   }
 
+  // Stringify console.* arguments to a single line. Never throws.
+  function consoleText(args) {
+    try {
+      return Array.prototype.slice
+        .call(args)
+        .map(function (a) {
+          if (a == null) return String(a);
+          var t = typeof a;
+          if (t === 'string') return a;
+          if (t === 'number' || t === 'boolean') return String(a);
+          if (a instanceof Error) return a.message || String(a);
+          try {
+            return JSON.stringify(a);
+          } catch (e) {
+            return String(a);
+          }
+        })
+        .join(' ');
+    } catch (e) {
+      return '';
+    }
+  }
+
   /**
    * Snapshot of the AUT document. Clones documentElement (never mutates the
    * AUT) and copies live form state onto the clone so the saved HTML shows
@@ -228,7 +259,12 @@
     try {
       ring = [];
       cmdRing = [];
+      cmdCount = 0;
       currentCmd = null;
+      conRing = [];
+      conCount = 0;
+      assertRing = [];
+      seenAsserts = {};
       if (!liveTests) return;
       var t = this.currentTest;
       if (!t) return;
@@ -269,6 +305,39 @@
     }
   });
 
+  /* ---- browser console capture ---------------------------------------- */
+
+  if (consoleEnabled) {
+    // wrap the app's console on each new window so we mirror its output into a
+    // ring; the original console is always called, so devtools is unaffected
+    Cypress.on('window:before:load', function (win) {
+      try {
+        ['log', 'info', 'warn', 'error', 'debug'].forEach(function (level) {
+          var orig = win.console && win.console[level];
+          if (typeof orig !== 'function') return;
+          win.console[level] = function () {
+            try {
+              conCount++;
+              var text = consoleText(arguments);
+              conRing.push({
+                i: conCount,
+                t: new Date().getTime(), // for chronological interleaving with commands
+                level: level,
+                text: text.length > 500 ? text.slice(0, 500) + '…' : text,
+              });
+              if (conRing.length > consoleDepth) conRing.shift();
+            } catch (e) {
+              /* skip this line */
+            }
+            return orig.apply(this, arguments);
+          };
+        });
+      } catch (e) {
+        /* leave the console alone */
+      }
+    });
+  }
+
   /* ---- command log (cheap, no DOM) ------------------------------------ */
 
   if (commandsEnabled) {
@@ -288,7 +357,10 @@
         var name = cmdGet(command, 'name');
         var args = cmdGet(command, 'args') || [];
         if (!name || isOwnTask(name, args)) return;
+        cmdCount++; // count EVERY command, so `i` is the true position
         var entry = {
+          i: cmdCount,
+          t: new Date().getTime(), // for chronological interleaving with console
           name: name,
           args: argStr(args),
           state: cmdGet(command, 'state') || 'passed',
@@ -297,40 +369,95 @@
           entry.ms = new Date().getTime() - currentCmd.startedAt;
         }
         currentCmd = null;
+        // ring keeps only the last N, but each entry carries its absolute `i`
         cmdRing.push(entry);
         if (cmdRing.length > commandsDepth) cmdRing.shift();
       } catch (e) {
         /* skipped command */
       }
     });
+
+    // assertions (.should / .and / expect) are Cypress LOGS, not commands, so
+    // command:end never sees them. Capture them from the log stream once they
+    // settle, to weave into the terminal log.
+    Cypress.on('log:changed', function (log) {
+      try {
+        // log:changed passes the log's attributes as a plain object (not a
+        // Cypress.Log instance), so read fields directly, with a .get() fallback
+        var get = function (k) {
+          if (!log) return undefined;
+          if (typeof log.get === 'function') return log.get(k);
+          return log[k];
+        };
+        if (get('name') !== 'assert') return;
+        var state = get('state');
+        if (state !== 'passed' && state !== 'failed') return; // wait until settled
+        var id = get('id');
+        if (id && seenAsserts[id]) return;
+        if (id) seenAsserts[id] = 1;
+        assertRing.push({
+          t: new Date().getTime(),
+          name: 'assert',
+          args: String(get('message') || '').replace(/\*\*/g, ''), // strip markdown bold
+          state: state,
+        });
+        if (assertRing.length > commandsDepth) assertRing.shift();
+      } catch (e) {
+        /* skipped assertion */
+      }
+    });
   }
 
   /* ---- failure evidence: command log + DOM snapshot (+ backtrack) ----- */
 
-  if (domEnabled || commandsEnabled) {
+  if (domEnabled || commandsEnabled || consoleEnabled) {
     Cypress.on('fail', function (err, runnable) {
       try {
         var testId = testIdFor(runnable);
         var attempt = attemptOf(runnable);
+
+        // browser console — the last N lines the app logged before failing
+        if (consoleEnabled && conRing.length) {
+          push('artifact:console', {
+            testId: testId,
+            attempt: attempt,
+            spec: specRelative(),
+            error: (err && err.message) || null,
+            totalLogs: conCount, // full count; `logs` holds only the last N
+            logs: conRing.slice(),
+          });
+        }
 
         // command log — the last N commands, plus the one that was in flight
         // when the failure happened (command:end never fired for it)
         if (commandsEnabled) {
           var cmds = cmdRing.slice();
           if (currentCmd) {
+            // the failing command started but never got command:end, so it's
+            // the next ordinal after everything counted so far
+            cmdCount++;
             cmds.push({
+              i: cmdCount,
+              t: new Date().getTime(),
               name: currentCmd.name,
               args: currentCmd.args,
               state: 'failed',
               ms: new Date().getTime() - currentCmd.startedAt,
             });
           }
+          // stepsBeforeFailure lets each command line up with the DOM backtrack
+          // (0 = the command that failed) — derived from its true ordinal
+          for (var ci = 0; ci < cmds.length; ci++) {
+            cmds[ci].stepsBeforeFailure = cmdCount - cmds[ci].i;
+          }
           push('artifact:commands', {
             testId: testId,
             attempt: attempt,
             spec: specRelative(),
             error: (err && err.message) || null,
+            totalCommands: cmdCount, // full count; `commands` holds only the last N
             commands: cmds,
+            asserts: assertRing.slice(), // assertions, for the terminal log
           });
         }
 
@@ -369,6 +496,9 @@
         ring = [];
         cmdRing = [];
         currentCmd = null;
+        conRing = [];
+        assertRing = [];
+        seenAsserts = {};
       } catch (e) {
         /* evidence collection must never mask the real failure */
       }
