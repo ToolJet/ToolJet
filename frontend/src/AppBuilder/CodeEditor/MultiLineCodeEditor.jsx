@@ -340,6 +340,7 @@ const MultiLineCodeEditor = (props) => {
           isOpen={isOpen}
           callback={setIsOpen}
           componentName={componentName}
+          paramLabel={paramLabel}
           key={componentName}
           forceUpdate={forceUpdate}
           optionalProps={{ styles: { height: 300 }, cls: '' }}
