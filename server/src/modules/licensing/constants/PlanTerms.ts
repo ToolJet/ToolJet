@@ -29,6 +29,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     queryFolders: false,
     scim: false,
     observability: false,
+    appPublic: false,
   },
   domains: [],
   workflows: {

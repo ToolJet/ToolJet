@@ -79,6 +79,7 @@ const PreviewAndShareIcons = () => {
             <ManageAppUsers
               currentEnvironment={selectedEnvironment}
               multiEnvironmentEnabled={featureAccess?.multiEnvironment}
+              appPublicEnabled={featureAccess?.appPublic}
               app={app}
               appId={appId}
               slug={slug}

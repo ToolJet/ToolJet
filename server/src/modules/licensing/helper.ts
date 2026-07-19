@@ -76,6 +76,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.MULTIPLAYER_EDIT:
       return licenseInstance.multiPlayerEdit;
 
+    case LICENSE_FIELD.APP_PUBLIC:
+      return licenseInstance.appPublic;
+
     case LICENSE_FIELD.VALID:
       return licenseInstance.isValid && !licenseInstance.isExpired;
 

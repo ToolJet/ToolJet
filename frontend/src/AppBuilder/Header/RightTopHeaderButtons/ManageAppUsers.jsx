@@ -90,6 +90,9 @@ class ManageAppUsersComponent extends React.Component {
       });
   };
   toggleAppVisibility = () => {
+    if (!this.props.appPublicEnabled) {
+      return;
+    }
     const newState = !this.props.isPublic;
     this.setState({
       ischangingVisibility: true,
@@ -191,6 +194,16 @@ class ManageAppUsersComponent extends React.Component {
 
     return (
       <div className="manage-app-users">
+        <style>{`
+          .tooltip.app-public-tooltip .tooltip-inner {
+            width: 238px;
+            max-width: 238px;
+            padding: 12px;
+            background-color: var(--background-inverse, #1B1F24);
+            border-radius: 8px;
+            text-align: center;
+          }
+        `}</style>
         <ToolTip message="Share" placement="bottom">
           <Button
             data-cy="editor-app-share-button"
@@ -228,18 +241,36 @@ class ManageAppUsersComponent extends React.Component {
                 <div className="make-public mb-3">
                   <div className="form-check form-switch d-flex align-items-center">
                     {this.props.isVersionReleased ? (
-                      <div>
+                      <div className="d-flex align-items-center">
                         <input
                           className="form-check-input"
                           type="checkbox"
                           onClick={this.toggleAppVisibility}
                           checked={this?.props?.isPublic}
-                          disabled={this.state.ischangingVisibility}
+                          disabled={this.state.ischangingVisibility || !this.props.appPublicEnabled}
                           data-cy="make-application-public-toggle"
                         />
-                        <span className="form-check-label field-name" data-cy="make-application-public-label">
-                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
-                        </span>
+                        <div className="d-flex align-items-center" style={{ gap: '6px' }}>
+                          <span className="form-check-label field-name" data-cy="make-application-public-label">
+                            {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                          </span>
+                          {!this.props.appPublicEnabled && (
+                            <ToolTip
+                              message="You don't have access to public apps. Upgrade your plan to access this feature."
+                              placement="top"
+                              tooltipClassName="app-public-tooltip"
+                            >
+                              <span className="d-inline-flex">
+                                <SolidIcon
+                                  name="premium-plan"
+                                  width="13.33"
+                                  height="13.33"
+                                  data-cy="app-public-upgrade-icon"
+                                />
+                              </span>
+                            </ToolTip>
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'left', gap: '8px' }}>

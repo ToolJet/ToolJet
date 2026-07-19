@@ -21,6 +21,7 @@ export default class LicenseBase {
   private _isServerSideGlobalResolve: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
+  private _isAppPublic: boolean;
   private _isComments: boolean;
   private _expiryDate: Date;
   private _updatedDate: Date;
@@ -80,6 +81,7 @@ export default class LicenseBase {
       this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
+      this._isAppPublic = true;
       this._isAi = true;
       this._aiPlan = 'credits';
       this._isExternalApis = true;
@@ -139,6 +141,10 @@ export default class LicenseBase {
     this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
+    // Default OFF unless a license payload explicitly grants it (unlike getFeatureValue's
+    // default-true-unless-flexible-plan behavior) — pre-existing licenses issued before this
+    // flag existed must not silently re-enable public app sharing.
+    this._isAppPublic = this._features?.['appPublic'] === true;
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
@@ -456,6 +462,13 @@ export default class LicenseBase {
     return this._isMultiEnvironment;
   }
 
+  public get appPublic(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.appPublic;
+    }
+    return this._isAppPublic;
+  }
+
   public get customStyling(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.customStyling;
@@ -566,6 +579,7 @@ export default class LicenseBase {
       serverSideGlobalResolve: this.serverSideGlobalResolve,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
+      appPublic: this.appPublic,
       gitSync: this.gitSync,
       comments: this.comments,
       ai: this.aiFeature,
