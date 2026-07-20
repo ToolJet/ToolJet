@@ -1,7 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { getManager } from 'typeorm';
-import { clearDB, createNestAppInstance, createUser } from '../test.helper';
+import { ConfigService } from '@nestjs/config';
+import {
+  createUser,
+  initTestApp,
+  closeTestApp,
+  getDefaultDataSource,
+  ensureAppEnvironments,
+  createApplicationVersion,
+} from 'test-helper';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
@@ -9,6 +16,7 @@ import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permis
 import { GroupApps } from '@entities/group_apps.entity';
 import { GroupDataSources } from '@entities/group_data_source.entity';
 import { App } from '@entities/app.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
 import { Organization } from '@entities/organization.entity';
@@ -17,16 +25,19 @@ import { Organization } from '@entities/organization.entity';
 // Constants
 // ---------------------------------------------------------------------------
 
-const EXT_API_TOKEN = 'test-ext-api-token';
-const AUTH_HEADER = `Basic ${EXT_API_TOKEN}`;
+// ExternalApiSecurityGuard validates `Authorization: Basic <EXTERNAL_API_ACCESS_TOKEN>`.
+// The token is resolved after the app boots (see beforeAll) — .env.test defines its own
+// EXTERNAL_API_ACCESS_TOKEN which wins over any value set on process.env beforehand (the
+// custom ConfigModule loader spreads the env file over process.env), so ConfigService is
+// the single source of truth. See external-apis/e2e/apps.spec.ts for the same pattern.
+let AUTH_HEADER: string;
 
 /**
  * Helper — set the env vars required by ExternalApiSecurityGuard before the
- * app boots.  Must be called *before* createNestAppInstance().
+ * app boots.  Must be called *before* initTestApp() (with `freshApp: true`).
  */
 function setExternalApiEnv() {
   process.env.ENABLE_EXTERNAL_API = 'true';
-  process.env.EXTERNAL_API_ACCESS_TOKEN = EXT_API_TOKEN;
 }
 
 // ---------------------------------------------------------------------------
@@ -38,14 +49,15 @@ async function seedCustomGroup(
   name: string,
   overrides: Partial<GroupPermissions> = {}
 ): Promise<GroupPermissions> {
-  const manager = getManager();
+  const manager = getDefaultDataSource().manager;
   const group = manager.create(GroupPermissions, {
     organizationId,
     name,
     type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
     appCreate: false,
     appDelete: false,
-    folderCRUD: false,
+    folderCreate: false,
+    folderDelete: false,
     orgConstantCRUD: false,
     workflowCreate: false,
     workflowDelete: false,
@@ -58,11 +70,12 @@ async function seedCustomGroup(
   return manager.save(group);
 }
 
-async function seedApp(organizationId: string, name: string): Promise<App> {
-  const manager = getManager();
+async function seedApp(organizationId: string, name: string, userId: string): Promise<App> {
+  const manager = getDefaultDataSource().manager;
   const app = manager.create(App, {
     name,
     organizationId,
+    userId,
     slug: name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
     isPublic: false,
   });
@@ -70,7 +83,7 @@ async function seedApp(organizationId: string, name: string): Promise<App> {
 }
 
 async function seedDataSource(organizationId: string, name: string): Promise<DataSource> {
-  const manager = getManager();
+  const manager = getDefaultDataSource().manager;
   const ds = manager.create(DataSource, {
     name,
     kind: 'restapi',
@@ -95,7 +108,7 @@ async function seedAppGranularPermission(
     canAccessReleased = true,
   } = {}
 ): Promise<GranularPermissions> {
-  const manager = getManager();
+  const manager = getDefaultDataSource().manager;
   const gp = await manager.save(
     manager.create(GranularPermissions, {
       groupId,
@@ -140,15 +153,15 @@ describe('External API — Groups endpoints', () => {
 
   beforeAll(async () => {
     setExternalApiEnv();
-    app = await createNestAppInstance();
+    ({ app } = await initTestApp({ freshApp: true, edition: 'ee', plan: 'enterprise' }));
+    AUTH_HEADER = `Basic ${app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN')}`;
   });
 
   afterAll(async () => {
-    await app.close();
+    await closeTestApp(app);
   });
 
   beforeEach(async () => {
-    await clearDB();
     // Create a workspace with an admin user (required by getAdminUserForOrg)
     const { organization, user } = await createUser(app, {
       email: 'admin@tooljet.io',
@@ -174,14 +187,26 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 403 when ENABLE_EXTERNAL_API is false', async () => {
-      process.env.ENABLE_EXTERNAL_API = 'false';
+      // ConfigService snapshots process.env at ConfigModule init time (via the custom
+      // `load: [() => getEnvVars()]` loader in src/modules/app/loader.ts), so mutating
+      // process.env.ENABLE_EXTERNAL_API after the app has booted has no effect on what
+      // ExternalApiSecurityGuard reads. Stub the guard's ConfigService.get() call for
+      // this one request instead of relying on a live env var read.
+      const configService = app.get(ConfigService);
+      const originalGet = configService.get.bind(configService);
+      const getSpy = jest.spyOn(configService, 'get').mockImplementation((key: string, ...rest: any[]) => {
+        if (key === 'ENABLE_EXTERNAL_API') return 'false';
+        return originalGet(key, ...rest);
+      });
+
       const group = await seedCustomGroup(organizationId, 'Dev Team');
       await request(app.getHttpServer())
         .patch(`/api/ext/workspace/${organizationId}/groups/${group.id}`)
         .set('Authorization', AUTH_HEADER)
         .send({ name: 'New Name' })
         .expect(403);
-      process.env.ENABLE_EXTERNAL_API = 'true';
+
+      getSpy.mockRestore();
     });
 
     // ---- 400/404 guard cases -------------------------------------------------
@@ -207,7 +232,7 @@ describe('External API — Groups endpoints', () => {
 
     it('returns 400 when trying to update a default (non-custom) group', async () => {
       // Default groups (admin, builder, end-user) have type DEFAULT
-      const defaultGroup = await getManager().findOne(GroupPermissions, {
+      const defaultGroup = await getDefaultDataSource().manager.findOne(GroupPermissions, {
         where: { organizationId, type: GROUP_PERMISSIONS_TYPE.DEFAULT },
       });
       await request(app.getHttpServer())
@@ -230,7 +255,7 @@ describe('External API — Groups endpoints', () => {
 
       expect(response.body).toEqual({});
 
-      const updated = await getManager().findOne(GroupPermissions, { where: { id: group.id } });
+      const updated = await getDefaultDataSource().manager.findOne(GroupPermissions, { where: { id: group.id } });
       expect(updated.name).toBe('New Name');
     });
 
@@ -239,7 +264,7 @@ describe('External API — Groups endpoints', () => {
     it('updates only the provided workspace permission flags', async () => {
       const group = await seedCustomGroup(organizationId, 'Dev Team', {
         appCreate: false,
-        folderCRUD: true,
+        folderCreate: true,
       });
 
       await request(app.getHttpServer())
@@ -248,18 +273,18 @@ describe('External API — Groups endpoints', () => {
         .send({ permissions: { appCreate: true } })
         .expect(204);
 
-      const updated = await getManager().findOne(GroupPermissions, { where: { id: group.id } });
+      const updated = await getDefaultDataSource().manager.findOne(GroupPermissions, { where: { id: group.id } });
       // The provided flag is set
       expect(updated.appCreate).toBe(true);
       // Omitted flag is untouched
-      expect(updated.folderCRUD).toBe(true);
+      expect(updated.folderCreate).toBe(true);
     });
 
     // ---- granularPermissions — app upsert (merge) ----------------------------
 
     it('merges new app resources into an existing matching granular permission entry', async () => {
-      const app1 = await seedApp(organizationId, 'App One');
-      const app2 = await seedApp(organizationId, 'App Two');
+      const app1 = await seedApp(organizationId, 'App One', adminUserId);
+      const app2 = await seedApp(organizationId, 'App Two', adminUserId);
       const group = await seedCustomGroup(organizationId, 'Dev Team');
 
       // Pre-existing entry: canView, no environments, app1
@@ -290,7 +315,7 @@ describe('External API — Groups endpoints', () => {
         .expect(204);
 
       // Both apps should now be in the same granular permission entry
-      const gps = await getManager().find(GranularPermissions, {
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, {
         where: { groupId: group.id, type: ResourceType.APP },
         relations: ['appsGroupPermissions', 'appsGroupPermissions.groupApps'],
       });
@@ -301,8 +326,8 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('creates a new granular permission entry when no match exists', async () => {
-      const app1 = await seedApp(organizationId, 'App One');
-      const app2 = await seedApp(organizationId, 'App Two');
+      const app1 = await seedApp(organizationId, 'App One', adminUserId);
+      const app2 = await seedApp(organizationId, 'App Two', adminUserId);
       const group = await seedCustomGroup(organizationId, 'Dev Team');
 
       // Pre-existing: canEdit=true
@@ -324,7 +349,7 @@ describe('External API — Groups endpoints', () => {
         })
         .expect(204);
 
-      const gps = await getManager().find(GranularPermissions, {
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, {
         where: { groupId: group.id, type: ResourceType.APP },
         relations: ['appsGroupPermissions'],
       });
@@ -334,8 +359,8 @@ describe('External API — Groups endpoints', () => {
     // ---- Downgrade: canEdit=true → canEdit=false (no data loss) ---------------
 
     it('downgrade: deletes canEdit=true entry, migrates its resources into canEdit=false entry', async () => {
-      const app1 = await seedApp(organizationId, 'App One');
-      const app2 = await seedApp(organizationId, 'App Two');
+      const app1 = await seedApp(organizationId, 'App One', adminUserId);
+      const app2 = await seedApp(organizationId, 'App Two', adminUserId);
       const group = await seedCustomGroup(organizationId, 'Dev Team');
 
       // Pre-existing canEdit=true entry with app1 and empty environments
@@ -364,7 +389,7 @@ describe('External API — Groups endpoints', () => {
         })
         .expect(204);
 
-      const gps = await getManager().find(GranularPermissions, {
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, {
         where: { groupId: group.id, type: ResourceType.APP },
         relations: ['appsGroupPermissions', 'appsGroupPermissions.groupApps'],
       });
@@ -382,8 +407,8 @@ describe('External API — Groups endpoints', () => {
     // ---- Environments are compared as unordered sets -------------------------
 
     it('treats environments as an unordered set for match lookup', async () => {
-      const app1 = await seedApp(organizationId, 'App One');
-      const app2 = await seedApp(organizationId, 'App Two');
+      const app1 = await seedApp(organizationId, 'App One', adminUserId);
+      const app2 = await seedApp(organizationId, 'App Two', adminUserId);
       const group = await seedCustomGroup(organizationId, 'Dev Team');
 
       // Existing: canEdit=false, dev+staging
@@ -416,7 +441,7 @@ describe('External API — Groups endpoints', () => {
         })
         .expect(204);
 
-      const gps = await getManager().find(GranularPermissions, {
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, {
         where: { groupId: group.id, type: ResourceType.APP },
         relations: ['appsGroupPermissions', 'appsGroupPermissions.groupApps'],
       });
@@ -429,9 +454,19 @@ describe('External API — Groups endpoints', () => {
     // ---- Idempotency: merging duplicate resources ----------------------------
 
     it('does not create duplicate resource entries when the same resource is sent twice', async () => {
-      const app1 = await seedApp(organizationId, 'App One');
+      const app1 = await seedApp(organizationId, 'App One', adminUserId);
       const group = await seedCustomGroup(organizationId, 'Dev Team');
-      await seedAppGranularPermission(group.id, [app1.id], { canEdit: false, canView: true });
+      // Environments must match the incoming request's empty set for the upsert to
+      // treat this as the *same* granular permission entry (see envSetsEqual usage in
+      // upsertAppGranularPermission) rather than creating a second, distinct entry.
+      await seedAppGranularPermission(group.id, [app1.id], {
+        canEdit: false,
+        canView: true,
+        canAccessDevelopment: false,
+        canAccessStaging: false,
+        canAccessProduction: false,
+        canAccessReleased: false,
+      });
 
       // Send app1 again — should be deduplicated
       await request(app.getHttpServer())
@@ -449,7 +484,7 @@ describe('External API — Groups endpoints', () => {
         })
         .expect(204);
 
-      const gps = await getManager().find(GranularPermissions, {
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, {
         where: { groupId: group.id, type: ResourceType.APP },
         relations: ['appsGroupPermissions', 'appsGroupPermissions.groupApps'],
       });
@@ -463,7 +498,7 @@ describe('External API — Groups endpoints', () => {
 
     it('updates an existing applyToAll entry in-place', async () => {
       const group = await seedCustomGroup(organizationId, 'Dev Team');
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
 
       // Seed an applyToAll=true entry
       const gp = await manager.save(
@@ -537,7 +572,7 @@ describe('External API — Groups endpoints', () => {
         })
         .expect(204);
 
-      const gps = await getManager().find(GranularPermissions, {
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, {
         where: { groupId: group.id, type: ResourceType.APP, isAll: true },
       });
       expect(gps.length).toBe(1);
@@ -576,7 +611,7 @@ describe('External API — Groups endpoints', () => {
       const group = await seedCustomGroup(organizationId, 'Dev Team');
 
       // Pre-existing DS entry with canConfigure=true + ds1
-      const manager = getManager();
+      const manager = getDefaultDataSource().manager;
       const gp = await manager.save(
         manager.create(GranularPermissions, {
           groupId: group.id,
@@ -644,7 +679,7 @@ describe('External API — Groups endpoints', () => {
         })
         .expect(204);
 
-      const gps = await getManager().find(GranularPermissions, {
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, {
         where: { groupId: group.id, type: ResourceType.DATA_SOURCE },
       });
       expect(gps.length).toBe(1);
@@ -692,7 +727,13 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('resolves app resources by name when names are provided', async () => {
-      const appByName = await seedApp(organizationId, 'Named App');
+      const appByName = await seedApp(organizationId, 'Named App', adminUserId);
+      // Name-based resolution joins onto app_versions.app_name (see
+      // validateResourcesExist in ee/external-apis/util.service.ts) — apps.name alone
+      // isn't enough, so seed a version carrying the app's name.
+      await ensureAppEnvironments(app, organizationId);
+      const version = await createApplicationVersion(app, appByName as App & { organizationId: string });
+      await getDefaultDataSource().manager.update(AppVersion, version.id, { appName: appByName.name });
       const group = await seedCustomGroup(organizationId, 'Dev Team');
 
       await request(app.getHttpServer())
@@ -710,7 +751,7 @@ describe('External API — Groups endpoints', () => {
         })
         .expect(204);
 
-      const gps = await getManager().find(GranularPermissions, {
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, {
         where: { groupId: group.id, type: ResourceType.APP },
         relations: ['appsGroupPermissions', 'appsGroupPermissions.groupApps'],
       });
@@ -731,7 +772,7 @@ describe('External API — Groups endpoints', () => {
         })
         .expect(204);
 
-      const updated = await getManager().findOne(GroupPermissions, { where: { id: group.id } });
+      const updated = await getDefaultDataSource().manager.findOne(GroupPermissions, { where: { id: group.id } });
       expect(updated.name).toBe('New Name');
       expect(updated.appCreate).toBe(true);
     });
@@ -842,7 +883,8 @@ describe('External API — Groups endpoints', () => {
         workflowDelete: false,
         dataSourceCreate: false,
         dataSourceDelete: false,
-        folderCRUD: true,
+        folderCreate: true,
+        folderDelete: false,
         orgConstantCRUD: false,
       });
 
@@ -861,13 +903,14 @@ describe('External API — Groups endpoints', () => {
         workflows_delete: false,
         datasources_create: false,
         datasources_delete: false,
-        folder: true,
+        folder_create: true,
+        folder_delete: false,
         workspace_constants: false,
       });
     });
 
     it('includes granularPermissions with correct shape in the response', async () => {
-      const testApp = await seedApp(organizationId, 'My App');
+      const testApp = await seedApp(organizationId, 'My App', adminUserId);
       const group = await seedCustomGroup(organizationId, 'Dev Team');
       await seedAppGranularPermission(group.id, [testApp.id], {
         canEdit: true,
@@ -937,7 +980,7 @@ describe('External API — Groups endpoints', () => {
     });
 
     it('returns 400 when trying to delete a default group', async () => {
-      const defaultGroup = await getManager().findOne(GroupPermissions, {
+      const defaultGroup = await getDefaultDataSource().manager.findOne(GroupPermissions, {
         where: { organizationId, type: GROUP_PERMISSIONS_TYPE.DEFAULT },
       });
 
@@ -957,12 +1000,12 @@ describe('External API — Groups endpoints', () => {
 
       expect(response.body).toEqual({});
 
-      const deleted = await getManager().findOne(GroupPermissions, { where: { id: group.id } });
+      const deleted = await getDefaultDataSource().manager.findOne(GroupPermissions, { where: { id: group.id } });
       expect(deleted).toBeNull();
     });
 
     it('cascades deletion to granular permissions and resource entries', async () => {
-      const testApp = await seedApp(organizationId, 'Cascade App');
+      const testApp = await seedApp(organizationId, 'Cascade App', adminUserId);
       const group = await seedCustomGroup(organizationId, 'To Delete');
       await seedAppGranularPermission(group.id, [testApp.id]);
 
@@ -971,15 +1014,19 @@ describe('External API — Groups endpoints', () => {
         .set('Authorization', AUTH_HEADER)
         .expect(204);
 
-      const gps = await getManager().find(GranularPermissions, { where: { groupId: group.id } });
+      const gps = await getDefaultDataSource().manager.find(GranularPermissions, { where: { groupId: group.id } });
       expect(gps.length).toBe(0);
     });
 
-    it('returns 400 when the UUID path param is invalid', async () => {
+    it('returns 422 when the UUID path param is invalid', async () => {
+      // There is no ParseUUIDPipe on this route — the malformed id reaches Postgres as
+      // a raw `uuid` column comparison and fails with a driver-level QueryFailedError.
+      // AllExceptionsFilter (src/modules/app/filters/all-exceptions-filter.ts) maps every
+      // QueryFailedError to 422 Unprocessable Entity, not 400.
       await request(app.getHttpServer())
         .delete(`/api/ext/workspace/${organizationId}/groups/not-a-uuid`)
         .set('Authorization', AUTH_HEADER)
-        .expect(400);
+        .expect(422);
     });
   });
 });
