@@ -65,8 +65,12 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     }
   }
 
-  protected validateDataSourceResourcePermissionUpdateOperation(group: GroupPermissions) {
-    if (group.name === USER_ROLE.END_USER) {
+  protected validateDataSourceResourcePermissionUpdateOperation(
+    group: GroupPermissions,
+    actions?: ResourceGroupActions<ResourceType.DATA_SOURCE>
+  ) {
+    // End-user groups can only hold the query-run restriction, never builder-level access
+    if (group.name === USER_ROLE.END_USER && (actions?.canConfigure || actions?.canUse)) {
       throw new BadRequestException(ERROR_HANDLER.EDITOR_LEVEL_PERMISSION_NOT_ALLOWED_END_USER);
     }
   }

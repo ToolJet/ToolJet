@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../../resources/styles/group-permissions.styles.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { OverlayTrigger } from 'react-bootstrap';
 import { RESOURCE_TYPE } from '../../../index';
 
 function AddResourcePermissionsMenu({
@@ -52,24 +52,9 @@ function AddResourcePermissionsMenu({
                 onClick={() => {
                   openAddPermissionModal(resource);
                 }}
-                disabled={currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES}
                 data-cy={`add-${resource.toLowerCase()}-button`}
               >
-                <OverlayTrigger
-                  key={index}
-                  placement="right"
-                  overlay={
-                    currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES ? (
-                      <Tooltip id={`tooltip-${index}`} style={{ maxWidth: '120px' }}>
-                        End-user cannot access data sources
-                      </Tooltip>
-                    ) : (
-                      <></>
-                    )
-                  }
-                >
-                  <span>{resourceNameMapping[resource]}</span>
-                </OverlayTrigger>
+                <span>{resourceNameMapping[resource]}</span>
               </ButtonSolid>
             ))}
           </div>
