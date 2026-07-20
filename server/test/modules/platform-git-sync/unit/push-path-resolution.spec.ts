@@ -27,8 +27,11 @@ describe('PlatformGitPushService — app name path resolution', () => {
   let service: PlatformGitPushService;
 
   // resolveAppPath is private; cast to reach it without exporting test-only surface.
+  // displayName mirrors the production caller's fallback chain
+  // (version?.appName || app.name || app.id) — these unit tests exercise the
+  // no-version case, so app.name is what a real caller would pass through.
   const resolveAppPath = (app: { id: string; name: string; type?: string }) =>
-    (service as any).resolveAppPath(app, REPO) as Promise<{ appPath: string; parentDir: string }>;
+    (service as any).resolveAppPath(app, REPO, app.name) as Promise<{ appPath: string; parentDir: string }>;
 
   beforeEach(() => {
     service = new PlatformGitPushService({} as any, {} as any, { log: jest.fn() } as any);
