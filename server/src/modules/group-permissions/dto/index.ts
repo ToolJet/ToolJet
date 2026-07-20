@@ -33,7 +33,19 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
+  moduleCreate: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  moduleDelete: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   orgConstantCRUD: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  tjdbCRUD: boolean;
 
   @IsBoolean()
   @IsOptional()
@@ -109,4 +121,8 @@ export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   @IsOptional()
   addGroupAdmins?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addModules: boolean;
 }

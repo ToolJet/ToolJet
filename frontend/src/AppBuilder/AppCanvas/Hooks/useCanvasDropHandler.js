@@ -126,6 +126,7 @@ export const useCanvasDropHandler = () => {
             ...dropComponent,
             isStub: false,
             versionId: hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId,
+            versionName: hydratedVersion.name ?? '',
             environmentId: hydratedVersion.current_environment_id,
             moduleContainer: hydrated.module_container,
             defaultSize: {
@@ -146,6 +147,7 @@ export const useCanvasDropHandler = () => {
         ? {
             moduleId: dropComponent.moduleId,
             versionId: dropComponent.versionId,
+            versionName: dropComponent.versionName ?? '',
             environmentId: dropComponent.environmentId,
             moduleName: dropComponent.displayName,
             moduleContainer: dropComponent.moduleContainer,
@@ -179,25 +181,6 @@ export const useCanvasDropHandler = () => {
         addedComponent = [newComponent];
         await addComponentToCurrentPage(addedComponent);
       }
-
-      // const canvas = document.querySelector('.canvas-container');
-      // const sidebar = document.querySelector('.editor-sidebar');
-      // const droppedElem = document.getElementById(addedComponent?.[0]?.id);
-
-      // if (!canvas || !sidebar || !droppedElem) return;
-
-      // const droppedRect = droppedElem.getBoundingClientRect();
-      // const sidebarRect = sidebar.getBoundingClientRect();
-
-      // const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
-
-      // if (isOverlapping) {
-      //   const overlap = droppedRect.right - sidebarRect.left;
-      //   canvas.scrollTo({
-      //     left: canvas.scrollLeft + overlap + BUFFER_OFFSET,
-      //     behavior: 'smooth',
-      //   });
-      // }
     } finally {
       // Reset drag bookkeeping when dropping
       setCurrentDragCanvasId(null);

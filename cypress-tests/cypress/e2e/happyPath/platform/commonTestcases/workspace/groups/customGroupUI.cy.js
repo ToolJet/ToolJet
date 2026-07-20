@@ -168,7 +168,7 @@ describe("Custom groups UI and Functionality verification", () => {
     verifyGranularPermissionModalStates("app", "custom", {
       editRadio: { checked: true, enabled: true },
       viewRadio: { checked: false, enabled: true },
-      hideCheckbox: { enabled: false },
+      hideCheckbox: { enabled: true },
       allAppsRadio: { checked: true, enabled: true },
       customRadio: { checked: false, enabled: true },
     });

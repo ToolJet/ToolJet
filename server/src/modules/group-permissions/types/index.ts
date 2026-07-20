@@ -12,7 +12,10 @@ export interface CreateDefaultGroupObject {
   workflowDelete?: boolean;
   folderCreate?: boolean;
   folderDelete?: boolean;
+  moduleCreate?: boolean;
+  moduleDelete?: boolean;
   orgConstantCRUD?: boolean;
+  tjdbCRUD?: boolean;
   dataSourceCreate?: boolean;
   dataSourceDelete?: boolean;
 }

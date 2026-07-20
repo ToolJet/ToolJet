@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
@@ -47,6 +47,7 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
@@ -87,6 +88,7 @@ type NewRevampedComponent =
   | 'DropdownV2'
   | 'Table'
   | 'Button'
+  | 'Cascader'
   | 'Checkbox'
   | 'Divider'
   | 'VerticalDivider'
@@ -140,6 +142,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Table',
   'Checkbox',
   'Button',
+  'Cascader',
   'Divider',
   'VerticalDivider',
   'Link',
@@ -239,6 +242,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
   'Button',
   'ButtonGroupV2',
+  'Cascader',
   'Checkbox',
   'CodeEditor',
   'ColorPicker',
@@ -276,7 +280,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
-const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
@@ -286,6 +290,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Button',
   'ButtonGroupV2',
   'Camera',
+  'Cascader',
   'Checkbox',
   'CircularProgressBar',
   'ColorPicker',
@@ -344,7 +349,8 @@ export class AppImportExportService {
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager,
     protected appsRepository: AppsRepository,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly abilityService: AbilityService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -836,6 +842,29 @@ export class AppImportExportService {
         const app = appById.get(row.app_id);
         if (app && row.app_name && !existingByName.has(row.app_name)) {
           existingByName.set(row.app_name, app);
+        }
+      }
+    }
+
+    // Gate: if any referenced module is missing, the user must have module_create permission.
+    // Use the same passport-first resolution as the processing loop below, so a renamed
+    // module that still resolves via co_relation_id isn't mistaken for a missing one.
+    if (appParams?.modules?.length > 0) {
+      const missingModules = appParams.modules.filter((m) => {
+        const resolved =
+          (m?.appV2?.co_relation_id && existingByCoRel.get(m.appV2.co_relation_id)) ||
+          existingByName.get(m?.appV2?.name);
+        return !resolved;
+      });
+      if (missingModules.length > 0) {
+        const perms = await this.abilityService.resourceActionsPermission(user, {
+          organizationId: user.organizationId,
+        });
+        const canCreateModule = perms.isSuperAdmin || perms.isAdmin || !!perms.moduleCreate;
+        if (!canCreateModule) {
+          throw new ForbiddenException(
+            "This app requires creating modules, but you don't have permission to create modules. Contact admin."
+          );
         }
       }
     }

@@ -22,8 +22,112 @@ import { Repository } from 'typeorm';
  * create/get-one are covered in groups-create-get.e2e-spec.ts.
  */
 
-/** @group platform */
-describe('External API — Groups list/update/delete', () => {
+// ---------------------------------------------------------------------------
+// DB seed helpers
+// ---------------------------------------------------------------------------
+
+async function seedCustomGroup(
+  organizationId: string,
+  name: string,
+  overrides: Partial<GroupPermissions> = {}
+): Promise<GroupPermissions> {
+  const manager = getManager();
+  const group = manager.create(GroupPermissions, {
+    organizationId,
+    name,
+    type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP,
+    appCreate: false,
+    appDelete: false,
+    folderCreate: false,
+    folderDelete: false,
+    orgConstantCRUD: false,
+    workflowCreate: false,
+    workflowDelete: false,
+    dataSourceCreate: false,
+    dataSourceDelete: false,
+    appPromote: false,
+    appRelease: false,
+    ...overrides,
+  });
+  return manager.save(group);
+}
+
+async function seedApp(organizationId: string, name: string): Promise<App> {
+  const manager = getManager();
+  const app = manager.create(App, {
+    name,
+    organizationId,
+    slug: name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
+    isPublic: false,
+  });
+  return manager.save(app);
+}
+
+async function seedDataSource(organizationId: string, name: string): Promise<DataSource> {
+  const manager = getManager();
+  const ds = manager.create(DataSource, {
+    name,
+    kind: 'restapi',
+    organizationId,
+  });
+  return manager.save(ds);
+}
+
+/**
+ * Seed an app granular permission (non-applyToAll) for a group.
+ */
+async function seedAppGranularPermission(
+  groupId: string,
+  appIds: string[],
+  {
+    canEdit = false,
+    canView = true,
+    hideFromDashboard = false,
+    canAccessDevelopment = true,
+    canAccessStaging = false,
+    canAccessProduction = false,
+    canAccessReleased = true,
+  } = {}
+): Promise<GranularPermissions> {
+  const manager = getManager();
+  const gp = await manager.save(
+    manager.create(GranularPermissions, {
+      groupId,
+      name: `app_gp_${Date.now()}`,
+      type: ResourceType.APP,
+      isAll: false,
+    })
+  );
+  const agp = await manager.save(
+    manager.create(AppsGroupPermissions, {
+      granularPermissionId: gp.id,
+      appType: 'front-end' as any,
+      canEdit,
+      canView,
+      hideFromDashboard,
+      canAccessDevelopment,
+      canAccessStaging,
+      canAccessProduction,
+      canAccessReleased,
+    })
+  );
+  if (appIds.length) {
+    await manager.insert(
+      GroupApps,
+      appIds.map((appId) => ({ appId, appsGroupPermissionsId: agp.id }))
+    );
+  }
+  return manager.findOne(GranularPermissions, {
+    where: { id: gp.id },
+    relations: ['appsGroupPermissions', 'appsGroupPermissions.groupApps'],
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Main test suite
+// ---------------------------------------------------------------------------
+
+describe('External API — Groups endpoints', () => {
   let app: INestApplication;
   let AUTH_HEADER: string;
   let groupRepo: Repository<GroupPermissions>;
@@ -219,6 +323,7 @@ describe('External API — Groups list/update/delete', () => {
       const group = await seedCustomGroup(org.id, 'Dev Team', {
         appCreate: false,
         folderCreate: true,
+        folderDelete: true,
       });
 
       await request(app.getHttpServer())
@@ -229,7 +334,9 @@ describe('External API — Groups list/update/delete', () => {
 
       const updated = await groupRepo.findOneOrFail({ where: { id: group.id } });
       expect(updated.appCreate).toBe(true);
+      // Omitted flag is untouched
       expect(updated.folderCreate).toBe(true);
+      expect(updated.folderDelete).toBe(true);
     });
 
     it('merges new app resources into an existing matching granular permission entry', async () => {
@@ -818,7 +925,7 @@ describe('External API — Groups list/update/delete', () => {
         dataSourceCreate: false,
         dataSourceDelete: false,
         folderCreate: true,
-        folderDelete: false,
+        folderDelete: true,
         orgConstantCRUD: false,
       });
 
@@ -838,7 +945,7 @@ describe('External API — Groups list/update/delete', () => {
         datasources_create: false,
         datasources_delete: false,
         folder_create: true,
-        folder_delete: false,
+        folder_delete: true,
         workspace_constants: false,
       });
     });

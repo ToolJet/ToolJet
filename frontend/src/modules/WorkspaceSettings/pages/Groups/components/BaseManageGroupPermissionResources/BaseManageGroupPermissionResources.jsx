@@ -22,6 +22,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import ModulePermissionsUI from '../ModulePermissionsUI';
 import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import VirtualizedUserList from './VirtualizedUserList';
@@ -764,7 +765,7 @@ class BaseManageGroupPermissionResources extends React.Component {
     const isCE = fetchEdition() === 'ce';
     const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
     const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
-    const { customGroups: isFeatureEnabled } = featureAccess || {};
+    const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
     // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs
     // and cannot change user roles (but can still add/remove users).
@@ -1270,6 +1271,15 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   </div>
                                   {/* //App till here */}
                                 </div>
+
+                                {/* Module Permission */}
+                                <ModulePermissionsUI
+                                  groupPermission={groupPermission}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
+                                  updateGroupPermission={this.updateGroupPermission}
+                                  updateState={this.updateParamState}
+                                />
+
                                 {/* Workflow Permission */}
                                 <WorkflowPermissionsUI
                                   groupPermission={groupPermission}
@@ -1343,6 +1353,49 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     </div>
                                   </div>
                                 </div>
+                                <div className="manage-groups-permission-apps">
+                                  <div data-cy="resource-tjdb">
+                                    {this.props.t(
+                                      'header.organization.menus.manageGroups.permissionResources.tooljetDatabase',
+                                      'ToolJet Database'
+                                    )}
+                                  </div>
+                                  <div className="text-muted">
+                                    <div className="d-flex apps-permission-wrap flex-column">
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              tjdbCRUD: !groupPermission.tjdbCRUD,
+                                            });
+                                            this.setState({
+                                              updateParam: { tjdbCRUD: !groupPermission.tjdbCRUD },
+                                            });
+                                          }}
+                                          checked={groupPermission.tjdbCRUD}
+                                          disabled={disableNonPromoteReleasePermissions}
+                                          data-cy="tjdb-create-checkbox"
+                                        />
+                                        <span className="form-check-label" data-cy="tjdb-create-label">
+                                          {this.props.t(
+                                            'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+                                            'Create/Update/Delete'
+                                          )}
+                                        </span>
+                                        <span
+                                          className={`tj-text-xxsm ${
+                                            disableNonPromoteReleasePermissions && 'check-label-disable'
+                                          }`}
+                                          data-cy="tjdb-helper-text"
+                                        >
+                                          All operations on ToolJet Database
+                                        </span>
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
                               </>
                             )}
                           </div>
@@ -1362,6 +1415,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                       darkMode={this.props.darkMode}
                       isBasicPlan={isBasicPlan}
                       isFeatureEnabled={isFeatureEnabled}
+                      isModulesEnabled={isModulesEnabled}
                       hasEndUsers={hasEndUsers}
                       isAdmin={isAdmin}
                     />
