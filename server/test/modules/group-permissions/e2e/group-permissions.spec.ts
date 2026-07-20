@@ -6,6 +6,8 @@ import {
   initTestApp,
   closeTestApp,
   createApplication,
+  createGroupPermission,
+  grantModulePermission,
   login,
   findEntityOrFail,
   findEntity,
@@ -407,6 +409,81 @@ describe('GroupPermissionsControllerV2', () => {
         const usersInGroup = await findEntities(GroupUsers, { where: { groupId: group.id } });
         const userIds = usersInGroup.map((gu) => gu.userId);
         expect(userIds).toContain(defaultUser.id);
+      });
+
+      it('should reject adding an end-user to a group with module Build-with (view-only) permission', async () => {
+        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const moduleGroup = await createGroupPermission(nestApp, { name: 'module-viewers', organization });
+        await grantModulePermission(nestApp, moduleGroup.id, { read: true });
+
+        const { user: endUser } = await createUser(nestApp, {
+          email: 'end-user-build-with@tooljet.io',
+          groups: ['all_users'],
+          organization,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ userIds: [endUser.id], groupId: moduleGroup.id });
+
+        expect(response.statusCode).toBe(409);
+
+        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: endUser.id } });
+        expect(usersInGroup).toHaveLength(0);
+      });
+
+      it('should reject adding an end-user to a group with module Edit permission', async () => {
+        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const moduleGroup = await createGroupPermission(nestApp, { name: 'module-editors', organization });
+        await grantModulePermission(nestApp, moduleGroup.id, { update: true });
+
+        const { user: endUser } = await createUser(nestApp, {
+          email: 'end-user-module-edit@tooljet.io',
+          groups: ['all_users'],
+          organization,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ userIds: [endUser.id], groupId: moduleGroup.id });
+
+        expect(response.statusCode).toBe(409);
+
+        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: endUser.id } });
+        expect(usersInGroup).toHaveLength(0);
+      });
+
+      it('should allow adding a builder-role user to a group with module Build-with permission', async () => {
+        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const moduleGroup = await createGroupPermission(nestApp, { name: 'module-viewers-builder', organization });
+        await grantModulePermission(nestApp, moduleGroup.id, { read: true });
+
+        const { user: builderUser } = await createUser(nestApp, {
+          email: 'builder-module-view@tooljet.io',
+          groups: ['builder'],
+          organization,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${moduleGroup.id}/users`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ userIds: [builderUser.id], groupId: moduleGroup.id });
+
+        expect(response.statusCode).toBe(201);
+
+        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: builderUser.id } });
+        expect(usersInGroup).toHaveLength(1);
       });
     });
 

@@ -58,6 +58,8 @@ export class AbilityService extends IAbilityService {
           orgVariableCRUD: acc.orgVariableCRUD,
           workflowCreate: acc.workflowCreate || group.workflowCreate,
           workflowDelete: acc.workflowDelete || group.workflowDelete,
+          moduleCreate: acc.moduleCreate || group.moduleCreate,
+          moduleDelete: acc.moduleDelete || group.moduleDelete,
         };
       }, DEFAULT_USER_PERMISSIONS);
 
@@ -75,11 +77,20 @@ export class AbilityService extends IAbilityService {
 
       const { resources } = resourcePermissionsObject;
       if (resources) {
-        // Load app permissions for both MODULES.APP and MODULES.MODULES since modules use app permissions
-        if (resources.some((item) => item.resource === MODULES.APP || item.resource === MODULES.MODULES)) {
+        if (resources.some((item) => item.resource === MODULES.APP)) {
           const appsGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.APP);
           userPermissions[MODULES.APP] = await this.abilityUtilService.createUserAppsPermissions(
             appsGranularPermissions,
+            user,
+            manager
+          );
+        }
+        // Modules resolve via their own granular permissions (app_type='module'), kept separate
+        // from the app bucket so module access never leaks into app-view resolution.
+        if (resources.some((item) => item.resource === MODULES.MODULES)) {
+          const moduleGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.MODULE);
+          userPermissions[MODULES.MODULES] = await this.abilityUtilService.createUserModulesPermissions(
+            moduleGranularPermissions,
             user,
             manager
           );

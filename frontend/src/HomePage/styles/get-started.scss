@@ -41,6 +41,20 @@
     position: relative;
     font-size: var(--font-size-large);
 
+    // Match the previous plain-Textarea's fixed sizing (initialHeight 80px, max-h 180px) —
+    // the shared CodeMirror mention theme otherwise caps this at 3rem/6.5rem everywhere.
+    .cm-editor {
+      min-height: 80px;
+      max-height: 180px;
+    }
+
+    // CodeMirror's own cursor for the empty doc isn't reliably aligned with the absolutely-
+    // positioned placeholder overlay text (varies by device/DPR) — hide it and use our own
+    // caret (.slot-placeholder-caret) instead, which is laid out inline with the overlay text.
+    &.is-showing-placeholder .cm-cursor {
+      visibility: hidden;
+    }
+
     .ai-builder-footer {
       display: flex;
       background-color: transparent;
@@ -124,5 +138,20 @@ div[role="listbox"].example-prompts-dropdown__content {
     &.active {
       opacity: 1;
     }
+  }
+
+  &-caret {
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin-right: 2px;
+    background-color: var(--text-default);
+    animation: slot-placeholder-caret-blink 1s step-end infinite;
+  }
+}
+
+@keyframes slot-placeholder-caret-blink {
+  50% {
+    opacity: 0;
   }
 }
