@@ -143,8 +143,10 @@ export default class LicenseBase {
     this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
-    this._isAppPublic = this.getFeatureValue('appPublic');
-    this._isAutomaticSsoLogin = this.getFeatureValue('automaticSsoLogin');
+    
+    // license with these set explicitly to true rather than being grandfathered in.
+    this._isAppPublic = this._features?.['appPublic'] === true;
+    this._isAutomaticSsoLogin = this._features?.['automaticSsoLogin'] === true;
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
