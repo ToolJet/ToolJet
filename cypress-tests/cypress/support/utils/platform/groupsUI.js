@@ -422,6 +422,28 @@ export const verifyGranularPermissionModalStates = (
                 customRadio: { checked: false, enabled: true },
             },
         },
+        // Ref: Module Permissions UI cases for automation - PR #16918
+        module: {
+            builder: {
+                editRadio: { checked: true, enabled: true },
+                buildWithRadio: { checked: false, enabled: true },
+                hideCheckbox: { enabled: true },
+                allAppsRadio: { checked: true, enabled: false },
+                customRadio: { checked: false, enabled: false },
+            },
+            // Unlike Apps/Workflows/Datasources, no module resource is seeded for this
+            // group's workspace (no apiCreateModule command exists), so "addableApps"
+            // for modules is always empty here and Custom stays disabled - this
+            // reflects real UI behavior (Custom-radio.jsx: disabled when no addable
+            // resources exist), not a workaround.
+            custom: {
+                editRadio: { checked: true, enabled: true },
+                buildWithRadio: { checked: false, enabled: true },
+                hideCheckbox: { enabled: true },
+                allAppsRadio: { checked: true, enabled: true },
+                customRadio: { checked: false, enabled: false },
+            },
+        },
     };
 
     // Get the base config
@@ -470,6 +492,23 @@ export const verifyGranularPermissionModalStates = (
             .should("be.visible")
             .and(config.buildWithRadio.checked ? "be.checked" : "not.be.checked")
             .and(config.buildWithRadio.enabled ? "be.enabled" : "be.disabled");
+    }
+
+    if (resourceType === "module") {
+        // Edit + Hide-from-dashboard reuse the Apps modal's data-cy; Build with is module-specific.
+        cy.get(groupsSelector.editPermissionRadio)
+            .should("be.visible")
+            .and(config.editRadio.checked ? "be.checked" : "not.be.checked")
+            .and(config.editRadio.enabled ? "be.enabled" : "be.disabled");
+
+        cy.get(groupsSelector.buildWithPermissionRadio)
+            .should("be.visible")
+            .and(config.buildWithRadio.checked ? "be.checked" : "not.be.checked")
+            .and(config.buildWithRadio.enabled ? "be.enabled" : "be.disabled");
+
+        cy.get(groupsSelector.hidePermissionInput)
+            .should("be.visible")
+            .and(config.hideCheckbox.enabled ? "be.enabled" : "be.disabled");
     }
 
     cy.get(groupsSelector.allAppsRadio)
@@ -559,6 +598,8 @@ export const permissions =
             groupsSelector.workflowsDeleteCheck,
             groupsSelector.datasourcesCreateCheck,
             groupsSelector.datasourcesDeleteCheck,
+            groupsSelector.moduleCreateCheck,
+            groupsSelector.moduleDeleteCheck,
             groupsSelector.foldersCreateCheck,
             groupsSelector.workspaceVarCheckbox,
         ];
@@ -659,6 +700,16 @@ export const verifyPermissionCheckBoxLabelsAndHelperTexts = () => {
             {
                 selector: groupsSelector.datasourcesDeleteHelperText,
                 text: "Delete any data source in this workspace",
+            },
+            { selector: groupsSelector.moduleCreateLabel, text: "Create" },
+            {
+                selector: groupsSelector.moduleCreateHelperText,
+                text: "Create modules in this workspace",
+            },
+            { selector: groupsSelector.moduleDeleteLabel, text: "Delete" },
+            {
+                selector: groupsSelector.moduleDeleteHelperText,
+                text: "Delete any module in this workspace",
             },
         ];
 
@@ -881,6 +932,87 @@ export const verifyGranularAccessByRole = (role) => {
             config.addButtonEnabled ? "be.enabled" : "be.disabled"
         );
     });
+};
+
+// Ref: Module Permissions UI cases for automation - PR #16918, TC-M6
+// Admin/Builder default groups get an auto-seeded "Modules" row (isAll: true,
+// server/src/modules/group-permissions/util.service.ts createDefaultGroups()).
+// End-user has no MODULE key in DEFAULT_RESOURCE_PERMISSIONS, so no row is ever
+// seeded for it - the disabled "Add Module" button (TC-M5) is its only surface.
+export const verifyModuleGranularAccessByRole = (role) => {
+    const roleConfig = {
+        admin: {
+            editRadio: { checked: true, enabled: false },
+            buildWithRadio: { checked: false, enabled: false },
+            hideCheckbox: { enabled: false },
+            // Labels/helper text are static copy, not role-dependent - verify once
+            // (mirrors the verifyHelperTexts flag in verifyGranularAccessByRole,
+            // which only checks it on the admin pass to avoid redundant assertions).
+            verifyHelperTexts: true,
+        },
+        builder: {
+            editRadio: { checked: true, enabled: true },
+            buildWithRadio: { checked: false, enabled: true },
+            hideCheckbox: { enabled: true },
+            verifyHelperTexts: false,
+        },
+    };
+
+    const config = roleConfig[role];
+
+    cy.get(groupsSelector.granularLink).click();
+    cy.verifyElement(groupsSelector.modulesText, "Modules");
+
+    cy.get(groupsSelector.moduleEditRadio)
+        .should("be.visible")
+        .and(config.editRadio.checked ? "be.checked" : "not.be.checked")
+        .and(config.editRadio.enabled ? "be.enabled" : "be.disabled");
+
+    cy.get(groupsSelector.moduleBuildWithRadio)
+        .should("be.visible")
+        .and(config.buildWithRadio.checked ? "be.checked" : "not.be.checked")
+        .and(config.buildWithRadio.enabled ? "be.enabled" : "be.disabled");
+
+    cy.get(groupsSelector.moduleHideFromDashboardCheckbox)
+        .should("be.visible")
+        .and(config.hideCheckbox.enabled ? "be.enabled" : "be.disabled");
+
+    if (config.verifyHelperTexts) {
+        cy.verifyElement(groupsSelector.moduleEditLabel, "Edit");
+        cy.verifyElement(
+            groupsSelector.moduleEditHelperText,
+            "Access to the module builder"
+        );
+        cy.verifyElement(groupsSelector.moduleBuildWithLabel, "Build with");
+        cy.verifyElement(
+            groupsSelector.moduleBuildWithHelperText,
+            "Use modules in apps"
+        );
+        cy.verifyElement(
+            groupsSelector.moduleHideFromDashboardLabel,
+            "Hide from dashboard"
+        );
+        cy.verifyElement(
+            groupsSelector.moduleHideFromDashboardHelperText,
+            "Module will be accessible by URL only"
+        );
+    }
+
+    cy.verifyElement(groupsSelector.groupChip("All modules"), "All modules");
+};
+
+// TC-M4: delete icon + confirmation modal for a custom Module granular permission
+export const verifyModuleGranularPermissionDelete = () => {
+    cy.get(groupsSelector.moduleGranularAccess).realHover();
+    cy.get(groupsSelector.editModuleGranularAccess).click();
+
+    cy.get(groupsSelector.deletePermissionIcon)
+        .should("be.visible")
+        .and("be.enabled");
+    cy.get(groupsSelector.deletePermissionIcon).click();
+
+    verifyDeleteConfirmationModal();
+    cy.contains("Cancel").click();
 };
 
 export const permissionModal = () => {
