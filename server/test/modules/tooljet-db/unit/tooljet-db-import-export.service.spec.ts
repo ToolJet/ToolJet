@@ -1,7 +1,7 @@
 /**
  * @group database
  */
-import { BadRequestException, ConflictException, INestApplication, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
@@ -174,8 +174,11 @@ describe('EE (plan: enterprise)', () => {
       expect(isValid).toBe(true);
     });
 
-    it('should throw NotFoundException for non-existent table', async () => {
-      await expect(service.export(organizationId, { table_id: uuidv4() }, [])).rejects.toThrow(NotFoundException);
+    it('should return null for non-existent table', async () => {
+      // Backward compatibility: export() intentionally returns null instead of throwing
+      // for a missing InternalTable, to avoid hard-failing export/clone on stale table
+      // references (see tooljet-db-import-export.service.ts).
+      await expect(service.export(organizationId, { table_id: uuidv4() }, [])).resolves.toBeNull();
     });
   });
 
@@ -348,13 +351,15 @@ describe('EE (plan: enterprise)', () => {
 
   describe('.bulkImport | import multiple tables with foreign keys', () => {
     it('should import multiple ToolJet DB tables with foreign key relationships', async () => {
+      const productsTableId = uuidv4();
+      const ordersTableId = uuidv4();
       const importData = {
         app: null,
         organization_id: organizationId,
         tooljet_version: '2.50.5.5.8',
         tooljet_database: [
           {
-            id: 'products-table-id',
+            id: productsTableId,
             table_name: 'products',
             schema: {
               columns: [
@@ -381,7 +386,7 @@ describe('EE (plan: enterprise)', () => {
             },
           },
           {
-            id: 'orders-table-id',
+            id: ordersTableId,
             table_name: 'orders',
             schema: {
               columns: [
@@ -412,7 +417,7 @@ describe('EE (plan: enterprise)', () => {
                   referenced_column_names: ['id'],
                   on_update: 'CASCADE',
                   on_delete: 'RESTRICT',
-                  referenced_table_id: 'products-table-id',
+                  referenced_table_id: productsTableId,
                 },
               ],
             },
