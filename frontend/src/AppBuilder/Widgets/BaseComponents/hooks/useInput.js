@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGridStore } from '@/_stores/gridStore';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
 
@@ -184,8 +184,7 @@ export const useInput = ({
   useEffect(() => {
     const exposedVariables = {
       clear: async function () {
-        inputType === 'phone' ? setPhoneInputValue('') : setInputValue('');
-        fireEvent('onChange');
+        clearValue();
       },
       setFocus: async function () {
         inputRef.current.focus();
@@ -263,6 +262,11 @@ export const useInput = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
+  const clearValue = () => {
+    inputType === 'phone' ? setPhoneInputValue('') : setInputValue('');
+    fireEvent('onChange');
+  };
+
   const handleChange = (e) => {
     setInputValue(e.target.value);
     fireEvent('onChange');
@@ -295,6 +299,8 @@ export const useInput = ({
       fireEvent('onEnterPressed');
     }
   };
+
+  useFormClear(clearValue);
 
   return {
     inputRef,

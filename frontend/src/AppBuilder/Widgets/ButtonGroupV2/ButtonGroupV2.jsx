@@ -9,7 +9,7 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { cx } from 'class-variance-authority';
 import { getLabelFontSize, getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -111,6 +111,8 @@ export const ButtonGroupV2 = (props) => {
       [key]: value,
     }));
   };
+
+  useFormClear(() => updateExposedVariablesState('selected', []));
 
   // ===== EFFECTS =====
   useBatchedUpdateEffectArray([

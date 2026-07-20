@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 // eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
@@ -488,6 +488,8 @@ export const useFilePicker = ({
     },
     [] // No dependencies needed
   );
+
+  useFormClear(clearFiles);
 
   // --- Effects ---
   useEffect(() => {
