@@ -2,8 +2,6 @@ import { create as _create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 
@@ -394,8 +392,8 @@ export function findAllEntityReferences(node, allRefs) {
 
       if (typeof value === 'string') {
         if (containsBracketNotation(value)) {
-          // Skip if the value is a bracket notation
-          break;
+          // Skip this value only — `break` would abort scanning the object's remaining keys
+          continue;
         }
 
         if (
@@ -419,26 +417,17 @@ export function findAllEntityReferences(node, allRefs) {
 /**
  * Replaces entity names with their corresponding IDs in the given code.
  *
+ * Delegates to the AST-based walker so that only genuine `components.X` / `queries.X`
+ * member expressions inside {{ }} are converted — an entity name appearing as plain
+ * text or inside a string literal must never be rewritten.
+ *
  * @param {Object} code - The code object containing entity names.
- * @param {Object} componentNameIdMapping - A map of component IDs to their names.
- * @param {Object} queryNameIdMapping - A map of query IDs to their names.
+ * @param {Object} componentNameIdMapping - A map of component names to their IDs.
+ * @param {Object} queryNameIdMapping - A map of query names to their IDs.
  * @returns {Object} The code object with entity references replaced by IDs.
  */
-export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}, queryNameIdMapping = {}) => {
-  const entityNameReferences = findAllEntityReferences(code, []);
-
-  let diffObj = deepClone(code);
-  entityNameReferences.forEach((entityName) => {
-    //! TODO revisit this
-    const entityId = componentNameIdMapping[entityName]
-      ? componentNameIdMapping[entityName]
-      : queryNameIdMapping[entityName]
-      ? queryNameIdMapping[entityName]
-      : entityName;
-    diffObj = dfs(diffObj, entityName, entityId);
-  });
-  return diffObj;
-};
+export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}, queryNameIdMapping = {}) =>
+  replaceQueryOptionsEntityReferencesWithIds(code, componentNameIdMapping, queryNameIdMapping);
 
 export function replaceQueryOptionsEntityReferencesWithIds(
   options,

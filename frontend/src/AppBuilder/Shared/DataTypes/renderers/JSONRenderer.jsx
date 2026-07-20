@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { isCellContentOverflowing } from '../utils';
 
 /**
  * JSONRenderer - Pure JSON value renderer with editing support
@@ -85,7 +86,7 @@ export const JSONRenderer = ({
       id={id}
       ref={ref}
       contentEditable={'true'}
-      className={`h-100 text-container long-text-input d-flex align-items-center ${
+      className={`h-100 text-container long-text-input d-flex  ${
         darkMode ? ' textarea-dark-theme' : ''
       } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
       tabIndex={-1}
@@ -96,6 +97,7 @@ export const JSONRenderer = ({
         background: 'inherit',
         position: 'relative',
         height: '100%',
+        alignItems: 'safe center',
       }}
       readOnly={!isEditable}
       onBlur={(e) => {
@@ -140,10 +142,7 @@ export const JSONRenderer = ({
     );
   };
 
-  const _showOverlay =
-    ref?.current &&
-    (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
-      ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
+  const _showOverlay = isCellContentOverflowing(ref?.current);
 
   return (
     <>
@@ -152,13 +151,11 @@ export const JSONRenderer = ({
         overlay={_showOverlay ? getOverlay() : <div />}
         trigger={_showOverlay && ['hover', 'focus']}
         rootClose={true}
-        show={_showOverlay && hovered && !isEditing}
+        show={_showOverlay && hovered}
       >
         {!isEditable ? (
           <div
-            className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
-              horizontalAlignment
-            )}`}
+            className={`d-flex  h-100 w-100 justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
             style={cellStyles}
             onMouseMove={() => {
               if (!hovered) setHovered(true);
