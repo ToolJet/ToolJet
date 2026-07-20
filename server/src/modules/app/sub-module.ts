@@ -1,5 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export abstract class SubModule {
   /**
@@ -15,10 +16,14 @@ export abstract class SubModule {
   /**
    * Build a stable string key from the register() arguments. Default
    * implementation handles the common (configs, isMainImport) shape; subclasses
-   * with extra register args can override.
+   * with extra register args can override. Includes the active edition —
+   * getImportPath() resolves CE/EE providers based on it, so a cache key that
+   * omits it would reuse a wrong-edition DynamicModule whenever the same
+   * process registers a module under more than one edition (e.g. tests that
+   * run initTestApp for both 'ee' and 'ce' within one file).
    */
   protected static buildCacheKey(configs?: { IS_GET_CONTEXT: boolean }, ...rest: any[]): string {
-    return JSON.stringify([configs ?? {}, ...rest]);
+    return JSON.stringify([configs ?? {}, getTooljetEdition(), ...rest]);
   }
 
   /** Look up a cached DynamicModule for this subclass + cache key. */
