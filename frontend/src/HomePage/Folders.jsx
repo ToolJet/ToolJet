@@ -53,9 +53,13 @@ export const Folders = function Folders({
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  // Get folder granular permissions from session
+  // Get folder granular permissions from session — workflow folders have their own permission
+  // surface, separate from front-end/module app folders.
   const currentSession = authenticationService.currentSessionValue;
-  const folderGroupPermissions = currentSession?.folder_group_permissions;
+  const folderGroupPermissions =
+    appType === 'workflow'
+      ? currentSession?.workflow_folder_group_permissions
+      : currentSession?.folder_group_permissions;
   // Get current user ID for ownership check
   const currentUserId = currentSession?.current_user?.id;
   const isBuilder = hasBuilderRole(currentSession?.role ?? {});
