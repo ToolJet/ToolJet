@@ -8,7 +8,7 @@ import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
 import { OrganizationConstantType } from './constants';
 import { OrganizationConstantRepository } from './repository';
-const secretValue = '**********';
+const secretValue = '********';
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
   constructor(

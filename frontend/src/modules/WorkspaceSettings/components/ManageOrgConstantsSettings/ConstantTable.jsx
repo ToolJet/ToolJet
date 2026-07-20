@@ -145,7 +145,7 @@ const ConstantTable = ({
                             style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
                             data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-update`}
                           >
-                            {!(constant.type === 'Secret' && !constant.fromEnv) && (
+                            {constant.type !== 'Secret' && (
                               <div
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => toggleShowValue(constant.id)}
