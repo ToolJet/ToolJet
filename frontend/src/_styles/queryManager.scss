@@ -111,6 +111,15 @@ $border-radius: 4px;
     z-index: 12 !important;
   }
 
+  // Lift above the mobile canvas frame (z-index 1000); toggle bar stays above the content pane.
+  &.query-pane--mobile {
+    z-index: 1002 !important;
+
+    &#query-manager {
+      z-index: 1001 !important;
+    }
+  }
+
 
   &#query-manager {
     border-top-width: 2px;

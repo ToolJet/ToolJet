@@ -25,6 +25,8 @@ export const QueryPanel = ({ darkMode }) => {
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+  // On mobile the query panel overlays the canvas via a higher z-index.
+  const isMobileLayout = useStore((state) => state.currentLayout === 'mobile', shallow);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -157,7 +159,9 @@ export const QueryPanel = ({ darkMode }) => {
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
       <div
-        className={`query-pane ${isQueryPaneExpanded ? 'expanded' : 'collapsed'}`}
+        className={cx('query-pane', isQueryPaneExpanded ? 'expanded' : 'collapsed', {
+          'query-pane--mobile': isMobileLayout,
+        })}
         style={{
           height: 40,
           ...(isRightSidebarOpen && {
@@ -200,7 +204,7 @@ export const QueryPanel = ({ darkMode }) => {
       <div
         ref={queryPaneRef}
         onMouseDown={onMouseDown}
-        className="query-pane"
+        className={cx('query-pane', { 'query-pane--mobile': isMobileLayout })}
         id="query-manager"
         style={{
           height: `calc(100% - ${isQueryPaneExpanded ? height : 100}%)`,
