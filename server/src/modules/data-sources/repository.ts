@@ -1,6 +1,6 @@
 import { DataSource } from '@entities/data_source.entity';
-import { Injectable } from '@nestjs/common';
-import { Brackets, DataSource as typeOrmDS, EntityManager, Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Brackets, DataSource as typeOrmDS, EntityManager, EntityNotFoundError, Repository } from 'typeorm';
 import { UserPermissions } from '@modules/ability/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -260,10 +260,17 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
   async findById(dataSourceId: string, organizationId: string, manager?: EntityManager): Promise<DataSource> {
     const m = manager ?? this.manager;
-    return m.findOneOrFail(DataSource, {
-      where: { id: dataSourceId, organizationId },
-      relations: ['plugin', 'apps'],
-    });
+    try {
+      return await m.findOneOrFail(DataSource, {
+        where: { id: dataSourceId, organizationId },
+        relations: ['plugin', 'apps'],
+      });
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException('Data source not found');
+      }
+      throw error;
+    }
   }
 
   async convertToGlobalSource(dataSourceId: string, organizationId: string, manager?: EntityManager) {
