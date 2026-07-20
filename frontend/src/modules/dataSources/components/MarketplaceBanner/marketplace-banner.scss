@@ -1,0 +1,52 @@
+.marketplace-explore-banner {
+  display: flex;
+  justify-content: space-between; // <- this was missing, causing the sticking
+  gap: 10px;
+  align-items: center;
+  padding: 12px 20px;
+  width: 100%; // Fill (880px)
+  min-height: 52px; // Hug (52px)
+  border-radius: 6px;
+  // NOTE: using your pasted values as-is for now — see caveat above re: blend mode
+  background: linear-gradient(
+    90.8deg,
+    rgba(255, 255, 255, 0.06) -1.85%,
+    rgba(252, 95, 112, 0.06) 19.28%,
+    rgba(142, 78, 198, 0.06) 61.52%,
+    rgba(255, 255, 255, 0.06) 102.76%
+  );
+
+  &__text {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 18px;
+    color: #2d343b; // exact hex from spec, not a token
+  }
+
+  &__button {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 10px;
+    gap: 6px;
+    width: 153px;
+    height: 28px;
+    background: #ffffff;
+    border: 1px solid #e4e7eb;
+    border-radius: 6px;
+    box-shadow: 0px 0px 1px rgba(48, 50, 51, 0.05), 0px 1px 1px rgba(48, 50, 51, 0.1);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 12px; // was wrongly 14px before
+    line-height: 18px; // was wrongly 20px before
+    color: #1b1f24;
+    cursor: pointer;
+    white-space: nowrap;
+
+    svg { flex-shrink: 0; }
+  }
+}
