@@ -767,6 +767,7 @@
                 "marketplace/plugins/marketplace-plugin-qdrant",
                 "marketplace/plugins/marketplace-plugin-quickbooks",
                 "marketplace/plugins/marketplace-plugin-salesforce",
+                "marketplace/plugins/marketplace-plugin-servicenow",
                 "marketplace/plugins/marketplace-plugin-sharepoint",
                 "marketplace/plugins/marketplace-plugin-supabase",
                 "marketplace/plugins/marketplace-plugin-ups",
