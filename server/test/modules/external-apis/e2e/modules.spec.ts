@@ -4,6 +4,7 @@
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   createUser,
   initTestApp,
@@ -15,8 +16,10 @@ import { APP_TYPES } from '@modules/apps/constants';
 
 jest.setTimeout(120_000);
 
-// Token is read from .env.test at runtime by ConfigService — read after env is loaded.
-const getExtAuth = () => `Basic ${process.env.EXTERNAL_API_ACCESS_TOKEN}`;
+// Read the token from the same ConfigService the guard resolves it from — the
+// app's ConfigModule and process.env can diverge (different env files).
+let externalApiAccessToken: string;
+const getExtAuth = () => `Basic ${externalApiAccessToken}`;
 
 // A valid UUID that will never exist in the test database.
 const NONEXISTENT_UUID = '00000000-0000-0000-0000-000000000001';
@@ -63,6 +66,7 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    externalApiAccessToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
   });
 
   afterEach(() => {
@@ -484,6 +488,7 @@ describe('ExternalApisModulesController (EE plan: starter)', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'starter' }));
+    externalApiAccessToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
   });
 
   afterEach(() => {
@@ -508,6 +513,7 @@ describe('ExternalApisModulesController (CE)', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ce' }));
+    externalApiAccessToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
   });
 
   afterEach(() => {
