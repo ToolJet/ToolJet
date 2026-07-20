@@ -7,6 +7,23 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import './tags.scss';
 
+// Single source of truth for turning a raw tags array into the rendered set:
+// drop non-visible tags and assign stable ids. Both the property-binding path
+// and the setValue CSA must go through this so the exposed `tags`/count never
+// diverges from what `renderTag` actually draws.
+function normalizeTags(tagsData) {
+  if (!Array.isArray(tagsData)) return [];
+  return tagsData
+    .filter((tag) => {
+      const isVisible = tag?.visible?.value !== undefined ? tag.visible.value : tag?.visible !== false;
+      return isVisible;
+    })
+    .map((tag, index) => ({
+      ...tag,
+      id: tag.id ? tag.id : index,
+    }));
+}
+
 function deriveTagsFromProperties({ data, advanced, schema, options }) {
   let tagsData;
   if (!advanced) {
@@ -19,16 +36,7 @@ function deriveTagsFromProperties({ data, advanced, schema, options }) {
   if (advanced && typeof tagsData === 'string') {
     tagsData = resolveWidgetFieldValue(tagsData);
   }
-  if (!Array.isArray(tagsData)) return [];
-  return tagsData
-    .filter((tag) => {
-      const isVisible = tag?.visible?.value !== undefined ? tag.visible.value : tag?.visible !== false;
-      return isVisible;
-    })
-    .map((tag, index) => ({
-      ...tag,
-      id: tag.id ? tag.id : index,
-    }));
+  return normalizeTags(tagsData);
 }
 
 export const Tags = function Tags({
@@ -120,12 +128,13 @@ export const Tags = function Tags({
           setParsedTags([]);
           return;
         }
-        const normalized = newTags.map((tag, index) =>
-          typeof tag === 'string'
-            ? { title: tag, color: '#405DE61A', textColor: '#405DE6', id: index }
-            : { ...tag, id: tag.id ? tag.id : index }
+        // Coerce string shorthand to tag objects, then run through the same
+        // normalizer as the property path so visibility filtering and id
+        // assignment stay identical across both entry points.
+        const asObjects = newTags.map((tag) =>
+          typeof tag === 'string' ? { title: tag, color: '#405DE61A', textColor: '#405DE6' } : tag
         );
-        setParsedTags(normalized);
+        setParsedTags(normalizeTags(asObjects));
       },
       setVisibility: async function (value) {
         setExposedVariable('isVisible', !!value);

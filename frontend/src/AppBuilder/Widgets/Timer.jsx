@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 export const Timer = function Timer({
   height,
@@ -26,6 +26,14 @@ export const Timer = function Timer({
   const [state, setState] = useState('initial');
   const [intervalId, setIntervalId] = useState(0);
 
+  // Mirror the running interval id into a ref so callbacks registered in
+  // []-dep effects (e.g. the setValue CSA) can read the current id instead of
+  // closing over the mount-time value (0).
+  const intervalIdRef = useRef(0);
+  useEffect(() => {
+    intervalIdRef.current = intervalId;
+  }, [intervalId]);
+
   const TimerType = {
     COUNTDOWN: 'countDown',
     COUNTUP: 'countUp',
@@ -52,11 +60,28 @@ export const Timer = function Timer({
     if (typeof setExposedVariables === 'function') {
       setExposedVariables({
         setValue: async function (newValue) {
-          if (typeof newValue !== 'string') return;
-          const parts = newValue.split(':');
-          if (parts.length < 4) return;
-          const [HH, MM, SS, MS] = parts;
-          const newTime = getTimeObj({ HH, MM, SS, MS });
+          // Accept both the 'HH:MM:SS:MS' string and the object shape that
+          // `value` is exposed as ({ hour, minute, second, mSecond }), so a
+          // round-trip like timer1.setValue(timer1.value) works.
+          let newTime;
+          if (typeof newValue === 'string') {
+            const parts = newValue.split(':');
+            if (parts.length < 4) return;
+            const [HH, MM, SS, MS] = parts;
+            newTime = getTimeObj({ HH, MM, SS, MS });
+          } else if (newValue && typeof newValue === 'object') {
+            const { hour, minute, second, mSecond } = newValue;
+            newTime = getTimeObj({ HH: hour, MM: minute, SS: second, MS: mSecond });
+          } else {
+            return;
+          }
+          // Hard-stop: cancel any running tick and return to the initial state
+          // so the set value is deterministic and doesn't keep counting from the
+          // new base. intervalId is read from the ref because this callback is
+          // registered in a []-dep effect (closes over the mount-time id, 0).
+          intervalIdRef.current && clearInterval(intervalIdRef.current);
+          setIntervalId(0);
+          setState('initial');
           setTime(newTime);
           setExposedVariable('value', newTime);
         },
