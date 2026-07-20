@@ -21,6 +21,7 @@ export enum ResourceType {
   FOLDER = 'folder',
   MODULE = 'module',
   WORKFLOW_FOLDER = 'workflow_folder',
+  MODULE_FOLDER = 'module_folder',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -37,6 +38,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     workflowDelete: true,
     moduleCreate: true,
     moduleDelete: true,
+    moduleFolderCreate: true,
+    moduleFolderDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -58,6 +61,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     workflowDelete: true,
     moduleCreate: true,
     moduleDelete: true,
+    moduleFolderCreate: true,
+    moduleFolderDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -126,6 +131,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEditApps: false,
       canViewApps: false,
     },
+    [ResourceType.MODULE_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
@@ -186,6 +196,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEditApps: false,
       canViewApps: false,
     },
+    [ResourceType.MODULE_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;
 
@@ -217,6 +232,10 @@ export enum FEATURE_KEY {
   CREATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'create_granular_workflow_folder_permissions',
   UPDATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'update_granular_workflow_folder_permissions',
   DELETE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'delete_granular_workflow_folder_permissions',
+  GET_ADDABLE_MODULE_FOLDERS = 'get_addable_module_folders',
+  CREATE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'create_granular_module_folder_permissions',
+  UPDATE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'update_granular_module_folder_permissions',
+  DELETE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'delete_granular_module_folder_permissions',
   USER_ROLE_CHANGE = 'change_user_role',
   ASSIGN_GROUP_ADMIN = 'assign_group_admin',
   REVOKE_GROUP_ADMIN = 'revoke_group_admin',

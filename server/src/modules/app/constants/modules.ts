@@ -50,4 +50,5 @@ export enum MODULES {
   CUSTOM_DOMAINS = 'customDomains',
   DATA_QUERY_FOLDERS = 'DataQueryFolders',
   WORKFLOW_FOLDER = 'WorkflowFolder',
+  MODULE_FOLDER = 'ModuleFolder',
 }

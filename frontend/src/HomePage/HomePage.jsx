@@ -65,7 +65,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { TriangleAlert } from 'lucide-react';
 
-import { appTypeToDisplayNameMapping } from './helper';
+import { appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
 
 const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
 class HomePageComponent extends React.Component {
@@ -886,25 +886,19 @@ class HomePageComponent extends React.Component {
 
   canCreateFolder = () => {
     const user_permissions = authenticationService.currentSessionValue?.user_permissions;
-    return this.props.appType === 'workflow'
-      ? user_permissions?.workflow_folder_create
-      : user_permissions?.folder_create;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'create');
   };
 
   canDeleteFolder = () => {
     const user_permissions = authenticationService.currentSessionValue?.user_permissions;
-    return this.props.appType === 'workflow'
-      ? user_permissions?.workflow_folder_delete
-      : user_permissions?.folder_delete;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'delete');
   };
 
   canUpdateFolder = () => {
     // Update folder (rename) requires either folderCreate permission or granular canEditFolder permission
-    // For now, we use folderCreate (or its workflow-folder equivalent) as the master permission for folder update
+    // For now, we use folderCreate (or its per-app-type equivalent) as the master permission for folder update
     const user_permissions = authenticationService.currentSessionValue?.user_permissions;
-    return this.props.appType === 'workflow'
-      ? user_permissions?.workflow_folder_create
-      : user_permissions?.folder_create;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'create');
   };
 
   isGitEnabled = () => {

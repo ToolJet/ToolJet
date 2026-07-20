@@ -35,7 +35,11 @@ export class FeatureAbilityGuard extends AbilityGuard {
   }
 
   protected getResource(): ResourceDetails | ResourceDetails[] {
-    return [{ resourceType: MODULES.FOLDER }, { resourceType: MODULES.WORKFLOW_FOLDER }];
+    return [
+      { resourceType: MODULES.FOLDER },
+      { resourceType: MODULES.WORKFLOW_FOLDER },
+      { resourceType: MODULES.MODULE_FOLDER },
+    ];
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

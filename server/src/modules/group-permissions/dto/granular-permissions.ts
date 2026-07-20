@@ -37,7 +37,12 @@ export class CreateGranularPermissionDto {
 }
 
 export class UpdateGranularPermissionDto<
-  T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.FOLDER | ResourceType.WORKFLOW_FOLDER,
+  T extends
+    | ResourceType.APP
+    | ResourceType.DATA_SOURCE
+    | ResourceType.FOLDER
+    | ResourceType.WORKFLOW_FOLDER
+    | ResourceType.MODULE_FOLDER,
 > {
   @IsString()
   @IsOptional()

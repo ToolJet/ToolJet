@@ -2,11 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { Ability, AbilityBuilder, InferSubjects } from '@casl/ability';
 import { AbilityFactory } from '@modules/app/ability-factory';
 import { UserAllPermissions } from '@modules/app/types';
+import { UserPermissions } from '@modules/ability/types';
 import { FEATURE_KEY } from '../constants';
 import { Folder } from '@entities/folder.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 type Subjects = InferSubjects<typeof Folder> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
+
+// Folder-flavor → the create/delete permission keys that gate it. Add an entry here
+// (not another ternary arm) when a new folder-owning resource type is introduced.
+const FOLDER_PERMISSION_KEYS_BY_TYPE: Partial<
+  Record<APP_TYPES, { create: keyof UserPermissions; delete: keyof UserPermissions }>
+> = {
+  [APP_TYPES.WORKFLOW]: { create: 'workflowFolderCreate', delete: 'workflowFolderDelete' },
+  [APP_TYPES.MODULE]: { create: 'moduleFolderCreate', delete: 'moduleFolderDelete' },
+};
 
 @Injectable()
 export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
@@ -21,9 +31,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     request?: any
   ): void {
     const { superAdmin, userPermission, isAdmin, isBuilder } = UserAllPermissions;
-    const isWorkflowFolder = request?.tj_folder_type === APP_TYPES.WORKFLOW;
-    const canCreateFolder = isWorkflowFolder ? userPermission.workflowFolderCreate : userPermission.folderCreate;
-    const canDeleteFolder = isWorkflowFolder ? userPermission.workflowFolderDelete : userPermission.folderDelete;
+    const permissionKeys = FOLDER_PERMISSION_KEYS_BY_TYPE[request?.tj_folder_type as APP_TYPES];
+    const canCreateFolder = permissionKeys ? !!userPermission[permissionKeys.create] : userPermission.folderCreate;
+    const canDeleteFolder = permissionKeys ? !!userPermission[permissionKeys.delete] : userPermission.folderDelete;
     const ownerCanManageFolder = !!request?.tj_allow_owner_folder_manage;
 
     if (superAdmin || isAdmin) {

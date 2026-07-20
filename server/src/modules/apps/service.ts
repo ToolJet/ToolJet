@@ -67,6 +67,13 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
 
+// App type → the UserPermissions bucket holding its folder's resolved access.
+// Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
+const FOLDER_RESOURCE_TYPE_BY_APP_TYPE: Partial<Record<APP_TYPES, MODULES>> = {
+  [APP_TYPES.WORKFLOW]: MODULES.WORKFLOW_FOLDER,
+  [APP_TYPES.MODULE]: MODULES.MODULE_FOLDER,
+};
+
 @Injectable()
 export class AppsService implements IAppsService {
   constructor(
@@ -1112,7 +1119,7 @@ export class AppsService implements IAppsService {
    */
   protected async checkFolderEditPermission(appId: string, user: User, appType: APP_TYPES): Promise<boolean> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const folderResource = appType === APP_TYPES.WORKFLOW ? MODULES.WORKFLOW_FOLDER : MODULES.FOLDER;
+      const folderResource = FOLDER_RESOURCE_TYPE_BY_APP_TYPE[appType] ?? MODULES.FOLDER;
       // Get folder permissions from the ability service
       const userPermissions = await this.abilityService.resourceActionsPermission(user, {
         resources: [{ resource: folderResource }],

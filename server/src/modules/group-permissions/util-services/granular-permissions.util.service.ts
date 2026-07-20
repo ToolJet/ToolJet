@@ -135,6 +135,14 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
             manager
           );
           break;
+        case ResourceType.MODULE_FOLDER:
+          await this.createFolderGroupPermission(
+            organizationId,
+            granularPermissions,
+            createResourcePermissionsObj as CreateResourcePermissionObject<ResourceType.MODULE_FOLDER>,
+            manager
+          );
+          break;
         default:
           break;
       }
@@ -376,6 +384,18 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     const folderGroupPermissions = new FoldersGroupPermissions();
     folderGranularPermission.foldersGroupPermissions = folderGroupPermissions;
 
+    // Modules are never end-user-assignable, so module folders have no default-permission
+    // spec for END_USER either — only constructed for ADMIN/BUILDER below.
+    const moduleFolderGranularPermission = new GranularPermissions();
+    const moduleFolderGroupPermissions = new FoldersGroupPermissions();
+    moduleFolderGranularPermission.foldersGroupPermissions = moduleFolderGroupPermissions;
+    moduleFolderGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.MODULE_FOLDER];
+    moduleFolderGranularPermission.isAll = true;
+    moduleFolderGranularPermission.type = ResourceType.MODULE_FOLDER;
+    moduleFolderGroupPermissions.canEditFolder = true;
+    moduleFolderGroupPermissions.canEditApps = false;
+    moduleFolderGroupPermissions.canViewApps = false;
+
     switch (role) {
       case USER_ROLE.ADMIN:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -394,7 +414,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         folderGroupPermissions.canEditApps = false;
         folderGroupPermissions.canViewApps = false;
 
-        return [appGranularPermission, folderGranularPermission];
+        return [appGranularPermission, folderGranularPermission, moduleFolderGranularPermission];
 
       case USER_ROLE.BUILDER:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -416,7 +436,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         folderGroupPermissions.canEditApps = false;
         folderGroupPermissions.canViewApps = false;
 
-        return [appGranularPermission, folderGranularPermission];
+        return [appGranularPermission, folderGranularPermission, moduleFolderGranularPermission];
 
       case USER_ROLE.END_USER:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -488,6 +508,9 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
           await this.updateFoldersGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
           break;
         case ResourceType.WORKFLOW_FOLDER:
+          await this.updateFoldersGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
+          break;
+        case ResourceType.MODULE_FOLDER:
           await this.updateFoldersGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
           break;
         default:

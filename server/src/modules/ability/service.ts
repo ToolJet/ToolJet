@@ -136,6 +136,12 @@ export class AbilityService extends IAbilityService {
             ResourceType.WORKFLOW_FOLDER
           );
         }
+        if (resources.some((item) => item.resource === MODULES.MODULE_FOLDER)) {
+          userPermissions[MODULES.MODULE_FOLDER] = this.createUserContainerFolderPermissions(
+            allGranularPermissions,
+            ResourceType.MODULE_FOLDER
+          );
+        }
       }
 
       return userPermissions;
