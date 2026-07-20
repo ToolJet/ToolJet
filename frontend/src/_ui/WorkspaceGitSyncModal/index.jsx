@@ -95,6 +95,8 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key !== 'Enter' || isPushing || isPulling) return;
+      // Stop native form submission — it reloads the page mid-push.
+      e.preventDefault();
       if (activeTab === 'push' && commitMessage.trim()) {
         handlePush();
       } else if (activeTab === 'pull' && checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && !actionChoiceMode) {
@@ -198,8 +200,8 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         // Current app doesn't exist in that branch — go to homepage
         window.location.href = `/${pathParts[1]}`;
       } else {
-        // Already on homepage — just reload
-        window.location.reload();
+        // homepage refetches apps via its branch-store subscription; pulled content lands via the success notification
+        actions.fetchBranches();
       }
     } catch (error) {
       if (error?.statusCode === 409) {
@@ -338,7 +340,11 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   // ---- Pull section content ----
   const renderPullSection = () => (
     <div className="pull-section">
-      <form noValidate className="d-flex w-100 align-items-start justify-content-start">
+      <form
+        noValidate
+        onSubmit={(e) => e.preventDefault()}
+        className="d-flex w-100 align-items-start justify-content-start"
+      >
         <div className="d-flex flex-column w-100" style={{ gap: '12px' }}>
           {/* PULL INTO */}
           <div className="import-in-row">
@@ -437,7 +443,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
   // ---- Push section content ----
   const renderPushSection = () => (
-    <form noValidate>
+    <form noValidate onSubmit={(e) => e.preventDefault()}>
       <div className="push-section mb-2">
         <div className="d-flex flex-column w-100 align-items-start">
           <div className="form-group mb-2 w-100">

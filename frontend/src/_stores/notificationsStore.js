@@ -23,6 +23,13 @@ let reconnectTimer = null;
 let manualClose = false;
 const RECONNECT_MS = 5000;
 
+// Fired only for fresh WS deliveries — never REST backfill.
+const liveSubscribers = new Set();
+export function subscribeLiveNotifications(cb) {
+  liveSubscribers.add(cb);
+  return () => liveSubscribers.delete(cb);
+}
+
 function notificationsWsUrl() {
   const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
   const isSecure = /https?:\/\//g.test(config.apiUrl);
@@ -159,6 +166,15 @@ export const useNotificationsStore = create(
           if (added && withToast) {
             const action = detailAction(n);
             showNotificationToast(n, action ? { onViewDetails: (notif) => get().actions.openDetail(notif) } : {});
+          }
+          if (added) {
+            liveSubscribers.forEach((cb) => {
+              try {
+                cb(n);
+              } catch (err) {
+                console.error('notification effect failed:', err);
+              }
+            });
           }
         },
       },
