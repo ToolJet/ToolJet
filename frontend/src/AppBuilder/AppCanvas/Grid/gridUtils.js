@@ -5,9 +5,10 @@ import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
 import { NO_OF_GRIDS } from '../appCanvasConstants';
 
 export const MOBILE_GRID_COLUMNS = NO_OF_GRIDS;
+// Vertical breathing room between stacked mobile items (top/height are in px).
+const MOBILE_STACK_GAP_PX = 10;
 
-// Stack each parent's children (page root + every container/slot) into a full-width
-// mobile column, bottom-up so containers grow to fit. Pure — returns { [id]: box }.
+// Stack each parent's children into a full-width mobile column, bottom-up. Returns { [id]: box }.
 export function computeAutoMobileLayout(currentPageComponents) {
   const ids = Object.keys(currentPageComponents);
 
@@ -22,9 +23,14 @@ export function computeAutoMobileLayout(currentPageComponents) {
   const updatedBoxes = {};
   const visited = new Set(); // guard against cyclic parent refs (corrupt data)
 
+  // Components hidden on mobile must not reserve a slot, so visible siblings fill the gap.
+  const getResolvedValue = useStore.getState().getResolvedValue;
+  const isVisibleOnMobile = (id) =>
+    getResolvedValue(currentPageComponents[id]?.component?.definition?.others?.showOnMobile?.value);
+
   // Stack a parent's direct children into one full-width column (children recursed first).
   const stackGroup = (parentKey) => {
-    const layouts = (childrenByParent[parentKey] || []).map((id) => {
+    const layouts = (childrenByParent[parentKey] || []).filter(isVisibleOnMobile).map((id) => {
       const desktop = currentPageComponents[id]?.layouts?.desktop || {};
       const nestedExtent = stackContainer(id);
       return {
@@ -38,11 +44,15 @@ export function computeAutoMobileLayout(currentPageComponents) {
 
     const stacked = compact(correctBounds(layouts, { cols: MOBILE_GRID_COLUMNS }), 'vertical', MOBILE_GRID_COLUMNS);
 
+    // compact() packs items flush; offset each by a cumulative 10px gap (top/height are in px).
     let extent = 0;
-    stacked.forEach((l) => {
-      updatedBoxes[l.i] = { left: l.left, top: l.top, width: l.width, height: l.height };
-      extent = Math.max(extent, l.top + l.height);
-    });
+    [...stacked]
+      .sort((a, b) => a.top - b.top)
+      .forEach((l, idx) => {
+        const top = l.top + idx * MOBILE_STACK_GAP_PX;
+        updatedBoxes[l.i] = { left: l.left, top, width: l.width, height: l.height };
+        extent = Math.max(extent, top + l.height);
+      });
     return extent;
   };
 

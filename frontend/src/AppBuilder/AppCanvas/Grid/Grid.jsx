@@ -743,6 +743,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           positionGhostElement(e.target, 'moveable-ghost-widget');
         }}
         onResizeStart={(e) => {
+          // Mobile layout doesn't support manual resizing (see onDragStart).
+          if (currentLayout === 'mobile') {
+            if (useStore.getState().getIsAutoMobileLayout(moduleId)) {
+              toast("Can't move components while auto stacking is on", { id: 'mobile-auto-lock' });
+            }
+            return false;
+          }
           if (
             e.target.id &&
             useGridStore.getState().resizingComponentId !== e.target.id &&
@@ -967,6 +974,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
         checkInput
         onDragStart={(e) => {
+          // Mobile layout doesn't support manual positioning: block moves. When auto stacking is on, tell the user why; when off, block silently (manual mode WIP).
+          if (currentLayout === 'mobile') {
+            if (useStore.getState().getIsAutoMobileLayout(moduleId)) {
+              toast("Can't move components while auto stacking is on", { id: 'mobile-auto-lock' });
+            }
+            return false;
+          }
           if (e.target.id === 'moveable-virtual-ghost-element') {
             startAutoScroll(e.clientX, e.clientY, e.target);
             return true;
