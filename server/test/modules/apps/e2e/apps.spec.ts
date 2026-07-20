@@ -2326,8 +2326,13 @@ describe('AppsController', () => {
             .send(exportPayload);
 
           expect(response.statusCode).toBe(201);
-          expect(response.body).toBeDefined();
           expect(response.body.tooljet_version).toBeDefined();
+          expect(response.body.app).toHaveLength(1);
+          expect(response.body.app[0].definition.appV2).toMatchObject({
+            id: application.id,
+            name: 'name',
+            slug: 'foo',
+          });
         }
 
         // Audit log assertions skipped: ResponseInterceptor not registered in test environment
@@ -2376,8 +2381,13 @@ describe('AppsController', () => {
           });
 
         expect(response.statusCode).toBe(201);
-        expect(response.body).toBeDefined();
         expect(response.body.tooljet_version).toBeDefined();
+        expect(response.body.app).toHaveLength(1);
+        expect(response.body.app[0].definition.appV2).toMatchObject({
+          id: application.id,
+          name: 'name',
+          slug: 'foo',
+        });
 
         // Audit log assertions skipped: ResponseInterceptor not registered in test environment
       });

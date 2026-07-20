@@ -26,6 +26,7 @@ describe('OAuthController', () => {
     'app_group_permissions',
     'avatar_id',
     'data_source_group_permissions',
+    'folder_group_permissions',
     'group_permissions',
     'user_permissions',
     'role',

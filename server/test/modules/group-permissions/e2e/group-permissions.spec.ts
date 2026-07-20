@@ -280,8 +280,7 @@ describe('GroupPermissionsControllerV2', () => {
           .set('tj-workspace-id', anotherAdminUser.defaultOrganizationId)
           .set('Cookie', anotherAdminCookie);
 
-        // GroupExistenceGuard returns 400 when group not found in caller's org
-        expect([400, 404]).toContain(response.statusCode);
+        expect(response.statusCode).toBe(400);
       });
     });
 

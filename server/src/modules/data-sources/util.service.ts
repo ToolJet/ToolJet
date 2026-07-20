@@ -1,11 +1,17 @@
 import { DataSource } from '@entities/data_source.entity';
-import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
 import Ajv2020 from 'ajv/dist/2020';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, ILike } from 'typeorm';
+import { EntityManager, EntityNotFoundError, ILike } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -687,18 +693,26 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId?: string,
     branchId?: string
   ): Promise<DataSource> {
-    const dataSource = await this.dataSourceRepository.findOneOrFail({
-      where: { id: dataSourceId, organizationId },
-      relations: [
-        'apps',
-        'appVersion',
-        'appVersion.app',
-        'plugin',
-        'plugin.iconFile',
-        'plugin.manifestFile',
-        'plugin.operationsFile',
-      ],
-    });
+    let dataSource: DataSource;
+    try {
+      dataSource = await this.dataSourceRepository.findOneOrFail({
+        where: { id: dataSourceId, organizationId },
+        relations: [
+          'apps',
+          'appVersion',
+          'appVersion.app',
+          'plugin',
+          'plugin.iconFile',
+          'plugin.manifestFile',
+          'plugin.operationsFile',
+        ],
+      });
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException('Data source not found');
+      }
+      throw error;
+    }
 
     if (!environmentId) {
       //fix for env id issue when importing cloud/enterprise apps to CE

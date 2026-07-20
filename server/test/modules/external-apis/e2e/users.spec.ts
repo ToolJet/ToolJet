@@ -4,6 +4,7 @@
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -13,13 +14,17 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 
 jest.setTimeout(120_000);
 
-const getExtAuth = () => `Basic ${process.env.EXTERNAL_API_ACCESS_TOKEN}`;
+// Read the token from the same ConfigService the guard resolves it from — the
+// app's ConfigModule and process.env can diverge (different env files).
+let externalApiAccessToken: string;
+const getExtAuth = () => `Basic ${externalApiAccessToken}`;
 
 describe('ExternalApisUsersController (EE enterprise)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    externalApiAccessToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
   });
 
   afterEach(() => {
