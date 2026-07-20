@@ -993,6 +993,7 @@ describe('AppController', () => {
             'app_group_permissions',
             'avatar_id',
             'data_source_group_permissions',
+            'folder_group_permissions',
             'group_permissions',
             'is_current_organization_archived',
             'metadata',
