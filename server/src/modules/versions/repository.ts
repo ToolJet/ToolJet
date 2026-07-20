@@ -401,12 +401,12 @@ export class VersionRepository extends Repository<AppVersion> {
     try {
       version = await this.manager.findOneOrFail(AppVersion, {
         where: { name: versionId, appId },
-        relations: ['app'],
+        relations: ['app', 'branch'],
       });
     } catch (error) {
       version = await this.manager.findOneOrFail(AppVersion, {
         where: { id: versionId },
-        relations: ['app'],
+        relations: ['app', 'branch'],
       });
     }
     if (!version) throw new BadRequestException('Wrong version Id');

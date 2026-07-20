@@ -204,10 +204,19 @@ export class GithubHttpsConfigDTO extends OrganizationGitCreateDto {
 
 export class AppGitPullDto {
   @IsString()
-  appId: string;
+  organizationId: string;
 
   @IsString()
-  organizationId: string;
+  @IsOptional()
+  gitAppId?: string;
+
+  @IsString()
+  @IsOptional()
+  gitAppName?: string;
+
+  @IsString()
+  @IsOptional()
+  gitBranchName?: string;
 }
 
 export class AppGitPushDto {
