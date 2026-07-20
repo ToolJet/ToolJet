@@ -17,6 +17,8 @@ import {
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
 import { GroupFolders } from 'src/entities/group_folders.entity';
+import { GranularPermissions } from 'src/entities/granular_permissions.entity';
+import { FoldersGroupPermissions } from 'src/entities/folders_group_permissions.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 
 /**
@@ -784,6 +786,401 @@ describe('GroupPermissionsControllerV2', () => {
         });
 
         expect(groupFolders.length).toBeGreaterThan(0);
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // GET /api/v2/group-permissions/granular-permissions/addable-workflow-folders
+    // -------------------------------------------------------------------------
+
+    describe('GET /api/v2/group-permissions/granular-permissions/addable-workflow-folders | List addable workflow folders', () => {
+      it('should return only workflow folders and hide front-end/module folders', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const appFolder = await createFolder(nestApp, {
+          name: 'App Folder For Workflow Check',
+          type: APP_TYPES.FRONT_END,
+          organizationId: organization.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .get('/api/v2/group-permissions/granular-permissions/addable-workflow-folders')
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie);
+
+        expect(response.statusCode).toBe(200);
+
+        const folderIds = response.body.map((folder: any) => folder.id);
+        expect(folderIds).toContain(workflowFolder.id);
+        expect(folderIds).not.toContain(appFolder.id);
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // POST /api/v2/group-permissions/:id/granular-permissions/workflow-folder
+    // -------------------------------------------------------------------------
+
+    describe('POST /api/v2/group-permissions/:id/granular-permissions/workflow-folder | Create workflow folder granular permissions', () => {
+      it('creates a workflow folder granular permission scoped to the given workflow folders', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const customGroupResponse = await createGroupViaApi(
+          cookie,
+          adminUser.defaultOrganizationId,
+          'workflow-folder-access'
+        );
+        expect(customGroupResponse.statusCode).toBe(201);
+
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'workflow-folder-access',
+        } as any);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder - direct grant',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            name: 'Workflow Folder Access',
+            groupId: group.id,
+            type: 'workflow_folder',
+            isAll: false,
+            createResourcePermissionObject: {
+              canEditFolder: false,
+              canEditApps: false,
+              canViewApps: true,
+              resourcesToAdd: [{ folderId: workflowFolder.id }],
+            },
+          });
+
+        expect(response.statusCode).toBe(201);
+
+        const groupFolders = await findEntities(GroupFolders, {
+          where: {
+            folderId: workflowFolder.id,
+          },
+        });
+
+        expect(groupFolders.length).toBeGreaterThan(0);
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // PUT /api/v2/group-permissions/granular-permissions/workflow-folder/:id
+    // -------------------------------------------------------------------------
+
+    describe('PUT /api/v2/group-permissions/granular-permissions/workflow-folder/:id | Update workflow folder granular permissions', () => {
+      it('should update actions and persist the new values on the FoldersGroupPermissions row', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const customGroupResponse = await createGroupViaApi(
+          cookie,
+          adminUser.defaultOrganizationId,
+          'workflow-folder-update-actions'
+        );
+        expect(customGroupResponse.statusCode).toBe(201);
+
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'workflow-folder-update-actions',
+        } as any);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder - update actions',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const createResponse = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            name: 'Workflow Folder Update Actions Access',
+            groupId: group.id,
+            type: 'workflow_folder',
+            isAll: false,
+            createResourcePermissionObject: {
+              canEditFolder: false,
+              canEditApps: false,
+              canViewApps: true,
+              resourcesToAdd: [{ folderId: workflowFolder.id }],
+            },
+          });
+        expect(createResponse.statusCode).toBe(201);
+
+        const granularPermission = await findEntityOrFail(GranularPermissions, {
+          groupId: group.id,
+          name: 'Workflow Folder Update Actions Access',
+        } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            actions: {
+              canEditFolder: false,
+              canEditApps: true,
+              canViewApps: true,
+            },
+          });
+
+        expect(response.statusCode).toBe(200);
+
+        const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
+          granularPermissionId: granularPermission.id,
+        } as any);
+        expect(foldersGroupPermissions).toMatchObject({
+          canEditFolder: false,
+          canEditApps: true,
+          canViewApps: true,
+        });
+      });
+
+      it('should add an additional folder via resourcesToAdd without removing the original one', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const customGroupResponse = await createGroupViaApi(
+          cookie,
+          adminUser.defaultOrganizationId,
+          'workflow-folder-update-add'
+        );
+        expect(customGroupResponse.statusCode).toBe(201);
+
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'workflow-folder-update-add',
+        } as any);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder - update add original',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const createResponse = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            name: 'Workflow Folder Update Add Access',
+            groupId: group.id,
+            type: 'workflow_folder',
+            isAll: false,
+            createResourcePermissionObject: {
+              canEditFolder: false,
+              canEditApps: false,
+              canViewApps: true,
+              resourcesToAdd: [{ folderId: workflowFolder.id }],
+            },
+          });
+        expect(createResponse.statusCode).toBe(201);
+
+        const granularPermission = await findEntityOrFail(GranularPermissions, {
+          groupId: group.id,
+          name: 'Workflow Folder Update Add Access',
+        } as any);
+
+        const anotherWorkflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder - update add new',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            resourcesToAdd: [{ folderId: anotherWorkflowFolder.id }],
+          });
+
+        expect(response.statusCode).toBe(200);
+
+        const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
+          granularPermissionId: granularPermission.id,
+        } as any);
+
+        const groupFolders = await findEntities(GroupFolders, {
+          where: { foldersGroupPermissionsId: foldersGroupPermissions.id },
+        });
+        const folderIds = groupFolders.map((groupFolder) => groupFolder.folderId);
+
+        expect(folderIds).toContain(workflowFolder.id);
+        expect(folderIds).toContain(anotherWorkflowFolder.id);
+      });
+
+      it('should remove the original folder via resourcesToDelete', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const customGroupResponse = await createGroupViaApi(
+          cookie,
+          adminUser.defaultOrganizationId,
+          'workflow-folder-update-delete'
+        );
+        expect(customGroupResponse.statusCode).toBe(201);
+
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'workflow-folder-update-delete',
+        } as any);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder - update delete',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const createResponse = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            name: 'Workflow Folder Update Delete Access',
+            groupId: group.id,
+            type: 'workflow_folder',
+            isAll: false,
+            createResourcePermissionObject: {
+              canEditFolder: false,
+              canEditApps: false,
+              canViewApps: true,
+              resourcesToAdd: [{ folderId: workflowFolder.id }],
+            },
+          });
+        expect(createResponse.statusCode).toBe(201);
+
+        const granularPermission = await findEntityOrFail(GranularPermissions, {
+          groupId: group.id,
+          name: 'Workflow Folder Update Delete Access',
+        } as any);
+
+        const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
+          granularPermissionId: granularPermission.id,
+        } as any);
+
+        const groupFolder = await findEntityOrFail(GroupFolders, {
+          folderId: workflowFolder.id,
+          foldersGroupPermissionsId: foldersGroupPermissions.id,
+        } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .put(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            resourcesToDelete: [{ id: groupFolder.id }],
+          });
+
+        expect(response.statusCode).toBe(200);
+
+        const deletedGroupFolder = await findEntity(GroupFolders, { id: groupFolder.id } as any);
+        expect(deletedGroupFolder).toBeNull();
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // DELETE /api/v2/group-permissions/granular-permissions/workflow-folder/:id
+    // -------------------------------------------------------------------------
+
+    describe('DELETE /api/v2/group-permissions/granular-permissions/workflow-folder/:id | Delete workflow folder granular permissions', () => {
+      it('should delete the granular permission and cascade-delete its FoldersGroupPermissions/GroupFolders rows', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const customGroupResponse = await createGroupViaApi(
+          cookie,
+          adminUser.defaultOrganizationId,
+          'workflow-folder-delete'
+        );
+        expect(customGroupResponse.statusCode).toBe(201);
+
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'workflow-folder-delete',
+        } as any);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder - delete grant',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: organization.id,
+        });
+
+        const createResponse = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/workflow-folder`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            name: 'Workflow Folder Delete Access',
+            groupId: group.id,
+            type: 'workflow_folder',
+            isAll: false,
+            createResourcePermissionObject: {
+              canEditFolder: false,
+              canEditApps: false,
+              canViewApps: true,
+              resourcesToAdd: [{ folderId: workflowFolder.id }],
+            },
+          });
+        expect(createResponse.statusCode).toBe(201);
+
+        const granularPermission = await findEntityOrFail(GranularPermissions, {
+          groupId: group.id,
+          name: 'Workflow Folder Delete Access',
+        } as any);
+
+        const foldersGroupPermissions = await findEntityOrFail(FoldersGroupPermissions, {
+          granularPermissionId: granularPermission.id,
+        } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .delete(`/api/v2/group-permissions/granular-permissions/workflow-folder/${granularPermission.id}`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie);
+
+        expect(response.statusCode).toBe(200);
+
+        const deletedGranularPermission = await findEntity(GranularPermissions, { id: granularPermission.id } as any);
+        expect(deletedGranularPermission).toBeNull();
+
+        const deletedFoldersGroupPermissions = await findEntity(FoldersGroupPermissions, {
+          id: foldersGroupPermissions.id,
+        } as any);
+        expect(deletedFoldersGroupPermissions).toBeNull();
+
+        const deletedGroupFolders = await findEntities(GroupFolders, {
+          where: { folderId: workflowFolder.id },
+        });
+        expect(deletedGroupFolders).toHaveLength(0);
       });
     });
   });

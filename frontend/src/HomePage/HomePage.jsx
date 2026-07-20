@@ -885,17 +885,26 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return this.props.appType === 'workflow'
+      ? user_permissions?.workflow_folder_create
+      : user_permissions?.folder_create;
   };
 
   canDeleteFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_delete;
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return this.props.appType === 'workflow'
+      ? user_permissions?.workflow_folder_delete
+      : user_permissions?.folder_delete;
   };
 
   canUpdateFolder = () => {
     // Update folder (rename) requires either folderCreate permission or granular canEditFolder permission
-    // For now, we use folderCreate as the master permission for folder update
-    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+    // For now, we use folderCreate (or its workflow-folder equivalent) as the master permission for folder update
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return this.props.appType === 'workflow'
+      ? user_permissions?.workflow_folder_create
+      : user_permissions?.folder_create;
   };
 
   isGitEnabled = () => {

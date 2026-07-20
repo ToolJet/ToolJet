@@ -26,7 +26,7 @@ import ModulePermissionsUI from '../ModulePermissionsUI';
 import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import VirtualizedUserList from './VirtualizedUserList';
-import { fetchEdition } from '@/modules/common/helpers/utils';
+import { fetchEdition, isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -728,6 +728,98 @@ class BaseManageGroupPermissionResources extends React.Component {
     );
   };
 
+  renderWorkflowFolderPermissions = ({ groupPermission, isCE, isBasicPlan, disableNonPromoteReleasePermissions }) => {
+    const showConsolidated = isCE;
+    const workflowFolderCRUD = groupPermission.workflowFolderCreate || groupPermission.workflowFolderDelete;
+
+    if (showConsolidated) {
+      return (
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={workflowFolderCRUD}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              const newValue = !workflowFolderCRUD;
+              this.updateGroupPermission(groupPermission.id, {
+                workflowFolderCreate: newValue,
+                workflowFolderDelete: newValue,
+              });
+              this.setState({ updateParam: { workflowFolderCreate: newValue, workflowFolderDelete: newValue } });
+            }}
+            data-cy="workflow-folder-crud-checkbox"
+          />
+          <span className="form-check-label" data-cy="workflow-folder-crud-label">
+            {this.props.t(
+              'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+              'Create/Update/Delete'
+            )}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="workflow-folder-crud-helper-text"
+          >
+            All operations on workflow folders
+          </span>
+        </label>
+      );
+    }
+
+    return (
+      <>
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={groupPermission.workflowFolderCreate}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              this.updateGroupPermission(groupPermission.id, {
+                workflowFolderCreate: !groupPermission.workflowFolderCreate,
+              });
+              this.setState({ updateParam: { workflowFolderCreate: !groupPermission.workflowFolderCreate } });
+            }}
+            data-cy="workflow-folder-create-checkbox"
+          />
+          <span className="form-check-label" data-cy="workflow-folder-create-label">
+            {this.props.t('header.organization.menus.manageGroups.permissionResources.create', 'Create')}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="workflow-folder-create-helper-text"
+          >
+            Create new workflow folders in this workspace
+          </span>
+        </label>
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={groupPermission.workflowFolderDelete}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              this.updateGroupPermission(groupPermission.id, {
+                workflowFolderDelete: !groupPermission.workflowFolderDelete,
+              });
+              this.setState({ updateParam: { workflowFolderDelete: !groupPermission.workflowFolderDelete } });
+            }}
+            data-cy="workflow-folder-delete-checkbox"
+          />
+          <span className="form-check-label" data-cy="workflow-folder-delete-label">
+            {this.props.t('header.organization.menus.manageGroups.permissionResources.delete', 'Delete')}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="workflow-folder-delete-helper-text"
+          >
+            Delete any workflow folders in this workspace
+          </span>
+        </label>
+      </>
+    );
+  };
+
   render() {
     if (!this.props.groupPermissionId) return null;
 
@@ -1313,6 +1405,21 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     </div>
                                   </div>
                                 </div>
+                                {isWorkflowsFeatureEnabled() && (
+                                  <div className="manage-groups-permission-apps">
+                                    <div data-cy="resource-workflow-folders">Workflow folder</div>
+                                    <div className="text-muted">
+                                      <div className="d-flex apps-permission-wrap flex-column">
+                                        {this.renderWorkflowFolderPermissions({
+                                          groupPermission,
+                                          isCE,
+                                          isBasicPlan,
+                                          disableNonPromoteReleasePermissions,
+                                        })}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
                                 <div className="manage-groups-permission-apps">
                                   <div data-cy="resource-workspace-variable">
                                     {this.props.t('globals.environmentVar', 'Workspace constant/variable')}

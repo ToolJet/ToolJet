@@ -41,6 +41,14 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
+  workflowFolderCreate: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  workflowFolderDelete: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   orgConstantCRUD: boolean;
 
   @IsBoolean()

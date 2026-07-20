@@ -298,6 +298,21 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
           });
           await appsGroupRepo.save(appsPerm);
         }
+
+        // Mirrors the APP block above but for workflow-type apps — without this row,
+        // `permission.appsGroupPermissions` is undefined for the default WORKFLOWS-type
+        // GranularPermissions row created below, so canEdit/canView reads as undefined
+        // instead of a real boolean for admin/builder/end-user default groups.
+        if (resourceType === ResourceType.WORKFLOWS) {
+          const workflowsPerm = appsGroupRepo.create({
+            granularPermissionId: savedGranular.id,
+            appType: APP_TYPES.WORKFLOW,
+            canEdit: isAdmin,
+            canView: true,
+            hideFromDashboard: false,
+          });
+          await appsGroupRepo.save(workflowsPerm);
+        }
       }
     }
   }

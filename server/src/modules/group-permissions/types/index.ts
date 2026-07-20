@@ -14,6 +14,8 @@ export interface CreateDefaultGroupObject {
   folderDelete?: boolean;
   moduleCreate?: boolean;
   moduleDelete?: boolean;
+  workflowFolderCreate?: boolean;
+  workflowFolderDelete?: boolean;
   orgConstantCRUD?: boolean;
   tjdbCRUD?: boolean;
   dataSourceCreate?: boolean;
@@ -72,6 +74,10 @@ interface Features {
   [FEATURE_KEY.UPDATE_GRANULAR_FOLDER_PERMISSIONS]: FeatureConfig;
   [FEATURE_KEY.DELETE_GRANULAR_FOLDER_PERMISSIONS]: FeatureConfig;
   [FEATURE_KEY.GET_ADDABLE_FOLDERS]: FeatureConfig;
+  [FEATURE_KEY.CREATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.DELETE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.GET_ADDABLE_WORKFLOW_FOLDERS]: FeatureConfig;
   [FEATURE_KEY.ASSIGN_GROUP_ADMIN]: FeatureConfig;
   [FEATURE_KEY.REVOKE_GROUP_ADMIN]: FeatureConfig;
   [FEATURE_KEY.GET_GROUP_ADMINS]: FeatureConfig;

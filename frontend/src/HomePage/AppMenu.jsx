@@ -40,15 +40,22 @@ export const AppMenu = function AppMenu({
   const isAppOwner = !!(appUserId && currentUserId && appUserId === currentUserId);
 
   // ─── App-level edit access ────────────────────────────────────────────────────
-  // Backend resolves folder-derived permissions into editable_apps_id, so canEditApp
-  // already covers apps in folders owned by or explicitly shared with the user.
+  // Backend resolves folder-derived permissions into editable_apps_id/editable_workflows_id,
+  // so canEditApp already covers apps/workflows in folders owned by or explicitly shared
+  // with the user. Workflows have their own permission surface, separate from apps.
   const canEditApp =
-    currentSession?.app_group_permissions?.is_all_editable ||
-    currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
+    appType === 'workflow'
+      ? currentSession?.workflow_group_permissions?.is_all_editable ||
+        currentSession?.workflow_group_permissions?.editable_workflows_id?.includes(appId)
+      : currentSession?.app_group_permissions?.is_all_editable ||
+        currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
 
   const canModifyApp = canEditApp || isAppOwner;
 
-  const folderGroupPermissions = currentSession?.folder_group_permissions;
+  const folderGroupPermissions =
+    appType === 'workflow'
+      ? currentSession?.workflow_folder_group_permissions
+      : currentSession?.folder_group_permissions;
 
   const canEditAnyFolderViaGroup =
     folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;

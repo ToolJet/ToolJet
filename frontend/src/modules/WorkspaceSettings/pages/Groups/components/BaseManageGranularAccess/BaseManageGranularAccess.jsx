@@ -14,6 +14,7 @@ import DataSourceResourcePermissions from './components/DataSourceResourcePermis
 import WorkflowResourcePermissions from './components/WorkflowResourcePermission';
 import FolderResourcePermissions from './components/FolderResourcePermission';
 import ModuleResourcePermissions from './components/ModuleResourcePermission';
+import WorkflowFolderResourcePermissions from './components/WorkflowFolderResourcePermission';
 import Spinner from 'react-bootstrap/Spinner';
 import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -62,6 +63,11 @@ class BaseManageGranularAccess extends React.Component {
         canEditApps: false,
         canViewApps: false,
       },
+      initialPermissionStateWorkflowFolder: {
+        canEditFolder: false,
+        canEditApps: false,
+        canViewApps: false,
+      },
       resourceType: null,
       hasChanges: false,
       initialState: {
@@ -76,6 +82,11 @@ class BaseManageGranularAccess extends React.Component {
           canConfigure: false,
         },
         initialPermissionStateFolder: {
+          canEditFolder: false,
+          canEditApps: false,
+          canViewApps: false,
+        },
+        initialPermissionStateWorkflowFolder: {
           canEditFolder: false,
           canEditApps: false,
           canViewApps: false,
@@ -102,6 +113,11 @@ class BaseManageGranularAccess extends React.Component {
     if (prevProps.addableFolders !== this.props.addableFolders) {
       this.setState({
         addableFolders: this.props.addableFolders,
+      });
+    }
+    if (prevProps.addableWorkflowFolders !== this.props.addableWorkflowFolders) {
+      this.setState({
+        addableWorkflowFolders: this.props.addableWorkflowFolders,
       });
     }
   }
@@ -194,6 +210,7 @@ class BaseManageGranularAccess extends React.Component {
       initialPermissionState,
       initialPermissionStateDs,
       initialPermissionStateFolder,
+      initialPermissionStateWorkflowFolder,
       isAll,
       newPermissionName,
       isCustom,
@@ -214,7 +231,7 @@ class BaseManageGranularAccess extends React.Component {
           return {
             appId: option.value,
           };
-        } else if (type === RESOURCE_TYPE.FOLDERS) {
+        } else if (type === RESOURCE_TYPE.FOLDERS || type === RESOURCE_TYPE.WORKFLOW_FOLDERS) {
           return {
             folderId: option.value,
           };
@@ -246,6 +263,7 @@ class BaseManageGranularAccess extends React.Component {
         }),
         ...(type == RESOURCE_TYPE.DATA_SOURCES && { action: initialPermissionStateDs }),
         ...(type == RESOURCE_TYPE.FOLDERS && { ...initialPermissionStateFolder }),
+        ...(type == RESOURCE_TYPE.WORKFLOW_FOLDERS && { ...initialPermissionStateWorkflowFolder }),
         resourcesToAdd: resourcesToAdd,
       },
     };
@@ -430,6 +448,42 @@ class BaseManageGranularAccess extends React.Component {
           selectedResources: selectedResources,
         },
       });
+    } else if (granularPermission.type === RESOURCE_TYPE.WORKFLOW_FOLDERS) {
+      const foldersGroupPermission = granularPermission?.foldersGroupPermissions;
+      const currentFolders = foldersGroupPermission?.groupFolders;
+      const selectedResources =
+        currentFolders?.length > 0
+          ? currentFolders?.map(({ folder }) => {
+              return {
+                name: folder.name,
+                value: folder.id,
+                label: folder.name,
+              };
+            })
+          : [];
+
+      this.setState({
+        ...fixedState,
+        modalTitle: `Edit workflow folder permissions`,
+        resourceType: RESOURCE_TYPE.WORKFLOW_FOLDERS,
+        initialPermissionStateWorkflowFolder: {
+          canEditFolder: foldersGroupPermission?.canEditFolder,
+          canEditApps: foldersGroupPermission?.canEditApps,
+          canViewApps: foldersGroupPermission?.canViewApps,
+        },
+        selectedResources: selectedResources,
+        initialState: {
+          type: RESOURCE_TYPE.WORKFLOW_FOLDERS,
+          initialPermissionStateWorkflowFolder: {
+            canEditFolder: foldersGroupPermission?.canEditFolder,
+            canEditApps: foldersGroupPermission?.canEditApps,
+            canViewApps: foldersGroupPermission?.canViewApps,
+          },
+          isAll: !!granularPermission.isAll,
+          newPermissionName: granularPermission?.name,
+          selectedResources: selectedResources,
+        },
+      });
     }
   };
 
@@ -493,6 +547,17 @@ class BaseManageGranularAccess extends React.Component {
             key={index}
           />
         );
+      case RESOURCE_TYPE.WORKFLOW_FOLDERS:
+        return (
+          <WorkflowFolderResourcePermissions
+            updateOnlyGranularPermissions={this.updateOnlyGranularPermissions}
+            permissions={permissions}
+            currentGroupPermission={currentGroupPermission}
+            openEditPermissionModal={this.openEditPermissionModal}
+            isEditable={isEditable}
+            key={index}
+          />
+        );
       default:
         return null;
     }
@@ -510,6 +575,8 @@ class BaseManageGranularAccess extends React.Component {
         return this.state.addableFolders;
       case RESOURCE_TYPE.MODULES:
         return this.state.addableModules;
+      case RESOURCE_TYPE.WORKFLOW_FOLDERS:
+        return this.state.addableWorkflowFolders;
       default:
         return [];
     }
@@ -561,13 +628,14 @@ class BaseManageGranularAccess extends React.Component {
       initialPermissionState,
       initialPermissionStateDs,
       initialPermissionStateFolder,
+      initialPermissionStateWorkflowFolder,
       selectedEnvironments,
     } = this.state;
     const type = currentEditingPermissions.type;
     let currentResource;
     if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES) {
       currentResource = currentEditingPermissions?.appsGroupPermissions?.groupApps?.map((app) => app.app.id) ?? [];
-    } else if (type === RESOURCE_TYPE.FOLDERS) {
+    } else if (type === RESOURCE_TYPE.FOLDERS || type === RESOURCE_TYPE.WORKFLOW_FOLDERS) {
       currentResource = currentEditingPermissions?.foldersGroupPermissions?.groupFolders?.map((f) => f.folder.id) ?? [];
     } else {
       currentResource =
@@ -584,7 +652,7 @@ class BaseManageGranularAccess extends React.Component {
           return {
             appId: id,
           };
-        else if (type === RESOURCE_TYPE.FOLDERS) {
+        else if (type === RESOURCE_TYPE.FOLDERS || type === RESOURCE_TYPE.WORKFLOW_FOLDERS) {
           return {
             folderId: id,
           };
@@ -600,7 +668,7 @@ class BaseManageGranularAccess extends React.Component {
       groupResToDelete = currentEditingPermissions?.appsGroupPermissions?.groupApps?.filter((groupApp) =>
         resourceItemsToDelete?.includes(groupApp.appId)
       );
-    } else if (type === RESOURCE_TYPE.FOLDERS) {
+    } else if (type === RESOURCE_TYPE.FOLDERS || type === RESOURCE_TYPE.WORKFLOW_FOLDERS) {
       groupResToDelete = currentEditingPermissions?.foldersGroupPermissions?.groupFolders?.filter((groupFolder) =>
         resourceItemsToDelete?.includes(groupFolder.folderId)
       );
@@ -629,6 +697,8 @@ class BaseManageGranularAccess extends React.Component {
       actions = { ...initialPermissionState, ...environmentPermissions };
     } else if (type === RESOURCE_TYPE.FOLDERS) {
       actions = initialPermissionStateFolder;
+    } else if (type === RESOURCE_TYPE.WORKFLOW_FOLDERS) {
+      actions = initialPermissionStateWorkflowFolder;
     } else {
       actions = initialPermissionStateDs;
     }
@@ -718,6 +788,7 @@ class BaseManageGranularAccess extends React.Component {
       initialPermissionState: { ...prevState.initialPermissionState, canView: true },
       initialPermissionStateDs: { ...prevState.initialPermissionStateDs, canUse: true },
       initialPermissionStateFolder: { ...prevState.initialPermissionStateFolder, canViewApps: true },
+      initialPermissionStateWorkflowFolder: { ...prevState.initialPermissionStateWorkflowFolder, canViewApps: true },
       isAll: true,
       selectedEnvironments: defaultEnvironments,
     }));
@@ -742,6 +813,11 @@ class BaseManageGranularAccess extends React.Component {
         canConfigure: false,
       },
       initialPermissionStateFolder: {
+        canEditFolder: false,
+        canEditApps: false,
+        canViewApps: false,
+      },
+      initialPermissionStateWorkflowFolder: {
         canEditFolder: false,
         canEditApps: false,
         canViewApps: false,
@@ -1042,6 +1118,7 @@ class BaseManageGranularAccess extends React.Component {
                         RESOURCE_TYPE.DATA_SOURCES,
                         RESOURCE_TYPE.WORKFLOWS,
                         RESOURCE_TYPE.FOLDERS,
+                        RESOURCE_TYPE.WORKFLOW_FOLDERS,
                       ];
                       return order.indexOf(a.type) - order.indexOf(b.type);
                     })

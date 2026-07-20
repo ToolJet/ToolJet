@@ -179,7 +179,7 @@ export class AppsService implements IAppsService {
 
     // If no app-level edit permission, check folder-level edit apps permission
     if (!hasEditPermission) {
-      hasEditPermission = await this.checkFolderEditPermission(app.id, user);
+      hasEditPermission = await this.checkFolderEditPermission(app.id, user, app.type);
     }
 
     // For preview/viewer access: enforce access type for users without edit permission
@@ -1110,15 +1110,16 @@ export class AppsService implements IAppsService {
    * Check if user has folder-level edit permission for the app.
    * This checks if the app belongs to any folder where the user has canEditApps permission.
    */
-  protected async checkFolderEditPermission(appId: string, user: User): Promise<boolean> {
+  protected async checkFolderEditPermission(appId: string, user: User, appType: APP_TYPES): Promise<boolean> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const folderResource = appType === APP_TYPES.WORKFLOW ? MODULES.WORKFLOW_FOLDER : MODULES.FOLDER;
       // Get folder permissions from the ability service
       const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-        resources: [{ resource: MODULES.FOLDER }],
+        resources: [{ resource: folderResource }],
         organizationId: user.organizationId,
       });
 
-      const folderPermissions = userPermissions?.[MODULES.FOLDER];
+      const folderPermissions = userPermissions?.[folderResource];
       if (!folderPermissions) {
         return false;
       }

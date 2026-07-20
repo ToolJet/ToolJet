@@ -23,6 +23,8 @@ function AddResourcePermissionsMenu({
         return 'datasource';
       case RESOURCE_TYPE.FOLDERS:
         return 'folder';
+      case RESOURCE_TYPE.WORKFLOW_FOLDERS:
+        return 'folder';
       default:
         return '';
     }
@@ -34,6 +36,7 @@ function AddResourcePermissionsMenu({
     [RESOURCE_TYPE.MODULES]: 'Modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
     [RESOURCE_TYPE.FOLDERS]: 'Folders',
+    [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'Workflow folders',
   };
 
   const order = [RESOURCE_TYPE.APPS, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.WORKFLOWS];

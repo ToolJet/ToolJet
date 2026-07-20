@@ -4,6 +4,7 @@ export const RESOURCE_TYPE = {
   WORKFLOWS: 'workflow',
   FOLDERS: 'folder',
   MODULES: 'module',
+  WORKFLOW_FOLDERS: 'workflow_folder',
 };
 
 export const APP_TYPES = {
@@ -18,4 +19,5 @@ export const RESOURCE_NAME_MAPPING = {
   [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
   [RESOURCE_TYPE.FOLDERS]: 'Folder',
   [RESOURCE_TYPE.MODULES]: 'Modules',
+  [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'Workflow folders',
 };

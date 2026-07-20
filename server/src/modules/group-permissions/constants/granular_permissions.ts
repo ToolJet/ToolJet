@@ -6,4 +6,5 @@ export const DEFAULT_GRANULAR_PERMISSIONS_NAME = {
   [ResourceType.WORKFLOWS]: 'Workflows',
   [ResourceType.FOLDER]: 'Folders',
   [ResourceType.MODULE]: 'Modules',
+  [ResourceType.WORKFLOW_FOLDER]: 'Workflow folders',
 };

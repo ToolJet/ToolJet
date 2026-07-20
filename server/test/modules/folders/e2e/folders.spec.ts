@@ -591,6 +591,119 @@ describe('FoldersController', () => {
           "This folder name is already taken.",
         );
       });
+
+      // Parallel to the FOLDER (front-end) create case above, but for a WORKFLOW
+      // folder: the group must have workflowFolderCreate (not folderCreate) to
+      // create it — proves the canCreateFolder branch in folders/ability/index.ts,
+      // fed by request.tj_folder_type set in folders/ability/guard.ts from
+      // request.body?.type.
+      it('should be able to create a new WORKFLOW folder if group has workflowFolderCreate permission', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-create@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-create@tooljet.io',
+          groups: ['all_users', 'wf-create-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'wf-create-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          workflowFolderCreate: true,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const preCount = await countEntities(Folder, {});
+
+        const response = await request(nestApp.getHttpServer())
+          .post('/api/folders')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ name: 'Workflow Folder Created', type: APP_TYPES.WORKFLOW });
+
+        expect(response.statusCode).toBe(201);
+
+        const postCount = await countEntities(Folder, {});
+        expect(postCount).toEqual(preCount + 1);
+
+        const createdFolder = await findEntityOrFail(Folder, { id: response.body.id });
+        expect(createdFolder).toMatchObject({
+          name: 'Workflow Folder Created',
+          type: APP_TYPES.WORKFLOW,
+        });
+      });
+
+      // Isolation: a group with the front-end folderCreate flag (but NOT
+      // workflowFolderCreate) must not be able to create a workflow folder.
+      it('isolation: folderCreate (front-end) permission does NOT grant create access to a WORKFLOW folder', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-create-isolation@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-create-isolation@tooljet.io',
+          groups: ['all_users', 'fe-only-create-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'fe-only-create-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          folderCreate: true,
+          workflowFolderCreate: false,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const response = await request(nestApp.getHttpServer())
+          .post('/api/folders')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ name: 'Workflow Folder Isolation', type: APP_TYPES.WORKFLOW });
+
+        expect(response.statusCode).toBe(403);
+      });
+
+      // Isolation (reverse direction): a group with only workflowFolderCreate
+      // (but NOT folderCreate) must not be able to create a regular front-end
+      // folder.
+      it('isolation: workflowFolderCreate permission does NOT grant create access to a FOLDER (front-end) folder', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-fe-create-isolation@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-fe-create-isolation@tooljet.io',
+          groups: ['all_users', 'wf-only-create-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'wf-only-create-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          workflowFolderCreate: true,
+          folderCreate: false,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const response = await request(nestApp.getHttpServer())
+          .post('/api/folders')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ name: 'Front End Folder Isolation', type: FOLDER_TYPE });
+
+        expect(response.statusCode).toBe(403);
+      });
     });
 
     describe('PUT /api/folders/:id | Update folder', () => {
@@ -662,6 +775,62 @@ describe('FoldersController', () => {
           .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
           .set('Cookie', viewerUserData['tokenCookie'])
           .send({ name: 'my folder' })
+          .expect(403);
+      });
+
+      // Parallel to the FOLDER (front-end) case above: same ownership-bypass path,
+      // now on a Workflow-typed folder — proves guard.ts's `select: [..., 'type']` +
+      // `request.tj_folder_type = folder?.type` doesn't change the ownership outcome.
+      it('should be able to update an existing WORKFLOW folder if group is admin, has update permission, or owns it', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-update@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-update@tooljet.io',
+          groups: ['all_users', 'developer'],
+          organization: adminUserData.organization,
+        });
+        const viewerUserData = await createUser(nestApp, {
+          email: 'viewer-wf-update@tooljet.io',
+          groups: ['viewer', 'all_users'],
+          organization: adminUserData.organization,
+        });
+
+        let loggedUser = await login(nestApp, adminUserData.user.email);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        loggedUser = await login(nestApp, viewerUserData.user.email);
+        viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const workflowFolder = await saveEntity(Folder, {
+          name: 'Workflow Folder1',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+          createdBy: developerUserData.user.id,
+        } as any);
+
+        for (const [i, userData] of [adminUserData, developerUserData].entries()) {
+          const name = `workflow folder ${i}`;
+          await request(nestApp.getHttpServer())
+            .put(`/api/folders/${workflowFolder.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', userData['tokenCookie'])
+            .send({ name })
+            .expect(200);
+
+          const updatedFolder = await findEntity(Folder, { id: workflowFolder.id });
+          expect(updatedFolder.name).toEqual(name);
+        }
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
+          .set('Cookie', viewerUserData['tokenCookie'])
+          .send({ name: 'my workflow folder' })
           .expect(403);
       });
     });
@@ -745,6 +914,260 @@ describe('FoldersController', () => {
           .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
           .set('Cookie', viewerUserData['tokenCookie'])
           .send()
+          .expect(403);
+      });
+
+      // Parallel to the FOLDER (front-end) delete case above, but on a WORKFLOW
+      // folder: the group must have workflowFolderDelete (not folderDelete) to
+      // delete it — proves the canDeleteFolder branch in folders/ability/index.ts.
+      it('should be able to delete an existing WORKFLOW folder if group has workflowFolderDelete permission', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-delete@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-delete@tooljet.io',
+          groups: ['all_users', 'wf-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'wf-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          workflowFolderDelete: true,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder For Delete',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+        });
+
+        const preCount = await countEntities(Folder, {});
+
+        await request(nestApp.getHttpServer())
+          .delete(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send()
+          .expect(200);
+
+        const postCount = await countEntities(Folder, {});
+        expect(postCount).toEqual(preCount - 1);
+      });
+
+      // Isolation: a group with the front-end folderDelete flag (but NOT
+      // workflowFolderDelete) must not be able to delete a workflow folder.
+      it('isolation: folderDelete (front-end) permission does NOT grant delete access to a WORKFLOW folder', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-delete-isolation@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-delete-isolation@tooljet.io',
+          groups: ['all_users', 'fe-only-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'fe-only-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          folderDelete: true,
+          workflowFolderDelete: false,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder For Delete Isolation',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+        });
+
+        await request(nestApp.getHttpServer())
+          .delete(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send()
+          .expect(403);
+      });
+    });
+
+    // ---------------------------------------------------------------------
+    // checkFolderManagePermission (folders/service.ts) — the update-tier
+    // editableFoldersId check must key off the correct resource type
+    // (MODULES.FOLDER vs MODULES.WORKFLOW_FOLDER) depending on folder.type.
+    // ---------------------------------------------------------------------
+    describe('PUT /api/folders/:id | checkFolderManagePermission granular edit-tier (FOLDER vs WORKFLOW_FOLDER)', () => {
+      /** Grants canEditFolder on `folderId`, tagged with `resourceType`, to `groupId`. */
+      async function grantEditFolder(groupId: string, folderId: string, resourceType: ResourceType): Promise<void> {
+        const granular = await saveEntity(GranularPermissions, {
+          groupId,
+          name: 'Folder manage grant',
+          type: resourceType,
+          isAll: false,
+        } as any);
+        const folderPerm = await saveEntity(FoldersGroupPermissions, {
+          granularPermissionId: granular.id,
+          canViewApps: true,
+          canEditApps: true,
+          canEditFolder: true,
+        } as any);
+        await saveEntity(GroupFolders, {
+          folderId,
+          foldersGroupPermissionsId: folderPerm.id,
+        } as any);
+      }
+
+      it('FOLDER (front-end): a canEditFolder grant scoped to the folder allows rename', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-manage-fe@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const endUserData = await createUser(nestApp, {
+          email: 'enduser-manage-fe@tooljet.io',
+          groups: ['all_users', 'builder'],
+          organization: adminUserData.organization,
+        });
+        const group = await createGroupPermission(nestApp, {
+          organization: adminUserData.organization,
+          group: 'manage-fe-group',
+        } as any);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['manage-fe-group']);
+
+        const folder = await createFolder(nestApp, {
+          name: 'FE Manage Folder',
+          type: FOLDER_TYPE,
+          organizationId: adminUserData.organization.id,
+        });
+        await grantEditFolder(group.id, folder.id, ResourceType.FOLDER);
+
+        const loggedUser = await login(nestApp, endUserData.user.email);
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${folder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'FE Manage Folder Renamed' })
+          .expect(200);
+
+        const updatedFolder = await findEntity(Folder, { id: folder.id });
+        expect(updatedFolder.name).toEqual('FE Manage Folder Renamed');
+      });
+
+      it('WORKFLOW_FOLDER (parallel case): a canEditFolder grant scoped to the workflow folder allows rename', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-manage-wf@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const endUserData = await createUser(nestApp, {
+          email: 'enduser-manage-wf@tooljet.io',
+          groups: ['all_users', 'builder'],
+          organization: adminUserData.organization,
+        });
+        const group = await createGroupPermission(nestApp, {
+          organization: adminUserData.organization,
+          group: 'manage-wf-group',
+        } as any);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['manage-wf-group']);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Manage Folder',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+        });
+        await grantEditFolder(group.id, workflowFolder.id, ResourceType.WORKFLOW_FOLDER);
+
+        const loggedUser = await login(nestApp, endUserData.user.email);
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'Workflow Manage Folder Renamed' })
+          .expect(200);
+
+        const updatedFolder = await findEntity(Folder, { id: workflowFolder.id });
+        expect(updatedFolder.name).toEqual('Workflow Manage Folder Renamed');
+      });
+
+      // -------------------------------------------------------------------
+      // Isolation: a FOLDER-tagged canEditFolder grant scoped to a folder id
+      // must not grant rename access when that same folder id is actually a
+      // WORKFLOW folder, and vice versa. checkFolderManagePermission must key
+      // its userPermissions lookup off folder.type, not just the folder id.
+      // -------------------------------------------------------------------
+      it('isolation: a WORKFLOW_FOLDER-tagged canEditFolder grant does NOT allow renaming a front-end folder with the same id', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-manage-isolation-1@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const endUserData = await createUser(nestApp, {
+          email: 'enduser-manage-isolation-1@tooljet.io',
+          groups: ['all_users', 'builder'],
+          organization: adminUserData.organization,
+        });
+        const group = await createGroupPermission(nestApp, {
+          organization: adminUserData.organization,
+          group: 'manage-isolation-group-1',
+        } as any);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['manage-isolation-group-1']);
+
+        const folder = await createFolder(nestApp, {
+          name: 'FE Manage Isolation Folder',
+          type: FOLDER_TYPE,
+          organizationId: adminUserData.organization.id,
+        });
+        // Foreign grant: WORKFLOW_FOLDER type tag, scoped to a front-end folder's id.
+        await grantEditFolder(group.id, folder.id, ResourceType.WORKFLOW_FOLDER);
+
+        const loggedUser = await login(nestApp, endUserData.user.email);
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${folder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'should not rename' })
+          .expect(403);
+      });
+
+      it('isolation: a FOLDER-tagged canEditFolder grant does NOT allow renaming a workflow folder with the same id', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-manage-isolation-2@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const endUserData = await createUser(nestApp, {
+          email: 'enduser-manage-isolation-2@tooljet.io',
+          groups: ['all_users', 'builder'],
+          organization: adminUserData.organization,
+        });
+        const group = await createGroupPermission(nestApp, {
+          organization: adminUserData.organization,
+          group: 'manage-isolation-group-2',
+        } as any);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['manage-isolation-group-2']);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Manage Isolation Folder',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+        });
+        // Foreign grant: FOLDER type tag, scoped to a workflow folder's id.
+        await grantEditFolder(group.id, workflowFolder.id, ResourceType.FOLDER);
+
+        const loggedUser = await login(nestApp, endUserData.user.email);
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'should not rename' })
           .expect(403);
       });
     });
