@@ -1,0 +1,81 @@
+name: Frontend unit tests
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+  push:
+    branches:
+      - develop
+      - lts-3.16
+    paths:
+      - 'frontend/**'
+  schedule:
+    # Nightly full run keeps the coverage baseline honest even on quiet days.
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-unit-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changed-tests:
+    name: Tests for changed files
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # --changedSince needs the full history to diff against the base branch.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22.15.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests related to changed files
+        run: npx jest --ci --coverage --changedSince=origin/${{ github.base_ref }}
+
+  full-suite:
+    name: Full suite + coverage ratchet
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22.15.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full test suite with coverage
+        run: npm run test:ci
+
+      - name: Coverage ratchet
+        run: npm run coverage:ratchet
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: |
+            frontend/coverage/lcov.info
+            frontend/coverage/coverage-summary.json
+          retention-days: 30
