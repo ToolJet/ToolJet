@@ -39,6 +39,22 @@
 
   .ai-builder-chat-container {
     position: relative;
+    font-size: var(--font-size-large);
+
+    // Match the previous plain-Textarea's fixed sizing (initialHeight 80px, max-h 180px) —
+    // the shared CodeMirror mention theme otherwise caps this at 3rem/6.5rem everywhere.
+    .cm-editor {
+      min-height: 80px;
+      max-height: 180px;
+    }
+
+    // CodeMirror's own cursor for the empty doc isn't reliably aligned with the absolutely-
+    // positioned placeholder overlay text (varies by device/DPR) — hide it and use our own
+    // caret (.slot-placeholder-caret) instead, which is laid out inline with the overlay text.
+    &.is-showing-placeholder .cm-cursor {
+      visibility: hidden;
+    }
+
     .ai-builder-footer {
       display: flex;
       background-color: transparent;
@@ -53,31 +69,17 @@
       border-top: 0px !important;
 
       button[role="combobox"] {
-        border-radius: 100px !important;
-        height: 20px !important;
-        font-size: 11px !important;
-        padding: 0 8px !important;
+        border-radius: 100px;
+        height: auto;
+        font-size: var(--font-size-large);
+        padding: 0.125rem 0.625rem;
+        gap: 0.25rem;
 
         &:hover {
           background-color: var(--interactive-default) !important;
         }
       }
     }
-  }
-}
-
-.example-prompts-dropdown button[role="combobox"] {
-  width: 124px !important;
-  gap: 4px !important;
-  padding: 2px 8px !important;
-
-  > div {
-    max-width: 89px !important;
-    width: 89px !important;
-  }
-  > div > div {
-    max-width: 89px !important;
-    width: 89px !important;
   }
 }
 
@@ -88,7 +90,7 @@ div[role="listbox"].example-prompts-dropdown__content {
 
   div[role="option"] {
     padding: 8px 6px !important;
-    font-size: 12px !important;
+    font-size: var(--font-size-large) !important;
     height: 30px !important;
     cursor: pointer;
 
@@ -112,7 +114,7 @@ div[role="listbox"].example-prompts-dropdown__content {
     position: absolute;
     left: 0;
     top: 0;
-    height: 16px;
+    height: 1.25rem;
     width: calc(100% - 32px);
     overflow: hidden;
     pointer-events: none;
@@ -126,16 +128,30 @@ div[role="listbox"].example-prompts-dropdown__content {
   }
 
   &-line {
-    height: 16px;
     display: flex;
     align-items: center;
     opacity: 0.3;
     transition: opacity 0.4s ease;
-    font-size: 12px;
+    font-size: var(--font-size-large);
     color: var(--text-placeholder);
 
     &.active {
       opacity: 1;
     }
+  }
+
+  &-caret {
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin-right: 2px;
+    background-color: var(--text-default);
+    animation: slot-placeholder-caret-blink 1s step-end infinite;
+  }
+}
+
+@keyframes slot-placeholder-caret-blink {
+  50% {
+    opacity: 0;
   }
 }

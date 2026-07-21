@@ -37,6 +37,10 @@ describe("user invite flow cases", () => {
       enableInstanceSignup();
     });
     cy.apiConfigureSmtp(smtpConfig);
+    // cy.mhDeleteAll();
+  });
+  after(() => {
+    cy.mhDeleteAll();
   });
 
   it("Should verify the user archive functionality", () => {
@@ -167,9 +171,9 @@ describe("user invite flow cases", () => {
     navigateToManageUsers();
     fillUserInviteForm(data.firstName, data.email);
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.wait(7000);
+    cy.wait(5000);
     cy.apiLogout();
-    cy.wait(7000);
+    cy.wait(5000);
 
     fetchAndVisitInviteLinkViaMH(data.email);
     confirmInviteElements(data.email);

@@ -38,7 +38,6 @@ export const JSONEditor = function JSONEditor(props) {
     setExposedVariable,
     setExposedVariables,
     darkMode,
-    adjustComponentPositions,
     currentLayout,
     width,
     currentMode,
@@ -70,7 +69,6 @@ export const JSONEditor = function JSONEditor(props) {
     id,
     height,
     value: forceDynamicHeightUpdate,
-    adjustComponentPositions,
     currentLayout,
     width,
     visibility,
@@ -135,6 +133,7 @@ export const JSONEditor = function JSONEditor(props) {
       {
         '.cm-scroller': {
           backgroundColor: backgroundColor,
+          flexGrow: 1,
         },
       },
       { dark: darkMode }

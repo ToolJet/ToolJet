@@ -27,6 +27,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
 import {
   parseParentIdAndSuffix,
+  remapFlexContainerChildOrder,
   remapParentIdForVersionCopy,
   shouldSkipComponentOnVersionCopy,
 } from '../helpers/version-copy-parent.helper';
@@ -538,6 +539,8 @@ export class VersionsCreateService implements IVersionsCreateService {
           newLayout.left = layout.left;
           newLayout.width = layout.width;
           newLayout.height = layout.height;
+          if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+          if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
           newLayout.componentId = newComponent.id;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
@@ -594,6 +597,10 @@ export class VersionsCreateService implements IVersionsCreateService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+        // remapped explicitly to the new component ids — otherwise the saved flex-child order
+        // is lost on draft/version creation (issue #5153).
+        remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
         return updateEntityReferences(component, mappings);
       });
 
@@ -635,11 +642,19 @@ export class VersionsCreateService implements IVersionsCreateService {
     for (const event of allEvents) {
       const eventDefinition = updateEntityReferences(event.event, mappings);
 
-      if (eventDefinition?.actionId === 'run-query') {
+      if (
+        eventDefinition?.actionId === 'run-query' ||
+        eventDefinition?.actionId === 'reset-query' ||
+        eventDefinition?.actionId === 'abort-query'
+      ) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 
       if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'scroll-component-into-view') {
         eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
       }
 

@@ -17,6 +17,7 @@ const NEW_WIDGETS = [
   'DatetimePickerV2',
   'DatePickerV2',
   'TimePicker',
+  'Cascader',
   'ModalV2',
   'EmailInput',
   'PhoneInput',
@@ -36,6 +37,7 @@ const NEW_WIDGETS = [
   'ColorPicker',
   'FileButton',
 ];
+const BETA_WIDGETS = ['FlexContainer'];
 
 export const WidgetBox = ({ component, darkMode }) => {
   const { t } = useTranslation();
@@ -49,6 +51,7 @@ export const WidgetBox = ({ component, darkMode }) => {
         >
           {LEGACY_WIDGETS.includes(component.component) && <p className="widget-version-old-identifier">Lgcy</p>}
           {NEW_WIDGETS.includes(component.component) && <p className="widget-version-new-identifier">New</p>}
+          {BETA_WIDGETS.includes(component.component) && <p className="widget-version-beta-identifier">Beta</p>}
           <center>
             <div
               className="widget-svg-container"

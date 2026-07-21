@@ -145,6 +145,7 @@ const CanvasSettings = ({ darkMode, isModuleEditor = false }) => {
             {forceCodeBox && (
               <ColorSwatches
                 data-cy={`color-picker-canvas`}
+                cyLabel={`canvas-bg-color`}
                 outerWidth="120px"
                 value={canvasBackgroundColor}
                 onChange={(color) => {

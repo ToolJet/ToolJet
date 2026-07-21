@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useGridStore } from '@/_stores/gridStore';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 //eslint-disable-next-line import/no-unresolved
-import { getCountryCallingCode } from 'react-phone-number-input';
+import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
   return {
@@ -45,6 +45,8 @@ export const useInput = ({
   const isInitialRender = useRef(true);
   const inputRef = useRef();
   const labelRef = useRef();
+  const validateRef = useRef(validate);
+  validateRef.current = validate;
 
   const { loadingState, disabledState, label, visibility: initialVisibility } = properties;
   const isResizing = useGridStore((state) => state.resizingComponentId === id);
@@ -145,8 +147,8 @@ export const useInput = ({
 
   useEffect(() => {
     if (inputType === 'phone') {
-      let code = getCountryCallingCodeSafe(country);
-      setInputValue(`+${code}${properties.value}`);
+      const code = getCountryCallingCodeSafe(country);
+      setPhoneInputValue(`+${code}${properties.value}`);
     } else {
       setInputValue(properties.value ?? '');
     }
@@ -154,10 +156,16 @@ export const useInput = ({
 
   useEffect(() => {
     if (inputType !== 'phone') return;
-    setExposedVariable('setValue', async function (value, countryCode = country) {
-      const code = getCountryCallingCodeSafe(country);
-      setInputValue(`+${code}${value}`);
-      setCountry(countryCode);
+    // `setValue` CSA for phone input
+    // - `value` is Phone number without country code.
+    // - `nextCountry` (default: current) is the country to apply.
+    setExposedVariable('setValue', async function (value, nextCountry = country) {
+      // Ignore an invalid country, and build the E.164 value from the TARGET country's calling code.
+      const targetCountry = getCountryCallingCodeSafe(nextCountry) ? nextCountry : country;
+      const code = getCountryCallingCodeSafe(targetCountry);
+      const nationalNumber = `${value ?? ''}`.replace(/\D/g, '');
+      setCountry(targetCountry);
+      setPhoneInputValue(nationalNumber ? `+${code}${nationalNumber}` : '', targetCountry);
       fireEvent('onChange');
     });
   }, [inputType, country]);
@@ -176,7 +184,7 @@ export const useInput = ({
   useEffect(() => {
     const exposedVariables = {
       clear: async function () {
-        setInputValue('');
+        inputType === 'phone' ? setPhoneInputValue('') : setInputValue('');
         fireEvent('onChange');
       },
       setFocus: async function () {
@@ -220,6 +228,7 @@ export const useInput = ({
     if (inputType !== 'phone' && inputType !== 'currency') {
       exposedVariables.setText = async function (text) {
         setInputValue(text);
+        setShowValidationError(true);
         fireEvent('onChange');
       };
     }
@@ -228,21 +237,28 @@ export const useInput = ({
     isInitialRender.current = false;
   }, []);
 
+  // Generic value setter shared by all input types
   const setInputValue = (value) => {
     setValue(value);
     setExposedVariable('value', value);
-    let validationStatus;
-    if (inputType === 'phone') {
-      const countryCode = getCountryCallingCodeSafe(country);
-      setExposedVariables({
-        country: country,
-        countryCode: `+${countryCode}`,
-        formattedValue: `${value}`,
-      });
-      validationStatus = validate(value?.replace(`+${countryCode}`, ''));
-    } else {
-      validationStatus = validate(value);
-    }
+    const validationStatus = validateRef.current(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
+
+  // Phone-only value setter.
+  // - `selectedCountry` defaults to the current country;
+  // - a country switch passes the new one since the `country` state closure isn't updated yet in the same tick.
+  const setPhoneInputValue = (value, selectedCountry = country) => {
+    const countryCode = getCountryCallingCodeSafe(selectedCountry);
+    setValue(value);
+    setExposedVariables({
+      value,
+      country: selectedCountry,
+      countryCode: `+${countryCode}`,
+      formattedValue: formatPhoneNumberIntl(value), // Library util formats the E.164 value to a readable format.
+    });
+    const validationStatus = validateRef.current(value?.replace(`+${countryCode}`, ''));
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };
@@ -252,6 +268,7 @@ export const useInput = ({
     fireEvent('onChange');
   };
 
+  // NOTE - only used by Currency input (not phone)
   const handlePhoneCurrencyInputChange = (value) => {
     setInputValue(value);
     fireEvent('onChange');
@@ -299,6 +316,7 @@ export const useInput = ({
     validationError,
     isMandatory,
     setInputValue,
+    setPhoneInputValue,
     handlePhoneCurrencyInputChange,
     handleChange,
     handleBlur,

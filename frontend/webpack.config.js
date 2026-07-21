@@ -248,7 +248,22 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
+    extensions: [
+      '.ts',
+      '.tsx',
+      '.js',
+      '.jsx',
+      '.png',
+      '.wasm',
+      '.tar',
+      '.data',
+      '.svg',
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.gif',
+      '.json',
+    ],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
@@ -269,7 +284,12 @@ module.exports = {
   //   (sentryWebpackPlugin uploads then deletes the .map files from the build dir).
   // In production without Sentry: skip map generation entirely — nothing consumes
   //   them and they push individual chunks past Cloudflare Pages' 25 MiB limit.
-  devtool: environment === 'development' ? 'eval-source-map' : process.env.APM_VENDOR === 'sentry' ? 'hidden-source-map' : false,
+  devtool:
+    environment === 'development'
+      ? 'eval-source-map'
+      : process.env.APM_VENDOR === 'sentry'
+      ? 'hidden-source-map'
+      : false,
   module: {
     rules: [
       {
@@ -289,7 +309,12 @@ module.exports = {
         use: ['file-loader'],
       },
       {
-        test: /\.svg$/,
+        test: /\.svg$/i,
+        type: 'asset/resource',
+        resourceQuery: /url/, // SVGs with path has *.svg?url
+      },
+      {
+        test: /\.svg$/i,
         use: ({ resource }) => ({
           loader: '@svgr/webpack',
           options: {
@@ -305,6 +330,7 @@ module.exports = {
             },
           },
         }),
+        resourceQuery: { not: [/url/] }, // exclude react component if path has *.svg?url
       },
       {
         test: /\.css$/,

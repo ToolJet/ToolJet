@@ -15,7 +15,9 @@ import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
+import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
@@ -50,6 +52,8 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'notificationDuration',
   'disableQuery',
   'disabledMessage',
+  'workflowId',
+  'workflowVersionId',
 ];
 
 const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
@@ -100,6 +104,7 @@ const useAppData = (
   const setCurrentPageId = useStore((state) => state.setCurrentPageId);
   const updateEventsField = useEventActions().updateEventsField;
   const setCurrentMode = useStore((state) => state.setCurrentMode);
+  const setIsEditorReadOnly = useStore((state) => state.setIsEditorReadOnly);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
@@ -133,6 +138,8 @@ const useAppData = (
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
   const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
   const isLicenseFetched = useStore((state) => state.isLicenseFetched);
+  const startExposedValueBatch = useStore((state) => state.startExposedValueBatch);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -146,7 +153,7 @@ const useAppData = (
     let totalPages = 1;
 
     while (currentPage <= totalPages) {
-      const data = await appsService.getAll(currentPage, '', '', 'module');
+      const data = await appsService.getAll(currentPage, '', '', 'module', 'picker');
       const pageModules = data?.apps || [];
 
       allModules.push(...pageModules);
@@ -190,6 +197,7 @@ const useAppData = (
 
   const initialLoadRef = useRef(true);
   const promptSentRef = useRef(false);
+  const isPageSwitchRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -224,15 +232,10 @@ const useAppData = (
 
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
-      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      isPageSwitchRef.current = true;
       setPageSwitchInProgress(false);
-      setTimeout(() => {
-        handleEvent('onPageLoad', currentPageEvents, {});
-        // Rebuild all suggestion segments for the new page's components/queries/variables
-        mode === 'edit' && initSuggestions(moduleId);
-      }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode, mode]);
+  }, [pageSwitchInProgress, moduleMode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -420,10 +423,20 @@ const useAppData = (
           promptSentRef.current = true;
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          sendMessage(state.prompt, {}, {}, moduleId);
+          // Structured datasources/tables the user tagged via "@mentions" in the create prompt. Sent
+          // alongside the kickoff message so the backend can auto-complete the data-clarification /
+          // datasource-selection / table-mapping steps for what was already referenced.
+          const taggedResources = state?.taggedResources;
+          const hasTaggedResources =
+            taggedResources && (taggedResources.datasources?.length ?? 0) + (taggedResources.tables?.length ?? 0) > 0;
+          sendMessage(state.prompt, {}, hasTaggedResources ? { taggedResources } : {}, moduleId);
           setIsQueryPaneExpanded(false);
           // Clear prompt from navigation state so it doesn't re-trigger on page refresh
-          const { prompt: _prompt, ...restUsrState } = window.history.state?.usr || {};
+          const {
+            prompt: _prompt,
+            taggedResources: _taggedResources,
+            ...restUsrState
+          } = window.history.state?.usr || {};
           window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
@@ -513,6 +526,20 @@ const useAppData = (
         if (!moduleMode) {
           updateFeatureAccess();
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          setIsEditorReadOnly(false); // non-module editors are never gated by module read-only
+        } else if (moduleId === 'canvas') {
+          // Module opened as the main editor (not a nested module): AppLoader resets all
+          // stores on mount, so feature access must be reloaded here too — otherwise
+          // modulesEnabled stays false and the ModuleContainer renders with the `disabled`
+          // class (opacity + pointer-events:none), breaking drops/move inside the module.
+          updateFeatureAccess();
+          // Needs its own currentVersionId so saveComponentChanges can reach the correct version endpoint.
+          setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          // Build-with (view-only) access → read-only editor. Security is enforced server-side;
+          // this only switches the editor UI into read-only (see getShouldFreeze).
+          const moduleOwnerId = appData?.user_id ?? appData?.editing_version?.app?.user_id ?? appData?.app?.user_id;
+          const canEdit = canEditModule(authenticationService.currentSessionValue, appId, moduleOwnerId);
+          setIsEditorReadOnly(!canEdit);
         }
         setAppHomePageId(homePageId, moduleId);
         if (!moduleMode && appData.modules) {
@@ -543,6 +570,11 @@ const useAppData = (
               setFolderMappings(folderData.folderMappings ?? []);
             })
             .catch(() => {});
+        } else if (moduleMode && moduleId === 'canvas' && setFolders) {
+          // Modules have no folder structure. Signal foldersReady so the EE QueryFolderTree
+          // renders the flat query list instead of returning null while waiting for fetch.
+          setFolders([]);
+          setFolderMappings([]);
         }
 
         const constants = constantsResp?.constants;
@@ -593,12 +625,21 @@ const useAppData = (
           const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
           useStore.getState().init(versionIdToInit, envFromQueryParams);
           fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+        } else if (!isPublicAccess && moduleMode && moduleId === 'canvas') {
+          // Standalone module editor: load static data sources (RunJS, RestAPI, RunPy) the same
+          // way a regular app editor does. Embedded modules skip this — they inherit the parent's.
+          const versionIdToInit = appData.editing_version?.id || appData.current_version_id;
+          // init() populates selectedVersion and selectedEnvironment, which useAppPreviewLink
+          // needs to build the preview URL with correct ?version=...&env=... params.
+          useStore.getState().init(versionIdToInit);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
-        if (!moduleMode) {
+        if (!moduleMode || moduleId === 'canvas') {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
 
@@ -616,6 +657,18 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
+      setSuppressQueryRerun(moduleId, true);
+
+      // The flush runs the initial-settle dependency cascade synchronously.
+      // Suppress dependency-triggered query re-runs for THIS module during that window,
+      // so queries don't run on load when components publish their initial exposed values.
+      // Only Genuine post-load changes cascade outside this window and rerun as expected.
+      try {
+        flushExposedValueBatch();
+      } finally {
+        setSuppressQueryRerun(moduleId, false);
+      }
+
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
@@ -643,9 +696,21 @@ const useAppData = (
           }
         }
 
-        await runOnLoadQueries(moduleId);
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
-        handleEvent('onPageLoad', currentPageEvents, {});
+        if (isPageSwitchRef.current) {
+          // Page switch: skip runOnLoadQueries and only fire onPageLoad.
+          // Running runOnLoadQueries here would create an infinite loop if any
+          // runOnPageLoad query has a success/failure event that navigates to another
+          // page — each navigation would re-trigger queries which re-trigger navigation.
+          // Apps that need data refresh on navigation should trigger queries from the
+          // onPageLoad event instead of relying on runOnPageLoad.
+          isPageSwitchRef.current = false;
+          handleEvent('onPageLoad', currentPageEvents, {});
+        } else {
+          runOnLoadQueries(moduleId).then(() => {
+            handleEvent('onPageLoad', currentPageEvents, {});
+          });
+        }
       };
 
       loadLibrariesAndRun();
