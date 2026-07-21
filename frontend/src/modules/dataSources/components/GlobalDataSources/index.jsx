@@ -87,7 +87,9 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   useEffect(() => {
     pluginsService
       .findAll()
-      .then(({ data = [] }) => setPlugins([...data]))
+      .then(({ data = [] }) => {
+        setPlugins([...data].sort((a, b) => a.name.localeCompare(b.name)));
+      })
       .catch((error) => {
         toast.error(error?.message || 'Failed to fetch plugins');
       });
@@ -465,6 +467,17 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       return acc;
     }, {});
 
+    const sortByName = (list) => [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    const databasesList = sortByName([...allDataSourcesList.databases, ...(pluginGroups.Databases || [])]);
+    const apisList = sortByName([...allDataSourcesList.apis, ...(pluginGroups.APIs || [])]);
+    const cloudStoragesList = sortByName([
+      ...allDataSourcesList.cloudStorages,
+      ...(pluginGroups['Cloud Storages'] || []),
+    ]);
+    const aiList = sortByName([...allDataSourcesList.ais, ...(pluginGroups.AI || [])]);
+    const pluginsList = sortByName(pluginGroups.Plugins || []);
+
     const dataSourceList = [
       {
         type: 'Commonly used',
@@ -472,43 +485,37 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         list: allDataSourcesList.common,
         renderDatasources: () => renderCardGroup(allDataSourcesList.common, 'Commonly used'),
       },
-
       {
         type: 'Databases',
         key: '#databases',
-        list: [...allDataSourcesList.databases, ...(pluginGroups.Databases || [])],
-        renderDatasources: () =>
-          renderCardGroup([...allDataSourcesList.databases, ...(pluginGroups.Databases || [])], 'Databases'),
+        list: databasesList,
+        renderDatasources: () => renderCardGroup(databasesList, 'Databases'),
       },
       {
         type: 'APIs',
         key: '#apis',
-        list: [...allDataSourcesList.apis, ...(pluginGroups.APIs || [])],
-        renderDatasources: () => renderCardGroup([...allDataSourcesList.apis, ...(pluginGroups.APIs || [])], 'APIs'),
+        list: apisList,
+        renderDatasources: () => renderCardGroup(apisList, 'APIs'),
       },
       {
         type: 'Cloud Storages',
         key: '#cloudstorage',
-        list: [...allDataSourcesList.cloudStorages, ...(pluginGroups['Cloud Storages'] || [])],
-        renderDatasources: () =>
-          renderCardGroup(
-            [...allDataSourcesList.cloudStorages, ...(pluginGroups['Cloud Storages'] || [])],
-            'Cloud Storages'
-          ),
+        list: cloudStoragesList,
+        renderDatasources: () => renderCardGroup(cloudStoragesList, 'Cloud Storages'),
       },
       {
         type: 'AI',
         key: '#ai',
-        list: [...allDataSourcesList.ais, ...(pluginGroups.AI || [])],
-        renderDatasources: () => renderCardGroup([...allDataSourcesList.ais, ...(pluginGroups.AI || [])], 'AI'),
+        list: aiList,
+        renderDatasources: () => renderCardGroup(aiList, 'AI'),
       },
       ...(!isCloudEdition
         ? [
             {
               type: 'Plugins',
               key: '#plugins',
-              list: pluginGroups.Plugins || [],
-              renderDatasources: () => renderCardGroup(pluginGroups.Plugins || [], 'Plugins'),
+              list: pluginsList,
+              renderDatasources: () => renderCardGroup(pluginsList, 'Plugins'),
             },
           ]
         : []),
@@ -516,15 +523,6 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
 
     return dataSourceList;
   };
-
-  const selectedPlugin = marketplacePlugins.find(
-    (plugin) =>
-      plugin.id === selectedDataSource?.kind ||
-      plugin.id === selectedDataSource?.pluginId ||
-      plugin.id === selectedDataSource?.plugin_id
-  );
-
-  const tags = selectedPlugin?.tags || [];
 
   return (
     <div className="row gx-0">
@@ -549,7 +547,6 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
             updateSelectedDatasource={updateSelectedDatasource}
             showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
             environmentLoading={environmentLoading}
-            tags={tags}
           />
         )}
         {isLoading && loadingState()}

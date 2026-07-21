@@ -102,7 +102,8 @@ class DataSourceManagerComponent extends React.Component {
     pluginsService
       .findAll()
       .then(({ data = [] }) => {
-        this.setState({ plugins: data, pluginsLoaded: true });
+        const sortedPlugins = [...data].sort((a, b) => a.name.localeCompare(b.name));
+        this.setState({ plugins: sortedPlugins, pluginsLoaded: true });
       })
       .catch((error) => {
         this.setState({ pluginsLoaded: true });
@@ -1113,17 +1114,6 @@ class DataSourceManagerComponent extends React.Component {
                       </span>
                     </ToolTip>
                   )}
-                  {this.props.tags &&
-                    this.props.tags.map((tag) => {
-                      if (tag === 'AI') {
-                        return (
-                          <div key={tag} className="tag-container">
-                            <SolidIcon name="AI-tag" />
-                            <span>{tag}</span>
-                          </div>
-                        );
-                      }
-                    })}
                 </div>
               </div>
               {!isSampleDb && (
