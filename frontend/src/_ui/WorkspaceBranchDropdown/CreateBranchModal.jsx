@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { Alert } from '@/_ui/Alert';
 import cx from 'classnames';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
+import { ImportBranchModal } from '@/_ui/WorkspaceBranchDropdown/ImportBranchModal';
 import '@/_styles/create-branch-modal.scss';
 
 const RESERVED_NAMES = ['main', 'master', 'head', 'origin'];
@@ -19,6 +20,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [sourceBranchId, setSourceBranchId] = useState('');
   const [conflictGroups, setConflictGroups] = useState(null);
+  const [pendingImportName, setPendingImportName] = useState(null);
   const dropdownRef = useRef(null);
 
   const { branches, activeBranchId, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
@@ -73,19 +75,13 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
     if (validationError) setValidationError('');
   };
 
-  const handleCreate = async () => {
-    const error = validateBranchName(branchName);
-    if (error) {
-      setValidationError(error);
-      return;
-    }
-
+  const performCreate = async (name, { isImport = false, confirmImport = false } = {}) => {
     setIsCreating(true);
     try {
-      const newBranch = await actions.createBranch(branchName.trim(), selectedSourceBranchId);
-      // toast.success(`Branch "${branchName}" created successfully`);
-      toast.success(`Branch was created successfully`);
+      const newBranch = await actions.createBranch(name, selectedSourceBranchId, undefined, confirmImport);
+      toast.success(isImport ? 'Branch imported successfully!' : 'Branch was created successfully');
       await actions.switchBranch(newBranch.id);
+      setPendingImportName(null);
       onSuccess?.();
       onClose();
     } catch (error) {
@@ -93,8 +89,16 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+          // Branch name already exists on remote — ask the user to confirm importing it
+          // instead of silently creating from scratch.
+          if (parsed?.needsImportConfirmation) {
+            setPendingImportName(name);
+            setIsCreating(false);
+            return;
+          }
           if (parsed?.conflictGroups?.length) {
             setConflictGroups(parsed.conflictGroups);
+            setPendingImportName(null);
             setIsCreating(false);
             return;
           }
@@ -102,11 +106,27 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
           /* fall through */
         }
       }
+      setPendingImportName(null);
       const msg = error?.data?.message || error?.error || error?.message || 'An unexpected error occurred';
       setValidationError(msg);
       toast.error(msg);
       setIsCreating(false);
     }
+  };
+
+  const handleCreate = async () => {
+    const error = validateBranchName(branchName);
+    if (error) {
+      setValidationError(error);
+      return;
+    }
+
+    await performCreate(branchName.trim(), { isImport: false, confirmImport: false });
+  };
+
+  const handleConfirmImport = async () => {
+    if (!pendingImportName) return;
+    await performCreate(pendingImportName, { isImport: true, confirmImport: true });
   };
 
   const handleKeyDown = (e) => {
@@ -120,7 +140,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   return (
     <>
       <AlertDialog
-        show={true}
+        show={!pendingImportName}
         closeModal={onClose}
         title="Create branch"
         checkForBackground={true}
@@ -259,6 +279,14 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
         conflictGroups={conflictGroups || []}
         onClose={() => setConflictGroups(null)}
         context="branch-creation"
+      />
+
+      <ImportBranchModal
+        show={!!pendingImportName}
+        branchName={pendingImportName}
+        isImporting={isCreating}
+        onCancel={() => setPendingImportName(null)}
+        onConfirm={handleConfirmImport}
       />
     </>
   );
