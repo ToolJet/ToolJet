@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsBoolean } from 'class-validator';
 
 export class CreateBranchDto {
   @IsNotEmpty()
@@ -12,6 +12,12 @@ export class CreateBranchDto {
   @IsOptional()
   @IsString()
   commitSha?: string;
+
+  // When the branch name was already found on remote and the user confirmed
+  // via the import-confirmation modal, skip the pre-creation existence check.
+  @IsOptional()
+  @IsBoolean()
+  confirmImport?: boolean;
 }
 
 export class SwitchBranchDto {
