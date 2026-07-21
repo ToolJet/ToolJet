@@ -17,7 +17,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.IMPORT_MODULE]: {
       license: LICENSE_FIELD.MODULES,
     },
-    [FEATURE_KEY.EXORT_MODULE]: {
+    [FEATURE_KEY.EXPORT_MODULE]: {
       license: LICENSE_FIELD.MODULES,
     },
     [FEATURE_KEY.CLONE_MODULE]: {

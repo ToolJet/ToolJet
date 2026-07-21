@@ -41,6 +41,8 @@ type LDAP = {
     serverCert: string;
   };
   basedn: string;
+  basedns?: string[];
+  bindAttribute?: 'cn' | 'upn';
   enableGroupSync: boolean;
 };
 type SAML = {
