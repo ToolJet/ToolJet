@@ -738,9 +738,13 @@ export class AppsService implements IAppsService {
     const targetBranchId = branchId ?? defaultBranch.id;
     const version = await this.versionRepository.findOne({
       where: { appId: app.id, branchId: targetBranchId, isStub: false },
+      relations: ['branch'],
       order: { updatedAt: 'DESC' },
     });
     if (version) {
+      if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
+        version.displayName = version.branch.name;
+      }
       app.editingVersion = version;
       (app as any).isStub = false;
     } else {
@@ -782,6 +786,12 @@ export class AppsService implements IAppsService {
     response['definition'] = app.editingVersion?.definition;
     response['pages'] = this.appsUtilService.mergeDefaultComponentData(pagesForVersion);
     response['events'] = eventsForVersion;
+    response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
+      pagesForVersion,
+      eventsForVersion,
+      app.organizationId,
+      branchId
+    );
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion) {
@@ -947,6 +957,16 @@ export class AppsService implements IAppsService {
     const modules = await this.appsUtilService.fetchModules(app, false, undefined);
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module)));
+
+    // Top-level linkedApps map: covers main app + every module
+    // Helps frontend to resolve go-to-app link for any correlationId referenced
+    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
+    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
+    response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
+      allPages,
+      allEvents,
+      app.organizationId
+    );
 
     return response;
   }

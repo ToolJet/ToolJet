@@ -19,21 +19,35 @@ export interface CheckUpdatesResponse {
 
 export interface IWorkspaceBranchService {
   list(organizationId: string): Promise<WorkspaceBranchListResponse>;
-  createBranch(organizationId: string, dto: CreateBranchDto, user?: User): Promise<WorkspaceBranch>;
+  // Heavy git work runs on the git-sync queue — the request only validates and enqueues
+  createBranch(
+    organizationId: string,
+    dto: CreateBranchDto,
+    user?: User
+  ): Promise<{ enqueued: boolean; isImport: boolean }>;
   switchBranch(
     organizationId: string,
     branchId: string,
     appId?: string
   ): Promise<{ success: boolean; resolvedAppId?: string }>;
-  deleteBranch(organizationId: string, branchId: string, user?: User): Promise<void>;
-  deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ jobId: string }>;
+  // Heavy delete (remote ref + DB cascade) runs on the git-sync queue — the request only enqueues
+  deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ enqueued: boolean }>;
   pushWorkspace(organizationId: string, dto: WorkspacePushDto, user?: User): Promise<{ success: boolean }>;
   pullWorkspace(
     organizationId: string,
     user?: User,
     sourceBranch?: string,
-    branchId?: string
+    branchId?: string,
   ): Promise<{ success: boolean }>;
+  pullApp(
+    organizationId: string,
+    user: User,
+    appId: string,
+    branchId?: string,
+    tagSha?: string,
+    tagName?: string,
+    tagDescription?: string,
+  ): Promise<{ success: boolean; draftVersionId: string | null }>;
   ensureAppDraft(
     organizationId: string,
     appId: string,
@@ -42,7 +56,17 @@ export interface IWorkspaceBranchService {
     tagSha?: string,
     tagName?: string
   ): Promise<{ draftVersionId: string | null }>;
+  pullModule(
+    organizationId: string,
+    user: User,
+    moduleId: string,
+    branchId?: string,
+    tagSha?: string,
+    tagName?: string,
+    tagDescription?: string,
+  ): Promise<{ success: boolean; draftVersionId: string | null }>;
   checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse>;
   listRemoteBranches(organizationId: string): Promise<{ branches: any[] }>;
   getPullRequests(organizationId: string): Promise<any>;
+  getEntityTags(organizationId: string, coRelationId: string): Promise<any[]>;
 }

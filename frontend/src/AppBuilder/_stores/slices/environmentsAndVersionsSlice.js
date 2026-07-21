@@ -216,6 +216,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     const editorVersion = {
       id: newVersion.id,
       name: newVersion.name,
+      displayName: newVersion.display_name || newVersion.displayName || newVersion.name,
       current_environment_id: newVersion.current_environment_id,
       status: newVersion.status,
     };

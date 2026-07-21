@@ -12,6 +12,7 @@ import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import Modal from '@/HomePage/Modal';
 import { Button } from '@/components/ui/Button/Button';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 
 export const List = ({ updateSelectedDatasource }) => {
@@ -56,6 +57,21 @@ export const List = ({ updateSelectedDatasource }) => {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [environments]);
+
+  // git-sync jobs finish in the background — react to their success notifications
+  useEffect(() => {
+    return subscribeLiveNotifications((n) => {
+      if (n?.metadata?.source !== 'git-sync' || n?.type !== 'success') return;
+      if (n.metadata.action === 'git-pull-branch') {
+        fetchDataSources(false).catch(() => {});
+      } else if (n.metadata.action === 'git-delete-branch') {
+        // fetchBranches self-heals a deleted active branch to default; the page's
+        // activeBranchId effect then refetches the list under the healed branch
+        useWorkspaceBranchesStore.getState().actions.fetchBranches();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchDataSources]);
 
   useEffect(() => {
     setFilteredData([...dataSources]);

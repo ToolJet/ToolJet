@@ -34,8 +34,9 @@ export class GitSyncModule extends SubModule {
       BaseGitSyncService,
       GitSyncAdapter,
       WorkspaceGitSyncAdapter,
-      RemoteBranchCacheService,
       GitObjectCacheService,
+      RemoteBranchCacheService,
+      GitMirrorWarmerService,
     } = await this.getProviders(configs, 'git-sync', [
       'controller',
       'service',
@@ -50,8 +51,9 @@ export class GitSyncModule extends SubModule {
       'base-git.service',
       'git-sync-adapter',
       'workspace-git-sync-adapter',
-      'remote-branch-cache.service',
       'git-object-cache.service',
+      'remote-branch-cache.service',
+      'git-mirror-warmer.service',
     ]);
 
     const edition = getTooljetEdition();
@@ -95,6 +97,7 @@ export class GitSyncModule extends SubModule {
         RemoteBranchCacheService,
         EncryptionService,
         GitObjectCacheService,
+        GitMirrorWarmerService,
         ...additionalProviders,
       ],
       exports: [
@@ -107,8 +110,9 @@ export class GitSyncModule extends SubModule {
         WorkspaceGitSyncAdapter,
         OrganizationGitSyncRepository,
         SourceControlProviderService,
-        RemoteBranchCacheService,
         GitObjectCacheService,
+        RemoteBranchCacheService,
+        GitMirrorWarmerService,
       ],
     });
   }
