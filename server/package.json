@@ -83,7 +83,7 @@
     "@octokit/rest": "^22.0.0",
     "@opentelemetry/exporter-metrics-otlp-proto": "^0.218.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.218.0",
-    "@opentelemetry/instrumentation-express": "^0.52.0",
+    "@opentelemetry/instrumentation-express": "^0.66.0",
     "@opentelemetry/instrumentation-http": "^0.218.0",
     "@opentelemetry/instrumentation-nestjs-core": "^0.49.0",
     "@opentelemetry/instrumentation-pg": "^0.56.0",
