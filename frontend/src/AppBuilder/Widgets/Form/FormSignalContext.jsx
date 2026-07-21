@@ -16,8 +16,10 @@ export const useFormClear = (clearFn) => {
   clearFnRef.current = clearFn;
 
   useEffect(() => {
-    if (clearCount > 0) clearFnRef.current();
+    if (clearCount > 0 && clearFnRef.current) clearFnRef.current();
   }, [clearCount]);
+
+  return clearCount;
 };
 
 export default FormSignalContext;
