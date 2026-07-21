@@ -105,6 +105,10 @@ export const BASIC_PLAN_SETTINGS = {
   ENABLE_COMMENTS: {
     value: 'false',
   },
+  AUTOMATIC_SSO_LOGIN: {
+    value: 'false',
+    feature: LICENSE_FIELD.AUTOMATIC_SSO_LOGIN,
+  },
 };
 
 export const CLOUD_EDITION_SETTINGS = {
