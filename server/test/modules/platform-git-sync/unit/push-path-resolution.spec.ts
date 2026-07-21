@@ -85,3 +85,4 @@ describe('PlatformGitPushService — app name path resolution', () => {
     await expect(resolveAppPath({ id: '4', name: nameOfLength(100), type: 'front-end' })).resolves.toBeDefined();
   });
 });
+// CI validation touch — safe to drop; exists only to trigger the affected-tests workflow.
