@@ -3,6 +3,15 @@ name:
   # Cache invalidation - 2025-12-09
 
 on:
+  workflow_call:
+    inputs:
+      edition:
+        type: string
+        required: false
+        default: 'ee'
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
   pull_request_target:
     types: [labeled]
   # workflow_dispatch:
@@ -13,33 +22,37 @@ permissions:
   issues: write
 
 env:
-  PR_NUMBER: ${{ github.event.number }}
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  PR_NUMBER: ${{ github.event.number || (github.event.workflow_run.pull_requests[0] && github.event.workflow_run.pull_requests[0].number) || '' }}
+  BRANCH_NAME: ${{ github.head_ref || github.event.workflow_run.head_branch || github.ref_name }}
   TIMESTAMP: ${{ github.run_number }}-${{ github.run_attempt }}
 
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+    if: >-
+      inputs.edition ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee')
+      (github.event_name == 'workflow_run'
+        && github.event.workflow_run.conclusion == 'success'
+        && github.event.workflow_run.event == 'pull_request'
+        && github.event.workflow_run.pull_requests[0].base.ref == 'lts-3.16')
 
     strategy:
       fail-fast: false
       matrix:
         edition:
           - ${{
-            (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
+            inputs.edition ||
             (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee')) && 'ee' ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'ee' || ''
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' ||
+            github.event_name == 'workflow_run' && 'ee' || ''
             }}
-        label:
-          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'gitsync' || 'default' }}
         exclude:
           - edition: ""
 
@@ -75,7 +88,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }}
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
@@ -98,8 +111,11 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --push \
+            --load \
             .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -116,11 +132,14 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --push \
+            --load \
             .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -385,39 +404,17 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Install Cypress & deps
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          runTests: false
-
       - name: Run Cypress tests
-        working-directory: ./cypress-tests
+        uses: cypress-io/github-action@v6
+        id: cypress-tests
+        with:
+          browser: chrome
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:3000"
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
         env:
-          CELL: "Platform / ${{ matrix.edition }}"
-          BROWSER: chrome
-          CONFIG_FILE: ${{ matrix.label == 'gitsync' && 'cypress-gitsync.config.js' || matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
-          CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
-        run: node cy-ci-run.js
-
-      - name: Ensure run summary exists
-        if: always()
-        working-directory: ./cypress-tests
-        run: |
-          if [ ! -f summary.json ]; then
-            printf '{"cell":"Platform / %s","result":"failure","stats":null}\n' '${{ matrix.edition }}' > summary.json
-          fi
-          cat summary.json
-
-      - name: Upload run summary
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-summary-platform-${{ matrix.edition }}
-          path: cypress-tests/summary.json
-          retention-days: 7
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -471,7 +468,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }}
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
@@ -494,8 +491,11 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --push \
+            --load \
             .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -511,11 +511,14 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --push \
+            --load \
             .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -797,39 +800,17 @@ jobs:
           echo ""
           echo "========================================="
 
-      - name: Install Cypress & deps
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          runTests: false
-
       - name: Run Cypress tests
-        working-directory: ./cypress-tests
+        uses: cypress-io/github-action@v6
+        id: cypress-tests-subpath
+        with:
+          browser: chrome
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:3000/apps"
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
         env:
-          CELL: "Platform subpath / ${{ matrix.edition }}"
-          BROWSER: chrome
-          CONFIG_FILE: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
-          CYPRESS_CONFIG: "baseUrl=http://localhost:3000/apps"
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
-        run: node cy-ci-run.js
-
-      - name: Ensure run summary exists
-        if: always()
-        working-directory: ./cypress-tests
-        run: |
-          if [ ! -f summary.json ]; then
-            printf '{"cell":"Platform subpath / %s","result":"failure","stats":null}\n' '${{ matrix.edition }}' > summary.json
-          fi
-          cat summary.json
-
-      - name: Upload run summary
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-summary-platform-subpath-${{ matrix.edition }}
-          path: cypress-tests/summary.json
-          retention-days: 7
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -886,7 +867,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }}
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
@@ -909,8 +890,11 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --push \
+            --load \
             .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -926,11 +910,14 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --push \
+            --load \
             .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -983,7 +970,7 @@ jobs:
           echo "ENABLE_AI_FEATURES=true" >> .env
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
           echo "TJ_AI_GATEWAY_URL=${{ secrets.TJ_AI_GATEWAY_URL }}" >> .env
-          echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env
+          echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env         
 
       - name: clean up old docker containers
         run: |
@@ -1224,40 +1211,18 @@ jobs:
           echo ""
           echo "========================================="
 
-      - name: Install Cypress & deps
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          runTests: false
-
       - name: Run Cypress tests
-        working-directory: ./cypress-tests
+        uses: cypress-io/github-action@v6
+        id: cypress-tests-proxy
+        with:
+          browser: chrome
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:4001,server_host=http://localhost:3000"
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
         env:
-          CELL: "Platform proxy / ${{ matrix.edition }}"
-          BROWSER: chrome
-          CONFIG_FILE: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
-          CYPRESS_CONFIG: "baseUrl=http://localhost:4001,server_host=http://localhost:3000"
           CYPRESS_proxy: true
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
-        run: node cy-ci-run.js
-
-      - name: Ensure run summary exists
-        if: always()
-        working-directory: ./cypress-tests
-        run: |
-          if [ ! -f summary.json ]; then
-            printf '{"cell":"Platform proxy / %s","result":"failure","stats":null}\n' '${{ matrix.edition }}' > summary.json
-          fi
-          cat summary.json
-
-      - name: Upload run summary
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-summary-platform-proxy-${{ matrix.edition }}
-          path: cypress-tests/summary.json
-          retention-days: 7
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -1314,7 +1279,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }}
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
@@ -1337,8 +1302,11 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --push \
+            --load \
             .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -1354,11 +1322,14 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --push \
+            --load \
             .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -1653,40 +1624,18 @@ jobs:
           echo ""
           echo "========================================="
 
-      - name: Install Cypress & deps
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          runTests: false
-
       - name: Run Cypress tests
-        working-directory: ./cypress-tests
+        uses: cypress-io/github-action@v6
+        id: cypress-tests-proxy-subpath
+        with:
+          browser: chrome
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:4001/apps,server_host=http://localhost:3000/apps"
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
         env:
-          CELL: "Platform proxy-subpath / ${{ matrix.edition }}"
-          BROWSER: chrome
-          CONFIG_FILE: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
-          CYPRESS_CONFIG: "baseUrl=http://localhost:4001/apps,server_host=http://localhost:3000/apps"
           CYPRESS_proxy: true
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
-        run: node cy-ci-run.js
-
-      - name: Ensure run summary exists
-        if: always()
-        working-directory: ./cypress-tests
-        run: |
-          if [ ! -f summary.json ]; then
-            printf '{"cell":"Platform proxy-subpath / %s","result":"failure","stats":null}\n' '${{ matrix.edition }}' > summary.json
-          fi
-          cat summary.json
-
-      - name: Upload run summary
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-summary-platform-proxy-subpath-${{ matrix.edition }}
-          path: cypress-tests/summary.json
-          retention-days: 7
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -1695,68 +1644,3 @@ jobs:
           name: screenshots-${{ matrix.edition }}-proxy-subpath-${{ env.TIMESTAMP }}
           path: cypress-tests/cypress/screenshots
           retention-days: 7
-
-  notify-slack:
-    needs:
-      - Cypress-Platform
-      - Cypress-Platform-Subpath
-      - Cypress-Platform-Proxy
-      - Cypress-Platform-Proxy-Subpath
-    # Run after the matrix whenever at least one test job actually ran (not all
-    # skipped — avoids posting on unrelated labels).
-    if: >-
-      always() &&
-      (needs.Cypress-Platform.result != 'skipped' ||
-       needs.Cypress-Platform-Subpath.result != 'skipped' ||
-       needs.Cypress-Platform-Proxy.result != 'skipped' ||
-       needs.Cypress-Platform-Proxy-Subpath.result != 'skipped')
-    runs-on: ubuntu-latest
-    steps:
-      # This job runs separately from the matrix, so check out just the script.
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: .github/scripts
-          sparse-checkout-cone-mode: false
-
-      - name: Download run summaries
-        uses: actions/download-artifact@v4
-        with:
-          pattern: cypress-summary-*
-          path: summaries
-
-      - name: Build Slack payload
-        env:
-          CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
-          # Suite name rendered in the Slack headline (e.g. "❌ Cypress Platform Failed").
-          SUITE: Platform
-          # Red unless every test job that ran passed (skipped cells don't count).
-          OVERALL: >-
-            ${{ (needs.Cypress-Platform.result == 'failure' ||
-                 needs.Cypress-Platform-Subpath.result == 'failure' ||
-                 needs.Cypress-Platform-Proxy.result == 'failure' ||
-                 needs.Cypress-Platform-Proxy-Subpath.result == 'failure')
-                && 'failure' || 'success' }}
-          REPO: ${{ github.repository }}
-          ACTOR: ${{ github.actor }}
-          # Normalise pull_request_target → pull_request so the script renders PR context.
-          EVENT: ${{ github.event_name == 'pull_request_target' && 'pull_request' || github.event_name }}
-          SHA: ${{ github.sha }}
-          SERVER_URL: ${{ github.server_url }}
-          RUN_ID: ${{ github.run_id }}
-          # PR context — populated only on pull_request events; empty on push.
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-          BRANCH: ${{ github.ref_name }}
-        run: node .github/scripts/build-slack-payload.js
-
-      - name: Post result to Slack
-        uses: slackapi/slack-github-action@v2.1.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          # Fail the step (and surface the Slack API error) instead of
-          # silently swallowing ok:false responses like not_in_channel.
-          errors: true
-          payload-file-path: payload.json
