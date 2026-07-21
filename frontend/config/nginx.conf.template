@@ -72,6 +72,12 @@ http
       try_files /_bypass_to_proxy @proxy;
     }
 
+    # Bull Board queue dashboard (basic-auth'd server route, not part of the SPA)
+    location /jobs
+    {
+      try_files /_bypass_to_proxy @proxy;
+    }
+
     location /ws
     {
       proxy_pass http://${SERVER_HOST}:3000;
@@ -117,6 +123,12 @@ http
     }
 
     location /api/
+    {
+      try_files /_bypass_to_proxy @proxy;
+    }
+
+    # Bull Board queue dashboard (basic-auth'd server route, not part of the SPA)
+    location /jobs
     {
       try_files /_bypass_to_proxy @proxy;
     }

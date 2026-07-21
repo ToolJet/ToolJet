@@ -1342,26 +1342,6 @@ class HomePageComponent extends React.Component {
         }
       }
 
-      // OLD: fetch remote branches for branch picker
-      // this.setState({
-      //   showGitRepositoryImportModal: true,
-      //   fetchingRemoteBranches: true,
-      //   selectedImportBranch: null,
-      //   appsFromRepos: {},
-      //   selectedAppRepo: null,
-      //   importingGitAppOperations: {},
-      //   latestCommitData: null,
-      //   selectedVersionOption: null,
-      // });
-      // useWorkspaceBranchesStore
-      //   .getState()
-      //   .actions.fetchRemoteBranches()
-      //   .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
-      //   .catch(() => {
-      //     toast.error('Failed to fetch remote branches');
-      //     this.setState({ fetchingRemoteBranches: false });
-      //   });
-
       // Auto-set branch to current workspace branch and immediately fetch apps
       const branchName = currentBranch?.name || null;
       this.setState({
@@ -1976,9 +1956,11 @@ class HomePageComponent extends React.Component {
                 <span>
                   {`The ${appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} ${
                     appToBeDeleted?.name
-                  } and the associated data will be deleted from this branch. On merge to main, `}
+                  } and the associated data will be deleted from this branch. On merge to ${
+                    useWorkspaceBranchesStore.getState().branches?.find((b) => b.is_default || b.isDefault)?.name ??
+                    'the default branch'
+                  }, `}
                   <strong>
-                    {' '}
                     {appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} and all its associated
                     versions
                   </strong>
