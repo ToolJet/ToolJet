@@ -11,7 +11,7 @@ Disallow: /search
 Disallow: /search/
 
 # Allow Algolia crawler
-User-agent: Algoliabot
+User-agent:  Algolia Crawler
 Allow: /
 
 # Allow AI crawlers

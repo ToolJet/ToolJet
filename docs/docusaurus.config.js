@@ -24,6 +24,7 @@ module.exports = {
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
+  trailingSlash: true,
   themeConfig: {
     image: 'img/tooljet-ai-og-image.png',
     announcementBar: {
