@@ -1421,6 +1421,7 @@ export class AppImportExportService {
           appName: appParams.name || null,
           icon: appParams.icon || null,
           isPublic: appParams.isPublic ?? false,
+          slug: appParams.slug || null,
         };
       }
 
@@ -3323,7 +3324,17 @@ export class AppImportExportService {
         // temp apps, partial exports) — fall back to deterministic placeholders so the
         // INSERT doesn't violate the CHECK. Skipped for workflows (they store metadata
         // on apps.* and the constraint is exempt for branch_id=NULL rows).
-        const resolvedSlug = !isWorkflow ? (appVersion.slug ?? importedApp.id) : undefined;
+        let resolvedSlug: string | undefined;
+        if (!isWorkflow) {
+          const sourceSlug = appVersion.slug ?? importMeta?.slug ?? importedApp.id;
+          const conflictingApp = await this.appsRepository.findBySlug(
+            sourceSlug,
+            user?.organizationId,
+            undefined,
+            branchId
+          );
+          resolvedSlug = conflictingApp && conflictingApp.id !== importedApp.id ? uuid() : sourceSlug;
+        }
         const resolvedAppName = !isWorkflow
           ? (appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id)
           : undefined;
