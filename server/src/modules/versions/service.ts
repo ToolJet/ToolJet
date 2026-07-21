@@ -125,10 +125,22 @@ export class VersionService implements IVersionService {
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
-    const result =
+    let result =
       app.type === APP_TYPES.MODULE
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, app.organizationId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
+
+    // On non-default branches, only show the branch's own version(s).
+    // Saved versions (VERSION-type) are only relevant on the default branch.
+    if (effectiveBranchId) {
+      const branch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+        where: { id: effectiveBranchId },
+        select: ['id', 'isDefault'],
+      });
+      if (branch && !branch.isDefault) {
+        result = result.filter((v) => v.versionType === AppVersionType.BRANCH);
+      }
+    }
 
     // For branch-type versions, the `name` column holds a UUID used as an internal
     // unique key. Replace it with the human-readable branch name from WorkspaceBranch
