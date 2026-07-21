@@ -42,7 +42,7 @@ export class TooljetDbBulkUploadService {
     fileBuffer: Buffer,
     organizationId: string
   ): Promise<{ processedRows: number }> {
-    return this.bulkUploadUtilService.bulkUploadCsv(internalTableId, fileBuffer, organizationId);
+    return await this.bulkUploadUtilService.bulkUploadCsv(internalTableId, fileBuffer, organizationId);
   }
 
   async bulkUpdateRowsWithPrimaryKey(
