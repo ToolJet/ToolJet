@@ -23,55 +23,14 @@ import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
-import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
+import { baseTheme } from '../_stores/utils';
+import { convertAllKeysToSnakeCase, normalizeQueryTransformationOptions } from '../_stores/utils/appDataCaseConversion';
 import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
-
-/* 
-Whitelist of cross-cutting query option keys that need snake→camel normalization.
-Editor (data-queries API) returns these as camelCase, but public/released/preview-for-version
-paths return them as snake_case. We only normalize keys here — REST/TooljetDB/gRPC editors
-rely on snake_case for their own option keys (query_timeout, retry_network_errors,
-where_filters, proto_files, etc.) and must NOT be touched.
-*/
-
-const QUERY_OPTION_KEYS_TO_NORMALIZE = [
-  'enableTransformation',
-  'transformationLanguage',
-  'runOnPageLoad',
-  'runOnDependencyChange',
-  'requestConfirmation',
-  'requestConfirmationFx',
-  'confirmationMessage',
-  'showSuccessNotification',
-  'successMessage',
-  'notificationDuration',
-  'disableQuery',
-  'disabledMessage',
-  'workflowId',
-  'workflowVersionId',
-];
-
-const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
-
-export const normalizeQueryTransformationOptions = (query) => {
-  if (!query?.options) return query;
-  QUERY_OPTION_KEYS_TO_NORMALIZE.forEach((camelKey) => {
-    const snakeKey = snakeCase(camelKey);
-    if (query.options[snakeKey] !== undefined) {
-      const value = query.options[snakeKey];
-      delete query.options[snakeKey];
-      if (query.options[camelKey] === undefined) {
-        query.options[camelKey] = value;
-      }
-    }
-  });
-  return query;
-};
 
 const useAppData = (
   appId,
@@ -307,14 +266,8 @@ const useAppData = (
         let editorEnvironment = result.editorEnvironment;
         let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
-          const rawDataQueries = appData?.data_queries;
-          const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
+          // `convertAllKeysToSnakeCase` normalises the metadata envelope.
           appData = convertAllKeysToSnakeCase(appData);
-
-          appData.data_queries = rawDataQueries;
-          if (appData.editing_version && rawEditingVersionDataQueries) {
-            appData.editing_version.data_queries = rawEditingVersionDataQueries;
-          }
 
           editorEnvironment = {
             id: environmentId,
@@ -555,9 +508,10 @@ const useAppData = (
           isPublicAccess || (mode !== 'edit' && appData.is_public)
             ? appData
             : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
-        const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
-        dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+
+        const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
+
         if (dataQueries?.length > 0) {
           !moduleMode && setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(
@@ -845,9 +799,9 @@ const useAppData = (
         }
 
         const queryData = await dataqueryService.getAll(currentVersionId, mode);
-        const dataQueries = queryData.data_queries;
-        dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+        const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
+
         if (dataQueries?.length > 0) {
           setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
