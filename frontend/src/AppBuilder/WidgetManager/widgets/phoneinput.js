@@ -12,6 +12,13 @@ export const phoneinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    expandFieldIfLabelEmpty: {
+      type: 'toggle',
+      displayName: 'Expand field when label is empty',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -325,6 +332,7 @@ export const phoneinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      expandFieldIfLabelEmpty: { value: '{{false}}' },
       value: { value: '' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter your phone' },

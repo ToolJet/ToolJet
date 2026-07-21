@@ -1,8 +1,5 @@
 import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
-export const INPUT_LABEL_HEIGHT_MODE_PROPERTY = '__inputLabelHeightMode';
-export const INPUT_LABEL_HEIGHT_MODE_FIXED = 'fixed';
-
 export const calculateInputCanvasHeight = ({
   height,
   alignment,
@@ -10,13 +7,11 @@ export const calculateInputCanvasHeight = ({
   width = 0,
   auto = false,
   labelType,
-  preserveLegacyTopAlignment = true,
+  expandFieldIfLabelEmpty = false,
 }) => {
   let resolvedLabelLength = labelLength;
 
-  // Legacy components reserve space for a top label even when their label property is empty.
-  // New components opt into the corrected behavior through the compatibility marker.
-  if (preserveLegacyTopAlignment || labelType === 'auto') {
+  if (expandFieldIfLabelEmpty || labelType === 'auto') {
     resolvedLabelLength = 1;
   }
 

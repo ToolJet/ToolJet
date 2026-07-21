@@ -1,7 +1,7 @@
 import { calculateInputCanvasHeight } from '../componentsSliceUtils';
 
 describe('calculateInputCanvasHeight', () => {
-  it('does not add top-label height when an input label is empty', () => {
+  it('does not add top-label height when an input label is empty and expansion is disabled', () => {
     expect(
       calculateInputCanvasHeight({
         height: 40,
@@ -9,12 +9,12 @@ describe('calculateInputCanvasHeight', () => {
         auto: true,
         width: 0,
         labelLength: 0,
-        preserveLegacyTopAlignment: false,
+        expandFieldIfLabelEmpty: false,
       })
     ).toBe(40);
   });
 
-  it('preserves the extra height for empty labels on legacy components', () => {
+  it('adds top-label height when an input label is empty and expansion is enabled', () => {
     expect(
       calculateInputCanvasHeight({
         height: 40,
@@ -22,6 +22,7 @@ describe('calculateInputCanvasHeight', () => {
         auto: true,
         width: 0,
         labelLength: 0,
+        expandFieldIfLabelEmpty: true,
       })
     ).toBe(60);
   });

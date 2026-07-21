@@ -30,11 +30,7 @@ import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-import {
-  calculateInputCanvasHeight,
-  INPUT_LABEL_HEIGHT_MODE_FIXED,
-  INPUT_LABEL_HEIGHT_MODE_PROPERTY,
-} from './componentsSliceUtils';
+import { calculateInputCanvasHeight } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
@@ -3133,8 +3129,10 @@ export const createComponentsSlice = (set, get) => ({
     const resolvedLabelType = labelType
       ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
       : undefined;
-    const inputLabelHeightMode =
-      componentDefinition?.component?.definition?.properties?.[INPUT_LABEL_HEIGHT_MODE_PROPERTY]?.value;
+    const expandFieldIfLabelEmpty = componentDefinition?.component?.definition?.properties?.expandFieldIfLabelEmpty;
+    const resolvedExpandFieldIfLabelEmpty = expandFieldIfLabelEmpty
+      ? resolveDynamicValues(expandFieldIfLabelEmpty.value + '', getAllExposedValues(moduleId)) ?? false
+      : false;
 
     const resolvedAlignment =
       alignment.value === 'top' || alignment.value === 'side'
@@ -3147,7 +3145,7 @@ export const createComponentsSlice = (set, get) => ({
       width: resolvedWidth,
       auto: resolvedAuto,
       labelType: resolvedLabelType,
-      preserveLegacyTopAlignment: inputLabelHeightMode !== INPUT_LABEL_HEIGHT_MODE_FIXED,
+      expandFieldIfLabelEmpty: resolvedExpandFieldIfLabelEmpty,
     });
   },
   getIsAutoMobileLayout: (moduleId = 'canvas') => {

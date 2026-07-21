@@ -20,6 +20,13 @@ export const cascaderConfig = {
     },
   },
   properties: {
+    expandFieldIfLabelEmpty: {
+      type: 'toggle',
+      displayName: 'Expand field when label is empty',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -406,6 +413,7 @@ export const cascaderConfig = {
       customRule: { value: null },
     },
     properties: {
+      expandFieldIfLabelEmpty: { value: '{{false}}' },
       label: { value: 'Select' },
       placeholder: { value: 'Select an option' },
       value: { value: '' },

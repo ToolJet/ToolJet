@@ -187,9 +187,7 @@ const universalProps = {
     boxShadow: { type: "boxShadow", displayName: "Box Shadow" },
   },
   definition: {
-    properties: {
-      __inputLabelHeightMode: { value: "fixed" },
-    },
+    properties: {},
     others: {},
     events: [],
     styles: {

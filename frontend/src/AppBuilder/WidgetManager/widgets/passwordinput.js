@@ -12,6 +12,13 @@ export const passinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    expandFieldIfLabelEmpty: {
+      type: 'toggle',
+      displayName: 'Expand field when label is empty',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -321,6 +328,7 @@ export const passinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      expandFieldIfLabelEmpty: { value: '{{false}}' },
       placeholder: { value: 'Password' },
       visibility: { value: '{{true}}' },
 
