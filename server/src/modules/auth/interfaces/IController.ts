@@ -17,7 +17,7 @@ export interface IAuthController {
   forgotPassword(appAuthDto: AppForgotPasswordDto): Promise<Record<string, never>>;
   resetPassword(appAuthDto: AppPasswordResetDto): Promise<Record<string, never>>;
   verifyResetToken(token: string): Promise<{ valid: boolean }>;
-  passwordExpiredReset(body: { email: string }): Promise<Record<string, never>>;
+  passwordExpiredReset(body: { email: string; redirectTo?: string }): Promise<Record<string, never>>;
 }
 
 export interface IWebsiteAuthController {

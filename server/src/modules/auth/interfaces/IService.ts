@@ -8,10 +8,10 @@ export interface IAuthService {
   login(response: Response, appAuthDto: AppAuthenticationDto, organizationId?: string, user?: User): Promise<any>;
   authorizeOrganization(user: User): Promise<any>;
   switchOrganization(response: Response, organizationId: string, user: User): Promise<any>;
-  forgotPassword(email: string, redirectTo?: string): Promise<void>;
+  forgotPassword(email: string, redirectTo?: string, orgSlug?: string): Promise<void>;
   resetPassword(token: string, password: string): Promise<void>;
   verifyResetToken(token: string): Promise<{ valid: boolean }>;
-  passwordExpiredReset(email: string): Promise<void>;
+  passwordExpiredReset(email: string, redirectTo?: string, orgSlug?: string): Promise<void>;
 }
 
 export interface IWebsiteAuthService {

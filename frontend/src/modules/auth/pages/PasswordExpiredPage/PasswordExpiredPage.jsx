@@ -12,7 +12,7 @@ import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onbo
 import { FormTextInput, SubmitButton, FormHeader } from '@/modules/common/components';
 import { ForgotPasswordInfoScreen } from '../ForgotPasswordPage/components';
 
-const PasswordExpiredForm = ({ initialEmail, onSuccess }) => {
+const PasswordExpiredForm = ({ initialEmail, onSuccess, redirectTo, orgSlug }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState(initialEmail || '');
   const [emailError, setEmailError] = useState('');
@@ -34,7 +34,7 @@ const PasswordExpiredForm = ({ initialEmail, onSuccess }) => {
     }
     setIsLoading(true);
     try {
-      await authenticationService.passwordExpiredReset(email);
+      await authenticationService.passwordExpiredReset(email, redirectTo, orgSlug);
       onSuccess(email);
     } catch {
       toast.error(t('passwordExpiredPage.somethingWentWrong', 'Something went wrong, please try again'), {
@@ -87,6 +87,11 @@ const PasswordExpiredPage = () => {
   const [showInfoScreen, setShowInfoScreen] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const initialEmail = searchParams.get('email') || '';
+  const orgSlug = searchParams.get('orgSlug') || null;
+  const appSlug = searchParams.get('appSlug') || null;
+  const redirectTo = searchParams.get('redirectTo') || null;
+  // For app password-expired flow, synthesize redirectTo so the reset email uses AppResetPasswordPage
+  const effectiveRedirectTo = redirectTo || (appSlug ? `/applications/${appSlug}` : null);
 
   useEffect(() => {
     const fetchWhiteLabel = async () => {
@@ -102,12 +107,30 @@ const PasswordExpiredPage = () => {
   };
 
   if (showInfoScreen) {
-    return <OnboardingBackgroundWrapper MiddleComponent={() => <ForgotPasswordInfoScreen email={submittedEmail} />} />;
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => (
+          <ForgotPasswordInfoScreen
+            email={submittedEmail}
+            organizationSlug={orgSlug}
+            appSlug={appSlug}
+            redirectTo={redirectTo}
+          />
+        )}
+      />
+    );
   }
 
   return (
     <OnboardingBackgroundWrapper
-      LeftSideComponent={() => <PasswordExpiredForm initialEmail={initialEmail} onSuccess={handleSuccess} />}
+      LeftSideComponent={() => (
+        <PasswordExpiredForm
+          initialEmail={initialEmail}
+          onSuccess={handleSuccess}
+          redirectTo={effectiveRedirectTo}
+          orgSlug={orgSlug}
+        />
+      )}
       RightSideComponent={LoginPageRightPanel}
     />
   );

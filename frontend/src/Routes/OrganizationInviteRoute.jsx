@@ -20,6 +20,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
   const organizationToken = params.organizationToken || (isOrgazanizationOnlyInvite ? params.token : null);
   const accountToken = !isOrgazanizationOnlyInvite ? params.token : null;
   const [extraProps, setExtraProps] = useState({});
+  const [expiredOrgSlug, setExpiredOrgSlug] = useState(null);
   const searchParams = new URLSearchParams(location?.search);
   const redirectTo = searchParams.get('redirectTo');
   const organizationId = new URL(window.location).searchParams.get('oid') || '';
@@ -85,6 +86,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
       switch (errorStatus) {
         case 410: {
           updateCurrentSession({ authentication_status: false });
+          setExpiredOrgSlug(errorObj?.error?.organizationSlug || null);
           setLinkExpired(true);
           setLoading(false);
           break;
@@ -207,7 +209,12 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
     }
   };
 
-  if (linkExpired) return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant="invite" />} />;
+  if (linkExpired)
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <LinkExpiredCard variant="invite" organizationSlug={expiredOrgSlug} />}
+      />
+    );
   if (invalidLink) return <LinkExpiredPage />;
 
   const clonedElement = React.cloneElement(children || <></>, extraProps);

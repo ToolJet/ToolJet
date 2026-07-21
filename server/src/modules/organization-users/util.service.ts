@@ -231,6 +231,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
+      const isCloud = getTooljetEdition() === 'cloud';
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+      const invitationTokenExpiry = (isCloud && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0)
+        ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+        : null;
 
       return await this.userRepository.createOrUpdate(
         {
@@ -243,6 +248,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           status,
           userType,
           invitationToken: uuid.v4(),
+          ...(isCloud && { invitationTokenExpiry }),
           defaultOrganizationId: defaultOrganizationId || null,
           createdAt: new Date(),
           updatedAt: new Date(),

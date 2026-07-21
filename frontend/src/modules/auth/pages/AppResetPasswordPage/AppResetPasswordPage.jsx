@@ -39,7 +39,11 @@ const AppResetPasswordPage = () => {
   if (tokenStatus === 'loading') return null;
 
   if (tokenStatus === 'expired') {
-    return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant="reset" />} />;
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <LinkExpiredCard variant="reset" appSlug={slug} redirectTo={redirectTo} />}
+      />
+    );
   }
 
   return (

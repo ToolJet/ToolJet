@@ -256,11 +256,11 @@ function verifyToken(token, organizationToken) {
     });
 }
 
-function forgotPassword(email, redirectTo) {
+function forgotPassword(email, redirectTo, orgSlug) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }) }),
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }), ...(orgSlug && { orgSlug }) }),
   };
 
   return fetch(`${config.apiUrl}/forgot-password`, requestOptions).then(handleResponse);
@@ -288,11 +288,11 @@ function verifyResetToken(token) {
   );
 }
 
-function passwordExpiredReset(email) {
+function passwordExpiredReset(email, redirectTo, orgSlug) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }), ...(orgSlug && { orgSlug }) }),
   };
   return fetch(`${config.apiUrl}/password-expired-reset`, requestOptions).then(handleResponse);
 }

@@ -65,7 +65,7 @@ export class AuthController implements IAuthController {
   @Post('/forgot-password')
   @InitFeature(FEATURE_KEY.FORGOT_PASSWORD)
   async forgotPassword(@Body() appAuthDto: AppForgotPasswordDto) {
-    await this.authService.forgotPassword(appAuthDto.email, appAuthDto.redirectTo);
+    await this.authService.forgotPassword(appAuthDto.email, appAuthDto.redirectTo, appAuthDto.orgSlug);
     return {};
   }
 
@@ -85,8 +85,8 @@ export class AuthController implements IAuthController {
 
   @Post('/password-expired-reset')
   @InitFeature(FEATURE_KEY.PASSWORD_EXPIRED_RESET)
-  async passwordExpiredReset(@Body() body: { email: string }) {
-    await this.authService.passwordExpiredReset(body.email);
+  async passwordExpiredReset(@Body() body: { email: string; redirectTo?: string; orgSlug?: string }) {
+    await this.authService.passwordExpiredReset(body.email, body.redirectTo, body.orgSlug);
     return {};
   }
 }

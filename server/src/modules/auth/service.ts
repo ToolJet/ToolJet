@@ -280,7 +280,7 @@ export class AuthService implements IAuthService {
     });
   }
 
-  async forgotPassword(email: string, redirectTo?: string) {
+  async forgotPassword(email: string, redirectTo?: string, orgSlug?: string) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       // No need to throw error - To prevent Username Enumeration vulnerability
@@ -312,6 +312,7 @@ export class AuthService implements IAuthService {
         organizationId: user.defaultOrganizationId,
         forgotPasswordTokenExpiry,
         ...(redirectTo && { redirectTo }),
+        ...(orgSlug && { orgSlug }),
       },
     });
   }
@@ -334,7 +335,7 @@ export class AuthService implements IAuthService {
     return { valid: false, reason: 'invalid' };
   }
 
-  async passwordExpiredReset(email: string): Promise<void> {
+  async passwordExpiredReset(email: string, redirectTo?: string, orgSlug?: string): Promise<void> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       // Prevent username enumeration
@@ -355,6 +356,8 @@ export class AuthService implements IAuthService {
         token,
         firstName: user.firstName,
         organizationId: user.defaultOrganizationId,
+        ...(redirectTo && { redirectTo }),
+        ...(orgSlug && { orgSlug }),
       },
     });
   }

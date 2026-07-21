@@ -27,6 +27,7 @@ export interface SendPasswordResetEmailPayload {
   firstName?: string;
   organizationId: string;
   redirectTo?: string;
+  orgSlug?: string;
   forgotPasswordTokenExpiry?: Date | null;
 }
 
@@ -35,6 +36,8 @@ export interface SendPasswordExpiredResetEmailPayload {
   token: string;
   firstName?: string;
   organizationId: string;
+  redirectTo?: string;
+  orgSlug?: string;
 }
 
 export interface SendEmailOtpPayload {

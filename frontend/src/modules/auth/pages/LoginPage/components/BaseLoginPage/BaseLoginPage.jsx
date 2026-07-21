@@ -73,7 +73,13 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
       (error) => {
         onError();
         if (error.data?.message === 'PASSWORD_EXPIRED') {
-          navigate(`/password-expired?email=${encodeURIComponent(error.data?.email || email)}`);
+          const orgSlug = params?.organizationId;
+          const currentRedirectTo = new URLSearchParams(locationRef.search).get('redirectTo');
+          navigate(
+            `/password-expired?email=${encodeURIComponent(error.data?.email || email)}${
+              orgSlug ? `&orgSlug=${orgSlug}` : ''
+            }${currentRedirectTo ? `&redirectTo=${encodeURIComponent(currentRedirectTo)}` : ''}`
+          );
           return;
         }
         toast.error(error.error || 'Invalid email or password', {

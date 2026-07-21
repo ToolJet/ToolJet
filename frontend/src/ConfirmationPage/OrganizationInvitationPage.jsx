@@ -25,6 +25,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       isLoading: false,
       defaultState: checkWhiteLabelsDefaultState(),
       linkExpired: false,
+      expiredOrgSlug: null,
     };
     this.formRef = React.createRef(null);
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
@@ -71,7 +72,8 @@ class OrganizationInvitationPageComponent extends React.Component {
       })
       .catch((error) => {
         if (error?.statusCode === 410) {
-          this.setState({ linkExpired: true, isLoading: false });
+          const expiredOrgSlug = error?.organizationSlug || error?.message?.organizationSlug || null;
+          this.setState({ linkExpired: true, expiredOrgSlug, isLoading: false });
         } else {
           toast.error('Error while setting up your account.', { position: 'top-center' });
           this.setState({ isLoading: false });
@@ -80,10 +82,14 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, defaultState, linkExpired } = this.state;
+    const { isLoading, defaultState, linkExpired, expiredOrgSlug } = this.state;
 
     if (linkExpired) {
-      return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant="invite" />} />;
+      return (
+        <OnboardingBackgroundWrapper
+          MiddleComponent={() => <LinkExpiredCard variant="invite" organizationSlug={expiredOrgSlug} />}
+        />
+      );
     }
     const { name, email, invitedOrganizationName: organizationName } = this.props;
     return (

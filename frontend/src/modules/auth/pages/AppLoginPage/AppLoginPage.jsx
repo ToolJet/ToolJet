@@ -132,7 +132,11 @@ const AppLoginPage = () => {
       (err) => {
         onError();
         if (err.data?.message === 'PASSWORD_EXPIRED') {
-          navigate(`/password-expired?email=${encodeURIComponent(err.data?.email || email)}`);
+          navigate(
+            `/password-expired?email=${encodeURIComponent(
+              err.data?.email || email
+            )}&appSlug=${slug}&redirectTo=${encodeURIComponent(appRedirectPath)}`
+          );
           return;
         }
         toast.error(err.error || 'Invalid email or password', {

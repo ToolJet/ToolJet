@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { OnboardingBackgroundWrapper } from '@/modules/onboarding/components';
 import { ResetPasswordForm, ResetPasswordInfoScreen } from './components';
 import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
@@ -10,6 +10,9 @@ import { LinkExpiredCard } from '@/modules/common/components';
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo') || null;
+  const orgSlug = searchParams.get('orgSlug') || null;
   const [showResponseScreen, setShowResponseScreen] = useState(false);
   const [tokenStatus, setTokenStatus] = useState('loading'); // 'loading' | 'valid' | 'expired' | 'invalid'
 
@@ -43,7 +46,11 @@ const ResetPasswordPage = () => {
   }
 
   if (showResponseScreen) {
-    return <OnboardingBackgroundWrapper MiddleComponent={ResetPasswordInfoScreen} />;
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <ResetPasswordInfoScreen organizationSlug={orgSlug} redirectTo={redirectTo} />}
+      />
+    );
   }
 
   return (

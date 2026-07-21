@@ -55,6 +55,10 @@ export class AppForgotPasswordDto {
   @IsOptional()
   @Matches(/^\/applications\//, { message: 'redirectTo must be a relative /applications/ path' })
   redirectTo?: string;
+
+  @IsString()
+  @IsOptional()
+  orgSlug?: string;
 }
 
 export class AppPasswordResetDto {

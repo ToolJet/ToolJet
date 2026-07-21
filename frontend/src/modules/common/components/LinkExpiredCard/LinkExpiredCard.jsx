@@ -55,14 +55,25 @@ const VARIANT_CONFIG = {
   },
 };
 
-const LinkExpiredCard = ({ variant = 'reset' }) => {
+const LinkExpiredCard = ({ variant = 'reset', organizationSlug, appSlug, redirectTo }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const config = VARIANT_CONFIG[variant] ?? VARIANT_CONFIG.reset;
+  const subpath = getSubpath() ?? '';
+
+  const resolvedLoginPath = appSlug
+    ? `/applications/${appSlug}/login${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
+    : organizationSlug
+    ? `/login/${organizationSlug}${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
+    : redirectTo
+    ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
+    : '/login';
+
+  const resolvedCtaPath = config.ctaPath === '/login' ? resolvedLoginPath : config.ctaPath;
+  const resolvedSignInPath = config.signInPath ? resolvedLoginPath : undefined;
 
   const handleCtaClick = () => {
-    const subpath = getSubpath() ? getSubpath() : '';
-    navigate(`${subpath}${config.ctaPath}`, config.ctaState ? { state: config.ctaState } : undefined);
+    navigate(`${subpath}${resolvedCtaPath}`, config.ctaState ? { state: config.ctaState } : undefined);
   };
 
   return (
@@ -82,12 +93,12 @@ const LinkExpiredCard = ({ variant = 'reset' }) => {
             <span>{t(config.ctaKey, config.ctaDefault)}</span>
           </button>
         )}
-        {config.signInPath && (
+        {resolvedSignInPath && (
           <p className="link-expired-card-signin" data-cy="link-expired-signin-prompt">
             {t('linkExpiredCard.alreadyHaveAccount', 'Already have an account?')}{' '}
             <span
               className="link-expired-card-signin-link"
-              onClick={() => navigate(`${getSubpath() ? getSubpath() : ''}${config.signInPath}`)}
+              onClick={() => navigate(`${subpath}${resolvedSignInPath}`)}
               data-cy="link-expired-signin"
             >
               {t('linkExpiredCard.signIn', 'Sign in')}
