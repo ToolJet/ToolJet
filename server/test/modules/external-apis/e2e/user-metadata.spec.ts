@@ -64,7 +64,12 @@ describe('ExternalApisController — user metadata', () => {
         const res = await request(app.getHttpServer())
           .put(`/api/ext/workspace/${orgId}/user/${memberId}`)
           .set('Authorization', getExtAuth())
-          .send({ userDetails: [{ key: 'department', value: 'engineering' }, { key: 'tier', value: 'gold' }] })
+          .send({
+            userDetails: [
+              { key: 'department', value: 'engineering' },
+              { key: 'tier', value: 'gold' },
+            ],
+          })
           .expect(200);
 
         expect(res.body).toMatchObject({
@@ -104,9 +109,7 @@ describe('ExternalApisController — user metadata', () => {
           .send({ userDetails: [{ key: 'plan', value: 'enterprise' }] })
           .expect(200);
 
-        expect(res.body.userDetails).toEqual(
-          expect.arrayContaining([{ key: 'plan', value: 'enterprise' }])
-        );
+        expect(res.body.userDetails).toEqual(expect.arrayContaining([{ key: 'plan', value: 'enterprise' }]));
         expect(res.body.userDetails.find((d: { key: string }) => d.key === 'plan').value).toBe('enterprise');
       });
 
@@ -176,9 +179,7 @@ describe('ExternalApisController — user metadata', () => {
 
     describe('GET /api/ext/workspace/:workspaceId/user/:userId | Get user metadata', () => {
       it('should return 403 when Authorization header is missing', async () => {
-        await request(app.getHttpServer())
-          .get(`/api/ext/workspace/${orgId}/user/${memberId}`)
-          .expect(403);
+        await request(app.getHttpServer()).get(`/api/ext/workspace/${orgId}/user/${memberId}`).expect(403);
       });
 
       it('should return empty userDetails for a user with no metadata', async () => {
@@ -213,7 +214,12 @@ describe('ExternalApisController — user metadata', () => {
         await request(app.getHttpServer())
           .put(`/api/ext/workspace/${orgId}/user/${memberId}`)
           .set('Authorization', getExtAuth())
-          .send({ userDetails: [{ key: 'country', value: 'IN' }, { key: 'language', value: 'en' }] })
+          .send({
+            userDetails: [
+              { key: 'country', value: 'IN' },
+              { key: 'language', value: 'en' },
+            ],
+          })
           .expect(200);
 
         const res = await request(app.getHttpServer())
@@ -244,9 +250,7 @@ describe('ExternalApisController — user metadata', () => {
           .expect(200);
 
         expect(res.body.id).toBe(memberId);
-        expect(res.body.userDetails).toEqual(
-          expect.arrayContaining([{ key: 'email-lookup', value: 'yes' }])
-        );
+        expect(res.body.userDetails).toEqual(expect.arrayContaining([{ key: 'email-lookup', value: 'yes' }]));
       });
 
       it('should return 404 when workspaceId does not exist', async () => {

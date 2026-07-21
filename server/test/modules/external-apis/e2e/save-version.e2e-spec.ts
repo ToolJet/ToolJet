@@ -115,7 +115,6 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
         .send({})
         .expect(403);
     });
-
   });
 
   // ---------------------------------------------------------------------------
@@ -366,9 +365,9 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       const draft = await seedDraftVersion(app as any, 'v1');
 
       const scProvider = nestApp.get(SourceControlProviderService);
-      jest.spyOn(scProvider, 'getSourceControlService').mockRejectedValue(
-        new Error('No Git Provider is enabled for the workspace')
-      );
+      jest
+        .spyOn(scProvider, 'getSourceControlService')
+        .mockRejectedValue(new Error('No Git Provider is enabled for the workspace'));
 
       await request(nestApp.getHttpServer())
         .post(`/api/ext/apps/${app.id}/versions/save`)

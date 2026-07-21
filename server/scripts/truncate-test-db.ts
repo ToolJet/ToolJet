@@ -19,9 +19,7 @@ const { Client } = require('pg');
   });
   await client.connect();
 
-  const { rows } = await client.query(
-    `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`
-  );
+  const { rows } = await client.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`);
   const skip = new Set(['instance_settings', 'migrations', 'typeorm_metadata']);
   const tables = rows
     .map((r: { table_name: string }) => r.table_name)

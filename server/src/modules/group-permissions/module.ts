@@ -60,4 +60,4 @@ export class GroupPermissionsModule extends SubModule {
       exports: [GroupPermissionsUtilService, GranularPermissionsUtilService, GroupAdminService],
     });
   }
-}         
+}

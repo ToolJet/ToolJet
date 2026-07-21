@@ -851,9 +851,7 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
-    const willInnerJoinOnBranch =
-      !!branchId &&
-      (type === APP_TYPES.MODULE || type === APP_TYPES.FRONT_END);
+    const willInnerJoinOnBranch = !!branchId && (type === APP_TYPES.MODULE || type === APP_TYPES.FRONT_END);
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -902,7 +900,7 @@ export class AppsUtilService implements IAppsUtilService {
     type?: string,
     branchId?: string,
     // consumed by the EE override (which applies addBranchFilter); unused in CE base
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _skipBranchScope?: boolean
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
@@ -1142,8 +1140,7 @@ export class AppsUtilService implements IAppsUtilService {
 
   async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
     return skipAppEditingVersionHydration.run(true, async () => {
-      const versionToLoadId =
-        versionId || app.currentVersionId || (app as any).editingVersion?.id;
+      const versionToLoadId = versionId || app.currentVersionId || (app as any).editingVersion?.id;
       if (!versionToLoadId && !allVersions) return [];
 
       const manager = getConnectionInstance().manager;
@@ -1264,9 +1261,7 @@ export class AppsUtilService implements IAppsUtilService {
 
         const meta = metaMap.get(moduleApp.id);
         if (gitEnabled && !meta && parentBranchId) {
-          throw new BadRequestException(
-            `No DRAFT version found for app ${moduleApp.id} on branch ${parentBranchId}.`
-          );
+          throw new BadRequestException(`No DRAFT version found for app ${moduleApp.id} on branch ${parentBranchId}.`);
         }
         if (meta) {
           // apps.name/slug/icon/isPublic are NULL for modules (metadata on app_versions).

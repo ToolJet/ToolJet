@@ -126,10 +126,7 @@ describe('OrganizationEnvRegistryService', () => {
       process.env.WORKSPACE_GIT_CONFIGS = JSON.stringify({
         [ORG_UUID_A]: { GITHUB_URL: 'env-url' },
       });
-      (fs.promises.readdir as jest.Mock).mockResolvedValue([
-        `.tj_env.${ORG_UUID_A}`,
-        `.tj_env.${ORG_UUID_B}`,
-      ]);
+      (fs.promises.readdir as jest.Mock).mockResolvedValue([`.tj_env.${ORG_UUID_A}`, `.tj_env.${ORG_UUID_B}`]);
       (fs.promises.readFile as jest.Mock)
         .mockResolvedValueOnce(`GITHUB_URL=file-url-a`)
         .mockResolvedValueOnce(`GITHUB_URL=file-url-b`);

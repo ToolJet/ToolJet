@@ -37,11 +37,12 @@ export function resolveCode(codeContext: any): any {
       ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
     };
     const codeToExecute = getFunctionWrappedCode(
-      'var console = { log: (...args) => __reserved_keyword_log(args.join(\', \'), \'normal\') };\n' + code,
+      "var console = { log: (...args) => __reserved_keyword_log(args.join(', '), 'normal') };\n" + code,
       globalState,
       wrapInIIFE
     );
-    const isolate = providedIsolate || new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
+    const isolate =
+      providedIsolate || new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
     const context = providedContext || isolate.createContextSync();
     Object.entries(globalState).forEach(([key, value]) => {
       if (typeof value === 'function' && key === 'require') {
@@ -54,7 +55,10 @@ export function resolveCode(codeContext: any): any {
           // If copying fails (e.g., for complex libraries like lodash), skip it
           // The library should be available through the bundle code execution
           if (error.message.includes('could not be cloned')) {
-            console.log(`[UTILS DEBUG] Skipping ${key} due to cloning issue, should be available via bundle:`, error.message);
+            console.log(
+              `[UTILS DEBUG] Skipping ${key} due to cloning issue, should be available via bundle:`,
+              error.message
+            );
           } else {
             throw error; // Re-throw if it's a different error
           }
@@ -133,14 +137,11 @@ export function resolveCode(codeContext: any): any {
 
     // try {
     try {
-      result = script.runSync(
-        context,
-        {
-          release: true,
-          timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
-          copy: true
-        }
-      );
+      result = script.runSync(context, {
+        release: true,
+        timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
+        copy: true,
+      });
     } catch (runErr) {
       throw runErr;
     }
@@ -180,7 +181,7 @@ function resolveVariableReference(
 export function getQueryVariables(
   options: any,
   state: any,
-  addLog: (message: string) => void = () => { },
+  addLog: (message: string) => void = () => {},
   bundleContent?: string,
   isolate?: ivm.Isolate | null,
   context?: ivm.Context | null

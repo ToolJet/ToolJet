@@ -119,13 +119,10 @@ async function getUuidFieldsForExport(
           .createQueryBuilder(DataSourceVersionOptions, 'dsvo')
           .select('dsvo.id')
           .innerJoin(DataSourceVersion, 'dsv', 'dsv.id = dsvo.dataSourceVersionId AND dsv.isDefault = true')
-          .where(
-            'dsvo.environmentId IN(:...environmentId) AND dsv.dataSourceId IN(:...dataSourceId)',
-            {
-              environmentId: environmentIds,
-              dataSourceId: allDataSourceIds,
-            }
-          )
+          .where('dsvo.environmentId IN(:...environmentId) AND dsv.dataSourceId IN(:...dataSourceId)', {
+            environmentId: environmentIds,
+            dataSourceId: allDataSourceIds,
+          })
           .getMany()
       : [];
 

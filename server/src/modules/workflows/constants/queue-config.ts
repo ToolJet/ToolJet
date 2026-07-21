@@ -13,8 +13,8 @@
  * SCHEDULED: Priority 1 - Scheduled workflows run with slightly lower priority
  */
 export const WORKFLOW_PRIORITY = {
-  MANUAL: 0,    // Manual workflow executions from UI
-  WEBHOOK: 0,   // Webhook-triggered workflow executions
+  MANUAL: 0, // Manual workflow executions from UI
+  WEBHOOK: 0, // Webhook-triggered workflow executions
   SCHEDULED: 1, // Scheduled workflow executions
 };
 
@@ -43,7 +43,7 @@ export const WORKFLOW_JOB_RETRY_CONFIG = {
  */
 export const WORKFLOW_QUEUE_RETENTION = {
   removeOnComplete: 100, // Keep last 100 completed jobs
-  removeOnFail: 50,      // Keep last 50 failed jobs
+  removeOnFail: 50, // Keep last 50 failed jobs
 };
 
 /**

@@ -16,7 +16,13 @@ type ComponentSummary = { id: string; name: string; type: string; co_relation_id
 type AppSummary = { id: string; name: string; slug: string; co_relation_id: string | null };
 type AppVersionSummary = { id: string; name: string; createdAt: Date; co_relation_id: string | null };
 type AppVersionWithComponents = AppVersionSummary & { components: ComponentSummary[] };
-type AppDetail = { id: string; name: string; slug: string; co_relation_id: string | null; versions: AppVersionWithComponents[] };
+type AppDetail = {
+  id: string;
+  name: string;
+  slug: string;
+  co_relation_id: string | null;
+  versions: AppVersionWithComponents[];
+};
 type QueryGroup = {
   appId: string;
   appName: string;
@@ -92,7 +98,12 @@ export class WorkspaceContextService {
         .orderBy('app.created_at', 'ASC')
         .getRawMany();
 
-    return rows.map((r) => ({ id: r.appId, name: r.appName, slug: r.appSlug, co_relation_id: r.appCoRelationId ?? null }));
+    return rows.map((r) => ({
+      id: r.appId,
+      name: r.appName,
+      slug: r.appSlug,
+      co_relation_id: r.appCoRelationId ?? null,
+    }));
   }
 
   async fetchAppById(appId: string, organizationId: string): Promise<AppDetail> {

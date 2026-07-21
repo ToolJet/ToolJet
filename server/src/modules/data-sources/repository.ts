@@ -33,53 +33,53 @@ export class DataSourcesRepository extends Repository<DataSource> {
     const manager = this.manager;
     const query = manager
       .createQueryBuilder(DataSource, 'data_source')
-        .leftJoinAndSelect('data_source.plugin', 'plugin')
-        .leftJoinAndSelect('plugin.iconFile', 'iconFile')
-        .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
-        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
+      .leftJoinAndSelect('data_source.plugin', 'plugin')
+      .leftJoinAndSelect('plugin.iconFile', 'iconFile')
+      .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
+      .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
-      const useBranchPath = !!(branchId && environmentId);
+    const useBranchPath = !!(branchId && environmentId);
 
-      if (useBranchPath) {
-        // Branch-aware: prefer branch-specific DSV, fall back to default DSV
-        // query.leftJoin(
-        //   'data_source_versions',
-        //   'dsv',
-        //   `dsv.data_source_id = data_source.id AND (
-        //     (dsv.branch_id = :branchId AND dsv.is_active = true)
-        //     OR (
-        //       dsv.is_default = true
-        //       AND NOT EXISTS (
-        //         SELECT 1 FROM data_source_versions dsv2
-        //         WHERE dsv2.data_source_id = data_source.id
-        //           AND dsv2.branch_id = :branchId
-        //       )
-        //     )
-        //   )`,
-        //   { branchId }
-        // );
-        query.leftJoin(
-         'data_source_versions',
-         'dsv',
-         `dsv.data_source_id = data_source.id
+    if (useBranchPath) {
+      // Branch-aware: prefer branch-specific DSV, fall back to default DSV
+      // query.leftJoin(
+      //   'data_source_versions',
+      //   'dsv',
+      //   `dsv.data_source_id = data_source.id AND (
+      //     (dsv.branch_id = :branchId AND dsv.is_active = true)
+      //     OR (
+      //       dsv.is_default = true
+      //       AND NOT EXISTS (
+      //         SELECT 1 FROM data_source_versions dsv2
+      //         WHERE dsv2.data_source_id = data_source.id
+      //           AND dsv2.branch_id = :branchId
+      //       )
+      //     )
+      //   )`,
+      //   { branchId }
+      // );
+      query.leftJoin(
+        'data_source_versions',
+        'dsv',
+        `dsv.data_source_id = data_source.id
           AND dsv.branch_id = :branchId
           AND dsv.is_active = true`,
-         { branchId }
-       );
-        query.leftJoin(
-          'data_source_version_options',
-          'dsvo',
-          'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
-          { environmentId }
-        );
-        // Select version-specific columns so they appear in raw results
-        query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
-      } else if (branchId) {
-        // Branch-aware but no environmentId: prefer branch DSV, fall back to default
-        query.leftJoin(
-          'data_source_versions',
-          'dsv',
-          `dsv.data_source_id = data_source.id AND (
+        { branchId }
+      );
+      query.leftJoin(
+        'data_source_version_options',
+        'dsvo',
+        'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
+        { environmentId }
+      );
+      // Select version-specific columns so they appear in raw results
+      query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
+    } else if (branchId) {
+      // Branch-aware but no environmentId: prefer branch DSV, fall back to default
+      query.leftJoin(
+        'data_source_versions',
+        'dsv',
+        `dsv.data_source_id = data_source.id AND (
             (dsv.branch_id = :branchId AND dsv.is_active = true)
             OR (
               dsv.is_default = true
@@ -90,170 +90,166 @@ export class DataSourcesRepository extends Repository<DataSource> {
               )
             )
           )`,
-          { branchId }
+        { branchId }
+      );
+      query.addSelect(['dsv.id', 'dsv.name']);
+    } else if (environmentId) {
+      // Released versions now read from the main-branch default DSV (is_default = true).
+      // Removed: appVersionId-specific DSV lookup (app_version_id dropped from data_source_versions).
+      // if (appVersionId) { ... dsv.app_version_id = :appVersionId ... }
+      query.leftJoin('data_source_versions', 'dsv', 'dsv.data_source_id = data_source.id AND dsv.is_default = true');
+      query.leftJoin(
+        'data_source_version_options',
+        'dsvo',
+        'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
+        { environmentId }
+      );
+      query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
+    }
+
+    query.where('data_source.type != :sampleType', { sampleType: DataSourceTypes.SAMPLE });
+
+    if ((!isSuperAdmin || !isAdmin) && !isAllUsableConfigurable) {
+      if (!canPerformCreateOrDelete) {
+        query.andWhere(
+          new Brackets((qb) => {
+            qb.where('data_source.id IN (:...dsIds)', {
+              dsIds: [
+                null,
+                ...dataSourcePermissions.usableDataSourcesId,
+                ...dataSourcePermissions.configurableDataSourceId,
+              ],
+            });
+            // Removed: appVersionId-based data query join (app_version_id dropped from data_source_versions).
+            // if (appVersionId) {
+            //   query.leftJoin('data_source.dataQueries', 'data_queries');
+            //   qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
+            // }
+          })
         );
-        query.addSelect(['dsv.id', 'dsv.name']);
-      } else if (environmentId) {
-        // Released versions now read from the main-branch default DSV (is_default = true).
-        // Removed: appVersionId-specific DSV lookup (app_version_id dropped from data_source_versions).
-        // if (appVersionId) { ... dsv.app_version_id = :appVersionId ... }
-        query.leftJoin(
-          'data_source_versions',
-          'dsv',
-          'dsv.data_source_id = data_source.id AND dsv.is_default = true'
-        );
-        query.leftJoin(
-          'data_source_version_options',
-          'dsvo',
-          'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
-          { environmentId }
-        );
-        query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
       }
+    }
 
-      query.where('data_source.type != :sampleType', { sampleType: DataSourceTypes.SAMPLE });
+    query
+      .andWhere('data_source.organization_id = :organizationId', { organizationId })
+      .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.GLOBAL });
 
-      if ((!isSuperAdmin || !isAdmin) && !isAllUsableConfigurable) {
-        if (!canPerformCreateOrDelete) {
-          query.andWhere(
-            new Brackets((qb) => {
-              qb.where('data_source.id IN (:...dsIds)', {
-                dsIds: [
-                  null,
-                  ...dataSourcePermissions.usableDataSourcesId,
-                  ...dataSourcePermissions.configurableDataSourceId,
-                ],
-              });
-              // Removed: appVersionId-based data query join (app_version_id dropped from data_source_versions).
-              // if (appVersionId) {
-              //   query.leftJoin('data_source.dataQueries', 'data_queries');
-              //   qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
-              // }
-            })
+    if (types && types.length > 0) {
+      query.andWhere('data_source.type IN (:...types)', { types });
+    }
+    if (environmentId && !useBranchPath && !branchId) {
+      // Filter: DS must have options in version table for this env
+      query.andWhere('dsvo.id IS NOT NULL');
+    }
+    if (useBranchPath || branchId) {
+      // Filter: DS must have at least a DSV (branch-specific or default fallback)
+      // Static data sources don't have DSV entries, so always allow them through
+      query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {
+        staticType: DataSourceTypes.STATIC,
+      });
+    }
+    let result: DataSource[];
+    let rawResults: any[] = [];
+
+    if (useBranchPath || branchId || environmentId) {
+      // Use getRawAndEntities to get both entity data and raw dsv/dsvo columns
+      const rawAndEntities = await query.getRawAndEntities();
+      result = rawAndEntities.entities;
+      rawResults = rawAndEntities.raw;
+    } else {
+      result = await query.getMany();
+    }
+
+    result.forEach((dataSource) => {
+      if (dataSource.plugin) {
+        if (dataSource.plugin.iconFile) {
+          dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+        }
+        if (dataSource.plugin.manifestFile) {
+          dataSource.plugin.manifestFile.data = JSON.parse(
+            decode(dataSource.plugin.manifestFile.data.toString('utf8'))
+          );
+        }
+        if (dataSource.plugin.operationsFile) {
+          dataSource.plugin.operationsFile.data = JSON.parse(
+            decode(dataSource.plugin.operationsFile.data.toString('utf8'))
           );
         }
       }
+    });
 
-      query
-        .andWhere('data_source.organization_id = :organizationId', { organizationId })
-        .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.GLOBAL });
+    const sampleDataSourceQuery = await manager
+      .createQueryBuilder(DataSource, 'data_source')
+      .where('data_source.organizationId = :organizationId', { organizationId })
+      .andWhere('data_source.type = :type', { type: DataSourceTypes.SAMPLE });
 
-      if (types && types.length > 0) {
-        query.andWhere('data_source.type IN (:...types)', { types });
-      }
-      if (environmentId && !useBranchPath && !branchId) {
-        // Filter: DS must have options in version table for this env
-        query.andWhere('dsvo.id IS NOT NULL');
-      }
+    const sampleDataSource: DataSource[] = (await sampleDataSourceQuery.getMany()) || [];
+
+    const dataSourceList = [...result, ...sampleDataSource];
+
+    const rawById = new Map<string, any>();
+    for (const r of rawResults) {
+      if (!rawById.has(r.data_source_id)) rawById.set(r.data_source_id, r);
+    }
+
+    //remove tokenData from restapi datasources
+    const dataSources = dataSourceList?.map((ds) => {
       if (useBranchPath || branchId) {
-        // Filter: DS must have at least a DSV (branch-specific or default fallback)
-        // Static data sources don't have DSV entries, so always allow them through
-        query.andWhere('(dsv.id IS NOT NULL OR data_source.type = :staticType)', {
-          staticType: DataSourceTypes.STATIC,
-        });
-      }
-      let result: DataSource[];
-      let rawResults: any[] = [];
-
-      if (useBranchPath || branchId || environmentId) {
-        // Use getRawAndEntities to get both entity data and raw dsv/dsvo columns
-        const rawAndEntities = await query.getRawAndEntities();
-        result = rawAndEntities.entities;
-        rawResults = rawAndEntities.raw;
-      } else {
-        result = await query.getMany();
-      }
-
-      result.forEach((dataSource) => {
-        if (dataSource.plugin) {
-          if (dataSource.plugin.iconFile) {
-            dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+        const rawRow = rawById.get(ds.id);
+        if (rawRow) {
+          // Overlay version-specific name from data_source_versions
+          if (rawRow.dsv_name) {
+            ds.name = rawRow.dsv_name;
           }
-          if (dataSource.plugin.manifestFile) {
-            dataSource.plugin.manifestFile.data = JSON.parse(
-              decode(dataSource.plugin.manifestFile.data.toString('utf8'))
-            );
-          }
-          if (dataSource.plugin.operationsFile) {
-            dataSource.plugin.operationsFile.data = JSON.parse(
-              decode(dataSource.plugin.operationsFile.data.toString('utf8'))
-            );
+          // Attach version id for frontend reference
+          (ds as any).versionId = rawRow.dsv_id || null;
+        }
+
+        if (useBranchPath && rawRow) {
+          // Options from data_source_version_options
+          const rawOptions = rawRow.dsvo_options || {};
+          const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
+          if (ds.kind === 'restapi') {
+            const options = {};
+            Object.keys(parsedOptions).filter((key) => {
+              if (key !== 'tokenData') {
+                return (options[key] = parsedOptions[key]);
+              }
+            });
+            ds.options = options;
+          } else {
+            ds.options = { ...parsedOptions };
           }
         }
-      });
-
-      const sampleDataSourceQuery = await manager
-        .createQueryBuilder(DataSource, 'data_source')
-        .where('data_source.organizationId = :organizationId', { organizationId })
-        .andWhere('data_source.type = :type', { type: DataSourceTypes.SAMPLE });
-
-      const sampleDataSource: DataSource[] = (await sampleDataSourceQuery.getMany()) || [];
-
-      const dataSourceList = [...result, ...sampleDataSource];
-
-      const rawById = new Map<string, any>();
-      for (const r of rawResults) {
-        if (!rawById.has(r.data_source_id)) rawById.set(r.data_source_id, r);
-      }
-
-      //remove tokenData from restapi datasources
-      const dataSources = dataSourceList?.map((ds) => {
-        if (useBranchPath || branchId) {
-          const rawRow = rawById.get(ds.id);
-          if (rawRow) {
-            // Overlay version-specific name from data_source_versions
-            if (rawRow.dsv_name) {
-              ds.name = rawRow.dsv_name;
-            }
-            // Attach version id for frontend reference
-            (ds as any).versionId = rawRow.dsv_id || null;
-          }
-
-          if (useBranchPath && rawRow) {
-            // Options from data_source_version_options
-            const rawOptions = rawRow.dsvo_options || {};
-            const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
-            if (ds.kind === 'restapi') {
-              const options = {};
-              Object.keys(parsedOptions).filter((key) => {
-                if (key !== 'tokenData') {
-                  return (options[key] = parsedOptions[key]);
-                }
-              });
-              ds.options = options;
-            } else {
-              ds.options = { ...parsedOptions };
-            }
-          }
-        } else if (environmentId) {
-          // Non-branch with environmentId: use version options
-          const rawRow = rawById.get(ds.id);
-          const rawOptions = rawRow?.dsvo_options;
-          if (rawOptions) {
-            const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
-            if (ds.kind === 'restapi') {
-              const options = {};
-              Object.keys(parsedOptions).filter((key) => {
-                if (key !== 'tokenData') {
-                  return (options[key] = parsedOptions[key]);
-                }
-              });
-              ds.options = options;
-            } else {
-              ds.options = { ...parsedOptions };
-            }
-            if (rawRow?.dsv_name) {
-              ds.name = rawRow.dsv_name;
-            }
+      } else if (environmentId) {
+        // Non-branch with environmentId: use version options
+        const rawRow = rawById.get(ds.id);
+        const rawOptions = rawRow?.dsvo_options;
+        if (rawOptions) {
+          const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
+          if (ds.kind === 'restapi') {
+            const options = {};
+            Object.keys(parsedOptions).filter((key) => {
+              if (key !== 'tokenData') {
+                return (options[key] = parsedOptions[key]);
+              }
+            });
+            ds.options = options;
           } else {
-            ds.options = {};
+            ds.options = { ...parsedOptions };
+          }
+          if (rawRow?.dsv_name) {
+            ds.name = rawRow.dsv_name;
           }
         } else {
           ds.options = {};
         }
-        delete ds['dataSourceOptions'];
-        return ds;
-      });
+      } else {
+        ds.options = {};
+      }
+      delete ds['dataSourceOptions'];
+      return ds;
+    });
 
     return dataSources;
   }

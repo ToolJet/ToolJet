@@ -74,5 +74,4 @@ function sanitizedArray(string: string): string[] {
   return [...new Set(string.split(',').map((p: string) => p.trim()))];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

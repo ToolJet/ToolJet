@@ -1,10 +1,6 @@
 import { EntityManager } from 'typeorm';
 import { InternalTable } from '@entities/internal_table.entity';
-import {
-  TooljetDatabaseColumn,
-  TooljetDatabaseForeignKey,
-  TooljetDatabaseTable,
-} from 'src/modules/tooljet-db/types';
+import { TooljetDatabaseColumn, TooljetDatabaseForeignKey, TooljetDatabaseTable } from 'src/modules/tooljet-db/types';
 
 const mockTableSchemas: Array<TooljetDatabaseTable> = [
   {

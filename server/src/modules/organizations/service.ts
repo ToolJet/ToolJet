@@ -1,4 +1,11 @@
-import { ConflictException, Injectable, Logger, NotAcceptableException, NotImplementedException, Optional } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotAcceptableException,
+  NotImplementedException,
+  Optional,
+} from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
@@ -28,7 +35,7 @@ export class OrganizationsService implements IOrganizationsService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly licenseUserService: LicenseUserService,
     @Optional() protected readonly customDomainRepository: CustomDomainRepository
-  ) { }
+  ) {}
 
   async fetchOrganizations(
     user: any,
@@ -64,8 +71,8 @@ export class OrganizationsService implements IOrganizationsService {
       const orgIds = organizations.map((o) => o.id);
       const activeDomains = this.customDomainRepository
         ? await this.customDomainRepository.find({
-          where: { organizationId: In(orgIds), status: 'active' },
-        })
+            where: { organizationId: In(orgIds), status: 'active' },
+          })
         : [];
       const domainMap = new Map(activeDomains.map((d) => [d.organizationId, d.domain]));
 
@@ -142,17 +149,17 @@ export class OrganizationsService implements IOrganizationsService {
       const resourceData =
         updatableData.status === WORKSPACE_STATUS.ACTIVE
           ? {
-            unarchived_workspace: {
-              id: organizationId,
-              name: organization.name,
-            },
-          }
+              unarchived_workspace: {
+                id: organizationId,
+                name: organization.name,
+              },
+            }
           : {
-            archived_workspace: {
-              id: organizationId,
-              name: organization.name,
-            },
-          };
+              archived_workspace: {
+                id: organizationId,
+                name: organization.name,
+              },
+            };
 
       const auditLogsData = {
         userId: user.id,
@@ -196,5 +203,4 @@ export class OrganizationsService implements IOrganizationsService {
   async setDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
     throw new NotImplementedException('This feature is only available in Enterprise Edition');
   }
-
 }

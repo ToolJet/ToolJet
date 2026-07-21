@@ -76,7 +76,13 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @Post('pull-app')
   async pullApp(@User() user, @Body() dto: PullAppDto) {
     return this.workspaceBranchService.pullApp(
-      user.organizationId, user, dto.appId, dto.branchId, dto.tagSha, dto.tagName, dto.tagDescription
+      user.organizationId,
+      user,
+      dto.appId,
+      dto.branchId,
+      dto.tagSha,
+      dto.tagName,
+      dto.tagDescription
     );
   }
 
@@ -91,7 +97,7 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
       dto.branchId,
       dto.tagSha,
       dto.tagName,
-      dto.tagDescription,
+      dto.tagDescription
     );
   }
 

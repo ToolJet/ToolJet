@@ -15,7 +15,9 @@ export class BackfillAppCoRelationId1773400000000 implements MigrationInterface 
       WHERE av.app_id = sibling.app_id
         AND av.co_relation_id IS NULL;
     `);
-    console.log(`[BackfillAppCoRelationId] Updated ${versionResult?.[1] ?? 'unknown'} app_versions from sibling versions`);
+    console.log(
+      `[BackfillAppCoRelationId] Updated ${versionResult?.[1] ?? 'unknown'} app_versions from sibling versions`
+    );
 
     // Step 2: For apps with NULL co_relation_id, copy from any of their versions
     // that has co_relation_id set.
@@ -39,7 +41,9 @@ export class BackfillAppCoRelationId1773400000000 implements MigrationInterface 
       SET co_relation_id = id
       WHERE co_relation_id IS NULL;
     `);
-    console.log(`[BackfillAppCoRelationId] Fallback: updated ${fallbackResult?.[1] ?? 'unknown'} apps with co_relation_id = id`);
+    console.log(
+      `[BackfillAppCoRelationId] Fallback: updated ${fallbackResult?.[1] ?? 'unknown'} apps with co_relation_id = id`
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

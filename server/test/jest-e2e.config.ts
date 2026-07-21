@@ -8,10 +8,7 @@ const config: Config.InitialOptions = {
   testEnvironment: 'node',
   globalSetup: '<rootDir>/../test/jest-global-setup.ts',
   setupFiles: ['<rootDir>/../test/jest-setup.ts'],
-  setupFilesAfterEnv: [
-    '<rootDir>/../test/jest-transaction-setup.ts',
-    '<rootDir>/../test/jest-retry-setup.ts',
-  ],
+  setupFilesAfterEnv: ['<rootDir>/../test/jest-transaction-setup.ts', '<rootDir>/../test/jest-retry-setup.ts'],
   testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
   modulePathIgnorePatterns: ['<rootDir>/../dist/'],
   runner: 'groups',
