@@ -214,16 +214,20 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     manager: EntityManager
   ): Promise<void> {
     const { resourcesToAdd, canEditFolder, canEditApps, canViewApps } = createFolderPermissionsObj;
+    // Module folders are never end-user-assignable — reject for view too, unlike plain/workflow
+    // folders where end-users can be granted view-only access.
+    const isModuleFolder = granularPermissions.type === ResourceType.MODULE_FOLDER;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Validate end-user constraints: can only have canViewApps
+      // Validate end-user constraints: can only have canViewApps (module folders: none at all)
       await this.validateFolderResourceCreation(
         {
           groupId: granularPermissions.groupId,
           organizationId,
-          isBuilderPermissions: canEditFolder || canEditApps,
+          isBuilderPermissions: canEditFolder || canEditApps || isModuleFolder,
         },
-        manager
+        manager,
+        isModuleFolder
       );
       const foldersGroupPermissions = await manager.save(
         manager.create(FoldersGroupPermissions, {
@@ -248,7 +252,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
 
   protected async validateFolderResourceCreation(
     params: ResourceCreateValidation,
-    manager: EntityManager
+    manager: EntityManager,
+    isModuleFolder = false
   ): Promise<void> {
     const { groupId, organizationId, isBuilderPermissions } = params;
     if (!isBuilderPermissions) {
@@ -271,8 +276,9 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     if (endUsers.length) {
       throw new BadRequestException({
         message: {
-          error:
-            'End-users cannot have Edit Folder or Edit Apps permissions. If you wish to add this permission, kindly change the following users role from end-user to builder.',
+          error: isModuleFolder
+            ? 'End-users cannot have Module folder permissions. If you wish to add this permission, kindly change the following users role from end-user to builder.'
+            : 'End-users cannot have Edit Folder or Edit Apps permissions. If you wish to add this permission, kindly change the following users role from end-user to builder.',
           data: endUsers.map((user) => user.email),
           title: 'Cannot add this permission to the group',
           type: 'USER_ROLE_CHANGE_ADD_PERMISSIONS',
@@ -527,16 +533,19 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { granularPermissions, actions, resourcesToDelete, resourcesToAdd, group } =
         updateResourceGroupPermissionsObject;
+      // Module folders are never end-user-assignable — reject for view too.
+      const isModuleFolder = granularPermissions.type === ResourceType.MODULE_FOLDER;
 
       // Validate end-user constraints
-      if (actions && (actions.canEditFolder || actions.canEditApps)) {
+      if (actions && (actions.canEditFolder || actions.canEditApps || isModuleFolder)) {
         await this.validateFolderResourceCreation(
           {
             groupId: granularPermissions.groupId,
             organizationId,
             isBuilderPermissions: true,
           },
-          manager
+          manager,
+          isModuleFolder
         );
       }
 

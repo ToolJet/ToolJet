@@ -8,7 +8,8 @@ import { MODULES } from '@modules/app/constants/modules';
 export function defineAppVersionAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  resourceId?: string
+  resourceId?: string,
+  isEmbeddedInEditableParentApp = false
 ): void {
   const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
@@ -104,6 +105,13 @@ export function defineAppVersionAbility(
       return;
     }
     if (isViewable) {
+      can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_EVENTS], App);
+      return;
+    }
+    if (isEmbeddedInEditableParentApp) {
+      // Builder can't open this module standalone, but it's embedded (verified
+      // structurally + permission-checked upstream in FeatureAbilityFactory) in
+      // an app they can edit — view-only, never edit/promote.
       can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_EVENTS], App);
       return;
     }

@@ -19,6 +19,7 @@ const AllEnvironmentsMultiValue = (props) => (
 function ContainerFolderPermissionActionContainer({
   updateParentState,
   disableBuilderLevelUpdate,
+  disableViewUpdate,
   initialPermissionState,
   stateKey,
   dataCyPrefix,
@@ -161,25 +162,45 @@ function ContainerFolderPermissionActionContainer({
           </OverlayTrigger>
         </div>
         <div className="permission-item">
-          <label className="form-check form-check-inline w-100">
-            <input
-              className="form-check-input"
-              type="radio"
-              checked={currentLevel === 'canViewApps'}
-              onClick={() => {
-                currentLevel !== 'canViewApps' && handleClickViewItems();
-              }}
-              data-cy={`${dataCyPrefix}-view-apps-permission-radio`}
-            />
-            <div>
-              <span className="form-check-label" data-cy={`${dataCyPrefix}-view-apps-permission-label`}>
-                {viewItemsLabel}
-              </span>
-              <span className="tj-text-xsm" data-cy={`${dataCyPrefix}-view-apps-permission-helper-text`}>
-                {viewItemsHelperText}
-              </span>
-            </div>
-          </label>
+          <OverlayTrigger
+            overlay={
+              disableViewUpdate ? (
+                <Tooltip id="tooltip-disable-view-update">End-user cannot have edit permission</Tooltip>
+              ) : (
+                <span></span>
+              )
+            }
+            placement="left"
+          >
+            <label className="form-check form-check-inline w-100">
+              <input
+                className="form-check-input"
+                type="radio"
+                disabled={disableViewUpdate}
+                checked={currentLevel === 'canViewApps'}
+                onClick={() => {
+                  currentLevel !== 'canViewApps' && handleClickViewItems();
+                }}
+                data-cy={`${dataCyPrefix}-view-apps-permission-radio`}
+              />
+              <div>
+                <span
+                  className="form-check-label"
+                  style={{ color: disableViewUpdate ? 'var(--text-disabled)' : '' }}
+                  data-cy={`${dataCyPrefix}-view-apps-permission-label`}
+                >
+                  {viewItemsLabel}
+                </span>
+                <span
+                  className="tj-text-xsm"
+                  style={{ color: disableViewUpdate ? 'var(--text-disabled)' : '' }}
+                  data-cy={`${dataCyPrefix}-view-apps-permission-helper-text`}
+                >
+                  {viewItemsHelperText}
+                </span>
+              </div>
+            </label>
+          </OverlayTrigger>
         </div>
       </div>
 

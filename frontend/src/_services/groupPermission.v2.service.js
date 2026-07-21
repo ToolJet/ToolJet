@@ -10,6 +10,7 @@ export const groupPermissionV2Service = {
   fetchAddableApps,
   fetchAddableFolders,
   fetchAddableWorkflowFolders,
+  fetchAddableModuleFolders,
   getUsersInGroup,
   getUsersNotInGroup,
   updateUserRole,
@@ -115,6 +116,18 @@ function fetchAddableWorkflowFolders() {
   ).then(handleResponse);
 }
 
+function fetchAddableModuleFolders() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(
+    `${config.apiUrl}/v2/group-permissions/granular-permissions/addable-module-folders`,
+    requestOptions
+  ).then(handleResponse);
+}
+
 function getGroups() {
   const requestOptions = {
     method: 'GET',
@@ -157,6 +170,8 @@ function createGranularPermission(id, body) {
     type = 'folder';
   } else if (body.type === 'workflow_folder') {
     type = 'workflow-folder';
+  } else if (body.type === 'module_folder') {
+    type = 'module-folder';
   } else {
     type = 'data-source';
   }
@@ -180,6 +195,8 @@ function updateGranularPermission(permission, body) {
     type = 'folder';
   } else if (permission.type === 'workflow_folder') {
     type = 'workflow-folder';
+  } else if (permission.type === 'module_folder') {
+    type = 'module-folder';
   } else {
     type = 'data-source';
   }
@@ -202,6 +219,8 @@ function deleteGranularPermission(permission) {
     type = 'folder';
   } else if (permission.type === 'workflow_folder') {
     type = 'workflow-folder';
+  } else if (permission.type === 'module_folder') {
+    type = 'module-folder';
   } else {
     type = 'data-source';
   }

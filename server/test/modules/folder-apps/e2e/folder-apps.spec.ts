@@ -698,6 +698,109 @@ describe('FolderAppsController', () => {
 
         expect(response.statusCode).toBe(403);
       });
+
+      // Regression coverage for the H1 gap: a builder with only an is_all MODULE_FOLDER
+      // view grant (no MODULE-type grant, not the module's owner) must still see the
+      // module in the "all modules" list. createUserModulesPermissions previously never
+      // resolved MODULE_FOLDER grants into viewableAppsId (see createUserWorkflowPermissions
+      // for the equivalent workflow-folder resolution this mirrors).
+      describe('MODULE_FOLDER is_all view grant surfaces modules owned by other users', () => {
+        /** Grants an is_all, view-only MODULE_FOLDER permission to `groupId`. */
+        async function grantAllModuleFoldersView(groupId: string): Promise<void> {
+          const granular = await saveEntity(GranularPermissions, {
+            groupId,
+            name: 'Module folders view grant',
+            type: ResourceType.MODULE_FOLDER,
+            isAll: true,
+          } as any);
+          await saveEntity(FoldersGroupPermissions, {
+            granularPermissionId: granular.id,
+            canViewApps: true,
+            canEditApps: false,
+            canEditFolder: false,
+          } as any);
+        }
+
+        it('should list a module owned by another user in "all modules" when the builder only has an is_all MODULE_FOLDER view grant', async () => {
+          const adminUserData = await createUser(nestApp, {
+            email: 'admin-modfolder-view@tooljet.io',
+            groups: ['end-user', 'admin'],
+          });
+          const adminUser = adminUserData.user;
+          const organization = adminUserData.organization;
+
+          const builderData = await createUser(nestApp, {
+            email: 'builder-modfolder-view@tooljet.io',
+            groups: ['builder'],
+            organization,
+          });
+          const { tokenCookie: builderCookie } = await login(nestApp, 'builder-modfolder-view@tooljet.io', 'password');
+
+          const group = await createGroupPermission(nestApp, { organization, group: 'modfolder-view-group' } as any);
+          await createUserGroupPermissions(nestApp, builderData.user, ['modfolder-view-group']);
+          await grantAllModuleFoldersView(group.id);
+
+          const moduleApp = await createApplication(
+            nestApp,
+            { user: adminUser, name: 'admin owned module for view grant', type: APP_TYPES.MODULE },
+            false
+          );
+          const moduleFolder = await createFolder(nestApp, {
+            name: 'module folder for view grant',
+            type: APP_TYPES.MODULE,
+            organizationId: adminUser.organizationId,
+          });
+          await addAppToFolder(nestApp, moduleApp, moduleFolder);
+
+          const response = await request(nestApp.getHttpServer())
+            .get('/api/apps')
+            .query({ type: 'module' })
+            .set('tj-workspace-id', adminUser.defaultOrganizationId)
+            .set('Cookie', builderCookie);
+
+          expect(response.statusCode).toBe(200);
+          const appIds = response.body.apps.map((app: any) => app.id);
+          expect(appIds).toContain(moduleApp.id);
+        });
+
+        it('should NOT list a module owned by another user when the builder has no module or MODULE_FOLDER grant at all (control)', async () => {
+          const adminUserData = await createUser(nestApp, {
+            email: 'admin-modfolder-noperm@tooljet.io',
+            groups: ['end-user', 'admin'],
+          });
+          const adminUser = adminUserData.user;
+          const organization = adminUserData.organization;
+
+          await createUser(nestApp, {
+            email: 'builder-modfolder-noperm@tooljet.io',
+            groups: ['builder'],
+            organization,
+          });
+          const { tokenCookie: builderCookie } = await login(nestApp, 'builder-modfolder-noperm@tooljet.io', 'password');
+
+          const moduleApp = await createApplication(
+            nestApp,
+            { user: adminUser, name: 'admin owned module no grant', type: APP_TYPES.MODULE },
+            false
+          );
+          const moduleFolder = await createFolder(nestApp, {
+            name: 'module folder no grant',
+            type: APP_TYPES.MODULE,
+            organizationId: adminUser.organizationId,
+          });
+          await addAppToFolder(nestApp, moduleApp, moduleFolder);
+
+          const response = await request(nestApp.getHttpServer())
+            .get('/api/apps')
+            .query({ type: 'module' })
+            .set('tj-workspace-id', adminUser.defaultOrganizationId)
+            .set('Cookie', builderCookie);
+
+          expect(response.statusCode).toBe(200);
+          const appIds = response.body.apps.map((app: any) => app.id);
+          expect(appIds).not.toContain(moduleApp.id);
+        });
+      });
     });
 
     describe('Workflow folder canEditFolder permission (parallel to FOLDER, plus isolation)', () => {

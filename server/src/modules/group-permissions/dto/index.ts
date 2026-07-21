@@ -141,4 +141,12 @@ export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   @IsOptional()
   addModules: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addWorkflowFolders?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addModuleFolders?: boolean;
 }
