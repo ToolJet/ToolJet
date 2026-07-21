@@ -16,6 +16,8 @@ The following permissions can be configured for the given resources:
 | | Release | Allows users of the group to release the applications from the production environment. |
 | **Data sources** | Create | Allows users of the group to add new data sources in the workspace. |
 | | Delete | Allows users of the group to remove data sources from the workspace. |
+| **Modules** | Create | Allows users of the group to create new modules within the workspace. This includes cloning and importing modules. |
+| | Delete | Allows users of the group to delete modules from the workspace. This is blocked if the module is being used in any app. |
 | **Folder** | Create/Delete | Allows users of the group to create or delete folders to organize resources. |
 | **Workspace constants/variables** | Create/Update/Delete | Allows users of the group to define, modify, or remove constants and variables used across the workspace. |
 | **Workflows** | Create | Allows users of the group to create new workflows within the workspace. |
@@ -45,7 +47,7 @@ Role Required: **Admin** <br/>
 
 ## Granular Access Control
 
-In ToolJet, you can set granular level access control for apps and data sources, by configuring permissions like view access or edit access, to manage who can interact with the resources in your workspace. You can apply permissions either to all resources (e.g., all apps or all data sources) or to specific, selected resources, offering flexibility and precision in managing access. <br/>
+In ToolJet, you can set granular level access control for apps, data sources, and modules, by configuring permissions like view access or edit access, to manage who can interact with the resources in your workspace. You can apply permissions either to all resources (e.g., all apps or all data sources) or to specific, selected resources, offering flexibility and precision in managing access. <br/>
 To configure Granular Access Control, you need to create custom groups. Refer to **[custom groups](/docs/user-management/role-based-access/custom-groups)** guide for more information.
 
 ### Apps
@@ -59,7 +61,7 @@ To configure Granular Access Control, you need to create custom groups. Refer to
     :::
 
 
-- **Hide from dashboard**: Hides the selected apps from the dashboard, making them accessible only via URL for users with view access. While the users with edit access can always see the app on the dashboard.
+- **Hide from dashboard**: Hides the selected apps from the dashboard, making them accessible only via URL. This permission applies to both **View** and **Edit** access, so if it is enabled for a group, users with Edit access (builders) will also not see the app on the dashboard, in addition to users with View access. The app remains accessible via its URL for both.
 
 - **Environment**: Using environment-level permissions, access to each environment can be restricted based on user groups or roles. For example, members of a custom group *Developer* may be granted access only to the *Development* environment. You can apply these permissions to specific apps or across all apps.  
     Refer [this documentation](/docs/development-lifecycle/environment/cloud/multi-environment#environment-access-permission) to learn more about Environment Access Permissions.
@@ -83,6 +85,26 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 - **Custom**: Provide the selected access (Configure or Build with) only to the specified data sources.
 
     <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/ds-permission.png" alt="Create Custom Group" />
+
+### Modules
+
+- **Edit**: Grants access to open and edit the module builder. Users with this access can build, rename, and export the module. This permission should be given to the builders or developers who own or maintain the module.
+
+- **Build with**: Users in the group can use the selected modules in the apps they build. Modules with only Build with access are shown on the dashboard in a locked, read-only state, letting builders review a module's internals (queries, components, logic) to understand or debug it, without being able to make any changes.
+
+    :::info
+    There is no separate **View** permission for modules. Modules can't be accessed independently of an app, so end users always inherit access to a module from their access to the app it's used in — no additional module permission needs to be configured for end users.
+    :::
+
+- **Hide from dashboard**: Hides the selected modules from the dashboard and search results, making them accessible only via URL for users with Build with access. This does not affect the **Module** section of the component library panel in the App Builder — builders with Build with access can still find and add a hidden module to their apps from there.
+
+- **All modules**: Provides the selected access (Edit or Build with) to all the modules in the workspace, including any newly created module.
+
+- **Custom**: Provide the selected access (Edit or Build with) only to the specified modules.
+
+    :::note
+    If an app already has a module added to it by another builder, any builder with access to that app can edit the module's properties and styles, and move, resize, or delete it on the canvas, even without Edit or Build with access to that module itself. They cannot, however, open the module builder to view or change its internal logic.
+    :::
 
 ### Workflows
 - **Build**: Users in this group can build or edit the workflows they are granted access to. 
@@ -129,7 +151,7 @@ Role Required: **Admin** <br/>
 
 4. Switch to the **Granular access** tab and click on **+ Add permission** button.
 
-5. Select the resource (Apps/Data source) based on requirement. Give a name for the permission, configure required permission and click on **Add** at the bottom of the modal.
+5. Select the resource (Apps/Data source/Modules) based on requirement. Give a name for the permission, configure required permission and click on **Add** at the bottom of the modal.
 
     <img className="screenshot-full" src="/img/user-management/rbac/access-control/select-resource.png" alt="Create Custom Group" />
 
