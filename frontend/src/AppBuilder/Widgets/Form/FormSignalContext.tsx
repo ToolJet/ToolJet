@@ -1,15 +1,20 @@
 import { createContext, useContext, useEffect, useRef } from 'react';
 
-const FormSignalContext = createContext({ submitAttemptCount: 0, clearCount: 0 });
+interface FormSignalContextValue {
+  submitAttemptCount: number;
+  clearCount: number;
+}
 
-export const useShowValidationOnFormSubmit = (setVisible) => {
+const FormSignalContext = createContext<FormSignalContextValue>({ submitAttemptCount: 0, clearCount: 0 });
+
+export const useShowValidationOnFormSubmit = (setVisible: (visible: boolean) => void): void => {
   const { submitAttemptCount } = useContext(FormSignalContext);
   useEffect(() => {
-    if (submitAttemptCount > 0) setVisible(true);
+    setVisible(submitAttemptCount > 0);
   }, [submitAttemptCount, setVisible]);
 };
 
-export const useFormClear = (clearFn) => {
+export const useFormClear = (clearFn?: () => void): number => {
   const { clearCount } = useContext(FormSignalContext);
   const clearFnRef = useRef(clearFn);
 

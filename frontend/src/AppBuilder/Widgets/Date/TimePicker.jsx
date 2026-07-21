@@ -138,7 +138,6 @@ export const TimePicker = ({
   useFormClear(() => setInputValue(null));
 
   const isTwentyFourHourMode = is24HourFormat(timeFormat);
-  console.log('isTwentyFourHourMode', isTwentyFourHourMode);
 
   const componentProps = {
     popperClassName: cx(
