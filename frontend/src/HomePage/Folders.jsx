@@ -4,6 +4,7 @@ import { folderService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
+import { FolderHasAppsModal } from './FolderHasAppsModal';
 import { ConfirmDialog, ToolTip } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -47,6 +48,7 @@ export const Folders = function Folders({
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
   const [filteredData, setFilteredData] = useState(folders);
   const [errorText, setErrorText] = useState('');
+  const [folderHasAppsBranches, setFolderHasAppsBranches] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -77,8 +79,7 @@ export const Folders = function Folders({
   const canUpdateSpecificFolder = (folderId, folder) =>
     !isGitSyncEnabled &&
     (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
-  const canDeleteSpecificFolder = (folderId, folder) =>
-    !isGitSyncEnabled && (canDeleteFolder || isOwnerOfFolder(folder));
+  const canDeleteSpecificFolder = (folderId, folder) => canDeleteFolder || isOwnerOfFolder(folder);
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
@@ -189,9 +190,22 @@ export const Folders = function Folders({
         handleFolderChange({});
       })
       .catch(({ error }) => {
-        toast.error(error);
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
+        // The global exception filter collapses error responses down to { message, ... },
+        // so the branch list is JSON-encoded inside the message string on the backend
+        // (see FoldersService.deleteFolder) — parse it back out here.
+        let branches;
+        try {
+          branches = JSON.parse(error)?.branches;
+        } catch {
+          // error is a plain string message, not JSON — fall through to the toast below
+        }
+        if (branches?.length) {
+          setFolderHasAppsBranches(branches);
+        } else {
+          toast.error(error);
+        }
       });
   }
 
@@ -271,6 +285,13 @@ export const Folders = function Folders({
         confirmButtonLoading={isDeleting}
         onConfirm={() => executeDeletion()}
         onCancel={() => cancelDeleteDialog()}
+        darkMode={darkMode}
+      />
+
+      <FolderHasAppsModal
+        show={!!folderHasAppsBranches}
+        branches={folderHasAppsBranches || []}
+        onClose={() => setFolderHasAppsBranches(null)}
         darkMode={darkMode}
       />
 

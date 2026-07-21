@@ -127,9 +127,16 @@ export class FoldersService implements IFoldersService {
       await this.checkFolderManagePermission(user, folder, manager, 'delete');
 
       if (await this.organizationGitSyncRepository.isOrganizationGitSynced(user.organizationId, manager)) {
-        throw new BadRequestException(
-          "Folders with apps synced to git can't be deleted. Delete the git apps and try again."
-        );
+        const branchNames = await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
+        if (branchNames.length > 0) {
+          // AllExceptionsFilter collapses every error response down to { message, ... } and
+          // drops any other fields on the exception body — so the branch list is JSON-encoded
+          // into the message itself and parsed back out on the frontend (same pattern already
+          // used for the SSO organizationId payload in handle-response.js).
+          throw new BadRequestException(
+            JSON.stringify({ message: 'Folder with apps cannot be deleted', branches: branchNames })
+          );
+        }
       }
 
       return manager.delete(Folder, { id: folder.id, organizationId: user.organizationId });
