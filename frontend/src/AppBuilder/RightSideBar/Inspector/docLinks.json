@@ -1,0 +1,12 @@
+{
+    "ToggleSwitchV2": "https://docs.tooljet.io/docs/widgets/toggle-switch",
+    "DropdownV2": "https://docs.tooljet.com/docs/widgets/dropdown",
+    "DropDown" : "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/dropdown",
+    "MultiselectV2": "https://docs.tooljet.com/docs/widgets/multiselect",
+    "Multiselect" : "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/multiselect",
+    "DaterangePicker" : "https://docs.tooljet.com/docs/widgets/date-range-picker",
+    "RangeSliderV2" : "https://docs.tooljet.com/docs/widgets/range-slider",
+    "RangeSlider" : "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider",
+    "Modal" : "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/modal",
+    "RadioButton" : "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/radio-button"
+}
