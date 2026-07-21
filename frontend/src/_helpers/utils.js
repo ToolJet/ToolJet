@@ -311,7 +311,7 @@ export function resolveReferences(
 }
 
 export function getDynamicVariables(text) {
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/\%\%(.*?)\%\%/gs);
   return matchedParams;
 }
 
