@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Label from '@/_ui/Label';
@@ -84,7 +84,7 @@ export const ButtonGroupV2 = (props) => {
     return multiSelection ? defaultValues : defaultValues.length > 0 ? [defaultValues[0]] : [];
   };
 
-  const validOptionValues = formattedOptions.map((option) => option.value);
+  const validOptionValues = useMemo(() => formattedOptions.map((option) => option.value), [formattedOptions]);
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -105,12 +105,12 @@ export const ButtonGroupV2 = (props) => {
   useShowValidationOnFormSubmit(setUserInteracted);
 
   // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
+  const updateExposedVariablesState = useCallback((key, value) => {
     setExposedVariablesTemporaryState((prevState) => ({
       ...prevState,
       [key]: value,
     }));
-  };
+  }, []);
 
   useFormClear(() => updateExposedVariablesState('selected', []));
 
