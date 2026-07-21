@@ -150,7 +150,7 @@ function getDialect(name: string): BaseDialect {
       return new PostgreSQLDialect();
     case 'mysql':
       return new MySQLDialect();
-    case 'mariadb':                
+    case 'mariadb':
       return new MariaDBDialect();
     case 'mssql':
     case 'sqlserver':
@@ -449,9 +449,12 @@ export class QueryBuilder {
     const { schema, primary_key_columns: rawPrimaryKeyColumns, columns } = upsertRowsData;
     const primary_key_columns = this._normalizePrimaryKey(rawPrimaryKeyColumns);
 
-    if (primary_key_columns.length === 0 && 
-        !(this._dialect instanceof MSSQLDialect) &&
-        !(this._dialect instanceof MySQLDialect)) {  // MariaDB extends MySQL so covered
+    if (
+      primary_key_columns.length === 0 &&
+      !(this._dialect instanceof MSSQLDialect) &&
+      !(this._dialect instanceof MySQLDialect)
+    ) {
+      // MariaDB extends MySQL so covered
       throw new QueryBuilderError('At least one primary key column is required for upsert');
     }
 
@@ -681,9 +684,11 @@ export class QueryBuilder {
 
     const { schema, primary_key: rawPrimaryKey, row_upsert } = bulkUpsert;
     const primary_key = this._normalizePrimaryKey(rawPrimaryKey);
-    if (primary_key.length === 0 && 
-        !(this._dialect instanceof MSSQLDialect) &&
-        !(this._dialect instanceof MySQLDialect)) { 
+    if (
+      primary_key.length === 0 &&
+      !(this._dialect instanceof MSSQLDialect) &&
+      !(this._dialect instanceof MySQLDialect)
+    ) {
       throw new QueryBuilderError('Bulk upsert requires at least one primary key column', {
         operation: 'bulk_upsert_with_primary_key',
       });
