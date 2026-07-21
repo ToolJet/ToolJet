@@ -151,6 +151,9 @@ jobs:
       # eslint 8's flat-config auto-detect trips over frontend/eslint.config.mjs;
       # force eslintrc mode until marketplace migrates to a flat config of its own
       - run: ESLINT_USE_FLAT_CONFIG=false npm run --prefix marketplace lint
+      # `npm run build --workspaces` builds alphabetically; plugins import
+      # @tooljet-marketplace/common's dist, so build common first
+      - run: npm run --prefix marketplace build --workspace=@tooljet-marketplace/common
       - run: npm run --prefix marketplace build
 
   # ---------------------------------------------------------------------------
