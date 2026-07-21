@@ -56,6 +56,7 @@ enum PostgresErrorCode {
   UndefinedTable = '42P01',
   PermissionDenied = '42501',
   UndefinedFunction = '42883',
+  InvalidTextRepresentation = '22P02',
 }
 
 export type TooljetDbActions =
@@ -85,11 +86,12 @@ const errorCodeMapping: Partial<ErrorCodeMapping> = {
   [PostgresErrorCode.NotNullViolation]: {
     edit_column: 'Cannot add NOT NULL constraint as this column contains null values',
     proxy_postgrest: 'Not null constraint violated for {{table}}.{{column}}',
+    bulk_upload: 'Column {{column}} cannot be null',
   },
   [PostgresErrorCode.UniqueViolation]: {
     edit_column: 'Cannot add UNIQUE constraint as this column contains duplicate values',
     proxy_postgrest: 'Unique constraint violated as {{value}} already exists in {{table}}.{{column}}',
-    bulk_upload: 'Duplicate value violates unique constraint',
+    bulk_upload: 'Duplicate value {{value}} violates unique constraint on column {{column}}',
   },
   [PostgresErrorCode.UndefinedTable]: {
     default: 'Could not find the table {{table}}.',
@@ -98,7 +100,10 @@ const errorCodeMapping: Partial<ErrorCodeMapping> = {
   [PostgresErrorCode.ForeignKeyViolation]: {
     proxy_postgrest: 'Update or delete on  {{table}}.{{column}} with {{value}} violates foreign key constraint',
     sql_execution: 'Update or delete on  {{table}}.{{column}} with {{value}} violates foreign key constraint',
-    bulk_upload: 'Insert or update violates foreign key constraint',
+    bulk_upload: 'Value {{value}} in column {{column}} violates foreign key constraint',
+  },
+  [PostgresErrorCode.CheckViolation]: {
+    bulk_upload: 'Value provided for column {{column}} violates a check constraint on the table',
   },
   [PostgresErrorCode.PermissionDenied]: {
     default: 'Insufficient privilege',
@@ -106,6 +111,9 @@ const errorCodeMapping: Partial<ErrorCodeMapping> = {
   [PostgresErrorCode.UndefinedFunction]: {
     // proxy_postgrest: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
     // join_tables: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
+  },
+  [PostgresErrorCode.InvalidTextRepresentation]: {
+    bulk_upload: 'Invalid value provided: does not match the expected data type for its column',
   },
 };
 
@@ -197,6 +205,14 @@ export class TooljetDatabaseError extends QueryFailedError {
       if (parsedTableInfo) {
         modifiedErrorMessage = replaceTemplateStrings(modifiedErrorMessage, parsedTableInfo);
       }
+    } else if (this.context.origin === 'bulk_upload') {
+      // Direct-SQL errors (e.g. from bulk CSV upload) come through as plain `pg` driver
+      // errors, which already carry parsed `column`/`table`/`constraint`/`detail` fields -
+      // no need to regex the raw message like the PostgREST branch above does.
+      const parsedTableInfo = this.rawPgErrorParser();
+      if (parsedTableInfo) {
+        modifiedErrorMessage = replaceTemplateStrings(modifiedErrorMessage, parsedTableInfo);
+      }
     }
 
     // TODO: Need to handle errors wherein multiple tables are involved when need arises
@@ -247,6 +263,41 @@ export class TooljetDatabaseError extends QueryFailedError {
         return null;
       },
     };
+    return parsers[this.code]?.() || null;
+  }
+
+  rawPgErrorParser(): Record<string, string> | null {
+    const driverError = this.queryError.driverError as {
+      column?: string;
+      table?: string;
+      constraint?: string;
+      detail?: string;
+    };
+    const table = this.context.internalTables[0]?.tableName;
+
+    const parsers = {
+      [PostgresErrorCode.NotNullViolation]: () => {
+        if (!driverError.column) return null;
+        return { table, column: driverError.column };
+      },
+      [PostgresErrorCode.UniqueViolation]: () => {
+        const matches = /Key \((.*?)\)=\((.*?)\) already exists\./.exec(driverError.detail || '');
+        if (!matches) return null;
+        return { table, column: matches[1], value: matches[2] };
+      },
+      [PostgresErrorCode.ForeignKeyViolation]: () => {
+        const matches = /Key \((.*?)\)=\((.*?)\) (is still referenced from table|is not present in table) "(.*?)"\./.exec(
+          driverError.detail || ''
+        );
+        if (!matches) return null;
+        return { table, column: matches[1], value: matches[2] };
+      },
+      [PostgresErrorCode.CheckViolation]: () => {
+        if (!driverError.constraint) return null;
+        return { table, column: driverError.constraint };
+      },
+    };
+
     return parsers[this.code]?.() || null;
   }
 }

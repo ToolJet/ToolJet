@@ -25,6 +25,7 @@ interface Features {
   [FEATURE_KEY.EXPORT_MODULE]: FeatureConfig;
   [FEATURE_KEY.IMPORT_MODULE]: FeatureConfig;
   [FEATURE_KEY.EXPORT_TJDB_TABLE_AS_CSV]: FeatureConfig;
+  [FEATURE_KEY.IMPORT_TJDB_TABLE_AS_CSV]: FeatureConfig;
   [FEATURE_KEY.UPDATE_USER_METADATA]: FeatureConfig;
   [FEATURE_KEY.GET_USER_METADATA]: FeatureConfig;
   [FEATURE_KEY.BAN_USER]: FeatureConfig;
