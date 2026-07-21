@@ -4,10 +4,11 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import '@/_styles/folder-has-apps-modal.scss';
 
-export function FolderHasAppsModal({ show, branches = [], onClose, darkMode }) {
+export function FolderHasAppsModal({ show, branches = [], onClose, darkMode, appType }) {
   const defaultBranchName = useWorkspaceBranchesStore(
     (state) => state.branches?.find((branch) => branch.is_default || branch.isDefault)?.name
   );
+  const itemsLabel = appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'apps';
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains('folder-has-apps-modal-overlay')) {
@@ -37,10 +38,12 @@ export function FolderHasAppsModal({ show, branches = [], onClose, darkMode }) {
 
         <div className="folder-has-apps-modal-body">
           <h3 className="folder-has-apps-modal-title" data-cy="folder-has-apps-modal-title">
-            Folder with apps cannot be deleted
+            Folder with {itemsLabel} cannot be deleted
           </h3>
 
-          <p className="folder-has-apps-modal-intro-text">This folder contains apps on the following branches:</p>
+          <p className="folder-has-apps-modal-intro-text">
+            This folder contains {itemsLabel} on the following branches:
+          </p>
           <ol>
             {branches.map((branchName) => (
               <li key={branchName}>{branchName}</li>
@@ -51,7 +54,7 @@ export function FolderHasAppsModal({ show, branches = [], onClose, darkMode }) {
             Folders are shared across all branches in this workspace, so to delete it:
           </p>
           <ul>
-            <li>Remove all apps from this folder in each listed branch</li>
+            <li>Remove all {itemsLabel} from this folder in each listed branch</li>
             <li>Delete the folder from any branch, it&apos;ll be removed workspace-wide</li>
           </ul>
 

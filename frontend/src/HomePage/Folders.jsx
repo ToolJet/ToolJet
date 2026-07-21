@@ -79,7 +79,12 @@ export const Folders = function Folders({
   const canUpdateSpecificFolder = (folderId, folder) =>
     !isGitSyncEnabled &&
     (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
-  const canDeleteSpecificFolder = (folderId, folder) => canDeleteFolder || isOwnerOfFolder(folder);
+  // With git sync on, only show delete when the folder has 0 apps on the currently active
+  // branch (folder.count). If it still has apps on some other branch, the backend blocks the
+  // delete and FolderHasAppsModal reports which branch(es) — this is a defense-in-depth
+  // fallback, not the primary gate.
+  const canDeleteSpecificFolder = (folderId, folder) =>
+    (!isGitSyncEnabled || folder?.count === 0) && (canDeleteFolder || isOwnerOfFolder(folder));
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
@@ -293,6 +298,7 @@ export const Folders = function Folders({
         branches={folderHasAppsBranches || []}
         onClose={() => setFolderHasAppsBranches(null)}
         darkMode={darkMode}
+        appType={appType}
       />
 
       <div className="d-flex justify-content-between" data-cy="folder-info" style={{ marginBottom: '8px' }}>
