@@ -24,7 +24,7 @@ export const cascaderConfig = {
       type: 'toggle',
       displayName: 'Expand field when label is empty',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
-      accordian: 'label',
+      section: 'deprecatedStyles',
       isFxNotRequired: true,
     },
     label: {
