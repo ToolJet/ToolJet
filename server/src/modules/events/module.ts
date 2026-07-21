@@ -10,9 +10,14 @@ export class EventsModule extends SubModule {
 
     const providers = [];
 
-    const { EventsGateway, YjsGateway } = await this.getProviders(configs, 'events', ['events.gateway', 'yjs.gateway']);
+    const { EventsGateway, YjsGateway, NotificationsGateway } = await this.getProviders(configs, 'events', [
+      'events.gateway',
+      'yjs.gateway',
+      'notifications.gateway',
+    ]);
 
     providers.unshift(YjsGateway);
+    providers.unshift(NotificationsGateway);
     if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
       providers.unshift(EventsGateway);
     }
