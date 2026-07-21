@@ -17,11 +17,17 @@ export const useShowValidationOnFormSubmit = (setVisible: (visible: boolean) => 
 export const useFormClear = (clearFn?: () => void): number => {
   const { clearCount } = useContext(FormSignalContext);
   const clearFnRef = useRef(clearFn);
-
   clearFnRef.current = clearFn;
+  // Snapshot clearCount at mount so components added after a clearForm call
+  // don't immediately fire their clear logic.
+  const prevClearCount = useRef(clearCount);
 
   useEffect(() => {
-    if (clearCount > 0 && clearFnRef.current) clearFnRef.current();
+    if (clearCount > prevClearCount.current && clearFnRef.current) {
+      clearFnRef.current();
+    }
+
+    prevClearCount.current = clearCount; // must always run, not only inside the if
   }, [clearCount]);
 
   return clearCount;
