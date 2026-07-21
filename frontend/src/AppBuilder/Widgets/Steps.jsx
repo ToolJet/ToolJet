@@ -4,6 +4,13 @@ import { ToolTip } from '@/_components/ToolTip';
 import './Steps.scss';
 import { getFormattedSteps, getSafeRenderableValue } from './utils';
 
+const isSameStepId = (a, b) => String(a) === String(b);
+
+const resolveToStepId = (value, steps) => {
+  const match = Array.isArray(steps) ? steps.find((step) => isSameStepId(step?.id, value)) : undefined;
+  return match ? match.id : value;
+};
+
 export const Steps = function Steps({
   properties,
   styles,
@@ -16,7 +23,9 @@ export const Steps = function Steps({
 }) {
   const { stepsSelectable, disabledState } = properties;
   const visibility = isExpectedDataType(properties.visibility, 'boolean');
-  const currentStepId = isExpectedDataType(properties.currentStep, 'number');
+  const rawCurrentStep = properties.currentStep;
+  const currentStepId =
+    typeof rawCurrentStep === 'number' || typeof rawCurrentStep === 'string' ? rawCurrentStep : undefined;
   const isDynamicStepsEnabled = isExpectedDataType(properties.advanced, 'boolean');
   const steps = isDynamicStepsEnabled ? properties.schema : properties.steps;
   const { color, boxShadow } = styles;
@@ -25,7 +34,7 @@ export const Steps = function Steps({
   const [stepsArr, setStepsArr] = useState(steps);
   const [isVisible, setIsVisible] = useState(visibility);
   const [isDisabled, setIsDisabled] = useState(disabledState);
-  const [activeStepId, setActiveStepId] = useState(currentStepId);
+  const [activeStepId, setActiveStepId] = useState(resolveToStepId(currentStepId, steps));
   const theme = properties.variant;
   const [progressBarWidth, setProgressBarWidth] = useState(0);
   const [containerPadding, setContainerPadding] = useState(0);
@@ -35,7 +44,7 @@ export const Steps = function Steps({
   const lastLabelRef = useRef(null);
   const containerRef = useRef(null);
 
-  const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
+  const currentStepIndex = filteredSteps.findIndex((step) => isSameStepId(step.id, activeStepId));
 
   useEffect(() => {
     const formattedSteps = getFormattedSteps(steps);
@@ -113,7 +122,7 @@ export const Steps = function Steps({
 
   // Step click handler
   const handleStepClick = (id) => {
-    const step = filteredSteps.find((item) => item.id == id);
+    const step = filteredSteps.find((item) => isSameStepId(item.id, id));
     if (step && !step.disabled && !isDisabled) {
       setActiveStepId(step.id);
       setExposedVariable('currentStepId', step.id);
@@ -130,7 +139,9 @@ export const Steps = function Steps({
 
     setExposedVariable('setStepVisible', (stepId, visibility) => {
       setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) => (item.id == stepId ? { ...item, visible: visibility } : item));
+        const updatedSteps = prev.map((item) =>
+          isSameStepId(item.id, stepId) ? { ...item, visible: visibility } : item
+        );
         setExposedVariable('steps', updatedSteps);
         setFilteredSteps(updatedSteps.filter((step) => step.visible));
         return updatedSteps;
@@ -139,7 +150,9 @@ export const Steps = function Steps({
 
     setExposedVariable('setStepDisable', (stepId, disabled) => {
       setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) => (item.id == stepId ? { ...item, disabled: disabled } : item));
+        const updatedSteps = prev.map((item) =>
+          isSameStepId(item.id, stepId) ? { ...item, disabled: disabled } : item
+        );
         setExposedVariable('steps', updatedSteps);
         setFilteredSteps(updatedSteps.filter((step) => step.visible));
         return updatedSteps;
@@ -160,7 +173,7 @@ export const Steps = function Steps({
   // Update state from props
   useEffect(() => setIsVisible(visibility), [visibility]);
   useEffect(() => setIsDisabled(disabledState), [disabledState]);
-  useEffect(() => setActiveStepId(currentStepId), [currentStepId]);
+  useEffect(() => setActiveStepId(resolveToStepId(currentStepId, steps)), [currentStepId]);
 
   return (
     <div
