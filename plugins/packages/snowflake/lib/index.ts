@@ -819,8 +819,11 @@ export default class Snowflake implements QueryService {
       if (connection && (await connection.isValidAsync())) {
         return connection;
       } else {
+        const cacheKeyPrefix = sourceOptions.multiple_auth_enabled && userId
+          ? `${dataSourceId}_${userId}_`
+          : `${dataSourceId}_`;
         connection = await this.buildConnection(sourceOptions, context, buildOptions);
-        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
+        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection, cacheKeyPrefix);
         return connection;
       }
     } else {

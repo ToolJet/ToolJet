@@ -18,8 +18,8 @@ export function cacheConnection(dataSourceId: string, connection: any): any {
   CACHED_CONNECTIONS[dataSourceId] = { connection, updatedAt };
 }
 
-export function generateSourceOptionsHash(sourceOptions) {
-  const sortedEntries = Object.entries(sourceOptions)
+export function generateSourceOptionsHash(sourceOptions: any) {
+  const sortedEntries = Object.entries(sourceOptions || {})
     .filter(([_, value]) => value !== undefined && value !== null && value !== '')
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, value]) => `${key}:${value}`)
@@ -28,11 +28,20 @@ export function generateSourceOptionsHash(sourceOptions) {
   return crypto.createHash('sha256').update(sortedEntries).digest('hex').substring(0, 16);
 }
 
-export function cacheConnectionWithConfiguration(dataSourceId: string, enhancedCacheKey: string, connection: any): any {
+export function cacheConnectionWithConfiguration(
+  dataSourceId: string,
+  enhancedCacheKey: string,
+  connection: any,
+  cacheKeyPrefix?: string
+): any {
   const updatedAt = new Date();
   const allKeys = Object.keys(CACHED_CONNECTIONS);
+
+  // If no prefix provided, fall back to dataSourceId_ to evict all entries for this datasource
+  const effectivePrefix = cacheKeyPrefix ?? `${dataSourceId}_`;
+
   const oldKeysForThisDatasource = allKeys.filter(
-    (key) => key.startsWith(`${dataSourceId}_`) && key !== enhancedCacheKey
+    (key) => key.startsWith(effectivePrefix) && key !== enhancedCacheKey
   );
   oldKeysForThisDatasource.forEach((oldKey) => delete CACHED_CONNECTIONS[oldKey]);
 
@@ -56,7 +65,7 @@ export function getCachedConnection(cacheKey: string | number, dataSourceUpdated
   }
 }
 
-export function cleanSensitiveData(data, keys) {
+export function cleanSensitiveData(data: any, keys: any) {
   if (!data || typeof data !== 'object') return;
 
   const dataObj = { ...data };
@@ -64,7 +73,7 @@ export function cleanSensitiveData(data, keys) {
   return dataObj;
 }
 
-function clearData(data, keys) {
+function clearData(data: any, keys: any) {
   if (!data || typeof data !== 'object') return;
 
   for (const key in data) {
@@ -86,7 +95,7 @@ export function isEmpty(value: number | null | undefined | string) {
   );
 }
 
-export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
+export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic?: boolean) => {
   if (isMultiAuthEnabled) {
     if (!tokenData || !Array.isArray(tokenData)) return null;
     return !isAppPublic
@@ -104,8 +113,8 @@ export const sanitizeHeaders = (
   queryOptions: any,
   hasDataSource = true
 ): { [k: string]: string } => {
-  const cleanHeaders = (headers) => headers.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
-  const filterValidHeaderEntries = (headers) => {
+  const cleanHeaders = (headers: any[]) => headers.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+  const filterValidHeaderEntries = (headers: any[]) => {
     return headers.filter(([_, value]) => {
       if (value == null) return false;
       if (typeof value === 'string') return true;
@@ -114,7 +123,7 @@ export const sanitizeHeaders = (
     });
   };
 
-  const processHeaders = (rawHeaders) => {
+  const processHeaders = (rawHeaders: any) => {
     const cleaned = cleanHeaders(rawHeaders || []);
     const validHeaders = filterValidHeaderEntries(cleaned);
     return Object.fromEntries(validHeaders);
@@ -130,8 +139,8 @@ export const sanitizeHeaders = (
 };
 
 export const sanitizeCookies = (sourceOptions: any, queryOptions: any, hasDataSource = true): object => {
-  const _cookies = (queryOptions.cookies || []).filter((o) => {
-    return o.some((e) => !isEmpty(e));
+  const _cookies = (queryOptions.cookies || []).filter((o: any[]) => {
+    return o.some((e: any) => !isEmpty(e));
   });
 
   if (!hasDataSource) return Object.fromEntries(_cookies);
@@ -150,32 +159,33 @@ export const cookiesToString = (cookies: object): string => {
 };
 
 export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasDataSource = true): Array<string> => {
-  const _urlParams = (queryOptions.url_params || []).filter((o) => {
-    return o.some((e) => !isEmpty(e));
+  const _urlParams = (queryOptions.url_params || []).filter((o: any[]) => {
+    return o.some((e: any) => !isEmpty(e));
   });
 
   if (!hasDataSource) return _urlParams;
-  const sanitisedUrlParamsFromSourceOptions = (sourceOptions.url_params || []).filter((o) => {
-    return o.some((e) => !isEmpty(e));
+  const sanitisedUrlParamsFromSourceOptions = (sourceOptions.url_params || []).filter((o: any[]) => {
+    return o.some((e: any) => !isEmpty(e));
   });
 
   const urlParams = _urlParams.concat(sanitisedUrlParamsFromSourceOptions || []);
   return urlParams;
 };
 
-export const sanitizeSortPairs = (options): Array<[string, string]> => {
-  const sanitizedOptions = (options || []).filter((o) => {
-    return o.every((e) => !isEmpty(e));
+export const sanitizeSortPairs = (options: any): Array<[string, string]> => {
+  const sanitizedOptions = (options || []).filter((o: any[]) => {
+    return o.every((e: any) => !isEmpty(e));
   });
   return sanitizedOptions;
 };
 
 export const fetchHttpsCertsForCustomCA = () => {
-  if (!process.env.NODE_EXTRA_CA_CERTS) return {};
+  const caCertPath = process.env.NODE_EXTRA_CA_CERTS;
+  if (!caCertPath) return {};
 
   return {
     https: {
-      certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+      certificateAuthority: [...tls.rootCertificates, readFileSync(caCertPath)].join('\n'),
     },
   };
 };
@@ -262,7 +272,7 @@ const headersToRedact = [
   'authentication-info', // Provides additional authentication details
 ];
 
-export const redactHeaders = (headers) => {
+export const redactHeaders = (headers: any) => {
   const redactedHeaders = { ...headers };
   headersToRedact.forEach((key) => {
     if (Object.prototype.hasOwnProperty.call(redactedHeaders, key)) {
