@@ -67,6 +67,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Cascader',
   'ModalV2',
   'Container',
+  'Timeline',
 ];
 
 const RenderWidget = ({

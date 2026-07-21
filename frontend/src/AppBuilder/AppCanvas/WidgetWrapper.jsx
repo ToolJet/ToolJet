@@ -25,6 +25,10 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'Text',
   'Table',
   'ModuleViewer',
+  'Timeline',
+  'FilePicker',
+  'ReorderableList',
+  'ButtonGroupV2',
 ];
 
 const WidgetWrapper = memo(

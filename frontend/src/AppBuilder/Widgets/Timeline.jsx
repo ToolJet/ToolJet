@@ -1,20 +1,50 @@
 import React from 'react';
 import { isArray } from 'lodash';
 import { getSafeRenderableValue } from './utils';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
-export const Timeline = function Timeline({ height, darkMode, properties, styles, dataCy }) {
-  const { visibility, boxShadow } = styles;
-  const { data, hideDate } = properties;
+export const Timeline = function Timeline({
+  id,
+  height,
+  width,
+  darkMode,
+  properties,
+  styles,
+  dataCy,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
+  componentType,
+}) {
+  const { boxShadow } = styles;
+  const { data, hideDate, visibility } = properties;
 
   const darkModeStyle = darkMode && 'text-white-50';
+
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  // Timeline height is a function of its items (and whether dates show). Trigger the reflow
+  // off that data rather than a DOM observer — width changes are already a hook dependency,
+  // so text re-wrapping on resize is still re-measured.
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: JSON.stringify({ data, hideDate }),
+    currentLayout,
+    width,
+    visibility,
+    subContainerIndex,
+    componentType,
+  });
 
   return (
     <div
       className="card"
       style={{
         display: visibility ? '' : 'none',
-        height,
-        overflow: 'auto',
+        height: isDynamicHeightEnabled ? 'auto' : height,
+        ...(isDynamicHeightEnabled && { minHeight: height }),
+        overflow: isDynamicHeightEnabled ? 'visible' : 'auto',
         overflowWrap: 'normal',
         boxShadow,
         backgroundColor: 'var(--cc-surface1-surface)',

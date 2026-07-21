@@ -10,6 +10,8 @@ import { cx } from 'class-variance-authority';
 import { getLabelFontSize, getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -26,6 +28,10 @@ export const ButtonGroupV2 = (props) => {
     validate,
     validation,
     darkMode,
+    currentLayout,
+    currentMode,
+    subContainerIndex,
+    componentType,
   } = props;
 
   const {
@@ -92,6 +98,25 @@ export const ButtonGroupV2 = (props) => {
     isVisible: visibility,
     isDisabled: disabledState || loadingState,
     selected: defaultOptionValues(formattedOptions),
+  });
+
+  // ===== DYNAMIC HEIGHT =====
+  // Only Column/Wrap grow vertically (more options -> more rows).
+  // Row lays the buttons out on a single line with horizontal scroll,
+  // so its height is fixed so gate it out entirely so nothing reflows for row.
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view' && layout !== 'row';
+  const heightChangeValue = useHeightObserver(groupRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
   });
 
   // ===== VALIDATION =====
@@ -237,9 +262,10 @@ export const ButtonGroupV2 = (props) => {
   };
 
   const groupWrapperStyles = {
-    height: _height,
+    height: isDynamicHeightEnabled ? 'auto' : _height,
+    ...(isDynamicHeightEnabled && { minHeight: _height }),
     ...(layout === 'column' && { justifyContent: justifyContentByAlignment }),
-    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+    overflow: layout === 'row' ? 'auto hidden' : isDynamicHeightEnabled ? 'visible' : 'hidden auto',
     ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, labelAutoWidth, alignment),
   };
 
