@@ -148,7 +148,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'marketplace/package-lock.json'
       - run: npm ci --prefix marketplace
-      - run: npm run --prefix marketplace lint
+      # eslint 8's flat-config auto-detect trips over frontend/eslint.config.mjs;
+      # force eslintrc mode until marketplace migrates to a flat config of its own
+      - run: ESLINT_USE_FLAT_CONFIG=false npm run --prefix marketplace lint
       - run: npm run --prefix marketplace build
 
   # ---------------------------------------------------------------------------

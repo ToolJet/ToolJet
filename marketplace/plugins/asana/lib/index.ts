@@ -75,11 +75,7 @@ export default class Asana implements QueryService {
 
       return authDetails;
     } catch (error) {
-      throw new QueryError(
-        'Authorization Error',
-        error.response?.body || error.message,
-        { error: error.message }
-      );
+      throw new QueryError('Authorization Error', error.response?.body || error.message, { error: error.message });
     }
   }
 
@@ -91,9 +87,7 @@ export default class Asana implements QueryService {
   ): Promise<{ access_token: string; refresh_token?: string }> {
     let refreshToken: string;
     if (sourceOptions.multiple_auth_enabled) {
-      const currentToken = sourceOptions.tokenData?.find((t) =>
-        isAppPublic && !userId ? true : t.user_id === userId
-      );
+      const currentToken = sourceOptions.tokenData?.find((t) => (isAppPublic && !userId ? true : t.user_id === userId));
       refreshToken = currentToken?.refresh_token;
     } else {
       refreshToken = sourceOptions.refresh_token;
@@ -131,11 +125,7 @@ export default class Asana implements QueryService {
       };
     } catch (error) {
       if (error instanceof QueryError) throw error;
-      throw new QueryError(
-        'Error refreshing access token',
-        error.response?.body || error.message,
-        {}
-      );
+      throw new QueryError('Error refreshing access token', error.response?.body || error.message, {});
     }
   }
 
@@ -150,11 +140,7 @@ export default class Asana implements QueryService {
       }
       throw new Error('Unexpected response from Asana');
     } catch (error) {
-      throw new QueryError(
-        'Connection could not be established',
-        error.response?.body || error.message,
-        {}
-      );
+      throw new QueryError('Connection could not be established', error.response?.body || error.message, {});
     }
   }
 
@@ -168,9 +154,7 @@ export default class Asana implements QueryService {
     let token: string;
     if (sourceOptions.multiple_auth_enabled) {
       const userId = context?.user?.id;
-      const currentToken = sourceOptions.tokenData?.find((t) =>
-        userId ? t.user_id === userId : true
-      );
+      const currentToken = sourceOptions.tokenData?.find((t) => (userId ? t.user_id === userId : true));
       if (!currentToken) {
         return { status: 'needs_oauth', data: { auth_url: this.authUrl(sourceOptions) } } as any;
       }
@@ -218,17 +202,25 @@ export default class Asana implements QueryService {
 
     switch (operation) {
       case 'list_tasks':
-        return this.get(token, '/tasks', this.clean({
-          project: opts.project_gid,
-          opt_fields: opts.opt_fields,
-          limit: opts.limit,
-          offset: opts.offset,
-        }));
+        return this.get(
+          token,
+          '/tasks',
+          this.clean({
+            project: opts.project_gid,
+            opt_fields: opts.opt_fields,
+            limit: opts.limit,
+            offset: opts.offset,
+          })
+        );
 
       case 'get_task':
-        return this.get(token, `/tasks/${opts.task_gid}`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/tasks/${opts.task_gid}`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'create_task': {
         const body = this.parseBody(opts.body);
@@ -249,14 +241,22 @@ export default class Asana implements QueryService {
         });
 
       case 'list_stories':
-        return this.get(token, `/tasks/${opts.task_gid}/stories`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/tasks/${opts.task_gid}/stories`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'list_subtasks':
-        return this.get(token, `/tasks/${opts.task_gid}/subtasks`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/tasks/${opts.task_gid}/subtasks`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'create_subtask': {
         const body = this.parseBody(opts.body);
@@ -264,10 +264,14 @@ export default class Asana implements QueryService {
       }
 
       case 'add_to_project':
-        return this.post(token, `/tasks/${opts.task_gid}/addProject`, this.clean({
-          project: opts.project_gid,
-          section: opts.section_gid,
-        }));
+        return this.post(
+          token,
+          `/tasks/${opts.task_gid}/addProject`,
+          this.clean({
+            project: opts.project_gid,
+            section: opts.section_gid,
+          })
+        );
 
       case 'remove_from_project':
         return this.post(token, `/tasks/${opts.task_gid}/removeProject`, {
@@ -285,10 +289,14 @@ export default class Asana implements QueryService {
         });
 
       case 'duplicate_task':
-        return this.post(token, `/tasks/${opts.task_gid}/duplicate`, this.clean({
-          name: opts.name,
-          include: opts.include ? opts.include.split(',').map((s) => s.trim()) : undefined,
-        }));
+        return this.post(
+          token,
+          `/tasks/${opts.task_gid}/duplicate`,
+          this.clean({
+            name: opts.name,
+            include: opts.include ? opts.include.split(',').map((s) => s.trim()) : undefined,
+          })
+        );
 
       case 'list_attachments':
         return this.get(token, `/tasks/${opts.task_gid}/attachments`, {});
@@ -305,17 +313,25 @@ export default class Asana implements QueryService {
 
     switch (operation) {
       case 'list_projects':
-        return this.get(token, '/projects', this.clean({
-          workspace: opts.workspace_gid,
-          opt_fields: opts.opt_fields,
-          limit: opts.limit,
-          offset: opts.offset,
-        }));
+        return this.get(
+          token,
+          '/projects',
+          this.clean({
+            workspace: opts.workspace_gid,
+            opt_fields: opts.opt_fields,
+            limit: opts.limit,
+            offset: opts.offset,
+          })
+        );
 
       case 'get_project':
-        return this.get(token, `/projects/${opts.project_gid}`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/projects/${opts.project_gid}`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'create_project': {
         const body = this.parseBody(opts.body);
@@ -330,9 +346,13 @@ export default class Asana implements QueryService {
         return this.delete(token, `/projects/${opts.project_gid}`);
 
       case 'list_sections':
-        return this.get(token, `/projects/${opts.project_gid}/sections`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/projects/${opts.project_gid}/sections`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       default:
         throw new QueryError('Unknown operation', `Project operation "${operation}" is not supported`, {});
@@ -346,31 +366,51 @@ export default class Asana implements QueryService {
 
     switch (operation) {
       case 'list_workspaces':
-        return this.get(token, '/workspaces', this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          '/workspaces',
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'list_users':
-        return this.get(token, `/workspaces/${opts.workspace_gid}/users`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/workspaces/${opts.workspace_gid}/users`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'list_teams':
-        return this.get(token, `/workspaces/${opts.workspace_gid}/teams`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/workspaces/${opts.workspace_gid}/teams`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'list_tags':
-        return this.get(token, `/workspaces/${opts.workspace_gid}/tags`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/workspaces/${opts.workspace_gid}/tags`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'create_tag':
-        return this.post(token, '/tags', this.clean({
-          name: opts.name,
-          color: opts.color,
-          workspace: opts.workspace_gid,
-        }));
+        return this.post(
+          token,
+          '/tags',
+          this.clean({
+            name: opts.name,
+            color: opts.color,
+            workspace: opts.workspace_gid,
+          })
+        );
 
       default:
         throw new QueryError('Unknown operation', `Workspace operation "${operation}" is not supported`, {});
@@ -384,9 +424,13 @@ export default class Asana implements QueryService {
 
     switch (operation) {
       case 'get_attachment':
-        return this.get(token, `/attachments/${opts.attachment_gid}`, this.clean({
-          opt_fields: opts.opt_fields,
-        }));
+        return this.get(
+          token,
+          `/attachments/${opts.attachment_gid}`,
+          this.clean({
+            opt_fields: opts.opt_fields,
+          })
+        );
 
       case 'delete_attachment':
         return this.delete(token, `/attachments/${opts.attachment_gid}`);
@@ -459,13 +503,14 @@ export default class Asana implements QueryService {
   private parseGidList(value: string | undefined): string[] {
     if (!value) return [];
     if (Array.isArray(value)) return value;
-    return value.split(',').map((s) => s.trim()).filter(Boolean);
+    return value
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
 
   private clean(params: Record<string, any>): Record<string, any> {
-    return Object.fromEntries(
-      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
-    );
+    return Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''));
   }
 
   private parseErrorBody(error: any): any {
