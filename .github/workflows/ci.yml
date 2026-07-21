@@ -172,7 +172,15 @@ jobs:
       - build-marketplace
       - build-server
       - build-frontend
-    if: needs.detect-changes.outputs.server == 'true'
+    # explicit result guards: a path-skipped build need must not auto-skip this
+    # job (GitHub's implicit success() on needs), only a FAILED build should
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
     container: node:22.15.1-bullseye
     services:
       postgres:
@@ -242,7 +250,15 @@ jobs:
       - build-marketplace
       - build-server
       - build-frontend
-    if: needs.detect-changes.outputs.server == 'true'
+    # explicit result guards: a path-skipped build need must not auto-skip this
+    # job (GitHub's implicit success() on needs), only a FAILED build should
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
     container: node:22.15.1-bullseye
     services:
       postgres:
@@ -319,8 +335,13 @@ jobs:
       - build-server
       - build-frontend
     if: >-
-      needs.detect-changes.outputs.server == 'true'
-      || needs.detect-changes.outputs.frontend == 'true'
+      !cancelled()
+      && (needs.detect-changes.outputs.server == 'true'
+      || needs.detect-changes.outputs.frontend == 'true')
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
     uses: ./.github/workflows/cypress-platform.yml
     with:
       edition: 'ee'
@@ -334,7 +355,13 @@ jobs:
       - build-server
       - build-frontend
       - build-marketplace
-    if: needs.detect-changes.outputs.marketplace == 'true'
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.marketplace == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && needs.build-marketplace.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
     uses: ./.github/workflows/cypress-marketplace.yml
     with:
       edition: 'ee'
