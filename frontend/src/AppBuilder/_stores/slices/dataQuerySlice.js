@@ -573,7 +573,7 @@ export const createDataQuerySlice = (set, get) => ({
         return Promise.reject(error);
       }
     },
-    performDeletionUpdationAndCreationOfQuery: (queriesInfo, moduleId = 'canvas') => {
+    performDeletionUpdationAndCreationOfQuery: (queriesInfo, moduleId = 'canvas', runLoadQueriesOnCreate = true) => {
       if (!(queriesInfo?.delete?.length || queriesInfo?.update?.length || queriesInfo?.create?.length)) return;
 
       const queryIdsToDelete = new Set(queriesInfo.delete?.map((query) => query.id) ?? []);
@@ -646,7 +646,7 @@ export const createDataQuerySlice = (set, get) => ({
         'performDeletionUpdationAndCreationOfQuery'
       );
 
-      queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
+      runLoadQueriesOnCreate && queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
 
       get().rebuildQueryHints(moduleId);
     },
