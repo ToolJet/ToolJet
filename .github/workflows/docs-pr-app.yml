@@ -7,72 +7,78 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 permissions:
+  contents: read
   pull-requests: write
   issues: write
 
 jobs:
-  create-review-docs-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-docs-app' }}
+  create-render-deploy:
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-preview-render' || github.event.label.name == 'create-prod-render') }}
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_SUFFIX: ${{ github.event.label.name == 'create-preview-render' && 'preview' || 'prod' }}
+      BUILD_LTS: ${{ github.event.label.name == 'create-preview-render' && 'true' || 'false' }}
+      PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+      PR_REPO_URL: ${{ github.event.pull_request.head.repo.git_url }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
     steps:
       - name: Create deployment
         id: create-deployment
         run: |
-          export RESPONSE=$(curl --request POST \
-          --url https://api.render.com/v1/services \
-          --header 'accept: application/json' \
-          --header 'content-type: application/json' \
-          --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
-          --data '
-          {
-            "type": "static_site",
-            "autoDeploy": "yes",
-            "branch": "${{ env.BRANCH_NAME }}",
-            "name": "ToolJet PR #${{ env.PR_NUMBER }}",
-            "ownerId": "tea-caeo4bj19n072h3dddc0",
-            "repo": "${{ github.event.pull_request.head.repo.git_url }}",
-            "rootDir": "docs",
-            "envVars": [
-              {
-                "key": "NODE_ENV",
-                "value": "production"
-              },
-              {
-                "key": "NODE_VERSION",
-                "value": "18.18.2"
-              },
-              {
-                "key": "NPM_VERSION",
-                "value": "9.8.1"
-              },
-              {
-                "key": "GTM",
-                "value": "dummy"
+          # Build the JSON payload with jq so every value is safely escaped —
+          # protects against both shell injection and malformed JSON from
+          # branch names containing quotes or other special characters.
+          PAYLOAD=$(jq -n \
+            --arg branch "$PR_BRANCH" \
+            --arg name "ToolJet PR #${PR_NUMBER}-${DEPLOY_SUFFIX}" \
+            --arg repo "$PR_REPO_URL" \
+            --arg buildLts "$BUILD_LTS" \
+            --arg url "https://tooljet-pr-${PR_NUMBER}-${DEPLOY_SUFFIX}.onrender.com" \
+            '{
+              type: "static_site",
+              autoDeploy: "yes",
+              branch: $branch,
+              name: $name,
+              ownerId: "tea-caeo4bj19n072h3dddc0",
+              repo: $repo,
+              rootDir: "docs",
+              envVars: [
+                {key: "NODE_ENV", value: "production"},
+                {key: "NODE_VERSION", value: "18.18.2"},
+                {key: "NPM_VERSION", value: "9.8.1"},
+                {key: "GTM", value: "dummy"},
+                {key: "build_lts", value: $buildLts}
+              ],
+              serviceDetails: {
+                pullRequestPreviewsEnabled: "no",
+                buildCommand: "npm i && npm run build",
+                publishPath: "build/",
+                url: $url
               }
-            ],
-            "serviceDetails": {
-                "pullRequestPreviewsEnabled": "no",
-                "buildCommand": "npm i && npm run build",
-                "publishPath": "build/",
-                "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
-            }
-          }')
+            }')
+
+          RESPONSE=$(curl --request POST \
+            --url https://api.render.com/v1/services \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header "Authorization: Bearer $RENDER_API_KEY" \
+            --data "$PAYLOAD")
 
           echo "response: $RESPONSE"
-          export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
-          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          SERVICE_ID=$(echo "$RESPONSE" | jq -r '.service.id')
+          echo "SERVICE_ID=$SERVICE_ID" >> "$GITHUB_ENV"
 
       - name: Comment deployment URL
         uses: actions/github-script@v5
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/static/${{ env.SERVICE_ID }}'
+              body: 'Deployment (${{ env.DEPLOY_SUFFIX }}): https://tooljet-pr-${{ env.PR_NUMBER }}-${{ env.DEPLOY_SUFFIX }}.onrender.com \n Dashboard: https://dashboard.render.com/static/${{ env.SERVICE_ID }}'
             })
 
       - uses: actions/github-script@v6
@@ -83,7 +89,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-review-docs-app'
+                name: '${{ github.event.label.name }}'
               })
             } catch (e) {
               console.log(e)
@@ -93,80 +99,33 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-docs-app']
+              labels: ['active-${{ env.DEPLOY_SUFFIX }}-render']
             })
 
-  destroy-review-docs-app:
-    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-docs-app') || github.event.action == 'closed' }}
+  suspend-render-deploy:
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'suspend-preview-render' || github.event.label.name == 'suspend-prod-render') }}
     runs-on: ubuntu-latest
-
-    steps:
-      - name: Delete service
-        run: |
-          export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
-          --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
-           jq -r '.[0].service.id')
-
-          curl --request DELETE \
-          --url https://api.render.com/v1/services/$SERVICE_ID \
-          --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
-
-      - uses: actions/github-script@v6
-        with:
-          script: |
-            try {
-              await github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'destroy-review-docs-app'
-              })
-            } catch (e) {
-              console.log(e)
-            }
-
-            try {
-              await github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'suspend-review-docs-app'
-              })
-            } catch (e) {
-              console.log(e)
-            }
-
-            try {
-              await github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'active-review-docs-app'
-              })
-            } catch (e) {
-              console.log(e)
-            }
-
-  suspend-review-docs-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-docs-app' }}
-    runs-on: ubuntu-latest
+    env:
+      DEPLOY_SUFFIX: ${{ github.event.label.name == 'suspend-preview-render' && 'preview' || 'prod' }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
     steps:
       - name: Suspend service
         run: |
-          export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
-          --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
-           jq -r '.[0].service.id')
+          SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20PR%20%23${PR_NUMBER}-${DEPLOY_SUFFIX}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | \
+            jq -r '.[0].service.id')
 
-          curl --request POST \
-          --url https://api.render.com/v1/services/$SERVICE_ID/suspend \
-          --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          if [ "$SERVICE_ID" != "null" ] && [ -n "$SERVICE_ID" ]; then
+            curl --request POST \
+              --url "https://api.render.com/v1/services/$SERVICE_ID/suspend" \
+              --header 'accept: application/json' \
+              --header "authorization: Bearer $RENDER_API_KEY"
+          else
+            echo "No ${DEPLOY_SUFFIX} service found for this PR — nothing to suspend."
+          fi
 
       - uses: actions/github-script@v6
         with:
@@ -176,29 +135,36 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-docs-app'
+                name: 'active-${{ env.DEPLOY_SUFFIX }}-render'
               })
             } catch (e) {
               console.log(e)
             }
 
-  resume-review-docs-app:
-    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-docs-app' }}
+  resume-render-deploy:
+    if: ${{ github.event.action == 'unlabeled' && (github.event.label.name == 'suspend-preview-render' || github.event.label.name == 'suspend-prod-render') }}
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_SUFFIX: ${{ github.event.label.name == 'suspend-preview-render' && 'preview' || 'prod' }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
     steps:
       - name: Resume service
         run: |
-          export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
-          --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
-           jq -r '.[0].service.id')
+          SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20PR%20%23${PR_NUMBER}-${DEPLOY_SUFFIX}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | \
+            jq -r '.[0].service.id')
 
-          curl --request POST \
-          --url https://api.render.com/v1/services/$SERVICE_ID/resume \
-          --header 'accept: application/json' \
-          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          if [ "$SERVICE_ID" != "null" ] && [ -n "$SERVICE_ID" ]; then
+            curl --request POST \
+              --url "https://api.render.com/v1/services/$SERVICE_ID/resume" \
+              --header 'accept: application/json' \
+              --header "authorization: Bearer $RENDER_API_KEY"
+          else
+            echo "No ${DEPLOY_SUFFIX} service found for this PR — nothing to resume."
+          fi
 
       - uses: actions/github-script@v6
         with:
@@ -207,16 +173,93 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-docs-app']
+              labels: ['active-${{ env.DEPLOY_SUFFIX }}-render']
             })
 
-            try {
-              await github.rest.issues.removeLabel({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'suspend-review-docs-app'
-              })
-            } catch (e) {
-              console.log(e)
+  destroy-render-deploy:
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'destroy-preview-render' || github.event.label.name == 'destroy-prod-render') }}
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_SUFFIX: ${{ github.event.label.name == 'destroy-preview-render' && 'preview' || 'prod' }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+    steps:
+      - name: Delete service
+        run: |
+          SERVICE_ID=$(curl --request GET \
+            --url "https://api.render.com/v1/services?name=ToolJet%20PR%20%23${PR_NUMBER}-${DEPLOY_SUFFIX}&limit=1" \
+            --header 'accept: application/json' \
+            --header "authorization: Bearer $RENDER_API_KEY" | \
+            jq -r '.[0].service.id')
+
+          if [ "$SERVICE_ID" != "null" ] && [ -n "$SERVICE_ID" ]; then
+            curl --request DELETE \
+              --url "https://api.render.com/v1/services/$SERVICE_ID" \
+              --header 'accept: application/json' \
+              --header "authorization: Bearer $RENDER_API_KEY"
+          else
+            echo "No ${DEPLOY_SUFFIX} service found for this PR — nothing to delete."
+          fi
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            for (const name of [
+              'destroy-${{ env.DEPLOY_SUFFIX }}-render',
+              'suspend-${{ env.DEPLOY_SUFFIX }}-render',
+              'active-${{ env.DEPLOY_SUFFIX }}-render'
+            ]) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name
+                })
+              } catch (e) {
+                console.log(e)
+              }
+            }
+
+  destroy-on-close:
+    if: ${{ github.event.action == 'closed' }}
+    runs-on: ubuntu-latest
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+    steps:
+      - name: Delete preview + prod services
+        run: |
+          for SUFFIX in preview prod; do
+            SERVICE_ID=$(curl --request GET \
+              --url "https://api.render.com/v1/services?name=ToolJet%20PR%20%23${PR_NUMBER}-${SUFFIX}&limit=1" \
+              --header 'accept: application/json' \
+              --header "authorization: Bearer $RENDER_API_KEY" | \
+              jq -r '.[0].service.id')
+
+            if [ "$SERVICE_ID" != "null" ] && [ -n "$SERVICE_ID" ]; then
+              curl --request DELETE \
+                --url "https://api.render.com/v1/services/$SERVICE_ID" \
+                --header 'accept: application/json' \
+                --header "authorization: Bearer $RENDER_API_KEY"
+            fi
+          done
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            for (const name of [
+              'destroy-preview-render', 'suspend-preview-render', 'active-preview-render',
+              'destroy-prod-render', 'suspend-prod-render', 'active-prod-render'
+            ]) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name
+                })
+              } catch (e) {
+                console.log(e)
+              }
             }
