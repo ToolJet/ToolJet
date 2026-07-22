@@ -596,6 +596,7 @@ export class AppImportExportService {
             .createQueryBuilder(App, 'app')
             .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
             .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            .andWhere('app.type = :appType', { appType: APP_TYPES.MODULE })
             .distinct(true)
             .getMany()
         : [];
@@ -624,7 +625,23 @@ export class AppImportExportService {
         // Find matching module by name in existing modules
         const existingModule = existingModules.find((module) => module.name === importedModule?.appV2?.name);
 
-        if (existingModule) {
+        /*
+          Defensive: only reuse when 
+          (a) the imported entry is itself APP_TYPES.MODULE
+          (guards against malformed exports that list a non-module here) and
+          (b) the existing module has a usable editingVersion + environment to
+          re-link against. If either fails, fall through to create-new — losing the
+          would-be reuse but guaranteeing a working module instance instead of a
+          broken re-link.
+        */
+        const importedIsModule = importedModule?.appV2?.type === APP_TYPES.MODULE;
+        const existingHasUsableVersion =
+          !!existingModule?.editingVersion?.id && !!existingModule?.editingVersion?.currentEnvironmentId;
+        const importedHasUsableVersion =
+          !!importedModule?.appV2?.editingVersion?.id && !!importedModule?.appV2?.editingVersion?.currentEnvironmentId;
+        const canReuse = !!existingModule && importedIsModule && existingHasUsableVersion && importedHasUsableVersion;
+
+        if (canReuse) {
           // Module exists - map old IDs to existing module's IDs
           moduleResourceMappings.moduleApps[importedModule?.appV2?.id] = existingModule.id;
 
