@@ -439,6 +439,8 @@ const FormComponent = (props) => {
     setCanHeight(`${roundedHeight}px`);
   }, [computedFormBodyHeight, canvasHeight]);
 
+  const formSignalContextValue = useMemo(() => ({ submitAttemptCount, clearCount }), [submitAttemptCount, clearCount]);
+
   return (
     <form
       className={`jet-container jet-form-widget ${advanced && 'jet-container-json-form'}`}
@@ -479,7 +481,7 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            <FormSignalContext.Provider value={{ submitAttemptCount, clearCount }}>
+            <FormSignalContext.Provider value={formSignalContextValue}>
               {!advanced && (
                 <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                   <SubContainer
