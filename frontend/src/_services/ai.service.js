@@ -16,6 +16,9 @@ export const aiService = {
   getConversation,
   autoSort,
   getTokenUsage,
+  getLlmPreference,
+  updateLlmPreference,
+  getOpenRouterModels,
 };
 
 function handleAITextResponse(response) {
@@ -164,4 +167,24 @@ async function autoSort(body) {
 async function getTokenUsage(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/ai/conversation/${conversationId}/token-usage`, requestOptions).then(handleResponse);
+}
+
+async function getOpenRouterModels() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/openrouter-models`, requestOptions).then(handleResponse);
+}
+
+async function getLlmPreference() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
+}
+
+async function updateLlmPreference(provider) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ provider }),
+  };
+  return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
 }
