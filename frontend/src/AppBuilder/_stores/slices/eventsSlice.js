@@ -93,6 +93,11 @@ export const createEventsSlice = (set, get) => ({
     fireEvent: (eventName, id, moduleId, customResolvables, options) => {
       const { eventsSlice, getCurrentMode, getEditorLoading } = get();
       const { handleEvent } = eventsSlice;
+      // A write made just before firing this event — by this component or another one entirely
+      // — may still be sitting in a pending batch; the event's actions could otherwise read a
+      // stale value. Resolve every pending write that isn't part of an explicit mount-time
+      // bracket (ListView/Form/page-switch) — never touches bracket-protected writes.
+      get().flushImplicitBatchEntries();
       const events = get().eventsSlice.module[moduleId].events;
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
