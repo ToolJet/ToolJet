@@ -1,0 +1,157 @@
+.link-expired-page {
+    position: fixed;
+    inset: 0;
+    background: #D5D7D9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+
+    .link-expired-card-wrapper {
+        box-shadow: 0px 8px 8px -4px #10182808, 0px 20px 24px -4px #10182814;
+        border: 1px solid var(--Slate-05, #E6E8EB);
+    }
+
+    .link-expired-card-wrapper .link-expired-card-icon {
+        width: 64px;
+        height: 64px;
+        background: none;
+        border-radius: 0;
+    }
+}
+
+.link-expired-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 356px;
+    padding: 24px;
+    border-radius: 12px;
+    background: var(--surface-default, #fff);
+    box-shadow: 0px 4px 16px 0px rgba(0, 0, 0, 0.08);
+    text-align: center;
+
+    .link-expired-card-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        background: var(--tomato-3, #FFEFEF);
+        margin-bottom: 16px;
+        flex-shrink: 0;
+    }
+
+    .link-expired-card-title {
+        color: var(--Text-default, #1B1F24);
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 28px;
+        letter-spacing: -0.4px;
+        margin-bottom: 8px;
+    }
+
+    .link-expired-card-description {
+        color: var(--text-placeholder, #6A727C);
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 20px;
+        margin-bottom: 24px;
+    }
+
+    .link-expired-card-cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 32px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: 1px solid #D7D7D7;
+        background: #FFF;
+        box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        span {
+            color: var(--Text-default, #1B1F24);
+            font-size: 12px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: 18px;
+        }
+
+        &:hover {
+            background-color: #f8f8f8;
+        }
+
+        &:active {
+            background-color: #f0f0f0;
+        }
+    }
+
+    .link-expired-card-signin {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        color: var(--text-placeholder, #6A727C);
+        margin-bottom: 0;
+
+        .link-expired-card-signin-link {
+            color: var(--indigo-9, #3E63DD);
+            cursor: pointer;
+            font-weight: 500;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+.dark-theme {
+    .link-expired-card-wrapper {
+        background: var(--surface-default, #1E2226);
+        box-shadow: 0px 4px 16px 0px rgba(0, 0, 0, 0.24);
+
+        .link-expired-card-icon {
+            background: rgba(229, 72, 77, 0.15);
+        }
+
+        .link-expired-card-title {
+            color: var(--Text-default, #FAFCFF);
+        }
+
+        .link-expired-card-description {
+            color: var(--text-medium, #CFD3D8);
+        }
+
+        .link-expired-card-cta {
+            border-color: var(--Border-brand-weak, rgba(74, 109, 217, 0.40));
+            background: var(--Button-Secondary-bg, #1E2226);
+
+            span {
+                color: var(--Text-default, #FAFCFF);
+            }
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.08);
+            }
+
+            &:active {
+                background-color: #1E2226;
+            }
+        }
+
+        .link-expired-card-signin {
+            color: var(--text-medium, #CFD3D8);
+
+            .link-expired-card-signin-link {
+                color: #7B9EE8;
+            }
+        }
+    }
+}

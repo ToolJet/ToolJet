@@ -5,13 +5,18 @@ import { OnboardingUIWrapper } from '@/modules/onboarding/components';
 import { FormHeader } from '@/modules/common/components';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
-const ForgotPasswordInfoScreen = ({ email }) => {
+const ResetPasswordInfoScreen = ({ organizationSlug, redirectTo }) => {
   const whiteLabelText = retrieveWhiteLabelText();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const message = `Your password has been reset successfully, log into ${whiteLabelText} to continue your session`;
-  const info = t('forgotPasswordInfo.info', 'Did not receive an email? Check your spam folder!');
+
+  const loginPath = organizationSlug
+    ? `/login/${organizationSlug}${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
+    : redirectTo
+    ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
+    : '/login';
 
   return (
     <div className="forgot-password-info-wrapper info-screen">
@@ -23,7 +28,7 @@ const ForgotPasswordInfoScreen = ({ email }) => {
         <div className="action-buttons pt-3">
           <button
             onClick={() =>
-              navigate('/login', {
+              navigate(loginPath, {
                 state: { from: '/reset-password' },
               })
             }
@@ -38,4 +43,4 @@ const ForgotPasswordInfoScreen = ({ email }) => {
   );
 };
 
-export default ForgotPasswordInfoScreen;
+export default ResetPasswordInfoScreen;

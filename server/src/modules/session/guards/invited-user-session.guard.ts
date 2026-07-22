@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ExecutionContext,
   ForbiddenException,
+  GoneException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import {
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { InvitedUserType } from '@modules/organization-users/types';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 /* 
 This guard will check all possible cases to reject an invalid invitation session request
@@ -73,6 +75,25 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
         },
       };
       throw new BadRequestException(errorResponse);
+    }
+
+    const inviteTokenExpiry = invitedUser?.invitationTokenExpiry;
+    if (inviteTokenExpiry && new Date() > inviteTokenExpiry) {
+      throw new GoneException({
+        message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+        organizationSlug: invitedUser.organizationId,
+      });
+    }
+
+    // Cloud-only: when accountToken present, also verify user-level invitationTokenExpiry
+    if (request.body.accountToken && getTooljetEdition() === 'cloud') {
+      const userInviteExpiry = user.invitationTokenExpiry;
+      if (userInviteExpiry && new Date() > userInviteExpiry) {
+        throw new GoneException({
+          message: 'INVITATION_LINK_EXPIRED',
+          organizationSlug: invitedUser?.organizationId,
+        });
+      }
     }
 
     request.invitedUser = user;
