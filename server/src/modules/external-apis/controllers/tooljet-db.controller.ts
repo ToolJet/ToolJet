@@ -20,4 +20,12 @@ export class ExternalApisTjdbController {
   importTableFromCSV(workspaceId: string, tableName: string, file: any): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
+  updateTableFromCSV(workspaceId: string, tableName: string, file: any): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  deleteTableFromCSV(workspaceId: string, tableName: string, file: any): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
 }

@@ -196,6 +196,342 @@ export class TooljetDbUtilService {
     }
   }
 
+  async bulkUpdateCsv(
+    internalTableId: string,
+    fileBuffer: Buffer,
+    organizationId: string
+  ): Promise<{ processedRows: number }> {
+    const rowsToUpdate: Record<string, any>[] = [];
+    const passThrough = new PassThrough();
+
+    const {
+      columns: internalTableDatabaseColumn,
+      foreign_keys: foreignKeys,
+    }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
+      await this.tableOperationsService.perform(organizationId, 'view_table', {
+        id: internalTableId,
+      });
+
+    const tablesInvolvedList = [
+      internalTableId,
+      ...(foreignKeys.length ? foreignKeys.map((foreignKey) => foreignKey.referenced_table_id) : []),
+    ];
+
+    const internalTables = await this.tableOperationsService.findOrFailInternalTableFromTableId(
+      tablesInvolvedList,
+      organizationId
+    );
+
+    const primaryKeyColumnSchema = internalTableDatabaseColumn.filter(
+      (colDetails) => colDetails.keytype === 'PRIMARY KEY'
+    );
+
+    const csvStream = csv.parseString(fileBuffer.toString(), {
+      headers: true,
+      strictColumnHandling: true,
+      discardUnmappedColumns: true,
+    });
+
+    let primaryKeyColumnsInCsv: string[] = [];
+    let dataColumnsInCsv: string[] = [];
+    const primaryKeyValuesSeen = new Set();
+    let rowsProcessed = 0;
+
+    csvStream
+      .on('headers', (headers) => {
+        const resolved = this.resolvePrimaryKeyAndDataColumns(internalTableDatabaseColumn, primaryKeyColumnSchema, headers);
+        primaryKeyColumnsInCsv = resolved.primaryKeyColumns;
+        dataColumnsInCsv = resolved.dataColumns;
+
+        if (primaryKeyColumnsInCsv.length === 0) {
+          csvStream.emit(
+            'error',
+            `CSV must include at least one primary key column: ${primaryKeyColumnSchema
+              .map((colDetails) => colDetails.column_name)
+              .join(', ')}`
+          );
+          return;
+        }
+        if (dataColumnsInCsv.length === 0) {
+          csvStream.emit('error', 'CSV must include at least one column to update besides the primary key');
+        }
+      })
+      .transform((row) =>
+        this.filterAndParseKnownColumns(
+          [...primaryKeyColumnsInCsv, ...dataColumnsInCsv],
+          primaryKeyColumnsInCsv,
+          internalTableDatabaseColumn,
+          row,
+          rowsProcessed,
+          csvStream
+        )
+      )
+      .on('data', (row: Record<string, any>) => {
+        rowsProcessed++;
+
+        const primaryKeyValuesIdentifier = primaryKeyColumnsInCsv.map((col) => row[col]).join('-');
+        if (primaryKeyValuesSeen.has(primaryKeyValuesIdentifier)) {
+          throw new BadRequestException(`Duplicate primary key found on row[${rowsProcessed + 1}]`);
+        }
+        primaryKeyValuesSeen.add(primaryKeyValuesIdentifier);
+
+        rowsToUpdate.push(row);
+      })
+      .on('error', (error) => {
+        csvStream.destroy();
+        passThrough.emit('error', new BadRequestException(error));
+      })
+      .on('end', () => {
+        passThrough.emit('end');
+      });
+
+    await pipeline(passThrough, csvStream);
+
+    const processedRows = await this.tooljetDbManager.transaction(async (tooljetDbManager) => {
+      return this.bulkUpdateRows(
+        tooljetDbManager,
+        rowsToUpdate,
+        internalTableId,
+        primaryKeyColumnsInCsv,
+        dataColumnsInCsv,
+        organizationId,
+        internalTables
+      );
+    });
+
+    return { processedRows };
+  }
+
+  async bulkUpdateRows(
+    tooljetDbManager: EntityManager,
+    rowsToUpdate: Record<string, any>[],
+    internalTableId: string,
+    primaryKeyColumns: string[],
+    dataColumns: string[],
+    organizationId: string,
+    internalTables: InternalTable[]
+  ): Promise<number> {
+    if (isEmpty(rowsToUpdate)) return 0;
+
+    const tenantSchema = findTenantSchema(organizationId);
+    const allColumns = [...primaryKeyColumns, ...dataColumns];
+
+    const allValueSets = [];
+    let allPlaceholders = [];
+    let parameterIndex = 1;
+
+    for (const row of rowsToUpdate) {
+      const valueSet = allColumns.map(() => `$${parameterIndex++}`);
+      allValueSets.push(`(${valueSet.join(', ')})`);
+      allPlaceholders = allPlaceholders.concat(allColumns.map((col) => row[col]));
+    }
+
+    const valuesColumnsAliased = allColumns.map((col) => `"${col}"`).join(', ');
+    const setClause = dataColumns.map((col) => `"${col}" = v."${col}"`).join(', ');
+    const whereClause = primaryKeyColumns.map((col) => `t."${col}" = v."${col}"`).join(' AND ');
+
+    const queryText =
+      `UPDATE "${tenantSchema}"."${internalTableId}" AS t ` +
+      `SET ${setClause} ` +
+      `FROM (VALUES ${allValueSets.join(', ')}) AS v(${valuesColumnsAliased}) ` +
+      `WHERE ${whereClause} ` +
+      `RETURNING t."${primaryKeyColumns[0]}";`;
+
+    try {
+      const result = await tooljetDbManager.query(queryText, allPlaceholders);
+      return Array.isArray(result) ? result.length : 0;
+    } catch (error) {
+      throw new TooljetDatabaseError(
+        error.message,
+        {
+          origin: 'bulk_update',
+          internalTables: internalTables,
+        },
+        error
+      );
+    }
+  }
+
+  async bulkDeleteCsv(
+    internalTableId: string,
+    fileBuffer: Buffer,
+    organizationId: string
+  ): Promise<{ processedRows: number }> {
+    const rowsToDelete: Record<string, any>[] = [];
+    const passThrough = new PassThrough();
+
+    const {
+      columns: internalTableDatabaseColumn,
+      foreign_keys: foreignKeys,
+    }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
+      await this.tableOperationsService.perform(organizationId, 'view_table', {
+        id: internalTableId,
+      });
+
+    const tablesInvolvedList = [
+      internalTableId,
+      ...(foreignKeys.length ? foreignKeys.map((foreignKey) => foreignKey.referenced_table_id) : []),
+    ];
+
+    const internalTables = await this.tableOperationsService.findOrFailInternalTableFromTableId(
+      tablesInvolvedList,
+      organizationId
+    );
+
+    const primaryKeyColumnSchema = internalTableDatabaseColumn.filter(
+      (colDetails) => colDetails.keytype === 'PRIMARY KEY'
+    );
+
+    const csvStream = csv.parseString(fileBuffer.toString(), {
+      headers: true,
+      strictColumnHandling: true,
+      discardUnmappedColumns: true,
+    });
+
+    let primaryKeyColumnsInCsv: string[] = [];
+    let rowsProcessed = 0;
+
+    csvStream
+      .on('headers', (headers) => {
+        const resolved = this.resolvePrimaryKeyAndDataColumns(internalTableDatabaseColumn, primaryKeyColumnSchema, headers);
+        primaryKeyColumnsInCsv = resolved.primaryKeyColumns;
+
+        if (primaryKeyColumnsInCsv.length === 0) {
+          csvStream.emit(
+            'error',
+            `CSV must include at least one primary key column: ${primaryKeyColumnSchema
+              .map((colDetails) => colDetails.column_name)
+              .join(', ')}`
+          );
+        }
+      })
+      .transform((row) =>
+        this.filterAndParseKnownColumns(
+          primaryKeyColumnsInCsv,
+          primaryKeyColumnsInCsv,
+          internalTableDatabaseColumn,
+          row,
+          rowsProcessed,
+          csvStream
+        )
+      )
+      .on('data', (row: Record<string, any>) => {
+        rowsProcessed++;
+        rowsToDelete.push(row);
+      })
+      .on('error', (error) => {
+        csvStream.destroy();
+        passThrough.emit('error', new BadRequestException(error));
+      })
+      .on('end', () => {
+        passThrough.emit('end');
+      });
+
+    await pipeline(passThrough, csvStream);
+
+    const processedRows = await this.tooljetDbManager.transaction(async (tooljetDbManager) => {
+      return this.bulkDeleteRows(
+        tooljetDbManager,
+        rowsToDelete,
+        internalTableId,
+        primaryKeyColumnsInCsv,
+        organizationId,
+        internalTables
+      );
+    });
+
+    return { processedRows };
+  }
+
+  async bulkDeleteRows(
+    tooljetDbManager: EntityManager,
+    rowsToDelete: Record<string, any>[],
+    internalTableId: string,
+    primaryKeyColumns: string[],
+    organizationId: string,
+    internalTables: InternalTable[]
+  ): Promise<number> {
+    if (isEmpty(rowsToDelete)) return 0;
+
+    const tenantSchema = findTenantSchema(organizationId);
+    const primaryKeyColumnsQuoted = primaryKeyColumns.map((col) => `"${col}"`).join(', ');
+
+    const allValueSets = [];
+    let allPlaceholders = [];
+    let parameterIndex = 1;
+
+    for (const row of rowsToDelete) {
+      const valueSet = primaryKeyColumns.map(() => `$${parameterIndex++}`);
+      allValueSets.push(`(${valueSet.join(', ')})`);
+      allPlaceholders = allPlaceholders.concat(primaryKeyColumns.map((col) => row[col]));
+    }
+
+    const queryText =
+      `DELETE FROM "${tenantSchema}"."${internalTableId}" ` +
+      `WHERE (${primaryKeyColumnsQuoted}) IN (VALUES ${allValueSets.join(', ')}) ` +
+      `RETURNING "${primaryKeyColumns[0]}";`;
+
+    try {
+      const result = await tooljetDbManager.query(queryText, allPlaceholders);
+      return Array.isArray(result) ? result.length : 0;
+    } catch (error) {
+      throw new TooljetDatabaseError(
+        error.message,
+        {
+          origin: 'bulk_delete',
+          internalTables: internalTables,
+        },
+        error
+      );
+    }
+  }
+
+  resolvePrimaryKeyAndDataColumns(
+    internalTableDatabaseColumn: TooljetDatabaseColumn[],
+    primaryKeyColumnSchema: TooljetDatabaseColumn[],
+    headers: string[]
+  ): { primaryKeyColumns: string[]; dataColumns: string[] } {
+    const knownColumnNames = new Set(internalTableDatabaseColumn.map((colDetails) => colDetails.column_name));
+    const primaryKeyColumnNames = new Set(primaryKeyColumnSchema.map((colDetails) => colDetails.column_name));
+    // Columns in the CSV that aren't real columns on the table are silently ignored,
+    // rather than rejected the way bulkUploadCsv's validateHeadersAsColumnSubset does.
+    const knownHeaders = headers.filter((header) => knownColumnNames.has(header));
+
+    return {
+      primaryKeyColumns: knownHeaders.filter((header) => primaryKeyColumnNames.has(header)),
+      dataColumns: knownHeaders.filter((header) => !primaryKeyColumnNames.has(header)),
+    };
+  }
+
+  filterAndParseKnownColumns(
+    columnsToKeep: string[],
+    requiredColumns: string[],
+    internalTableDatabaseColumn: TooljetDatabaseColumn[],
+    row: Record<string, any>,
+    rowsProcessed: number,
+    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
+  ) {
+    if (rowsProcessed >= this.MAX_ROW_COUNT)
+      csvStream.emit('error', `Row count cannot be greater than ${this.MAX_ROW_COUNT}`);
+
+    try {
+      const filteredRow: Record<string, any> = {};
+      for (const columnName of columnsToKeep) {
+        if (requiredColumns.includes(columnName) && isEmpty(row[columnName]))
+          throw `Primary key value required for column ${columnName}`;
+
+        const columnDetails = internalTableDatabaseColumn.find(
+          (colDetails) => colDetails.column_name === columnName
+        );
+        filteredRow[columnName] = this.convertToDataType(row[columnName], columnDetails!.data_type);
+      }
+
+      return filteredRow;
+    } catch (error) {
+      csvStream.emit('error', `Error at row[${rowsProcessed + 1}]: ${error}`);
+    }
+  }
+
   async validateHeadersAsColumnSubset(
     internalTableDatabaseColumn: TooljetDatabaseColumn[],
     headers: string[],

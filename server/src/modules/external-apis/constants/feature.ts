@@ -97,6 +97,14 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.UPDATE_TJDB_TABLE_AS_CSV]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.DELETE_TJDB_TABLE_AS_CSV]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.UPDATE_USER_METADATA]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
