@@ -6,8 +6,6 @@ import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
 import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-import { isLinkedAppValid } from '../utils';
-import moment from 'moment';
 
 const createUpdateObject = (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => ({
   appId,
@@ -82,7 +80,7 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageIcon = createPageUpdateCommand(['icon']);
   const updatePageURL = createPageUpdateCommand(['url']);
   const updatePageTarget = createPageUpdateCommand(['openIn']);
-  const updatePageTargetApp = createPageUpdateCommand(['targetCorelationId']);
+  const updatePageAppId = createPageUpdateCommand(['appId']);
 
   const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
 
@@ -215,19 +213,7 @@ export const createPageMenuSlice = (set, get) => {
       };
       _togglePageFooterCmd(pageId, [updated])(set, get);
     },
-    updatePageTargetApp: (pageId, coRelationId, slug = null, currentVersionId = null, moduleId = 'canvas') => {
-      const { upsertLinkedApp } = get();
-
-      // Factory handles state mutation + autosave for targetCorelationId
-      updatePageTargetApp(pageId, [coRelationId])(set, get);
-
-      // Mirror both `slug` and `currentVersionId` into the linkedApps store map so
-      // switchPageWrapper can resolve the URL and the validator can distinguish
-      // "missing target" from "no released version" — without waiting for a reload.
-      if (coRelationId) {
-        upsertLinkedApp(coRelationId, { slug, currentVersionId }, moduleId);
-      }
-    },
+    updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);
       const pages = get().modules.canvas.pages;
@@ -613,42 +599,16 @@ export const createPageMenuSlice = (set, get) => {
       }
 
       if (page?.type === 'app') {
-        if (!page?.targetCorelationId) {
+        if (page?.appId) {
+          const appUrl = `${getHostURL()}/applications/${page.appId}`;
+          if (page.openIn === 'new_tab') {
+            window.open(appUrl, '_blank');
+          } else {
+            window.location.href = appUrl;
+          }
+        } else {
           toast.error('No app selected');
           return false;
-        }
-
-        const linkedApps = get().appStore.modules[moduleId]?.linkedApps;
-        const appSlug = linkedApps?.[page.targetCorelationId]?.slug;
-
-        // Editor: throw → routed to debugger via logError below.
-        // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
-        if (currentMode !== 'view') {
-          const { isValid, errorMessage } = isLinkedAppValid(page.targetCorelationId, linkedApps);
-          if (!isValid) {
-            get().debugger?.log?.({
-              logLevel: 'error',
-              type: 'navigation',
-              kind: 'page-nav',
-              key: `[Page ${page.name.replace(/ /g, '_')}]`,
-              errorTarget: 'Pages',
-              error: {
-                message: errorMessage,
-                description: JSON.stringify(errorMessage, null, 2),
-              },
-              strace: 'app_level',
-              timestamp: moment().toISOString(),
-            });
-
-            return false;
-          }
-        }
-
-        const appUrl = `${getHostURL()}/applications/${appSlug}`;
-        if (page.openIn === 'new_tab') {
-          window.open(appUrl, '_blank');
-        } else {
-          window.location.href = appUrl;
         }
         return true;
       }

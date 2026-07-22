@@ -7,8 +7,6 @@ import {
   cleanupStaleBranchKeys,
   registerBranchFocusSync,
   unregisterBranchFocusSync,
-  registerBranchStorageSync,
-  unregisterBranchStorageSync,
 } from '@/_helpers/active-branch';
 
 const initialState = {
@@ -27,22 +25,6 @@ const initialState = {
   isDeletingBranch: false,
   deleteBranchError: null,
 };
-
-// Validator lets focus-sync drop deleted branch ids instead of re-poisoning localStorage from a stale tab.
-function activateBranchSync(get, currentBranch) {
-  if (currentBranch) setActiveBranch(currentBranch);
-  registerBranchFocusSync((branchId) => {
-    const known = get().branches;
-    return known?.length ? known.some((b) => b.id === branchId) : null;
-  });
-  registerBranchStorageSync(() => get().actions.fetchBranches());
-}
-
-function deactivateBranchSync() {
-  unregisterBranchFocusSync();
-  unregisterBranchStorageSync();
-  setActiveBranch(null);
-}
 
 // Helper to resolve current branch from branches list + active ID
 function resolveCurrentBranch(branches, activeBranchId) {
@@ -85,9 +67,11 @@ export const useWorkspaceBranchesStore = create(
             const currentBranch = isGitSyncEnabled ? resolveCurrentBranch(branches, effectiveActiveBranchId) : null;
 
             if (isGitSyncEnabled) {
-              activateBranchSync(get, currentBranch);
+              if (currentBranch) setActiveBranch(currentBranch);
+              registerBranchFocusSync();
             } else {
-              deactivateBranchSync();
+              unregisterBranchFocusSync();
+              setActiveBranch(null);
             }
 
             set({
@@ -112,13 +96,6 @@ export const useWorkspaceBranchesStore = create(
             const serverActiveBranchId = data?.active_branch_id || data?.activeBranchId || null;
             const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
             const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
-            // Stored branch deleted in background — persist fallback so we stop sending a dead id.
-            // Guards keep a transient empty list from clobbering a valid stored branch.
-            const gitStatus = get().orgGitConfig;
-            const isGitSyncEnabled = !!(gitStatus?.isEnabled ?? gitStatus?.is_enabled);
-            if (isGitSyncEnabled && branches.length > 0 && currentBranch && currentBranch.id !== storedBranch?.id) {
-              setActiveBranch(currentBranch);
-            }
             set({ branches, activeBranchId: currentBranch?.id || effectiveActiveBranchId, currentBranch });
           } catch (error) {
             console.error('Failed to fetch branches:', error);
@@ -265,12 +242,14 @@ export const useWorkspaceBranchesStore = create(
         },
 
         clearActiveBranchContext() {
-          deactivateBranchSync();
+          unregisterBranchFocusSync();
+          setActiveBranch(null);
           set({ activeBranchId: null, currentBranch: null });
         },
 
         reset() {
-          deactivateBranchSync();
+          unregisterBranchFocusSync();
+          setActiveBranch(null);
           set(initialState);
         },
 
@@ -290,9 +269,11 @@ export const useWorkspaceBranchesStore = create(
             const currentBranch = isGitSyncEnabled ? resolveCurrentBranch(branches, effectiveActiveBranchId) : null;
 
             if (isGitSyncEnabled) {
-              activateBranchSync(get, currentBranch);
+              if (currentBranch) setActiveBranch(currentBranch);
+              registerBranchFocusSync();
             } else {
-              deactivateBranchSync();
+              unregisterBranchFocusSync();
+              setActiveBranch(null);
             }
 
             set({

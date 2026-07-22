@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { User } from '@entities/user.entity';
 import { IWorkspaceBranchService, WorkspaceBranchListResponse, CheckUpdatesResponse } from './interfaces/IService';
 import { CreateBranchDto, WorkspacePushDto } from './dto';
@@ -9,11 +10,7 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
-  async createBranch(
-    organizationId: string,
-    dto: CreateBranchDto,
-    user?: User
-  ): Promise<{ enqueued: boolean; isImport: boolean }> {
+  async createBranch(organizationId: string, dto: CreateBranchDto, user?: User): Promise<WorkspaceBranch> {
     throw new NotFoundException();
   }
 
@@ -25,7 +22,11 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
-  async deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ enqueued: boolean }> {
+  async deleteBranch(organizationId: string, branchId: string, user?: User): Promise<void> {
+    throw new NotFoundException();
+  }
+
+  async deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ jobId: string }> {
     throw new NotFoundException();
   }
 

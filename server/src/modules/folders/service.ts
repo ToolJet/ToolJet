@@ -13,6 +13,13 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
 
+// App type → the delete-permission key and MODULES bucket that gate its folders.
+// Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
+const FOLDER_PERMISSION_BY_APP_TYPE: Partial<Record<APP_TYPES, { deleteKey: string; resourceType: MODULES }>> = {
+  [APP_TYPES.WORKFLOW]: { deleteKey: 'workflowFolderDelete', resourceType: MODULES.WORKFLOW_FOLDER },
+  [APP_TYPES.MODULE]: { deleteKey: 'moduleFolderDelete', resourceType: MODULES.MODULE_FOLDER },
+};
+
 @Injectable()
 export class FoldersService implements IFoldersService {
   constructor(
@@ -83,7 +90,11 @@ export class FoldersService implements IFoldersService {
     const userPermissions = await this.abilityService.resourceActionsPermission(
       user,
       {
-        resources: [{ resource: MODULES.FOLDER }],
+        resources: [
+          { resource: MODULES.FOLDER },
+          { resource: MODULES.WORKFLOW_FOLDER },
+          { resource: MODULES.MODULE_FOLDER },
+        ],
         organizationId: user.organizationId,
       },
       manager
@@ -97,11 +108,15 @@ export class FoldersService implements IFoldersService {
       return;
     }
 
-    if (action === 'delete' && userPermissions.folderDelete) {
+    const folderPermission = FOLDER_PERMISSION_BY_APP_TYPE[folder.type as APP_TYPES];
+    const canDeleteFolder = folderPermission ? userPermissions[folderPermission.deleteKey] : userPermissions.folderDelete;
+
+    if (action === 'delete' && canDeleteFolder) {
       return;
     }
 
-    const folderPerms = userPermissions[MODULES.FOLDER];
+    const folderResourceType = folderPermission?.resourceType ?? MODULES.FOLDER;
+    const folderPerms = userPermissions[folderResourceType];
     if (action === 'update' && folderPerms) {
       if (folderPerms.isAllEditable) {
         return;
@@ -109,10 +124,6 @@ export class FoldersService implements IFoldersService {
       if (folderPerms.editableFoldersId?.includes(folder.id)) {
         return;
       }
-    }
-
-    if (action === 'update' && userPermissions.isBuilder && folder.type === APP_TYPES.MODULE) {
-      return;
     }
 
     throw new ForbiddenException('You do not have access to perform this action');

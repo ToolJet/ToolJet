@@ -8,7 +8,7 @@ import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
 import { OrganizationConstantType } from './constants';
 import { OrganizationConstantRepository } from './repository';
-const secretValue = '********';
+const secretValue = '**********';
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
   constructor(
@@ -28,6 +28,13 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
+          // Skip processing values if type is SECRET and decryptSecretValue is false
+          if (constant.type === OrganizationConstantType.SECRET && !decryptSecretValue) {
+            return {
+              name: constant.constantName,
+            };
+          }
+
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
               let resolvedValue = '';
@@ -37,9 +44,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
                 if (constant.type === OrganizationConstantType.SECRET) {
                   resolvedValue = decryptSecretValue
                     ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
-                    : value.value
-                    ? secretValue
-                    : '';
+                    : secretValue;
                 } else {
                   resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
                     organizationId,

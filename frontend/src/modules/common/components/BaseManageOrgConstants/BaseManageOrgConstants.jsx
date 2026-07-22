@@ -279,16 +279,7 @@ const BaseManageOrgConstants = ({
   };
 
   const fetchConstantsAndEnvironments = async () => {
-    // Global constants keep using the decrypted endpoint (not sensitive). Secrets use the
-    // masked endpoint instead - the plaintext should never reach the frontend at all, the
-    // same way encrypted data source fields are never sent back in plaintext.
-    const [globalConstants, secretConstants] = await Promise.all([
-      orgEnvironmentConstantService.getAll(Constants.Global),
-      orgEnvironmentConstantService.getAllSecrets(),
-    ]);
-    const orgConstants = {
-      constants: [...(globalConstants?.constants ?? []), ...(secretConstants?.constants ?? [])],
-    };
+    const orgConstants = await orgEnvironmentConstantService.getAll();
 
     if (orgConstants?.constants?.length > 1) {
       orgConstants.constants.sort((a, b) => {

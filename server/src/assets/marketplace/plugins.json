@@ -371,5 +371,15 @@
     "id": "asana",
     "author": "Tooljet",
     "timestamp": "Sun, 29 Jun 2025 00:00:00 GMT"
+  },
+  {
+    "name": "ServiceNow",
+    "description": "Read and write ServiceNow records via the Table API",
+    "version": "1.0.0",
+    "id": "servicenow",
+    "author": "Tooljet",
+    "timestamp": "Mon, 08 Jun 2026 14:10:00 GMT",
+    "repo": "",
+    "tags": ["IT Service Management"]
   }
 ]

@@ -49,7 +49,7 @@ const buildPermissions = (
     userPermission: {
       ...DEFAULT_USER_PERMISSIONS,
       appPromote,
-      [MODULES.APP]: {
+      [resourceType]: {
         ...DEFAULT_USER_APPS_PERMISSIONS,
         isAllEditable,
         isAllViewable,
@@ -92,67 +92,8 @@ describe('defineAppVersionAbility', () => {
   const VIEW_ACTIONS = [FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_EVENTS];
 
   describe('MODULES resource type', () => {
-    it('grants all edit actions when isAllEditable is true', () => {
-      const perms = buildPermissions({ isAllEditable: true, resourceType: MODULES.MODULES });
-      const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms);
-      const ability = build();
-
-      ALL_ACTIONS.forEach((action) => {
-        expect(ability.can(action, App)).toBe(true);
-      });
-    });
-
-    it('grants all edit actions when resourceId is in editableAppsId', () => {
-      const resourceId = 'module-uuid-1';
-      const perms = buildPermissions({ editableAppsId: [resourceId], resourceType: MODULES.MODULES });
-      const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms, resourceId);
-      const ability = build();
-
-      ALL_ACTIONS.forEach((action) => {
-        expect(ability.can(action, App)).toBe(true);
-      });
-    });
-
-    it('denies edit actions when resourceId is not in editableAppsId', () => {
-      const perms = buildPermissions({ editableAppsId: ['other-uuid'], resourceType: MODULES.MODULES });
-      const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms, 'module-uuid-1');
-      const ability = build();
-
-      ALL_ACTIONS.forEach((action) => {
-        expect(ability.can(action, App)).toBe(false);
-      });
-    });
-
-    it('grants view actions when isAllViewable is true', () => {
-      const perms = buildPermissions({ isAllViewable: true, resourceType: MODULES.MODULES });
-      const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms);
-      const ability = build();
-
-      VIEW_ACTIONS.forEach((action) => {
-        expect(ability.can(action, App)).toBe(true);
-      });
-      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
-    });
-
-    it('grants view actions when resourceId is in viewableAppsId', () => {
-      const resourceId = 'module-uuid-2';
-      const perms = buildPermissions({ viewableAppsId: [resourceId], resourceType: MODULES.MODULES });
-      const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms, resourceId);
-      const ability = build();
-
-      VIEW_ACTIONS.forEach((action) => {
-        expect(ability.can(action, App)).toBe(true);
-      });
-      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
-    });
-
-    it('grants all actions to isBuilder via early return', () => {
-      const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
+    it('grants all edit actions + PROMOTE when isAllEditable is true (module editor, Builder role)', () => {
+      const perms = buildPermissions({ isBuilder: true, isAllEditable: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
       defineAppVersionAbility(can, perms);
       const ability = build();
@@ -162,13 +103,171 @@ describe('defineAppVersionAbility', () => {
       });
     });
 
-    it('denies all actions with no permissions', () => {
+    it('grants all edit actions + PROMOTE when resourceId is in editableAppsId (module editor, Builder role)', () => {
+      const resourceId = 'module-uuid-1';
+      const perms = buildPermissions({ isBuilder: true, editableAppsId: [resourceId], resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, resourceId);
+      const ability = build();
+
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
+    });
+
+    it('denies edit actions when resourceId is not in editableAppsId (Builder role, wrong module)', () => {
+      const perms = buildPermissions({ isBuilder: true, editableAppsId: ['other-uuid'], resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, 'module-uuid-1');
+      const ability = build();
+
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
+    });
+
+    it('grants view actions only (no PROMOTE, no draft-create) when isAllViewable is true (Build-with, Builder role)', () => {
+      const perms = buildPermissions({ isBuilder: true, isAllViewable: true, resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms);
+      const ability = build();
+
+      VIEW_ACTIONS.forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
+      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.APP_DRAFT_VERSION_CREATE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.UPDATE, App)).toBe(false);
+    });
+
+    it('grants view actions only when resourceId is in viewableAppsId (Build-with, Builder role)', () => {
+      const resourceId = 'module-uuid-2';
+      const perms = buildPermissions({ isBuilder: true, viewableAppsId: [resourceId], resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, resourceId);
+      const ability = build();
+
+      VIEW_ACTIONS.forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
+      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.APP_DRAFT_VERSION_CREATE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.UPDATE, App)).toBe(false);
+    });
+
+    it('denies all edit actions to isBuilder role alone, without per-module edit assignment', () => {
+      const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms);
+      const ability = build();
+
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
+    });
+
+    it('grants edit actions + PROMOTE to isBuilder role when also per-module editable', () => {
+      const resourceId = 'module-uuid-builder-editor';
+      const perms = buildPermissions({
+        isBuilder: true,
+        editableAppsId: [resourceId],
+        resourceType: MODULES.MODULES,
+      });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, resourceId);
+      const ability = build();
+
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
+    });
+
+    it('denies all edit actions with no permissions (baseline preview-only access remains)', () => {
       const perms = buildPermissions({ resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
       defineAppVersionAbility(can, perms);
       const ability = build();
 
-      ALL_ACTIONS.forEach((action) => {
+      const editOnlyActions = ALL_ACTIONS.filter((a) => !VIEW_ACTIONS.includes(a));
+      editOnlyActions.forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
+    });
+
+    it('ignores generic appPromote flag for modules — per-module edit access is the only gate', () => {
+      const perms = buildPermissions({ appPromote: true, resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms);
+      const ability = build();
+
+      expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
+    });
+  });
+
+  describe('embedded-in-editable-parent-app bypass (MODULES resource type)', () => {
+    it('grants view actions only when isEmbeddedInEditableParentApp is true, with no direct module permission', () => {
+      const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, 'module-uuid-embedded', true);
+      const ability = build();
+
+      VIEW_ACTIONS.forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
+      const editOnlyActions = ALL_ACTIONS.filter((a) => !VIEW_ACTIONS.includes(a));
+      editOnlyActions.forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
+      expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
+    });
+
+    it('grants nothing when isEmbeddedInEditableParentApp is false and there is no direct module permission', () => {
+      const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, 'module-uuid-not-embedded', false);
+      const ability = build();
+
+      VIEW_ACTIONS.forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
+    });
+
+    it('does not upgrade an embedded-view grant into edit access', () => {
+      const perms = buildPermissions({
+        isBuilder: true,
+        viewableAppsId: ['module-uuid-x'],
+        resourceType: MODULES.MODULES,
+      });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, 'module-uuid-x', true);
+      const ability = build();
+
+      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
+    });
+
+    it('direct editableAppsId grant still wins full edit access even when isEmbeddedInEditableParentApp is also true', () => {
+      const resourceId = 'module-uuid-both';
+      const perms = buildPermissions({ isBuilder: true, editableAppsId: [resourceId], resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, resourceId, true);
+      const ability = build();
+
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
+    });
+
+    it('has no effect on the APP resource type (param is MODULES-only)', () => {
+      const perms = buildPermissions({ resourceType: MODULES.APP });
+      const { can, build } = makeBuilder();
+      // 4th param passed but should be ignored entirely for MODULES.APP
+      defineAppVersionAbility(can, perms, 'app-uuid-1', true);
+      const ability = build();
+
+      VIEW_ACTIONS.forEach((action) => {
         expect(ability.can(action, App)).toBe(false);
       });
     });
@@ -356,14 +455,6 @@ describe('defineAppVersionAbility', () => {
       expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
     });
 
-    it('grants PROMOTE via appPromote on MODULES resource type', () => {
-      const perms = buildPermissions({ appPromote: true, resourceType: MODULES.MODULES });
-      const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms);
-      const ability = build();
-
-      expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(true);
-    });
   });
 
   describe('builder role edge cases', () => {
@@ -379,17 +470,17 @@ describe('defineAppVersionAbility', () => {
       expect(ability.can(FEATURE_KEY.CREATE_COMPONENTS, App)).toBe(false);
     });
 
-    it('grants version management actions to isBuilder on MODULES', () => {
+    it('denies version management actions to isBuilder on MODULES without per-module edit assignment', () => {
       const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
       defineAppVersionAbility(can, perms);
       const ability = build();
 
-      expect(ability.can(FEATURE_KEY.APP_VERSION_CREATE, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.APP_VERSION_DELETE, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.APP_VERSION_UPDATE, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.DELETE, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.CREATE_PAGES, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.APP_VERSION_CREATE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.APP_VERSION_DELETE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.APP_VERSION_UPDATE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.DELETE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.CREATE_PAGES, App)).toBe(false);
     });
   });
 

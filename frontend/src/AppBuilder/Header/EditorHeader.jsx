@@ -17,7 +17,7 @@ import SaveIndicator from './SaveIndicator';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
+  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion, isEditorReadOnly } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
@@ -25,6 +25,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
       appId: state.appStore.modules[moduleId].app.appId,
       organizationId: state.appStore.modules[moduleId].app.organizationId,
       selectedVersion: state.selectedVersion,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
@@ -62,18 +63,20 @@ export const EditorHeader = ({ darkMode, appType }) => {
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
-                    <div>
-                      <span
-                        className={cx('autosave-indicator tj-text-xsm', {
-                          'autosave-indicator-saving': isSaving,
-                          'text-danger': saveError,
-                          'd-none': isVersionReleased,
-                        })}
-                        data-cy="autosave-indicator"
-                      >
-                        <SaveIndicator isSaving={isSaving} saveError={saveError} />
-                      </span>
-                    </div>
+                    {!isEditorReadOnly && (
+                      <div>
+                        <span
+                          className={cx('autosave-indicator tj-text-xsm', {
+                            'autosave-indicator-saving': isSaving,
+                            'text-danger': saveError,
+                            'd-none': isVersionReleased,
+                          })}
+                          data-cy="autosave-indicator"
+                        >
+                          <SaveIndicator isSaving={isSaving} saveError={saveError} />
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

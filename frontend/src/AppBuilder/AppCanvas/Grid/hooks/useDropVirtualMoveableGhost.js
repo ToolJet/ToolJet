@@ -5,6 +5,7 @@ import { clearActiveTargetClassNamesAfterSnapping } from '@/AppBuilder/AppCanvas
 
 export const useDropVirtualMoveableGhost = () => {
   const ghostElementRef = useRef(null);
+  const ghostSizeRef = useRef({ width: 100, height: 40 });
   const isActiveRef = useRef(false);
   const moveableGhostClass = 'disable-moveable-line';
 
@@ -19,11 +20,14 @@ export const useDropVirtualMoveableGhost = () => {
 
   const applyGhostElementStyles = (ghost, componentSize) => {
     toggleMoveableGhostClass(true);
+    const width = componentSize.width || 100;
+    const height = componentSize.height || 40;
+    ghostSizeRef.current = { width, height };
     ghost.className = 'moveable-ghost target';
     ghost.style.cssText = `
       position: absolute;
-      width: ${componentSize.width || 100}px;
-      height: ${componentSize.height || 40}px;
+      width: ${width}px;
+      height: ${height}px;
       background: #D9E2FC;
       opacity: 0.7;
       pointer-events: none;
@@ -33,6 +37,17 @@ export const useDropVirtualMoveableGhost = () => {
       left: 0;
       border: 1px solid #4af;
     `;
+  };
+
+  const updateGhostSize = (componentSize) => {
+    const ghost = ghostElementRef.current;
+    if (!ghost || !componentSize) return;
+    const width = componentSize.width || ghostSizeRef.current.width;
+    const height = componentSize.height || ghostSizeRef.current.height;
+    if (width === ghostSizeRef.current.width && height === ghostSizeRef.current.height) return;
+    ghostSizeRef.current = { width, height };
+    ghost.style.width = `${width}px`;
+    ghost.style.height = `${height}px`;
   };
 
   const createGhostMoveElement = (componentSize) => {
@@ -126,5 +141,7 @@ export const useDropVirtualMoveableGhost = () => {
   return {
     activateMoveableGhost,
     deactivateMoveableGhost,
+    updateGhostSize,
+    updateMoveableGhostPosition,
   };
 };

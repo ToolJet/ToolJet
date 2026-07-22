@@ -221,7 +221,6 @@ export class PageService implements IPageService {
       newPage.icon = pageToClone.icon || 'IconFile';
       newPage.openIn = pageToClone.openIn;
       newPage.appId = pageToClone.appId;
-      newPage.targetCorelationId = pageToClone.targetCorelationId;
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;

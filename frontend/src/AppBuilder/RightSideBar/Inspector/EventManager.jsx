@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 
-import { AlertTriangle, ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
-import { ToolTip } from '@/_components';
-import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
+import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
 import {
   Popover,
@@ -48,7 +46,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
-import { appsService } from '@/_services';
+import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
@@ -66,6 +64,7 @@ export const EventManager = ({
   hideEmptyEventsAlert,
   callerQueryId,
   customEventRefs = undefined,
+  excludeRefEvents = false,
   callerQueryName,
   component,
 }) => {
@@ -87,7 +86,6 @@ export const EventManager = ({
   const { createAppVersionEventHandlers, deleteAppVersionEventHandler, updateAppVersionEventHandlers } =
     useEventActions();
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
-  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
 
   const eventsUpdatedLoader = useStore((state) => state.eventsSlice.getEventsUpdatedLoader(), shallow);
   const eventsCreatedLoader = useStore((state) => state.eventsSlice.getEventsCreatedLoader(), shallow);
@@ -101,6 +99,10 @@ export const EventManager = ({
       if (event.event.ref !== customEventRefs.ref) {
         return false;
       }
+    } else if (excludeRefEvents && event.event?.ref) {
+      // Hide sub-element (ref-scoped) events from a component-level panel,
+      // e.g. per-menu-item Navigation events should not appear at the component level.
+      return false;
     }
 
     return event.sourceId === sourceId && event.target === eventSourceType;
@@ -282,14 +284,13 @@ export const EventManager = ({
     return defaultParams;
   }
 
-  const fetchApps = async () => {
-    const { apps } = await appsService.getAllAddableApps();
+  const fetchApps = async (page) => {
+    const { apps } = await appService.getAllAddableApps();
     updateState({
       apps: apps.map((app) => ({
         id: app.id,
         name: app.name,
         slug: app.slug,
-        co_relation_id: app.co_relation_id,
         current_version_id: app.current_version_id,
       })),
     });
@@ -298,16 +299,14 @@ export const EventManager = ({
   };
 
   async function getAllApps() {
-    const apps = await fetchApps();
+    const apps = await fetchApps(0);
     let appsOptionsList = [];
     apps
-      .filter((item) => item.slug !== undefined && item.id !== appId)
+      .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
       .forEach((item) => {
         appsOptionsList.push({
           name: item.name,
-          value: item.co_relation_id,
-          slug: item.slug,
-          currentVersionId: item.current_version_id,
+          value: item.slug,
         });
       });
     return appsOptionsList;
@@ -360,16 +359,6 @@ export const EventManager = ({
 
     if (param === 'name') {
       updatedEvent.name = value;
-    } else if (typeof param === 'object' && param !== null) {
-      // Object diff form: merge each key into the event blob, deleting undefined keys
-      // so callers can drop legacy fields (e.g. `slug: undefined` when re-picking a target app).
-      for (const [k, v] of Object.entries(param)) {
-        if (v === undefined) {
-          delete updatedEvent.event[k];
-        } else {
-          updatedEvent.event[k] = v;
-        }
-      }
     } else {
       updatedEvent.event[param] = value;
     }
@@ -1151,12 +1140,7 @@ export const EventManager = ({
               <div {...droppableProps} ref={innerRef}>
                 {events.map((event, index) => {
                   const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
-                  const goToAppValidation =
-                    event.event.actionId === 'go-to-app'
-                      ? isLinkedAppValid(event.event.correlationId, linkedAppsMap)
-                      : null;
-                  const goToAppErrorMessage =
-                    goToAppValidation && !goToAppValidation.isValid ? goToAppValidation.errorMessage : null;
+                  // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                   return (
                     <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
                       {renderDraggable((provided, snapshot) => {
@@ -1208,22 +1192,6 @@ export const EventManager = ({
                                         {event?.name}
                                       </TooltipContent>
                                     </Tooltip>
-                                    {goToAppErrorMessage && (
-                                      <ToolTip
-                                        message={goToAppErrorMessage}
-                                        maxWidth="360px"
-                                        placement="top-end"
-                                        popperConfig={{
-                                          modifiers: [{ name: 'offset', options: { offset: [10, 2] } }],
-                                        }}
-                                      >
-                                        <AlertTriangle
-                                          className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"
-                                          onClick={(e) => e.stopPropagation()}
-                                          data-cy="event-row-broken-link-warning"
-                                        />
-                                      </ToolTip>
-                                    )}
                                     {(index === focusedEventIndex && (actionsUpdatedLoader || eventsUpdatedLoader)) ||
                                     index === eventToDeleteLoaderIndex ? (
                                       <Spinner size="default" className="tw-text-icon-brand" />
@@ -1245,7 +1213,7 @@ export const EventManager = ({
                                           {eventMetaDefinition?.events[event.event.eventId]?.displayName}
                                         </span>
                                         <ArrowRight className="tw-h-3 tw-w-3 tw-shrink-0 tw-text-text-placeholder" />
-                                        <span className="tw-min-w-0 tw-text-left tw-truncate tw-font-body-default tw-text-text-placeholder">
+                                        <span className="tw-min-w-0 tw-text-left tw-flex-1 tw-truncate tw-font-body-default tw-text-text-placeholder">
                                           {actionMeta.name}
                                         </span>
                                       </div>
@@ -1365,7 +1333,7 @@ export const EventManager = ({
           <EmptyDescription>
             {t(
               'editor.inspector.eventManager.emptyDescription',
-              'Add events to make your component interactive — like button clicks or form submissions'
+              'Add events to define how this component responds to user actions.'
             )}
           </EmptyDescription>
         </EmptyHeader>

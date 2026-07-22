@@ -26,7 +26,10 @@ import { Repository } from 'typeorm';
  *   - 409: version already saved
  *   - 201 happy path: no rename, with rename, by slug
  *   - 400: name exceeds max length
- *   - End-to-end: save then release chain
+ *
+ * The full save -> release -> push lifecycle chain, and the branch-publish
+ * hook this endpoint shares with release, are covered in
+ * promote-to-next-version.e2e-spec.ts, not here.
  */
 
 /** @group platform */

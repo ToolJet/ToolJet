@@ -68,11 +68,17 @@ export class AbilityService extends IAbilityService {
 
           folderCreate: acc.folderCreate || group.folderCreate,
           folderDelete: acc.folderDelete || group.folderDelete,
+          workflowFolderCreate: acc.workflowFolderCreate || group.workflowFolderCreate,
+          workflowFolderDelete: acc.workflowFolderDelete || group.workflowFolderDelete,
+          moduleFolderCreate: acc.moduleFolderCreate || group.moduleFolderCreate,
+          moduleFolderDelete: acc.moduleFolderDelete || group.moduleFolderDelete,
           orgConstantCRUD: acc.orgConstantCRUD || group.orgConstantCRUD,
           tjdbCRUD: acc.tjdbCRUD || group.tjdbCRUD,
           orgVariableCRUD: acc.orgVariableCRUD,
           workflowCreate: acc.workflowCreate || group.workflowCreate,
           workflowDelete: acc.workflowDelete || group.workflowDelete,
+          moduleCreate: acc.moduleCreate || group.moduleCreate,
+          moduleDelete: acc.moduleDelete || group.moduleDelete,
         };
       }, DEFAULT_USER_PERMISSIONS);
 
@@ -90,8 +96,7 @@ export class AbilityService extends IAbilityService {
 
       const { resources } = resourcePermissionsObject;
       if (resources) {
-        // Load app permissions for both MODULES.APP and MODULES.MODULES since modules use app permissions
-        if (resources.some((item) => item.resource === MODULES.APP || item.resource === MODULES.MODULES)) {
+        if (resources.some((item) => item.resource === MODULES.APP)) {
           const appsGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.APP);
           const foldersGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.FOLDER);
           userPermissions[MODULES.APP] = await this.abilityUtilService.createUserAppsPermissions(
@@ -99,6 +104,20 @@ export class AbilityService extends IAbilityService {
             foldersGranularPermissions,
             user,
             m
+          );
+        }
+        // Modules resolve via their own granular permissions (app_type='module'), kept separate
+        // from the app bucket so module access never leaks into app-view resolution.
+        if (resources.some((item) => item.resource === MODULES.MODULES)) {
+          const moduleGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.MODULE);
+          const moduleFolderGranularPermissions = allGranularPermissions.filter(
+            (perm) => perm.type === ResourceType.MODULE_FOLDER
+          );
+          userPermissions[MODULES.MODULES] = await this.abilityUtilService.createUserModulesPermissions(
+            moduleGranularPermissions,
+            moduleFolderGranularPermissions,
+            user,
+            manager
           );
         }
         if (resources.some((item) => item.resource === MODULES.GLOBAL_DATA_SOURCE)) {
@@ -112,8 +131,25 @@ export class AbilityService extends IAbilityService {
           }
         }
         if (resources.some((item) => item.resource === MODULES.FOLDER)) {
-          const folderGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.FOLDER);
-          userPermissions[MODULES.FOLDER] = this.createUserFolderPermissions(folderGranularPermissions);
+          userPermissions[MODULES.FOLDER] = this.createUserContainerFolderPermissions(
+            allGranularPermissions,
+            ResourceType.FOLDER,
+            userPermissions.isEndUser
+          );
+        }
+        if (resources.some((item) => item.resource === MODULES.WORKFLOW_FOLDER)) {
+          userPermissions[MODULES.WORKFLOW_FOLDER] = this.createUserContainerFolderPermissions(
+            allGranularPermissions,
+            ResourceType.WORKFLOW_FOLDER,
+            userPermissions.isEndUser
+          );
+        }
+        if (resources.some((item) => item.resource === MODULES.MODULE_FOLDER)) {
+          userPermissions[MODULES.MODULE_FOLDER] = this.createUserContainerFolderPermissions(
+            allGranularPermissions,
+            ResourceType.MODULE_FOLDER,
+            userPermissions.isEndUser
+          );
         }
       }
 
@@ -121,7 +157,11 @@ export class AbilityService extends IAbilityService {
     });
   }
 
-  createUserFolderPermissions(folderGranularPermissions: GranularPermissions[]): UserFolderPermissions {
+  createUserContainerFolderPermissions(
+    allGranularPermissions: GranularPermissions[],
+    resourceType: ResourceType,
+    isEndUser = false
+  ): UserFolderPermissions {
     const userFolderPermissions: UserFolderPermissions = {
       ...DEFAULT_USER_FOLDER_PERMISSIONS,
       editableFoldersId: [],
@@ -129,6 +169,13 @@ export class AbilityService extends IAbilityService {
       editAppsInFoldersId: [],
     };
 
+    // Module folders are never end-user-assignable — resolve to no access even if a
+    // granular permission already grants it (e.g. a user added later to that group).
+    if (isEndUser && resourceType === ResourceType.MODULE_FOLDER) {
+      return userFolderPermissions;
+    }
+
+    const folderGranularPermissions = allGranularPermissions.filter((perm) => perm.type === resourceType);
     for (const gp of folderGranularPermissions) {
       const folderPerms = gp.foldersGroupPermissions;
       if (!folderPerms) continue;

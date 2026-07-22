@@ -17,7 +17,6 @@ import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.s
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { RedisModule } from '@modules/redis/module';
-import { BullMqMetricsModule } from '@modules/bullmq-metrics/bullmq-metrics.module';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -147,9 +146,7 @@ export class AppModuleLoader {
           metrics: {
             hostMetrics: true,
           },
-        }),
-        // Queue depth + worker gauges; not WORKER-gated (counts come from Redis)
-        BullMqMetricsModule
+        })
       );
     }
 

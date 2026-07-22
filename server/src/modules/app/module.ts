@@ -78,7 +78,6 @@ import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
 import { WorkspaceContextModule } from '@modules/workspace-context/module';
-import { NotificationsModule } from '@modules/notifications/module';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -159,7 +158,6 @@ export class AppModule implements OnModuleInit, NestModule {
       await CustomDomainsModule.register(configs, true),
       await BackgroundProcessorModule.register(configs, true),
       await WorkspaceContextModule.register(configs, true),
-      await NotificationsModule.register(configs, true),
     ];
 
     const conditionalImports = [];

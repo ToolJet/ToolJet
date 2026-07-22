@@ -77,15 +77,9 @@ export class CreatePageDto {
   @IsOptional()
   type?: PageType;
 
-  // Deprecated: use targetCorelationId instead
   @IsUUID()
   @IsOptional()
   appId?: string;
-
-  // Co relation id for the target tooljet app when page type is 'app'
-  @IsUUID()
-  @IsOptional()
-  targetCorelationId?: string;
 }
 
 export class DeletePageDto {

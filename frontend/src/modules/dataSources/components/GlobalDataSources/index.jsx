@@ -30,6 +30,8 @@ import Skeleton from 'react-loading-skeleton';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
+import { MarketplaceBanner } from '../MarketplaceBanner';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -44,8 +46,19 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const [pendingCreateDS, setPendingCreateDS] = useState(null);
   const loadingSeenRef = useRef(false);
   const { t } = useTranslation();
-  const { admin } = authenticationService.currentSessionValue;
-  const marketplaceEnabled = admin;
+  const currentUserValue = authenticationService.currentSessionValue;
+  const admin = currentUserValue?.admin;
+  const superAdmin = currentUserValue?.super_admin;
+  const isBuilder = !!currentUserValue?.user_permissions?.is_builder;
+  const edition = String(fetchEdition() || '').toLowerCase();
+  const { tooljetVersion } = useAppDataStore(
+    (state) => ({
+      tooljetVersion: state?.metadata?.installed_version,
+    }),
+    shallow
+  );
+  const isCloudEdition = edition === 'cloud' || checkIfToolJetCloud(tooljetVersion);
+  const marketplaceEnabled = !isCloudEdition && (admin || superAdmin || isBuilder);
   const [modalProps, setModalProps] = useState({
     backdrop: false,
     dialogClassName: `datasource-edit-modal`,
@@ -74,12 +87,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   } = useContext(GlobalDataSourcesContext);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  const { tooljetVersion } = useAppDataStore(
-    (state) => ({
-      tooljetVersion: state?.metadata?.installed_version,
-    }),
-    shallow
-  );
+  const showMarketplaceBanner = marketplaceEnabled && tooljetVersion && !checkIfToolJetCloud(tooljetVersion);
 
   useEffect(() => {
     pluginsService
@@ -292,6 +300,9 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     return (
       <div className="datasource-list-container" id="datasource-list-container">
         <div className="datasource-list">
+          <div className="datasource-marketplace-banner-holder">
+            <MarketplaceBanner marketplaceEnabled={marketplaceEnabled} showBanner={showMarketplaceBanner} />
+          </div>
           <div className="datasource-search-holder">
             <SearchBox
               dataCy={`home-page`}

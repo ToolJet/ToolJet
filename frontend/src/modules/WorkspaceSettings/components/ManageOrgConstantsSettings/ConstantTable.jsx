@@ -121,11 +121,7 @@ const ConstantTable = ({
                           }`}
                           data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-value`}
                         >
-                          {constant.type === 'Secret' && !constant.fromEnv ? (
-                            // Secret values are never sent back from the backend in plaintext
-                            // (matches encrypted data source fields), so there's nothing to reveal here.
-                            '*'.repeat(displayValue(constant).length)
-                          ) : !showValues[constant.id] ? (
+                          {!showValues[constant.id] ? (
                             '*'.repeat(displayValue(constant).length)
                           ) : constant.type === 'Secret' && constant.fromEnv ? (
                             <span className={`env-secret-hidden-message ${darkMode ? 'dark' : 'light'}`}>
@@ -145,39 +141,37 @@ const ConstantTable = ({
                             style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
                             data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-update`}
                           >
-                            {constant.type !== 'Secret' && (
-                              <div
-                                style={{ cursor: 'pointer' }}
-                                onClick={() => toggleShowValue(constant.id)}
-                                data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-constant-visibility`}
-                              >
-                                {!showValues[constant.id] ? (
-                                  <EyeHide
-                                    fill={
-                                      darkMode
-                                        ? String(constant.value)?.length
-                                          ? '#D1D5DB'
-                                          : '#656565'
-                                        : String(constant.value)?.length
-                                        ? '#384151'
-                                        : '#D1D5DB'
-                                    }
-                                  />
-                                ) : (
-                                  <EyeShow
-                                    fill={
-                                      darkMode
-                                        ? String(constant.value)?.length
-                                          ? '#D1D5DB'
-                                          : '#656565'
-                                        : String(constant.value)?.length
-                                        ? '#384151'
-                                        : '#D1D5DB'
-                                    }
-                                  />
-                                )}
-                              </div>
-                            )}
+                            <div
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => toggleShowValue(constant.id)}
+                              data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-constant-visibility`}
+                            >
+                              {!showValues[constant.id] ? (
+                                <EyeHide
+                                  fill={
+                                    darkMode
+                                      ? String(constant.value)?.length
+                                        ? '#D1D5DB'
+                                        : '#656565'
+                                      : String(constant.value)?.length
+                                      ? '#384151'
+                                      : '#D1D5DB'
+                                  }
+                                />
+                              ) : (
+                                <EyeShow
+                                  fill={
+                                    darkMode
+                                      ? String(constant.value)?.length
+                                        ? '#D1D5DB'
+                                        : '#656565'
+                                      : String(constant.value)?.length
+                                      ? '#384151'
+                                      : '#D1D5DB'
+                                  }
+                                />
+                              )}
+                            </div>
                             {
                               <WithTooltip
                                 {...(constant.fromEnv && {

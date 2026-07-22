@@ -270,21 +270,10 @@ export class VersionService implements IVersionService {
     };
 
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
-    const modules = await this.appUtilService.fetchModules(app, false, undefined);
+    const modules = await this.appUtilService.fetchModules(app, false, app.appVersions?.[0]?.id);
 
     response['modules'] = await Promise.all(
       modules.map((module) => prepareResponse(module, module.editingVersion?.id))
-    );
-
-    // Top-level linkedApps map: covers main app + every module
-    // Helps frontend to resolve go-to-app link for any correlationId referenced
-    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
-    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
-    response['linkedApps'] = await this.appUtilService.collectLinkedAppsForResponse(
-      allPages,
-      allEvents,
-      app.organizationId,
-      app.appVersions?.[0]?.branchId
     );
 
     return response;

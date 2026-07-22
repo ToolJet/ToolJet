@@ -105,7 +105,6 @@ export class PageHelperService implements IPageHelperService {
     page.autoComputeLayout = true;
     page.index = dto.index;
     page.appId = dto.appId;
-    page.targetCorelationId = dto.targetCorelationId ?? null;
     page.url = dto.url;
     page.type = dto.type;
     page.openIn = dto.openIn;
