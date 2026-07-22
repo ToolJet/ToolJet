@@ -41,7 +41,7 @@ export class App extends BaseEntity {
   @Column({ name: 'slug', unique: true })
   slug: string;
 
-  @Column({ name: 'is_public', default: true })
+  @Column({ name: 'is_public', default: false })
   isPublic: boolean;
 
   @Column({ name: 'is_maintenance_on', default: false })

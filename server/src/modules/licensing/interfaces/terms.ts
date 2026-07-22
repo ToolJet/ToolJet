@@ -37,6 +37,8 @@ export interface Terms {
     github?: boolean;
     observability?: boolean;
     queryFolders?: boolean;
+    appPublic?: boolean;
+    automaticSsoLogin?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
