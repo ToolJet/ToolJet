@@ -119,7 +119,11 @@ export const createUndoRedoSlice = (set, get) => {
           skipUndoRedo: true,
         });
 
-        const addedComponentIds = new Set(Object.keys(addedComponents || {}));
+        if (!addedComponents || Object.keys(addedComponents).length === 0) {
+          throw new Error('Undo/redo restore failed: no components were added');
+        }
+
+        const addedComponentIds = new Set(Object.keys(addedComponents));
         const eventHandlersToCreate = (componentEventsToUpdate || [])
           .filter((event) => addedComponentIds.has(event.sourceId))
           .filter((event) => event?.event && event?.target && event?.sourceId != null && event?.index != null)
@@ -141,7 +145,10 @@ export const createUndoRedoSlice = (set, get) => {
 
         try {
           const response = await get().saveComponentChanges(batchDiff, 'components/batch', 'update', 'canvas');
-          response?.events?.forEach((event) => get().eventsSlice.addEvent(event, 'canvas'));
+          if (response) {
+            response.events?.forEach((event) => get().eventsSlice.addEvent(event, 'canvas'));
+            get().multiplayer.broadcastUpdates(componentsToAdd, 'components', 'create');
+          }
         } catch (error) {
           console.error('Error restoring components and event handlers on undo:', error);
         }
