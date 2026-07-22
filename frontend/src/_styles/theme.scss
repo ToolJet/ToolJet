@@ -6381,25 +6381,72 @@ a.step-item-disabled {
   background: var(--completedAccent) !important;
 }
 
+// design (153:7287): 13px blue pill overlapping the bell's top-right (badge at x16,y2 of the 32px nav item)
 .notification-center-badge {
-  margin-top: 0px;
-  margin-left: 10px;
-  margin-bottom: 15px;
   position: absolute;
-  right: 6px;
+  top: 2px;
+  // right-anchored so the 99+ pill grows leftward instead of clipping at the
+  // 48px sidebar's overflow-x: hidden edge
+  left: auto;
+  right: -2px;
+  margin: 0;
+  padding: 2px 4px;
+  height: 13px;
+  min-width: 13px;
+  background: #4368e3;
+  color: #f6f8fa;
+  border-radius: 8px;
+  font-family: 'Inter', 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+// panel container (68:3832): 420 wide, radius 10, 1px weak border, elevation-400 shadow
 .notification-center {
   max-height: 500px;
+  width: 420px;
   min-width: 420px;
   overflow: auto;
   margin-left: 11px !important;
+  padding: 0;
+  border: 1px solid var(--borders-weak, #e4e7eb) !important; // beat tabler's 0.667px dropdown border
+  border-radius: 10px;
+  box-shadow: 0 0 1px rgba(48, 50, 51, 0.05), 0 8px 16px rgba(48, 50, 51, 0.1);
 
+  // empty state (85:9355): 40px icon box + 12px medium title + 12px grey hint, centered
   .empty {
-    padding: 0 !important;
+    padding: 6px 32px !important;
+    margin: 0;
+    min-height: 304px; // fills the 320px list cap without scrolling
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
 
     .empty-img {
-      font-size: 2.5em;
+      padding: 10px;
+      margin: 0;
+      line-height: 0;
+    }
+
+    .empty-title {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      letter-spacing: -0.24px;
+      color: var(--text-default, #1b1f24);
+    }
+
+    .empty-subtitle {
+      margin: 0;
+      font-size: 12px !important; // tabler .empty-subtitle bumps size
+      line-height: 18px;
+      letter-spacing: -0.24px;
+      color: var(--text-placeholder, #6a727c) !important;
     }
   }
 
@@ -6407,7 +6454,25 @@ a.step-item-disabled {
     min-width: 400px;
     background: var(--surfaces-surface-01);
     color: var(--text-default);
-    box-shadow: var(--elevation-400-box-shadow);
+    border: none;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  // header (68:3833): 48px, py 8 px 16, 14/20 medium title
+  .card-header {
+    padding: 8px 16px;
+    min-height: 48px;
+    align-items: center;
+    border-bottom: 1px solid var(--borders-weak, #e4e7eb) !important;
+
+    .card-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--text-default, #1b1f24);
+    }
   }
 
   .card-footer {
@@ -6417,6 +6482,340 @@ a.step-item-disabled {
 
   .spinner {
     min-height: 100px;
+  }
+
+  // dark panel (Figma 282:4776) — --borders-weak has no dark token and --slate3
+  // stays light inside .dark-theme, so both need explicit dark values
+  &.dark-theme {
+    background: var(--surfaces-surface-01, #1e2226);
+    border-color: #2b3036 !important;
+
+    .card-header {
+      border-bottom-color: #2b3036 !important;
+    }
+
+    .notification-new-pill {
+      background: #3c434b;
+      color: #ffffff;
+    }
+
+    .notification-load-more {
+      border-top-color: #2b3036;
+    }
+  }
+}
+
+// notification row — Figma "Notif types and states": unread = right blue dot; read = grey
+// (#acb2b9) text, not opacity; hover greys the row and swaps the dot for open/× actions
+.notification-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 8px 4px;
+  border-radius: 4px;
+  font-family: 'Inter', 'IBM Plex Sans', sans-serif; // design family/regular: Inter
+  transition: background 0.15s;
+  cursor: pointer;
+
+  .notification-row-icon {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  // read rows keep full color (Figma 70:7733) — the only differentiator is the missing dot
+  &:hover {
+    background: rgba(136, 144, 153, 0.12);
+
+    .notification-row-dot {
+      display: none;
+    }
+
+    .notification-row-actions {
+      display: flex;
+    }
+  }
+
+  &:active {
+    background: rgba(136, 144, 153, 0.18); // design pressed state
+  }
+
+  .notification-row-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; // design: text column top-aligned with the 28px icon box, 2px between lines
+  }
+
+  .notification-row-title {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    letter-spacing: -0.24px;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .notification-row-body {
+    font-size: 12px;
+    line-height: 18px;
+    letter-spacing: -0.24px;
+    color: var(--text-placeholder, #6a727c);
+
+    .notification-row-mono {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-medium, #2d343b);
+      background: none;
+      padding: 0 2px;
+    }
+  }
+
+  .notification-row-time {
+    font-size: 12px;
+    line-height: 18px;
+    letter-spacing: -0.24px;
+    color: var(--text-placeholder, #6a727c);
+  }
+
+  .notification-row-side {
+    display: flex;
+    align-items: center;
+    align-self: flex-start; // dot rides the title line, not row center
+    height: 28px;
+    // constant width whether it holds the dot (8px) or the hover actions (2×28px) —
+    // otherwise the text column re-wraps on hover and the panel height jitters
+    min-width: 56px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .notification-row-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4368e3;
+    margin-right: 10px; // optically centered in the 28px slot the × occupies on hover
+  }
+
+  .notification-row-actions {
+    display: none;
+  }
+
+  .notification-row-action {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-placeholder, #6a727c);
+
+    &:hover {
+      background: rgba(136, 144, 153, 0.15);
+      color: var(--text-default);
+    }
+  }
+}
+
+// panel header: "N new" pill + icon actions (bell-check / brush-cleaning)
+.notification-new-pill {
+  margin-left: 10px; // design gap 10 between title and pill
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--slate3, #f1f3f5);
+  color: var(--text-default, #1b1f24); // design slate/12 #11181c; nearest dark-mode-safe token
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.notification-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.notification-header-action {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary, #6a727c);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background: rgba(136, 144, 153, 0.12);
+    color: var(--text-default);
+  }
+
+  &:disabled {
+    color: var(--icon-default, #acb2b9); // design empty state: icons greyed, not translucent
+    cursor: default;
+  }
+}
+
+// cursor pagination — pinned footer bar below the scroll area (design 70:8193)
+.notification-load-more {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--borders-weak, #e4e7eb);
+  padding: 10px 16px;
+  cursor: pointer;
+  color: var(--text-default, #1b1f24);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: -0.24px;
+  text-align: center;
+
+  &:hover:not(:disabled) {
+    background: var(--surfaces-surface-02, #f6f8fa);
+  }
+
+  &:disabled {
+    color: var(--text-placeholder);
+    cursor: default;
+  }
+}
+
+// "View details" action inside notification arrival toasts (standard react-hot-toast look)
+// design 70:6926: message + secondary-button action on one row
+.notification-toast-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-toast-view {
+  padding: 4px 12px;
+  border: 1px solid var(--borders-default, #ccd1d5);
+  border-radius: 6px;
+  background: var(--surfaces-surface-01, #fff);
+  color: var(--text-default, #1b1f24);
+  font-size: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--interactive-overlays-fill-hover, #f6f8fa);
+  }
+}
+
+// cap the bell list to ~4 rows; scroll the rest (bell sits low, panel grows upward)
+.notification-center .notifications-card .list-group {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+// error detail modal (Figma 70:6766): icon+title header, lead + time, trace box, Copy trace footer
+.modal-dialog:has(.notification-error-modal) {
+  max-width: 712px; // design frame width, not bootstrap modal-lg 800px
+}
+
+.notification-error-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--borders-weak, #e4e7eb);
+}
+
+.notification-error-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-default, #1b1f24);
+}
+
+.notification-error-close {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-placeholder, #6a727c);
+  display: inline-flex;
+
+  &:hover {
+    color: var(--text-default);
+  }
+}
+
+.notification-error-lead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  .notification-error-message {
+    font-size: 13px;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .notification-error-time {
+    font-size: 12px;
+    color: var(--text-placeholder, #6a727c);
+    flex-shrink: 0;
+  }
+}
+
+.notification-error-pre {
+  height: 280px;
+  overflow: auto;
+  white-space: pre;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-placeholder, #6a727c);
+  background: var(--surfaces-surface-01, #ffffff);
+  border: 1px solid var(--borders-weak, #e4e7eb);
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+.notification-error-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+
+  // design dev-inspect: 7px 12px, gap 6, radius 6, button/primary + elevation/100
+  .notification-copy-trace {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #4368e3;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    box-shadow: 0 0 1px 0 rgba(48, 50, 51, 0.05);
+    cursor: pointer;
+
+    &:hover {
+      background: #3a5cd0;
+    }
   }
 }
 
@@ -7628,6 +8027,7 @@ tbody {
 .audit-log-nav-item,
 .notification-center-nav-item {
   border-radius: 4px;
+  position: relative; // anchor for the unread count pill
 }
 
 .settings-nav-item {

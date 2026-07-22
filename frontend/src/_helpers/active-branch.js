@@ -62,8 +62,11 @@ let _focusSyncListener = null;
  * from sessionStorage to localStorage whenever the tab becomes visible.
  * This ensures new tabs opened from this tab inherit its active branch.
  * Safe to call multiple times — removes any existing listener before re-registering.
+ *
+ * isKnownBranchId(id) => true | false | null (injected by the branches store; avoids circular import).
+ * false = branch deleted: drop stale sessionStorage instead of re-poisoning localStorage with a dead id.
  */
-export function registerBranchFocusSync() {
+export function registerBranchFocusSync(isKnownBranchId) {
   if (_focusSyncListener) {
     document.removeEventListener('visibilitychange', _focusSyncListener);
   }
@@ -76,14 +79,42 @@ export function registerBranchFocusSync() {
       const sessionStored = sessionStorage.getItem(key);
       // Only write to localStorage if sessionStorage has a value — avoids
       // wiping the localStorage seed when a fresh tab hasn't initialised yet
-      if (sessionStored) {
-        localStorage.setItem(key, sessionStored);
+      if (!sessionStored) return;
+      const branchId = JSON.parse(sessionStored)?.id;
+      if (branchId && isKnownBranchId?.(branchId) === false) {
+        sessionStorage.removeItem(key);
+        return;
       }
+      localStorage.setItem(key, sessionStored);
     } catch {
       // ignore storage errors
     }
   };
   document.addEventListener('visibilitychange', _focusSyncListener);
+}
+
+// Cross-tab heal: another tab changed the shared branch value — reconcile from THIS
+// tab's own sessionStorage (valid id keeps the tab's branch; deleted id self-heals).
+// Never copy the other tab's value in: deliberate switches must not propagate.
+let _storageSyncListener = null;
+export function registerBranchStorageSync(onBranchChanged) {
+  if (_storageSyncListener) {
+    window.removeEventListener('storage', _storageSyncListener);
+  }
+  _storageSyncListener = (e) => {
+    const id = getOrgId();
+    if (!id || e.key !== `${BRANCH_KEY_PREFIX}${id}` || !e.newValue) return;
+    if (e.newValue === sessionStorage.getItem(e.key)) return;
+    onBranchChanged?.();
+  };
+  window.addEventListener('storage', _storageSyncListener);
+}
+
+export function unregisterBranchStorageSync() {
+  if (_storageSyncListener) {
+    window.removeEventListener('storage', _storageSyncListener);
+    _storageSyncListener = null;
+  }
 }
 
 export function unregisterBranchFocusSync() {

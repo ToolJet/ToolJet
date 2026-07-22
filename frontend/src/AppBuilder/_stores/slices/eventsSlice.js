@@ -1,6 +1,6 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
-import { debounce, replaceEntityReferencesWithIds } from '../utils';
+import { debounce, replaceEntityReferencesWithIds, isLinkedAppValid } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
@@ -661,11 +661,36 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'go-to-app': {
             try {
-              if (!event.slug) {
-                throw new Error('No application slug provided');
+              let slug;
+
+              if (event.source === 'app-action') {
+                // RunJS app action go-to-app still send a slug directly for backward compatibility.
+                if (!event.slug) {
+                  throw new Error('No application slug provided');
+                }
+
+                slug = getResolvedValue(event.slug, customVariables, moduleId);
+              } else {
+                // Builder-configured go-to-app events resolve the target via correlationId.
+                if (!event.correlationId) {
+                  throw new Error('No application selected');
+                }
+
+                const linkedApps = get().appStore.modules[moduleId]?.linkedApps;
+                const appSlug = linkedApps?.[event.correlationId]?.slug;
+
+                // Editor: throw → routed to debugger via logError below.
+                // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
+                if (mode !== 'view') {
+                  const { isValid, errorMessage } = isLinkedAppValid(event.correlationId, linkedApps);
+                  if (!isValid) {
+                    throw new Error(errorMessage);
+                  }
+                }
+
+                slug = getResolvedValue(appSlug, customVariables, moduleId);
               }
-              const resolvedValue = getResolvedValue(event.slug, customVariables, moduleId);
-              const slug = resolvedValue;
+
               const queryParams = event.queryParams?.reduce(
                 (result, queryParam) => ({
                   ...result,
@@ -1241,6 +1266,7 @@ export const createEventsSlice = (set, get) => ({
       const goToApp = (slug = '', queryParams = []) => {
         const event = {
           actionId: 'go-to-app',
+          source: 'app-action',
           slug,
           queryParams,
         };
