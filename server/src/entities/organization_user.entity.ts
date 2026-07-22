@@ -36,6 +36,17 @@ export class OrganizationUser extends BaseEntity {
   @Column({ name: 'invitation_token' })
   invitationToken: string;
 
+  /**
+   * The builder's chosen LLM provider for this workspace, or null if they never picked one.
+   *
+   * Lives here rather than in a table of its own because membership already is the
+   * user-and-workspace pair the preference is keyed on, unique constraint included.
+   * Only meaningful on ToolJet-managed AI; BYOK and self-hosted take the admin's
+   * provider from organization_ai_keys and ignore this.
+   */
+  @Column({ name: 'llm_provider', nullable: true })
+  llmProvider: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
