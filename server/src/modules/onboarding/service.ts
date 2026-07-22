@@ -441,7 +441,10 @@ export class OnboardingService implements IOnboardingService {
       }
 
       if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
-        throw new GoneException('WORKSPACE_INVITE_LINK_EXPIRED');
+        throw new GoneException({
+          message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+          organizationSlug: organizationUser.organization?.slug,
+        });
       }
 
       const user: User = organizationUser.user;
@@ -506,12 +509,15 @@ export class OnboardingService implements IOnboardingService {
     if (organizationToken) {
       organizationUser = await this.organizationUsersRepository.findOne({
         where: { invitationToken: organizationToken },
-        relations: ['user'],
+        relations: ['user', 'organization'],
       });
 
       if (!user && organizationUser) {
         if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
-          throw new GoneException('WORKSPACE_INVITE_LINK_EXPIRED');
+          throw new GoneException({
+            message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+            organizationSlug: organizationUser.organization?.slug,
+          });
         }
         return {
           redirect_url: generateOrgInviteURL(organizationToken, organizationUser.organizationId),
@@ -523,7 +529,10 @@ export class OnboardingService implements IOnboardingService {
       }
 
       if (organizationUser?.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
-        throw new GoneException('WORKSPACE_INVITE_LINK_EXPIRED');
+        throw new GoneException({
+          message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+          organizationSlug: organizationUser.organization?.slug,
+        });
       }
     }
 
@@ -559,6 +568,22 @@ export class OnboardingService implements IOnboardingService {
     const { email, password, organizationToken } = activateAccountWithToken;
     const signupUser = await this.userRepository.findByEmail(email);
     const invitedUser = await this.organizationUsersUtilService.findByWorkspaceInviteToken(organizationToken);
+
+    // Re-verify expiry at submit time — the guard only checks at page load
+    if (invitedUser.orgUserInvitationTokenExpiry && new Date() > invitedUser.orgUserInvitationTokenExpiry) {
+      throw new GoneException({
+        message: 'WORKSPACE_INVITE_LINK_EXPIRED',
+        organizationSlug: invitedUser.invitedOrganizationId,
+      });
+    }
+    if (
+      getTooljetEdition() === 'cloud' &&
+      signupUser?.invitationTokenExpiry &&
+      new Date() > signupUser.invitationTokenExpiry
+    ) {
+      throw new GoneException('INVITATION_LINK_EXPIRED');
+    }
+
     if (password) {
       validatePasswordServer(password);
     }

@@ -199,7 +199,7 @@ export class EmailService implements IEmailService {
     const appSlug = redirectTo?.match(/^\/applications\/([^/?]+)/)?.[1];
     const url = appSlug
       ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
-      : `${effectiveHost}${basePath}reset-password/${token}${orgSlug ? `?orgSlug=${encodeURIComponent(orgSlug)}` : ''}`;
+      : `${effectiveHost}${basePath}reset-password/${token}${orgSlug ? `?oid=${encodeURIComponent(orgSlug)}` : ''}`;
 
     let expiryDate: string | null = null;
     if (forgotPasswordTokenExpiry) {
@@ -244,8 +244,8 @@ export class EmailService implements IEmailService {
     const url = appSlug
       ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
       : redirectTo
-      ? `${effectiveHost}${basePath}reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}${orgSlug ? `&orgSlug=${encodeURIComponent(orgSlug)}` : ''}`
-      : `${effectiveHost}${basePath}reset-password/${token}${orgSlug ? `?orgSlug=${encodeURIComponent(orgSlug)}` : ''}`;
+      ? `${effectiveHost}${basePath}reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}${orgSlug ? `&oid=${encodeURIComponent(orgSlug)}` : ''}`
+      : `${effectiveHost}${basePath}reset-password/${token}${orgSlug ? `?oid=${encodeURIComponent(orgSlug)}` : ''}`;
     const templateData = {
       name: firstName || '',
       resetLink: url,

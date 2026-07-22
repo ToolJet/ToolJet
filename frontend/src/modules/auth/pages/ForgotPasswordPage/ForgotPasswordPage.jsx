@@ -10,7 +10,7 @@ import { ForgotPasswordForm, ForgotPasswordInfoScreen } from './components';
 const ForgotPasswordPage = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const orgSlug = searchParams.get('orgSlug');
+  const orgSlug = searchParams.get('oid');
   const [showInfoScreen, setShowInfoScreen] = useState(false);
   const [email, setEmail] = useState('');
 

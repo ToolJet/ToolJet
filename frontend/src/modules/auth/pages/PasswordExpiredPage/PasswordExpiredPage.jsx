@@ -87,7 +87,7 @@ const PasswordExpiredPage = () => {
   const [showInfoScreen, setShowInfoScreen] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const initialEmail = searchParams.get('email') || '';
-  const orgSlug = searchParams.get('orgSlug') || null;
+  const orgSlug = searchParams.get('oid') || null;
   const appSlug = searchParams.get('appSlug') || null;
   const redirectTo = searchParams.get('redirectTo') || null;
   // For app password-expired flow, synthesize redirectTo so the reset email uses AppResetPasswordPage

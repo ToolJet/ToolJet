@@ -86,7 +86,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
       switch (errorStatus) {
         case 410: {
           updateCurrentSession({ authentication_status: false });
-          setExpiredOrgSlug(errorObj?.error?.organizationSlug || null);
+          setExpiredOrgSlug(errorObj?.data?.organizationSlug || null);
           setLinkExpired(true);
           setLoading(false);
           break;

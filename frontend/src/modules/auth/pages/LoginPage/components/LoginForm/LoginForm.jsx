@@ -201,7 +201,7 @@ const LoginForm = ({
                             redirectTo || `/applications/${appSlug}`
                           )}`
                         : paramOrganizationSlug
-                        ? `/forgot-password?orgSlug=${paramOrganizationSlug}`
+                        ? `/forgot-password?oid=${paramOrganizationSlug}`
                         : '/forgot-password'
                     }
                     hint={''}

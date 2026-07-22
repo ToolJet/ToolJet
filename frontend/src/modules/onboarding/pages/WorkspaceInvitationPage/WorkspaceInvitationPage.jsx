@@ -6,6 +6,7 @@ import {
   FormHeader,
   FormDescription,
   TermsAndPrivacyInfo,
+  LinkExpiredCard,
 } from '@/modules/common/components';
 import { appService, authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
@@ -19,6 +20,8 @@ import { useEnterKeyPress } from '@/modules/common/hooks';
 
 const WorkspaceInvitationPage = (props) => {
   const [isLoading, setisLoading] = React.useState(false);
+  const [linkExpired, setLinkExpired] = React.useState(false);
+  const [expiredOrgSlug, setExpiredOrgSlug] = React.useState(null);
   const defaultState = checkWhiteLabelsDefaultState();
   const whiteLabelText = retrieveWhiteLabelText();
   const userName = props.name || '';
@@ -53,8 +56,13 @@ const WorkspaceInvitationPage = (props) => {
         });
         onLoginSuccess(data, props.navigate);
       })
-      .catch(() => {
-        toast.error('Error while setting up your account.', { position: 'top-center' });
+      .catch((errorObj) => {
+        if (errorObj?.data?.statusCode === 410) {
+          setExpiredOrgSlug(errorObj?.data?.organizationSlug || null);
+          setLinkExpired(true);
+        } else {
+          toast.error('Error while setting up your account.', { position: 'top-center' });
+        }
         setisLoading(false);
       });
   };
@@ -98,6 +106,14 @@ const WorkspaceInvitationPage = (props) => {
       </OnboardingUIWrapper>
     );
   };
+  if (linkExpired) {
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <LinkExpiredCard variant="invite" organizationSlug={expiredOrgSlug} />}
+      />
+    );
+  }
+
   return <OnboardingBackgroundWrapper LeftSideComponent={LeftSideComponent} RightSideComponent={LoginPageRightPanel} />;
 };
 

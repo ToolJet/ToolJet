@@ -17,6 +17,7 @@ export const InvitationPage = (darkMode = false) => {
   const [isLoading, setIsLoading] = useState(true);
   const [fallBack, setFallBack] = useState(false);
   const [linkExpiredVariant, setLinkExpiredVariant] = useState(null); // 'verification' | 'invite' | null
+  const [linkExpiredOrgSlug, setLinkExpiredOrgSlug] = useState(null);
 
   const location = useLocation();
   const params = useParams();
@@ -82,6 +83,7 @@ export const InvitationPage = (darkMode = false) => {
         if (error?.statusCode === 410) {
           const variant = error?.data?.message === 'WORKSPACE_INVITE_LINK_EXPIRED' ? 'invite' : 'verification';
           setLinkExpiredVariant(variant);
+          setLinkExpiredOrgSlug(error?.data?.organizationSlug || null);
         } else {
           const errMessage = utils.processErrorMessage(error);
           toast.error(errMessage, { position: 'top-center' });
@@ -96,7 +98,11 @@ export const InvitationPage = (darkMode = false) => {
   }
 
   if (linkExpiredVariant) {
-    return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant={linkExpiredVariant} />} />;
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <LinkExpiredCard variant={linkExpiredVariant} organizationSlug={linkExpiredOrgSlug} />}
+      />
+    );
   }
 
   if (fallBack) {

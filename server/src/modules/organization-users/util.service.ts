@@ -612,6 +612,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     user.invitedOrganizationId = organizationUser.organizationId;
     user.organizationStatus = organizationUser.status;
     user.organizationUserSource = organizationUser.source;
+    user.orgUserInvitationTokenExpiry = organizationUser.invitationTokenExpiry;
     return user;
   }
 

@@ -12,7 +12,7 @@ const ResetPasswordPage = () => {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || null;
-  const orgSlug = searchParams.get('orgSlug') || null;
+  const orgSlug = searchParams.get('oid') || null;
   const [showResponseScreen, setShowResponseScreen] = useState(false);
   const [tokenStatus, setTokenStatus] = useState('loading'); // 'loading' | 'valid' | 'expired' | 'invalid'
 
@@ -38,7 +38,11 @@ const ResetPasswordPage = () => {
   if (tokenStatus === 'loading') return null;
 
   if (tokenStatus === 'expired') {
-    return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant="reset" />} />;
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() => <LinkExpiredCard variant="reset" organizationSlug={orgSlug} />}
+      />
+    );
   }
 
   if (tokenStatus === 'invalid') {

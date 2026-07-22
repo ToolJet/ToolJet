@@ -77,7 +77,7 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
           const currentRedirectTo = new URLSearchParams(locationRef.search).get('redirectTo');
           navigate(
             `/password-expired?email=${encodeURIComponent(error.data?.email || email)}${
-              orgSlug ? `&orgSlug=${orgSlug}` : ''
+              orgSlug ? `&oid=${orgSlug}` : ''
             }${currentRedirectTo ? `&redirectTo=${encodeURIComponent(currentRedirectTo)}` : ''}`
           );
           return;
