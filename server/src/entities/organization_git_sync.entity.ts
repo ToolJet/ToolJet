@@ -50,6 +50,9 @@ export class OrganizationGitSync extends BaseEntity {
   @Column({ name: 'webhook_secret', type: 'varchar', length: 64, nullable: true })
   webhookSecret: string;
 
+  @Column({ name: 'webhook_events', type: 'jsonb', default: () => `'["push","pull_request","delete"]'` })
+  webhookEvents: string[];
+
   // Not persisted — populated at runtime from OrganizationEnvRegistryService
   envGitProvider: GITConnectionType | null;
 

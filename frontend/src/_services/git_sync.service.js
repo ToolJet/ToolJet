@@ -31,6 +31,7 @@ export const gitSyncService = {
   testProviderConnection,
   // Auto-sync webhook management
   enableAutoSync,
+  updateAutoSyncEvents,
   disableAutoSync,
   rotateAutoSyncSecret,
   getAutoSyncStatus,
@@ -401,13 +402,24 @@ function checkTagExists(appId, versionName) {
 
 // Auto-sync webhook management
 
-function enableAutoSync() {
+function enableAutoSync(selectedEvents) {
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
     credentials: 'include',
+    body: JSON.stringify({ events: selectedEvents }),
   };
   return fetch(`${config.apiUrl}/git-sync/auto-sync/enable`, requestOptions).then(handleResponse);
+}
+
+function updateAutoSyncEvents(selectedEvents) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ events: selectedEvents }),
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/events`, requestOptions).then(handleResponse);
 }
 
 function disableAutoSync() {

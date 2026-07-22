@@ -1,14 +1,14 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { SubModule } from '@modules/app/sub-module';
-import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { BullModule } from '@nestjs/bullmq';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
 import { WebhookSkipFlagModule } from '@modules/git-sync-webhooks/webhook-skip-flag.module';
+import { NotificationsModule } from '@modules/notifications/module';
 
-@Module({})
 export class GitSyncWebhookModule extends SubModule {
   static async register(
     configs?: { IS_GET_CONTEXT: boolean },
@@ -18,10 +18,11 @@ export class GitSyncWebhookModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-
-    const { GitSyncWebhooksController } = await import(`${importPath}/git-sync-webhooks/controller`);
-    const { GitSyncWebhookService } = await import(`${importPath}/git-sync-webhooks/service`);
+    const { GitSyncWebhooksController, GitSyncWebhookService } = await this.getProviders(
+      configs,
+      'git-sync-webhooks',
+      ['controller', 'service'],
+    );
 
     const edition = getTooljetEdition();
     const isEEOrCloud = edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud;
@@ -54,17 +55,31 @@ export class GitSyncWebhookModule extends SubModule {
             },
           },
         }),
+        await WorkspaceBranchesModule.register(configs),
+        await WebhookSkipFlagModule.register(configs),
+        await NotificationsModule.register(configs),
       );
-      imports.push(await WorkspaceBranchesModule.register(configs));
-      imports.push(await WebhookSkipFlagModule.register(configs));
 
-      const { WebhookSignatureService } = await import(`${importPath}/git-sync-webhooks/services/webhook-signature.service`);
-      const { WebhookDeduplicationService } = await import(`${importPath}/git-sync-webhooks/services/webhook-deduplication.service`);
+      // EE-only services — no CE stubs needed since the entire block is edition-gated
+      const { WebhookSignatureService } = await this.getProviders(
+        configs,
+        'git-sync-webhooks',
+        ['services/webhook-signature.service'],
+      );
+      const { WebhookDeduplicationService } = await this.getProviders(
+        configs,
+        'git-sync-webhooks',
+        ['services/webhook-deduplication.service'],
+      );
 
       providers.push(WebhookSignatureService, WebhookDeduplicationService);
 
       if (isMainImport && !configs?.IS_GET_CONTEXT) {
-        const { GitSyncWebhookWorker } = await import(`${importPath}/git-sync-webhooks/processors/git-sync-webhook.worker`);
+        const { GitSyncWebhookWorker } = await this.getProviders(
+          configs,
+          'git-sync-webhooks',
+          ['processors/git-sync-webhook.worker'],
+        );
         providers.push(GitSyncWebhookWorker);
       }
     }
