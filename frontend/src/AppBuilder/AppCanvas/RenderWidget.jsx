@@ -353,7 +353,7 @@ const RenderWidget = ({
   // tooltip surfaces the widget's *description*, not user-authored content.
   if (inCanvas) {
     return (
-      <ErrorBoundary>
+      <ErrorBoundary widgetType={componentType}>
         <WidgetTooltip
           content={userTooltipContent}
           format={userTooltipFormat}
@@ -367,7 +367,7 @@ const RenderWidget = ({
   }
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary widgetType={componentType}>
       <OverlayTrigger
         placement="top"
         delay={{ show: 500, hide: 0 }}

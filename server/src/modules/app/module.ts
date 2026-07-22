@@ -68,6 +68,7 @@ import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
+import { FrontendMetricsModule } from '@modules/frontend-metrics/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ScimModule } from '@modules/scim/module';
 import { CustomDomainsModule } from '@modules/custom-domains/module';
@@ -185,6 +186,11 @@ export class AppModule implements OnModuleInit, NestModule {
 
     if (process.env.ENABLE_METRICS === 'true') {
       conditionalImports.push(MetricsModule);
+    }
+
+    if (process.env.ENABLE_OTEL === 'true') {
+      // Frontend metrics receiver — only needed when OTEL is active
+      conditionalImports.push(FrontendMetricsModule);
     }
 
     const imports = [...baseImports, ...conditionalImports];

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { setCurrentAppName } from '@/_services/frontend-metrics.service';
 import {
   appEnvironmentService,
   appService,
@@ -200,6 +201,11 @@ const useAppData = (
     const list = state.modulesStore?.modulesList ?? [];
     return list.find((m) => (m.co_relation_id ?? m.id) === appId)?.name ?? null;
   });
+
+  useEffect(() => {
+    setCurrentAppName(appName || '');
+    return () => setCurrentAppName('');
+  }, [appName]);
 
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
