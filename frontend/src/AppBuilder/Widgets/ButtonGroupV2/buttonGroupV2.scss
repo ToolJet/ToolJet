@@ -20,6 +20,11 @@
                 font-weight: 500;
                 font-size: 14px;
                 line-height: 20px;
+
+                &:focus,
+                &:active {
+                    outline: none !important;
+                }
             }
         }
     }
