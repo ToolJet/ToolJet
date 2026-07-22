@@ -10,6 +10,7 @@ const initialState = {
   currentAppVersionEnvironment: null,
   restoredAppHistoryId: null, // Used to trigger app refresh flow after restoring app history
   restoreTimestamp: null, // Timestamp to ensure re-fetch even when restoring to same entry twice
+  isEditorReadOnly: false, // module opened in Build-with (view-only) mode
 };
 
 export const createAppVersionSlice = (set, get) => ({
@@ -53,6 +54,15 @@ export const createAppVersionSlice = (set, get) => ({
       'setIsEditorFreezed'
     ),
 
+  setIsEditorReadOnly: (value = false) =>
+    set(
+      (state) => {
+        state.isEditorReadOnly = value;
+      },
+      false,
+      'setIsEditorReadOnly'
+    ),
+
   setAppVersions: (versions) => set(() => ({ appVersions: versions }), false, 'setAppVersions'),
 
   setAppVersionCurrentEnvironment: (environment) =>
@@ -65,8 +75,12 @@ export const createAppVersionSlice = (set, get) => ({
     const selectedVersionId = get().selectedVersion?.id;
     const releasedVersionId = get().releasedVersionId;
     const isEditorFreezed = get().isEditorFreezed;
+    const isEditorReadOnly = get().isEditorReadOnly;
     const result =
-      isVersionReleased || (!skipIsEditorFreezedCheck && isEditorFreezed) || selectedVersionId === releasedVersionId;
+      isVersionReleased ||
+      (!skipIsEditorFreezedCheck && isEditorFreezed) ||
+      selectedVersionId === releasedVersionId ||
+      isEditorReadOnly;
     return result;
   },
 

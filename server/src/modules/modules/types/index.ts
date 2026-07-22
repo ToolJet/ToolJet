@@ -6,7 +6,7 @@ interface Features {
   [FEATURE_KEY.DELETE_MODULE]: FeatureConfig;
   [FEATURE_KEY.UPDATE_MODULE]: FeatureConfig;
   [FEATURE_KEY.IMPORT_MODULE]: FeatureConfig;
-  [FEATURE_KEY.EXORT_MODULE]: FeatureConfig;
+  [FEATURE_KEY.EXPORT_MODULE]: FeatureConfig;
   [FEATURE_KEY.CLONE_MODULE]: FeatureConfig;
 }
 

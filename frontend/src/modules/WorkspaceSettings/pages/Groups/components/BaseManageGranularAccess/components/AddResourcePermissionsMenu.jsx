@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../../resources/styles/group-permissions.styles.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { OverlayTrigger } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { RESOURCE_TYPE } from '../../../index';
 
 function AddResourcePermissionsMenu({
@@ -17,9 +17,15 @@ function AddResourcePermissionsMenu({
         return 'apps';
       case RESOURCE_TYPE.WORKFLOWS:
         return 'workflows';
+      case RESOURCE_TYPE.MODULES:
+        return 'apps';
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'datasource';
       case RESOURCE_TYPE.FOLDERS:
+        return 'folder';
+      case RESOURCE_TYPE.WORKFLOW_FOLDERS:
+        return 'folder';
+      case RESOURCE_TYPE.MODULE_FOLDERS:
         return 'folder';
       default:
         return '';
@@ -29,9 +35,21 @@ function AddResourcePermissionsMenu({
   const resourceNameMapping = {
     [RESOURCE_TYPE.APPS]: 'Apps',
     [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
+    [RESOURCE_TYPE.MODULES]: 'Modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
     [RESOURCE_TYPE.FOLDERS]: 'Folders',
+    [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'Workflow folders',
+    [RESOURCE_TYPE.MODULE_FOLDERS]: 'Module folders',
   };
+
+  const order = [RESOURCE_TYPE.APPS, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.WORKFLOWS];
+
+  const rank = (type) => {
+    const i = order.indexOf(type);
+    return i === -1 ? order.length : i; // unknown types go last
+  };
+
+  resourcesOptions.sort((a, b) => rank(a) - rank(b));
 
   return resourcesOptions.length > 1 ? (
     <OverlayTrigger
@@ -52,9 +70,32 @@ function AddResourcePermissionsMenu({
                 onClick={() => {
                   openAddPermissionModal(resource);
                 }}
+                disabled={
+                  currentGroupPermission.name === 'end-user' &&
+                  [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.MODULE_FOLDERS].includes(resource)
+                }
                 data-cy={`add-${resource.toLowerCase()}-button`}
               >
-                <span>{resourceNameMapping[resource]}</span>
+                <OverlayTrigger
+                  key={index}
+                  placement="right"
+                  overlay={
+                    currentGroupPermission.name === 'end-user' &&
+                    [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.MODULE_FOLDERS].includes(
+                      resource
+                    ) ? (
+                      <Tooltip id={`tooltip-${index}`} style={{ maxWidth: '120px' }}>
+                        {resource === RESOURCE_TYPE.MODULES
+                          ? 'End-user implicitly gets access'
+                          : `End-user cannot access ${resourceNameMapping[resource].toLowerCase()}`}
+                      </Tooltip>
+                    ) : (
+                      <></>
+                    )
+                  }
+                >
+                  <span>{resourceNameMapping[resource]}</span>
+                </OverlayTrigger>
               </ButtonSolid>
             ))}
           </div>
@@ -66,7 +107,7 @@ function AddResourcePermissionsMenu({
           variant="tertiary"
           iconWidth="17"
           fill="var(--slate9)"
-          className="add-icon tj-text-xsm font-weight-600"
+          className="add-icon tj-text-xsm font-weight-600 remove-disabled-bg"
           leftIcon="plus"
           disabled={currentGroupPermission.name === 'admin' || !isEditable}
           data-cy="add-permission-button"
@@ -81,13 +122,13 @@ function AddResourcePermissionsMenu({
         variant="tertiary"
         iconWidth="17"
         fill="var(--slate9)"
-        className="add-icon tj-text-xsm font-weight-600"
+        className="add-icon tj-text-xsm font-weight-600 remove-disabled-bg"
         leftIcon="plus"
         disabled={currentGroupPermission.name === 'admin' || !isEditable}
         onClick={() => {
           openAddPermissionModal(RESOURCE_TYPE.APPS);
         }}
-        data-cy="add-apps-buton"
+        data-cy="add-apps-button"
       >
         Add apps
       </ButtonSolid>

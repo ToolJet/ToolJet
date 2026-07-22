@@ -58,13 +58,14 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { TriangleAlert } from 'lucide-react';
 
-import { appTypeToDisplayNameMapping } from './helper';
+import { appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
 
 const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
 class HomePageComponent extends React.Component {
@@ -834,9 +835,32 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
-      // Module permissions return true if builder
-      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
+    } else if (this.props.appType === 'module') {
+      // Admins have implicit full access to all modules
+      if (currentSession?.admin || currentSession?.super_admin) {
+        return true;
+      }
+      const modulePerms = currentSession?.module_group_permissions;
+      if (modulePerms) {
+        // Shared with the module editor read-only gate (useAppData) so the two can't drift.
+        const canEdit = canEditModule(currentSession, app?.id, app?.user_id);
+        const canReadModule =
+          canEdit || modulePerms.is_all_viewable || (app?.id && modulePerms.viewable_apps_id?.includes(app.id));
+        switch (action) {
+          case 'create':
+            return user_permissions.module_create;
+          case 'read':
+            return this.isUserOwnerOfApp(user, app) || canReadModule;
+          case 'update':
+            return canEdit;
+          case 'delete':
+            return user_permissions.module_delete || this.isUserOwnerOfApp(user, app);
+          default:
+            return false;
+        }
+      }
+      // CE fallback: any builder can perform all module actions
+      return currentSession?.role?.name === 'builder';
     }
   }
 
@@ -861,17 +885,20 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'create');
   };
 
   canDeleteFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_delete;
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'delete');
   };
 
   canUpdateFolder = () => {
     // Update folder (rename) requires either folderCreate permission or granular canEditFolder permission
-    // For now, we use folderCreate as the master permission for folder update
-    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+    // For now, we use folderCreate (or its per-app-type equivalent) as the master permission for folder update
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'create');
   };
 
   isGitEnabled = () => {
@@ -1718,11 +1745,7 @@ class HomePageComponent extends React.Component {
     };
 
     const showCreateAppButtonTooltip = () => {
-      if (this.props.appType === 'module') {
-        return true;
-      } else {
-        return this.canCreateApp();
-      }
+      return this.canCreateApp();
     };
     const modalConfigs = {
       create: {
@@ -2606,7 +2629,7 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? 'No Modules found'
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
                         : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>

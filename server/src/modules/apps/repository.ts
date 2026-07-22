@@ -1,6 +1,8 @@
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { Page } from '@entities/page.entity';
+import { Component } from '@entities/component.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
@@ -12,6 +14,37 @@ import { APP_TYPES } from './constants';
 export class AppsRepository extends Repository<App> {
   constructor(private dataSource: DataSource) {
     super(App, dataSource.createEntityManager());
+  }
+
+  /**
+   * True if ANY version of `parentAppId` contains a ModuleViewer component
+   * that embeds the module identified by `moduleCoRelationId`. Mirrors the
+   * structural join in DataQueryRepository.findPublicParentAppForModuleQuery,
+   * without the is_public / git-sync-branch metadata resolution or the
+   * current_version_id restriction — the caller (the module's embedded-view
+   * bypass) needs this to work for apps still in draft, which have no
+   * current_version_id yet, so any version embedding the module counts. The
+   * requester's right to edit `parentAppId` at all is checked separately by
+   * the caller.
+   */
+  async isModuleEmbeddedInApp(
+    moduleCoRelationId: string,
+    parentAppId: string,
+    manager?: EntityManager
+  ): Promise<boolean> {
+    const m = manager ?? this.manager;
+    const count = await m
+      .createQueryBuilder(App, 'app')
+      .innerJoin(AppVersion, 'app_version', 'app_version.app_id = app.id')
+      .innerJoin(Page, 'page', 'page.app_version_id = app_version.id')
+      .innerJoin(Component, 'component', 'component.page_id = page.id')
+      .where('app.id = :parentAppId', { parentAppId })
+      .andWhere('component.type = :componentType', { componentType: 'ModuleViewer' })
+      .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleCoRelationId", {
+        moduleCoRelationId,
+      })
+      .getCount();
+    return count > 0;
   }
 
   async findBySlug(slug: string, organizationId: string, versionId?: string, branchId?: string): Promise<App> {

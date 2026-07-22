@@ -11,13 +11,13 @@ import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
-import { validateName, handleHttpErrorMessages, getWorkspaceId, hasBuilderRole } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
-import { appTypeToDisplayNameMapping } from './helper';
+import { appTypeToDisplayNameMapping, getFolderGroupPermissions } from './helper';
 
 export const Folders = function Folders({
   folders,
@@ -53,12 +53,12 @@ export const Folders = function Folders({
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  // Get folder granular permissions from session
+  // Get folder granular permissions from session — each folder-owning app type
+  // (workflow, module) has its own permission surface, separate from app folders.
   const currentSession = authenticationService.currentSessionValue;
-  const folderGroupPermissions = currentSession?.folder_group_permissions;
+  const folderGroupPermissions = getFolderGroupPermissions(currentSession, appType);
   // Get current user ID for ownership check
   const currentUserId = currentSession?.current_user?.id;
-  const isBuilder = hasBuilderRole(currentSession?.role ?? {});
 
   // Check if user can edit a specific folder (granular permission)
   const canEditSpecificFolder = (folderId) => {
@@ -72,11 +72,10 @@ export const Folders = function Folders({
   };
 
   // Determine if user can update/delete a specific folder
-  // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
+  // Rename: requires granular canEditFolder OR ownership
   // Delete: requires master Delete OR ownership
   const canUpdateSpecificFolder = (folderId, folder) =>
-    !isGitSyncEnabled &&
-    (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
+    !isGitSyncEnabled && (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder));
   const canDeleteSpecificFolder = (folderId, folder) =>
     !isGitSyncEnabled && (canDeleteFolder || isOwnerOfFolder(folder));
 

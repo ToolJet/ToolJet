@@ -37,6 +37,7 @@ const VersionDropdownItem = ({
   const versions = useVersionManagerStore((state) => state.versions);
   const developmentVersions = useStore((state) => state.developmentVersions);
   const featureAccess = useStore((state) => state.license.featureAccess);
+  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const { appType } = useModuleContext();
   const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
 
@@ -111,6 +112,7 @@ const VersionDropdownItem = ({
     !isReleased &&
     (featureAccess?.multiEnvironment ? isInProduction : isPublished);
   const canCreateVersion = isDraft; // Show create version button for drafts
+  const canOpenMoreMenu = !isEditorReadOnly; // Build-with: no-op edit/delete actions, hide entirely
 
   const renderMenu = (
     <Popover
@@ -331,23 +333,36 @@ const VersionDropdownItem = ({
 
                     {/* Create version button - shown for drafts */}
                     {canCreateVersion && (
-                      <Button
-                        variant="outline"
-                        size="small"
-                        className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuVersionId?.(null);
-                          onCreateVersion?.(version);
-                        }}
-                        data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                      <ToolTip
+                        message={
+                          isEditorReadOnly
+                            ? "You don't have access to save this version. Contact admin to know more."
+                            : 'Save this version'
+                        }
+                        placement="left"
+                        width="280px"
                       >
-                        Save version
-                      </Button>
+                        <span>
+                          <Button
+                            variant="outline"
+                            size="small"
+                            disabled={isEditorReadOnly}
+                            className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuVersionId?.(null);
+                              onCreateVersion?.(version);
+                            }}
+                            data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                          >
+                            Save version
+                          </Button>
+                        </span>
+                      </ToolTip>
                     )}
 
                     {/* More menu */}
-                    {!(isGitSyncEnabled && isReleased) && (
+                    {canOpenMoreMenu && !(isGitSyncEnabled && isReleased) && (
                       <OverlayTrigger
                         trigger="click"
                         placement="bottom-end"
