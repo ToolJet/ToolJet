@@ -131,8 +131,11 @@ export class VersionService implements IVersionService {
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
     // On non-default branches, only show the branch's own version(s).
-    // Saved versions (VERSION-type) are only relevant on the default branch.
-    if (effectiveBranchId) {
+    // Saved versions (VERSION-type) are only relevant on the default branch — but
+    // NOT for modules: listModuleVersions intentionally returns saved versions on
+    // all branches so the ModuleViewer inspector can detect pinned states and avoid
+    // showing "Current branch" when the pin is valid.
+    if (effectiveBranchId && app.type !== APP_TYPES.MODULE) {
       const branch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
         where: { id: effectiveBranchId },
         select: ['id', 'isDefault'],
