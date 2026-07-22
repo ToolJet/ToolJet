@@ -120,7 +120,10 @@ const DRAFT_SENTINEL = '__default_branch_draft__';
  *                                              that branch's own editable row.
  *   ref is a valid UUID (moduleReferenceId) → Tier 1: look by module_reference_id on
  *                                              consumer branch then default. Same-workspace
- *                                              fast path.
+ *                                              fast path. A UUID pin from another workspace
+ *                                              (e.g. legacy pin with no versionName, pulled
+ *                                              via git-sync) never matches locally — falls
+ *                                              through to the orphan fallback below.
  *   ref absent / no match                   → unpinned/orphaned fallback: latest non-stub
  *                                              on the consumer's branch (or default).
  *
@@ -239,9 +242,9 @@ export async function resolveModuleRef(
   }
 
   // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
-  // If a ref was provided but no tier matched, return null — don't silently load the wrong version.
-  if (moduleReferenceId) return null;
-
+  // A ref that matched no tier (stale/foreign UUID, or a name with no tag/branch) falls
+  // through to the same latest-on-branch resolution as an unpinned ModuleViewer, instead
+  // of 404ing — mirrors resolveAllModuleViewersForVersion's 'orphan-fallback' matchKind.
   const targetBranchId = consumerBranchId ?? defaultBranch?.id;
   if (!targetBranchId) {
     // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
