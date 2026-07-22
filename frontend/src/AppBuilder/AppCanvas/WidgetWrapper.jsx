@@ -230,7 +230,7 @@ const WidgetWrapper = memo(
             'active-target': isWidgetActive,
             'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
-            'dynamic-height-target': isGridLayout && isDynamicHeightEnabled,
+            'dynamic-height-target': isDynamicHeightEnabled,
             'flex-child-wrapper': isFlexLayout,
           })}
           data-id={`${id}`}
