@@ -72,7 +72,7 @@ function AddResourcePermissionsMenu({
                 }}
                 disabled={
                   currentGroupPermission.name === 'end-user' &&
-                  [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.MODULE_FOLDERS].includes(resource)
+                  [RESOURCE_TYPE.MODULES, RESOURCE_TYPE.MODULE_FOLDERS].includes(resource)
                 }
                 data-cy={`add-${resource.toLowerCase()}-button`}
               >
@@ -81,9 +81,7 @@ function AddResourcePermissionsMenu({
                   placement="right"
                   overlay={
                     currentGroupPermission.name === 'end-user' &&
-                    [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.MODULE_FOLDERS].includes(
-                      resource
-                    ) ? (
+                    [RESOURCE_TYPE.MODULES, RESOURCE_TYPE.MODULE_FOLDERS].includes(resource) ? (
                       <Tooltip id={`tooltip-${index}`} style={{ maxWidth: '120px' }}>
                         {resource === RESOURCE_TYPE.MODULES
                           ? 'End-user implicitly gets access'

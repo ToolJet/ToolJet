@@ -58,6 +58,7 @@ class BaseManageGranularAccess extends React.Component {
       initialPermissionStateDs: {
         canUse: false,
         canView: false,
+        canRunQuery: true,
       },
       initialPermissionStateFolder: {
         canEditFolder: false,
@@ -86,6 +87,7 @@ class BaseManageGranularAccess extends React.Component {
         initialPermissionStateDs: {
           canUse: false,
           canConfigure: false,
+          canRunQuery: true,
         },
         initialPermissionStateFolder: {
           canEditFolder: false,
@@ -343,6 +345,7 @@ class BaseManageGranularAccess extends React.Component {
         initialPermissionStateDs: {
           canUse: dataSourcesGroupPermission?.canUse,
           canConfigure: dataSourcesGroupPermission?.canConfigure,
+          canRunQuery: dataSourcesGroupPermission?.canRunQuery ?? true,
         },
         resourceType: RESOURCE_TYPE.DATA_SOURCES,
         selectedResources:
@@ -360,6 +363,7 @@ class BaseManageGranularAccess extends React.Component {
           initialPermissionStateDs: {
             canUse: dataSourcesGroupPermission?.canUse,
             canConfigure: dataSourcesGroupPermission?.canConfigure,
+            canRunQuery: dataSourcesGroupPermission?.canRunQuery ?? true,
           },
           isAll: !!granularPermission.isAll,
           newPermissionName: granularPermission?.name,
@@ -867,12 +871,14 @@ class BaseManageGranularAccess extends React.Component {
           { label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' },
         ];
 
+    // End-user groups cannot hold builder-level data source access; only query-run restriction
+    const isEndUserGroup = this.props?.groupPermission?.name === 'end-user';
     this.setState((prevState) => ({
       modalTitle: `Add ${RESOURCE_NAME_MAPPING[resourceType].toLowerCase()} permissions`,
       resourceType,
       showAddPermissionModal: true,
       initialPermissionState: { ...prevState.initialPermissionState, canView: true },
-      initialPermissionStateDs: { ...prevState.initialPermissionStateDs, canUse: true },
+      initialPermissionStateDs: { ...prevState.initialPermissionStateDs, canUse: !isEndUserGroup, canRunQuery: true },
       initialPermissionStateFolder: { ...prevState.initialPermissionStateFolder, canViewApps: true },
       initialPermissionStateWorkflowFolder: { ...prevState.initialPermissionStateWorkflowFolder, canViewApps: true },
       initialPermissionStateModuleFolder: { ...prevState.initialPermissionStateModuleFolder, canViewApps: true },
@@ -898,6 +904,7 @@ class BaseManageGranularAccess extends React.Component {
       initialPermissionStateDs: {
         canUse: false,
         canConfigure: false,
+        canRunQuery: true,
       },
       initialPermissionStateFolder: {
         canEditFolder: false,
@@ -956,7 +963,9 @@ class BaseManageGranularAccess extends React.Component {
     const permissionStateChanged =
       type === RESOURCE_TYPE.DATA_SOURCES
         ? this.state.initialState.initialPermissionStateDs?.canUse !== newPermissionState?.canUse ||
-          this.state.initialPermissionStateDs?.canConfigure !== newPermissionState?.canConfigure
+          this.state.initialPermissionStateDs?.canConfigure !== newPermissionState?.canConfigure ||
+          (this.state.initialState.initialPermissionStateDs?.canRunQuery ?? true) !==
+            (newPermissionState?.canRunQuery ?? true)
         : this.state.initialState.initialPermissionState?.canEdit !== newPermissionState?.canEdit ||
           newPermissionState?.canView !== this.state.initialState.initialPermissionState?.canView ||
           newPermissionState?.hideFromDashboard !== this.state.initialState.initialPermissionState?.hideFromDashboard;

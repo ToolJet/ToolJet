@@ -58,6 +58,7 @@ export interface CreateFolderPermissionsObject {
 export interface DataSourcesGroupPermissionsActions {
   canConfigure: boolean;
   canUse: boolean;
+  canRunQuery?: boolean;
 }
 
 export interface CreateGranularPermissionObject {
