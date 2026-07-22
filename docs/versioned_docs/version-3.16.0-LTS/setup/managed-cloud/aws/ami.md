@@ -8,6 +8,10 @@ sidebar_label: AMI
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
 
 :::info
+**Looking for automated SSL/HTTPS setup?** ToolJet now includes built-in SSL certificate management with Let's Encrypt. Learn more in the [Built-in SSL documentation](/docs/setup/builtin-ssl/overview).
+:::
+
+:::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements).
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
@@ -159,8 +163,8 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use. <br/>
    Examples: <br/>
    `TOOLJET_HOST=http://12.34.56.78` or <br/>
-   `TOOLJET_HOST=https://yourdomain.com` or <br/>
-   `TOOLJET_HOST=https://tooljet.yourdomain.com`
+   `TOOLJET_HOST=https://example.com` or <br/>
+   `TOOLJET_HOST=https://tooljet.example.com`
    :::info
    1. We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
    2. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`

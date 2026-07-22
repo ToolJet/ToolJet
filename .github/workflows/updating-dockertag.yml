@@ -14,7 +14,7 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: documentation
 
       - name: 🛠 Setup Git
         run: |
@@ -49,7 +49,7 @@ jobs:
           branch: auto/update-lts-${{ github.run_id }}
           title: "docs: update LTS version table"
           body: "Automated update of the LTS version table from DockerHub."
-          base: develop
+          base: documentation
 
       - name: 🤖 Auto-merge the PR (fallback if needed)
         if: steps.changes.outputs.changed == 'true'
