@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, createElement } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
+import { Info } from 'lucide-react';
+import { subscribeLiveNotifications, useNotificationsStore } from '@/_stores/notificationsStore';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 /**
@@ -9,8 +10,8 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
  * toasts + triggers editor freeze when appropriate.
  *
  * Rules:
- * - Dashboard/other pages: notification panel only (no toast)
- * - App builder on affected branch: show toast
+ * - Branch updated (pulled): show info toast in app builder only (not dashboard)
+ * - Version imported: show info toast in app builder only
  * - Branch deletion while on that branch in app builder: freeze + toast
  * - Branch deletion while on that branch on dashboard: toast + refresh branches
  * - Failure notifications: toast only inside app builder
@@ -21,10 +22,15 @@ export function useAutoSyncNotifications() {
   locationRef.current = location;
 
   useEffect(() => {
+    // Ensure the notifications WebSocket is connected — the NotificationCenter component
+    // only mounts in the dashboard layout, but this hook also runs inside the app builder
+    // via AppsRoute where no NotificationCenter exists.
+    useNotificationsStore.getState().actions.connect();
+
     const unsubscribe = subscribeLiveNotifications((notification) => {
       if (!notification?.metadata?.source || notification.metadata.source !== 'auto-sync') return;
 
-      const { action, branch, event } = notification.metadata;
+      const { action, branch } = notification.metadata;
       const isError = notification.type === 'error';
       const pathname = locationRef.current.pathname;
 
@@ -37,28 +43,29 @@ export function useAutoSyncNotifications() {
       // Determine if this notification affects the current branch
       const isCurrentBranch = branch && currentBranch && branch === currentBranch;
       const isDefaultBranch = isOnDefaultBranch();
+      const affectsDefaultBranch = isDefaultBranch && branch === getDefaultBranchName();
 
       // ─── Branch Deletion ───
       if (action === 'deleted') {
         if (isCurrentBranch) {
           if (isInAppBuilder) {
-            // Freeze the editor
             freezeEditor();
             toast('This branch was deleted on GitHub.', { duration: 8000 });
           } else {
-            // On dashboard/other: show toast and trigger branch refresh
             toast('This branch was deleted on GitHub.', { duration: 5000 });
             refreshBranches();
           }
         }
-        // Always in notification panel (handled by notificationsStore.receive)
         return;
       }
 
-      // ─── Branch Updated (push or PR merge) ───
+      // ─── Branch Updated (push or PR merge) — toast only in app builder ───
       if (action === 'pulled') {
-        if (isInAppBuilder && (isCurrentBranch || (isDefaultBranch && branch === getDefaultBranchName()))) {
-          toast('Main branch has been updated from GitHub. Refresh to see changes', { duration: 5000 });
+        if (isInAppBuilder && (isCurrentBranch || affectsDefaultBranch)) {
+          toast(`${branch} branch has been updated from GitHub. Refresh to see changes`, {
+            duration: 8000,
+            icon: createElement(Info, { size: 16 }),
+          });
         }
         return;
       }
@@ -66,7 +73,10 @@ export function useAutoSyncNotifications() {
       // ─── Version Imported (tag push) ───
       if (action === 'version_imported') {
         if (isInAppBuilder) {
-          toast('New version saved from GitHub. Refresh to see changes', { duration: 5000 });
+          toast('New version saved from GitHub. Refresh to see changes', {
+            duration: 8000,
+            icon: createElement(Info, { size: 16 }),
+          });
         }
         return;
       }
@@ -83,8 +93,6 @@ export function useAutoSyncNotifications() {
     return unsubscribe;
   }, []);
 }
-
-// ─── Helpers ───
 
 function getCurrentBranchName() {
   const state = useWorkspaceBranchesStore.getState();

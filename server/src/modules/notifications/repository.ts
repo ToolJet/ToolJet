@@ -151,17 +151,17 @@ export class NotificationRepository extends Repository<Notification> {
 
   /**
    * Returns user IDs of all active admins in an organization.
-   * Uses the group_permissions + user_group_permissions join pattern.
+   * Uses the permission_groups + group_users join pattern.
    */
   async getOrgAdminUserIds(organizationId: string): Promise<string[]> {
     const rows: { user_id: string }[] = await this.manager.query(
-      `SELECT ugp.user_id
-         FROM user_group_permissions ugp
-         JOIN group_permissions gp ON gp.id = ugp.group_id
-         JOIN organization_users ou ON ou.user_id = ugp.user_id AND ou.organization_id = $1
-        WHERE gp.organization_id = $1
-          AND gp.type = 'default'
-          AND gp.name = 'admin'
+      `SELECT gu.user_id
+         FROM group_users gu
+         JOIN permission_groups pg ON pg.id = gu.group_id
+         JOIN organization_users ou ON ou.user_id = gu.user_id AND ou.organization_id = $1
+        WHERE pg.organization_id = $1
+          AND pg.type = 'default'
+          AND pg.name = 'admin'
           AND ou.status != 'archived'`,
       [organizationId]
     );
