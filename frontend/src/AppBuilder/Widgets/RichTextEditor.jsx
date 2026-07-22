@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import 'draft-js/dist/Draft.css';
 import { DraftEditor } from './DraftEditor';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export default function RichTextEditor({
   id,
@@ -62,6 +63,8 @@ export default function RichTextEditor({
     setExposedVariable('isLoading', isLoading);
   }, [isLoading]);
 
+  const clearCount = useFormClear();
+
   function handleChange(html) {
     setExposedVariable('value', html);
     setCurrentValue(html);
@@ -91,6 +94,7 @@ export default function RichTextEditor({
         width={width}
         placeholder={placeholder}
         defaultValue={defaultValue}
+        clearCount={clearCount}
         isLoading={isLoading}
         isVisible={visibility}
         isDisabled={disabledState}
