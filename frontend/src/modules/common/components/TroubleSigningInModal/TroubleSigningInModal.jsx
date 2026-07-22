@@ -17,7 +17,7 @@ const TroubleSigningInModal = ({ show, onClose, title, children, darkMode }) => 
           <SolidIcon name="remove" width="16" />
         </button>
         <div className="trouble-signing-in-modal-icon">
-          <SolidIcon name="lock" width="20" />
+          <SolidIcon name="lock" width="20" fill="#4368E3" />
         </div>
         <h3 className="trouble-signing-in-modal-title" data-cy="trouble-signing-in-modal-title">
           {title}

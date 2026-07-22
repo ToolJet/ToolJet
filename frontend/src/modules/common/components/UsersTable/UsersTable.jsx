@@ -72,8 +72,13 @@ const UsersTable = ({
         darkMode={darkMode}
       />
       <div style={customStyles} className="tj-user-table-wrapper">
-        <div className="card-table fixedHeader table-responsive">
-          <table data-testid="usersTable" className="users-table table table-vcenter h-100 mx-0">
+        <div className="card-table fixedHeader table-responsive users-table-scroll-wrapper">
+          <table
+            data-testid="usersTable"
+            className={cx('users-table table table-vcenter h-100 mx-0', {
+              'all-users-table': isLoadingAllUsers,
+            })}
+          >
             <thead>
               <tr>
                 <th data-cy="users-table-name-column-header" data-name="name-header">
@@ -116,7 +121,7 @@ const UsersTable = ({
                     {translator('header.organization.menus.manageUsers.workspaces', 'Workspaces')}
                   </th>
                 )}
-                <th className="w-1 !tw-w-16 !tw-max-w-16 !tw-min-w-16"></th>
+                <th className="w-1 !tw-w-16 !tw-max-w-16 !tw-min-w-16 users-table-actions-cell"></th>
               </tr>
             </thead>
             {isLoading ? (
@@ -246,7 +251,7 @@ const UsersTable = ({
                       {isLoadingAllUsers && (
                         <td className="text-muted !tw-w-[230px] tw-max-w-[230px]">
                           <a
-                            className="px-2 text-muted workspaces"
+                            className="text-muted workspaces"
                             onClick={
                               user.total_organizations > 0
                                 ? () => openOrganizationModal(user)
@@ -260,7 +265,7 @@ const UsersTable = ({
                           </a>
                         </td>
                       )}
-                      <td className="user-actions-button tw-w-16 tw-max-w-16">
+                      <td className="user-actions-button tw-w-16 tw-max-w-16 users-table-actions-cell">
                         <UsersActionMenu
                           archivingUser={archivingUser}
                           user={user}

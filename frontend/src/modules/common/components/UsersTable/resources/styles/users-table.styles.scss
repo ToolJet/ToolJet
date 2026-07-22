@@ -13,3 +13,48 @@
         color: #027a48;
     }
 }
+
+.users-table-scroll-wrapper {
+    overflow-x: auto;
+}
+
+// Scoped to the All Users (super-admin) table only via the .all-users-table modifier
+// class, rather than editing the shared .users-table rules other pages (e.g. workspace
+// members) also rely on. `<th>` has no explicit text-align in the shared styles, so it
+// falls back to the browser default (center) while `<td>` content is flex/left-aligned -
+// headers then read as shifted right relative to their column's data.
+.all-users-table.users-table thead tr > th {
+    text-align: left;
+
+    &[data-name='mfa-header'] {
+        width: 110px !important;
+    }
+}
+
+.all-users-table.users-table {
+    tbody tr td[data-name='mfa-header'],
+    tr > td[data-name='mfa-header'] {
+        max-width: 110px !important;
+    }
+}
+
+// Keeps the row action menu reachable without horizontal scrolling, no matter how many
+// columns (Type/Status/2FA/Workspaces) are shown for a given users table variant.
+// Background matches the row's own background (not --base) so the sticky cell doesn't
+// read as a mismatched patch against the row, and padding restores the breathing room
+// the row's own padding would normally give this cell before it stops flowing with layout.
+.users-table {
+    .users-table-actions-cell {
+        position: sticky;
+        right: 0;
+        background: var(--page-weak, #ffffff);
+        z-index: 1;
+        padding-left: 8px !important;
+        padding-right: 18px !important;
+
+        .user-actions-menu-container {
+            border: none;
+        }
+    }
+}
+

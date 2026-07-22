@@ -78,7 +78,7 @@ export default function UsersActionMenu({
                   iconWidth="12"
                   data-cy="reset-mfa-button"
                 >
-                  Reset MFA
+                  Reset 2FA
                 </ButtonSolid>
               )}
               <ButtonSolid
