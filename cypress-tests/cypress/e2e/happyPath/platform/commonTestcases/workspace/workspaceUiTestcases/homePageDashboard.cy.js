@@ -41,7 +41,12 @@ describe("Home Page Dashboard Testcases", () => {
         );
 
         cy.get(dashboardSelector.promptInput).should("be.visible");
-        cy.get(dashboardSelector.homePagePromptTextArea).should("be.enabled").type("Build a task manager app");
+        cy.get(dashboardSelector.homePagePromptTextArea).should(
+            "have.attr",
+            "contenteditable",
+            "true"
+        );
+        cy.get(dashboardSelector.homePagePromptTextArea).clearAndTypeOnCodeMirror("Build a task manager app");
         cy.get(dashboardSelector.promptEnterButton).should("have.attr", "class").and("include", "tw-opacity-100");
 
 
