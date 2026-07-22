@@ -694,10 +694,7 @@ export default class LicenseBase {
   }
 
   public get workspaceEnv(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.workspaceEnv;
-    }
-    return this._isEnvMapping;
+    return true;
   }
 
   public get appJsLibraries(): boolean {
