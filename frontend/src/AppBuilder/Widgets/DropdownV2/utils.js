@@ -87,3 +87,18 @@ export const sortArray = (arr, sort) => {
   }
   return arr;
 };
+
+// Flatten grouped select options ([{ label, options: [...] }]) into a single flat
+// list of leaf options. Non-grouped (flat) options are returned unchanged. Used
+// for value lookups so a selected value can be resolved even when the options are
+// provided as grouped options.
+export const flattenSelectOptions = (selectOptions = []) => {
+  if (!Array.isArray(selectOptions)) return [];
+  return selectOptions.reduce((acc, option) => {
+    if (Array.isArray(option?.options)) {
+      return acc.concat(option.options);
+    }
+    acc.push(option);
+    return acc;
+  }, []);
+};
