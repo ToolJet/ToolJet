@@ -285,7 +285,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
                     >
-                      {isMobileLayout ? (
+                      {isMobileLayout && !isModuleMode ? (
                         <MobileLayout
                           pageKey={pageKey}
                           showCanvasHeader={showCanvasHeader}
