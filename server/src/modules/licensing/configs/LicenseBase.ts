@@ -145,7 +145,7 @@ export default class LicenseBase {
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     
     // license with these set explicitly to true rather than being grandfathered in.
-    this._isAppPublic = this._features?.['appPublic'] === true;
+    this._isAppPublic = this._app?.features?.['appPublic'] === true;
     this._isAutomaticSsoLogin = this._features?.['automaticSsoLogin'] === true;
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
@@ -466,7 +466,7 @@ export default class LicenseBase {
 
   public get appPublic(): boolean {
     if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.appPublic;
+      return !!this.BASIC_PLAN_TERMS.app?.features?.appPublic;
     }
     return this._isAppPublic;
   }

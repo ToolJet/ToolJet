@@ -29,7 +29,6 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     queryFolders: false,
     scim: false,
     observability: false,
-    appPublic: false,
     automaticSsoLogin: false,
   },
   domains: [],
@@ -70,6 +69,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       release: false,
       history: false,
       jsLibraries: false,
+      appPublic: false,
     },
   },
   modules: {

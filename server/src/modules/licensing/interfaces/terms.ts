@@ -37,7 +37,6 @@ export interface Terms {
     github?: boolean;
     observability?: boolean;
     queryFolders?: boolean;
-    appPublic?: boolean;
     automaticSsoLogin?: boolean;
   };
   type?: LICENSE_TYPE;
@@ -69,6 +68,7 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
+      appPublic?: boolean;
     };
   };
   modules?: {
