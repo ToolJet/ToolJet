@@ -7,7 +7,7 @@
   "tj:source": {
     "name": "OpenAI",
     "kind": "openai",
-    "type": "api"
+    "type": "ai"
   },
   "properties": {
     "apiKey": {
