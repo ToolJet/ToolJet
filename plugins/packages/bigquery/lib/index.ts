@@ -276,8 +276,11 @@ export default class Bigquery implements QueryService {
       if (connection) {
         return connection;
       } else {
+        const cacheKeyPrefix = isMultiAuthEnabled && userId
+          ? `${dataSourceId}_${userId}_`
+          : `${dataSourceId}_`;
         connection = await this.buildConnection(sourceOptions, userId, isAppPublic);
-        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
+        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection, cacheKeyPrefix);
         return connection;
       }
     } else {

@@ -8,6 +8,8 @@ import {
   generateSourceOptionsHash,
   createQueryBuilder,
   isEmpty,
+  User,
+  App,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { Client } from 'ssh2';
@@ -98,7 +100,8 @@ export default class Mariadb implements QueryService {
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
     // ── Dynamic connection parameter overrides ────────────────────────────────
     if (sourceOptions.allow_dynamic_connection_parameters) {
@@ -108,7 +111,7 @@ export default class Mariadb implements QueryService {
 
     const checkCache = !sourceOptions.allow_dynamic_connection_parameters;
     let conn;
-    const pool = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
+    const pool = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt, context?.user?.id);
 
     try {
       conn = await pool.getConnection();
@@ -638,16 +641,23 @@ export default class Mariadb implements QueryService {
     options: any,
     checkCache: boolean,
     dataSourceId?: string,
-    dataSourceUpdatedAt?: string
+    dataSourceUpdatedAt?: string,
+    userId?: string
   ): Promise<any> {
     if (checkCache) {
       const optionsHash = generateSourceOptionsHash(sourceOptions);
-      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
+      const isMultiAuth = !!sourceOptions['multiple_auth_enabled'];
+      const enhancedCacheKey = isMultiAuth && userId
+        ? `${dataSourceId}_${userId}_${optionsHash}`
+        : `${dataSourceId}_${optionsHash}`;
+      const cacheKeyPrefix = isMultiAuth && userId
+        ? `${dataSourceId}_${userId}_`
+        : `${dataSourceId}_`;
       const cachedPool = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
       if (cachedPool) return cachedPool;
 
       const pool = await this.buildConnectionPool(sourceOptions);
-      cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, pool);
+      cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, pool, cacheKeyPrefix);
       return pool;
     }
     return this.buildConnectionPool(sourceOptions);

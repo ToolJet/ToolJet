@@ -12,6 +12,8 @@ import {
   QueryService,
   QueryResult,
   QueryError,
+  User,
+  App,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 
@@ -48,7 +50,8 @@ export default class OracledbQueryService implements QueryService {
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
     let result = {
       rows: [],
@@ -99,7 +102,7 @@ export default class OracledbQueryService implements QueryService {
     try {
       checkCache = true;
 
-      knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
+      knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt, context?.user?.id);
 
       result = await knexInstance.raw(query, binds);
 
@@ -268,18 +271,25 @@ export default class OracledbQueryService implements QueryService {
     options: any,
     checkCache: boolean,
     dataSourceId?: string,
-    dataSourceUpdatedAt?: string
+    dataSourceUpdatedAt?: string,
+    userId?: string
   ): Promise<any> {
     if (checkCache) {
       const optionsHash = generateSourceOptionsHash(sourceOptions);
-      const enhancedCacheKey = `${dataSourceId}_${optionsHash}`;
+      const isMultiAuth = !!sourceOptions['multiple_auth_enabled'];
+      const enhancedCacheKey = isMultiAuth && userId
+        ? `${dataSourceId}_${userId}_${optionsHash}`
+        : `${dataSourceId}_${optionsHash}`;
+      const cacheKeyPrefix = isMultiAuth && userId
+        ? `${dataSourceId}_${userId}_`
+        : `${dataSourceId}_`;
       let connection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
 
       if (connection) {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
-        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
+        cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection, cacheKeyPrefix);
         return connection;
       }
     } else {
