@@ -24,7 +24,7 @@ export const createUndoRedoSlice = (set, get) => {
   };
 
   return {
-    handleUndo: () => {
+    handleUndo: async () => {
       if (undoStack.length === 0) {
         return;
       }
@@ -36,24 +36,26 @@ export const createUndoRedoSlice = (set, get) => {
         if (redoStack.length > MAX_HISTORY_LENGTH) {
           redoStack.shift();
         }
-        get().processPatches(patches);
+        await get().processPatches(patches);
       } catch (error) {
+        redoStack.pop();
         undoStack.push([patches, inversePatches]);
       }
 
       updateCanUndoRedo();
     },
 
-    processPatches: (rawPatches) => {
+    processPatches: async (rawPatches) => {
       const patches = filterAndFormatPatches(rawPatches);
       const componentIdsToDelete = [];
       const componentLayoutsToUpdate = {};
       const componentParentToUpdate = {};
-      const componentIdsToAdd = [];
+      const componentsToAdd = [];
 
       let newParentId = null;
       let updateParent = false;
       let componenetPropertiesToUpdate = {};
+      let componentEventsToUpdate = null;
 
       const hasMoreThanOnePatchWithPropertyUpdate = patches.filter((patch) => patch.op === 'propertyUpdate').length > 1;
 
@@ -70,7 +72,7 @@ export const createUndoRedoSlice = (set, get) => {
         }
 
         if (op === 'add') {
-          componentIdsToAdd.push(value);
+          componentsToAdd.push(value);
         }
 
         if (op === 'parentUpdate') {
@@ -100,14 +102,56 @@ export const createUndoRedoSlice = (set, get) => {
               attr: value.attr,
             };
         }
+
+        if (op === 'restoreEvents') {
+          componentEventsToUpdate = value;
+        }
       });
 
       if (componentIdsToDelete && componentIdsToDelete.length > 0) {
         get().deleteComponents(componentIdsToDelete, undefined, { skipUndoRedo: true });
       }
 
-      if (componentIdsToAdd && componentIdsToAdd.length > 0) {
-        get().addComponentToCurrentPage(componentIdsToAdd, 'canvas', { skipUndoRedo: true });
+      if (componentsToAdd && componentsToAdd.length > 0) {
+        const addedComponents = await get().addComponentToCurrentPage(componentsToAdd, 'canvas', {
+          saveAfterAction: false,
+          skipFormUpdate: true,
+          skipUndoRedo: true,
+        });
+
+        if (!addedComponents || Object.keys(addedComponents).length === 0) {
+          throw new Error('Undo/redo restore failed: no components were added');
+        }
+
+        const addedComponentIds = new Set(Object.keys(addedComponents));
+        const eventHandlersToCreate = (componentEventsToUpdate || [])
+          .filter((event) => addedComponentIds.has(event.sourceId))
+          .filter((event) => event?.event && event?.target && event?.sourceId != null && event?.index != null)
+          .map((event) => ({
+            name: event.name,
+            event: { ...event.event },
+            eventType: event.target,
+            attachedTo: event.sourceId,
+            index: event.index,
+          }));
+
+        const batchDiff = {
+          create: {
+            diff: addedComponents,
+            pageId: get().getCurrentPageId('canvas'),
+          },
+          ...(eventHandlersToCreate.length > 0 ? { events: eventHandlersToCreate } : {}),
+        };
+
+        try {
+          const response = await get().saveComponentChanges(batchDiff, 'components/batch', 'update', 'canvas');
+          if (response) {
+            response.events?.forEach((event) => get().eventsSlice.addEvent(event, 'canvas'));
+            get().multiplayer.broadcastUpdates(componentsToAdd, 'components', 'create');
+          }
+        } catch (error) {
+          console.error('Error restoring components and event handlers on undo:', error);
+        }
       }
 
       if (!isEmpty(componentLayoutsToUpdate)) {
@@ -128,7 +172,7 @@ export const createUndoRedoSlice = (set, get) => {
       }
     },
 
-    handleRedo: () => {
+    handleRedo: async () => {
       if (redoStack.length === 0) {
         return;
       }
@@ -140,8 +184,9 @@ export const createUndoRedoSlice = (set, get) => {
         if (undoStack.length > MAX_HISTORY_LENGTH) {
           undoStack.shift();
         }
-        get().processPatches(patches);
+        await get().processPatches(patches);
       } catch (error) {
+        undoStack.pop();
         redoStack.push([patches, inversePatches]);
       }
 
@@ -179,6 +224,7 @@ const filterAndFormatPatches = (patches) => {
   patches?.map((patch) => {
     const { op, path, value } = patch;
     const joinedPath = path.slice(0, 3).join('.');
+
     if (op === 'remove' && /^modules\.\w+\.pages$/.test(joinedPath)) {
       // componentIdsToDelete.push(path[path.length - 1]);
       changeStack.push({
@@ -210,13 +256,7 @@ const filterAndFormatPatches = (patches) => {
           },
         });
       }
-      // if (path[6] === 'component' && path[7] === 'parent') {
-      //   changeStack.push({
-      //     op: 'parentUpdate',
-      //     componentId: path[5],
-      //     value,
-      //   });
-      // } else
+
       if (path[6] === 'component' && path[7] !== 'parent') {
         changeStack.push({
           op: 'propertyUpdate',
@@ -229,6 +269,13 @@ const filterAndFormatPatches = (patches) => {
           },
         });
       }
+    }
+
+    if (op === 'replace' && path[0] === 'eventsSlice' && path[1] === 'module' && path[3] === 'events') {
+      changeStack.push({
+        op: 'restoreEvents',
+        value,
+      });
     }
   });
   return changeStack;
