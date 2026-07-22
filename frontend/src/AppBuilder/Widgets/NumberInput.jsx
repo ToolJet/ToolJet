@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NumberInput = (props) => {
+  const inputRef = useRef(null);
+
   const inputLogic = useInput({
     ...props,
     properties: {
@@ -12,7 +14,8 @@ export const NumberInput = (props) => {
       value: Number(parseFloat(props.properties.value).toFixed(props.properties.decimalPlaces)),
     },
   });
-  const showClearBtn = props.properties?.showClearBtn;
+
+  const { showClearBtn, disableStepControls } = props.properties;
 
   const handleChange = (e) => {
     if (e.target.value === '') {
@@ -65,7 +68,13 @@ export const NumberInput = (props) => {
     props.fireEvent('onChange');
   };
 
-  const numberControls = !inputLogic.isResizing && (
+  const handleKeyDown = (e) => {
+    if (disableStepControls && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+    }
+  };
+
+  const numberControls = !disableStepControls && !inputLogic.isResizing && (
     <div className="tw-w-5 tw-z-[2] tw-shrink-0 tw-self-stretch tw-flex tw-flex-col tw-border-0 tw-border-l tw-border-solid tw-border-[var(--cc-default-border)]">
       <div
         onClick={handleIncrement}
@@ -84,6 +93,49 @@ export const NumberInput = (props) => {
   );
 
   useEffect(() => {
+    if (!disableStepControls || !inputRef.current) return;
+
+    const el = inputRef.current;
+
+    // undefined = not yet searched, null = searched but no scrollable ancestor found
+    let scrollableParent = undefined;
+
+    const handleWheel = (e) => {
+      // Prevent the browser from changing the input value on scroll
+      e.preventDefault();
+
+      // Lazy-init: walk the DOM only on the first scroll, then cache the result.
+      // This avoids doing any work if the user never scrolls over the input.
+      if (scrollableParent === undefined) {
+        scrollableParent = null;
+
+        let parent = el.parentElement;
+
+        while (parent) {
+          // String concat lets one regex check both overflow and overflowY at once.
+          // e.g. overflow="visible", overflowY="auto" → "visibleauto" → matches "auto"
+          const { overflow, overflowY } = window.getComputedStyle(parent);
+
+          const isScrollable = /(auto|scroll)/.test(overflow + overflowY) && parent.scrollHeight > parent.clientHeight;
+
+          if (isScrollable) {
+            scrollableParent = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+      }
+
+      (scrollableParent ?? window).scrollBy(0, e.deltaY);
+    };
+
+    // { passive: false } is required — without it the browser silently ignores preventDefault()
+    el.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [disableStepControls]);
+
+  useEffect(() => {
     if (isNaN(inputLogic.value) || inputLogic.value === '') {
       props.setExposedVariable('value', null);
     }
@@ -96,9 +148,11 @@ export const NumberInput = (props) => {
       inputType="number"
       handleChange={handleChange}
       handleBlur={handleBlur}
+      inputRef={inputRef}
       additionalInputProps={{
         min: props.validation?.minValue ?? null,
         max: props.validation?.maxValue ?? null,
+        onKeyDown: handleKeyDown,
       }}
       rightIcon={numberControls}
       classes={{

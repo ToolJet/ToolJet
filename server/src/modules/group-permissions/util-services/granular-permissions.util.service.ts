@@ -58,9 +58,11 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
 
   protected validateAppResourcePermissionUpdateOperation(
     group: GroupPermissions,
-    actions: ResourceGroupActions<ResourceType.APP | ResourceType.WORKFLOWS>
+    actions: ResourceGroupActions<ResourceType.APP | ResourceType.WORKFLOWS>,
+    isModule = false
   ) {
-    if (group.name === USER_ROLE.END_USER && actions.canEdit) {
+    // Modules are never assignable to end-users — reject for Build-with (canView) too, not just Edit.
+    if (group.name === USER_ROLE.END_USER && (actions.canEdit || isModule)) {
       throw new BadRequestException(ERROR_HANDLER.EDITOR_LEVEL_PERMISSION_NOT_ALLOWED_END_USER);
     }
   }
@@ -134,16 +136,21 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
   protected async createAppGroupPermission(
     organizationId: string,
     granularPermissions: GranularPermissions,
-    createAppPermissionsObj?: CreateResourcePermissionObject<ResourceType.APP | ResourceType.WORKFLOWS>,
+    createAppPermissionsObj?: CreateResourcePermissionObject<
+      ResourceType.APP | ResourceType.WORKFLOWS | ResourceType.MODULE
+    >,
     manager?: EntityManager
   ): Promise<void> {
     const { resourcesToAdd, canEdit } = createAppPermissionsObj;
+    // Modules are never assignable to end-users — reject for BOTH Edit and Build-with,
+    // unlike apps where only Edit (builder-level) triggers the end-user guard.
+    const isModule = granularPermissions.type === ResourceType.MODULE;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       await this.validateResourceCreation(
         {
           groupId: granularPermissions.groupId,
           organizationId,
-          isBuilderPermissions: canEdit,
+          isBuilderPermissions: canEdit || isModule,
         },
         manager
       );
@@ -264,6 +271,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         return APP_TYPES.FRONT_END;
       case ResourceType.WORKFLOWS:
         return APP_TYPES.WORKFLOW;
+      case ResourceType.MODULE:
+        return APP_TYPES.MODULE;
       default:
         throw new BadRequestException('Invalid resource type');
     }
@@ -531,7 +540,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
 
   protected async updateAppsGroupPermission(
     UpdateResourceGroupPermissionsObject: UpdateResourceGroupPermissionsObject<
-      ResourceType.APP | ResourceType.WORKFLOWS
+      ResourceType.APP | ResourceType.WORKFLOWS | ResourceType.MODULE
     >,
     organizationId: string,
     manager?: EntityManager
@@ -540,9 +549,11 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       const { granularPermissions, actions, resourcesToDelete, resourcesToAdd, group, allowRoleChange } =
         UpdateResourceGroupPermissionsObject;
 
+      const isModule = granularPermissions.type === ResourceType.MODULE;
       this.validateAppResourcePermissionUpdateOperation(
         group,
-        actions as ResourceGroupActions<ResourceType.APP | ResourceType.WORKFLOWS>
+        actions as ResourceGroupActions<ResourceType.APP | ResourceType.WORKFLOWS>,
+        isModule
       );
 
       const canEdit = actions.canEdit;
@@ -553,7 +564,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       const hasBuilderLevelEnvironments =
         canAccessProduction === true || canAccessDevelopment === true || canAccessStaging === true;
 
-      const isBuilderLevelUpdate = canEdit === true;
+      // Module updates are always builder-level so the end-user scan runs for Build-with too.
+      const isBuilderLevelUpdate = canEdit === true || isModule;
 
       await this.validateResourceAction(
         {
