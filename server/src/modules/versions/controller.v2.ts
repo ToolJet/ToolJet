@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -14,6 +15,12 @@ import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { PromoteVersionDto } from './dto';
 import { IVersionControllerV2 } from './interfaces/IControllerV2';
+import { AppVersionStatus } from '@entities/app_version.entity';
+
+// A day is plenty — PUBLISHED versions are immutable (editing creates a new version id), so
+// staleness isn't a real concern here; this just bounds how long a browser trusts the entry
+// before it re-validates at all.
+const PUBLISHED_VERSION_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60;
 
 @InitModule(MODULES.VERSION)
 @Controller({
@@ -26,8 +33,25 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions/:versionId')
-  getVersion(@User() user: UserEntity, @App() app: AppEntity, @Query('mode') mode?: string) {
-    return this.versionService.getVersion(app, user, mode);
+  async getVersion(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Query('mode') mode: string,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const result = await this.versionService.getVersion(app, user, mode);
+
+    // Only published versions are safe to cache client-side — editing creates a new version id,
+    // so this exact response body for this exact versionId will never change again. Draft/preview
+    // versions mutate on every edit and must always be revalidated live.
+    if (result?.editing_version?.status === AppVersionStatus.PUBLISHED && result?.editing_version?.id) {
+      res.set({
+        'Cache-Control': `private, max-age=${PUBLISHED_VERSION_CACHE_MAX_AGE_SECONDS}, immutable`,
+        ETag: `"v-${result.editing_version.id}"`,
+      });
+    }
+
+    return result;
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_UPDATE)

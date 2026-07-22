@@ -3,6 +3,7 @@ import { WhiteLabellingRepository } from './repository';
 import { OrganizationRepository } from '../organizations/repository';
 import { FeatureAbilityFactory } from '@modules/white-labelling/ability';
 import { SubModule } from '@modules/app/sub-module';
+import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 
 @Module({})
 export class WhiteLabellingModule extends SubModule {
@@ -15,7 +16,7 @@ export class WhiteLabellingModule extends SubModule {
 
     return {
       module: WhiteLabellingModule,
-      imports: [],
+      imports: [await InMemoryCacheModule.register(configs)],
       controllers: isMainImport ? [WhiteLabellingController] : [],
       providers: [
         WhiteLabellingService,

@@ -119,7 +119,7 @@ export class DataQueriesService implements IDataQueriesService {
   }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
-    const queries = await this.dataQueryRepository.getAll(versionId);
+    const queries = await this.dataQueryRepository.getAll(versionId, mode);
     return { data_queries: serializeDataQueries(queries) };
   }
 
