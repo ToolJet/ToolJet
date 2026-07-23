@@ -13,6 +13,7 @@ import { NoActiveWorkspaceModal } from './components/NoActiveWorkspaceModal';
 import Spinner from 'react-bootstrap/Spinner';
 import { ToolTip } from '@/_components/ToolTip';
 import { fetchEdition } from '../../helpers/utils';
+import './resources/styles/users-table.styles.scss';
 const UsersTable = ({
   isLoading,
   users,
@@ -33,6 +34,8 @@ const UsersTable = ({
   toggleEditUserDrawer,
   resetPassword = false,
   wsSettings = false,
+  toggleMfa = false,
+  onToggleMfaClick,
 }) => {
   const [isResetPasswordModalVisible, setIsResetPasswordModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -69,8 +72,13 @@ const UsersTable = ({
         darkMode={darkMode}
       />
       <div style={customStyles} className="tj-user-table-wrapper">
-        <div className="card-table fixedHeader table-responsive">
-          <table data-testid="usersTable" className="users-table table table-vcenter h-100 mx-0">
+        <div className="card-table fixedHeader table-responsive users-table-scroll-wrapper">
+          <table
+            data-testid="usersTable"
+            className={cx('users-table table table-vcenter h-100 mx-0', {
+              'all-users-table': isLoadingAllUsers,
+            })}
+          >
             <thead>
               <tr>
                 <th data-cy="users-table-name-column-header" data-name="name-header">
@@ -103,12 +111,17 @@ const UsersTable = ({
                 ) : (
                   <th className="w-1"></th>
                 )}
+                {isLoadingAllUsers && toggleMfa && (
+                  <th data-cy="users-table-mfa-column-header" data-name="mfa-header">
+                    2FA
+                  </th>
+                )}
                 {isLoadingAllUsers && (
                   <th data-cy="users-table-workspaces-column-header">
                     {translator('header.organization.menus.manageUsers.workspaces', 'Workspaces')}
                   </th>
                 )}
-                <th className="w-1 !tw-w-16 !tw-max-w-16 !tw-min-w-16"></th>
+                <th className="w-1 !tw-w-16 !tw-max-w-16 !tw-min-w-16 users-table-actions-cell"></th>
               </tr>
             </thead>
             {isLoading ? (
@@ -225,10 +238,20 @@ const UsersTable = ({
                           )}
                         </td>
                       )}
+                      {isLoadingAllUsers && toggleMfa && (
+                        <td className="text-muted" data-name="mfa-header">
+                          <span
+                            className={cx('mfa-status-pill', { active: user.mfa_enabled })}
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-mfa-status`}
+                          >
+                            {user.mfa_enabled ? 'Enabled' : 'Disabled'}
+                          </span>
+                        </td>
+                      )}
                       {isLoadingAllUsers && (
                         <td className="text-muted !tw-w-[230px] tw-max-w-[230px]">
                           <a
-                            className="px-2 text-muted workspaces"
+                            className="text-muted workspaces"
                             onClick={
                               user.total_organizations > 0
                                 ? () => openOrganizationModal(user)
@@ -242,7 +265,7 @@ const UsersTable = ({
                           </a>
                         </td>
                       )}
-                      <td className="user-actions-button tw-w-16 tw-max-w-16">
+                      <td className="user-actions-button tw-w-16 tw-max-w-16 users-table-actions-cell">
                         <UsersActionMenu
                           archivingUser={archivingUser}
                           user={user}
@@ -252,6 +275,8 @@ const UsersTable = ({
                           toggleEditUserDrawer={() => toggleEditUserDrawer(user)}
                           onResetPasswordClick={() => handleResetPasswordClick(user)}
                           resetPassword={resetPassword}
+                          toggleMfa={toggleMfa}
+                          onToggleMfaClick={() => onToggleMfaClick(user)}
                         />
                       </td>
                     </tr>

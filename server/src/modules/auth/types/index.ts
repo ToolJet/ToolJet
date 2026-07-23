@@ -23,6 +23,7 @@ export interface Features {
   [FEATURE_KEY.AI_COOKIE_DELETE]: FeatureConfig;
   [FEATURE_KEY.AI_MFA_REQUEST_OTP]: FeatureConfig;
   [FEATURE_KEY.AI_MFA_VERIFY_OTP]: FeatureConfig;
+  [FEATURE_KEY.MFA_VERIFY]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

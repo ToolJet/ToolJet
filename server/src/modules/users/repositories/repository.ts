@@ -79,6 +79,7 @@ export class UserRepository extends Repository<User> {
         status: true,
         userType: true,
         createdAt: true,
+        mfaEnabled: true,
         organizationUsers: {
           id: true,
           status: true,

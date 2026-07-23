@@ -16,13 +16,14 @@ export class ProfileService implements IProfileService {
   constructor(protected userRepository: UserRepository, protected serviceUtils: ProfileUtilService) {}
 
   getSessionUserDetails(user: User): Partial<User> {
-    const { firstName, lastName, avatarId, email, id } = user;
+    const { firstName, lastName, avatarId, email, id, mfaEnabled } = user;
     return {
       firstName,
       lastName,
       avatarId,
       email,
       id,
+      mfaEnabled,
     };
   }
 

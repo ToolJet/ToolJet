@@ -126,6 +126,7 @@ export enum LICENSE_FIELD {
   APP_HISTORY = 'appHistoryEnabled',
   APP_JS_LIBRARIES = 'appJsLibrariesEnabled',
   SCIM = 'scimEnabled',
+  MFA = 'mfaEnabled',
   PLAN = 'plan',
   MODULES = 'modulesEnabled',
   CUSTOM_GROUPS = 'customGroupsEnabled',
