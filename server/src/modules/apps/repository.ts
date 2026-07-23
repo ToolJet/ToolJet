@@ -18,13 +18,15 @@ export class AppsRepository extends Repository<App> {
   }
 
   /**
-   * True if ANY version of `parentAppId` contains a ModuleViewer component
-   * that embeds the module identified by `moduleCoRelationId`. Mirrors the
-   * structural join in DataQueryRepository.findPublicParentAppForModuleQuery,
-   * without the is_public / git-sync-branch metadata resolution or the
-   * current_version_id restriction — the caller (the module's embedded-view
-   * bypass) needs this to work for apps still in draft, which have no
-   * current_version_id yet, so any version embedding the module counts. The
+   * True if `parentAppId`'s CURRENT version contains a ModuleViewer component
+   * that embeds the module identified by `moduleCoRelationId`. "Current" is
+   * `app.current_version_id` if released, else the latest non-stub AppVersion
+   * by updated_at — deliberately NOT excluding version_type='branch' rows:
+   * in a git-sync-enabled workspace the app's only (or actively edited) row
+   * IS a branch-type row, so excluding it here (as fetchModules' unrelated
+   * editingVersion tier does, for a different need — matching a MODULE against
+   * a specific consumer branch) would make a genuinely-current embed invisible.
+   * A since-removed embed in a superseded version still no longer counts. The
    * requester's right to edit `parentAppId` at all is checked separately by
    * the caller.
    */
@@ -44,6 +46,18 @@ export class AppsRepository extends Repository<App> {
       .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleCoRelationId", {
         moduleCoRelationId,
       })
+      .andWhere(
+        `app_version.id = COALESCE(
+           app.current_version_id,
+           (
+             SELECT av.id FROM app_versions av
+             WHERE av.app_id = app.id
+               AND av.is_stub = false
+             ORDER BY av.updated_at DESC
+             LIMIT 1
+           )
+         )`
+      )
       .getCount();
     return count > 0;
   }
