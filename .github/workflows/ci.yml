@@ -388,9 +388,13 @@ jobs:
       - name: Evaluate results
         id: eval
         run: |
+          # Gate is a required status check on develop/main. GitHub counts a
+          # SKIPPED required check as satisfied, so this job must RUN and FAIL
+          # whenever the pipeline didn't execute for this commit — otherwise
+          # adding any unrelated label would mint a green Gate with zero tests.
           if [[ "${{ needs.detect-changes.result }}" == "skipped" ]]; then
-            echo "CI was not triggered (no run-ci label). Gate passes."
-            echo "verdict=skip" >> "$GITHUB_OUTPUT"
+            echo "::error::CI was not run for this commit — add the run-ci label"
+            echo "verdict=not-run" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -428,7 +432,9 @@ jobs:
           fi
 
       - name: Post PR comment
-        if: github.event_name == 'pull_request' && steps.eval.outputs.verdict != 'skip'
+        # not-run stays silent: a red Gate check says enough, no comment spam
+        # every time an unrelated label lands on the PR
+        if: github.event_name == 'pull_request' && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
         uses: actions/github-script@v7
         with:
@@ -531,7 +537,11 @@ jobs:
             }
 
       - name: Fail gate if checks failed
-        if: steps.eval.outputs.verdict == 'fail'
+        if: steps.eval.outputs.verdict != 'pass'
         run: |
-          echo "::error::One or more CI jobs failed"
+          if [[ "${{ steps.eval.outputs.verdict }}" == "not-run" ]]; then
+            echo "::error::run-ci has not passed for this commit — add the run-ci label to run CI"
+          else
+            echo "::error::One or more CI jobs failed"
+          fi
           exit 1
