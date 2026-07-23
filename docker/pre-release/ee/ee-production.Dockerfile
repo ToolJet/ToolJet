@@ -92,6 +92,7 @@ RUN apt-get update && \
         postgresql-client \
         redis \
         libaio1 \
+        libxml2 \
         git \
         openssh-client \
         freetds-dev \

@@ -101,5 +101,21 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.BAN_USER]: {
+      isPublic: true,
+    },
+    [FEATURE_KEY.UNBAN_USER]: {
+      isPublic: true,
+    },
+    [FEATURE_KEY.BAN_WORKSPACE]: {
+      isPublic: true,
+    },
+    [FEATURE_KEY.UNBAN_WORKSPACE]: {
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
   },
 };

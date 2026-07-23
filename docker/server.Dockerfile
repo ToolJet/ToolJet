@@ -48,7 +48,7 @@ ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
+RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle

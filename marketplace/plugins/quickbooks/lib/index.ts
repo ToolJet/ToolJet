@@ -2,9 +2,18 @@ import { QueryError, QueryService, OAuthUnauthorizedClientError } from '@tooljet
 import { SourceOptions, QueryOptions, QueryResult } from './types';
 import got from 'got';
 import crypto from 'crypto';
+const FormData = require('form-data');
 
 const SANDBOX_URL = 'https://sandbox-quickbooks.api.intuit.com';
 const TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
+
+// File Picker components resolve to { name, type, base64Data } — used to tell a real
+// uploaded file apart from a plain string/object body param.
+function isFileObject(value: unknown): value is { name?: string; type?: string; base64Data?: string } {
+  if (typeof value !== 'object' || value === null) return false;
+  const keys = Object.keys(value);
+  return keys.includes('name') && keys.includes('type') && keys.includes('base64Data');
+}
 
 export default class QuickBooks implements QueryService {
   authUrl(source_options: SourceOptions): string {
@@ -130,6 +139,7 @@ export default class QuickBooks implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     const accessToken = sourceOptions['access_token'];
+    const companyId = sourceOptions['company_id'];
 
     if (!accessToken) {
       throw new QueryError(
@@ -139,16 +149,26 @@ export default class QuickBooks implements QueryService {
       );
     }
 
+    if (!companyId) {
+      throw new QueryError(
+        'Invalid configuration',
+        'Missing QuickBooks Company ID. Please add it in the datasource configuration.',
+        { code: 'MISSING_COMPANY_ID' }
+      );
+    }
+
     const operation = queryOptions?.operation?.toLowerCase?.();
     const path = queryOptions['path'];
-    const pathParams = queryOptions['params']?.['path'] || {};
+    // companyid always comes from the datasource connection, never from the query itself —
+    // this overrides any companyid a query might still set in params.path.
+    const pathParams = { ...(queryOptions['params']?.['path'] || {}), companyid: companyId };
     const queryParams = queryOptions['params']?.['query'] || {};
     const bodyParams = queryOptions['params']?.['request'] || {};
 
     // Build URL — always use sandbox for development apps
     let url = `${SANDBOX_URL}${path}`;
     for (const param in pathParams) {
-      url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
+      url = url.split(`{${param}}`).join(encodeURIComponent(pathParams[param]));
     }
 
     console.log('[QuickBooks] Request:', operation?.toUpperCase(), url);
@@ -176,11 +196,35 @@ export default class QuickBooks implements QueryService {
 
     // Add body for non-GET/DELETE operations
     if (operation && !['get', 'delete'].includes(operation) && bodyParams && Object.keys(bodyParams).length > 0) {
-      // QuickBooks /query endpoint expects a raw SQL string as text/plain, not JSON
+      // QuickBooks /query endpoint expects a raw SQL string with Content-Type: application/text
+      // (Intuit's API rejects the standard text/plain MIME type here).
       if (path?.endsWith('/query')) {
         const queryString = bodyParams['body'] ?? Object.values(bodyParams)[0];
         requestOptions.body = String(queryString);
-        requestOptions.headers['Content-Type'] = 'text/plain';
+        requestOptions.headers['Content-Type'] = 'application/text';
+      } else if (path?.endsWith('/upload')) {
+        // QuickBooks' upload endpoint requires a real multipart/form-data body: the
+        // Attachable metadata (file_metadata_0) paired with the file bytes (file_content_0).
+        // Letting `form-data` set Content-Type (with boundary) instead of forcing JSON is
+        // what fixes the 415 "Cannot consume content type" error on this endpoint.
+        const form = new FormData();
+        for (const [key, value] of Object.entries(bodyParams)) {
+          if (isFileObject(value)) {
+            const fileValue = value as { name?: string; type?: string; base64Data?: string };
+            const fileBuffer = Buffer.from(fileValue.base64Data || '', 'base64');
+            form.append(key, fileBuffer, {
+              filename: fileValue.name || 'file',
+              contentType: fileValue.type || 'application/octet-stream',
+              knownLength: fileBuffer.length,
+            });
+          } else if (key.startsWith('file_metadata') && typeof value === 'string') {
+            form.append(key, value, { contentType: 'application/json' });
+          } else if (value != null) {
+            form.append(key, typeof value === 'string' ? value : JSON.stringify(value));
+          }
+        }
+        requestOptions.body = form;
+        requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
       } else {
         const parsedBody: Record<string, any> = {};
         for (const [key, value] of Object.entries(bodyParams)) {
