@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 /**
  * Hook that manages all exposed variable logic for the TreeSelect widget.
@@ -175,6 +175,16 @@ export function useTreeSelect({
     },
     [pathObj, leafValues]
   );
+
+  useFormClear(() => {
+    setChecked([]);
+    setExposedVariables(computeExposedVars([]));
+    if (validate) {
+      const result = validate([]);
+      setValidationStatus(result);
+      setExposedVariable('isValid', result.isValid);
+    }
+  });
 
   // Sync checked state when checkedData or data changes
   useEffect(() => {

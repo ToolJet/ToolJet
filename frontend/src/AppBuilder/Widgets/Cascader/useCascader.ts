@@ -8,7 +8,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import type {
   CascaderNode,
   CascaderPathMaps,
@@ -167,6 +167,8 @@ export function useCascader({
     setSelection(null);
     fireEventRef.current('onSelect');
   }, [setSelection]);
+
+  useFormClear(() => setSelection(null));
 
   // === Mount: register exposed variables + CSAs ===
   useEffect(() => {
