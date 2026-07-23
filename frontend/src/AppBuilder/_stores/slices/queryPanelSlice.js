@@ -1569,7 +1569,7 @@ export const createQueryPanelSlice = (set, get) => ({
         return {
           data: undefined,
           status: 'failed',
-          message: e?.error || e?.data?.message || 'Workflow execution failed',
+          message: e?.error || e?.data?.message || e?.message || 'Workflow execution failed',
         };
       }
     },
