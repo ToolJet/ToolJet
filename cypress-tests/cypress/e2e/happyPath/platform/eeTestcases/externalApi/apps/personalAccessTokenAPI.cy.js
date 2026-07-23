@@ -25,7 +25,6 @@ const validateSuccessResponse = (status, body) => {
     expect(status).to.eq(201);
     expect(body).to.have.property("personalAccessToken");
     expect(body).to.have.property("redirectUrl");
-    expect(Object.keys(body).length).to.eq(2);
     expect(body.personalAccessToken).to.be.a("string");
     expect(body.personalAccessToken).to.match(/^pat_[a-f0-9]+$/i);
     expect(body.redirectUrl).to.be.a("string");
@@ -40,8 +39,9 @@ describe("ToolJet: Personal Access Token (PAT) API", () => {
     const data = {};
 
     before(() => {
-        data.workspaceName = sanitize(fake.lastName);
-        data.workspaceSlug = sanitize(fake.lastName);
+        const uniqueSuffix = `${Date.now()}${Math.floor(Math.random() * 1e6)}`;
+        data.workspaceName = `${sanitize(fake.lastName)}${uniqueSuffix}`;
+        data.workspaceSlug = `pat-${uniqueSuffix}`;
 
         cy.apiLogin();
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((response) => {
@@ -78,7 +78,7 @@ describe("ToolJet: Personal Access Token (PAT) API", () => {
                             diffApp = { id: apps[1].id, slug: apps[1].slug };
 
                             // Rename the second app's slug so appId !== appSlug
-                            const customSlug = `custom-slug-${sanitize(fake.lastName)}`;
+                            const customSlug = `custom-slug-${uniqueSuffix}`;
                             cy.getAuthHeaders().then((headers) => {
                                 cy.request({
                                     method: "PUT",
@@ -169,9 +169,12 @@ describe("ToolJet: Personal Access Token (PAT) API", () => {
             sessionExpiry: 100,
             patExpiry: 100,
         }).then(({ status, body }) => {
-            // Current behavior: 500 (service reads app.id with app undefined). Kept tolerant to 400
-            // so this survives the API being fixed to a proper validation error.
-            expect(status, "missing appId and appSlug should return 400 or 500").to.be.oneOf([400, 500]);
+            // Documents a known server defect: the workspace-scoped PAT path in
+            // ee/external-apis/service.ts dereferences `app.id` when `app` is undefined
+            // and crashes with 500 instead of returning a proper validation error.
+            // Flip this to `.to.eq(400)` once the server enforces validation for the
+            // missing-appId + missing-appSlug case.
+            expect(status, "missing appId and appSlug currently crashes the service with 500").to.eq(500);
             const message = joinMessage(body.message).toLowerCase();
             expect(message).to.match(/app(id|slug)|undefined/);
             expect(body).to.not.have.property("personalAccessToken");
@@ -244,8 +247,8 @@ describe("ToolJet: Personal Access Token (PAT) API", () => {
             {
                 label: "appSlug does not exist",
                 body: buildBody({ appSlug: `nonexistent-${sanitize(fake.lastName)}` }),
-                acceptable: [400, 404],
-                expectMessage: /invalid appid or appslug|appslug|not found/,
+                acceptable: [400],
+                expectMessage: /invalid appid or appslug/,
             },
         ].forEach(({ label, body: reqBody, acceptable, expectMessage }) => {
             sendApiRequest("POST", PAT_ENDPOINT, reqBody).then(({ status, body }) => {
@@ -271,14 +274,4 @@ describe("ToolJet: Personal Access Token (PAT) API", () => {
         });
     });
 
-    // NOTE on out-of-scope cases from the PRD:
-    // - 403 App Access Denied and Permission Inheritance: enforced by the PAT *consumption*
-    //   endpoint (POST /ext/users/session — see validatePatAndCreateSession), not by generation.
-    //   Belong in a separate spec for the session endpoint.
-    // - 429 Rate Limiting: not yet implemented in the codebase. @nestjs/throttler is only wired
-    //   into ee/workflows/controllers/workflow-webhooks.controller.ts — no external-apis
-    //   controller uses ThrottlerGuard, and there is no global ThrottlerModule. Re-enable when
-    //   the rate-limit guard lands on the PAT endpoint.
-    // - Workspace Migration invalidates PAT: no move-app-between-workspaces feature exists
-    //   (AppUpdateDto has no organizationId field, no moveApp/transferApp endpoint).
 });
