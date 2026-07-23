@@ -135,6 +135,26 @@
     }
 }
 
+// Mobile edit frame: the canvas region (.tj-mobile-canvas-scroll) scrolls with a hidden scrollbar; the page
+// canvas overflows visibly (borders show on all sides) and the hover outline is drawn inside to avoid clipping.
+.tj-canvas-area {
+    .tj-mobile-canvas-scroll {
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    #real-canvas {
+        overflow: visible;
+    }
+
+    .widget-target:hover {
+        outline-offset: -1px;
+    }
+}
+
 .real-canvas.flex-container-canvas:not(.has-no-scroll) {
     overflow: auto;
     // Flex children reflow when scrollbar width changes, so keep the gutter stable and only reveal colors on hover.

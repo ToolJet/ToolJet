@@ -48,6 +48,7 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(moduleId), shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
+  const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const turnOnAutoComputeLayout = useStore((state) => state.turnOnAutoComputeLayout, shallow);
   const turnOffAutoComputeLayout = useStore((state) => state.turnOffAutoComputeLayout, shallow);
@@ -63,6 +64,8 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
     if (isEmpty(diff(lastComputedRef.current, updatedBoxes))) return;
     lastComputedRef.current = updatedBoxes;
     setComponentLayout(updatedBoxes, undefined, moduleId, { skipUndoRedo: true });
+    // Recompute canvas bottom height from the freshly stacked layout (setComponentLayout doesn't).
+    incrementCanvasUpdater();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, currentPageComponents, isAutoMobileLayout, moduleId]);
 
@@ -114,12 +117,12 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="tw-flex tw-items-center tw-gap-2">
-                <span className="tw-text-xs tw-text-text-default">Enable auto layout</span>
                 <Switch
                   checked={isAutoMobileLayout}
                   onCheckedChange={handleToggle}
                   data-cy="enable-auto-layout-toggle"
                 />
+                <span className="tw-text-xs tw-text-text-default">Enable auto layout</span>
               </div>
             </TooltipTrigger>
             {/* offsets align it to the toolbar's left edge and lift it above the toolbar */}
@@ -135,15 +138,13 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
-        {/* divider centered in the toolbar, independent of content */}
-        <div className="tw-absolute tw-left-1/2 tw-top-1/2 tw--translate-x-1/2 tw--translate-y-1/2 tw-h-[17.5px] tw-w-px tw-bg-border-weak" />
+        <div className="tw-h-[17.5px] tw-w-px tw-bg-border-weak" />
 
         <div className="tw-flex tw-items-center tw-gap-2">
-          <span className="tw-text-xs tw-text-text-placeholder">{hiddenCount} hidden components</span>
+          <span className="tw-text-xs tw-text-text-default">{hiddenCount} hidden components</span>
           <Button
             variant="outline"
-            size="small"
+            size="medium"
             onClick={() => setManageOpen(true)}
             data-cy="manage-hidden-components-button"
           >
@@ -153,7 +154,7 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
       </div>
 
       <AlertDialog open={!!confirm} onOpenChange={(next) => !next && setConfirm(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className={cx({ 'dark-theme theme-dark': darkMode })}>
           <AlertDialogHeader>
             <AlertDialogMedia>
               <TriangleAlert className="tw-size-10 tw-text-icon-brand" />
@@ -177,7 +178,14 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
       </AlertDialog>
 
       {/* mount only when open so it doesn't subscribe/recompute while closed */}
-      {manageOpen && <ManageMobileVisibilityDialog open onClose={() => setManageOpen(false)} moduleId={moduleId} />}
+      {manageOpen && (
+        <ManageMobileVisibilityDialog
+          open
+          onClose={() => setManageOpen(false)}
+          moduleId={moduleId}
+          darkMode={darkMode}
+        />
+      )}
     </>
   );
 }

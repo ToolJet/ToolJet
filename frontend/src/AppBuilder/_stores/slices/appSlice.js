@@ -191,9 +191,36 @@ export const createAppSlice = (set, get) => ({
       }
     }
 
-    const bottomPadding = currentMode === 'view' ? 100 : 300;
+    // Mobile auto-layout has no manual drop zone, so skip the 300px editor drop-zone padding that
+    // would otherwise leave empty canvas below the stacked content and push it past the viewport.
+    const bottomPadding = currentMode === 'view' ? 100 : currentLayout === 'mobile' ? 16 : 300;
     const frameHeight =
       currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
+    // Mobile editor: size canvas from the real DOM bottom (stored layout lags dynamic-height widgets by a
+    // reflow cycle), + bottomPadding so the 16px gap sits inside the box below the lowest widget.
+    if (currentLayout === 'mobile' && currentMode === 'edit') {
+      const realCanvasEl =
+        typeof document !== 'undefined'
+          ? document.getElementById(moduleId === 'canvas' ? 'real-canvas' : `canvas-${moduleId}`)
+          : null;
+      if (realCanvasEl) {
+        const canvasTop = realCanvasEl.getBoundingClientRect().top;
+        let contentBottom = 0;
+        realCanvasEl.querySelectorAll('.widget-target').forEach((widgetEl) => {
+          const bottom = widgetEl.getBoundingClientRect().bottom - canvasTop;
+          if (bottom > contentBottom) contentBottom = bottom;
+        });
+        if (contentBottom > 0) {
+          setCanvasHeight(`${Math.round(contentBottom) + bottomPadding}px`, moduleId);
+          return;
+        }
+      }
+      // Fallback before widgets mount; a later reflow re-runs this.
+      setCanvasHeight(`${maxHeight + bottomPadding}px`, moduleId);
+      return;
+    }
+
+    // Mobile view / desktop: keep the 100vh floor so published pages fill the screen.
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(canvasHeight, moduleId);
   },
