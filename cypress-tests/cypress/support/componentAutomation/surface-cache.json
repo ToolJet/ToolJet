@@ -1,0 +1,5 @@
+{
+  "$schema": "./README.md",
+  "shared": { "cssPropertyMap": {} },
+  "components": {}
+}
