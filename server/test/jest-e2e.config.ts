@@ -10,6 +10,9 @@ const config: Config.InitialOptions = {
   setupFiles: ['<rootDir>/../test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/../test/jest-transaction-setup.ts', '<rootDir>/../test/jest-retry-setup.ts'],
   testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
+  // QUARANTINE(git-sync): suite throws at import (requires TEST_GIT_BASE_URL +
+  // a live git server) — describe.skip can't guard module-load failures. #17265
+  testPathIgnorePatterns: ['modules/git-sync/e2e/git-sync\\.spec\\.ts$'],
   modulePathIgnorePatterns: ['<rootDir>/../dist/'],
   runner: 'groups',
   testTimeout: 60000,
