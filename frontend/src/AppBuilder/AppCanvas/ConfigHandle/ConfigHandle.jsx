@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { DROPPABLE_PARENTS } from '../appCanvasConstants';
+import { DROPPABLE_PARENTS, GRID_HEIGHT } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
@@ -56,7 +56,9 @@ export const ConfigHandle = ({
   );
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const timeoutRef = useRef(null);
-  const position = widgetTop < 15 ? 'bottom' : 'top';
+  // Flip handle above the widget only once there's a full 3 grid rows of space above it —
+  // 1-2 rows isn't enough headroom in a child canvas (Tabs/Form/Modal etc.), handle ends up clipped.
+  const position = widgetTop < GRID_HEIGHT * 3 ? 'bottom' : 'top';
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
