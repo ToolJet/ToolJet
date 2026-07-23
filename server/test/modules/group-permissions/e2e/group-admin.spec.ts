@@ -35,7 +35,10 @@ import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 const email = (label: string) => `${label}-${Date.now().toString(36)}@tooljet.io`;
 
 /** @group platform */
-describe('GroupAdminController', () => {
+// QUARANTINE(group-permissions): whole suite is order-dependent — individual
+// skips just shift which sibling 403s next (three different tests flaked
+// across runs 30016630657/30029967262). Needs an isolation fix — see #17261
+describe.skip('GroupAdminController', () => {
   let nestApp: INestApplication;
 
   beforeAll(async () => {
