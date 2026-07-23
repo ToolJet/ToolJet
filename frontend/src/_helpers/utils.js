@@ -69,7 +69,7 @@ export function findProp(obj, prop, defval) {
       } else {
         obj = undefined;
       }
-    } else if (obj !== undefined) {
+    } else if (obj != null) {
       if (typeof obj[prop[i]] === 'undefined') return defval;
       obj = obj[prop[i]];
     }
@@ -78,6 +78,7 @@ export function findProp(obj, prop, defval) {
 }
 
 export function stripTrailingSlash(str) {
+  if (!str) return '';
   return str.replace(/[/]+$/, '');
 }
 
@@ -685,9 +686,17 @@ export function hasCircularDependency(obj, stack = new Set()) {
   return false;
 }
 
+const escapeHtml = (str) => {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+};
+
 export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
-  return comment.replace(regex, '<span class=mentioned-user>$2</span>');
+  return comment.replace(regex, (_match, _open, inner, _close) =>
+    `<span class="mentioned-user">${escapeHtml(inner)}</span>`
+  );
 };
 //   const currentPageId = _ref.currentPageId;
 //   const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
@@ -987,7 +996,7 @@ export function isExpectedDataType(data, expectedDataType) {
       case 'number':
         return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'number' ? data : undefined;
       case 'boolean':
-        return Boolean();
+        return Boolean(data);
       case 'array':
         return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'array' ? data : [];
       case 'object':
