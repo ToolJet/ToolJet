@@ -466,6 +466,8 @@ jobs:
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Run changed tests (unit + e2e)
+        # container default shell is dash — PIPESTATUS needs bash
+        shell: bash
         run: |
           mkdir -p /tmp/tj-e2e-json
           BASE_BRANCH="${{ github.base_ref }}" bash scripts/test-changed.sh 2>&1 | tee /tmp/tj-run.log
