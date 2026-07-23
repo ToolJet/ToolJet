@@ -601,19 +601,18 @@ export const useDataQueriesStore = create(
 );
 
 const sortByAttribute = (data, sortBy, order) => {
+  const sorted = [...data];
   if (order === 'asc') {
     if (sortBy === 'kind' || sortBy === 'updated_at') {
-      // sort by name first and then by the attribute
-      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+      return sorted.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
     }
-    return data.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+    return sorted.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
   }
   if (order === 'desc') {
     if (sortBy === 'kind' || sortBy === 'updated_at') {
-      // sort by name first and then by the attribute
-      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
+      return sorted.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
     }
-    return data.sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
+    return sorted.sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
   }
 };
 

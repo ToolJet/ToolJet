@@ -2580,13 +2580,13 @@ export const createComponentsSlice = (set, get) => ({
   getCurrentPage: (moduleId = 'canvas') => {
     const { modules, getCurrentPageId } = get();
     const currentPageId = getCurrentPageId(moduleId);
-    const currentPage = modules[moduleId].pages.find((page) => page.id === currentPageId);
+    const currentPage = modules[moduleId]?.pages?.find((page) => page.id === currentPageId);
     return currentPage;
   },
 
   // Get the component definition from the component id
   getComponentDefinition: (componentId, moduleId = 'canvas') => {
-    const currentPage = get().modules[moduleId].pages.find((page) => page.id === get().getCurrentPageId(moduleId));
+    const currentPage = get().modules[moduleId]?.pages?.find((page) => page.id === get().getCurrentPageId(moduleId));
     // if (componentId === 'd78554b8-2af0-4add-9d7d-0032bb4c90ce')
     // console.trace('here--- getComponentDefinition--- ', componentId, moduleId, currentPage?.components[componentId]);
     return currentPage?.components[componentId];
@@ -2600,12 +2600,12 @@ export const createComponentsSlice = (set, get) => ({
   getComponentNameFromId: (componentId, moduleId = 'canvas') => {
     const { modules, getCurrentPageIndex } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
-    return modules[moduleId].pages[currentPageIndex]?.components[componentId]?.component.name;
+    return modules[moduleId]?.pages?.[currentPageIndex]?.components[componentId]?.component.name;
   },
   getComponentTypeFromId: (componentId, moduleId = 'canvas') => {
     const { modules, getCurrentPageIndex } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
-    return modules[moduleId].pages[currentPageIndex]?.components[componentId]?.component.component;
+    return modules[moduleId]?.pages?.[currentPageIndex]?.components[componentId]?.component.component;
   },
   getComponentNameIdMapping: (moduleId = 'canvas') => {
     const { modules } = get();

@@ -101,7 +101,11 @@ class HttpClient {
       }
     } catch (err) {
       payload.data = [];
-      payload.error = !isEmpty(text) && JSON.parse(text);
+      try {
+        payload.error = !isEmpty(text) && JSON.parse(text);
+      } catch {
+        payload.error = text;
+      }
     } finally {
       // eslint-disable-next-line no-unsafe-finally
       return payload;
