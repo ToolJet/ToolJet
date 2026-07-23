@@ -25,12 +25,13 @@ export function useBatchedUpdateEffectArray(items) {
   const firstRender = useRef(true);
   const prevDeps = useRef(items.map((item) => item.dep));
 
+  const depKey = JSON.stringify(items.map((item) => item.dep));
+
   useEffect(
     () => {
       // Skip running on first render
       if (firstRender.current) {
         firstRender.current = false;
-        prevDeps.current = items.map((item) => item.dep);
         return;
       }
 
@@ -43,6 +44,6 @@ export function useBatchedUpdateEffectArray(items) {
         }
       });
     },
-    items.map((item) => item.dep)
+    [depKey]
   );
 }
