@@ -1,9 +1,9 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { isEqual } from 'lodash';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
-import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
-import _ from 'lodash';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns, postgresErrorCode } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -34,7 +34,7 @@ const compareValueInObject = (currentValue, defaultValue) => {
     }
 
     // Step 2: Use Lodash's isEqual for a deep comparison
-    return _.isEqual(cv, defaultVal);
+    return isEqual(cv, defaultVal);
   } catch (error) {
     return false;
   }
@@ -57,8 +57,7 @@ const EditRowForm = ({
   initiator,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } = useTooljetDatabaseContext();
   const inputRefs = useRef({});
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
@@ -238,7 +237,7 @@ const EditRowForm = ({
             ? null
             : compareValueInObject(newInputValues[index].value, defaultValue)
             ? defaultValue
-            : _.isEqual(newInputValues[index].value, currentValue)
+            : isEqual(newInputValues[index].value, currentValue)
             ? currentValue
             : currentValue === null && customVal === ''
             ? ''

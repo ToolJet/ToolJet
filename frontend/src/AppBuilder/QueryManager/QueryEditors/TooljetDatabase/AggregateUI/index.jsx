@@ -1,11 +1,11 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { NoCondition } from '../NoConditionUI';
 import './style.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';
 import { SelectBox } from './Select';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { useToolJetDbOperationsContext } from '../ToolJetDbOperationsContext';
 import { v4 as uuidv4 } from 'uuid';
 import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
@@ -22,7 +22,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     joinOptions,
     tableInfo,
     findTableDetails,
-  } = useContext(TooljetDatabaseContext);
+  } = useToolJetDbOperationsContext();
   const operationDetails = useMemo(() => {
     switch (operation) {
       case 'listRows':

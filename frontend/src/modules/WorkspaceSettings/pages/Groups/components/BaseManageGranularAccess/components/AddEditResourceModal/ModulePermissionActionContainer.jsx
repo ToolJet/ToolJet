@@ -1,8 +1,9 @@
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEModulePermissionActionContainer from '@ee/modules/WorkspaceSettings/components/ModulePermissionActionContainer/ModulePermissionActionContainer';
 
-function ModulePermissionActionContainer() {
-  return <></>;
-}
+const ModulePermissionActionContainer = pickEditionSpecificComponent({
+  ee: EEModulePermissionActionContainer,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(ModulePermissionActionContainer, 'WorkspaceSettings');
+export default ModulePermissionActionContainer;

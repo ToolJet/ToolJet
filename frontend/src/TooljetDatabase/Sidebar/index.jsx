@@ -4,7 +4,7 @@ import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { OrganizationList } from '@/modules/dashboard/components';
 import cx from 'classnames';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 
 export default function Sidebar({ collapseSidebar }) {
   const [bannerVisible, setBannerVisible] = useState(false);

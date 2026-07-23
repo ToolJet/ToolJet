@@ -268,6 +268,30 @@ export default [
     },
   },
 
+  // EE/cloud-only code must be imported via the `@ee`/`@cloud` aliases, never a
+  // relative path — relative paths bypass NormalModuleReplacementPlugin's swap,
+  // so a CE build would ship real EE code instead of the empty-module stub.
+  {
+    files: ['src/**/*.js', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/ee/**', '**/ee'],
+              message: 'Import EE-only code via the "@ee/" alias, not a relative path.',
+            },
+            {
+              group: ['**/cloud/**', '**/cloud'],
+              message: 'Import cloud-only code via the "@cloud/" alias, not a relative path.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // Storybook config
   ...pluginStorybook.configs['flat/recommended'],
 ];

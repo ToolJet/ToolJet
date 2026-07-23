@@ -1,17 +1,18 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { isEmpty, cloneDeep } from 'lodash';
+import cx from 'classnames';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
-import { tooljetDatabaseService, authenticationService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
-import _, { isEmpty } from 'lodash';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import { BreadCrumbContext } from '@/App/App';
 import WarningInfo from '../Icons/Edit-information.svg';
 // import ArrowRight from '../Icons/ArrowRight.svg';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { serialDataType } from '../constants';
-import cx from 'classnames';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import ChangesComponent from '../ChangesComponent';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const TableForm = ({
@@ -46,11 +47,11 @@ const TableForm = ({
   const [showModal, setShowModal] = useState(false);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
   const [tableName, setTableName] = useState(selectedTable.table_name);
-  const { organizationId, foreignKeys, setForeignKeys, configurations } = useContext(TooljetDatabaseContext);
+  const { organizationId, foreignKeys, setForeignKeys, configurations } = useTooljetDatabaseContext();
 
   const [columns, setColumns] = useState(
     (() => {
-      const clonedColumns = _.cloneDeep(selectedTableColumns) || {};
+      const clonedColumns = cloneDeep(selectedTableColumns) || {};
       const transformedColumns = Object.values(clonedColumns).map((column) => {
         const columnUuid = configurations?.columns?.column_names?.[column.column_name];
         const columnConfigurations = configurations?.columns?.configurations?.[columnUuid] || {};
@@ -407,10 +408,9 @@ const TableForm = ({
         confirmButtonText={'Continue'}
         cancelButtonText={'Cancel'}
         footerStyle={footerStyle}
-        currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-        newPrimaryKeyIcons={newPrimaryKeyIcons}
-        isEditToolJetDbTable={true}
-      />
+      >
+        <ChangesComponent currentPrimaryKeyIcons={currentPrimaryKeyIcons} newPrimaryKeyIcons={newPrimaryKeyIcons} />
+      </ConfirmDialog>
     </div>
   );
 };
