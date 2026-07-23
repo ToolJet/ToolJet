@@ -20,6 +20,8 @@ import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
@@ -249,6 +251,16 @@ const useAppData = (
     }
   }, [pageSwitchInProgress, moduleMode]);
 
+  // Sync editor freeze state from global store to app builder store (for cross-bundle triggers like auto-sync)
+  useEffect(() => {
+    const unsubscribe = useAppVersionStore.subscribe((state) => {
+      if (state.isEditorFreezed) {
+        setIsEditorFreezed(true);
+      }
+    });
+    return unsubscribe;
+  }, [setIsEditorFreezed]);
+
   useEffect(() => {
     const subscription = authenticationService.currentSession
       .pipe(
@@ -477,6 +489,9 @@ const useAppData = (
           },
           moduleId
         );
+
+        // Also populate the global app data store so route-level hooks can access co_relation_id
+        useAppDataStore.getState().actions.updateState({ coRelationId: appData.co_relation_id });
 
         const liveMessages = useStore.getState().ai?.conversation?.aiConversationMessages;
         if (

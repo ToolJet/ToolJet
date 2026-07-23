@@ -3,6 +3,7 @@ import { create, zustandDevTools } from './utils';
 import { notificationsService } from '@/_services/notifications.service';
 import { detailAction } from '@/_components/NotificationCenter/detailAction';
 import { showNotificationToast } from '@/_components/NotificationCenter/NotificationToast';
+import { authenticationService } from '@/_services/authentication.service';
 
 const PAGE_SIZE = 20;
 
@@ -157,6 +158,9 @@ export const useNotificationsStore = create(
         },
         receive(n, withToast = false) {
           if (!n?.recipientId) return;
+          // Scope notifications to the active workspace — ignore cross-org deliveries
+          const currentOrgId = authenticationService.currentSessionValue?.current_organization_id;
+          if (n.organizationId && currentOrgId && n.organizationId !== currentOrgId) return;
           let added = false;
           set((s) => {
             if (s.items.some((it) => it.recipientId === n.recipientId)) return s; // dedupe re-delivery

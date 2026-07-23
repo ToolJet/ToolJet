@@ -32,8 +32,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can(FEATURE_KEY.UPDATE_ORGANIZATION_GIT_STATUS, OrganizationGitSync);
       can(FEATURE_KEY.DELETE_ORGANIZATION_GIT_CONFIGS, OrganizationGitSync);
       can(FEATURE_KEY.SAVE_ENV_PROVIDER_CONFIGS, OrganizationGitSync);
+      can(FEATURE_KEY.ENABLE_AUTO_SYNC, OrganizationGitSync);
+      can(FEATURE_KEY.DISABLE_AUTO_SYNC, OrganizationGitSync);
+      can(FEATURE_KEY.ROTATE_AUTO_SYNC_SECRET, OrganizationGitSync);
+      can(FEATURE_KEY.GET_AUTO_SYNC_STATUS, OrganizationGitSync);
+      can(FEATURE_KEY.GET_AUTO_SYNC_EVENTS, OrganizationGitSync);
       return;
     }
     can(FEATURE_KEY.GET_ORGANIZATION_GIT_STATUS, OrganizationGitSync);
+    can(FEATURE_KEY.GET_AUTO_SYNC_STATUS, OrganizationGitSync);
   }
 }
