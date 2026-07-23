@@ -11,6 +11,7 @@ import './jsonEditor.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export async function loadCodeMirrorTheme(theme) {
   const mod = await import('@uiw/codemirror-themes-all');
@@ -292,6 +293,8 @@ export const JSONEditor = function JSONEditor(props) {
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useFormClear(() => setValue('null'));
 
   // ===== MAIN RENDER =====
   return (
