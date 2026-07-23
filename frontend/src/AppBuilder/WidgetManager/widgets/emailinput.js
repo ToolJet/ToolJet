@@ -14,7 +14,7 @@ export const emailinputConfig = {
   properties: {
     expandFieldIfLabelEmpty: {
       type: 'toggle',
-      displayName: 'Expand field when label is empty',
+      displayName: 'Legacy layout',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'deprecatedStyles',
       isFxNotRequired: true,

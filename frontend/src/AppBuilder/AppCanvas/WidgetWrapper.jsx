@@ -74,6 +74,12 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
     );
+    const resolvedAlignment = useStore(
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.styles?.alignment
+    );
+    const resolvedLegacyLayout = useStore(
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.expandFieldIfLabelEmpty
+    );
     const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
     const temporaryLayouts = useStore((state) => {
       const layoutContext = indices ?? subContainerIndex;
@@ -156,7 +162,14 @@ const WidgetWrapper = memo(
     }
 
     const gridWidthPx = gridWidth * newLayoutData?.width;
-    const gridHeight = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition, moduleId);
+    const gridHeight = calculateMoveableBoxHeightWithId(
+      id,
+      currentLayout,
+      stylesDefinition,
+      moduleId,
+      resolvedAlignment,
+      resolvedLegacyLayout
+    );
 
     // Calculate the final height based on visibility and temporary layouts.
     // Hidden widgets collapse to 0 in both edit and view modes — in edit mode

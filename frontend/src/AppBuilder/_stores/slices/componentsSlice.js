@@ -30,7 +30,7 @@ import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-import { calculateInputCanvasHeight } from './componentsSliceUtils';
+import { calculateInputCanvasHeight, resolveInputCanvasAlignment } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
@@ -3110,7 +3110,14 @@ export const createComponentsSlice = (set, get) => ({
       return match; // Return the original match if no mapping is found
     });
   },
-  calculateMoveableBoxHeightWithId: (componentId, currentLayout, stylesDefinition, moduleId = 'canvas') => {
+  calculateMoveableBoxHeightWithId: (
+    componentId,
+    currentLayout,
+    stylesDefinition,
+    moduleId = 'canvas',
+    resolvedStyleAlignment,
+    resolvedStyleLegacyLayout
+  ) => {
     const componentDefinition = get().getComponentDefinition(componentId, moduleId);
     const layoutData = componentDefinition?.layouts?.[currentLayout];
     const componentType = componentDefinition?.component?.component;
@@ -3129,15 +3136,20 @@ export const createComponentsSlice = (set, get) => ({
     const resolvedLabelType = labelType
       ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
       : undefined;
-    const expandFieldIfLabelEmpty = componentDefinition?.component?.definition?.properties?.expandFieldIfLabelEmpty;
-    const resolvedExpandFieldIfLabelEmpty = expandFieldIfLabelEmpty
-      ? resolveDynamicValues(expandFieldIfLabelEmpty.value + '', getAllExposedValues(moduleId)) ?? false
-      : false;
+    const legacyLayoutProperty = componentDefinition?.component?.definition?.properties?.expandFieldIfLabelEmpty;
+    const resolvedLegacyLayout =
+      resolvedStyleLegacyLayout ??
+      (legacyLayoutProperty
+        ? resolveDynamicValues(legacyLayoutProperty.value + '', getAllExposedValues(moduleId)) ?? false
+        : false);
 
-    const resolvedAlignment =
-      alignment.value === 'top' || alignment.value === 'side'
-        ? alignment.value
-        : resolveDynamicValues(alignment.value + '');
+    const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
+      alignment: alignment.value,
+      hasLegacyLayoutProperty: Boolean(legacyLayoutProperty),
+      legacyLayout: resolvedLegacyLayout,
+      resolveValue: (value) => resolvedStyleAlignment ?? get().getResolvedValue(value, {}, moduleId),
+    });
+
     return calculateInputCanvasHeight({
       height: layoutData?.height,
       alignment: alignment.value && resolvedAlignment,
@@ -3145,7 +3157,8 @@ export const createComponentsSlice = (set, get) => ({
       width: resolvedWidth,
       auto: resolvedAuto,
       labelType: resolvedLabelType,
-      expandFieldIfLabelEmpty: resolvedExpandFieldIfLabelEmpty,
+      legacyLayout: resolvedLegacyLayout,
+      isDynamicAlignment,
     });
   },
   getIsAutoMobileLayout: (moduleId = 'canvas') => {
