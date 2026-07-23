@@ -201,7 +201,7 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
 
 function getDynamicVariables(text) {
   /* eslint-disable no-useless-escape */
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/\%\%(.*?)\%\%/gs);
   return matchedParams;
 }
 const resolveMultiDynamicReferences = (code, lookupTable = {}, queryHasJSCode, customResolvers = {}) => {
