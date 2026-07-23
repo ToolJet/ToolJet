@@ -67,7 +67,7 @@ fi
 
 if [[ "$RUN_ALL" == "true" ]] || [[ ${#UNIQUE_MODULES[@]} -eq 0 ]]; then
   PATTERN=""
-  echo "Running all server unit tests"
+  echo "Running all server tests"
 else
   MODULE_REGEX=$(IFS='|'; echo "${UNIQUE_MODULES[*]}")
   PATTERN="test/modules/(${MODULE_REGEX})/"

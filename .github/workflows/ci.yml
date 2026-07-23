@@ -74,8 +74,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'plugins/package-lock.json'
       - run: npm ci --prefix plugins
-      - run: npm run --prefix plugins lint
-      - run: npm run --prefix plugins build
+      - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix plugins lint 2>&1 | tee -a /tmp/buildlog/plugins.log
+      - run: set -o pipefail; npm run --prefix plugins build 2>&1 | tee -a /tmp/buildlog/plugins.log
+      - name: Upload lint/build log for the PR comment
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildlog-plugins
+          path: /tmp/buildlog/
+          retention-days: 1
       - uses: actions/upload-artifact@v4
         with:
           name: plugins-dist
@@ -113,9 +120,16 @@ jobs:
       - run: npm ci --prefix server
       # 147 pre-existing manual-fix lint errors on main (unused-vars, require-imports,
       # useless-escape…) — needs its own rehab PR; non-blocking for pipeline validation
-      - run: npm run --prefix server lint
+      - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix server lint 2>&1 | tee -a /tmp/buildlog/server.log
         continue-on-error: true
-      - run: npm run --prefix server build
+      - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
+      - name: Upload lint/build log for the PR comment
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildlog-server
+          path: /tmp/buildlog/
+          retention-days: 1
 
   build-frontend:
     name: 'Lint & Build · frontend'
@@ -139,8 +153,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'frontend/package-lock.json'
       - run: npm ci --prefix frontend
-      - run: npm run --prefix frontend lint
-      - run: npm run --prefix frontend build
+      - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix frontend lint 2>&1 | tee -a /tmp/buildlog/frontend.log
+      - run: set -o pipefail; npm run --prefix frontend build 2>&1 | tee -a /tmp/buildlog/frontend.log
+      - name: Upload lint/build log for the PR comment
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildlog-frontend
+          path: /tmp/buildlog/
+          retention-days: 1
 
   build-marketplace:
     name: 'Lint & Build · marketplace'
@@ -157,11 +178,18 @@ jobs:
       - run: npm ci --prefix marketplace
       # eslint 8's flat-config auto-detect trips over frontend/eslint.config.mjs;
       # force eslintrc mode until marketplace migrates to a flat config of its own
-      - run: ESLINT_USE_FLAT_CONFIG=false npm run --prefix marketplace lint
+      - run: set -o pipefail; mkdir -p /tmp/buildlog; ESLINT_USE_FLAT_CONFIG=false npm run --prefix marketplace lint 2>&1 | tee -a /tmp/buildlog/marketplace.log
       # `npm run build --workspaces` builds alphabetically; plugins import
       # @tooljet-marketplace/common's dist, so build common first
-      - run: npm run --prefix marketplace build --workspace=@tooljet-marketplace/common
-      - run: npm run --prefix marketplace build
+      - run: set -o pipefail; npm run --prefix marketplace build --workspace=@tooljet-marketplace/common 2>&1 | tee -a /tmp/buildlog/marketplace.log
+      - run: set -o pipefail; npm run --prefix marketplace build 2>&1 | tee -a /tmp/buildlog/marketplace.log
+      - name: Upload lint/build log for the PR comment
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildlog-marketplace
+          path: /tmp/buildlog/
+          retention-days: 1
 
   # ---------------------------------------------------------------------------
   # 3. Test jobs — need plugins build artifact
@@ -441,7 +469,15 @@ jobs:
           exit "${PIPESTATUS[0]}"
       - name: Capture scope for the PR comment
         if: always()
-        run: grep -m1 -E 'Changed modules:|Running all server unit tests|No server files changed' /tmp/tj-run.log > /tmp/tj-scope.txt || echo "scope unknown" > /tmp/tj-scope.txt
+        run: |
+          scope=$(grep -m1 -E 'Changed modules:|Running all server tests|No server files changed' /tmp/tj-run.log || true)
+          case "$scope" in
+            "Changed modules:"*) mods=$(echo "${scope#Changed modules: }" | sed 's/[^ ]*/`&`/g; s/ /, /g')
+                                 echo "modules ${mods}" > /tmp/tj-scope.txt;;
+            "Running all"*)      echo "all modules (cross-cutting change)" > /tmp/tj-scope.txt;;
+            "No server files"*)  echo "no server changes — lint & build only" > /tmp/tj-scope.txt;;
+            *)                   echo "not recorded" > /tmp/tj-scope.txt;;
+          esac
       - name: Upload fast-run results
         if: always()
         uses: actions/upload-artifact@v4
@@ -620,12 +656,24 @@ jobs:
           name: full-e2e-results
           path: /tmp/ci-results/tj-e2e-json
 
+      - name: Download build logs
+        if: >-
+          github.event_name == 'pull_request'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: buildlog-*
+          merge-multiple: true
+          path: /tmp/ci-results/buildlogs
+
       - name: Render PR comment
         if: >-
           github.event_name == 'pull_request'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         env:
           GH_TOKEN: ${{ github.token }}
+          BUILDLOG_DIR: /tmp/ci-results/buildlogs
           MODE: ${{ steps.eval.outputs.mode }}
           VERDICT: ${{ steps.eval.outputs.verdict }}
           SHA: ${{ github.event.pull_request.head.sha }}

@@ -57,6 +57,38 @@ else
 fi
 echo
 
+# lint/build output of failed build jobs (uploaded as buildlog-* artifacts)
+failed_builds=()
+for comp in server plugins frontend marketplace; do
+  case "$comp" in
+    server)      result="$RESULT_BUILD_SERVER";;
+    plugins)     result="$RESULT_BUILD_PLUGINS";;
+    frontend)    result="$RESULT_BUILD_FRONTEND";;
+    marketplace) result="$RESULT_BUILD_MARKETPLACE";;
+  esac
+  if [ "$result" = "failure" ] && [ -f "${BUILDLOG_DIR:-/nonexistent}/$comp.log" ]; then
+    failed_builds+=("$comp")
+  fi
+done
+if [ "${#failed_builds[@]}" -gt 0 ]; then
+  echo "<details>"
+  echo "<summary><b>❌ Lint & Build output</b></summary>"
+  echo
+  for comp in "${failed_builds[@]}"; do
+    echo "<details>"
+    echo "<summary><b>${comp}</b> · last 80 lines</summary>"
+    echo
+    echo '```'
+    tail -n 80 "$BUILDLOG_DIR/$comp.log" | sed -e $'s/\x1b\\[[0-9;]*m//g' -e "s/\`\`\`/'''/g" | cut -c1-300
+    echo '```'
+    echo
+    echo "</details>"
+    echo
+  done
+  echo "</details>"
+  echo
+fi
+
 details=$(node "$SCRIPT_DIR/render-failed-tests.mjs" details || true)
 if [ -n "$details" ]; then
   echo "$details"
