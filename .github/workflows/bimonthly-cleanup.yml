@@ -1,0 +1,112 @@
+name: Docker Hub Tag Cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "list = just show tags older than 60 days | delete = actually delete them"
+        required: true
+        default: "list"
+        type: choice
+        options:
+          - "list"
+          - "delete"
+
+  schedule:
+    - cron: "0 3 1 */2 *"   # 1st of every 2nd month, 03:00 UTC -> real delete run
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: List / Delete old Docker Hub tags
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          DOCKERHUB_NAMESPACE: ${{ secrets.DOCKERHUB_NAMESPACE }}
+          DOCKERHUB_REPO: ${{ secrets.DOCKERHUB_REPO }}
+          MODE: ${{ github.event.inputs.mode || 'delete' }}
+          MAX_AGE_DAYS: 60
+          PROTECTED_TAGS: "latest"
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq >/dev/null
+
+          NOW=$(date -u +%s)
+          CUTOFF=$(( NOW - MAX_AGE_DAYS * 86400 ))
+          IFS=',' read -ra PROTECTED <<< "${PROTECTED_TAGS}"
+
+          echo "Mode: ${MODE} | Repo: ${DOCKERHUB_NAMESPACE}/${DOCKERHUB_REPO} | Cutoff: ${MAX_AGE_DAYS} days"
+
+          TOKEN=$(curl -s -H "Content-Type: application/json" \
+            -X POST -d "{\"username\":\"${DOCKERHUB_USERNAME}\",\"password\":\"${DOCKERHUB_TOKEN}\"}" \
+            https://hub.docker.com/v2/users/login/ | jq -r '.token')
+
+          if [[ -z "${TOKEN}" || "${TOKEN}" == "null" ]]; then
+            echo "::error::Docker Hub authentication failed. Check secrets."
+            exit 1
+          fi
+
+          # Collect matches first. Deleting mid-pagination would shift Docker
+          # Hub's page-number-based results and skip tags — so we only scan
+          # and record during pagination, then delete afterward.
+          TARGETS=()
+          URL="https://hub.docker.com/v2/repositories/${DOCKERHUB_NAMESPACE}/${DOCKERHUB_REPO}/tags?page_size=100"
+
+          while [[ -n "${URL}" && "${URL}" != "null" ]]; do
+            RESP=$(curl -s -H "Authorization: JWT ${TOKEN}" "${URL}")
+
+            while IFS=$'\t' read -r name pushed; do
+              [[ -z "${name}" ]] && continue
+
+              skip=false
+              for p in "${PROTECTED[@]}"; do
+                [[ "${name}" == "${p}" ]] && skip=true && break
+              done
+              [[ "${skip}" == true ]] && continue
+
+              ts=$(date -u -d "${pushed}" +%s 2>/dev/null || echo 0)
+              [[ "${ts}" -eq 0 ]] && continue
+
+              if [[ "${ts}" -lt "${CUTOFF}" ]]; then
+                age=$(( (NOW - ts) / 86400 ))
+                TARGETS+=("${name}|${age}|${pushed}")
+              fi
+            done < <(echo "${RESP}" | jq -r '.results[] | [.name, .tag_last_pushed] | @tsv')
+
+            URL=$(echo "${RESP}" | jq -r '.next')
+          done
+
+          echo "---"
+          echo "Found ${#TARGETS[@]} tag(s) older than ${MAX_AGE_DAYS} days."
+
+          if [[ "${MODE}" == "delete" ]]; then
+            for item in "${TARGETS[@]}"; do
+              IFS='|' read -r name age pushed <<< "${item}"
+              status=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+                -H "Authorization: JWT ${TOKEN}" \
+                "https://hub.docker.com/v2/repositories/${DOCKERHUB_NAMESPACE}/${DOCKERHUB_REPO}/tags/${name}/")
+              if [[ "${status}" == "204" ]]; then
+                echo "DELETED  ${name}  (${age}d old)"
+              elif [[ "${status}" == "429" ]]; then
+                echo "::warning::Rate limited on ${name}, backing off 5s and retrying once"
+                sleep 5
+                retry_status=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+                  -H "Authorization: JWT ${TOKEN}" \
+                  "https://hub.docker.com/v2/repositories/${DOCKERHUB_NAMESPACE}/${DOCKERHUB_REPO}/tags/${name}/")
+                [[ "${retry_status}" == "204" ]] && echo "DELETED  ${name}  (${age}d old, after retry)" \
+                  || echo "::warning::Failed to delete ${name} (HTTP ${retry_status})"
+              else
+                echo "::warning::Failed to delete ${name} (HTTP ${status})"
+              fi
+              sleep 0.3
+            done
+            echo "Done. ${#TARGETS[@]} tag(s) deleted."
+          else
+            for item in "${TARGETS[@]}"; do
+              IFS='|' read -r name age pushed <<< "${item}"
+              echo "OLD      ${name}  (${age}d old, pushed ${pushed})"
+            done
+            echo "Done. Nothing deleted (list mode)."
+          fi
+          
