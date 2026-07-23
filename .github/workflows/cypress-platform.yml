@@ -39,7 +39,7 @@ jobs:
       (github.event_name == 'workflow_run'
         && github.event.workflow_run.conclusion == 'success'
         && github.event.workflow_run.event == 'pull_request'
-        && github.event.workflow_run.pull_requests[0].base.ref == 'lts-3.16')
+        && github.event.workflow_run.pull_requests[0].base.ref == 'main')
 
     strategy:
       fail-fast: false

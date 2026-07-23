@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [lts-3.16]
+    branches: [develop, main]
   pull_request:
     types: [labeled]
   workflow_dispatch:
