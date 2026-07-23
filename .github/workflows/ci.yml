@@ -415,7 +415,7 @@ jobs:
       - name: Run changed tests (unit + e2e)
         run: |
           mkdir -p /tmp/tj-e2e-json
-          BASE_BRANCH="${{ github.base_ref }}" bash scripts/test-changed.sh --e2e 2>&1 | tee /tmp/tj-run.log
+          BASE_BRANCH="${{ github.base_ref }}" bash scripts/test-changed.sh 2>&1 | tee /tmp/tj-run.log
           exit "${PIPESTATUS[0]}"
       - name: Capture scope for the PR comment
         if: always()
