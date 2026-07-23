@@ -689,6 +689,7 @@ export function hasCircularDependency(obj, stack = new Set()) {
 }
 
 const escapeHtml = (str) => {
+  if (str == null) return '';
   const div = document.createElement('div');
   div.appendChild(document.createTextNode(str));
   return div.innerHTML;

@@ -41,7 +41,12 @@ export function handleResponse(
         </div>
       </>
     );
-    const data = text && JSON.parse(text);
+    let data;
+    try {
+      data = text && JSON.parse(text);
+    } catch {
+      return Promise.reject({ error: text || response.statusText });
+    }
     if (!response.ok) {
       // Custom friendly error messages
       if (response.status === 422 && typeof data?.message === 'string') {
@@ -145,7 +150,12 @@ export function handleResponse(
 }
 export function handleResponseWithoutValidation(response) {
   return response.text().then((text) => {
-    const data = text && JSON.parse(text);
+    let data;
+    try {
+      data = text && JSON.parse(text);
+    } catch {
+      return Promise.reject({ error: text || response.statusText });
+    }
     if (!response.ok) {
       const error = (data && data.message) || response.statusText;
       return Promise.reject({ error, data });
