@@ -2,14 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop, main, 'release/**']
   pull_request:
     types: [labeled]
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.sha }}
-  cancel-in-progress: true
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # cancel superseded PR runs (last label wins); never kill a push-validation run
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -22,12 +23,15 @@ jobs:
       || github.event_name == 'workflow_dispatch'
       || (github.event_name == 'pull_request'
           && github.event.action == 'labeled'
-          && github.event.label.name == 'run-ci')
+          && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name))
     outputs:
       server: ${{ steps.filter.outputs.server }}
       frontend: ${{ steps.filter.outputs.frontend }}
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
+      # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
+      # no CI Gate commit status. full = merge truth (run-ci label / push / dispatch).
+      mode: ${{ (github.event_name == 'pull_request' && github.event.label.name == 'run-ci-changed') && 'changed' || 'full' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -176,6 +180,7 @@ jobs:
     # job (GitHub's implicit success() on needs), only a FAILED build should
     if: >-
       !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.server == 'true'
       && needs.build-plugins.result == 'success'
       && needs.build-server.result == 'success'
@@ -254,6 +259,7 @@ jobs:
     # job (GitHub's implicit success() on needs), only a FAILED build should
     if: >-
       !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.server == 'true'
       && needs.build-plugins.result == 'success'
       && needs.build-server.result == 'success'
@@ -324,6 +330,109 @@ jobs:
       - run: npm run --prefix server test:e2e -- --testTimeout=60000
 
   # ---------------------------------------------------------------------------
+  # 3b. Fast lane (run-ci-changed) — only the jest modules the PR touches.
+  #     Lint & Build still run above; this job never feeds the CI Gate status.
+  # ---------------------------------------------------------------------------
+  test-changed:
+    name: 'Changed OK'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'changed'
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    container: node:22.15.1-bullseye
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+    env:
+      FORCE_COLOR: true
+      NODE_OPTIONS: '--max-old-space-size=4096'
+      NODE_ENV: test
+      LOCKBOX_MASTER_KEY: lockbox-master-key
+      SECRET_KEY_BASE: secret-key-base
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASS: postgres
+      PG_DB: tooljet_test
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB: tooljet_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - name: Fetch base branch for merge-base
+        run: git fetch origin ${{ github.base_ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v4
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: apt-get update && apt-get install -y postgresql-client
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
+      - name: Run changed tests (unit + e2e)
+        run: |
+          mkdir -p /tmp/tj-e2e-json
+          BASE_BRANCH="${{ github.base_ref }}" bash scripts/test-changed.sh --e2e 2>&1 | tee /tmp/tj-run.log
+          exit "${PIPESTATUS[0]}"
+      - name: Capture scope for the PR comment
+        if: always()
+        run: grep -m1 -E 'Changed modules:|Running all server unit tests|No server files changed' /tmp/tj-run.log > /tmp/tj-scope.txt || echo "scope unknown" > /tmp/tj-scope.txt
+      - name: Upload fast-run results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fast-test-results
+          path: |
+            /tmp/tj-unit-results.json
+            /tmp/tj-e2e-json/
+            /tmp/tj-scope.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
   # 4. Cypress E2E — reusable workflows, run after server tests pass
   # ---------------------------------------------------------------------------
   cypress-platform:
@@ -336,6 +445,7 @@ jobs:
       - build-frontend
     if: >-
       !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
       && (needs.detect-changes.outputs.server == 'true'
       || needs.detect-changes.outputs.frontend == 'true')
       && needs.build-plugins.result == 'success'
@@ -357,6 +467,7 @@ jobs:
       - build-marketplace
     if: >-
       !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.marketplace == 'true'
       && needs.build-plugins.result == 'success'
       && needs.build-server.result == 'success'
@@ -374,12 +485,17 @@ jobs:
     name: 'Gate'
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
     needs:
       - detect-changes
       - build-server
       - build-frontend
       - build-plugins
       - build-marketplace
+      - test-changed
       - test-server-unit
       - test-server-e2e
       - cypress-platform
@@ -388,13 +504,16 @@ jobs:
       - name: Evaluate results
         id: eval
         run: |
-          # Gate is a required status check on develop/main. GitHub counts a
-          # SKIPPED required check as satisfied, so this job must RUN and FAIL
-          # whenever the pipeline didn't execute for this commit — otherwise
-          # adding any unrelated label would mint a green Gate with zero tests.
+          # Merge enforcement lives in the 'CI Gate' COMMIT STATUS (posted below,
+          # full mode only) — not in this job's conclusion. An unposted status
+          # blocks protected branches; fast runs and unrelated labels stay silent
+          # and never mint a mergeable state.
+          MODE="${{ needs.detect-changes.outputs.mode }}"
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+
           if [[ "${{ needs.detect-changes.result }}" == "skipped" ]]; then
-            echo "::error::CI was not run for this commit — add the run-ci label"
-            echo "verdict=not-run" >> "$GITHUB_OUTPUT"
+            echo "Unrelated label event — nothing ran, nothing to report."
+            echo "verdict=noop" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -405,16 +524,23 @@ jobs:
           fi
 
           failed=false
-          results=(
+          builds=(
             "build-server:${{ needs.build-server.result }}"
             "build-frontend:${{ needs.build-frontend.result }}"
             "build-plugins:${{ needs.build-plugins.result }}"
             "build-marketplace:${{ needs.build-marketplace.result }}"
-            "test-server-unit:${{ needs.test-server-unit.result }}"
-            "test-server-e2e:${{ needs.test-server-e2e.result }}"
-            "cypress-platform:${{ needs.cypress-platform.result }}"
-            "cypress-marketplace:${{ needs.cypress-marketplace.result }}"
           )
+          if [[ "$MODE" == "changed" ]]; then
+            results=("${builds[@]}" "test-changed:${{ needs.test-changed.result }}")
+          else
+            results=(
+              "${builds[@]}"
+              "test-server-unit:${{ needs.test-server-unit.result }}"
+              "test-server-e2e:${{ needs.test-server-e2e.result }}"
+              "cypress-platform:${{ needs.cypress-platform.result }}"
+              "cypress-marketplace:${{ needs.cypress-marketplace.result }}"
+            )
+          fi
 
           for entry in "${results[@]}"; do
             job="${entry%%:*}"
@@ -431,10 +557,12 @@ jobs:
             echo "verdict=pass" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Post PR comment
-        # not-run stays silent: a red Gate check says enough, no comment spam
-        # every time an unrelated label lands on the PR
-        if: github.event_name == 'pull_request' && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+      - name: Post PR comment (full run)
+        # full-mode merge-truth comment; noop events stay silent
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
         uses: actions/github-script@v7
         with:
@@ -475,7 +603,7 @@ jobs:
 
             const verdict = '${{ steps.eval.outputs.verdict }}';
             const verdictLine = verdict === 'pass'
-              ? ':white_check_mark: **All checks passed**'
+              ? ':white_check_mark: **All checks passed** — `CI Gate` status set, mergeable.'
               : ':x: **Failed** — fix issues and re-add `run-ci` label';
 
             const body = [
@@ -517,8 +645,109 @@ jobs:
               });
             }
 
-      - name: Remove run-ci label
-        if: github.event_name == 'pull_request'
+      - uses: actions/checkout@v4
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'changed'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+
+      - name: Download fast-run results
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'changed'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: fast-test-results
+          path: /tmp/fast-results
+
+      - name: Render fast-check comment
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'changed'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        env:
+          UNIT_JSON: /tmp/fast-results/tj-unit-results.json
+          E2E_JSON_DIR: /tmp/fast-results/tj-e2e-json
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          sha="${{ github.event.pull_request.head.sha }}"
+          scope=$(cat /tmp/fast-results/tj-scope.txt 2>/dev/null || echo "no server changes — lint & build only")
+          {
+            echo "<!-- ci-fast-comment -->"
+            echo "### ⚡ Fast check — [\`${sha:0:7}\`]($RUN_URL)"
+            echo "**Scope:** ${scope} · diffed against \`${{ github.base_ref }}\`"
+            echo
+            echo "| Step | Status |"
+            echo "|------|--------|"
+            echo "| Lint & Build | server: ${{ needs.build-server.result }} · plugins: ${{ needs.build-plugins.result }} · frontend: ${{ needs.build-frontend.result }} · marketplace: ${{ needs.build-marketplace.result }} |"
+            echo "| Changed tests | ${{ needs.test-changed.result }} |"
+            echo
+            if [ -f "$UNIT_JSON" ] || [ -d "$E2E_JSON_DIR" ]; then
+              bash scripts/format-test-comment.sh | tail -n +2   # drop the tj-test-results marker line
+            else
+              echo "_No jest results — no server test modules affected._"
+            fi
+            echo
+            echo "_Quick check only — merging to a protected branch still requires a green \`run-ci\` (full CI)._"
+          } > /tmp/fast-comment.md
+          cat /tmp/fast-comment.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post fast-check comment
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'changed'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = context.payload.pull_request?.number || context.issue?.number;
+            if (!prNumber) return;
+            const body = fs.readFileSync('/tmp/fast-comment.md', 'utf8');
+            const marker = '<!-- ci-fast-comment -->';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: prNumber,
+            });
+            const existing = comments.find(c => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: prNumber, body,
+              });
+            }
+
+      - name: Post CI Gate commit status
+        # merge enforcement: only full runs ever touch this status; branch
+        # protection on develop/main/release/* requires context 'CI Gate'
+        if: >-
+          steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const verdict = '${{ steps.eval.outputs.verdict }}';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request?.head?.sha || context.sha,
+              state: verdict === 'pass' ? 'success' : 'failure',
+              context: 'CI Gate',
+              description: verdict === 'pass' ? 'Full CI green' : 'Full CI failed',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Remove triggering label
+        if: >-
+          github.event_name == 'pull_request'
+          && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name)
         continue-on-error: true
         uses: actions/github-script@v7
         with:
@@ -530,18 +759,14 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: prNumber,
-                name: 'run-ci',
+                name: context.payload.label.name,
               });
             } catch (e) {
               if (e.status !== 404) throw e;
             }
 
       - name: Fail gate if checks failed
-        if: steps.eval.outputs.verdict != 'pass'
+        if: steps.eval.outputs.verdict == 'fail'
         run: |
-          if [[ "${{ steps.eval.outputs.verdict }}" == "not-run" ]]; then
-            echo "::error::run-ci has not passed for this commit — add the run-ci label to run CI"
-          else
-            echo "::error::One or more CI jobs failed"
-          fi
+          echo "::error::One or more CI jobs failed"
           exit 1

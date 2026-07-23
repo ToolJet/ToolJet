@@ -60,7 +60,12 @@ function formatSection(data, label) {
 
   let out = `### ${label} · ${summary}\n\n`;
   out += `| Module | Test | Result |\n|--------|------|--------|\n`;
-  out += rows.join('\n') + '\n';
+  // cap per-test rows so a run-all sweep can't blow GitHub's 65k comment limit
+  const MAX_ROWS = 50;
+  out += rows.slice(0, MAX_ROWS).join('\n') + '\n';
+  if (rows.length > MAX_ROWS) {
+    out += `\n_…and ${rows.length - MAX_ROWS} more tests — see the run log for the full list._\n`;
+  }
 
   if (failures.length > 0) {
     const plural = failures.length > 1 ? 'failures' : 'failure';
