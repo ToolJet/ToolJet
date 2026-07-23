@@ -243,7 +243,15 @@ jobs:
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
-      - run: npm run --prefix server test
+      - run: npm run --prefix server test -- --json --outputFile /tmp/tj-unit-results.json
+      - name: Upload unit results for the PR comment
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-unit-results
+          path: /tmp/tj-unit-results.json
+          if-no-files-found: ignore
+          retention-days: 1
 
   test-server-e2e:
     name: 'Test Suite · server-e2e'
@@ -327,7 +335,15 @@ jobs:
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
-      - run: npm run --prefix server test:e2e -- --testTimeout=60000
+      - run: mkdir -p /tmp/tj-e2e-json && npm run --prefix server test:e2e -- --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
+      - name: Upload e2e results for the PR comment
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-e2e-results
+          path: /tmp/tj-e2e-json/
+          if-no-files-found: ignore
+          retention-days: 1
 
   # ---------------------------------------------------------------------------
   # 3b. Fast lane (run-ci-changed) — only the jest modules the PR touches.
@@ -489,6 +505,7 @@ jobs:
       contents: read
       pull-requests: write
       statuses: write
+      actions: read   # jobs API — step links in the PR comment
     needs:
       - detect-changes
       - build-server
@@ -557,112 +574,14 @@ jobs:
             echo "verdict=pass" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Post PR comment (full run)
-        # full-mode merge-truth comment; noop events stay silent
-        if: >-
-          github.event_name == 'pull_request'
-          && steps.eval.outputs.mode == 'full'
-          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
-        continue-on-error: true
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = context.payload.pull_request?.number || context.issue?.number;
-            if (!prNumber) {
-              core.warning('Could not determine PR number — skipping comment');
-              return;
-            }
-
-            const sha = (context.payload.pull_request?.head?.sha || context.sha || '').slice(0, 7);
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-
-            const icon = (r) => {
-              if (r === 'success')   return '✅';
-              if (r === 'skipped')   return '⏭️';
-              if (r === 'failure')   return '❌';
-              if (r === 'cancelled') return '🚫';
-              return '❓';
-            };
-            const word = (r) => {
-              if (r === 'success')   return 'passed';
-              if (r === 'skipped')   return 'skipped — no relevant changes';
-              if (r === 'failure')   return 'failed';
-              if (r === 'cancelled') return 'cancelled';
-              return r || 'unknown';
-            };
-            const cell = (r) => `${icon(r)} ${word(r)}`;
-
-            // Lint & Build row — combine all build-* results inline
-            const checks = [
-              { name: 'server',      result: '${{ needs.build-server.result }}' },
-              { name: 'plugins',     result: '${{ needs.build-plugins.result }}' },
-              { name: 'frontend',    result: '${{ needs.build-frontend.result }}' },
-              { name: 'marketplace', result: '${{ needs.build-marketplace.result }}' },
-            ];
-            const checkStatus = checks.map(c => `${icon(c.result)} ${c.name}`).join(' · ');
-
-            const rows = [
-              ['🧹 Lint & Build',           null, checkStatus],
-              ['🧪 Unit Tests',             '${{ needs.test-server-unit.result }}'],
-              ['🔗 E2E Tests',              '${{ needs.test-server-e2e.result }}'],
-              ['🌲 Cypress — Platform',     '${{ needs.cypress-platform.result }}'],
-              ['🛍️ Cypress — Marketplace',  '${{ needs.cypress-marketplace.result }}'],
-            ];
-
-            const verdict = '${{ steps.eval.outputs.verdict }}';
-            const headline = verdict === 'pass'
-              ? '🟢 **All checks passed** — ready to merge'
-              : '🔴 **CI failed** — merge is blocked';
-            const nextStep = verdict === 'pass'
-              ? '`CI Gate` status is ✅ on this commit — you\'re good to go. 🚀'
-              : '👉 Fix the failing steps, push, then re-add the `run-ci` label to try again.';
-
-            const body = [
-              `## 🚦 CI Gate — [\`${sha}\`](${runUrl})`,
-              '',
-              headline,
-              '',
-              '| Step | Result |',
-              '|------|--------|',
-              ...rows.map(([name, result, custom]) => `| **${name}** | ${custom ?? cell(result)} |`),
-              '',
-              nextStep,
-              '',
-              '<sub>Full pipeline (`run-ci`) — the merge-truth check for protected branches. Runs against this commit only; new pushes need a fresh run.</sub>',
-            ].join('\n');
-
-            const marker = '<!-- ci-gate-comment -->';
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            });
-            const existing = comments.find(c => c.body.includes(marker));
-
-            const fullBody = `${marker}\n${body}`;
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body: fullBody,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body: fullBody,
-              });
-            }
-
+      # Comment pipeline — one path for both lanes: download jest JSONs,
+      # render markdown via scripts/render-ci-comment.sh, upsert by marker.
       - uses: actions/checkout@v4
         if: >-
           github.event_name == 'pull_request'
-          && steps.eval.outputs.mode == 'changed'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
 
-      - name: Download fast-run results
+      - name: Download changed-run test results
         if: >-
           github.event_name == 'pull_request'
           && steps.eval.outputs.mode == 'changed'
@@ -671,74 +590,69 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: fast-test-results
-          path: /tmp/fast-results
+          path: /tmp/ci-results
 
-      - name: Render fast-check comment
+      - name: Download full-run unit results
         if: >-
           github.event_name == 'pull_request'
-          && steps.eval.outputs.mode == 'changed'
+          && steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: full-unit-results
+          path: /tmp/ci-results
+
+      - name: Download full-run e2e results
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: full-e2e-results
+          path: /tmp/ci-results/tj-e2e-json
+
+      - name: Render PR comment
+        if: >-
+          github.event_name == 'pull_request'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         env:
-          UNIT_JSON: /tmp/fast-results/tj-unit-results.json
-          E2E_JSON_DIR: /tmp/fast-results/tj-e2e-json
+          GH_TOKEN: ${{ github.token }}
+          MODE: ${{ steps.eval.outputs.mode }}
+          VERDICT: ${{ steps.eval.outputs.verdict }}
+          SHA: ${{ github.event.pull_request.head.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BASE_REF: ${{ github.base_ref }}
+          UNIT_JSON: /tmp/ci-results/tj-unit-results.json
+          E2E_JSON_DIR: /tmp/ci-results/tj-e2e-json
+          RESULT_BUILD_SERVER: ${{ needs.build-server.result }}
+          RESULT_BUILD_PLUGINS: ${{ needs.build-plugins.result }}
+          RESULT_BUILD_FRONTEND: ${{ needs.build-frontend.result }}
+          RESULT_BUILD_MARKETPLACE: ${{ needs.build-marketplace.result }}
+          RESULT_UNIT: ${{ needs.test-server-unit.result }}
+          RESULT_E2E: ${{ needs.test-server-e2e.result }}
+          RESULT_CHANGED: ${{ needs.test-changed.result }}
+          RESULT_CYPRESS_PLATFORM: ${{ needs.cypress-platform.result }}
+          RESULT_CYPRESS_MARKETPLACE: ${{ needs.cypress-marketplace.result }}
         run: |
-          sha="${{ github.event.pull_request.head.sha }}"
-          scope=$(cat /tmp/fast-results/tj-scope.txt 2>/dev/null || echo "no server changes — lint & build only")
-
-          icon() {
-            case "$1" in
-              success)   echo "✅";;
-              skipped)   echo "⏭️";;
-              failure)   echo "❌";;
-              cancelled) echo "🚫";;
-              *)         echo "❓";;
-            esac
-          }
-          word() {
-            case "$1" in
-              success)   echo "passed";;
-              skipped)   echo "skipped";;
-              failure)   echo "failed";;
-              cancelled) echo "cancelled";;
-              *)         echo "$1";;
-            esac
-          }
-
-          verdict="${{ steps.eval.outputs.verdict }}"
-          if [ "$verdict" = "pass" ]; then
-            headline="🟢 **Looking good** — everything in scope passed"
+          jobs_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" 2>/dev/null || echo '{}')
+          job_url() { echo "$jobs_json" | jq -r --arg n "$1" '.jobs[]? | select(.name | contains($n)) | .html_url' | head -1; }
+          if [ "$MODE" = "changed" ]; then
+            export UNIT_STEP_URL=$(job_url "Changed OK")
+            export E2E_STEP_URL="$UNIT_STEP_URL"
+            export SCOPE=$(cat /tmp/ci-results/tj-scope.txt 2>/dev/null || echo "not recorded")
           else
-            headline="🔴 **Something broke** — see the failing steps below"
+            export UNIT_STEP_URL=$(job_url "server-unit")
+            export E2E_STEP_URL=$(job_url "server-e2e")
           fi
+          bash scripts/render-ci-comment.sh "$MODE" > /tmp/ci-comment.md
+          cat /tmp/ci-comment.md >> "$GITHUB_STEP_SUMMARY"
 
-          {
-            echo "<!-- ci-fast-comment -->"
-            echo "## ⚡ Fast check — [\`${sha:0:7}\`]($RUN_URL)"
-            echo
-            echo "$headline"
-            echo
-            echo "🎯 **Scope:** ${scope} · diffed against \`${{ github.base_ref }}\`"
-            echo
-            echo "| Step | Result |"
-            echo "|------|--------|"
-            echo "| **🧹 Lint & Build** | $(icon "${{ needs.build-server.result }}") server · $(icon "${{ needs.build-plugins.result }}") plugins · $(icon "${{ needs.build-frontend.result }}") frontend · $(icon "${{ needs.build-marketplace.result }}") marketplace |"
-            echo "| **🧪 Changed tests** | $(icon "${{ needs.test-changed.result }}") $(word "${{ needs.test-changed.result }}") |"
-            echo
-            if [ -f "$UNIT_JSON" ] || [ -d "$E2E_JSON_DIR" ]; then
-              bash scripts/format-test-comment.sh | tail -n +2   # drop the tj-test-results marker line
-            else
-              echo "_No jest results — no server test modules affected._"
-            fi
-            echo
-            echo "<sub>⚡ Quick feedback only — merging to a protected branch still needs a green \`run-ci\` (full CI).</sub>"
-          } > /tmp/fast-comment.md
-          cat /tmp/fast-comment.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Post fast-check comment
+      - name: Post PR comment
         if: >-
           github.event_name == 'pull_request'
-          && steps.eval.outputs.mode == 'changed'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
         uses: actions/github-script@v7
@@ -747,8 +661,8 @@ jobs:
             const fs = require('fs');
             const prNumber = context.payload.pull_request?.number || context.issue?.number;
             if (!prNumber) return;
-            const body = fs.readFileSync('/tmp/fast-comment.md', 'utf8');
-            const marker = '<!-- ci-fast-comment -->';
+            const body = fs.readFileSync('/tmp/ci-comment.md', 'utf8');
+            const marker = body.split('\n')[0];   // ci-gate-comment or ci-fast-comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner, repo: context.repo.repo, issue_number: prNumber,
             });
