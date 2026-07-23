@@ -656,7 +656,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze}
-        resizable={!shouldFreeze ? isWidgetResizable : false}
+        resizable={currentLayout !== 'mobile' && !shouldFreeze ? isWidgetResizable : false}
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
@@ -743,6 +743,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           positionGhostElement(e.target, 'moveable-ghost-widget');
         }}
         onResizeStart={(e) => {
+          // Mobile layout doesn't support manual resizing (see onDragStart).
+          if (currentLayout === 'mobile') {
+            if (useStore.getState().getIsAutoMobileLayout(moduleId)) {
+              toast("Can't move components while auto stacking is on", { id: 'mobile-auto-lock' });
+            }
+            return false;
+          }
           if (
             e.target.id &&
             useGridStore.getState().resizingComponentId !== e.target.id &&
@@ -967,6 +974,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
         checkInput
         onDragStart={(e) => {
+          // Mobile: let a click select, but block the actual move + alert in onDrag (fires only on real movement).
+          if (currentLayout === 'mobile') {
+            if (e.target.id && !e.target.classList.contains('delete-icon')) setSelectedComponents([e.target.id]);
+            return true;
+          }
           if (e.target.id === 'moveable-virtual-ghost-element') {
             startAutoScroll(e.clientX, e.clientY, e.target);
             return true;
@@ -1087,6 +1099,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
+          // Mobile drags are blocked in onDrag; nothing to persist here.
+          if (currentLayout === 'mobile') return;
           try {
             if (isDraggingRef.current) {
               useStore.getState().setDraggingComponentId(null);
@@ -1212,6 +1226,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             // Update autoscroll with current mouse position and target
             updateMousePosition(e.clientX, e.clientY, e.target);
+            return false;
+          }
+          // Mobile doesn't support manual positioning: block the move; alert only when auto stacking is on.
+          if (currentLayout === 'mobile') {
+            if (useStore.getState().getIsAutoMobileLayout(moduleId)) {
+              toast("Can't move components while auto stacking is on", { id: 'mobile-auto-lock' });
+            }
             return false;
           }
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
