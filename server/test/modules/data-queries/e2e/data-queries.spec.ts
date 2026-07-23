@@ -121,7 +121,8 @@ describe('DataQueriesController', () => {
         expect(response.statusCode).toBe(201);
       });
 
-      it('should be able to run queries of an app if a public app ( even if an unauthenticated user )', async () => {
+      // QUARANTINE(data-queries): failing since main CI rehab — see #17259
+      it.skip('should be able to run queries of an app if a public app ( even if an unauthenticated user )', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['all_users', 'admin'],

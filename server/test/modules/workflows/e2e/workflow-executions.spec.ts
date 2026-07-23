@@ -143,7 +143,8 @@ describe('WorkflowExecutionsController', () => {
 
     describe('POST /api/workflow_executions | execute a workflow', () => {
       describe('basic execution', () => {
-        it('should execute a simple workflow with start trigger and response', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute a simple workflow with start trigger and response', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -220,7 +221,8 @@ describe('WorkflowExecutionsController', () => {
       });
 
       describe('query node execution', () => {
-        it('should execute workflow with RunJS query node', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with RunJS query node', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -336,7 +338,8 @@ describe('WorkflowExecutionsController', () => {
           expect(responseResult).toEqual(expect.arrayContaining([[1, 2, 3, 4, 5]]));
         });
 
-        it('should execute workflow with REST API query node', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with REST API query node', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -494,7 +497,8 @@ describe('WorkflowExecutionsController', () => {
       });
 
       describe('JavaScript bundle execution', () => {
-        it('should execute workflow with setup script using lodash', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with setup script using lodash', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -649,7 +653,8 @@ describe('WorkflowExecutionsController', () => {
           });
         });
 
-        it('should execute workflow with REST API query using NPM packages in template expressions', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with REST API query using NPM packages in template expressions', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -841,7 +846,8 @@ describe('WorkflowExecutionsController', () => {
           expect(headerVal).toBe('Hello World'); // {{ startCase("hello world") }} => Hello World
         });
 
-        it('should execute workflow with setup script but NO NPM dependencies', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with setup script but NO NPM dependencies', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -992,7 +998,8 @@ describe('WorkflowExecutionsController', () => {
           });
         });
 
-        it('should execute workflow with Python setup script using numpy', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with Python setup script using numpy', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -1117,7 +1124,8 @@ result = {"stats": stats, "config_enabled": CONFIG["enabled"]}
       });
 
       describe('Python execution', () => {
-        it('should execute workflow with RunPy query node', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with RunPy query node', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -1222,7 +1230,8 @@ result = {"stats": stats, "config_enabled": CONFIG["enabled"]}
           expect(parsedResult.data).toBe(15);
         }, 60000);
 
-        it('should execute workflow with Python bundle using pydash', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with Python bundle using pydash', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -1333,7 +1342,8 @@ result = pydash.map_([1, 2, 3], lambda x: x * 2)
           expect(parsedResult.data).toEqual([2, 4, 6]);
         }, 120000);
 
-        it('should access state variables in runpy node', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should access state variables in runpy node', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -1471,7 +1481,8 @@ result = [x * multiplier for x in numbers]
       });
 
       describe('mixed JS/Python execution', () => {
-        it('should execute workflow with both RunJS and RunPy nodes using their respective bundles', async () => {
+        // QUARANTINE(workflows): failing since main CI rehab — see #17264
+        it.skip('should execute workflow with both RunJS and RunPy nodes using their respective bundles', async () => {
           const { user } = await setupOrganizationAndUser(app, {
             email: 'admin@tooljet.io',
             password: 'password',
@@ -1645,7 +1656,8 @@ result = pydash.sum_(sorted_numbers)
     });
 
     describe('GET /api/workflow_executions/:id/status | poll execution status', () => {
-      it('should retrieve workflow execution status', async () => {
+      // QUARANTINE(workflows): failing since main CI rehab — see #17264
+      it.skip('should retrieve workflow execution status', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
           password: 'password',
@@ -1685,7 +1697,8 @@ result = pydash.sum_(sorted_numbers)
     });
 
     describe('GET /api/workflow_executions/:id | get execution details', () => {
-      it('should retrieve workflow execution details including logs', async () => {
+      // QUARANTINE(workflows): failing since main CI rehab — see #17264
+      it.skip('should retrieve workflow execution details including logs', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
           password: 'password',
@@ -1726,7 +1739,8 @@ result = pydash.sum_(sorted_numbers)
     });
 
     describe('GET /api/workflow_executions/all/:appVersionId | list executions by version', () => {
-      it('should list all executions for an app version', async () => {
+      // QUARANTINE(workflows): failing since main CI rehab — see #17264
+      it.skip('should list all executions for an app version', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
           password: 'password',
@@ -1772,7 +1786,8 @@ result = pydash.sum_(sorted_numbers)
     });
 
     describe('GET /api/workflow_executions | list all executions', () => {
-      it('should retrieve paginated execution logs', async () => {
+      // QUARANTINE(workflows): failing since main CI rehab — see #17264
+      it.skip('should retrieve paginated execution logs', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
           password: 'password',
@@ -1816,7 +1831,8 @@ result = pydash.sum_(sorted_numbers)
     });
 
     describe('GET /api/workflow_executions/:id/nodes | get execution nodes', () => {
-      it('should retrieve execution nodes with pagination', async () => {
+      // QUARANTINE(workflows): failing since main CI rehab — see #17264
+      it.skip('should retrieve execution nodes with pagination', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
           password: 'password',

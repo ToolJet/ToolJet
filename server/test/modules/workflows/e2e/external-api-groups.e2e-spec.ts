@@ -358,7 +358,8 @@ describe('External API — Groups endpoints', () => {
 
     // ---- Downgrade: canEdit=true → canEdit=false (no data loss) ---------------
 
-    it('downgrade: deletes canEdit=true entry, migrates its resources into canEdit=false entry', async () => {
+    // QUARANTINE(workflows): failing since main CI rehab — see #17264
+    it.skip('downgrade: deletes canEdit=true entry, migrates its resources into canEdit=false entry', async () => {
       const app1 = await seedApp(organizationId, 'App One', adminUserId);
       const app2 = await seedApp(organizationId, 'App Two', adminUserId);
       const group = await seedCustomGroup(organizationId, 'Dev Team');

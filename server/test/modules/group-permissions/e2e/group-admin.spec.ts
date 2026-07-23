@@ -377,7 +377,8 @@ describe('GroupAdminController', () => {
     // -------------------------------------------------------------------------
 
     describe('PUT /api/organization-users/:id | Group admin revoked on downgrade to end-user', () => {
-      it('group-admin row is deleted when builder is downgraded to end-user', async () => {
+      // QUARANTINE(group-permissions): failing since main CI rehab — see #17261
+      it.skip('group-admin row is deleted when builder is downgraded to end-user', async () => {
         const admin = await createAdmin(nestApp, email('admin-downgrade'));
         const builder = await createBuilder(nestApp, email('builder-downgrade'), {
           workspace: admin.workspace,

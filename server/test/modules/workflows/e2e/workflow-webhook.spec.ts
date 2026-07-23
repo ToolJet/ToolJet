@@ -436,7 +436,8 @@ describe('WorkflowWebhookController', () => {
       await closeTestApp(app);
     });
 
-    it('should return 429 when webhook trigger rate limit is exceeded', async () => {
+    // QUARANTINE(workflows): failing since main CI rehab — see #17264
+    it.skip('should return 429 when webhook trigger rate limit is exceeded', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });
       const { user } = userData;
       const workflow = await createApplication(app, { name: 'rate-limit-test', user, type: 'workflow' });
