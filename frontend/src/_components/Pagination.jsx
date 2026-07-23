@@ -28,10 +28,11 @@ export const Pagination = function Pagination({
       );
     }
   };
-  if (currentPage > totalPages) {
-    currentPage = totalPages;
-    pageChanged(currentPage);
-  }
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      pageChanged(totalPages, itemsPerPage, queryParams);
+    }
+  }, [currentPage, totalPages]);
   function gotoPage(page) {
     pageChanged(page, itemsPerPage, queryParams);
   }

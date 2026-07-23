@@ -39,7 +39,7 @@ const usePopover = (defaultOpen = false) => {
   const [open, setOpen] = useState(defaultOpen);
   const toggle = useCallback((e) => {
     e.stopPropagation();
-    setOpen(!open);
+    setOpen(prev => !prev);
   }, []);
   const close = useCallback(() => setOpen(false), []);
   useEscapeHandler(close, []);

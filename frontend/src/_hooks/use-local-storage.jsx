@@ -11,7 +11,7 @@ export const useLocalStorageState = (
 
     if (valueInLocalStorage === null) {
       // key not found
-      return defaultVal;
+      return defaultValue;
 
     if (valueInLocalStorage) {
       return deserialize(valueInLocalStorage);
