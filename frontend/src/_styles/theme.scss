@@ -5932,7 +5932,8 @@ div#driver-page-overlay {
   display: flex;
   flex-direction: column;
   justify-content: left;
-  overflow: hidden !important;
+  // visible so the button focus outline isn't clipped by this container
+  overflow: visible !important;
 }
 
 .group-button {

@@ -111,6 +111,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
       data-cy={dataCy}
     >
       <a
+        className="focus-visible:tw-outline-none focus-visible:tw-underline focus-visible:tw-decoration-2 focus-visible:tw-underline-offset-2 focus-visible:!tw-decoration-interactive-focus-outline"
         {...(linkTargetState != '' ? { href: linkTargetState } : {})}
         target={targetType === 'new' && '_blank'}
         onClick={(event) => {

@@ -202,7 +202,10 @@ export const RadioButtonV2 = ({
     height: '100%',
     flexDirection: layout === 'wrap' ? 'row' : layout,
     ...(layout === 'wrap' && { flexWrap: 'wrap', maxHeight: '100%', height: 'max-content' }),
-    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+    // overflow:visible so the focus ring on .checkmark isn't clipped by this
+    // container. Trade-off: options that exceed the widget size spill instead of
+    // scrolling (CSS can't mix visible on one axis with scroll on the other).
+    overflow: 'visible',
   };
 
   return (
@@ -257,7 +260,7 @@ export const RadioButtonV2 = ({
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
         ) : (
           <div
-            className="d-flex px-0"
+            className="d-flex tw-items-center tw-px-0"
             ref={radioBtnRef}
             style={{
               ...computedLayoutStyles,
@@ -285,12 +288,14 @@ export const RadioButtonV2 = ({
                   </span>
                   <input
                     data-cy={`${dataCy}-option-input-${index}`}
+                    className="tw-peer"
                     style={{
                       marginTop: '1px',
                       backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
                     }}
                     checked={checkedValue == option.value}
                     type="radio"
+                    name={`radio-group-${id}`}
                     value={option.value}
                     onChange={() => {
                       onSelect(option.value);
@@ -300,7 +305,7 @@ export const RadioButtonV2 = ({
                     id={inputId}
                   />
                   <span
-                    className="checkmark"
+                    className="checkmark peer-focus-visible:tw-ring-2 peer-focus-visible:tw-ring-interactive-focus-outline peer-focus-visible:tw-ring-offset-1"
                     style={{
                       backgroundColor:
                         !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),
