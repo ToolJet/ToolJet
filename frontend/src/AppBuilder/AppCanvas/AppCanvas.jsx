@@ -248,7 +248,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 'tw-w-full tw-mx-auto': isMobileLayout,
               })}
               style={{
-                minWidth: minCanvasWidth,
+                // Skip desktop-only minCanvasWidth on mobile; it forces a horizontal scrollbar that shifts the frame
+                minWidth: isMobileLayout ? undefined : minCanvasWidth,
                 // Reserve room below the phone frame for the toolbar gutter
                 ...(isMobileLayout && currentMode === 'edit' ? { paddingBottom: '76px' } : {}),
               }}
@@ -266,6 +267,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 style={{
                   overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
                   ...(isMobileLayout && currentMode === 'view' ? { overflowX: 'hidden' } : {}),
+                  // Reserve the vertical scrollbar symmetrically so it doesn't shift the centered mobile frame.
+                  ...(isMobileLayout ? { scrollbarGutter: 'stable both-edges' } : {}),
                   width: '100%',
                   flex: 1,
                   minHeight: 0,

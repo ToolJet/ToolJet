@@ -39,6 +39,11 @@ export const MobileLayout = ({
         position: 'relative',
         transform: 'translateZ(0)',
         maxWidth: CANVAS_WIDTHS.deviceWindowWidth,
+        // Edit mode: pin the frame to the canvas viewport and scroll only its canvas region (below the
+        // sticky header) so the frame never rides up with the outer canvas.
+        ...(currentMode === 'edit'
+          ? { height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+          : {}),
       }}
       className={cx('tj-canvas-area tw-w-full tw-mx-auto')}
     >
@@ -82,7 +87,24 @@ export const MobileLayout = ({
         isAppDarkMode={isAppDarkMode}
         pageLoader={pageLoader}
       >
-        {mainCanvasContainer}
+        {currentMode === 'edit' ? (
+          <div
+            className="tj-mobile-canvas-scroll"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden auto',
+              // Bottom gap lives in canvas height (updateCanvasBottomHeight); pad top/sides only to avoid doubling.
+              padding: '16px 16px 0',
+              boxSizing: 'border-box',
+              backgroundColor: 'var(--surfaces-app-bg-default)',
+            }}
+          >
+            {mainCanvasContainer}
+          </div>
+        ) : (
+          mainCanvasContainer
+        )}
       </CanvasContentTail>
       <Suspense fallback={null}>
         <PageCanvasFooter
