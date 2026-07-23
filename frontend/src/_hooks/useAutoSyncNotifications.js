@@ -2,8 +2,27 @@ import { useEffect, useRef, createElement } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Info } from 'lucide-react';
-import { subscribeLiveNotifications, useNotificationsStore } from '@/_stores/notificationsStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { setActiveBranch } from '@/_helpers/active-branch';
+import { Button } from '@/components/ui/Rocket';
+
+const infoIcon = createElement(Info, { size: 18, fill: '#3E63DD', color: 'white' });
+
+const toastStyle = {
+  maxWidth: '100vw',
+  width: 'fit-content',
+  padding: '14px 16px',
+  borderRadius: 8,
+  background: '#fff',
+  border: '1px solid var(--border-default, #E6E8EB)',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+  fontSize: 14,
+  whiteSpace: 'nowrap',
+  color: 'var(--text-default, #11181C)',
+};
 
 /**
  * Hook that listens for auto-sync webhook notifications and shows context-aware
@@ -22,11 +41,6 @@ export function useAutoSyncNotifications() {
   locationRef.current = location;
 
   useEffect(() => {
-    // Ensure the notifications WebSocket is connected — the NotificationCenter component
-    // only mounts in the dashboard layout, but this hook also runs inside the app builder
-    // via AppsRoute where no NotificationCenter exists.
-    useNotificationsStore.getState().actions.connect();
-
     const unsubscribe = subscribeLiveNotifications((notification) => {
       if (!notification?.metadata?.source || notification.metadata.source !== 'auto-sync') return;
 
@@ -48,24 +62,66 @@ export function useAutoSyncNotifications() {
       // ─── Branch Deletion ───
       if (action === 'deleted') {
         if (isCurrentBranch) {
+          // Immediately switch storage to default branch so dashboard uses correct branch on navigation
+          switchToDefaultBranch();
           if (isInAppBuilder) {
             freezeEditor();
-            toast('This branch was deleted on GitHub.', { duration: 8000 });
+            refreshBranches();
+            toast('This branch was deleted on GitHub.', {
+              id: `auto-sync-deleted-${branch}`,
+              duration: 8000,
+              icon: infoIcon,
+              style: toastStyle,
+            });
           } else {
-            toast('This branch was deleted on GitHub.', { duration: 5000 });
+            toast('This branch was deleted on GitHub.', {
+              id: `auto-sync-deleted-${branch}`,
+              duration: 5000,
+              icon: infoIcon,
+              style: toastStyle,
+            });
             refreshBranches();
           }
         }
         return;
       }
 
-      // ─── Branch Updated (push or PR merge) — toast only in app builder ───
+      // ─── Branch Updated (push or PR merge) ───
       if (action === 'pulled') {
         if (isInAppBuilder && (isCurrentBranch || affectsDefaultBranch)) {
           toast(`${branch} branch has been updated from GitHub. Refresh to see changes`, {
+            id: `auto-sync-pulled-${branch}`,
             duration: 8000,
-            icon: createElement(Info, { size: 16 }),
+            icon: infoIcon,
+            style: toastStyle,
           });
+        } else if (!isInAppBuilder) {
+          toast(
+            (t) =>
+              createElement(
+                'span',
+                { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+                `${branch} branch has been updated from GitHub.`,
+                createElement(
+                  Button,
+                  {
+                    variant: 'outline',
+                    size: 'medium',
+                    onClick: () => {
+                      toast.dismiss(t.id);
+                      window.location.reload();
+                    },
+                  },
+                  'Refresh'
+                )
+              ),
+            {
+              id: `auto-sync-pulled-${branch}`,
+              duration: 8000,
+              icon: infoIcon,
+              style: toastStyle,
+            }
+          );
         }
         return;
       }
@@ -73,9 +129,16 @@ export function useAutoSyncNotifications() {
       // ─── Version Imported (tag push) ───
       if (action === 'version_imported') {
         if (isInAppBuilder) {
+          // Only show the toast if the user is viewing the specific app whose version was saved
+          const currentCoRelId = getCurrentAppCoRelationId();
+          const notifCoRelId = notification.metadata?.appCoRelationId;
+          // Both must be present and must match — if either is missing, skip the toast
+          if (!notifCoRelId || !currentCoRelId || notifCoRelId !== currentCoRelId) return;
           toast('New version saved from GitHub. Refresh to see changes', {
+            id: 'auto-sync-version-imported',
             duration: 8000,
-            icon: createElement(Info, { size: 16 }),
+            icon: infoIcon,
+            style: toastStyle,
           });
         }
         return;
@@ -111,22 +174,31 @@ function getDefaultBranchName() {
   return defaultBranch?.name || 'main';
 }
 
+function getCurrentAppCoRelationId() {
+  return useAppDataStore.getState().coRelationId || null;
+}
+
 function freezeEditor() {
-  try {
-    // Dynamic import to avoid circular dependency — app builder store is only available in editor
-    const useStore = require('@/AppBuilder/_stores/store').default;
-    const state = useStore.getState();
-    if (state?.onEditorFreeze) {
-      state.onEditorFreeze(true, true);
-    }
-  } catch {
-    // App builder store not available (not in app builder context)
-  }
+  useAppVersionStore.getState().actions.onEditorFreeze(true, true);
 }
 
 function refreshBranches() {
   const state = useWorkspaceBranchesStore.getState();
   if (state?.actions?.fetchBranches) {
     state.actions.fetchBranches();
+  }
+}
+
+function switchToDefaultBranch() {
+  const state = useWorkspaceBranchesStore.getState();
+  const branches = state?.branches || [];
+  const defaultBranch = branches.find((b) => b.isDefault || b.is_default) || branches[0];
+  if (defaultBranch) {
+    setActiveBranch(defaultBranch);
+    // Update zustand store synchronously so subscription-based refetches trigger on navigation
+    useWorkspaceBranchesStore.setState({
+      activeBranchId: defaultBranch.id,
+      currentBranch: defaultBranch,
+    });
   }
 }

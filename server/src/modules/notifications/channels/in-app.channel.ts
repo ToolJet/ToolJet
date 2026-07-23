@@ -22,6 +22,7 @@ export class InAppChannel implements NotificationChannel {
       notification: {
         recipientId: recipient.id,
         id: event.id,
+        organizationId: event.organizationId,
         type: event.type,
         title: event.title,
         body: event.body,

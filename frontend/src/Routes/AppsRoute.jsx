@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { useAutoSyncNotifications } from '@/_hooks/useAutoSyncNotifications';
+import { useNotificationsStore } from '@/_stores/notificationsStore';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { handleAppAccess, handleError } from '@/_helpers/handleAppAccess';
 import { getQueryParams, getSubpath } from '@/_helpers/routes';
@@ -25,6 +26,15 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     disableInValidSessionCallback: componentType !== 'editor',
   });
   useAutoSyncNotifications();
+
+  // Connect the notifications WebSocket once session is valid — must not fire before
+  // authentication completes or the org_id will be "null" (string), causing 401 loops.
+  useEffect(() => {
+    if (isValidSession) {
+      useNotificationsStore.getState().actions.connect();
+    }
+  }, [isValidSession]);
+
   const clonedElement = React.cloneElement(children, extraProps);
   const navigate = useNavigate();
   const switchPage = useStore((state) => state.switchPage);

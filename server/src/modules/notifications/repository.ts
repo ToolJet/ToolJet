@@ -61,6 +61,95 @@ export class NotificationRepository extends Repository<Notification> {
     });
   }
 
+  /**
+   * Creates a single notification with recipients for multiple users (fan-out).
+   * DedupeKey is checked at the Notification level — if the notification already exists,
+   * new recipients are still created for users who don't already have one.
+   */
+  async createForUsers(params: {
+    organizationId: string;
+    userIds: string[];
+    type: string;
+    title: string;
+    body?: string;
+    link?: string;
+    metadata?: Record<string, unknown>;
+    dedupeKey?: string;
+  }): Promise<{ notification: Notification; recipients: NotificationRecipient[] } | null> {
+    // Deduplicate to prevent creating multiple recipients for the same user
+    const uniqueUserIds = [...new Set(params.userIds)];
+    if (!uniqueUserIds.length) return null;
+
+    return this.manager.transaction(async (em) => {
+      const metadata = params.dedupeKey
+        ? { ...(params.metadata ?? {}), dedupeKey: params.dedupeKey }
+        : (params.metadata ?? null);
+
+      let notification: Notification;
+
+      if (params.dedupeKey) {
+        // Try to find existing notification with this dedupeKey
+        const existing = await em
+          .createQueryBuilder(Notification, 'n')
+          .where(`n.metadata ->> 'dedupeKey' = :key`, { key: params.dedupeKey })
+          .andWhere('n.organization_id = :org', { org: params.organizationId })
+          .getOne();
+
+        if (existing) {
+          notification = existing;
+        } else {
+          notification = await em.save(
+            em.create(Notification, {
+              organizationId: params.organizationId,
+              type: params.type,
+              title: params.title,
+              body: params.body ?? null,
+              link: params.link ?? null,
+              metadata,
+            })
+          );
+        }
+      } else {
+        notification = await em.save(
+          em.create(Notification, {
+            organizationId: params.organizationId,
+            type: params.type,
+            title: params.title,
+            body: params.body ?? null,
+            link: params.link ?? null,
+            metadata,
+          })
+        );
+      }
+
+      // Create recipients for users who don't already have one for this notification
+      const existingRecipients = await em
+        .createQueryBuilder(NotificationRecipient, 'r')
+        .where('r.notification_id = :nid', { nid: notification.id })
+        .andWhere('r.user_id IN (:...userIds)', { userIds: uniqueUserIds })
+        .getMany();
+
+      const existingUserIds = new Set(existingRecipients.map((r) => r.userId));
+      const newUserIds = uniqueUserIds.filter((uid) => !existingUserIds.has(uid));
+
+      if (!newUserIds.length) return null; // all users already have this notification
+
+      const recipients = await Promise.all(
+        newUserIds.map((userId) =>
+          em.save(
+            em.create(NotificationRecipient, {
+              notificationId: notification.id,
+              userId,
+              readAt: null,
+            })
+          )
+        )
+      );
+
+      return { notification, recipients };
+    });
+  }
+
   // reads are org-scoped: a multi-workspace user must not see org B's items in org A's panel
   async listForUser(
     userId: string,
@@ -155,7 +244,7 @@ export class NotificationRepository extends Repository<Notification> {
    */
   async getOrgAdminUserIds(organizationId: string): Promise<string[]> {
     const rows: { user_id: string }[] = await this.manager.query(
-      `SELECT gu.user_id
+      `SELECT DISTINCT gu.user_id
          FROM group_users gu
          JOIN permission_groups pg ON pg.id = gu.group_id
          JOIN organization_users ou ON ou.user_id = gu.user_id AND ou.organization_id = $1

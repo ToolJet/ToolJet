@@ -41,15 +41,34 @@ export class NotificationService implements INotificationService {
 
   /**
    * Broadcast a notification to all active admin users in an organization.
-   * Used by system-triggered events (webhooks, background jobs) that have no initiating user.
+   * Creates one notification row and fans out recipients to all admins,
+   * then delivers via all enabled channels.
    */
   async notifyOrgAdmins(params: NotifyOrgAdminsParams): Promise<void> {
     const adminUserIds = await this.repository.getOrgAdminUserIds(params.organizationId);
     if (!adminUserIds.length) return;
 
-    await Promise.allSettled(
-      adminUserIds.map((userId) => this.notify({ ...params, userId }))
-    );
+    const persisted = await this.repository.createForUsers({
+      organizationId: params.organizationId,
+      userIds: adminUserIds,
+      type: params.type,
+      title: params.title,
+      body: params.body,
+      link: params.link,
+      metadata: params.metadata,
+      dedupeKey: params.dedupeKey,
+    });
+    if (!persisted) return; // fully deduped — all admins already have this notification
+
+    const enabled = params.channels ?? DEFAULT_CHANNELS;
+    for (const recipient of persisted.recipients) {
+      for (const channel of this.channels) {
+        if (!enabled.includes(channel.key)) continue;
+        await channel
+          .deliver(persisted.notification, recipient, { toast: params.toast })
+          .catch((e) => this.logger.error(`channel ${channel.key} failed for user ${recipient.userId}: ${e?.message}`));
+      }
+    }
   }
 
   async list(
