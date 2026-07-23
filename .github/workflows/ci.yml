@@ -577,12 +577,20 @@ jobs:
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
             const icon = (r) => {
-              if (r === 'success')   return ':white_check_mark:';
-              if (r === 'skipped')   return ':next_track_button:';
-              if (r === 'failure')   return ':x:';
-              if (r === 'cancelled') return ':no_entry_sign:';
-              return ':grey_question:';
+              if (r === 'success')   return '✅';
+              if (r === 'skipped')   return '⏭️';
+              if (r === 'failure')   return '❌';
+              if (r === 'cancelled') return '🚫';
+              return '❓';
             };
+            const word = (r) => {
+              if (r === 'success')   return 'passed';
+              if (r === 'skipped')   return 'skipped — no relevant changes';
+              if (r === 'failure')   return 'failed';
+              if (r === 'cancelled') return 'cancelled';
+              return r || 'unknown';
+            };
+            const cell = (r) => `${icon(r)} ${word(r)}`;
 
             // Lint & Build row — combine all build-* results inline
             const checks = [
@@ -593,31 +601,34 @@ jobs:
             ];
             const checkStatus = checks.map(c => `${icon(c.result)} ${c.name}`).join(' · ');
 
-            // Test rows
-            const unitResult = '${{ needs.test-server-unit.result }}';
-            const e2eResult = '${{ needs.test-server-e2e.result }}';
-
-            // Cypress rows
-            const cypressPlatformResult = '${{ needs.cypress-platform.result }}';
-            const cypressMarketplaceResult = '${{ needs.cypress-marketplace.result }}';
+            const rows = [
+              ['🧹 Lint & Build',           null, checkStatus],
+              ['🧪 Unit Tests',             '${{ needs.test-server-unit.result }}'],
+              ['🔗 E2E Tests',              '${{ needs.test-server-e2e.result }}'],
+              ['🌲 Cypress — Platform',     '${{ needs.cypress-platform.result }}'],
+              ['🛍️ Cypress — Marketplace',  '${{ needs.cypress-marketplace.result }}'],
+            ];
 
             const verdict = '${{ steps.eval.outputs.verdict }}';
-            const verdictLine = verdict === 'pass'
-              ? ':white_check_mark: **All checks passed** — `CI Gate` status set, mergeable.'
-              : ':x: **Failed** — fix issues and re-add `run-ci` label';
+            const headline = verdict === 'pass'
+              ? '🟢 **All checks passed** — ready to merge'
+              : '🔴 **CI failed** — merge is blocked';
+            const nextStep = verdict === 'pass'
+              ? '`CI Gate` status is ✅ on this commit — you\'re good to go. 🚀'
+              : '👉 Fix the failing steps, push, then re-add the `run-ci` label to try again.';
 
             const body = [
-              `### CI — [\`${sha}\`](${runUrl})`,
+              `## 🚦 CI Gate — [\`${sha}\`](${runUrl})`,
               '',
-              '| Step | Status |',
+              headline,
+              '',
+              '| Step | Result |',
               '|------|--------|',
-              `| **Lint & Build** | ${checkStatus} |`,
-              `| **Unit Tests** | ${icon(unitResult)} ${unitResult} |`,
-              `| **E2E Tests** | ${icon(e2eResult)} ${e2eResult} |`,
-              `| **Cypress — Platform** | ${icon(cypressPlatformResult)} ${cypressPlatformResult} |`,
-              `| **Cypress — Marketplace** | ${icon(cypressMarketplaceResult)} ${cypressMarketplaceResult} |`,
+              ...rows.map(([name, result, custom]) => `| **${name}** | ${custom ?? cell(result)} |`),
               '',
-              verdictLine,
+              nextStep,
+              '',
+              '<sub>Full pipeline (`run-ci`) — the merge-truth check for protected branches. Runs against this commit only; new pushes need a fresh run.</sub>',
             ].join('\n');
 
             const marker = '<!-- ci-gate-comment -->';
@@ -674,15 +685,45 @@ jobs:
         run: |
           sha="${{ github.event.pull_request.head.sha }}"
           scope=$(cat /tmp/fast-results/tj-scope.txt 2>/dev/null || echo "no server changes — lint & build only")
+
+          icon() {
+            case "$1" in
+              success)   echo "✅";;
+              skipped)   echo "⏭️";;
+              failure)   echo "❌";;
+              cancelled) echo "🚫";;
+              *)         echo "❓";;
+            esac
+          }
+          word() {
+            case "$1" in
+              success)   echo "passed";;
+              skipped)   echo "skipped";;
+              failure)   echo "failed";;
+              cancelled) echo "cancelled";;
+              *)         echo "$1";;
+            esac
+          }
+
+          verdict="${{ steps.eval.outputs.verdict }}"
+          if [ "$verdict" = "pass" ]; then
+            headline="🟢 **Looking good** — everything in scope passed"
+          else
+            headline="🔴 **Something broke** — see the failing steps below"
+          fi
+
           {
             echo "<!-- ci-fast-comment -->"
-            echo "### ⚡ Fast check — [\`${sha:0:7}\`]($RUN_URL)"
-            echo "**Scope:** ${scope} · diffed against \`${{ github.base_ref }}\`"
+            echo "## ⚡ Fast check — [\`${sha:0:7}\`]($RUN_URL)"
             echo
-            echo "| Step | Status |"
+            echo "$headline"
+            echo
+            echo "🎯 **Scope:** ${scope} · diffed against \`${{ github.base_ref }}\`"
+            echo
+            echo "| Step | Result |"
             echo "|------|--------|"
-            echo "| Lint & Build | server: ${{ needs.build-server.result }} · plugins: ${{ needs.build-plugins.result }} · frontend: ${{ needs.build-frontend.result }} · marketplace: ${{ needs.build-marketplace.result }} |"
-            echo "| Changed tests | ${{ needs.test-changed.result }} |"
+            echo "| **🧹 Lint & Build** | $(icon "${{ needs.build-server.result }}") server · $(icon "${{ needs.build-plugins.result }}") plugins · $(icon "${{ needs.build-frontend.result }}") frontend · $(icon "${{ needs.build-marketplace.result }}") marketplace |"
+            echo "| **🧪 Changed tests** | $(icon "${{ needs.test-changed.result }}") $(word "${{ needs.test-changed.result }}") |"
             echo
             if [ -f "$UNIT_JSON" ] || [ -d "$E2E_JSON_DIR" ]; then
               bash scripts/format-test-comment.sh | tail -n +2   # drop the tj-test-results marker line
@@ -690,7 +731,7 @@ jobs:
               echo "_No jest results — no server test modules affected._"
             fi
             echo
-            echo "_Quick check only — merging to a protected branch still requires a green \`run-ci\` (full CI)._"
+            echo "<sub>⚡ Quick feedback only — merging to a protected branch still needs a green \`run-ci\` (full CI).</sub>"
           } > /tmp/fast-comment.md
           cat /tmp/fast-comment.md >> "$GITHUB_STEP_SUMMARY"
 
