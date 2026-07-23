@@ -387,7 +387,8 @@ jobs:
           --health-retries 5
     env:
       FORCE_COLOR: true
-      NODE_OPTIONS: '--max-old-space-size=4096'
+      # env parity with test-server-e2e — this job runs the same e2e specs
+      NODE_OPTIONS: '--max-old-space-size=8192'
       NODE_ENV: test
       LOCKBOX_MASTER_KEY: lockbox-master-key
       SECRET_KEY_BASE: secret-key-base
@@ -403,6 +404,11 @@ jobs:
       TOOLJET_DB: tooljet_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      WORKFLOW_TIMEOUT_SECONDS: '60'
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      ENABLE_EXTERNAL_API: 'true'
+      EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
     steps:
       - uses: actions/checkout@v4
         with:
@@ -423,7 +429,7 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
