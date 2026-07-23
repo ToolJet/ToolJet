@@ -7,10 +7,10 @@ export function setCookie(name, value, inIFrame = false, expiryMinutes) {
   }
 
   if (inIFrame) {
-    return (document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=None; Secure`);
+    return (document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value || '')}${expires}; path=/; SameSite=None; Secure`);
   }
 
-  document.cookie = `${name}=${value || ''}${expires}; path=/`;
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value || '')}${expires}; path=/`;
 }
 
 export function getCookie(name) {

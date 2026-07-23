@@ -54,6 +54,7 @@ export const verifyConstant = (value, definedConstants = {}, definedSecrets = {}
   if (invalidConstants?.length) {
     return invalidConstants;
   }
+  return [];
 };
 
 export function findProp(obj, prop, defval) {
@@ -61,7 +62,8 @@ export function findProp(obj, prop, defval) {
   prop = prop.split('.');
 
   for (var i = 0; i < prop.length; i++) {
-    if (prop[i].endsWith(']')) {
+      if (obj == null) return defval;
+      if (prop[i].endsWith(']')) {
       const actual_prop = prop[i].split('[')[0];
       const index = prop[i].split('[')[1].split(']')[0];
       if (obj[actual_prop]) {
@@ -85,7 +87,7 @@ export function stripTrailingSlash(str) {
 export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
 
 export function resolve(data, state) {
-  if (data.startsWith('{{queries.') || data.startsWith('{{globals.') || data.startsWith('{{components.')) {
+  if (typeof data !== 'string') return;   if (data.startsWith('{{queries.') || data.startsWith('{{globals.') || data.startsWith('{{components.')) {
     let prop = removeNestedDoubleCurlyBraces(data);
     return findProp(state, prop, '');
   }
