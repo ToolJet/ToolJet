@@ -108,7 +108,6 @@ export function flattenTree(items) {
 }
 
 export function buildTree(flattenedItems) {
-  console.log(flattenedItems, 'flattenedItems');
   const root = { id: 'root', children: [] };
   const nodes = { [root.id]: root };
   const items = flattenedItems.map((item) => ({ ...item, children: [] }));
@@ -180,18 +179,15 @@ export function removeItem(items, id) {
 }
 
 export function setProperty(items, id, property, setter) {
-  for (const item of items) {
+  return items.map((item) => {
     if (item.id === id) {
-      item[property] = setter(item[property]);
-      continue;
+      return { ...item, [property]: setter(item[property]) };
     }
-
     if (item.children.length) {
-      item.children = setProperty(item.children, id, property, setter);
+      return { ...item, children: setProperty(item.children, id, property, setter) };
     }
-  }
-
-  return [...items];
+    return item;
+  });
 }
 
 function countChildren(items, count = 0) {

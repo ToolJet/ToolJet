@@ -30,7 +30,7 @@ function useConfirm() {
   const [show, setShow] = useState(false);
   const [message, setMessage] = useState('');
   const [heading, setHeading] = useState('Confirm action?');
-  const [handleConfirm, setHandleConfirm] = useState(null);
+  const [handleConfirm, setHandleConfirm] = useState(() => () => {});
 
   const confirm = (message, heading) => {
     return new Promise((resolve) => {

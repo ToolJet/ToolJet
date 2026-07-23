@@ -9,10 +9,9 @@ export const useLocalStorageState = (
   const [state, setState] = useState(() => {
     let valueInLocalStorage = window.localStorage.getItem(key);
 
-    if (valueInLocalStorage === 'undefined') {
-      //   valueInLocalStorage = window.localStorage.getItem(`copy${key}`); // can extend this hook to save a copy of the previous state
-      window.localStorage.removeItem(key);
-    }
+    if (valueInLocalStorage === null) {
+      // key not found
+      return defaultVal;
 
     if (valueInLocalStorage) {
       return deserialize(valueInLocalStorage);
