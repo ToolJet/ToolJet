@@ -1,5 +1,5 @@
 import { Controller, Get, Param, UseGuards, Body, Patch, Post, Put, NotFoundException } from '@nestjs/common';
-import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto, UpdateUserMetadataDto } from './dto';
+import { UpdateUserDto, WorkspaceDto, UpdateGivenWorkspaceDto, CreateUserDto, UpdateUserMetadataDto, GetWorkspaceUsersByGroupsDto } from './dto';
 import { IExternalApisController } from './Interfaces/IController';
 import { EditUserRoleDto } from '@modules/roles/dto';
 import { ExternalApiSecurityGuard } from '@modules/auth/guards/external-api-security.guard';
@@ -69,6 +69,15 @@ export class ExternalApisController implements IExternalApisController {
   async getUserMetadata(
     @Param('workspaceId') workspaceId: string,
     @Param('userId') userId: string
+  ) {
+    throw new NotFoundException();
+  }
+
+  @UseGuards(ExternalApiSecurityGuard)
+  @Post('workspace/:workspaceId/users')
+  async getWorkspaceUsersByGroups(
+    @Param('workspaceId') workspaceId: string,
+    @Body() body: GetWorkspaceUsersByGroupsDto
   ) {
     throw new NotFoundException();
   }

@@ -10,7 +10,8 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { EntityManager, MoreThan } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { VersionsCreateService } from './services/create.service';
-import { camelizeKeys } from 'humps';
+import { camelizeKeys, decamelizeKeys } from 'humps';
+import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
 import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
@@ -226,6 +227,14 @@ export class VersionService implements IVersionService {
 
       delete appData['editingVersion'];
 
+      /*
+        Data-query contains `options` which are a free-form, mixed-case blob (snake_case alongside camelCase keys).
+        Strip them here so the rest of the version envelope can be camelized safely below.
+        `camelizeKeys` recurses deeply and would silently break queries if they stayed on the version object.
+      */
+      const serializedDataQueries = serializeDataQueries(appCurrentEditingVersion?.dataQueries);
+      delete appCurrentEditingVersion['dataQueries'];
+
       const editingVersion = camelizeKeys(appCurrentEditingVersion);
 
       // For branch-type versions, expose the human-readable branch name so
@@ -263,6 +272,7 @@ export class VersionService implements IVersionService {
       return {
         ...appData,
         editing_version: editingVersion,
+        data_queries: serializedDataQueries,
         pages: this.appUtilService.mergeDefaultComponentData(pagesForVersion),
         events: eventsForVersion,
         should_freeze_editor: shouldFreezeEditor,
