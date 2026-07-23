@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import * as OTPAuth from 'otpauth';
@@ -9,6 +9,11 @@ export class TotpUtilService {
 
   deriveUserSecret(identifier: string): string {
     const MFA_MASTER_SECRET = this.configService.get<string>('MFA_MASTER_SECRET');
+    if (!MFA_MASTER_SECRET) {
+      throw new InternalServerErrorException(
+        'MFA_MASTER_SECRET is not configured. Set it in the environment before enabling two-factor authentication.'
+      );
+    }
     // Unique for each email
     return crypto.createHmac('sha256', MFA_MASTER_SECRET).update(identifier).digest('hex');
   }

@@ -119,7 +119,9 @@ function getUserLimits(type) {
 
 function getMfaSetup() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/profile/mfa/setup`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/profile/mfa/setup`, requestOptions).then((response) =>
+    handleResponse(response, false, null, true)
+  );
 }
 
 function confirmMfaSetup(otp) {
