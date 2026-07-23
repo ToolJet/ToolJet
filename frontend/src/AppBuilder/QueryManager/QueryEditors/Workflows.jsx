@@ -52,12 +52,10 @@ export function Workflows({ options, optionsChanged, currentState }) {
       appVersionService
         .getAll(options.workflowId)
         .then((data) => {
-          const versions = (data?.versions || [])
-            .filter((v) => v.status === 'PUBLISHED')
-            .map((v) => ({
-              value: v.id,
-              name: v.name,
-            }));
+          const versions = (data?.versions || []).map((v) => ({
+            value: v.id,
+            name: `${v.name} (${v.status.toLowerCase()})`,
+          }));
           setVersionOptions(versions);
         })
         .catch(() => {
