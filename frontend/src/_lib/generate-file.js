@@ -39,6 +39,7 @@ async function generatePDF(filename, data) {
       });
       y += 10;
     } else if (Array.isArray(value)) {
+      if (value.length === 0) return;
       const columnNames = Object.keys(value[0]);
 
       // Print table headers
