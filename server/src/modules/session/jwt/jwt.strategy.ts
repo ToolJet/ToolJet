@@ -205,11 +205,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     /* Re-fetch with the workspace context so organizationUsers relations are populated,
        matching the shape produced by the regular JWT flow. */
-    const user = await this.userRepository.findByEmail(
-      adminUser.email,
-      organizationId,
-      WORKSPACE_USER_STATUS.ACTIVE
-    );
+    const user = await this.userRepository.findByEmail(adminUser.email, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
     if (!user) {
       throw new UnauthorizedException('No admin user found for the requested workspace');
     }

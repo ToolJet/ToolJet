@@ -7,7 +7,7 @@ export type QueryOptions = {
   model?: string; // Added model as an optional field
   operation: Operation;
   prompt?: string;
-  system_prompt?: string;           
+  system_prompt?: string;
   message_history?: string | any[];
   max_tokens?: number | string;
   temperature?: number | string;

@@ -37,11 +37,11 @@ interface Message {
   content: string;
 }
 export interface ChatCompletionQueryOptions extends CompletionQueryBase {
-  messages: Array<Message>
+  messages: Array<Message>;
 }
 
 export interface TextCompletionQueryOptions extends CompletionQueryBase {
-  prompt: string
+  prompt: string;
 }
 
 export interface PromptCompletionQueryOptions extends CredentialsBase {
@@ -59,4 +59,8 @@ export interface EmbeddingQueryOptions extends CredentialsBase {
   metadata?: Record<string, any>;
 }
 
-export type QueryOptions = TextCompletionQueryOptions | ChatCompletionQueryOptions | PromptCompletionQueryOptions | EmbeddingQueryOptions;
+export type QueryOptions =
+  | TextCompletionQueryOptions
+  | ChatCompletionQueryOptions
+  | PromptCompletionQueryOptions
+  | EmbeddingQueryOptions;

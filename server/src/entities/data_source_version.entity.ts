@@ -34,7 +34,6 @@ export class DataSourceVersion {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-
   // FIXME: misnamed. Stores a content hash (truncated sha256 of the DS's git JSON,
   // git-sync pull dedup), NOT a timestamp. Also `numeric` → node-pg returns it as a
   // string; coerce with Number() before comparing. Rename to meta_content_hash needs a migration.
@@ -60,7 +59,6 @@ export class DataSourceVersion {
   @ManyToOne(() => DataSourceVersion, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'version_from_id' })
   versionFrom: DataSourceVersion;
-
 
   @ManyToOne(() => WorkspaceBranch, (wb) => wb.id, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'branch_id' })

@@ -1,6 +1,12 @@
 name: Cypress Marketplace
 
 on:
+  workflow_call:
+    inputs:
+      edition:
+        type: string
+        required: false
+        default: 'ee'
   pull_request_target:
     types: [labeled]
 
@@ -20,8 +26,10 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
+    if: inputs.edition ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') ||
+      github.event_name == 'workflow_dispatch'
 
     strategy:
       fail-fast: false

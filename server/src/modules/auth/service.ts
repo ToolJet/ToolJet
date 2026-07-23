@@ -4,11 +4,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { EntityManager } from 'typeorm';
 import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
-import {
-  isSuperAdmin,
-  generateNextNameAndSlug,
-  validatePasswordDomain,
-} from 'src/helpers/utils.helper';
+import { isSuperAdmin, generateNextNameAndSlug, validatePasswordDomain } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Response } from 'express';
@@ -116,7 +112,9 @@ export class AuthService implements IAuthService {
               this.instanceSettingsUtilService
             ))
           ) {
-            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+            throw new UnauthorizedException(
+              `This login method is not available for your domain. Please contact admin or try another method.`
+            );
           }
         }
       } else {
@@ -143,7 +141,9 @@ export class AuthService implements IAuthService {
               this.instanceSettingsUtilService
             ))
           ) {
-            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+            throw new UnauthorizedException(
+              `This login method is not available for your domain. Please contact admin or try another method.`
+            );
           }
         }
       }

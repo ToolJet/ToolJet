@@ -165,9 +165,7 @@ export class FolderAppsService implements IFolderAppsService {
         ...(folderPermissions.viewableFoldersId || []),
       ]);
 
-      return folders.filter(
-        (f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id || f.folderApps.length > 0
-      );
+      return folders.filter((f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id || f.folderApps.length > 0);
     }
 
     // No folder permissions object at all (CE / unconfigured EE) → show all folders

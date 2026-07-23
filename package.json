@@ -19,6 +19,7 @@
   },
   "scripts": {
     "setup:hooks": "git config core.hooksPath .githooks",
+    "ci:changed": "bash scripts/test-changed.sh",
     "prebuild:plugins": "npm run install:plugins",
     "install:plugins": "npm --prefix plugins install",
     "build:plugins": "npm --prefix plugins run build",

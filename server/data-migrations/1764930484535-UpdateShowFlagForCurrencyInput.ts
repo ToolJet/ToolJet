@@ -1,8 +1,6 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdateShowFlagForCurrencyInput1764930484535
-  implements MigrationInterface
-{
+export class UpdateShowFlagForCurrencyInput1764930484535 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 100;
     let offset = 0;
@@ -30,9 +28,7 @@ export class UpdateShowFlagForCurrencyInput1764930484535
 
   private async processUpdates(queryRunner: QueryRunner, components: any[]) {
     for (const component of components) {
-      const properties = component.properties
-        ? { ...component.properties }
-        : {};
+      const properties = component.properties ? { ...component.properties } : {};
 
       if (properties.showFlag === undefined) {
         properties.showFlag = {

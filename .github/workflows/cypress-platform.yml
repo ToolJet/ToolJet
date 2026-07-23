@@ -3,6 +3,12 @@ name:
   # Cache invalidation - 2025-12-09
 
 on:
+  workflow_call:
+    inputs:
+      edition:
+        type: string
+        required: false
+        default: 'ee'
   pull_request_target:
     types: [labeled]
   # workflow_dispatch:
@@ -21,7 +27,8 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+    if: inputs.edition ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
@@ -32,6 +39,7 @@ jobs:
       matrix:
         edition:
           - ${{
+            inputs.edition ||
             (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
             (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||

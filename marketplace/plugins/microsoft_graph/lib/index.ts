@@ -222,22 +222,19 @@ export default class Microsoft_graph implements QueryService {
 
   private parseBodyParams(params: Record<string, any>): Record<string, any> {
     if (!params) return params;
-    return Object.keys(params).reduce(
-      (acc, key) => {
-        const value = params[key];
-        if (typeof value === 'string') {
-          try {
-            acc[key] = JSON.parse(value);
-          } catch {
-            acc[key] = value;
-          }
-        } else {
+    return Object.keys(params).reduce((acc, key) => {
+      const value = params[key];
+      if (typeof value === 'string') {
+        try {
+          acc[key] = JSON.parse(value);
+        } catch {
           acc[key] = value;
         }
-        return acc;
-      },
-      {} as Record<string, any>
-    );
+      } else {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, any>);
   }
 
   private constructSourceOptions(sourceOptions) {

@@ -109,13 +109,10 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
             const firstWord = parts[0];
             const lastWord = parts.slice(1).join(' ');
 
-            qb.orWhere(
-              '(LOWER(user.firstName) LIKE :splitFirstName AND LOWER(user.lastName) LIKE :splitLastName)',
-              { 
-                splitFirstName: `%${firstWord}%`, 
-                splitLastName: `%${lastWord}%` 
-              }
-            );
+            qb.orWhere('(LOWER(user.firstName) LIKE :splitFirstName AND LOWER(user.lastName) LIKE :splitLastName)', {
+              splitFirstName: `%${firstWord}%`,
+              splitLastName: `%${lastWord}%`,
+            });
           }
         })
       );

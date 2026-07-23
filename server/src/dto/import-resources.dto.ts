@@ -32,7 +32,7 @@ export class ImportResourcesDto {
   @IsOptional()
   @IsBoolean()
   skip_permissions_group_check?: boolean;
-  
+
   @IsOptional()
   @IsUUID()
   branchId?: string;

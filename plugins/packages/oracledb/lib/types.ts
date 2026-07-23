@@ -13,8 +13,8 @@ export type SourceOptions = {
   tns_alias: string;
   config_dir: string;
   wallet_file?: string;
-  wallet_file_path:string;
-  wallet_password?: string; 
+  wallet_file_path: string;
+  wallet_password?: string;
 };
 export type QueryOptions = {
   operation: string;
@@ -55,5 +55,4 @@ export type QueryOptions = {
 
   allow_multiple_updates?: boolean;
   zero_records_as_success?: boolean;
-
 };

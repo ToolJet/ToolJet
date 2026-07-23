@@ -14,10 +14,7 @@ export class PromoteAndReleaseExistingModuleVersions1776419051000 implements Mig
       relations: ['appEnvironments'],
     });
 
-    const migrationProgress = new MigrationProgress(
-      'PromoteAndReleaseExistingModuleVersions',
-      organizations.length
-    );
+    const migrationProgress = new MigrationProgress('PromoteAndReleaseExistingModuleVersions', organizations.length);
 
     for (const organization of organizations) {
       const productionEnvironment = organization.appEnvironments.find((env) => env.isDefault);

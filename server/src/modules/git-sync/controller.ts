@@ -15,7 +15,7 @@ import { UpdateGitEnvConfigDTO } from '@modules/git-sync/providers/dto/provider-
 @Controller('git-sync')
 @InitModule(MODULES.GIT_SYNC)
 export class GitSyncController implements IGitSyncController {
-  constructor() { }
+  constructor() {}
 
   @Get(':id/status')
   async getOrgGitStatusByOrgId(@User() user: UserEntity, @Param('id') organizationId: string): Promise<any> {
@@ -83,5 +83,4 @@ export class GitSyncController implements IGitSyncController {
   async toggleEnvConfig(@User() user: UserEntity, @Body() configData: UpdateGitEnvConfigDTO) {
     throw new NotFoundException();
   }
-
 }

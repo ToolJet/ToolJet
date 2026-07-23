@@ -38,7 +38,7 @@ export class DualKeyEncryptionService {
     if (!hexRegex.test(key)) {
       throw new Error(
         `${keyLabel}_LOCKBOX_MASTER_KEY must be exactly 64 hexadecimal characters (0-9, a-f, A-F). ` +
-        `Got ${key.length} characters.`
+          `Got ${key.length} characters.`
       );
     }
   }
@@ -126,9 +126,9 @@ export class DualKeyEncryptionService {
     let ciphertext = Buffer.from(cipherText, 'base64');
 
     // Extract components
-    const nonce = ciphertext.subarray(0, 12);        // First 12 bytes
-    const auth_tag = ciphertext.subarray(-16);       // Last 16 bytes
-    ciphertext = ciphertext.subarray(12, -16);       // Middle bytes
+    const nonce = ciphertext.subarray(0, 12); // First 12 bytes
+    const auth_tag = ciphertext.subarray(-16); // Last 16 bytes
+    ciphertext = ciphertext.subarray(12, -16); // Middle bytes
 
     // Create decipher
     const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce);
