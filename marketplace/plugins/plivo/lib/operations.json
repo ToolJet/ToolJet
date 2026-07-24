@@ -14,6 +14,10 @@
         {
           "value": "send_sms",
           "name": "Send SMS"
+        },
+        { 
+          "value": "make_call",
+          "name": "Make Call" 
         }
       ]
     },
@@ -48,6 +52,49 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter message body"
+      }
+    },
+    "make_call": {
+      "from": {
+        "label": "From Number",
+        "key": "from",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the Plivo number to call from",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "to": {
+        "label": "To Number",
+        "key": "to",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the number to call",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "answerUrl": {
+        "label": "Answer URL",
+        "key": "answerUrl",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "URL Plivo requests for call instructions (Plivo XML) when the call is answered",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "https://your-server.com/answer_url"
+      },
+      "answerMethod": {
+        "label": "Answer Method",
+        "key": "answerMethod",
+        "type": "dropdown-component-flip",
+        "description": "HTTP method Plivo uses to request the Answer URL",
+        "list": [
+          { "value": "POST", "name": "POST" },
+          { "value": "GET", "name": "GET" }
+        ]
       }
     }
   }
