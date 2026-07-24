@@ -94,6 +94,12 @@ export const numberinputConfig = {
       placeholder: 'Enter tooltip text',
       showLabel: false,
     },
+    disableStepControls: {
+      type: 'toggle',
+      displayName: 'Disable step controls',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {
     onChange: { displayName: 'On change' },
@@ -349,6 +355,7 @@ export const numberinputConfig = {
       loadingState: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       showClearBtn: { value: '{{false}}' },
+      disableStepControls: { value: '{{false}}' },
     },
     events: [],
     styles: {

@@ -472,7 +472,8 @@ describe('FoldersController', () => {
         // new user can only see folders having apps with read permissions
         await createGroupPermission(nestApp, {
           group: 'folder-handler',
-          folderCRUD: false,
+          folderCreate: false,
+          folderDelete: false,
           organization: newUserData.organization,
         });
         const group = await findEntityOrFail(GroupPermissions, {

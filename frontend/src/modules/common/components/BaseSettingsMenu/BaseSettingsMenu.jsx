@@ -36,8 +36,9 @@ function BaseSettingsMenu({
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
   const superAdmin = currentUserValue?.super_admin;
-  const marketplaceEnabled = admin && !options.hideMarketPlaceMenuItem;
   const isBuilder = !!currentUserValue?.user_permissions?.is_builder;
+  const isCloudEdition = edition === 'cloud' || checkIfToolJetCloud(tooljetVersion);
+  const marketplaceEnabled = !options.hideMarketPlaceMenuItem && !isCloudEdition && (admin || superAdmin || isBuilder);
   const canAccessWorkspaceSettings = !!admin || (isEEorCloud && isBuilder);
   const isValidUrl = (url) => {
     try {

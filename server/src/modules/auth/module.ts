@@ -6,6 +6,7 @@ import { RolesModule } from '@modules/roles/module';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { ProfileModule } from '@modules/profile/module';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { RolesRepository } from '@modules/roles/repository';
@@ -80,6 +81,7 @@ export class AuthModule extends SubModule {
       providers: [
         AuthService,
         UserRepository,
+        UserBanListRepository,
         OrganizationRepository,
         RolesRepository,
         OrganizationUsersRepository,

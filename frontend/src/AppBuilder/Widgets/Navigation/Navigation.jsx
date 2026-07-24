@@ -4,29 +4,31 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { ToolTip } from '@/_components';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useCalculateOverflow } from './hooks/useCalculateOverflow';
-import { findItemById, findParentGroup } from './utils';
+import { findItemById, findParentGroup, isItemVisible, isItemDisabled } from './utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
 // Render individual nav item - uses tj-list-item class like page navigation
-const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
-  const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
-  const isDisabled =
-    typeof item.disable === 'object'
-      ? item.disable.value === '{{true}}' || item.disable.value === true
-      : item.disable === true;
+const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientation, isNested }) => {
+  if (!isItemVisible(item)) return null;
 
-  if (!isVisible) return null;
+  const isDisabled = isItemDisabled(item);
 
   const showIcon = displayStyle !== 'textOnly' && item.iconVisibility !== false;
   const showLabel = displayStyle !== 'iconOnly';
 
   const iconColor = isSelected ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
 
-  return (
+  const isHorizontalTopLevel = orientation === 'horizontal' && !isNested;
+  const showInlineCaption = !isHorizontalTopLevel && !!item.caption;
+  const showTooltip = isHorizontalTopLevel && !!item.caption;
+
+  const buttonEl = (
     <button
       className={cx('tj-list-item', {
         'tj-list-item-selected': isSelected,
@@ -53,25 +55,43 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
         </div>
       )}
       {showLabel && (
-        <div className="page-name" data-cy={`nav-label-${item.id}`}>
-          {item.label}
+        <div className="nav-item-text">
+          <div className="page-name" data-cy={`nav-label-${item.id}`}>
+            {item.label}
+          </div>
+          {showInlineCaption ? (
+            <OverflowTooltip childrenClassName="nav-item-caption">{item.caption}</OverflowTooltip>
+          ) : null}
         </div>
       )}
     </button>
   );
+
+  if (!showTooltip) return buttonEl;
+
+  return (
+    <ToolTip message={item.caption} placement="top">
+      {buttonEl}
+    </ToolTip>
+  );
 };
 
 // Render nav group (collapsible) - uses page-group-wrapper class like page navigation
-const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displayStyle, orientation, darkMode }) => {
+const RenderNavGroup = ({
+  group,
+  selectedItemId,
+  onItemClick,
+  styles,
+  displayStyle,
+  orientation,
+  darkMode,
+  childAlignment,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const isVisible = typeof group.visible === 'object' ? group.visible.value !== '{{true}}' : group.visible !== true;
-  const isDisabled =
-    typeof group.disable === 'object'
-      ? group.disable.value === '{{true}}' || group.disable.value === true
-      : group.disable === true;
+  if (!isItemVisible(group)) return null;
 
-  if (!isVisible) return null;
+  const isDisabled = isItemDisabled(group);
 
   const showIcon = displayStyle !== 'textOnly' && group.iconVisibility !== false;
   const showLabel = displayStyle !== 'iconOnly';
@@ -91,7 +111,7 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
   // Check if any child is selected
   const hasSelectedChild = deduplicatedChildren.some((child) => child.id === selectedItemId);
 
-  const TriggerBody = () => (
+  const triggerBody = (
     <div className="group-info">
       {showIcon && (
         <div className="custom-icon">
@@ -109,36 +129,40 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
     </div>
   );
 
-  // For horizontal orientation, use Radix DropdownMenu — native collision
-  // detection flips the dropdown above the trigger when there isn't enough
-  // space below. We skip Portal so the content stays inside .navigation-widget
-  // (keeps existing SCSS nesting working). `asChild` lets us keep our custom
-  // button styles and the group-[data-state] chevron rotation — Radix
-  // propagates data-state onto the delegated child element.
   if (orientation === 'horizontal') {
+    const triggerButton = (
+      <button
+        type="button"
+        className={cx('tw-group page-group-wrapper', {
+          'page-group-selected': hasSelectedChild,
+          'page-group-disabled': isDisabled,
+        })}
+        disabled={isDisabled}
+        {...(isDisabled ? { 'data-state': 'closed' } : {})}
+        aria-label={group.label}
+        data-cy={`nav-group-${group.id}`}
+      >
+        {triggerBody}
+        <TablerIcon
+          iconName="IconChevronUp"
+          size={16}
+          className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
+        />
+      </button>
+    );
+
+    if (isDisabled) {
+      return <NavigationMenuItem key={group.id}>{triggerButton}</NavigationMenuItem>;
+    }
+
     return (
       <NavigationMenuItem key={group.id}>
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <button
-              type="button"
-              className={cx('tw-group page-group-wrapper', {
-                'page-group-selected': hasSelectedChild,
-              })}
-              disabled={isDisabled}
-              aria-label={group.label}
-              data-cy={`nav-group-${group.id}`}
-            >
-              <TriggerBody />
-              <TablerIcon
-                iconName="IconChevronUp"
-                size={16}
-                className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
-              />
-            </button>
-          </DropdownMenu.Trigger>
+          <DropdownMenu.Trigger asChild>{triggerButton}</DropdownMenu.Trigger>
           <DropdownMenu.Content
-            className={cx('page-menu-popup', { 'dark-theme': darkMode })}
+            className={cx('page-menu-popup', childAlignment && `nav-subalign-${childAlignment}`, {
+              'dark-theme': darkMode,
+            })}
             sideOffset={6}
             align="start"
             collisionPadding={8}
@@ -167,6 +191,7 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
       <button
         className={cx('tw-group page-group-wrapper', {
           'page-group-selected': hasSelectedChild,
+          'page-group-disabled': isDisabled,
         })}
         onClick={(e) => {
           e.stopPropagation();
@@ -177,7 +202,7 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
         aria-label={group.label}
         aria-expanded={isExpanded}
       >
-        <TriggerBody />
+        {triggerBody}
         <TablerIcon
           iconName="IconChevronUp"
           size={16}
@@ -185,7 +210,7 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
         />
       </button>
       <div className={cx('accordion-body', { expanded: isExpanded, collapsed: !isExpanded })}>
-        <div className="accordion-content">
+        <div className={cx('accordion-content', childAlignment && `nav-subalign-${childAlignment}`)}>
           {deduplicatedChildren.map((child) => (
             <RenderNavItem
               key={child.id}
@@ -218,18 +243,15 @@ export const Navigation = function Navigation(props) {
     currentMode,
   } = props;
 
-  const {
-    orientation,
-    displayStyle,
-    navItemSize = 'equalWidth',
-    loadingState,
-    disabledState,
-    visibility,
-    horizontalAlignment = 'left',
-    verticalAlignment = 'top',
-  } = properties;
+  const { loadingState, disabledState, visibility } = properties;
 
   const {
+    orientation: orientationStyle,
+    displayStyle: displayStyleStyle,
+    navItemSize: navItemSizeStyle,
+    horizontalAlignment: horizontalAlignmentStyle,
+    verticalAlignment: verticalAlignmentStyle,
+    subMenuAlignment,
     backgroundColor = 'var(--cc-surface1-surface)',
     borderColor = 'var(--cc-weak-border)',
     borderRadius = 8,
@@ -238,6 +260,13 @@ export const Navigation = function Navigation(props) {
     hoverPillBackgroundColor,
     pillBorderRadius = 6,
   } = styles || {};
+
+  const orientation = orientationStyle ?? properties?.orientation;
+  const displayStyle = displayStyleStyle ?? properties?.displayStyle;
+  const navItemSize = navItemSizeStyle ?? properties?.navItemSize ?? 'equalWidth';
+  const horizontalAlignment = horizontalAlignmentStyle ?? properties?.horizontalAlignment ?? 'left';
+  const verticalAlignment = verticalAlignmentStyle ?? properties?.verticalAlignment ?? 'top';
+  const childAlignment = subMenuAlignment;
 
   // Get menu items from component definition
   const menuItems = properties.menuItems || [];
@@ -279,10 +308,7 @@ export const Navigation = function Navigation(props) {
     }
 
     // Then filter by visibility
-    return deduplicatedItems.filter((item) => {
-      const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
-      return isVisible;
-    });
+    return deduplicatedItems.filter(isItemVisible);
   }, [menuItems]);
 
   // Overflow calculation for horizontal orientation
@@ -318,7 +344,8 @@ export const Navigation = function Navigation(props) {
   const handleItemClick = (item) => {
     if (disabledState) return;
     applySelection(item);
-    fireEvent('onClick');
+
+    fireEvent('onNavigationItemClicked', { itemId: item.id });
   };
 
   // Actions
@@ -507,7 +534,7 @@ export const Navigation = function Navigation(props) {
             className={`navigation-horizontal-list ${justifyTwClass} ${
               navItemSize === 'equalWidth' ? `nav-equal-width nav-align-${horizontalAlignment}` : ''
             }`}
-            style={{ ...navItemStyles, flex: navItemSize === 'equalWidth' ? '1' : 'none' }}
+            style={{ flex: navItemSize === 'equalWidth' ? '1' : 'none' }}
           >
             {links.visible.map((item) => {
               if (item.isGroup) {
@@ -521,6 +548,7 @@ export const Navigation = function Navigation(props) {
                     displayStyle={displayStyle}
                     orientation={orientation}
                     darkMode={darkMode}
+                    childAlignment={childAlignment}
                   />
                 );
               }
@@ -571,6 +599,7 @@ export const Navigation = function Navigation(props) {
                             orientation="vertical"
                             darkMode={darkMode}
                             isInOverflow={true}
+                            childAlignment={childAlignment}
                           />
                         );
                       }
@@ -597,20 +626,16 @@ export const Navigation = function Navigation(props) {
     }
 
     // Vertical orientation - use visibleMenuItems (deduplicated and filtered)
-    // Auto-margins handle alignment without clipping scrollable content:
-    // center → auto margins on both sides; end → auto margin on start side only
+    // Nav-item CSS vars now live on the widget root, so only layout margins remain here.
     const verticalMenuStyle = {
-      ...navItemStyles,
       marginTop: verticalAlignment === 'center' ? 'auto' : verticalAlignment === 'bottom' ? 'auto' : undefined,
       marginBottom: verticalAlignment === 'center' ? 'auto' : undefined,
-      marginLeft: horizontalAlignment === 'center' ? 'auto' : horizontalAlignment === 'right' ? 'auto' : undefined,
-      marginRight: horizontalAlignment === 'center' ? 'auto' : undefined,
     };
 
     return (
       <div
-        className={`navigation-vertical-menu ${
-          navItemSize === 'equalWidth' ? `nav-equal-width nav-align-${horizontalAlignment}` : ''
+        className={`navigation-vertical-menu nav-align-${horizontalAlignment} ${
+          navItemSize === 'equalWidth' ? 'nav-equal-width' : ''
         }`}
         style={verticalMenuStyle}
       >
@@ -626,6 +651,7 @@ export const Navigation = function Navigation(props) {
                 displayStyle={displayStyle}
                 orientation={orientation}
                 darkMode={darkMode}
+                childAlignment={childAlignment}
               />
             );
           }
@@ -654,7 +680,7 @@ export const Navigation = function Navigation(props) {
         'navigation-horizontal': orientation === 'horizontal',
         'navigation-vertical': orientation === 'vertical',
       })}
-      style={containerStyle}
+      style={{ ...navItemStyles, ...containerStyle }}
       data-cy={dataCy}
       role="navigation"
       aria-label="Navigation menu"

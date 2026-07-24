@@ -1,11 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext, Type, HttpException, ForbiddenException } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
+import { DataSource } from 'typeorm';
 import { AbilityFactory } from '../ability-factory';
 import { MODULE_INFO } from '../constants/module-info';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { FeatureConfig, ResourceDetails } from '../types';
 import { App } from '@entities/app.entity';
+import { Organization } from '@entities/organization.entity';
+import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { MODULES } from '../constants/modules';
 import { isSuperAdmin } from '@helpers/utils.helper';
 import { cloneDeep } from 'lodash';
@@ -18,7 +21,8 @@ export abstract class AbilityGuard implements CanActivate {
     protected reflector: Reflector,
     protected moduleRef: ModuleRef,
     protected readonly licenseTermsService: LicenseTermsService,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly dataSource: DataSource
   ) {}
 
   protected abstract getAbilityFactory(): Type<AbilityFactory<any, any>>;
@@ -33,8 +37,20 @@ export abstract class AbilityGuard implements CanActivate {
   protected setResourceObject(resource: any): void {
     this.resource = resource;
   }
-  protected getResource(): ResourceDetails | ResourceDetails[] {
+  protected getResource(request?: any): ResourceDetails | ResourceDetails[] {
     return;
+  }
+
+  private async checkWorkspaceSuspended(orgId: string): Promise<void> {
+    const banned = await this.dataSource.getRepository(WorkspaceBanList).findOne({ where: { organizationId: orgId } });
+    if (banned) {
+      const org = await this.dataSource
+        .getRepository(Organization)
+        .findOne({ where: { id: orgId }, select: ['id', 'name'] });
+      throw new ForbiddenException({
+        message: JSON.stringify({ errorType: 'WORKSPACE_BANNED', workspaceName: org?.name }),
+      });
+    }
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -52,8 +68,19 @@ export abstract class AbilityGuard implements CanActivate {
       const request = context.switchToHttp().getRequest();
       const user = request.user;
       const app: App = request.tj_app;
-      if (app) {
-        this.setResourceObject(app);
+      // Guard instances are singleton-scoped in Nest's DI container, so `this.resource`
+      // persists across requests. It must always be overwritten (even with undefined) so a
+      // request with no app in context can't inherit a stale value set by an earlier request.
+      this.setResourceObject(app);
+
+      const reqOrg =
+        typeof request.headers['tj-workspace-id'] === 'object'
+          ? request.headers['tj-workspace-id'][0]
+          : request.headers['tj-workspace-id'];
+      const orgId = app?.organizationId || user?.organizationId || reqOrg;
+
+      if (orgId) {
+        await this.checkWorkspaceSuspended(orgId);
       }
 
       if (!features?.length) {
@@ -123,7 +150,7 @@ export abstract class AbilityGuard implements CanActivate {
         return false;
       }
 
-      const resources = this.getResource();
+      const resources = this.getResource(request);
       const resourceArray: ResourceDetails[] = Array.isArray(resources) ? resources : resources ? [resources] : [];
 
       if (user) {

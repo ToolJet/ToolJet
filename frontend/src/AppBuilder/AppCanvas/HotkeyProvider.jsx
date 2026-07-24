@@ -15,6 +15,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const moveComponentPosition = useStore((state) => state.moveComponentPosition, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
@@ -22,8 +23,20 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const containerChildrenMapping = useStore((state) => state.containerChildrenMapping, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
 
-  useHotkeys('meta+z, control+z', handleUndo, { enabled: mode === 'edit' });
-  useHotkeys('meta+shift+z, control+shift+z', handleRedo, { enabled: mode === 'edit' });
+  useHotkeys(
+    'meta+z, control+z',
+    (e) => {
+      if (!isEditorReadOnly) handleUndo(e);
+    },
+    { enabled: mode === 'edit' }
+  );
+  useHotkeys(
+    'meta+shift+z, control+shift+z',
+    (e) => {
+      if (!isEditorReadOnly) handleRedo(e);
+    },
+    { enabled: mode === 'edit' }
+  );
 
   const paste = async () => {
     if (isModuleEditor && !focusedParentId) return;
@@ -63,7 +76,9 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
 
   const handleHotKeysCallback = (key) => {
     if (shouldFreeze) {
-      enableReleasedVersionPopupState();
+      if (!isEditorReadOnly) {
+        enableReleasedVersionPopupState();
+      }
       return;
     }
 
