@@ -2994,16 +2994,15 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     // If the component is inside a ListView, use the ListView's data length
-    // so that all rows are resolved even if this component's array hasn't
-    // been fully sized yet (e.g. grandchildren on page refresh).
-    if (Array.isArray(data)) {
-      const parentId = getParentIdFromDependency(dependency, moduleId);
-      const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
-      if (nearestListviewId) {
-        const customResolvables = getCustomResolvables(nearestListviewId, null, moduleId, parentIndices);
-        const lvLength = Array.isArray(customResolvables) ? customResolvables.length : 0;
-        if (lvLength > 0) return lvLength;
-      }
+    // so all rows are resolved even when this component's resolved value is
+    // still flat/non-array (common for nested descendants like
+    // ListView -> Container/Form -> Text on initial pass).
+    const parentId = getParentIdFromDependency(dependency, moduleId);
+    const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
+    if (nearestListviewId) {
+      const customResolvables = getCustomResolvables(nearestListviewId, null, moduleId, parentIndices);
+      const lvLength = Array.isArray(customResolvables) ? customResolvables.length : 0;
+      if (lvLength > 0) return lvLength;
     }
 
     return data?.length;
