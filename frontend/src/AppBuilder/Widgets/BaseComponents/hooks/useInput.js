@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGridStore } from '@/_stores/gridStore';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
 
@@ -45,6 +45,8 @@ export const useInput = ({
   const isInitialRender = useRef(true);
   const inputRef = useRef();
   const labelRef = useRef();
+  const validateRef = useRef(validate);
+  validateRef.current = validate;
 
   const { loadingState, disabledState, label, visibility: initialVisibility } = properties;
   const isResizing = useGridStore((state) => state.resizingComponentId === id);
@@ -182,8 +184,7 @@ export const useInput = ({
   useEffect(() => {
     const exposedVariables = {
       clear: async function () {
-        inputType === 'phone' ? setPhoneInputValue('') : setInputValue('');
-        fireEvent('onChange');
+        clearValue();
       },
       setFocus: async function () {
         inputRef.current.focus();
@@ -226,6 +227,7 @@ export const useInput = ({
     if (inputType !== 'phone' && inputType !== 'currency') {
       exposedVariables.setText = async function (text) {
         setInputValue(text);
+        setShowValidationError(true);
         fireEvent('onChange');
       };
     }
@@ -238,7 +240,7 @@ export const useInput = ({
   const setInputValue = (value) => {
     setValue(value);
     setExposedVariable('value', value);
-    const validationStatus = validate(value);
+    const validationStatus = validateRef.current(value);
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };
@@ -255,9 +257,14 @@ export const useInput = ({
       countryCode: `+${countryCode}`,
       formattedValue: formatPhoneNumberIntl(value), // Library util formats the E.164 value to a readable format.
     });
-    const validationStatus = validate(value?.replace(`+${countryCode}`, ''));
+    const validationStatus = validateRef.current(value?.replace(`+${countryCode}`, ''));
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
+  };
+
+  const clearValue = () => {
+    inputType === 'phone' ? setPhoneInputValue('') : setInputValue('');
+    fireEvent('onChange');
   };
 
   const handleChange = (e) => {
@@ -292,6 +299,8 @@ export const useInput = ({
       fireEvent('onEnterPressed');
     }
   };
+
+  useFormClear(clearValue);
 
   return {
     inputRef,

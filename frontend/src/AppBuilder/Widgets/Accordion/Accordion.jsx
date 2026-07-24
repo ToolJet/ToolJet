@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
 import Spinner from '@/_ui/Spinner';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
   CONTAINER_FORM_CANVAS_PADDING,
@@ -37,6 +38,10 @@ export const Accordion = ({
     isLoading: loadingState,
     isExpanded: true, // State for expanding/collapsing accordion component
   });
+  const accordionRef = useRef(null);
+  // Disabled accordion blocks the mouse via `data-disabled`; `inert` also removes the child
+  // components from the tab order (runtime only — keeps the builder editable).
+  useDisableInert(accordionRef, exposedVariablesTemporaryState.isDisabled);
 
   const updateGrid = useStore((state) => state.incrementCanvasUpdater, shallow);
 
@@ -174,6 +179,7 @@ export const Accordion = ({
 
   return (
     <div
+      ref={accordionRef}
       className={`jet-container ${exposedVariablesTemporaryState.isLoading ? 'jet-container-loading' : ''} ${
         exposedVariablesTemporaryState.isExpanded ? 'jet-accordion-expanded' : 'jet-accordion-collapsed'
       }`}
@@ -196,7 +202,14 @@ export const Accordion = ({
               borderRadius={borderRadius}
               headerHeight={headerHeight}
               isExpanded={exposedVariablesTemporaryState.isExpanded}
-              setExpanded={(expand) => updateExposedVariablesState('isExpanded', expand)}
+              setExpanded={(expand) => {
+                // Commit the exposed `isExpanded` to the store SYNCHRONOUSLY.
+                // The dynamic-height reflow is scheduled off the local-state flip but reads `isExpanded` from the store in resolveContainerHeight;
+                // Without this synchronous write the store value lags (it was only synced via a batched effect),
+                // so the reflow reads the stale state and siblings fail to pull up / overlap on the next toggle.
+                setExposedVariable('isExpanded', expand);
+                updateExposedVariablesState('isExpanded', expand);
+              }}
               fireEvent={fireEvent}
               isDisabled={exposedVariablesTemporaryState.isDisabled}
               chevronIconColor={chevronIconColor}

@@ -11,6 +11,8 @@ import {
   getLabelWidthOfInput,
 } from '../BaseComponents/hooks/useInput';
 
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+
 export const RangeSliderV2 = ({
   height,
   properties,
@@ -161,6 +163,14 @@ export const RangeSliderV2 = ({
     setDefaultRangeValue(value);
   };
 
+  useFormClear(() => {
+    if (enableTwoHandle === 'slider') {
+      onSliderChange(min);
+    } else {
+      onRangeChange([min, min]);
+    }
+  });
+
   const rangeStyles = {
     handleStyle: toArray(defaultRangeValue).map(() => ({
       backgroundColor: `${handleColor}`,
@@ -278,6 +288,7 @@ export const RangeSliderV2 = ({
             {enableTwoHandle !== 'slider' ? (
               <Slider
                 range
+                disabled={disabled}
                 min={min}
                 max={max}
                 defaultValue={defaultRangeValue}
@@ -318,6 +329,7 @@ export const RangeSliderV2 = ({
               />
             ) : (
               <Slider
+                disabled={disabled}
                 min={min}
                 max={max}
                 defaultValue={defaultSliderValue}

@@ -497,6 +497,10 @@
 
       tbody {
         display: inline-block;
+
+        tr td:last-child {
+          flex: 1 1 auto !important;
+        }
       }
     }
 
@@ -1566,6 +1570,10 @@
 
 .table> :not(caption)>*>* {
   padding: 0;
+}
+
+.align-items-safe-center {
+  align-items: safe center;
 }
 
 .overlay-cell-table {

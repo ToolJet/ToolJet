@@ -161,8 +161,30 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
   };
 
   const handleBrowserNavigation = (e) => {
-    const { id, handle } = e.state;
-    switchPage(id, handle, [], 'canvas', true);
+    const pages = useStore.getState().modules?.canvas?.pages ?? [];
+
+    // The URL is authoritative on back/forward — the browser sets it before popstate fires.
+    // The page id stored on the history entry can be stale (e.g. it was captured under a
+    // different app version, or overwritten by an embedded module's load, or sits under React
+    // Router's state.usr instead of the top level), so resolve the target page from the URL
+    // handle against the live page list first.
+    const handleFromUrl = window.location.pathname.split('/').filter(Boolean).pop();
+    let page = pages.find((p) => p.handle === handleFromUrl && !p.isPageGroup);
+
+    // Fallback to whatever the history entry carries (covering both the raw-pushState shape and
+    // React Router's state.usr shape), matched against live pages so we never switch to an id
+    // the store doesn't know — which is what blanks the canvas.
+    if (!page) {
+      const rawState = e.state ?? {};
+      const stateId = rawState.id ?? rawState.usr?.id;
+      const stateHandle = rawState.handle ?? rawState.usr?.handle;
+      page = pages.find((p) => p.id === stateId || p.handle === stateHandle);
+    }
+
+    // Can't resolve a real page — keep the current one rather than blanking the canvas.
+    if (!page) return;
+
+    switchPage(page.id, page.handle, [], 'canvas', true);
   };
 
   // Show mobile empty state for protected routes (editor mode)

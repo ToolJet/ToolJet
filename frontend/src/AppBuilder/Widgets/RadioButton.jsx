@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+
 export const RadioButton = function RadioButton({
   id,
   height,
@@ -18,6 +20,11 @@ export const RadioButton = function RadioButton({
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checkedValue, setValue] = useState(() => value);
   useEffect(() => setValue(value), [value]);
+
+  useFormClear(() => {
+    setValue(null);
+    setExposedVariable('value', null);
+  });
 
   let selectOptions = [];
 
@@ -80,6 +87,7 @@ export const RadioButton = function RadioButton({
               value={option.value}
               name={`${id}-${uuidv4()}`}
               onChange={() => onSelect(option.value)}
+              disabled={disabledState}
               aria-disabled={disabledState}
               aria-hidden={!visibility}
               aria-labelledby={`${id}-option-${index}-label`}
