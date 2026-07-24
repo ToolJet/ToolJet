@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
@@ -10,7 +10,6 @@ export class AppAuthenticationDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(5, { message: 'Password should contain more than 5 characters' })
   @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
 
@@ -51,6 +50,11 @@ export class AppForgotPasswordDto {
   @IsNotEmpty()
   @Transform(({ value }) => lowercaseString(value))
   email: string;
+
+  @IsString()
+  @IsOptional()
+  @Matches(/^\/applications\//, { message: 'redirectTo must be a relative /applications/ path' })
+  redirectTo?: string;
 }
 
 export class AppPasswordResetDto {
@@ -90,4 +94,11 @@ export class CreateAiUserDto {
   @IsString()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;
+
+  @IsOptional()
+  utmParams?: Record<string, any>;
+
+  @IsString()
+  @IsNotEmpty()
+  otp: string;
 }

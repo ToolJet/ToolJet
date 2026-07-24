@@ -10,7 +10,7 @@ import ErrorMessage from './Components/ErrorMessage';
 import './style.scss';
 import { useFilePicker } from './hooks/useFilePicker';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const FilePicker = (props) => {
   const {
@@ -195,7 +195,12 @@ const FilePicker = (props) => {
       ) : (
         <>
           <div className={topSectionClasses}>
-            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }}>
+            <h3
+              className="file-picker-title"
+              style={{ color: 'var(--file-picker-text-primary)' }}
+              id={`${id}-label`}
+              data-cy={`${dataCy}-upload-files-label`}
+            >
               {labelText}
             </h3>
             <ValidationBar
@@ -205,6 +210,7 @@ const FilePicker = (props) => {
               minFileCount={minFileCount}
               maxFileCount={maxFileCount}
               enableMultiple={enableMultiple}
+              dataCy={dataCy}
             />
             <UploadArea
               getRootProps={getRootProps}
@@ -226,6 +232,11 @@ const FilePicker = (props) => {
               borderRadius={borderRadius}
               height={height}
               selectedFilesLength={selectedFiles.length}
+              id={id}
+              isVisible={isVisible}
+              isLoading={isLoading}
+              isMandatory={isMandatory}
+              dataCy={dataCy}
             />
           </div>
           {selectedFiles.length > 0 && (

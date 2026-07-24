@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -7,6 +7,7 @@ import { FEATURE_KEY } from './constants';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
 import { FeatureAbilityGuard } from './ability/guard';
+import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 import { User as UserEntity } from '@entities/user.entity';
 import { User } from '@modules/app/decorators/user.decorator';
 import { App as AppEntity } from '@entities/app.entity';
@@ -21,7 +22,22 @@ import { IVersionControllerV2 } from './interfaces/IControllerV2';
   version: '2',
 })
 export class VersionControllerV2 implements IVersionControllerV2 {
-  constructor(protected readonly versionService: VersionService) { }
+  constructor(protected readonly versionService: VersionService) {}
+
+  @InitFeature(FEATURE_KEY.GET_ONE)
+  @UseGuards(JwtAuthGuard, ValidModuleByCorrelationGuard, FeatureAbilityGuard)
+  @Get('module/by-correlation/:coRelationId/version')
+  getModuleVersionByStableIds(
+    @User() user: UserEntity,
+    @Param('coRelationId') coRelationId: string,
+    @Query('ref') ref?: string,
+    @Query('mode') mode?: string,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
+    // resolver returns the latest non-stub version on the consumer's branch.
+    return this.versionService.getVersionByStableIds(coRelationId, ref, user, mode, branchId);
+  }
 
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
@@ -47,8 +63,6 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   ) {
     return this.versionService.updateSettings(app, user, appVersionUpdateDto);
   }
-
-
 
   @InitFeature(FEATURE_KEY.PROMOTE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)

@@ -61,7 +61,7 @@
   },
   {
     "name": "PocketBase",
-    "description": "API plugin from pocketbase",
+    "description": "API plugin from PocketBase",
     "version": "1.0.0",
     "id": "pocketbase",
     "author": "Tooljet",
@@ -77,7 +77,7 @@
   },
   {
     "name": "Engagespot",
-    "description": "Plugin for engagespot APIs",
+    "description": "Plugin for Engagespot APIs",
     "version": "1.0.0",
     "id": "engagespot",
     "author": "Tooljet",
@@ -85,7 +85,7 @@
   },
   {
     "name": "Salesforce",
-    "description": "API plugin from salesforce",
+    "description": "API plugin from Salesforce",
     "version": "1.0.0",
     "id": "salesforce",
     "author": "Tooljet",
@@ -100,8 +100,8 @@
     "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
   },
   {
-    "name": "Sharepoint",
-    "description": "Plugin for Sharepoint API",
+    "name": "SharePoint",
+    "description": "Plugin for SharePoint API",
     "version": "1.0.0",
     "id": "sharepoint",
     "author": "Tooljet",
@@ -231,6 +231,25 @@
     "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
   },
   {
+    "name": "AWS Bedrock",
+    "description": "Plugin to use AI foundation models available on AWS",
+    "version": "1.0.0",
+    "id": "aws-bedrock",
+    "author": "Tooljet",
+    "timestamp": "Fri, 04 Jul 2025 05:17:22 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "EasyPost",
+    "description": "Integrate with EasyPost to use shipping APIs with multiple carriers",
+    "version": "1.0.0",
+    "id": "easypost",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 04:38:28 GMT"
+  },
+  {
     "name": "Prometheus",
     "description": "Plugin to query metrics using PromQL",
     "version": "1.0.0",
@@ -245,5 +264,112 @@
     "id": "googlecalendar",
     "author": "Tooljet",
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
+  },
+  {
+    "name": "Google Cloud Spanner",
+    "description": "Plugin to query relational database using GoogleSQL or PostgreSQL.",
+    "version": "1.0.0",
+    "id": "spanner",
+    "author": "Tooljet",
+    "timestamp": "Mon, 14 Jul 2025 07:03:25 GMT"
+  },
+  {
+    "name": "AfterShip",
+    "description": " Plugin for E-commerce operations management (Shipping, Tracking, Returns)",
+    "version": "1.0.0",
+    "id": "aftership",
+    "author": "Tooljet",
+    "timestamp": "Thu, 15 Jul 2025 14:33:00 GMT"
+  },
+  {
+    "name": "UPS",
+    "description": "Integrate with UPS API to create and track shipments",
+    "version": "1.0.0",
+    "id": "ups",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 18:44:28 GMT"
+  },
+  {
+    "name": "Gmail",
+    "description": "Integrate with Gmail API to organise and manage emails",
+    "version": "1.0.0",
+    "id": "gmail",
+    "author": "Tooljet",
+    "timestamp": "Mon, 21 Jul 2025 07:17:51 GMT"
+  },
+  {
+    "name": "Microsoft Graph",
+    "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
+    "version": "1.0.0",
+    "id": "microsoft_graph",
+    "author": "Tooljet",
+    "timestamp": "Thu, 31 Jul 2025 08:56:30 GMT"
+  },
+  {
+    "name": "Xero",
+    "description": "Integrate with Xero API to manage financial accounting data",
+    "version": "1.0.0",
+    "id": "xero",
+    "author": "Tooljet",
+    "timestamp": "Mon, 18 Aug 2025 11:22:39 GMT"
+  },
+  {
+    "name": "HubSpot",
+    "description": "Integrate with HubSpot API for CRM and sales automation",
+    "version": "1.0.0",
+    "id": "hubspot",
+    "author": "Tooljet",
+    "timestamp": "Tue, 19 Aug 2025 08:08:38 GMT"
+  },
+  {
+    "name": "FedEx",
+    "description": "Plugin to integrate shipping data from FedEx - pickups, tracking, rates, freight, etc.",
+    "version": "1.0.0",
+    "id": "fedex",
+    "author": "Tooljet",
+    "timestamp": "Fri, 05 Sep 2025 05:46:39 GMT"
+  },
+  {
+    "name": "Authorize.Net",
+    "description": "Plugin for payment processing and customer profile management",
+    "version": "1.0.0",
+    "id": "authorizenet",
+    "author": "Tooljet",
+    "timestamp": "Tue, 25 Nov 2025 16:27:22 GMT",
+    "tags": [
+      "Payment"
+    ]
+  },
+  {
+    "name": "Couchbase",
+    "description": "Couchbase is a high-performance, distributed NoSQL document database",
+    "version": "1.0.0",
+    "id": "couchbase",
+    "author": "Tooljet",
+    "timestamp": "Fri, 20 Jun 2025 06:46:04 GMT"
+  },
+  {
+    "name": "QuickBooks",
+    "description": "Integrate with QuickBooks Online Accounting API",
+    "version": "1.0.0",
+    "id": "quickbooks",
+    "author": "Tooljet",
+    "timestamp": "Wed, 09 Apr 2026 09:30:00 GMT"
+  },
+  {
+    "name": "Intercom",
+    "description": "Connect to Intercom API to manage contacts, conversations, tickets, companies, articles, and more",
+    "version": "1.0.0",
+    "id": "intercom",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Apr 2026 10:00:00 GMT"
+  },
+  {
+    "name": "Asana",
+    "description": "Plugin for Asana project and task management",
+    "version": "1.0.0",
+    "id": "asana",
+    "author": "Tooljet",
+    "timestamp": "Sun, 29 Jun 2025 00:00:00 GMT"
   }
 ]

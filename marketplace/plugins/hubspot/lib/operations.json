@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "HubSpot datasource",
+  "description": "A schema defining HubSpot datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "hubspot_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": {
+        "WebHooks": "@spec/hubspot/webhooks",
+        "Subscriptions": "@spec/hubspot/subscriptions",
+        "Oauth Service": "@spec/hubspot/oauth-service",
+        "Domains": "@spec/hubspot/domains",
+        "Blog Posts": "@spec/hubspot/blog-posts",
+        "Blog Authors": "@spec/hubspot/blog-authors",
+        "Url Redirects": "@spec/hubspot/url-redirects",
+        "Performance": "@spec/hubspot/performance",
+        "HubDB": "@spec/hubspot/hubdb",
+        "Blog Tags": "@spec/hubspot/blog-tags",
+        "Audit Logs": "@spec/hubspot/audit-logs",
+        "Site Search": "@spec/hubspot/site-search",
+        "Transactional Email": "@spec/hubspot/transactional-email",
+        "Custom Workflow Actions": "@spec/hubspot/custom-workflow-actions",
+        "Files": "@spec/hubspot/files",
+        "Visitor Identification": "@spec/hubspot/visitor-identification",
+        "Cards": "@spec/hubspot/cards",
+        "Products": "@spec/hubspot/products",
+        "Pipelines": "@spec/hubspot/pipelines",
+        "Companies": "@spec/hubspot/companies",
+        "Calling": "@spec/hubspot/calling",
+        "Quotes": "@spec/hubspot/quotes",
+        "Deals": "@spec/hubspot/deals",
+        "Imports": "@spec/hubspot/imports",
+        "Schemas": "@spec/hubspot/schemas",
+        "Properties": "@spec/hubspot/properties",
+        "Associations": "@spec/hubspot/associations",
+        "Owners": "@spec/hubspot/owners",
+        "Timeline": "@spec/hubspot/timeline",
+        "Contacts": "@spec/hubspot/contacts",
+        "Feedback Submissions": "@spec/hubspot/feedback-submissions",
+        "Objects": "@spec/hubspot/objects",
+        "Video Conference": "@spec/hubspot/video-conference",
+        "Tickets": "@spec/hubspot/tickets",
+        "Line Items": "@spec/hubspot/line-items"
+      }
+    }
+  }
+}

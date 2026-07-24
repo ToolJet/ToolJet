@@ -1,12 +1,62 @@
-.canvas-container{
-    &:focus-visible{
+.canvas-container {
+    &:focus-visible {
         outline: none;
     }
+}
 
-    &.page-container {
-        &.position-top {
-            flex-direction: column;
+.canvas-header-slot {
+    flex-shrink: 0;
+    position: relative;
+
+    // .real-canvas {
+    //     height: 100% !important;
+    //     min-height: unset !important;
+    // }
+
+    &.canvas-header-slot--edit {
+        &.canvas-header-slot--selected {
+            .canvas-header-tooltip {
+                display: flex !important;
+            }
         }
+    }
+
+    .canvas-header-tooltip {
+        display: none;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        z-index: 1000;
+        gap: 2px;
+        pointer-events: auto;
+    }
+}
+
+.canvas-footer-slot {
+    flex-shrink: 0;
+    position: relative;
+
+    .real-canvas {
+        height: 100% !important;
+        min-height: unset !important;
+    }
+
+    &.canvas-footer-slot--edit {
+        &.canvas-footer-slot--selected {
+            .canvas-footer-tooltip {
+                display: flex !important;
+            }
+        }
+    }
+
+    .canvas-footer-tooltip {
+        display: none;
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        z-index: 1000;
+        gap: 2px;
+        pointer-events: auto;
     }
 }
 
@@ -23,12 +73,12 @@
 //     }
 //   }
 
-.empty-box-cont{
+.empty-box-cont {
     display: flex;
     justify-content: center;
     margin: unset !important;
 
-    .dotted-cont{
+    .dotted-cont {
         border: 1px dashed var(--indigo8);
         border-radius: 6px;
         margin: 0 10px 0 10px;
@@ -38,20 +88,20 @@
         margin-bottom: 10px;
     }
 
-    .title-text{
+    .title-text {
         margin-top: 10px;
         font-size: 16px;
         font-weight: 600px;
-        
+
     }
 
-    .title-desc{
+    .title-desc {
         font-size: 14px;
         margin-top: 5px;
         font-weight: 400;
     }
 
-    .box-link{
+    .box-link {
         display: flex;
         margin-top: 10px;
 
@@ -60,8 +110,8 @@
             width: auto;
         }
 
-        .link-but{
-            
+        .link-but {
+
             font-weight: 500;
             font-size: 14px;
             color: #3E63DD;
@@ -70,5 +120,100 @@
 }
 
 *:focus-visible {
-    outline: none;  // Rewriting it to replace outline coming from browser styles
-  }
+    outline: none; // Rewriting it to replace outline coming from browser styles
+}
+
+// This is common scrollbar classused for all subcontainers
+// Show scrollbar only on hover in subcontainers
+
+.real-canvas:not(.has-no-scroll) {
+    overflow: hidden auto;
+    scrollbar-width: none;
+
+    &:hover {
+        scrollbar-width: auto;
+    }
+}
+
+.real-canvas.flex-container-canvas:not(.has-no-scroll) {
+    overflow: auto;
+    // Flex children reflow when scrollbar width changes, so keep the gutter stable and only reveal colors on hover.
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+
+    &:hover {
+        scrollbar-width: thin;
+        scrollbar-color: auto    
+    }
+
+    // &::-webkit-scrollbar-thumb,
+    // &::-webkit-scrollbar-track {
+    //     background: transparent;
+    // }
+
+    // &:hover::-webkit-scrollbar-thumb {
+    //     background: #a0a6ae;
+    // }
+
+    // &:hover::-webkit-scrollbar-track {
+    //     background: #e7eaef;
+    // }
+}
+
+#main-editor-canvas.disable-moveable-line #real-canvas {
+    transform: none !important;
+    position: relative;
+    overflow: visible !important;
+}
+
+// #main-editor-canvas.disable-moveable-line .canvas-header-slot + .canvas-wrapper {
+//     position: relative;
+//     z-index: 11;
+// }
+
+// #main-editor-canvas.disable-moveable-line .canvas-wrapper + .canvas-footer-slot {
+//     position: relative;
+//     z-index: 11;
+// }
+
+
+// This is required to maintain the height of the subcontainer when dragging a widget inside it
+.real-canvas.is-child-being-dragged:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 500%;
+    overflow: hidden;
+}
+
+.scrollbar-hidden {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+
+    &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+}
+
+.suspense-loading-overlay {
+
+    z-index: 10;
+    background-color: #fff;
+
+    &.dark-theme {
+        background-color: #1e2226;
+    }
+
+    .suspense-loader-wrapper {
+        .spin-loader {
+            position: relative;
+            width: auto;
+        }
+    }
+}

@@ -7,23 +7,75 @@ import {
   StringColumn,
   NumberColumn,
   BooleanColumn,
-  TagsColumn,
-  RadioColumn,
-  ToggleColumn,
   DatepickerColumn,
   LinkColumn,
-  // SelectColumn,
-  // MultiSelectColumn,
   ImageColumn,
   CustomSelectColumn,
-  CustomDropdownColumn,
+  TagsV2Column,
   TextColumn,
   JsonColumn,
   MarkdownColumn,
   HTMLColumn,
+  ButtonColumnGroup,
+  // Deprecated columns
+  TagsColumn,
+  RadioColumn,
+  ToggleColumn,
+  CustomDropdownColumn,
+  RatingColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
+import { normalizeButtonEvent } from './normalizeButtonEvent';
 import SelectSearch from 'react-select-search';
+import { parseDate, getDateTimeFormat } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
+
+// Module-level singleton for text measurement (avoids creating canvas on every call)
+let _measureCanvas = null;
+const getMeasureContext = () => {
+  if (!_measureCanvas) {
+    _measureCanvas = document.createElement('canvas');
+  }
+  const ctx = _measureCanvas.getContext('2d');
+  ctx.font = '500 12px "IBM Plex Sans"';
+  return ctx;
+};
+
+// Calculate width needed for button column based on button labels/icons
+const calculateButtonColumnWidth = (buttons, getResolvedValue) => {
+  if (!buttons || buttons.length === 0) return 90;
+
+  const context = getMeasureContext();
+
+  let totalWidth = 0;
+  const cellPadding = 24; // .has-actions: padding 0 12px (12px each side)
+  const buttonGap = 6; // ButtonColumnGroup: gap 6px
+
+  let visibleCount = 0;
+  buttons.forEach((button) => {
+    // Only skip when explicitly false (matching ButtonColumnGroupAdapter behavior)
+    const isVisible = getResolvedValue(button.buttonVisibility);
+    if (isVisible === false) return;
+
+    const label = getResolvedValue(button.buttonLabel) || 'Button';
+    const textWidth = context.measureText(label).width;
+
+    // Button style: padding 4px 10px = 20px horizontal, border 1px each side = 2px (conservative upper bound)
+    const buttonPadding = 20;
+    const buttonBorder = 2;
+    // Icon: 14px icon + 6px gap (button internal gap) when visible
+    const iconVisible = getResolvedValue(button.buttonIconVisibility);
+    const iconWidth = iconVisible ? 20 : 0;
+
+    totalWidth += textWidth + buttonPadding + buttonBorder + iconWidth;
+    visibleCount++;
+  });
+
+  // Add gaps between buttons
+  if (visibleCount > 1) totalWidth += buttonGap * (visibleCount - 1);
+
+  totalWidth += cellPadding;
+  return Math.max(90, Math.ceil(totalWidth));
+};
 
 export default function generateColumnsData({
   columnProperties,
@@ -33,23 +85,29 @@ export default function generateColumnsData({
   id,
   darkMode,
   fireEvent,
+  setExposedVariables,
   tableRef,
   handleCellValueChange,
   validateDates,
   searchText,
   columnForAddNewRow = false,
   t,
+  moduleId = 'canvas',
 }) {
-  const getResolvedValue = useStore.getState().getResolvedValue;
-  const getEditedRowFromIndex = useTableStore.getState().getEditedRowFromIndex;
+  const _getResolvedValue = useStore.getState().getResolvedValue;
+  const getResolvedValue = (value, customVariables = {}) => _getResolvedValue(value, customVariables, moduleId);
+  const getEditedFieldsOnIndex = useTableStore.getState().getEditedFieldsOnIndex;
   const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
+  const useDynamicColumn = useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
   if (!columnProperties) return [];
 
   return columnProperties
     .map((column) => {
       if (!column) return null;
 
-      const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
+      const columnSize = useDynamicColumn
+        ? column.columnSize || columnSizes[column?.id] || columnSizes[column?.name]
+        : columnSizes[column?.id] ?? columnSizes[column?.name] ?? column.columnSize;
       const columnType = column?.columnType;
 
       // Process column options for select types
@@ -64,31 +122,22 @@ export default function generateColumnsData({
         }));
       }
 
-      // Handle select and multiselect options
-      let useDynamicOptions = false;
-      if (columnType === 'select' || columnType === 'newMultiSelect') {
-        useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
-        if (useDynamicOptions) {
-          const dynamicOptions = getResolvedValue(column?.dynamicOptions || []);
-          columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
-        } else {
-          const options = column?.options ?? [];
-          columnOptions.selectOptions =
-            options?.map((option) => ({
-              label: option.label,
-              value: option.value,
-              optionColor: option.optionColor,
-              labelColor: option.labelColor,
-            })) ?? [];
-        }
-      }
-
       // Handle disabled dates
       const disabledDates = getResolvedValue(column.disabledDates);
       const parseInUnixTimestamp = getResolvedValue(column.parseInUnixTimestamp);
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
+      // const disableSort = getResolvedValue(column.disableSort);
       const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
+      let pinPosition = column.pinPosition ?? 'unpinned';
+      if (useDynamicColumn && column.freezeColumn !== undefined && column.freezeColumn !== null) {
+        const resolvedFreeze = getResolvedValue(column.freezeColumn);
+        if (resolvedFreeze === 'left' || resolvedFreeze === 'right') {
+          pinPosition = resolvedFreeze;
+        } else {
+          pinPosition = 'unpinned';
+        }
+      }
 
       if (!isVisible) return null;
 
@@ -96,7 +145,7 @@ export default function generateColumnsData({
         id: column.id || uuidv4(),
         accessorKey: column.key || column.name,
         header: getResolvedValue(column.name) ?? '',
-        enableSorting: true,
+        // enableSorting: !disableSort,
         enableResizing: true,
         enableHiding: true,
         enableColumnFilter: true,
@@ -114,19 +163,21 @@ export default function generateColumnsData({
           validation: column.validation,
           columnVisibility: isVisible,
           ...column,
+          pinPosition,
         },
 
         cell: ({ cell, row }) => {
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
-            : getEditedRowFromIndex(id, row.index);
-
-          let cellValue = changeSet
-            ? changeSet[cell.column.columnDef?.accessorKey] ?? cell.getValue()
-            : cell.getValue();
+            : getEditedFieldsOnIndex(id, row.index);
+          const accessorKey = cell.column.columnDef?.accessorKey;
+          let cellValue =
+            changeSet && Object.prototype.hasOwnProperty.call(changeSet, accessorKey)
+              ? changeSet[accessorKey]
+              : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
-
+          const isEditable = getResolvedValue(column.isEditable, { cellValue, rowData });
           switch (columnType) {
             case 'string':
             case undefined:
@@ -222,7 +273,23 @@ export default function generateColumnsData({
               );
 
             case 'select':
-            case 'newMultiSelect':
+            case 'newMultiSelect': {
+              // Handle select and multiselect options
+              let useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
+              if (useDynamicOptions) {
+                const dynamicOptions = getResolvedValue(column?.dynamicOptions || [], { cellValue, rowData });
+                columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+              } else {
+                const options = column?.options ?? [];
+                columnOptions.selectOptions =
+                  options?.map((option) => ({
+                    label: option.label,
+                    value: option.value,
+                    optionColor: option.optionColor,
+                    labelColor: option.labelColor,
+                  })) ?? [];
+              }
+
               return (
                 <CustomSelectColumn
                   options={columnOptions.selectOptions}
@@ -233,9 +300,7 @@ export default function generateColumnsData({
                   containerWidth={columnSize}
                   defaultOptionsList={column?.defaultOptionsList || []}
                   optionsLoadingState={
-                    getResolvedValue(column?.useDynamicOptions) && getResolvedValue(column?.optionsLoadingState)
-                      ? true
-                      : false
+                    useDynamicOptions && getResolvedValue(column?.optionsLoadingState) ? true : false
                   }
                   autoAssignColors={autoAssignColors}
                   isEditable={isEditable}
@@ -248,6 +313,53 @@ export default function generateColumnsData({
                   id={id}
                 />
               );
+            }
+
+            case 'tagsV2': {
+              let useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
+              if (useDynamicOptions) {
+                const dynamicOptions = getResolvedValue(column?.dynamicOptions || [], { cellValue, rowData });
+                columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+              } else {
+                const options = column?.options ?? [];
+                columnOptions.selectOptions =
+                  options?.map((option) => ({
+                    label: option.label,
+                    value: option.value,
+                    optionColor: option.optionColor,
+                    labelColor: option.labelColor,
+                  })) ?? [];
+              }
+
+              const tagsAutoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
+              const sortTags = getResolvedValue(column.sortTags) ?? 'none';
+              const allowMultipleSelection = getResolvedValue(column.allowMultipleSelection) ?? false;
+
+              return (
+                <TagsV2Column
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
+                  disabled={!isEditable}
+                  darkMode={darkMode}
+                  containerWidth={columnSize}
+                  defaultOptionsList={useDynamicOptions ? [] : column?.defaultOptionsList || []}
+                  optionsLoadingState={
+                    useDynamicOptions && getResolvedValue(column?.optionsLoadingState) ? true : false
+                  }
+                  autoAssignColors={tagsAutoAssignColors}
+                  isEditable={isEditable}
+                  allowMultipleSelection={allowMultipleSelection}
+                  sortTags={sortTags}
+                  className="select-search table-select-search"
+                  column={column}
+                  isNewRow={columnForAddNewRow}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  id={id}
+                />
+              );
+            }
 
             case 'badge':
             case 'badges':
@@ -399,11 +511,88 @@ export default function generateColumnsData({
               );
             }
 
+            case 'rating': {
+              return (
+                <RatingColumn
+                  isEditable={isEditable}
+                  darkMode={darkMode}
+                  handleCellValueChange={handleCellValueChange}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  cellValue={cellValue}
+                  column={column}
+                  containerWidth={columnSize}
+                  cell={cell}
+                  row={row}
+                  id={id}
+                  isNewRow={columnForAddNewRow}
+                />
+              );
+            }
+
+            case 'button': {
+              if (columnForAddNewRow) return <span />;
+              const columnKey = column?.key || column?.name;
+              const buttons = column.buttons || [];
+
+              return (
+                <ButtonColumnGroup
+                  id={id}
+                  buttons={buttons}
+                  cellBackgroundColor={getResolvedValue(column.cellBackgroundColor, { cellValue, rowData })}
+                  cellValue={cellValue}
+                  rowData={rowData}
+                  onClick={(buttonId, tableColumnEvents) => {
+                    if (setExposedVariables) {
+                      setExposedVariables({
+                        selectedRow: rowData ?? {},
+                        selectedRowId: row.index,
+                      });
+                    }
+
+                    const buttonEvents = tableColumnEvents.filter(
+                      (event) => event?.event?.ref === `${columnKey}::${buttonId}`
+                    );
+
+                    // Dynamic mode: merge inline events from button data
+                    const useDynamicColumn =
+                      useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
+                    if (useDynamicColumn) {
+                      const button = buttons.find((b) => b.id === buttonId);
+                      const inlineEvents = (button?.events || [])
+                        .map((evt) => {
+                          const normalized = normalizeButtonEvent(evt, buttonId);
+                          if (!normalized) return null;
+                          return { event: { ...normalized, ref: `${columnKey}::${buttonId}` } };
+                        })
+                        .filter(Boolean);
+                      buttonEvents.push(...inlineEvents);
+                    }
+
+                    fireEvent('OnTableButtonColumnClicked', {
+                      column,
+                      buttonId,
+                      tableColumnEvents: buttonEvents,
+                    });
+                  }}
+                />
+              );
+            }
+
             default:
               return cellValue || '';
           }
         },
       };
+
+      // Disable sorting, filtering, and resizing for button columns; auto-size to content
+      if (columnType === 'button') {
+        columnDef.enableSorting = false;
+        columnDef.enableColumnFilter = false;
+        columnDef.enableResizing = false;
+        const buttons = column.buttons || [];
+        columnDef.size = calculateButtonColumnWidth(buttons, getResolvedValue);
+      }
 
       // Add sorting configuration for specific column types
       if (columnType === 'number') {
@@ -423,6 +612,48 @@ export default function generateColumnsData({
           const dateA = moment(a);
           const dateB = moment(b);
           return dateA.isBefore(dateB) ? -1 : dateA.isAfter(dateB) ? 1 : 0;
+        };
+      } else if (columnType === 'datepicker') {
+        // Datepicker cells hold the formatted display string (e.g. "12 May 2026, 5:30 PM"),
+        // Parse each value back into a real Date using the same logic the renderer uses to
+        // display it, then compare chronologically.
+        columnDef.sortingFn = (rowA, rowB, columnId) => {
+          const a = rowA.getValue(columnId);
+          const b = rowB.getValue(columnId);
+
+          const aIsEmpty = a === null || a === undefined || a === '';
+          const bIsEmpty = b === null || b === undefined || b === '';
+          if (aIsEmpty && bIsEmpty) return 0;
+          if (aIsEmpty) return 1;
+          if (bIsEmpty) return -1;
+
+          const isTimeChecked = getResolvedValue(column?.isTimeChecked) ?? false;
+          const isDateSelectionEnabled = getResolvedValue(column?.isDateSelectionEnabled) ?? true;
+          const isTwentyFourHrFormatEnabled = getResolvedValue(column?.isTwentyFourHrFormatEnabled) ?? false;
+
+          const parseOptions = {
+            parseDateFormat: getDateTimeFormat(
+              column?.parseDateFormat,
+              isTimeChecked,
+              isTwentyFourHrFormatEnabled,
+              isDateSelectionEnabled
+            ),
+            timeZoneValue: column?.timeZoneValue,
+            timeZoneDisplay: column?.timeZoneDisplay,
+            unixTimestamp: column?.unixTimestamp ?? 'seconds',
+            parseInUnixTimestamp,
+            isTimeChecked,
+          };
+
+          const dateA = parseDate({ value: a, ...parseOptions });
+          const dateB = parseDate({ value: b, ...parseOptions });
+
+          // If a value can't be parsed into a date, push it to the bottom instead of breaking the sort.
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+
+          return dateA.getTime() - dateB.getTime();
         };
       }
 

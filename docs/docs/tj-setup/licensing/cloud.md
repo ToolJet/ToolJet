@@ -23,13 +23,14 @@ ToolJet offers various plans for paid subscription. Visit the **[ToolJet Pricing
 
 ## AI Credit System
 
-Starting from **`v3.5.0-cloud-lts`** ToolJet supports **Build with AI** allowing you to build applications effortlessly using natural language. Refer to **[Build with AI](/docs/build-with-ai/overview)** guide for more information.
+Starting from **`v3.5.0-cloud-lts`** ToolJet supports **Build with AI** allowing you to build applications effortlessly using natural language. Refer to **[Build with AI](/docs/build-with-ai/overview)** guide for more information. 
 
 The AI credits are consumed on every AI operation performed in ToolJet. Credits are allocated at the workspace level, varying based on the pricing plan and replenishing every month. Unused credits do not carry over to the next month, they expire at the end of each billing cycle. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
 
 ### Credit Usage
 
 **Standard Operations**
+
 
 AI-powered assistance for the following actions consumes **3 credits**:
 
@@ -66,8 +67,8 @@ Role Required: **Admin**
 
 1. Click the gear icon (⚙️) at the bottom of the left sidebar and select **Settings** from the dropdown.
 
-2. In the Settings page, choose the **Subscription** tab. <br/>
-   (Example URL - `https://app.corp.com/nexus/settings/subscription`)
+2. In the Settings page, choose the **Subscription** tab. <br/> 
+    (Example URL - `https://app.corp.com/nexus/settings/subscription`)
 
 3. The subscription tab displays a subscription overview card summarizing your current plan. Locate the **Upgrade** button in the lower left corner and click on it.
 
@@ -76,25 +77,9 @@ Role Required: **Admin**
 5. You'll be directed to a payment gateway. Complete the payment process.
 
 6. Upon successful payment, you'll return to the ToolJet subscription tab. A success message will display, and your subscription overview card will update shortly to reflect your new plan.
-   <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/cloud-license-price.png" alt="Dashboard"/>
+    <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/cloud-license-price.png" alt="Dashboard"/>
 
 If you've decided to move forward with Pro or customized Enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
-
-## Updated Limits in New Pricing Plan
-
-Starting from version `v3.5.34-cloud-lts`, which was released on May 27th, 2025, the new pricing plan will have the following limitations and the old users will be impacted in the following ways:
-
-| Resource     | Allowed Limit | Impact on Existing Users                                                                                                                                      |
-| ------------ | :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Builder      |       2       | All builders will be automatically archived, except for two random builders (including 1 Admin).                                                              |
-| End User     |      50       | All users beyond 50 will be archived automatically.                                                                                                           |
-| Applications |       2       | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have two or more than two apps created. |
-
-### Unarchiving Desired Users Affected Due to New Pricing Plan
-
-If a user is automatically archived due to the new pricing plan, the Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) an active Builder or End User to free up a slot and then [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired user.
-
-If you have any questions, feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).
 
 ## FAQs
 

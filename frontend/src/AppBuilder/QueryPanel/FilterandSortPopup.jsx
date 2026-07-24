@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
+import { ListFilter } from 'lucide-react';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
 import Filter from '@/_ui/Icon/solidIcons/Filter';
@@ -8,7 +9,7 @@ import Tick from '@/_ui/Icon/solidIcons/Tick';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { staticDataSources } from '../QueryManager/constants';
-import { Tooltip } from 'react-tooltip';
+import { ToolTip } from '@/_components';
 import { PillButton } from '../QueryManager/Components/ParameterDetails';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -102,10 +103,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
       default:
         return (
-          <div
-            className="card-body p-0 tj-scrollbar query-editor-sort-filter-popup"
-            style={{ height: '315px', overflowY: 'auto' }}
-          >
+          <div className="card-body p-0 tj-scrollbar query-editor-sort-filter-popup query-editor-sort-filter-body">
             <div className="color-slate9 px-3 pb-2 w-100">
               <small data-cy="label-filter-by">Filter By</small>
             </div>
@@ -129,10 +127,11 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
                 ''
               )}
             </div>
-            <div class="border-bottom mt-1"></div>
+            <div className="border-bottom mt-1"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small data-cy="label-sort-by">Sort By</small>
             </div>
+            <MenuButton id="custom" text="Custom order" callback={handleSort} active={sortBy === 'custom'} />
             <MenuButton
               id="name"
               order="asc"
@@ -198,24 +197,22 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
       }
     >
       <span>
-        <button
-          id="query-sort-filter-popover-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowMenu((showMenu) => !showMenu);
-          }}
-          className={cx('position-relative  btn-query-panel-header', {
-            active: showMenu,
-          })}
-          style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
-          data-tooltip-id="tooltip-for-open-filter"
-          data-tooltip-content="Show sort/filter"
-          data-cy={`query-filter-button`}
-        >
-          <Filter width="14" height="14" fill="var(--icons-default)" />
-          {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
-        </button>
-        <Tooltip id="tooltip-for-open-filter" className="tooltip" />
+        <ToolTip message="Show sort/filter" placement="bottom">
+          <button
+            id="query-sort-filter-popover-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu((showMenu) => !showMenu);
+            }}
+            className={cx('position-relative  btn-query-panel-header', {
+              active: showMenu,
+            })}
+            data-cy={`query-filter-button`}
+          >
+            <ListFilter color="var(--icons-strong)" size={14} />
+            {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
+          </button>
+        </ToolTip>
       </span>
     </OverlayTrigger>
   );
@@ -266,7 +263,7 @@ const DataSourceSelector = ({
           />
         </div>
       </div>
-      <div className="tj-scrollbar py-2" style={{ height: '281px', overflowY: 'auto' }}>
+      <div className="tj-scrollbar py-2 query-ds-filter-list">
         {sources.map((source) => (
           <label
             className={cx('px-2 py-2 tj-list-btn d-block mx-1')}

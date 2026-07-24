@@ -19,6 +19,9 @@ export const TableContainer = ({
   fireEvent,
   setExposedVariables,
   hasDataChanged,
+  tableBodyRef,
+  loadingState,
+  moduleId = 'canvas',
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
@@ -36,13 +39,29 @@ export const TableContainer = ({
   const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
   const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
   const rowsPerPage = useTableStore((state) => state.getTableProperties(id)?.rowsPerPage, shallow);
+  const serverSideRowsPerPage = useTableStore((state) => state.getTableProperties(id)?.serverSideRowsPerPage, shallow);
   const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const actions = useTableStore((state) => state.getActions(id), shallow);
 
+  // Expandable rows
+  const enableExpandableRows = useTableStore((state) => state.getEnableExpandableRows(id), shallow);
+  const expandedRows = useTableStore((state) => state.getExpandedRows(id), shallow);
+  const toggleRowExpansion = useTableStore((state) => state.toggleRowExpansion, shallow);
+  const collapseAllRows = useTableStore((state) => state.collapseAllRows, shallow);
+  const expansionHeight = useTableStore((state) => state.getTableProperties(id)?.expansionHeight, shallow);
+
+  const effectiveRowsPerPage = useMemo(() => {
+    if (serverSidePagination) {
+      const parsed = Number(serverSideRowsPerPage);
+      return parsed > 0 ? parsed : rowsPerPage;
+    }
+    return rowsPerPage;
+  }, [serverSidePagination, serverSideRowsPerPage, rowsPerPage]);
+
   const [globalFilter, setGlobalFilter] = useState('');
   const lastClickedRowRef = useRef({});
-  const tableBodyRef = useRef(null);
+  const paginationBtnClicked = useRef(false); // flag to indicate when page is changed using the pagination buttons or pagination input in table footer
 
   const handleCellValueChange = useCallback(
     (index, name, value, row) => {
@@ -68,7 +87,10 @@ export const TableContainer = ({
       globalFilter,
       serverSideSearch,
       tableBodyRef,
-      t
+      t,
+      enableExpandableRows,
+      toggleRowExpansion,
+      moduleId
     );
   }, [
     actions,
@@ -83,6 +105,9 @@ export const TableContainer = ({
     globalFilter,
     showBulkSelector,
     serverSideSearch,
+    enableExpandableRows,
+    toggleRowExpansion,
+    moduleId,
   ]);
 
   const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
@@ -95,10 +120,22 @@ export const TableContainer = ({
       serverSidePagination,
       serverSideSort,
       serverSideFilter,
-      rowsPerPage,
+      rowsPerPage: effectiveRowsPerPage,
       globalFilter,
       setGlobalFilter,
+      expandedRows,
     });
+
+  // Collapse all expanded rows when sort, filter, search or page changes
+  useEffect(() => {
+    if (enableExpandableRows) collapseAllRows(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    JSON.stringify(table.getState().sorting),
+    JSON.stringify(table.getState().columnFilters),
+    globalFilter,
+    pagination.pageIndex,
+  ]);
 
   // Memoizing allColumns to avoid re-rendering on every render
   // New reference for columnOrder is created on every render, so stringifying it
@@ -134,6 +171,10 @@ export const TableContainer = ({
     fireEvent('onCancelChanges');
   }, [clearChangeSet, fireEvent]);
 
+  useEffect(() => {
+    setExposedVariables({ resetChanges: handleChangesDiscarded });
+  }, [handleChangesDiscarded, setExposedVariables]);
+
   return (
     <>
       <TableExposedVariables
@@ -146,6 +187,7 @@ export const TableContainer = ({
         pageIndex={pagination.pageIndex + 1}
         lastClickedRowRef={lastClickedRowRef}
         hasDataChanged={hasDataChanged}
+        paginationBtnClicked={paginationBtnClicked}
       />
       <Header
         id={id}
@@ -157,6 +199,7 @@ export const TableContainer = ({
         table={table}
         setFilters={handleFilterChange}
         appliedFiltersLength={table.getState().columnFilters.length}
+        componentName={componentName}
       />
       <TableData
         id={id}
@@ -169,6 +212,12 @@ export const TableContainer = ({
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
         lastClickedRowRef={lastClickedRowRef}
+        componentName={componentName}
+        loadingState={loadingState}
+        enableExpandableRows={enableExpandableRows}
+        expandedRows={expandedRows}
+        expansionHeight={expansionHeight}
+        canvasWidth={width}
       />
       <Footer
         id={id}
@@ -186,6 +235,7 @@ export const TableContainer = ({
         pageCount={table.getPageCount()}
         dataLength={table.getFilteredRowModel().rows.length}
         columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
+        paginationBtnClicked={paginationBtnClicked}
       />
     </>
   );

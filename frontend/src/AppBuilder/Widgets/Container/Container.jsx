@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
@@ -22,9 +23,12 @@ export const Container = ({
   width,
   setExposedVariables,
   setExposedVariable,
-  adjustComponentPositions,
   currentLayout,
   componentCount = 0,
+  currentMode,
+  subContainerIndex,
+  dataCy,
+  componentType,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -33,29 +37,29 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
-  const { dynamicHeight, headerHeight = 80, showHeader } = properties;
-
+  const { headerHeight = 80, showHeader } = properties;
+  const containerRef = useRef(null);
+  // Disabled container blocks the mouse via `data-disabled`; `inert` also removes the child
+  // components from the tab order (runtime only — keeps the builder editable).
+  useDisableInert(containerRef, isDisabled);
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   useDynamicHeight({
-    dynamicHeight: properties.dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
     value: JSON.stringify({ headerHeight, showHeader }),
     visibility: isVisible,
+    subContainerIndex,
+    componentType,
   });
-
-  const isWidgetInContainerDragging = useStore(
-    (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
-    shallow
-  );
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
-  const { borderRadius, borderColor, boxShadow } = styles;
-  const headerMaxHeight = dynamicHeight ? 10000 : parseInt(height, 10) - 100 - 10;
+  const { borderRadius, borderColor, boxShadow, headerDividerColor } = styles;
+  const headerMaxHeight = isDynamicHeightEnabled ? 10000 : parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:
@@ -76,11 +80,13 @@ export const Container = ({
     backgroundColor: contentBgColor.backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    height: dynamicHeight ? '100%' : height,
+    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
+    height: isDynamicHeightEnabled ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     flexDirection: 'column',
     position: 'relative',
     boxShadow,
+    '--cc-container-header-divider-color': headerDividerColor,
   };
 
   const containerHeaderStyles = {
@@ -89,10 +95,10 @@ export const Container = ({
     maxHeight: `${headerMaxHeight}px`,
     borderTopLeftRadius: `${borderRadius}px`,
     borderTopRightRadius: `${borderRadius}px`,
+    overflow: 'hidden',
     ...headerBgColor,
   };
   const containerContentStyles = {
-    overflow: 'hidden auto',
     display: 'flex',
     height: '100%',
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
@@ -109,6 +115,7 @@ export const Container = ({
 
   return (
     <div
+      ref={containerRef}
       className={`jet-container ${isLoading ? 'jet-container-loading' : ''}`}
       id={id}
       data-disabled={isDisabled}
@@ -130,6 +137,7 @@ export const Container = ({
               isActive={activeSlot === `${id}-header`}
               onResize={updateHeaderSizeInStore}
               componentType="Container"
+              dataCy={dataCy}
             />
           )}
           <div
@@ -142,10 +150,8 @@ export const Container = ({
               styles={{
                 ...contentBgColor,
                 borderRadius: `${borderRadius}px`,
-                // Prevent the scroll when dragging a widget inside the container or moving out of the container
-                overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
               }}
-              canvasHeight={dynamicHeight ? '100%' : height}
+              canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}
               componentType="Container"

@@ -2,6 +2,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import AiBanner from '@/_ui/AiBanner';
+import LegacyBanner from '@/_ui/LegacyBanner';
 
 const Card = ({
   title,
@@ -45,10 +46,12 @@ const Card = ({
           handleClick && handleClick();
         }}
         data-cy={`data-source-${String(title).toLocaleLowerCase()}`}
+        style={{ position: 'relative' }}
       >
+        {tags && tags.includes('legacy') && <LegacyBanner />}
         <div className="card-body">
           {tags && tags.includes('AI') && <AiBanner className="card-tag" />}
-          <center style={{ marginTop: tags.length > 0 ? '0px' : '15px' }}>
+          <center style={{ marginTop: tags.includes('AI') ? '0px' : '15px' }}>
             <DisplayIcon src={src} />
             <br></br>
             <br></br>

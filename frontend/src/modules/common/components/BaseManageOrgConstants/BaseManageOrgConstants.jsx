@@ -230,16 +230,27 @@ const BaseManageOrgConstants = ({
     updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
+  const isWorkspaceBranchLocked = false;
+
   const canCreateVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const canUpdateVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const canDeleteVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (
+      (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) &&
+      !isWorkspaceBranchLocked
+    );
   };
 
   const fetchEnvironments = () => {
@@ -268,7 +279,16 @@ const BaseManageOrgConstants = ({
   };
 
   const fetchConstantsAndEnvironments = async () => {
-    const orgConstants = await orgEnvironmentConstantService.getAll();
+    // Global constants keep using the decrypted endpoint (not sensitive). Secrets use the
+    // masked endpoint instead - the plaintext should never reach the frontend at all, the
+    // same way encrypted data source fields are never sent back in plaintext.
+    const [globalConstants, secretConstants] = await Promise.all([
+      orgEnvironmentConstantService.getAll(Constants.Global),
+      orgEnvironmentConstantService.getAllSecrets(),
+    ]);
+    const orgConstants = {
+      constants: [...(globalConstants?.constants ?? []), ...(secretConstants?.constants ?? [])],
+    };
 
     if (orgConstants?.constants?.length > 1) {
       orgConstants.constants.sort((a, b) => {
@@ -476,8 +496,8 @@ const BaseManageOrgConstants = ({
           </div>
           <OrganizationList />
         </div>
-        <div className="page-wrapper mt-4">
-          <div className="container-xl" style={{ width: '880px' }}>
+        <div className="page-wrapper" style={{ marginTop: 0 }}>
+          <div className="container-xl mt-4" style={{ width: '880px' }}>
             <div className="align-items-center d-flex justify-content-between">
               <div className="tj-text-sm font-weight-500" data-cy="env-name">
                 {capitalize(activeTabEnvironment?.name)} ({globalCount + secretCount})
@@ -495,7 +515,7 @@ const BaseManageOrgConstants = ({
                     customStyles={{ minWidth: '200px', height: '32px' }}
                     disabled={isManageVarDrawerOpen}
                   >
-                    + Create new constant
+                    + Create new {activeTab === Constants.Global ? 'constant' : 'secret'}
                   </ButtonSolid>
                 )}
               </div>
@@ -512,7 +532,7 @@ const BaseManageOrgConstants = ({
                       onClick={() => handleTabChange(Constants.Global)}
                       style={{ color: 'var(--text-default)' }}
                     >
-                      <span className="workspace-constant-text">
+                      <span className="workspace-constant-text" data-cy="global-constants-button">
                         Global constants
                         <span className={`tab-count ${activeTab === Constants.Global ? 'active' : ''}`}>
                           ({globalCount})
@@ -524,7 +544,7 @@ const BaseManageOrgConstants = ({
                       onClick={() => handleTabChange(Constants.Secret)}
                       style={{ color: 'var(--text-default)' }}
                     >
-                      <span className="workspace-constant-text">
+                      <span className="workspace-constant-text" data-cy="secrets-constants-button">
                         Secrets
                         <span className={`tab-count ${activeTab === Constants.Secret ? 'active' : ''}`}>
                           ({secretCount})
@@ -574,13 +594,7 @@ const BaseManageOrgConstants = ({
 
                       <div>
                         <Button
-                          // Todo: Update link to documentation: workspace constants
-                          onClick={() =>
-                            window.open(
-                              'https://docs.tooljet.ai/docs/org-management/workspaces/workspace_constants/',
-                              '_blank'
-                            )
-                          }
+                          onClick={() => window.open('https://docs.tooljet.com/docs/security/constants/', '_blank')}
                           darkMode={darkMode}
                           size="sm"
                           styles={{
@@ -619,6 +633,7 @@ const BaseManageOrgConstants = ({
                       </div>
                     ) : (
                       <EmptyState
+                        activeTab={activeTab}
                         canCreateVariable={canCreateVariable()}
                         setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
                         isLoading={isLoading}

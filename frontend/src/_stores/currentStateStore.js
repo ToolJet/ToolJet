@@ -2,8 +2,7 @@ import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
-import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
-import { useEditorStore } from '@/_stores/editorStore';
+import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { useAppDataStore } from './appDataStore';
 import { authenticationService } from '@/_services';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
@@ -124,7 +123,7 @@ useCurrentStateStore.subscribe((state) => {
   if (!isEditorReady) return;
 
   // TODO: Change the logic of updating canvas background
-  updateCanvasBackground(useEditorStore.getState().canvasBackground);
+  // updateCanvasBackground(useEditorStore.getState().canvasBackground);
 
   const isStoreIntialized = useResolveStore.getState().storeReady;
   if (!isStoreIntialized) {

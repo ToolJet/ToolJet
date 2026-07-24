@@ -95,6 +95,7 @@ export const filepickerConfig = {
         },
         defaultValue: false,
       },
+      accordian: 'Data',
     },
     parseFileType: {
       type: 'select',
@@ -102,6 +103,7 @@ export const filepickerConfig = {
       options: [
         { name: 'Autodetect from extension', value: 'auto-detect' },
         { name: 'CSV', value: 'csv' },
+        { name: 'TSV', value: 'tsv' },
         { name: 'Microsoft Excel - xls', value: 'vnd.ms-excel' },
         {
           name: 'Microsoft Excel - xlsx',
@@ -114,6 +116,30 @@ export const filepickerConfig = {
         },
         defaultValue: 'auto-detect',
       },
+      conditionallyRender: {
+        key: 'parseContent',
+        value: true,
+      },
+      accordian: 'Data',
+    },
+    delimiter: {
+      type: 'code',
+      displayName: 'Delimiter',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: ',',
+      },
+      conditionallyRender: [
+        {
+          key: 'parseContent',
+          value: true,
+        },
+        {
+          key: 'parseFileType',
+          value: 'csv',
+        },
+      ],
+      accordian: 'Data',
     },
     loadingState: {
       type: 'toggle',
@@ -142,6 +168,23 @@ export const filepickerConfig = {
         defaultValue: false,
       },
     },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -150,6 +193,7 @@ export const filepickerConfig = {
         schema: { type: 'string' },
         defaultValue: '',
       },
+      showLabel: false,
     },
   },
   events: {
@@ -210,6 +254,13 @@ export const filepickerConfig = {
         },
         defaultValue: 2,
       },
+      conditionallyRender: [
+        {
+          key: 'enableMultiple',
+          value: true,
+          parentObjectKey: 'properties',
+        },
+      ],
     },
     maxFileCount: {
       type: 'code',
@@ -221,6 +272,13 @@ export const filepickerConfig = {
         },
         defaultValue: 2,
       },
+      conditionallyRender: [
+        {
+          key: 'enableMultiple',
+          value: true,
+          parentObjectKey: 'properties',
+        },
+      ],
     },
   },
   styles: {
@@ -310,10 +368,12 @@ export const filepickerConfig = {
       enableMultiple: { value: '{{false}}', fxActive: false },
       parseContent: { value: '{{false}}' },
       parseFileType: { value: 'auto-detect' },
+      delimiter: { value: ',' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
@@ -324,7 +384,7 @@ export const filepickerConfig = {
       // containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       // containerBorder: { value: 'var(--cc-default-border)' },
       padding: { value: 'default' },
-      boxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
+      boxShadow: { value: '0px 1px 3px #0000001A' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },

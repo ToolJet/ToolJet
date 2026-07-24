@@ -10,11 +10,21 @@ export function defineAppVersionAbility(
   UserAllPermissions: UserAllPermissions,
   resourceId?: string
 ): void {
-  const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
-  const userAppPermissions = userPermission?.[resource[0].resourceType];
+  const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
+  const permissionKey = resourceType === MODULES.MODULES ? MODULES.APP : resourceType;
+  const userAppPermissions = userPermission?.[permissionKey];
 
-  if (isAdmin || superAdmin) {
+  // For MODULE type apps every authenticated user can read the version --> modules are
+  // fetched as dependencies during app preview and cannot be added to permission groups
+  // (the app_type DB enum has no 'module' value), so the normal viewableAppsId path
+  // can never grant access to them.
+  if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin && !isBuilder) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_EVENTS], App);
+    return;
+  }
+
+  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
     can(
       [
         FEATURE_KEY.GET,
@@ -42,6 +52,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );
@@ -80,6 +91,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );
@@ -113,35 +125,19 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );
   }
 
   if (isAllViewable) {
-    can([FEATURE_KEY.GET_EVENTS], App);
+    can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   } else if (
     userAppPermissions?.viewableAppsId?.length &&
     resourceId &&
     userAppPermissions.viewableAppsId.includes(resourceId)
   ) {
-    can([FEATURE_KEY.GET_EVENTS], App);
-  }
-
-  if (isBuilder && resourceType === MODULES.MODULES) {
-    //For Modules
-    can(
-      [
-        FEATURE_KEY.UPDATE_COMPONENTS,
-        FEATURE_KEY.CREATE_COMPONENTS,
-        FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
-        FEATURE_KEY.DELETE_COMPONENTS,
-        FEATURE_KEY.GET_EVENTS,
-        FEATURE_KEY.CREATE_EVENT,
-        FEATURE_KEY.UPDATE_EVENT,
-        FEATURE_KEY.DELETE_EVENT,
-      ],
-      App
-    );
+    can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   }
 }

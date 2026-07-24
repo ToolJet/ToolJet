@@ -36,17 +36,33 @@ export const dashboardText = {
     dragHandleIcon: "drag-handle",
   },
   seeAllAppsTemplateButton: "See all templates",
-  addToFolderTitle: "Add to folder",
+  updateFolderTitle: "Update folder",
   appClonedToast: "App cloned successfully!",
   darkModeText: "Dark Mode",
   lightModeText: "Light Mode",
   dashboardAppsHeaderLabel: "All apps",
 
   moveAppText: (appName) => {
-    return `Move "${appName}" to`;
+    return `Update ${appName}'s folderto`;
   },
   addToFolderButton: "Add to folder",
   folderName: (folderName) => {
     return folderName;
   },
+  homePageDividerText: "OR START WITH",
+  homePagePromptHeader: "What do you want to build today?",
+  appCardTitle: "Create a blank app",
+  appCardDescription:
+    "Build custom apps that make internal processes efficient",
+  datasourceCardTitle: "Connect to a data source",
+  datasourceCardDescription:
+    "Link your tools to existing databases, spreadsheets, APIs, and more",
+  workflowCardTitle: "Create a workflow",
+  workflowCardDescription:
+    "Automate repetitive tasks to streamline business process",
+  exploreTemplateCardTitle: "Explore templates",
+  exploreTemplateCardDescription:
+    "Get started quickly with ready-to-deploy applications",
+  bulkMoveSuccessToast: (folderName) =>
+    `Apps moved to "${folderName}" folder successfully!`,
 };

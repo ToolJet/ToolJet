@@ -62,6 +62,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.SCOPE_CHANGE,
           FEATURE_KEY.GET_FOR_APP,
           FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE,
+          FEATURE_KEY.VALIDATE_OPTIONS,
         ],
         DataSource
       );
@@ -77,6 +78,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET_BY_ENVIRONMENT,
           FEATURE_KEY.TEST_CONNECTION,
           FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+          FEATURE_KEY.VALIDATE_OPTIONS,
         ],
         DataSource
       );
@@ -99,6 +101,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET_BY_ENVIRONMENT,
           FEATURE_KEY.TEST_CONNECTION,
           FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+          FEATURE_KEY.VALIDATE_OPTIONS,
         ],
         DataSource
       );
@@ -115,6 +118,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
             FEATURE_KEY.GET_BY_ENVIRONMENT,
             FEATURE_KEY.TEST_CONNECTION,
             FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+            FEATURE_KEY.VALIDATE_OPTIONS,
           ],
           DataSource
         );
@@ -128,6 +132,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET,
           FEATURE_KEY.TEST_CONNECTION,
           FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+          FEATURE_KEY.VALIDATE_OPTIONS,
         ],
         DataSource
       );
@@ -137,10 +142,21 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.GET], DataSource);
       if (dataSourceId && resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)) {
         can(
-          [FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION, FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB],
+          [
+            FEATURE_KEY.GET_BY_ENVIRONMENT,
+            FEATURE_KEY.TEST_CONNECTION,
+            FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB,
+            FEATURE_KEY.VALIDATE_OPTIONS,
+          ],
           DataSource
         );
       }
+      return;
+    }
+
+    // End users should only have read access to data sources for preview functionality
+    if (userPermission?.isEndUser) {
+      can([FEATURE_KEY.GET, FEATURE_KEY.GET_FOR_APP], DataSource);
       return;
     }
   }

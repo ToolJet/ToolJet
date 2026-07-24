@@ -5,13 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { gitSyncService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
+import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
+const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
@@ -20,14 +20,21 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
   const { t } = useTranslation();
   const { current_organization_id } = authenticationService.currentSessionValue;
 
-  const { promoteAppVersionAction, selectedVersion, creationMode } = useStore(
+  const { promoteAppVersionAction, selectedVersion, creationMode, versions } = useStore(
     (state) => ({
       promoteAppVersionAction: state.promoteAppVersionAction,
       selectedVersion: state.selectedVersion,
       creationMode: state.appStore.modules[moduleId].app.creationMode,
+      versions: state.developmentVersions || [],
     }),
     shallow
   );
+
+  // Use editingVersion if provided, otherwise fall back to currentVersionId
+  const versionIdToPromote = editingVersion || currentVersionId;
+
+  // Find the version object to display the correct name
+  const versionToPromote = versions.find((v) => v.id === versionIdToPromote) || selectedVersion;
 
   useEffect(() => {
     setShow(data);
@@ -38,48 +45,55 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     onClose();
     setShow(false);
   }, [promotingEnvironment, onClose]);
-  const allowAppEdit = useStore((state) => state.allowEditing);
 
   const handleConfirm = () => {
     setPromotingEnvironment(true);
 
     promoteAppVersionAction(
-      currentVersionId,
+      versionIdToPromote,
       async (response) => {
-        toast.success(`${selectedVersion.name} has been promoted to ${data.target.name}!`);
-        if (
-          data?.current?.name == 'development' &&
-          (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
-        ) {
-          try {
-            const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersion?.id);
-            const appGit = gitData?.app_git;
-            if (appGit && appGit?.org_git?.auto_commit) {
-              const body = {
-                gitAppName: appGit?.git_app_name,
-                versionId: selectedVersion?.id,
-                lastCommitMessage: ` ${selectedVersion.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
-                gitVersionName: selectedVersion?.name,
-              };
-              await gitSyncService.gitPush(body, appGit?.id, selectedVersion?.id);
-              toast.success('Changes committed successfully');
-            }
-          } catch (err) {
-            const status = err?.statusCode;
-            const error = err?.error;
-            if (
-              !(status === 404 && error === 'Git Configuration not found') &&
-              !(error === 'No Git Provider is enabled for the workspace')
-            ) {
-              toast.error(error, {
-                style: {
-                  width: 'auto',
-                  maxWidth: '339px',
-                },
-              });
-            }
-          }
+        toast.success(`${versionToPromote.name} has been promoted to ${data.target.name}!`);
+        setPromotingEnvironment(false);
+        onClose();
+
+        {
+          /* Can clean when autoCommit is removed completely */
         }
+        // if (
+        //   data?.current?.name == 'development' &&
+        //   (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
+        // ) {
+        //   try {
+        //     const gitData = await gitSyncService.getAppConfig(current_organization_id, versionToPromote?.id);
+        //     const appGit = gitData?.app_git;
+        //     if (appGit && appGit?.org_git?.auto_commit) {
+        //       const body = {
+        //         gitAppName: appGit?.git_app_name,
+        //         versionId: versionToPromote?.id,
+        //         lastCommitMessage: ` ${versionToPromote.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
+        //         gitVersionName: versionToPromote?.name,
+        //         allowMasterPush: true,
+        //       };
+        //       await gitSyncService.gitPush(body, appGit?.id, versionToPromote?.id);
+        //       toast.success('Changes committed successfully');
+        //     }
+        //   } catch (err) {
+        //     const status = err?.statusCode;
+        //     const error = err?.error;
+        //     if (
+        //       !(status === 404 && error === 'Git Configuration not found') &&
+        //       !(error === 'No Git Provider is enabled for the workspace')
+        //     ) {
+        //       toast.error(error, {
+        //         style: {
+        //           width: 'auto',
+        //           maxWidth: '339px',
+        //         },
+        //       });
+        //     }
+        //   }
+        // }
+
         // setSelectedEnvironment(response);
         // set env id here-----> state update
         // appEnvironmentChanged(response, true);
@@ -87,14 +101,29 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
         onClose();
       },
       (error) => {
-        console.error(error);
-        toast.error(`${selectedVersion.name} could not be promoted to ${data.target.name}. Please try again!`);
+        const rawError = error?.error || error?.message;
+        const errorMessage =
+          typeof rawError === 'object'
+            ? rawError.error
+            : rawError || `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`;
+        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        toast.error(errorMessage);
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          key: 'Promote Failed',
+          message: errorMessage,
+          description: errorDetails || errorMessage,
+          error: { message: errorMessage, description: errorDetails || errorMessage },
+          errorTarget: 'Version',
+          timestamp: new Date().toISOString(),
+        });
         setPromotingEnvironment(false);
       }
     );
   };
 
-  if (!selectedVersion) return null;
+  if (!versionToPromote) return null;
 
   return (
     <Modal
@@ -107,7 +136,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
     >
       <Modal.Header>
         <Modal.Title className={`confirmation-header ${darkMode ? 'dark-theme' : ''}`} data-cy="modal-title">
-          Promote {selectedVersion.name}
+          Promote {versionToPromote.name}
         </Modal.Title>
         <svg
           onClick={handleClose}
@@ -159,7 +188,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
         </div>
         {data?.current?.name === 'development' && (
           <div className="env-change-info" data-cy="env-change-info-text">
-            You won&apos;t be able to edit this version after promotion. Are you sure you want to continue?
+            {/* You won&apos;t be able to edit this version after promotion. Are you sure you want to continue? */}
+            This version will be pushed to Staging. Are you sure you are done editing the current version?
           </div>
         )}
       </Modal.Body>
@@ -173,7 +203,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose }) => {
           isLoading={promotingEnvironment}
           data-cy="promote-button"
         >
-          Promote <ArrowRightIcon />
+          Promote
+          <span style={{ marginTop: '2px' }}>
+            <ArrowRight fill="#FDFDFE" width="22" />
+          </span>
         </ButtonSolid>
       </Modal.Footer>
     </Modal>

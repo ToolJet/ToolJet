@@ -9,6 +9,7 @@ const Corners = ({ style, fill = '#C1C8CD', width = '12', height = '13', classNa
     className={className}
     style={style}
     xmlns="http://www.w3.org/2000/svg"
+    data-cy="corners-icon"
   >
     <g id="corners ">
       <path

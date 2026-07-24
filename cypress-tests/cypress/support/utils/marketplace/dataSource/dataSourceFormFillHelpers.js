@@ -1,0 +1,258 @@
+import { dsCommonSelector } from "Selectors/marketplace/common";
+
+export const fillDSConnectionTextField = (field) => {
+  cy.clearAndType(dsCommonSelector.textField(field.fieldName), field.text);
+};
+
+export const fillDSConnectionDropdown = (field) => {
+  cy.waitForElement(dsCommonSelector.dropdownField(field.fieldName))
+  cy.get(dsCommonSelector.dropdownField(field.fieldName))
+    .click();
+  cy.contains("[id*=react-select-]", field.text).click();
+};
+
+export const toggleDSConnectionButton = (field) => {
+  const shouldBeChecked = field.shouldBeChecked !== undefined ? field.shouldBeChecked : true;
+  cy.get(dsCommonSelector.toggleInput(field.fieldName)).then(($checkbox) => {
+    const isChecked = $checkbox.is(":checked");
+    if (isChecked !== shouldBeChecked) {
+      cy.wrap($checkbox).click({ force: true });
+    }
+  });
+};
+
+export const selectDSConnectionRadioButton = (field) => {
+  const shouldBeSelected = field.shouldBeSelected !== undefined ? field.shouldBeSelected : true;
+  cy.get(dsCommonSelector.radioButtonInput(field.fieldName)).then(($radio) => {
+    const isSelected = $radio.is(":checked");
+    if (isSelected !== shouldBeSelected) {
+      cy.wrap($radio).click({ force: true });
+    }
+  });
+};
+
+export const selectDSConnectionCheckbox = (field) => {
+  const shouldBeChecked = field.shouldBeChecked !== undefined ? field.shouldBeChecked : true;
+  cy.get(dsCommonSelector.checkboxInput(field.fieldName)).then(($checkbox) => {
+    const isChecked = $checkbox.is(":checked");
+    if (isChecked !== shouldBeChecked) {
+      cy.wrap($checkbox).click({ force: true });
+    }
+  });
+};
+
+export const fillDSConnectionKeyValuePairs = (field) => {
+  cy.get(dsCommonSelector.subSection(field.fieldName)).within(() => {
+    field.keyValueData.forEach((pair, index) => {
+      cy.root().then(($section) => {
+        const keyFieldExists = $section.find(dsCommonSelector.keyInputField(field.fieldName, index)).length > 0;
+        if (!keyFieldExists) {
+          cy.get(dsCommonSelector.addMoreButton(field.fieldName))
+            .should('be.visible')
+            .click();
+          cy.wait(500);
+        }
+      });
+
+      cy.get(dsCommonSelector.keyInputField(field.fieldName, index))
+        .should('be.visible')
+        .clear()
+        .type(pair.key);
+
+      cy.get(dsCommonSelector.valueInputField(field.fieldName, index))
+        .should('be.visible')
+        .clear()
+        .type(pair.value);
+    });
+  });
+};
+
+export const renameDSName = (newName) => {
+  cy.waitForElement(dsCommonSelector.dataSourceNameInputField("data-source-name"))
+    .scrollIntoView()
+    .should("be.visible");
+
+  cy.clearAndType(dsCommonSelector.dataSourceNameInputField("data-source-name"), newName);
+
+  cy.get(dsCommonSelector.dataSourceNameButton("db-connection-save"))
+    .scrollIntoView()
+    .should("be.visible")
+    .click();
+
+  cy.waitForElement(dsCommonSelector.dataSourceNameButton(newName))
+    .should("be.visible");
+};
+
+export const saveAndDiscardDSChanges = (option) => {
+  cy.get('[data-cy="unsaved-changes-title"]')
+    .should("be.visible");
+  cy.get('[data-cy="modal-message"]').verifyVisibleElement("have.text", "Datasource has unsaved changes. Are you sure you want to discard them?");
+  cy.get(dsCommonSelector.dataSourceNameButton(option)).click();
+};
+
+let _testConnCounter = 0;
+export const verifyDSConnection = (expectedStatus = "success", customMessage = null) => {
+  const alias = `testConnection${_testConnCounter++}`;
+  cy.intercept('POST', '**/api/data-sources/*/test-connection').as(alias);
+  cy.waitForElement('[data-cy="test-connection-button"]', 60000);
+
+  cy.get('[data-cy="test-connection-button"]')
+    .should("be.visible")
+    .should("contain.text", "Test connection")
+    .click();
+
+  // Wait for the API call to complete and verify API response
+  const toastTimeout = 80000;
+  cy.wait(`@${alias}`, { timeout: toastTimeout }).then((interception) => {
+    const responseBody = interception.response.body;
+
+    switch (expectedStatus) {
+      case "success":
+        expect(responseBody.status).to.eq("ok");
+        break;
+
+      case "failed":
+        expect(responseBody.status).to.not.eq("ok");
+
+        if (customMessage) {
+          const errorMsg = responseBody.data?.message || responseBody.message || JSON.stringify(responseBody);
+          expect(errorMsg).to.contain(customMessage);
+        }
+        break;
+    }
+  });
+
+  // Verify UI toast feedback
+  switch (expectedStatus) {
+    case "success":
+      cy.verifyToastMessage(".go3958317564", "Test connection verified", true, toastTimeout);
+      break;
+
+    case "failed":
+      cy.verifyToastMessage(".go3958317564", "Test connection could not be verified", true, toastTimeout);
+
+      if (customMessage) {
+        cy.get("body").then(($body) => {
+          if ($body.find('[data-cy="connection-alert-text"]').length > 0) {
+            cy.get('[data-cy="connection-alert-text"]')
+              .scrollIntoView()
+              .should("be.visible")
+              .and("contain.text", customMessage);
+          }
+        });
+      }
+      break;
+  }
+};
+
+export const fillDSConnectionEncryptedField = (field) => {
+  const fieldSelector = dsCommonSelector.textField(field.fieldName);
+  const encrypted = field.encrypted !== undefined ? field.encrypted : true;
+
+  if (encrypted) {
+    cy.get(fieldSelector).then(($field) => {
+      if ($field.is(':disabled')) {
+        cy.get('[data-cy="edit-button"]').should('be.visible').click();
+        cy.wait(500);
+      }
+    });
+  }
+
+  cy.get(fieldSelector)
+    .scrollIntoView()
+    .should("be.visible")
+    .click({ force: true })
+    .type(`{selectall}{backspace}`)
+    .type(field.text, { parseSpecialCharSequences: false });
+};
+
+export const fillDataOnCodeMirrorInput = (field) => {
+  const selector = dsCommonSelector.codeMirrorField(field.fieldName);
+  cy.get(selector).scrollIntoView();
+  cy.wait(500);
+  // Focus the CodeMirror editor directly to bypass covered-element check from .realClick()
+  cy.get(selector).find(".cm-content").click({ force: true });
+  cy.get(selector).clearAndTypeOnCodeMirror(field.text);
+};
+
+export const fillDynamicSelectorFxMode = (field) => {
+  const sectionSelector = dsCommonSelector.subSection(field.fieldName);
+  cy.get(sectionSelector).find('[data-cy="undefined-fx-button"]').click();
+  cy.get(sectionSelector).find('[data-cy="-input-field"]').clearAndTypeOnCodeMirror(field.text);
+};
+
+export const fillCodeMirrorKeyValuePairs = (field) => {
+  field.keyValueData.forEach((pair, index) => {
+    cy.get(dsCommonSelector.button(field.addButtonFieldName))
+      .should('be.visible')
+      .click();
+    cy.wait(500);
+
+    cy.get(dsCommonSelector.codeMirrorField(`key-${index}`))
+      .clearAndTypeOnCodeMirror(pair.key);
+
+    cy.get(dsCommonSelector.codeMirrorField(`value-${index}`))
+      .clearAndTypeOnCodeMirror(pair.value);
+  });
+};
+
+
+const processFields = (fields) => {
+  fields.forEach((field) => {
+    switch (field.type) {
+      case 'input':
+        fillDSConnectionTextField(field);
+        break;
+      case 'encrypted':
+        fillDSConnectionEncryptedField(field);
+        break;
+      case 'dropdown':
+        fillDSConnectionDropdown(field);
+        break;
+      case 'toggle':
+        toggleDSConnectionButton(field);
+        break;
+      case 'radio':
+        selectDSConnectionRadioButton(field);
+        break;
+      case 'keyValue':
+        fillDSConnectionKeyValuePairs(field);
+        break;
+      case 'checkbox':
+        selectDSConnectionCheckbox(field);
+        break;
+      case 'codeMirrorInput':
+        fillDataOnCodeMirrorInput(field);
+        break;
+      case 'codeMirrorKeyValue':
+        fillCodeMirrorKeyValuePairs(field);
+        break;
+      case 'dynamicSelectorFx':
+        fillDynamicSelectorFxMode(field);
+        break;
+      default:
+        throw new Error(`Unsupported field type: ${field.type}`);
+    }
+  });
+};
+
+export function fillDSConnectionForm(formConfig, invalidFields = []) {
+  if (Array.isArray(formConfig) && formConfig.length > 0 && typeof formConfig[0] === 'object' && formConfig[0].type) {
+    processFields(formConfig);
+    return;
+  }
+
+  if (!formConfig || typeof formConfig !== 'object') {
+    throw new Error('Invalid formConfig: expected an object');
+  }
+
+  if (formConfig.valid && Array.isArray(formConfig.valid)) {
+    processFields(formConfig.valid);
+  }
+
+  if (invalidFields && invalidFields.length > 0) {
+    processFields(invalidFields);
+  }
+}
+
+

@@ -162,6 +162,16 @@ class DependencyGraph {
     return this.hasNode(path) ? this.graph.directDependantsOf(path) : [];
   }
 
+  /**
+   * Remove a leaf node (e.g., __options__ sentinel) and disconnect all its edges.
+   * Unlike removeNode() which removes children (nodes starting with path.),
+   * this removes the exact node at the given path.
+   */
+  removeLeafNode(path) {
+    if (!this.hasNode(path)) return;
+    this.graph.removeNode(path);
+  }
+
   getOverallOrder() {
     return this.graph.overallOrder();
   }

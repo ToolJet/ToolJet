@@ -1,0 +1,365 @@
+import { QueryResult, QueryService, ConnectionTestResult, QueryError, getAuthUrl, getRefreshedToken } from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types';
+import * as grpc from '@grpc/grpc-js';
+import * as os from 'os';
+import * as path from 'path';
+import JSON5 from 'json5';
+import { isEmpty } from 'lodash';
+import fg from 'fast-glob';
+import {
+  buildReflectionClient,
+  buildProtoFileClient,
+  buildFilesystemClient,
+  buildChannelCredentials,
+  sanitizeGrpcServerUrl,
+  validateFilesystemAccess,
+  discoverServicesUsingReflection,
+  discoverServicesUsingProtoUrl,
+  discoverServiceNamesFromFilesystem,
+  discoverMethodsForSelectedServices,
+  loadProtoFromRemoteUrl,
+  extractServicesFromGrpcPackage,
+  executeGrpcMethod
+} from './operations';
+
+export default class Grpcv2QueryService implements QueryService {
+
+  async run(
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
+    _dataSourceId: string,
+    _dataSourceUpdatedAt: string
+  ): Promise<QueryResult> {
+    try {
+      const client = await this.createGrpcClient(sourceOptions, queryOptions.service);
+
+      this.validateRequestData(queryOptions);
+      this.validateMethodExists(client, queryOptions);
+
+      const response = await this.executeGrpcCall(client, queryOptions, sourceOptions);
+
+      return {
+        status: 'ok',
+        data: response,
+      };
+    } catch (error: unknown) {
+      if (error instanceof GrpcOperationError) {
+        throw new QueryError('Query could not be completed', error.message, error.errorDetails);
+      }
+
+      const err = toError(error);
+      throw new QueryError('Query could not be completed', err.message || 'An unknown error occurred', {
+        grpcCode: 0,
+        grpcStatus: 'UNKNOWN',
+        errorType: 'QueryError'
+      });
+    }
+  }
+
+  // Test connection verifies:
+  // - All modes: discovers services, then checks TCP connectivity via waitForReady
+  //   (channel-level check only — does not verify service existence or proto compatibility)
+  // - Filesystem additionally validates that proto files can be parsed
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+    try {
+      let services: GrpcService[];
+      let parseFailures: Array<{ file: string; error: string }> = [];
+
+      switch (sourceOptions.proto_files) {
+        case 'server_reflection':
+          services = await discoverServicesUsingReflection(sourceOptions);
+          break;
+
+        case 'import_proto_file':
+          const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url!);
+          const grpcObject = grpc.loadPackageDefinition(packageDefinition);
+          services = extractServicesFromGrpcPackage(grpcObject);
+          break;
+
+        case 'import_protos_from_filesystem': {
+          const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+          const expandedDir = validateFilesystemAccess(directory);
+
+          // Count proto files — don't parse them
+          const protoFiles = await fg(pattern, { cwd: expandedDir, onlyFiles: true });
+          if (protoFiles.length === 0) {
+            return { status: 'failed', message: `No .proto files found in directory: ${expandedDir}` };
+          }
+
+          // TCP connectivity via raw gRPC channel (no proto loading)
+          const credentials = buildChannelCredentials(sourceOptions);
+          const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
+          const rawClient = new grpc.Client(cleanUrl, credentials);
+          const deadline = new Date();
+          deadline.setSeconds(deadline.getSeconds() + 60);
+
+          try {
+            await new Promise<void>((resolve, reject) => {
+              rawClient.waitForReady(deadline, (err) => (err ? reject(err) : resolve()));
+            });
+          } catch (error) {
+            return { status: 'failed', message: `Cannot connect to host: ${error.message}` };
+          } finally {
+            rawClient.close();
+          }
+
+          return { status: 'ok', message: `Successfully connected. Found ${protoFiles.length} proto file(s) in directory.` };
+        }
+
+        default:
+          return {
+            status: 'failed',
+            message: `Unsupported proto_files option: ${sourceOptions.proto_files}`
+          };
+      }
+
+      if (services.length === 0) {
+        return {
+          status: 'failed',
+          message: 'No services found',
+        };
+      }
+
+      return await this.checkFirstServiceConnection(sourceOptions, services, parseFailures.length > 0 ? parseFailures : undefined);
+    } catch (error) {
+      return {
+        status: 'failed',
+        message: error?.description || error.message || 'Connection test failed',
+      };
+    }
+  }
+
+  private async checkFirstServiceConnection(
+    sourceOptions: SourceOptions,
+    services: GrpcService[],
+    failures?: Array<{ file: string; error: string }>
+  ): Promise<ConnectionTestResult> {
+    const firstService = services[0].name;
+    try {
+      const client = await this.createGrpcClient(sourceOptions, firstService);
+
+      const deadline = new Date();
+      deadline.setSeconds(deadline.getSeconds() + 60);
+
+      const waitForReadyAsync = (client: GrpcClient, deadline: Date): Promise<void> => {
+        return new Promise((resolve, reject) => {
+          client.waitForReady(deadline, (error: any) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve();
+            }
+          });
+        });
+      };
+
+      try {
+        await waitForReadyAsync(client, deadline);
+      } catch (error) {
+        throw new Error(`Cannot connect to host: ${error.message}`);
+      }
+
+      let message = `Successfully connected. Found ${services.length} service(s)`;
+      if (failures && failures.length > 0) {
+        message += `. Note: ${failures.length} proto file(s) skipped due to errors`;
+      }
+      message += '.';
+
+      return {
+        status: 'ok',
+        message: message
+      };
+    } catch (connectionError) {
+      return {
+        status: 'failed',
+        message: `Connection error: ${connectionError?.message || 'Failed to connect to gRPC server'}`,
+      };
+    }
+  }
+
+  async invokeMethod(
+    methodName: string,
+    context: { user?: any; app?: any },
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<unknown> {
+    const methodMap: Record<string, Function> = {
+      'listServices': this.listServices.bind(this),
+      'getServiceDefinitions': this.getServiceDefinitions.bind(this),
+    };
+
+    const method = methodMap[methodName];
+    if (!method) {
+      throw new QueryError(
+        'Method not allowed',
+        `Method ${methodName} is not exposed by this plugin`,
+        { allowedMethods: Object.keys(methodMap) }
+      );
+    }
+
+    return await method(sourceOptions, args);
+  }
+
+  /**
+   * Full service + method discovery for reflection and proto URL modes.
+   * Only used internally by getServiceDefinitions.
+   */
+  private async discoverAllServices(sourceOptions: SourceOptions): Promise<GrpcService[]> {
+    this.validateSourceOptionsForDiscovery(sourceOptions);
+
+    switch (sourceOptions.proto_files) {
+      case 'server_reflection':
+        return await discoverServicesUsingReflection(sourceOptions);
+
+      case 'import_proto_file':
+        return await discoverServicesUsingProtoUrl(sourceOptions);
+
+      default:
+        throw new GrpcOperationError(
+          `Unsupported proto_files option for full discovery: ${sourceOptions.proto_files}. ` +
+          `Use 'server_reflection' or 'import_proto_file'.`
+        );
+    }
+  }
+
+  /**
+   * Resolves the filesystem proto directory and glob pattern from source options,
+   * falling back to ~/protos and **\/*.proto respectively.
+   */
+  private resolveFilesystemConfig(sourceOptions: SourceOptions): { directory: string; pattern: string } {
+    const directory = isEmpty(sourceOptions.proto_files_directory)
+      ? path.join(os.homedir(), 'protos')
+      : sourceOptions.proto_files_directory;
+    const pattern = isEmpty(sourceOptions.proto_files_pattern)
+      ? '**/*.proto'
+      : sourceOptions.proto_files_pattern;
+    return { directory, pattern };
+  }
+
+  /**
+   * Lightweight service name enumeration for the DS config page (filesystem mode).
+   * Uses protobufjs.parse() (~30KB/file vs 500KB with proto-loader) to scan
+   * proto files and return just service names for a multi-select.
+   */
+  private async listServices(sourceOptions: SourceOptions): Promise<Array<{ label: string; value: string }>> {
+    try {
+      const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+
+      const { serviceNames, failures } = await discoverServiceNamesFromFilesystem(directory, pattern);
+
+      if (failures.length > 0) {
+        console.warn(`[gRPC] Discovered ${serviceNames.length} services. ${failures.length} file(s) skipped.`);
+      }
+
+      return serviceNames.map((name) => ({ label: name, value: name }));
+    } catch (error: unknown) {
+      // Return empty list instead of failing — directory may not exist yet
+      // or may not have proto files. The UI will show an empty selector.
+      return [];
+    }
+  }
+
+  /**
+   * Returns full service + method definitions for the query editor.
+   * Single entry point for all modes — takes an optional serviceNames filter.
+   *
+   * - Filesystem mode: requires serviceNames, scopes parsing to those services only
+   * - Reflection/URL modes: full discovery, optionally filtered by serviceNames
+   */
+  private async getServiceDefinitions(sourceOptions: SourceOptions, args?: { serviceNames?: string[] }): Promise<GrpcService[]> {
+    try {
+      const serviceNames = args?.serviceNames;
+
+      if (sourceOptions.proto_files === 'import_protos_from_filesystem') {
+        if (!serviceNames?.length) return [];
+        const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+        const { services } = await discoverMethodsForSelectedServices(directory, pattern, serviceNames);
+        return services;
+      }
+
+      // Reflection / URL: full discovery, optionally filtered
+      const allServices = await this.discoverAllServices(sourceOptions);
+      if (!serviceNames?.length) return allServices;
+
+      const selectedSet = new Set(serviceNames);
+      return allServices.filter((s) => selectedSet.has(s.name));
+    } catch (error: unknown) {
+      if (error instanceof GrpcOperationError) {
+        throw new QueryError('Query could not be completed', error.message, error.errorDetails);
+      }
+      if (error instanceof QueryError) throw error;
+      const err = toError(error);
+      throw new QueryError('Service definition discovery failed', err.message, {
+        grpcCode: 0, grpcStatus: 'UNKNOWN', errorType: 'QueryError'
+      });
+    }
+  }
+
+  private async createGrpcClient(sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> {
+    // TODO: Can cache clients based on sourceOptions 
+    switch (sourceOptions.proto_files) {
+      case 'server_reflection':
+        return await buildReflectionClient(sourceOptions, serviceName);
+
+      case 'import_proto_file':
+        return await buildProtoFileClient(sourceOptions, serviceName);
+
+      case 'import_protos_from_filesystem':
+        return await buildFilesystemClient(sourceOptions, serviceName);
+
+      default:
+        throw new GrpcOperationError(`Unsupported proto_files option: ${sourceOptions.proto_files}`);
+    }
+  }
+
+  private validateSourceOptionsForDiscovery(sourceOptions: SourceOptions): void {
+    if (!sourceOptions) {
+      throw new GrpcOperationError('Source options are required for service discovery');
+    }
+  }
+
+  private validateRequestData(queryOptions: QueryOptions): void {
+    const message = this.parseMessage(queryOptions.raw_message);
+    if (!message || typeof message !== 'object') {
+      throw new GrpcOperationError('Invalid message data. Please provide a valid JSON object in the Request tab.');
+    }
+  }
+
+  private parseMessage(raw_message?: string): Record<string, unknown> {
+    if (!raw_message || raw_message.trim() === '') {
+      return {};
+    }
+
+    try {
+      return JSON5.parse(raw_message);
+    } catch (error) {
+      const err = toError(error);
+      throw new GrpcOperationError(`Invalid JSON in request message: ${err.message}`, error);
+    }
+  }
+
+  private validateMethodExists(client: GrpcClient, queryOptions: QueryOptions): void {
+    const methodFunction = client[queryOptions.method];
+    if (!methodFunction || typeof methodFunction !== 'function') {
+      throw new GrpcOperationError(`Method ${queryOptions.method} not found in service ${queryOptions.service}`);
+    }
+  }
+
+  private async executeGrpcCall(client: GrpcClient, queryOptions: QueryOptions, sourceOptions: SourceOptions): Promise<Record<string, unknown>> {
+    const message = this.parseMessage(queryOptions.raw_message);
+    return executeGrpcMethod(client, queryOptions.method, message, sourceOptions, queryOptions);
+  }
+
+  authUrl(sourceOptions: SourceOptions): string {
+    return getAuthUrl(sourceOptions);
+  }
+
+  async refreshToken(
+    sourceOptions: SourceOptions,
+    error: Error,
+    userId: string,
+    isAppPublic: boolean
+  ): Promise<Record<string, unknown>> {
+    return getRefreshedToken(sourceOptions, error, userId, isAppPublic);
+  }
+}

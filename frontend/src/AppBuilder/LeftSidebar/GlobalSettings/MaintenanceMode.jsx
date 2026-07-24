@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import SwitchComponent from '@/components/ui/Switch/Index';
 import { shallow } from 'zustand/shallow';
-import { Confirm } from '@/Editor/Viewer/Confirm';
+import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const MaintenanceMode = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
@@ -15,6 +16,10 @@ const MaintenanceMode = ({ darkMode }) => {
     }),
     shallow
   );
+  const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+
+  if (isOnFeatureBranch) return null;
 
   return (
     <>
@@ -29,7 +34,7 @@ const MaintenanceMode = ({ darkMode }) => {
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      <div className="tw-flex tw-mb-3">
+      <div className="tw-flex">
         <SwitchComponent
           align="right"
           label="Maintenance mode"
@@ -37,7 +42,7 @@ const MaintenanceMode = ({ darkMode }) => {
           checked={isMaintenanceOn}
           onCheckedChange={() => setConfirmationShow(true)}
           data-cy={`toggle-maintenance-mode`}
-          className="tw-w-full"
+          className="tw-w-full field-name"
         />
       </div>
     </>

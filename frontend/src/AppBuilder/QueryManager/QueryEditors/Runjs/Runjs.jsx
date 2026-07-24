@@ -13,7 +13,7 @@ const Runjs = (props) => {
   }, [props.options]);
 
   return (
-    <Card className="runjs-editor mb-3 !tw-mb-0">
+    <div className="runjs-editor mb-3 !tw-mb-0 ">
       <CodeHinter
         renderCopilot={props.renderCopilot}
         type="multiline"
@@ -29,7 +29,7 @@ const Runjs = (props) => {
         cyLabel={`runjs`}
         delayOnChange={false}
       />
-    </Card>
+    </div>
   );
 };
 

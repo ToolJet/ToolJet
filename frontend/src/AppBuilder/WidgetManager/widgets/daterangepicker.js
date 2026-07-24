@@ -1,6 +1,6 @@
 export const daterangepickerConfig = {
   name: 'DateRangePicker',
-  displayName: 'Range Picker',
+  displayName: 'Date Range Picker',
   description: 'Choose date ranges',
   component: 'DaterangePicker',
   defaultSize: {
@@ -52,6 +52,14 @@ export const daterangepickerConfig = {
       },
       accordian: 'Data',
     },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Select Date Range',
+      },
+    },
     defaultStartDate: {
       type: 'code',
       displayName: 'Default start date',
@@ -82,6 +90,12 @@ export const daterangepickerConfig = {
         defautlValue: 'DD/MM/YYYY',
       },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -94,10 +108,34 @@ export const daterangepickerConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
       section: 'additionalActions',
     },
     tooltip: {
@@ -109,6 +147,7 @@ export const daterangepickerConfig = {
       },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -204,6 +243,12 @@ export const daterangepickerConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -227,9 +272,10 @@ export const daterangepickerConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
-    labelWidth: {
-      type: 'slider',
+    auto: {
+      type: 'checkbox',
       displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
         key: 'alignment',
@@ -237,17 +283,45 @@ export const daterangepickerConfig = {
       },
       isFxNotRequired: true,
     },
-    auto: {
-      type: 'checkbox',
-      displayName: 'auto',
+    labelWidth: {
+      type: 'slider',
       showLabel: false,
-      validation: { schema: { type: 'boolean' } },
       accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
       isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
     },
     fieldBackgroundColor: {
       type: 'colorSwatches',
@@ -351,10 +425,15 @@ export const daterangepickerConfig = {
       defaultStartDate: { value: '01/04/2022' },
       defaultEndDate: { value: '10/04/2022' },
       format: { value: 'DD/MM/YYYY' },
+      placeholder: { value: 'Select Date Range' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
+      showClearBtn: { value: '{{false}}' },
     },
     validation: {
       minDate: { value: '' },
@@ -366,6 +445,7 @@ export const daterangepickerConfig = {
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
       labelWidth: { value: '20' },
@@ -382,6 +462,7 @@ export const daterangepickerConfig = {
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
       iconColor: { value: 'var(--cc-default-icon)' },
+      widthType: { value: 'ofComponent' },
     },
   },
 };

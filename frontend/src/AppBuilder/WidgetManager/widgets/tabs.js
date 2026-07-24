@@ -3,8 +3,8 @@ export const tabsConfig = {
   displayName: 'Tabs',
   description: 'Organize content in tabs',
   defaultSize: {
-    width: 30,
-    height: 300,
+    width: 15,
+    height: 450,
   },
   component: 'Tabs',
   others: {
@@ -37,6 +37,13 @@ export const tabsConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
     },
     disabledState: {
       type: 'toggle',
@@ -103,6 +110,18 @@ export const tabsConfig = {
         defaultValue: false,
       },
     },
+    scrollToTopOnTabSwitch: {
+      type: 'toggle',
+      displayName: 'Scroll to top on tab switch',
+      section: 'additionalActions',
+      conditionallyRender: { key: 'renderOnlyActiveTab', value: false },
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -112,12 +131,30 @@ export const tabsConfig = {
       },
       section: 'additionalActions',
     },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
       validation: { schema: { type: 'string' }, defaultValue: '' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: { onTabSwitch: { displayName: 'On tab switch' } },
@@ -221,12 +258,21 @@ export const tabsConfig = {
       ],
       accordian: 'Tabs',
     },
+    commonBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Common background color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'Container',
+    },
     border: {
       type: 'colorSwatches',
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'Container',
     },
@@ -346,6 +392,7 @@ export const tabsConfig = {
   ],
   exposedVariables: {
     currentTab: '',
+    currentTabTitle: '',
     isVisible: true,
     isDisabled: false,
     isLoading: false,
@@ -399,10 +446,14 @@ export const tabsConfig = {
       defaultTab: { value: '0' },
       hideTabs: { value: false },
       renderOnlyActiveTab: { value: false },
+      scrollToTopOnTabSwitch: { value: false },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
@@ -418,7 +469,8 @@ export const tabsConfig = {
       tabWidth: { value: 'auto' },
       transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
-      border: { value: 'var(--cc-default-border)' },
+      commonBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      border: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
     },

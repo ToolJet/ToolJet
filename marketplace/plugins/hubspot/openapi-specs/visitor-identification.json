@@ -1,0 +1,231 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Visitor Identification",
+    "description" : "The Visitor Identification API allows you to pass identification information to the HubSpot chat widget for otherwise unknown visitors that were verified by your own authentication system.",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Generate",
+    "description" : "Operations to generate a token"
+  } ],
+  "paths" : {
+    "/conversations/v3/visitor-identification/tokens/create" : {
+      "post" : {
+        "tags" : [ "Generate" ],
+        "summary" : "Generate a token",
+        "description" : "Generates a new visitor identification token. This token will be unique every time this endpoint is called, even if called with the same email address. This token is temporary and will expire after 12 hours",
+        "operationId" : "post-/visitor-identification/v3/tokens/create_generateToken",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/IdentificationTokenGenerationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IdentificationTokenResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "conversations.visitor_identification.tokens.create" ]
+        }, {
+          "private_apps_legacy" : [ "conversations.visitor_identification.tokens.create" ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "IdentificationTokenResponse" : {
+        "required" : [ "token" ],
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string"
+          }
+        },
+        "description" : "The identification token to be passed to the Conversations JS API to identify the visitor",
+        "example" : {
+          "token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        }
+      },
+      "IdentificationTokenGenerationRequest" : {
+        "required" : [ "email" ],
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "description" : "The email of the visitor that you wish to identify"
+          },
+          "firstName" : {
+            "type" : "string",
+            "description" : "The first name of the visitor that you wish to identify. This value will only be set in HubSpot for new contacts and existing contacts where first name is unknown. Optional."
+          },
+          "lastName" : {
+            "type" : "string",
+            "description" : "The last name of the visitor that you wish to identify. This value will only be set in HubSpot for new contacts and existing contacts where last name is unknown. Optional."
+          }
+        },
+        "description" : "Information used to generate a token",
+        "example" : {
+          "email" : "visitor-email@example.com",
+          "firstName" : "Gob",
+          "lastName" : "Bluth"
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "oauth2_legacy" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "conversations.visitor_identification.tokens.create" : "Fetch identification tokens for authenticated website visitors interacting with the HubSpot chat widget"
+            }
+          }
+        }
+      },
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "private_apps_legacy" : {
+        "type" : "apiKey",
+        "name" : "private-app-legacy",
+        "in" : "header"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

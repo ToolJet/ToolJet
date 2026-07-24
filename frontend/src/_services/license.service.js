@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const licenseService = {
   get,
   update,
+  updateEnvSetting,
   getFeatureAccess,
   generateCloudTrial,
   getDomainsList,
@@ -15,6 +16,9 @@ export const licenseService = {
   updateSubscription,
   getPortalLink,
   updateOrganization,
+  addTopUpCredits,
+  getAiCreditsBalance,
+  getSelfhostCustomer,
 };
 
 function get() {
@@ -26,6 +30,11 @@ async function update(body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   const updatedData = await fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse);
   return updatedData;
+}
+
+async function updateEnvSetting(body) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/env-setting`, requestOptions).then(handleResponse);
 }
 
 function getFeatureAccess() {
@@ -146,4 +155,32 @@ async function updateOrganization(body) {
     handleResponse
   );
   return updatedData;
+}
+
+function addTopUpCredits(topUpPaymentDto) {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(topUpPaymentDto),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/top-up`, requestOptions).then(handleResponse);
+}
+
+function getAiCreditsBalance() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/ai-credits-balance`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getSelfhostCustomer() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/selfhost-customer`, requestOptions).then(handleResponse);
 }

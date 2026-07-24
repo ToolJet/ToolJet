@@ -31,7 +31,7 @@ import {
   convertDateToTimeZoneFormatted,
   getLocalTimeZone,
   getUTCOffset,
-} from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+} from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
@@ -56,6 +56,7 @@ const Table = ({ collapseSidebar }) => {
     configurations,
     setConfigurations,
     getConfigurationProperty,
+    canEditTjdb,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -1257,7 +1258,7 @@ const Table = ({ collapseSidebar }) => {
                             closeMenu();
                           }}
                           onDelete={() => handleDelete(column.Header)}
-                          // disabled={column.isPrimaryKey}
+                          disabled={!canEditTjdb}
                           show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
                           className="column-popover-parent"
                           darkMode={darkMode}
@@ -1275,15 +1276,17 @@ const Table = ({ collapseSidebar }) => {
                       </div>
                     </th>
                   ))}
-                  <th
-                    onClick={() => {
-                      resetCellAndRowSelection();
-                      setIsCreateColumnDrawerOpen(true);
-                    }}
-                    className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
-                  >
-                    <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
-                  </th>
+                  {canEditTjdb && (
+                    <th
+                      onClick={() => {
+                        resetCellAndRowSelection();
+                        setIsCreateColumnDrawerOpen(true);
+                      }}
+                      className={darkMode ? 'add-icon-column-dark' : 'add-icon-column'}
+                    >
+                      <div className="icon-styles d-flex align-items-center justify-content-center">+</div>
+                    </th>
+                  )}
                 </tr>
               ))}
             </thead>

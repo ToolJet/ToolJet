@@ -5,21 +5,28 @@ import { SearchBox } from '@/_components/SearchBox';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import Skeleton from 'react-loading-skeleton';
 import { QueryCard } from './QueryCard';
+import { QueryFolderTree as QueryFolderTreeBase } from './QueryFolderTree';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
-import { Tooltip } from 'react-tooltip';
 import FilterandSortPopup from './FilterandSortPopup';
+import { ToolTip } from '@/_components';
+import { Button } from '@/components/ui/Button/Button';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import FolderEmpty from '@/_ui/Icon/solidIcons/FolderEmpty';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
-import QueryCardMenu from './QueryCardMenu';
+import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import QueryCardMenuBase from './QueryCardMenu';
+import { withEditionSpecificComponent } from '@/modules/common/helpers';
+
+const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
+const QueryCardMenu = withEditionSpecificComponent(QueryCardMenuBase, 'Appbuilder');
 
 export const QueryDataPane = ({ darkMode }) => {
   const { t } = useTranslation();
@@ -44,7 +51,11 @@ export const QueryDataPane = ({ darkMode }) => {
   const showQueryPermissionModal = useStore((state) => state.queryPanel.showQueryPermissionModal);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
-  const isFreezed = useStore((state) => state.getShouldFreeze());
+  const sortBy = useStore((state) => state.dataQuery.sortBy);
+  const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
+  const folders = allFolders;
+  const { isModuleEditor } = useModuleContext();
+  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -103,34 +114,37 @@ export const QueryDataPane = ({ darkMode }) => {
   return (
     <div className="data-pane">
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
-        <div className="queries-header row d-flex align-items-center justify-content-between">
-          <div className="col-auto d-flex" style={{ gap: '2px' }}>
+        <div className="queries-header">
+          <AddDataSourceButton darkMode={darkMode} />
+          <div className="queries-header-actions">
+            <AutoSortButton darkMode={darkMode} />
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
               clearSelectedDataSources={() => setDataSourcesForFilters([])}
               darkMode={darkMode}
             />
-            <button
-              onClick={() => {
-                showSearchBox && setSearchTermForFilters('');
-                setShowSearchBox((showSearchBox) => !showSearchBox);
-              }}
-              className={cx('btn-query-panel-header', {
-                active: showSearchBox,
-              })}
-              data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Open quick search"
-              data-cy="query-search-button"
-            >
-              <Search width="14" height="14" fill="var(--icons-default)" />
-            </button>
-            <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
+            <ToolTip message="Open quick search" placement="bottom">
+              <Button
+                isLucid
+                iconOnly
+                size="medium"
+                variant="ghost"
+                leadingIcon="search"
+                onClick={() => {
+                  showSearchBox && setSearchTermForFilters('');
+                  setShowSearchBox((showSearchBox) => !showSearchBox);
+                }}
+                className={cx({ 'tw-bg-button-outline-pressed': showSearchBox })}
+                data-tooltip-id="tooltip-for-query-panel-header-btn"
+                data-tooltip-content="Open quick search"
+                data-cy="query-search-button"
+              />
+            </ToolTip>
           </div>
-          <AddDataSourceButton darkMode={darkMode} />
         </div>
         <div
-          className={cx('queries-header row d-flex align-items-center justify-content-between', {
+          className={cx('queries-header', {
             'd-none': !showSearchBox,
           })}
         >
@@ -173,14 +187,22 @@ export const QueryDataPane = ({ darkMode }) => {
           </div>
         ) : (
           <div
-            className={`query-list tj-scrollbar overflow-auto ${filteredQueries.length === 0 ? 'flex-grow-1 align-items-center justify-content-center' : ''
-              }`}
+            className={`query-list tj-scrollbar overflow-auto ${
+              filteredQueries.length === 0 && folders.length === 0
+                ? 'flex-grow-1 align-items-center justify-content-center'
+                : ''
+            }`}
           >
-            <div>
-              {/* TODO: replace/add filter query logic here */}
-              {filteredQueries.map((query) => (
-                <QueryCard key={query.id} dataQuery={query} darkMode={darkMode} localDs={!!isDataSourceLocal(query)} />
-              ))}
+            <div className="query-list-inner">
+              <QueryFolderTree
+                filteredQueries={filteredQueries}
+                searchActive={!!searchTermForFilters}
+                filteredQueryIds={dataSourcesForFilters.length > 0 ? new Set(filteredQueries.map((q) => q.id)) : null}
+                darkMode={darkMode}
+                isDataSourceLocal={isDataSourceLocal}
+                allowFolders
+                shouldFreeze={isFreezed}
+              />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
               {licenseValid && (
                 <AppPermissionsModal
@@ -209,25 +231,12 @@ export const QueryDataPane = ({ darkMode }) => {
                 />
               )}
             </div>
-            <Tooltip
-              id="query-card-name-tooltip"
-              className="tooltip query-manager-tooltip"
-              disableTooltip={(anchor) => {
-                const { offsetWidth } = anchor;
-                // enable tooltip if the query name is too long
-                if (anchor?.getAttribute('data-tooltip-dynamic') && offsetWidth <= 150) {
-                  return true;
-                }
-
-                return false;
-              }}
-            />
-            {filteredQueries.length === 0 && (
-              <div className=" d-flex  flex-column align-items-center justify-content-start">
-                {filteredQueries.length === 0 ? <EmptyDataSource /> : ''}
-                <br />
-              </div>
-            )}
+            {filteredQueries.length === 0 &&
+              (folders.length === 0 || dataSourcesForFilters.length > 0 || !!searchTermForFilters) && (
+                <div className="query-empty-state-wrapper">
+                  <EmptyDataSource />
+                </div>
+              )}
           </div>
         )}
       </div>
@@ -236,23 +245,72 @@ export const QueryDataPane = ({ darkMode }) => {
 };
 
 const EmptyDataSource = () => (
-  <div>
-    <div className="text-center">
-      <span
-        className="rounded mb-3 bg-slate3 d-flex justify-content-center align-items-center"
-        style={{ width: '32px', height: '32px' }}
+  <div className="empty-data-source">
+    <div className="empty-data-source__icon">
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--text-placeholder, #6a727c)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <FolderEmpty style={{ height: '16px' }} />
-      </span>
+        <path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
+        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+        <path d="m5 12-3 3 3 3" />
+        <path d="m9 18 3-3-3-3" />
+      </svg>
     </div>
-    <span data-cy="label-no-queries">No queries have been added. </span>
+    <span data-cy="label-no-queries" className="empty-data-source__label">
+      No queries yet
+    </span>
   </div>
 );
 
+const AutoSortButton = ({ darkMode: _darkMode }) => {
+  const isAutoSorting = useStore((state) => state.queryFolders?.isAutoSorting ?? false);
+  const autoSort = useStore((state) => state.queryFolders?.autoSort);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+
+  if (!featureAccess?.ai) return null;
+
+  const disabled = shouldFreeze || isAutoSorting;
+
+  const tooltipMsg = isAutoSorting ? 'Auto-sorting in progress...' : 'Auto-sort unsorted queries into folders';
+
+  return (
+    <ToolTip message={tooltipMsg} placement="bottom">
+      <span>
+        <Button
+          isLucid
+          iconOnly
+          size="medium"
+          variant="ghost"
+          disabled={disabled}
+          onClick={() => !disabled && autoSort?.()}
+          data-cy="query-autosort-button"
+          style={!disabled ? { color: '#F3A53C' } : undefined}
+        >
+          {isAutoSorting ? (
+            <span className="spinner-border spinner-border-sm" style={{ width: '14px', height: '14px' }} />
+          ) : (
+            <AITripleSparkles width="16" height="16" />
+          )}
+        </Button>
+      </span>
+    </ToolTip>
+  );
+};
+
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
+  const { isModuleEditor } = useModuleContext();
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   // const { isVersionReleased, isEditorFreezed } = useStore(
   //   (state) => ({
   //     isVersionReleased: state.isVersionReleased,
@@ -280,17 +338,26 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
         <Popover
           key={'page.i'}
           id="query-add-ds-popover"
-          className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
-          style={{ width: '244px', maxWidth: '246px' }}
+          className={`ds-select-popover transparent-popover ${
+            darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
+          }`}
         >
-          <DataSourceSelect selectRef={selectRef} closePopup={() => setShowMenu(false)} />
+          <DataSourceSelect
+            selectRef={selectRef}
+            closePopup={() => setShowMenu(false)}
+            allowNewFolder
+            queryFoldersLicensed
+          />
         </Popover>
       }
     >
       <span className="col-auto" id="query-add-ds-popover-btn">
-        <ButtonSolid
-          size="sm"
-          variant="tertiary"
+        <Button
+          isLucid
+          iconOnly
+          size="medium"
+          variant="outline"
+          leadingIcon="plus"
           disabled={disabled}
           onClick={(e) => {
             e.stopPropagation();
@@ -299,11 +366,8 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             }
             setShowMenu((show) => !show);
           }}
-          style={{ height: '28px', width: '28px', padding: '0px' }}
           data-cy={`show-ds-popover-button`}
-        >
-          <Plus style={{ height: '14px' }} fill="var(--icons-strong)" />
-        </ButtonSolid>
+        />
       </span>
     </OverlayTrigger>
   );

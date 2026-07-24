@@ -3,6 +3,7 @@ import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import { useTranslation } from 'react-i18next';
+import { getHostURL } from '@/_helpers/routes';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
@@ -394,7 +395,7 @@ function InviteUsersForm({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 ">
-                    <label className="form-label" data-cy="email-label">
+                    <label className="form-label" data-cy="email-address-label">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
                     <ToolTip
@@ -412,7 +413,7 @@ function InviteUsersForm({
                           name="email"
                           onChange={changeNewUserOption.bind(this, 'email')}
                           value={fields['email']}
-                          data-cy="email-input"
+                          data-cy="email-address-input"
                           disabled={isEditing}
                         />
                         <span className="text-danger" data-cy="error-message-email">
@@ -422,7 +423,7 @@ function InviteUsersForm({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 manage-groups-invite-form" data-cy="user-group-select">
-                    <label className="form-label" data-cy="user-group-label">
+                    <label className="form-label" data-cy={isEditing ? 'user-group-label' : 'select-group-label'}>
                       {isEditing
                         ? 'User groups'
                         : t('header.organization.menus.manageUsers.selectGroup', 'Select groups')}
@@ -452,9 +453,9 @@ function InviteUsersForm({
                       Files in any other format may not be recognized.{' '}
                     </p>
                     <ButtonSolid
-                      href={`${window.public_config?.TOOLJET_HOST}${
-                        window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                      }assets/csv/${edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'}`}
+                      href={`${getHostURL()}/assets/csv/${
+                        edition === 'ce' ? 'sample_upload_ce.csv' : 'sample_upload.csv'
+                      }`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"

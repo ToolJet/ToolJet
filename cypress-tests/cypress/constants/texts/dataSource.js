@@ -4,8 +4,8 @@ export const dataSourceText = {
 
   allDataSources: () => {
     return Cypress.env("marketplace_action")
-      ? "All data sources (44)"
-      : "All data sources (42)";
+      ? "All data sources (46)"
+      : "All data sources (44)";
   },
   commonlyUsed: "Commonly used (5)",
   allDatabase: () => {
@@ -13,7 +13,7 @@ export const dataSourceText = {
       ? "Databases (20)"
       : "Databases (18)";
   },
-  allApis: "APIs (21)",
+  allApis: "APIs (22)",
   allCloudStorage: "Cloud Storages (4)",
   pluginsLabelAndCount: "Plugins (0)",
 
@@ -51,6 +51,7 @@ export const dataSourceText = {
   buttonLabelPreview: "Preview",
   buttonLabelCreateAndRun: "Create & Run",
   buttonLabelCreate: "Create",
+  buttonLabelRun: "Run",
   queryModeSql: "SQL mode",
   queryModeGui: "GUI mode",
 

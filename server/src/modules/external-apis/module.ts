@@ -14,24 +14,38 @@ import { AppGitModule } from '@modules/app-git/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppsRepository } from '@modules/apps/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { OrganizationUsersModule } from '@modules/organization-users/module';
 
 export class ExternalApiModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const { ExternalApisController, ExternalApisService, ExternalApiUtilService, ExternalApisAppsController } =
-      await this.getProviders(configs, 'external-apis', [
-        'controller',
-        'service',
-        'util.service',
-        'controllers/apps.controller',
-      ]);
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
 
-    return {
+    const {
+      ExternalApisController,
+      ExternalApisService,
+      ExternalApiUtilService,
+      ExternalApisAppsController,
+      ExternalApisGroupsController,
+      ExternalApisModulesController,
+      ExternalApisTjdbController,
+    } = await this.getProviders(configs, 'external-apis', [
+      'controller',
+      'service',
+      'util.service',
+      'controllers/apps.controller',
+      'controllers/groups.controller',
+      'controllers/modules.controller',
+      'controllers/tooljet-db.controller',
+    ]);
+
+    return this.cacheModule(cacheKey, {
       module: ExternalApiModule,
       imports: [
         await UsersModule.register(configs),
@@ -45,6 +59,7 @@ export class ExternalApiModule extends SubModule {
         await GitSyncModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
+        await OrganizationUsersModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -54,15 +69,22 @@ export class ExternalApiModule extends SubModule {
         AppsRepository,
         GroupPermissionsRepository,
         VersionRepository,
-        AppGitRepository,
         OrganizationRepository,
         UserRepository,
         UserPersonalAccessTokenRepository,
         UserRepository,
         AppsRepository,
       ],
-      controllers: [ExternalApisController, ExternalApisAppsController],
+      controllers: isMainImport
+        ? [
+            ExternalApisController,
+            ExternalApisAppsController,
+            ExternalApisGroupsController,
+            ExternalApisModulesController,
+            ExternalApisTjdbController,
+          ]
+        : [],
       exports: [ExternalApiUtilService],
-    };
+    });
   }
 }

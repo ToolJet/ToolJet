@@ -22,6 +22,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     request?: any
   ): void {
     const resourceId = request?.tj_resource_id;
-    createAbility(can, UserAllPermissions, resourceId);
+    createAbility(can, UserAllPermissions, resourceId, request);
   }
 }

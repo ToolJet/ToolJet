@@ -18,10 +18,17 @@ import { SSOConfigsRepository } from '@modules/login-configs/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { SubModule } from '@modules/app/sub-module';
 import { OnboardingModule } from '@modules/onboarding/module';
+import { UserMfaRepository } from './mfa/repository';
+import { EncryptionModule } from '@modules/encryption/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 
 @Module({})
 export class AuthModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       AuthController,
       AuthService,
@@ -35,6 +42,7 @@ export class AuthModule extends SubModule {
       LdapService,
       WebsiteAuthController,
       WebsiteAuthService,
+      WebsiteOtpController,
     } = await this.getProviders(configs, 'auth', [
       'controller',
       'service',
@@ -48,9 +56,10 @@ export class AuthModule extends SubModule {
       'oauth/util-services/ldap.service',
       'website/controller',
       'website/service',
+      'website/otp-controller',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: AuthModule,
       imports: [
         await SessionModule.register(configs),
@@ -64,8 +73,10 @@ export class AuthModule extends SubModule {
         await SetupOrganizationsModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await OnboardingModule.register(configs),
+        await EncryptionModule.register(configs),
+        await CustomDomainsModule.register(configs),
       ],
-      controllers: [AuthController, OauthController, WebsiteAuthController],
+      controllers: isMainImport ? [AuthController, OauthController, WebsiteAuthController, WebsiteOtpController] : [],
       providers: [
         AuthService,
         UserRepository,
@@ -84,8 +95,9 @@ export class AuthModule extends SubModule {
         GroupPermissionsRepository,
         SSOConfigsRepository,
         WebsiteAuthService,
+        UserMfaRepository,
       ],
       exports: [AuthUtilService],
-    };
+    });
   }
 }

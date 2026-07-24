@@ -47,14 +47,23 @@ export const kanbanConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    columnData: { type: 'code', displayName: 'Column data' },
-    cardData: { type: 'code', displayName: 'Card data' },
+    columnsSubSectonHeader: {
+      type: 'sectionSubHeader',
+      displayName: 'Columns',
+    },
+    columnData: { type: 'code', displayName: 'Column data', accordian: 'Board configuration' },
+    cardsSubSectonHeader: {
+      type: 'sectionSubHeader',
+      displayName: 'Cards',
+    },
+    cardData: { type: 'code', displayName: 'Card data', accordian: 'Board configuration' },
     cardWidth: {
       type: 'code',
       displayName: 'Card width',
       validation: {
         schema: { type: 'number' },
       },
+      accordian: 'Board configuration',
     },
     cardHeight: {
       type: 'code',
@@ -62,9 +71,74 @@ export const kanbanConfig = {
       validation: {
         schema: { type: 'number' },
       },
+      accordian: 'Board configuration',
     },
-    enableAddCard: { type: 'toggle', displayName: 'Enable add card' },
-    showDeleteButton: { type: 'toggle', displayName: 'Show delete button' },
+    enableAddCard: { type: 'toggle', displayName: 'Enable adding card', accordian: 'Board configuration' },
+    showDeleteButton: { type: 'toggle', displayName: 'Enable card deletion zone', accordian: 'Board configuration' },
+    deleteLabel: {
+      type: 'code',
+      displayName: 'Delete zone label',
+      validation: {
+        schema: { type: 'string', defaultValue: 'Drop here to delete' },
+      },
+      accordian: 'Board configuration',
+    },
+    cardDetailsModalSubSectonHeader: {
+      type: 'sectionSubHeader',
+      displayName: 'Card details modal',
+    },
+    openModalOnCardClick: {
+      type: 'toggle',
+      displayName: 'Open modal on card click',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
+    size: {
+      type: 'select',
+      displayName: 'Modal size',
+      options: [
+        { name: 'small', value: 'sm' },
+        { name: 'medium', value: 'lg' },
+        { name: 'large', value: 'xl' },
+        { name: 'fullscreen', value: 'fullscreen' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'lg',
+      },
+    },
+    modalHeight: {
+      type: 'numberInput',
+      displayName: 'Height',
+      validation: {
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        defaultValue: 400,
+      },
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   events: {
     onUpdate: { displayName: 'On update' },
@@ -152,6 +226,16 @@ export const kanbanConfig = {
       showDeleteButton: {
         value: `{{true}}`,
       },
+      deleteLabel: {
+        value: 'Drop here to delete',
+      },
+      openModalOnCardClick: {
+        value: `{{true}}`,
+      },
+      size: { value: 'lg' },
+      modalHeight: { value: 400 },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {

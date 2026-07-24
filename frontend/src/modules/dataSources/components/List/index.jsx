@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
 import { ListItem } from '../LIstItem';
@@ -11,6 +11,9 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import Modal from '@/HomePage/Modal';
 import { Button } from '@/components/ui/Button/Button';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -31,8 +34,20 @@ export const List = ({ updateSelectedDatasource }) => {
   const [filteredData, setFilteredData] = useState(dataSources);
   const [showInput, setShowInput] = useState(false);
   const [showDependentQueriesInfo, setShowDependentQueriesInfo] = useState(false);
+  const [showSwitchBranchModal, setShowSwitchBranchModal] = useState(false);
+  const [pendingDeleteSource, setPendingDeleteSource] = useState(null);
+  const pendingDeleteAfterSwitchRef = useRef(null);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const isBranchingEnabled = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return !!(state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled);
+  });
+
+  const isOnDefaultBranch = useWorkspaceBranchesStore((state) => {
+    return !!(state.currentBranch?.is_default || state.currentBranch?.isDefault);
+  });
 
   useEffect(() => {
     environments?.length &&
@@ -43,11 +58,41 @@ export const List = ({ updateSelectedDatasource }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [environments]);
 
+  // git-sync jobs finish in the background — react to their success notifications
+  useEffect(() => {
+    return subscribeLiveNotifications((n) => {
+      if (n?.metadata?.source !== 'git-sync' || n?.type !== 'success') return;
+      if (n.metadata.action === 'git-pull-branch') {
+        fetchDataSources(false).catch(() => {});
+      } else if (n.metadata.action === 'git-delete-branch') {
+        // fetchBranches self-heals a deleted active branch to default; the page's
+        // activeBranchId effect then refetches the list under the healed branch
+        useWorkspaceBranchesStore.getState().actions.fetchBranches();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchDataSources]);
+
   useEffect(() => {
     setFilteredData([...dataSources]);
   }, [dataSources]);
 
+  // After branch switch + refetch, trigger the deferred delete flow
+  useEffect(() => {
+    if (pendingDeleteAfterSwitchRef.current && !isLoading && dataSources.length) {
+      const source = pendingDeleteAfterSwitchRef.current;
+      pendingDeleteAfterSwitchRef.current = null;
+      deleteDataSource(source);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources, isLoading]);
+
   const deleteDataSource = (selectedSource) => {
+    if (isBranchingEnabled && isOnDefaultBranch) {
+      setPendingDeleteSource(selectedSource);
+      setShowSwitchBranchModal(true);
+      return;
+    }
     setActiveDatasourceList('');
     setSelectedDataSource(selectedSource);
     setCurrentEnvironment(environments[0]);
@@ -102,7 +147,7 @@ export const List = ({ updateSelectedDatasource }) => {
     setFilteredData(filtered);
   };
 
-  function handleClose () {
+  function handleClose() {
     setShowInput(false);
     setFilteredData(dataSources);
   }
@@ -204,13 +249,35 @@ export const List = ({ updateSelectedDatasource }) => {
       </Modal>
       <ConfirmDialog
         show={isDeleteModalVisible}
-        message={'You will lose all the queries created from this data source. Do you really want to delete?'}
+        title={isBranchingEnabled ? 'Delete datasource' : undefined}
+        message={
+          isBranchingEnabled
+            ? "Deleting this data source will only apply changes to the selected branch. To reflect these changes on master, you'll need to push and commit your changes, then merge them."
+            : 'Do you want to delete?'
+        }
+        confirmButtonText={isBranchingEnabled ? 'Delete' : undefined}
         confirmButtonLoading={isDeletingDatasource}
         onConfirm={() => executeDataSourceDeletion()}
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
         backdropClassName="delete-modal"
       />
+      {showSwitchBranchModal && (
+        <WorkspaceSwitchBranchModal
+          show={showSwitchBranchModal}
+          onClose={() => {
+            setShowSwitchBranchModal(false);
+            setPendingDeleteSource(null);
+          }}
+          onBranchSwitch={() => {
+            if (pendingDeleteSource) {
+              pendingDeleteAfterSwitchRef.current = pendingDeleteSource;
+              setPendingDeleteSource(null);
+            }
+            setShowSwitchBranchModal(false);
+          }}
+        />
+      )}
     </>
   );
 };

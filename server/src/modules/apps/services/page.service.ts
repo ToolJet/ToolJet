@@ -4,25 +4,148 @@ import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { EventsService } from './event.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { isEmpty } from 'class-validator';
+import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
 import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
 import * as uuid from 'uuid';
 import { AppVersion } from '@entities/app_version.entity';
-import { IPageService } from '../interfaces/services/IPageService';
+import {
+  IPageService,
+  PageCreateContext,
+  PageUpdateContext,
+  PageDeleteContext,
+  PageReorderContext,
+  DeletePageOptions,
+} from '../interfaces/services/IPageService';
+import { RequestContext } from '@modules/request-context/service';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class PageService implements IPageService {
   constructor(
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
-    protected eventHandlerService: EventsService
-  ) {}
+    protected eventHandlerService: EventsService,
+    protected readonly transactionLogger: TransactionLogger
+  ) { }
+
+  /**
+   * Hook called before page creation - override in EE to capture state for history
+   */
+  protected async beforePageCreate(
+    pageData: CreatePageDto,
+    appVersionId: string,
+    organizationId: string
+  ): Promise<PageCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page creation - override in EE to queue history
+   */
+  protected async afterPageCreate(
+    context: PageCreateContext | null,
+    createdPage: Page,
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before page update - override in EE to capture state for history
+   */
+  protected async beforePageUpdate(pageId: string, diff: any, appVersionId: string): Promise<PageUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page update - override in EE to queue history
+   */
+  protected async afterPageUpdate(
+    context: PageUpdateContext | null,
+    diff: any,
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before page deletion - override in EE to capture state for history
+   */
+  protected async beforePageDelete(pageId: string, appVersionId: string): Promise<PageDeleteContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page deletion - override in EE to queue history
+   */
+  protected async afterPageDelete(
+    context: PageDeleteContext | null,
+    pageId: string,
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before page reorder - override in EE to capture state for history
+   */
+  protected async beforePageReorder(
+    diff: any,
+    appVersionId: string,
+    organizationId: string
+  ): Promise<PageReorderContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page reorder - override in EE to queue history
+   */
+  protected async afterPageReorder(
+    context: PageReorderContext | null,
+    diff: any,
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before page clone - override in EE to capture state for history
+   */
+  protected async beforePageClone(
+    pageId: string,
+    appVersionId: string,
+    organizationId: string
+  ): Promise<PageCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page clone - override in EE to queue history
+   */
+  protected async afterPageClone(
+    context: PageCreateContext | null,
+    clonedPages: Page[],
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
@@ -33,7 +156,7 @@ export class PageService implements IPageService {
         return { ...page, components, restricted: false };
       })
     );
-    return pagesWithComponents;
+    return pagesWithComponents as unknown as Page[];
   }
 
   async findOne(id: string): Promise<Page> {
@@ -43,14 +166,28 @@ export class PageService implements IPageService {
   }
 
   async createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
-      const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
+    const context = await this.beforePageCreate(page, appVersionId, organizationId);
 
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+      const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
       return await manager.save(Page, newPage);
     }, appVersionId);
+
+    const operationTimestamp = Date.now();
+    this.afterPageCreate(context, result, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterPageCreate failed:', err.message)
+    );
+
+    return result;
   }
 
   async clonePage(pageId: string, appVersionId: string, organizationId: string) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
+    const context = await this.beforePageClone(pageId, appVersionId, organizationId);
+
+    let clonedPage: Page | null = null;
+
     await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
         where: { id: pageId, appVersionId },
@@ -84,13 +221,16 @@ export class PageService implements IPageService {
       newPage.icon = pageToClone.icon || 'IconFile';
       newPage.openIn = pageToClone.openIn;
       newPage.appId = pageToClone.appId;
+      newPage.targetCorelationId = pageToClone.targetCorelationId;
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
+      newPage.pageHeader = pageToClone.pageHeader;
+      newPage.pageFooter = pageToClone.pageFooter;
 
-      const clonedpage = await manager.save(newPage);
+      clonedPage = await manager.save(newPage);
 
-      await this.clonePageEventsAndComponents(pageId, clonedpage.id, manager);
+      await this.clonePageEventsAndComponents(pageId, clonedPage.id, manager);
 
       const pages = await this.findPagesForVersion(appVersionId, manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
@@ -98,7 +238,14 @@ export class PageService implements IPageService {
       return { pages, events };
     }, appVersionId);
 
-    // Fetch pages and events separately after transaction completes
+    const operationTimestamp = Date.now();
+    if (clonedPage) {
+      this.afterPageClone(context, [clonedPage], appVersionId, historyUserId, operationTimestamp).catch((err) =>
+        console.error('[AppHistory] Fire-and-forget afterPageClone failed:', err.message)
+      );
+    }
+
+    // Fetch pages and events after transaction completes
     const pages = await this.findPagesForVersion(appVersionId);
     const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
 
@@ -142,7 +289,21 @@ export class PageService implements IPageService {
     };
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const pageComponents = await manager.find(Component, { where: { pageId } });
+      const pageComponents = await manager.find(Component, {
+        where: { pageId },
+      });
+
+      // Heal any pre-existing parent-child cycle on the source page before
+      // cloning. Otherwise the clone preserves the cycle verbatim through the
+      // ID remap and the new page is born corrupt.
+      const { repairedIds } = repairParentCycles(pageComponents);
+      if (repairedIds.length > 0) {
+        this.transactionLogger.warn(
+          `[page-clone] Repaired ${repairedIds.length} parent-child cycle(s) on source page ${pageId}. ` +
+            `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+        );
+      }
+
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
       const mappingsToUpdate = [];
@@ -186,7 +347,9 @@ export class PageService implements IPageService {
             });
           }
 
-          const componentLayouts = await manager.find(Layout, { where: { componentId: component.id } });
+          const componentLayouts = await manager.find(Layout, {
+            where: { componentId: component.id },
+          });
           // CORRECTED: Use manager.create(Layout, ...) to ensure entity instances are created
           const clonedLayouts = componentLayouts.map((layout) =>
             manager.create(Layout, {
@@ -277,22 +440,32 @@ export class PageService implements IPageService {
         let parentId = originalComponent.parent ? originalComponent.parent : null;
 
         if (parentId) {
-          const isParentIdSuffixed = isSpecialParentType(originalComponent, pageComponents, parentId);
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentIdSuffixed = isSpecialParentType(originalComponent, pageComponents, parentId);
 
-          if (isParentIdSuffixed) {
-            const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = componentsIdMap[originalBaseParentId];
+            if (isParentIdSuffixed) {
+              const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
+              const mappedBaseParentId = componentsIdMap[originalBaseParentId];
 
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+              if (mappedBaseParentId) {
+                parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+              } else {
+                parentId = null;
+              }
             } else {
-              parentId = null;
+              parentId = componentsIdMap[parentId];
             }
-          } else {
-            parentId = componentsIdMap[parentId];
           }
         }
         component.parent = parentId;
+      }
+
+      for (const component of clonedComponents) {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding); remap after
+        // the full componentsIdMap is built so flex-child order survives page clone (#5153).
+        remapFlexContainerChildOrder(component, componentsIdMap);
       }
 
       await manager.save(clonedComponents);
@@ -300,8 +473,18 @@ export class PageService implements IPageService {
     }, manager);
   }
 
-  async reorderPages(diff, appVersionId: string, organizationId: string) {
-    return this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
+  async reorderPages(diff: any, appVersionId: string, organizationId: string) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
+    const context = await this.beforePageReorder(diff, appVersionId, organizationId);
+
+    const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
+
+    const operationTimestamp = Date.now();
+    this.afterPageReorder(context, diff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterPageReorder failed:', err.message)
+    );
+
+    return result;
   }
 
   async updatePage(pageUpdates: UpdatePageDto, appVersionId: string) {
@@ -309,7 +492,10 @@ export class PageService implements IPageService {
       throw new Error('Can not update multiple pages');
     }
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
+    const context = await this.beforePageUpdate(pageUpdates.pageId, pageUpdates.diff, appVersionId);
+
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const currentPage = await manager.findOne(Page, {
         where: { id: pageUpdates.pageId },
       });
@@ -319,6 +505,13 @@ export class PageService implements IPageService {
       }
       return manager.update(Page, pageUpdates.pageId, pageUpdates.diff);
     });
+
+    const operationTimestamp = Date.now();
+    this.afterPageUpdate(context, pageUpdates.diff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterPageUpdate failed:', err.message)
+    );
+
+    return result;
   }
 
   async deletePage(
@@ -328,7 +521,10 @@ export class PageService implements IPageService {
     deleteAssociatedPages: boolean = false,
     organizationId: string
   ) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
+    const context = await this.beforePageDelete(pageId, appVersionId);
+
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const pageExists = await manager.findOne(Page, {
         where: { id: pageId },
       });
@@ -341,6 +537,15 @@ export class PageService implements IPageService {
         throw new Error('Cannot delete home page');
       }
       if (pageExists.isPageGroup) {
+        // Capture child page IDs before group deletion for history tracking
+        if (deleteAssociatedPages && context) {
+          const childPages = await manager.find(Page, {
+            where: { appVersionId, pageGroupId: pageId },
+            select: ['id'],
+          });
+          context.childPageIds = childPages.map((p) => p.id);
+        }
+
         return await this.pageHelperService.deletePageGroup(
           pageExists,
           appVersionId,
@@ -357,9 +562,114 @@ export class PageService implements IPageService {
 
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
     }, appVersionId);
+
+    const operationTimestamp = Date.now();
+    this.afterPageDelete(context, pageId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterPageDelete failed:', err.message)
+    );
+
+    return result;
+  }
+
+  /**
+   * Delete a page using an existing EntityManager (for use within transactions).
+   * This method performs the core deletion logic without creating a new transaction.
+   * @param pageId - The ID of the page to delete
+   * @param manager - The EntityManager to use for the deletion
+   * @param organizationId - The organization ID for license validation
+   * @param options - Optional deletion options
+   */
+  async deletePageWithManager(
+    pageId: string,
+    manager: EntityManager,
+    organizationId: string,
+    options: DeletePageOptions = {}
+  ): Promise<void> {
+    const { skipReorder = false, deleteAssociatedPages = false } = options;
+
+    const pageExists = await manager.findOne(Page, {
+      where: { id: pageId },
+    });
+
+    if (!pageExists) {
+      throw new Error('Page not found');
+    }
+
+    // Handle page group deletion (EE feature - will be overridden in EE service)
+    if (pageExists.isPageGroup) {
+      await this.deletePageGroupWithManager(pageExists, manager, organizationId, {
+        deleteAssociatedPages,
+        skipReorder,
+      });
+      return;
+    }
+
+    // Cascade delete events for the page
+    await this.cascadeDeleteEventsWithManager(pageExists.id, manager);
+
+    // Delete the page
+    const deleteResult = await manager.delete(Page, pageId);
+
+    if (deleteResult.affected === 0) {
+      throw new Error('Page not deleted');
+    }
+
+    // Rearrange page order after deletion (unless skipped for bulk operations)
+    if (!skipReorder) {
+      await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
+    }
+  }
+
+  /**
+   * Delete a page group with an existing EntityManager.
+   * Base implementation throws error - EE service will override this.
+   */
+  protected async deletePageGroupWithManager(
+    page: Page,
+    manager: EntityManager,
+    organizationId: string,
+    options: { deleteAssociatedPages?: boolean; skipReorder?: boolean }
+  ): Promise<void> {
+    throw new Error('Page groups are an enterprise feature');
+  }
+
+  /**
+   * Cascade delete events for a source ID using an existing EntityManager.
+   */
+  protected async cascadeDeleteEventsWithManager(sourceId: string, manager: EntityManager): Promise<void> {
+    const allEvents = await manager.find(EventHandler, {
+      where: { sourceId },
+    });
+    await manager.remove(allEvents);
   }
 
   async findModuleContainer(appVersionId: string, organizationId: string): Promise<any> {
     return this.pageHelperService.findModuleContainer(appVersionId, organizationId);
+  }
+
+  async findModuleContainersForVersions(
+    appVersionIds: string[],
+    _organizationId: string,
+    manager: EntityManager
+  ): Promise<Map<string, any>> {
+    const versionIds = appVersionIds.filter(Boolean);
+    if (versionIds.length === 0) return new Map();
+
+    const pagesByVersion = await this.pageHelperService.findFirstPagesByVersionIds(versionIds, manager);
+    if (pagesByVersion.size === 0) return new Map();
+
+    const pageIds = [...pagesByVersion.values()].map((p) => p.id);
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
+
+    const moduleContainerByVersion = new Map<string, any>();
+    for (const [versionId, page] of pagesByVersion) {
+      const components = componentsByPage.get(page.id) ?? {};
+      const moduleContainer = _.find(
+        Object.values(components),
+        (c: any) => c?.component?.component === 'ModuleContainer'
+      );
+      if (moduleContainer) moduleContainerByVersion.set(versionId, moduleContainer);
+    }
+    return moduleContainerByVersion;
   }
 }

@@ -18,7 +18,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-marketplace/common": "^1.0.0",
-    "plivo": "^4.40.0"
+    "plivo": "4.75.1"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",

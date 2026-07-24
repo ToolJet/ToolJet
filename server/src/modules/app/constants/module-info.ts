@@ -41,13 +41,24 @@ import { FEATURES as EXTERNAL_API_FEATURES } from '@modules/external-apis/consta
 import { FEATURES as MODULE_FEATURES } from '@modules/modules/constants/feature';
 import { FEATURES as APP_GIT_FEATURES } from '@modules/app-git/constants/feature';
 import { FEATURES as GIT_SYNC_FEATURES } from '@modules/git-sync/constants/feature';
+import { FEATURES as APP_HISTORY_FEATURES } from '@modules/app-history/constants/features';
+import { FEATURES as CRM_FEATURES } from '@modules/CRM/constants/feature';
+import { FEATURES as METRICS } from '@modules/metrices/constants/features';
+import { FEATURES as SCIM_FEATURES } from '@modules/scim/constants/feature';
+import { FEATURES as WORKSPACE_BRANCHES_FEATURES } from '@modules/workspace-branches/constants/feature';
+import { FEATURES as CUSTOM_DOMAINS_FEATURES } from '@modules/custom-domains/constant/feature';
+import { FEATURES as DATA_QUERY_FOLDERS_FEATURES } from '@modules/data-query-folders/constants/features';
 
+const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
-  getTooljetEdition() === TOOLJET_EDITIONS.EE ? GROUP_PERMISSIONS_FEATURES_EE : GROUP_PERMISSIONS_FEATURES_CE;
+  tooljetEdition === TOOLJET_EDITIONS.EE || tooljetEdition === TOOLJET_EDITIONS.Cloud
+    ? GROUP_PERMISSIONS_FEATURES_EE
+    : GROUP_PERMISSIONS_FEATURES_CE;
 
 //every module should be here
 export const MODULE_INFO: { [key: string]: any } = {
   ...ROOT_FEATURES,
+  ...METRICS,
   ...USER_FEATURES,
   ...SESSION_FEATURES,
   ...GROUP_PERMISSIONS_FEATURES,
@@ -87,4 +98,10 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...MODULE_FEATURES,
   ...APP_GIT_FEATURES,
   ...GIT_SYNC_FEATURES,
+  ...APP_HISTORY_FEATURES,
+  ...CRM_FEATURES,
+  ...SCIM_FEATURES,
+  ...WORKSPACE_BRANCHES_FEATURES,
+  ...CUSTOM_DOMAINS_FEATURES,
+  ...DATA_QUERY_FOLDERS_FEATURES,
 };

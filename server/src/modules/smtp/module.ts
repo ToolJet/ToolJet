@@ -6,18 +6,22 @@ import { SubModule } from '@modules/app/sub-module';
 
 @Module({})
 export class SMTPModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { SMTPService, SmtpController, SMTPUtilService } = await this.getProviders(configs, 'smtp', [
       'service',
       'util.service',
       'controller',
     ]);
-    return {
+    return this.cacheModule(cacheKey, {
       module: SMTPModule,
       imports: [await InstanceSettingsModule.register(configs)],
-      controllers: [SmtpController],
+      controllers: isMainImport ? [SmtpController] : [],
       providers: [SMTPService, FeatureAbilityFactory, SMTPUtilService, OrganizationRepository],
       exports: [SMTPUtilService],
-    };
+    });
   }
 }

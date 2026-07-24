@@ -30,6 +30,7 @@
 /frontend/.firebase
 /.env
 /.env.test
+/.env.bak
 /docs/.firebase
 /docs/.firebaserc
 /node_modules
@@ -37,3 +38,14 @@
 
 .idea/*
 ti-*
+.claude/
+.worktrees/
+
+
+.tj_env.*
+.local/
+taskfile.*
+.serena/
+docs/superpowers/
+.codegraph/
+contexts/

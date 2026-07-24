@@ -1,4 +1,5 @@
 import React from 'react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEvent, isCell = false, ...rest }, ref) => {
   const defaultRef = React.useRef();
@@ -9,7 +10,11 @@ export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEven
   }, [resolvedRef, indeterminate]);
 
   return (
-    <div className={`d-flex flex-column align-items-center ${isCell ? 'justify-content-center h-100' : ''}`}>
+    <div
+      className={`table-selector-checkbox d-flex flex-column align-items-center ${
+        isCell ? 'justify-content-center h-100' : ''
+      }`}
+    >
       <input
         data-cy={`checkbox-input`}
         type="checkbox"
@@ -24,11 +29,12 @@ export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEven
         }}
         {...rest}
         style={{
-          width: 16,
-          height: 16,
+          width: '18px',
+          height: '18px',
         }}
         onMouseDown={(e) => e.preventDefault()}
       />
+      <SolidIcon name={'tickv3'} width="14px" fill="var(--icon-inverse)" className="table-selector-checkbox-icon" />
     </div>
   );
 });

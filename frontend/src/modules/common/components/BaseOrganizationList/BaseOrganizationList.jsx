@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { authenticationService } from '@/_services';
-import { getAvatar, decodeEntities } from '@/_helpers/utils';
-import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import { getAvatar, decodeEntities, stripTrailingSlash } from '@/_helpers/utils';
+import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
+import { useSessionTransferRedirect } from '@/_helpers/useSessionTransferRedirect';
 import { ToolTip } from '@/_components';
 import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
 import { shallow } from 'zustand/shallow';
@@ -32,12 +33,28 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const newTabRef = useRef(false);
+  const redirectWithSessionTransfer = useSessionTransferRedirect('switchOrganization');
+
   const switchOrganization = (id, newTab = false) => {
     newTabRef.current = newTab;
     const organization = organizationList.find((org) => org.id === id);
     if (![id, organization.slug].includes(getWorkspaceIdOrSlugFromURL())) {
       const newPath = appendWorkspaceId(organization.slug || id, location.pathname, true);
-      newTab ? window.open(newPath, '_blank') : (window.location = newPath);
+      const targetDomain = getTargetDomainURL(organization);
+      const currentOrigin = window.location.origin;
+
+      if (targetDomain && targetDomain !== currentOrigin) {
+        redirectWithSessionTransfer(targetDomain, newPath, id, newTab);
+      } else if (!targetDomain && isCustomDomain()) {
+        const mainHost = window.public_config?.TOOLJET_HOST;
+        if (!mainHost) {
+          console.error('[switchOrganization] TOOLJET_HOST not configured, cannot redirect from custom domain');
+          return;
+        }
+        redirectWithSessionTransfer(stripTrailingSlash(mainHost), newPath, id, newTab);
+      } else {
+        newTab ? window.open(newPath, '_blank') : (window.location = newPath);
+      }
     }
   };
   const handleOnChange = (id) => {

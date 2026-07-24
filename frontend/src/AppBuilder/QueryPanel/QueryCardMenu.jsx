@@ -6,7 +6,6 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import { debounce } from 'lodash';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
@@ -17,8 +16,7 @@ const QueryCardMenu = ({ darkMode }) => {
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const hasAppPermissionQuery = useStore((state) => state?.license?.featureAccess?.appPermissionQuery ?? false);
   const targetBtnForMenu = useStore((state) => state.queryPanel.targetBtnForMenu);
   const targetElement = document.getElementById(targetBtnForMenu);
   const showQueryHandlerMenu = useStore((state) => state.queryPanel.showQueryHandlerMenu);
@@ -33,13 +31,11 @@ const QueryCardMenu = ({ darkMode }) => {
       label: 'Rename',
       value: 'rename',
       icon: <Edit width={16} />,
-      showTooltip: false,
     },
     {
       label: 'Duplicate',
       value: 'duplicate',
       icon: <Copy width={16} />,
-      showTooltip: false,
     },
     {
       label: 'Query permission',
@@ -58,11 +54,9 @@ const QueryCardMenu = ({ darkMode }) => {
       label: 'Delete',
       value: 'delete',
       icon: <Trash width={16} fill={'#E54D2E'} />,
-      showTooltip: false,
     },
   ];
 
-  // To prevent user clicking from continuous clicks
   const debouncedDuplicateQuery = useCallback(
     debounce((queryId, appId) => {
       duplicateQuery(queryId, appId);
@@ -79,7 +73,7 @@ const QueryCardMenu = ({ darkMode }) => {
       debouncedDuplicateQuery(selectedQuery?.id, appId);
     }
     if (value === 'permission') {
-      if (!licenseValid) return;
+      if (!hasAppPermissionQuery) return;
       toggleQueryPermissionModal(true);
     }
     if (value === 'delete') {
@@ -103,6 +97,7 @@ const QueryCardMenu = ({ darkMode }) => {
       target={targetElement}
       show={showQueryHandlerMenu}
       rootClose
+      transition={false}
       onHide={() => toggleQueryHandlerMenu(false)}
       popperConfig={{
         strategy: 'absolute',
@@ -118,28 +113,10 @@ const QueryCardMenu = ({ darkMode }) => {
           {
             name: 'preventOverflow',
             enabled: true,
-            options: {
-              boundary: 'viewport',
-              rootBoundary: 'viewport',
-              padding: 8,
-              altAxis: true,
-              altBoundary: true,
-            },
+            options: { boundary: 'viewport', rootBoundary: 'viewport', padding: 8, altAxis: true, altBoundary: true },
           },
-          {
-            name: 'shift',
-            enabled: true,
-            options: {
-              boundary: 'viewport',
-              padding: 8,
-            },
-          },
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 3],
-            },
-          },
+          { name: 'shift', enabled: true, options: { boundary: 'viewport', padding: 8 } },
+          { name: 'offset', options: { offset: [0, 3] } },
         ],
       }}
     >
@@ -149,7 +126,7 @@ const QueryCardMenu = ({ darkMode }) => {
             {QUERY_MENU_OPTIONS.map((option) => {
               const optionBody = (
                 <div
-                  data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                  data-cy={`query-card-${String(option?.value).toLowerCase()}-button`}
                   className="list-item-popover-option"
                   key={option?.value}
                   onClick={(e) => {
@@ -161,21 +138,21 @@ const QueryCardMenu = ({ darkMode }) => {
                   <div
                     className={classNames('list-item-option-menu-label', {
                       'color-tomato9': option.value === 'delete',
-                      'color-disabled': option.value === 'permission' && !licenseValid,
+                      'color-disabled': option.value === 'permission' && !hasAppPermissionQuery,
                     })}
                   >
                     {option?.label}
                   </div>
-                  {option.value === 'permission' && !licenseValid && option.trailingIcon && option.trailingIcon}
+                  {option.value === 'permission' && !hasAppPermissionQuery && option.trailingIcon}
                 </div>
               );
 
               return option.value === 'permission' ? (
                 <ToolTip
                   key={option.value}
-                  message={'Component permissions are available only in paid plans'}
-                  placement="left"
-                  show={!licenseValid}
+                  message={"You don't have access to query permissions. Upgrade your plan to access this feature."}
+                  placement="right"
+                  show={!hasAppPermissionQuery}
                 >
                   {optionBody}
                 </ToolTip>

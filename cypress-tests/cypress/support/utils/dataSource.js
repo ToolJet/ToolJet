@@ -1,23 +1,29 @@
-import { postgreSqlSelector } from "Selectors/postgreSql";
-import { postgreSqlText } from "Texts/postgreSql";
-import { cyParamName } from "Selectors/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { commonText } from "Texts/common";
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { dataSourceText } from "Texts/dataSource";
+import { postgreSqlSelector } from "Selectors/postgreSql";
 import { navigateToAppEditor } from "Support/utils/common";
 import { verifyAppDelete } from "Support/utils/dashboard";
+import { postgreSqlText } from "Texts/postgreSql";
 
-export const verifyCouldnotConnectWithAlert = (dangerText) => {
+export const verifyCouldnotConnectWithAlert = (alertText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
     timeout: 10000,
   }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
     timeout: 5000,
   });
+  cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
+    "contain",
+    alertText
+  );
 };
 
 export const resizeQueryPanel = (height = "90") => {
   cy.get('[class="query-pane"]').invoke("css", "height", `calc(${height}%)`);
+};
+
+export const deleteWorkflowAndDS = (appName, datasourceName) => {
+  cy.deleteWorkflow(appName);
+  deleteDatasource(datasourceName);
 };
 
 export const query = (operation) => {
@@ -25,7 +31,7 @@ export const query = (operation) => {
 };
 
 export const verifypreview = (type, data) => {
-  cy.get(`[data-cy="preview-tab-${type}"]`, { timeout: 15000 }).click();
+  cy.get(`[data-cy="preview-tab-${type}"]`).click();
   cy.get(`[data-cy="preview-${type}-data-container"]`).verifyVisibleElement(
     "contain.text",
     data,
@@ -155,7 +161,7 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
 };
 
 export const verifyValueOnInspector = (queryName, value) => {
-  cy.get('[data-cy="left-sidebar-inspect-button"]').click();
+  cy.get('[data-cy="left-sidebar-inspector-button"]').click();
   cy.hideTooltip();
   cy.get('[data-cy="inspector-node-queries"]')
     .parent()
@@ -187,9 +193,9 @@ export const createDataQuery = (appName, url, key, value) => {
   let appId, versionId;
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `select id from apps where name='${appName}';`,
+    sql: `select app_id from app_versions where app_name='${appName}';`,
   }).then((resp) => {
-    appId = resp.rows[0].id;
+    appId = resp.rows[0].app_id;
 
     cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
@@ -280,7 +286,12 @@ export const createRestAPIQuery = (
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
+        url: `${Cypress.env(
+          "server_host"
+        )}/api/data-queries/data-sources/${data_source_id}/versions/${editingVersionId}`,
         headers: headers,
         body: requestBody,
       }).then((response) => {
@@ -289,4 +300,13 @@ export const createRestAPIQuery = (
       });
     });
   });
+};
+
+export const verifyPreviewData = (expectedData) => {
+  cy.get('[data-cy="query-preview-button"]').click();
+  cy.wait(2000);
+  cy.get('[data-cy="preview-json-data-container"]>ul>li>ul>li>div').click();
+  cy.get('[data-cy="preview-json-data-container"]')
+    .should("be.visible")
+    .and("contain", expectedData);
 };

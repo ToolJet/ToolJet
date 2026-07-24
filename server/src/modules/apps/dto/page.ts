@@ -21,6 +21,7 @@ export enum PageType {
   GROUP = 'group',
   URL = 'url',
   APP = 'app',
+  CUSTOM = 'custom',
 }
 
 export class CreatePageDto {
@@ -48,6 +49,12 @@ export class CreatePageDto {
   hidden: Record<string, any>;
 
   @IsOptional()
+  pageHeader: Record<string, any>;
+
+  @IsOptional()
+  pageFooter: Record<string, any>;
+
+  @IsOptional()
   isPageGroup: boolean;
 
   @IsOptional()
@@ -70,9 +77,15 @@ export class CreatePageDto {
   @IsOptional()
   type?: PageType;
 
+  // Deprecated: use targetCorelationId instead
   @IsUUID()
   @IsOptional()
   appId?: string;
+
+  // Co relation id for the target tooljet app when page type is 'app'
+  @IsUUID()
+  @IsOptional()
+  targetCorelationId?: string;
 }
 
 export class DeletePageDto {

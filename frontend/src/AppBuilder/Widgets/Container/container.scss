@@ -1,25 +1,19 @@
 .wj-container-header {
     position: relative;
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0px;
-      right: 0px;
-      height: 1px;
-      background-color: var(--cc-default-border);
+    border-bottom: 1px solid var(--cc-container-header-divider-color, var(--border-weak, #e4e7eb));
+  }
+
+
+.viewer {
+    .dynamic-height-target {
+        > .canvas-component {
+            > .jet-container {
+                > .widget-type-container {
+                    > .sub-canvas {
+                        overflow-y: hidden !important;
+                    }
+                }
+            }
+        }
     }
-  }
-
-//[Container-widget]Show scrollbar only on hover
-.widget-type-container {
-  .sub-canvas {
-    overflow: hidden auto;
-    scrollbar-width: none;
-    &:hover {
-      scrollbar-width: auto;
-   }
-  }
-
 }
-  

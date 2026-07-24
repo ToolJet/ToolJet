@@ -38,7 +38,7 @@ export class AppEnvironmentsController implements IAppEnvironmentsController {
     @Param('action') action: string,
     @Body() appEnvironmentActionParametersDto: AppEnvironmentActionParametersDto
   ) {
-    return await this.appEnvironmentServices.processActions(null, action, appEnvironmentActionParametersDto);
+    return await this.appEnvironmentServices.processActions(user, action, appEnvironmentActionParametersDto);
   }
 
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)

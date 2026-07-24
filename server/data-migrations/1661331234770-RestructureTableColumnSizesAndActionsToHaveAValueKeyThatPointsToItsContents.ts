@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersion } from '@entities/app_version.entity';
 
-export class RestructureTableColumnSizesAndActionsToHaveAValueKeyThatPointsToItsContents1661331234770
-  implements MigrationInterface
-{
+export class RestructureTableColumnSizesAndActionsToHaveAValueKeyThatPointsToItsContents1661331234770 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const appVersions = await entityManager.find(AppVersion);

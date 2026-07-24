@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import { appsService } from '@/_services';
+import { appVersionService } from '@/_services/appVersion.service';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import './workflows-query.scss';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,13 +9,18 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import useWorkflowStore from '@/_stores/workflowStore';
+import { useTranslation } from 'react-i18next';
+import { CustomToggleSwitch } from '../Components/CustomToggleSwitch';
 
 export function Workflows({ options, optionsChanged, currentState }) {
   const { moduleId } = useModuleContext();
+  const { t } = useTranslation();
   const [workflowOptions, setWorkflowOptions] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
+  const [syncExecution, setSyncExecution] = useState(options.syncExecution ?? true);
+  const [versionOptions, setVersionOptions] = useState([]);
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -42,6 +48,28 @@ export function Workflows({ options, optionsChanged, currentState }) {
   }, []);
 
   useEffect(() => {
+    if (options.workflowId) {
+      appVersionService
+        .getAll(options.workflowId)
+        .then((data) => {
+          const versions = (data?.versions || [])
+            .filter((v) => v.status === 'PUBLISHED')
+            .map((v) => ({
+              value: v.id,
+              name: v.name,
+            }));
+          setVersionOptions(versions);
+        })
+        .catch(() => {
+          setVersionOptions([]);
+        });
+    } else {
+      setVersionOptions([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.workflowId]);
+
+  useEffect(() => {
     optionsChanged({
       ...options,
       params,
@@ -51,7 +79,20 @@ export function Workflows({ options, optionsChanged, currentState }) {
 
   return (
     <>
+      <div style={{ marginBottom: '2px' }}>
+        {`To know more about querying workflows data,`}
+        &nbsp;
+        <a
+          href={'https://docs.tooljet.com/docs/workflows/how-to/trigger-workflow-from-app'}
+          target="_blank"
+          style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+          rel="noreferrer"
+        >
+          {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+        </a>
+      </div>
       <label className="mb-1">Workflow</label>
+      <div data-cy="workflow-dropdown"></div>
       <Select
         options={workflowOptions}
         value={options.workflowId ?? {}}
@@ -67,13 +108,42 @@ export function Workflows({ options, optionsChanged, currentState }) {
         width="300px"
         menuPlacement="bottom"
         customClassPrefix="workflow-select"
-        onMenuOpen={() => {
-          setIsMenuOpen(true);
-        }}
-        onMenuClose={() => {
-          setIsMenuOpen(false);
-        }}
+        onMenuOpen={() => setIsMenuOpen(true)}
+        onMenuClose={() => setIsMenuOpen(false)}
       />
+      {options.workflowId && (
+        <>
+          <label className="mb-1 mt-2">Version</label>
+          <div data-cy="workflow-version-dropdown"></div>
+          <Select
+            options={versionOptions}
+            value={options.workflowVersionId ?? {}}
+            onChange={(workflowVersionId) => {
+              optionsChanged({ ...options, workflowVersionId: workflowVersionId || null });
+            }}
+            height="32px"
+            useMenuPortal={true}
+            closeMenuOnSelect={true}
+            customWrap={true}
+            width="300px"
+            menuPlacement="bottom"
+            customClassPrefix="workflow-version-select"
+          />
+        </>
+      )}
+      <div className="my-2">
+        <CustomToggleSwitch
+          isChecked={syncExecution}
+          toggleSwitchFunction={() => {
+            const newVal = !syncExecution;
+            setSyncExecution(newVal);
+            optionsChanged({ ...options, syncExecution: newVal });
+          }}
+          action="syncExecution"
+          label="Run workflows synchronously"
+          dataCy="sync-workflow-execution"
+        />
+      </div>
       <label className="my-2">Params</label>
       <div className="grid"></div>
       {params.map((param, index) => (

@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 export class CreateDataSourceDto {
   @IsUUID()
@@ -49,6 +50,14 @@ export class GetDataSourceOauthUrlDto {
 
   @IsOptional()
   plugin_id: string;
+
+  @IsOptional()
+  @IsString()
+  environment_id?: string;
+
+  @IsOptional()
+  @IsUUID()
+  organization_id?: string;
 }
 
 export class AuthorizeDataSourceOauthDto {
@@ -78,3 +87,34 @@ export class CreateArgumentsDto {
   @IsString()
   environmentId?: string;
 }
+
+export class InvokeDataSourceMethodDto {
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
+  method: string;
+
+  @IsString()
+  environmentId: string;
+
+  @IsOptional()
+  args?: any;
+
+  @IsOptional()
+  resolvedOptions?: object;
+}
+
+export type InvokeDataSourceMethodResponseDto = QueryResult;
+
+export class ValidateOptionsDto {
+  @IsDefined()
+  options: Record<string, any>;
+
+  @IsDefined()
+  schema: Record<string, any>;
+
+  @IsUUID()
+  @IsOptional()
+  environment_id?: string;
+}
+

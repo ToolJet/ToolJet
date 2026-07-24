@@ -1,22 +1,25 @@
 import React from 'react';
-import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { SortableItem } from './components';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export function SortableList({ items, onChange, renderItem }) {
+  const { isModuleEditor } = useModuleContext();
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { delay: 150 },
+      activationConstraint: {
+        delay: 250,
+        distance: 10,
+      },
     })
     // useSensor(KeyboardSensor, {
     //   coordinateGetter: sortableKeyboardCoordinates,
     // })
   );
 
-  const shouldFreeze = useStore((state) => state.isVersionReleased || state.isEditorFreezed);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState);
 
   return (

@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import TemplateLibraryModal from './TemplateLibraryModal';
 import { useTranslation } from 'react-i18next';
-import { appsService } from '@/_services';
-import EmptyIllustration from '@assets/images/no-apps.svg';
+import { appsService, authenticationService } from '@/_services';
+import noAppsIllustration from '@assets/images/no-apps.svg?url';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -24,6 +23,7 @@ export const BlankPage = function BlankPage({
   appType,
   canCreateApp,
   workflowsLimit,
+  onImportFromDeviceClick,
 }) {
   const { t } = useTranslation();
   const whiteLabelText = retrieveWhiteLabelText();
@@ -157,7 +157,7 @@ export const BlankPage = function BlankPage({
                           leftIcon="plus"
                           onClick={openCreateAppModal}
                           isLoading={creatingApp}
-                          data-cy="button-new-app-from-scratch"
+                          data-cy={`button-new-${appType !== 'workflow' ? 'application' : 'workflow'}-from-scratch`}
                           className="col"
                           disabled={appType !== 'workflow' ? appCreationDisabled : workflowsCreationDisabled}
                           fill={'#FDFDFE'}
@@ -182,6 +182,11 @@ export const BlankPage = function BlankPage({
                             })}
                             style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
                             data-cy={appType !== 'workflow' ? 'import-an-application' : 'import-a-workflow'}
+                            onClick={(e) => {
+                              if (onImportFromDeviceClick && onImportFromDeviceClick(e) === false) {
+                                e.preventDefault();
+                              }
+                            }}
                           >
                             &nbsp;
                             {appType !== 'workflow'
@@ -209,7 +214,7 @@ export const BlankPage = function BlankPage({
                     </div>
                   </div>
                   <div className="col-5 empty-home-page-image" data-cy="empty-home-page-image">
-                    <EmptyIllustration />
+                    <img src={noAppsIllustration} alt="No apps" />
                   </div>
                 </div>
                 {appType !== 'workflow' && !appCreationDisabled && templateOptionsView}

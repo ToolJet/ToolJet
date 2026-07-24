@@ -18,6 +18,7 @@ export enum ResourceType {
   APP = 'app',
   DATA_SOURCE = 'data_source',
   WORKFLOWS = 'workflow',
+  FOLDER = 'folder',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -26,10 +27,12 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
     appCreate: true,
     appDelete: true,
-    folderCRUD: true,
+    folderCreate: true,
+    folderDelete: true,
     workflowCreate: true,
     workflowDelete: true,
     orgConstantCRUD: true,
+    tjdbCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
     isBuilderLevel: true,
@@ -41,10 +44,12 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
     appCreate: true,
     appDelete: true,
-    folderCRUD: true,
+    folderCreate: true,
+    folderDelete: true,
     workflowCreate: true,
     workflowDelete: true,
     orgConstantCRUD: true,
+    tjdbCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
     isBuilderLevel: true,
@@ -58,8 +63,10 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appDelete: false,
     workflowCreate: false,
     workflowDelete: false,
-    folderCRUD: false,
+    folderCreate: false,
+    folderDelete: false,
     orgConstantCRUD: false,
+    tjdbCRUD: false,
     dataSourceCreate: false,
     dataSourceDelete: false,
     isBuilderLevel: false,
@@ -74,6 +81,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: true,
       canView: false,
       hideFromDashboard: false,
+      canAccessDevelopment: true,
+      canAccessStaging: true,
+      canAccessProduction: true,
+      canAccessReleased: true,
     },
     [ResourceType.DATA_SOURCE]: {
       action: {
@@ -84,6 +95,13 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
     [ResourceType.WORKFLOWS]: {
       canEdit: true,
       canView: false,
+    },
+    [ResourceType.FOLDER]: {
+      // Radio button selection: Admin has "Edit folder" permission
+      // Only set the selected permission level to true; implied permissions are derived at runtime
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
     },
   },
   [USER_ROLE.END_USER]: {
@@ -91,10 +109,19 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: false,
       canView: true,
       hideFromDashboard: false,
+      canAccessDevelopment: false,
+      canAccessStaging: false,
+      canAccessProduction: false,
+      canAccessReleased: true,
     },
     [ResourceType.WORKFLOWS]: {
       canEdit: false,
       canView: true,
+    },
+    [ResourceType.FOLDER]: {
+      canEditFolder: false,
+      canEditApps: false,
+      canViewApps: true,
     },
   },
   [USER_ROLE.BUILDER]: {
@@ -102,6 +129,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: true,
       canView: false,
       hideFromDashboard: false,
+      canAccessDevelopment: true,
+      canAccessStaging: true,
+      canAccessProduction: false,
+      canAccessReleased: true,
     },
     [ResourceType.DATA_SOURCE]: {
       action: {
@@ -112,6 +143,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
     [ResourceType.WORKFLOWS]: {
       canEdit: true,
       canView: false,
+    },
+    [ResourceType.FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
     },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;
@@ -136,5 +172,14 @@ export enum FEATURE_KEY {
   UPDATE_GRANULAR_DATA_PERMISSIONS = 'update_granular_data_permissions',
   DELETE_GRANULAR_APP_PERMISSIONS = 'delete_granular_app_permissions',
   DELETE_GRANULAR_DATA_PERMISSIONS = 'delete_granular_data_permissions',
+  CREATE_GRANULAR_FOLDER_PERMISSIONS = 'create_granular_folder_permissions',
+  UPDATE_GRANULAR_FOLDER_PERMISSIONS = 'update_granular_folder_permissions',
+  DELETE_GRANULAR_FOLDER_PERMISSIONS = 'delete_granular_folder_permissions',
+  GET_ADDABLE_FOLDERS = 'get_addable_folders',
   USER_ROLE_CHANGE = 'change_user_role',
+  ASSIGN_GROUP_ADMIN = 'assign_group_admin',
+  REVOKE_GROUP_ADMIN = 'revoke_group_admin',
+  GET_GROUP_ADMINS = 'get_group_admins',
+  GET_ADDABLE_ADMINS = 'get_addable_admins',
+  GET_USER_ADMIN_GROUPS = 'get_user_admin_groups',
 }

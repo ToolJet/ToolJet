@@ -1,171 +1,143 @@
-// TODO: Clean up code
-
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ToolTip } from '@/_components';
 import { appsService } from '@/_services';
-import { handleHttpErrorMessages, validateName } from '@/_helpers/utils';
-import { InfoOrErrorBox } from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { AppModal } from '@/_components/AppModal';
+import { PenLine, TriangleAlert } from 'lucide-react';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
-  const { moduleId } = useModuleContext();
-  const [appId, appName, setAppName, appCreationMode] = useStore(
+  const { moduleId, appType } = useModuleContext();
+  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
       state.appStore.modules[moduleId].app.appName,
       state.setAppName,
       state.appStore.modules[moduleId].app.creationMode,
+      state.selectedVersion,
+      state.orgGit,
     ],
     shallow
   );
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  const [name, setName] = useState(appName);
-  const [isValid, setIsValid] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [warningText, setWarningText] = useState('');
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
 
-  const inputRef = useRef(null);
+  const isDraftVersion = selectedVersion?.status === 'DRAFT';
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isOnDefaultBranch = workspaceActiveBranch
+    ? workspaceActiveBranch.is_default ||
+      workspaceActiveBranch.isDefault ||
+      workspaceActiveBranch.name === defaultBranchName
+    : selectedVersion?.versionType !== 'branch';
+  // Workspace-level git sync: every app in a git-enabled org participates in git.
+  // Default branch is read-only (rename must happen on a feature branch); rename also
+  // requires a draft version regardless of git state.
+  const isRenameDisabled = !isGitSyncEnabled ? false : !isDraftVersion || isOnDefaultBranch;
 
-  useEffect(() => {
-    setName(appName);
-  }, [appName]);
-
-  const clearError = () => {
-    setIsError(false);
-    setErrorMessage('');
+  const getDisabledTooltipMessage = () => {
+    if (isGitSyncEnabled && isOnDefaultBranch) {
+      return "Renaming isn't allowed on default branch. Switch branch to update name.";
+    }
+    if (!isDraftVersion && isGitSyncEnabled) {
+      return 'Renaming of app is only allowed on draft versions';
+    }
+    return appName;
   };
 
-  const setError = (message) => {
-    setIsError(true);
-    setErrorMessage(message);
-  };
+  const [showRenameModal, setShowRenameModal] = useState(false);
 
-  const saveAppName = async (newName) => {
-    const trimmedName = newName.trim();
-    if (validateName(trimmedName, 'App', false, true)?.errorMsg) {
-      setName(appName);
-      clearError();
-      setIsEditing(false);
-      return;
+  const handleRenameApp = async (newAppName, appId) => {
+    const sanitizedName = newAppName?.trim().replace(/\s+/g, ' ');
+
+    // Prevent unnecessary API call if the name effectively hasn't changed
+    if (sanitizedName === appName) {
+      setShowRenameModal(false);
+      return true;
     }
-
-    if (trimmedName === appName) {
-      setIsValid(true);
-      setIsEditing(false);
-      setName(appName);
-      return;
-    }
-
     try {
-      await appsService.saveApp(appId, { name: trimmedName });
-      setAppName(trimmedName);
-
-      setIsValid(true);
-      setIsEditing(false);
-      toast.success('App name successfully updated!');
-    } catch (error) {
-      if (error.statusCode === 409) {
-        setError('App name already exists');
-      } else {
-        clearError();
-        setName(appName);
-        setIsEditing(false);
-        handleHttpErrorMessages(error, 'app');
+      await appsService.saveApp(appId, { name: sanitizedName, editingVersionId: selectedVersion?.id });
+      setAppName(sanitizedName);
+      toast.success(`${appType === 'module' ? 'Module' : 'App'} name has been updated!`);
+      return true;
+    } catch (errorResponse) {
+      if (errorResponse.statusCode === 409) {
+        return false;
+      }
+      if (errorResponse.statusCode !== 451) {
+        throw errorResponse;
       }
     }
   };
 
-  const handleKeyDown = (e) => {
-    if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-    }
-  };
-
-  React.useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown); // Clean up the event listener
-    };
-  }, []);
-
-  const handleBlur = () => {
-    saveAppName(name);
-  };
-
-  const handleFocus = () => {
-    setIsValid(true);
-    setIsEditing(true);
-  };
-
-  const handleInput = (e) => {
-    const newValue = e.target.value;
-    setName(newValue);
-    if (newValue.length >= 50) {
-      setWarningText('Maximum length has been reached');
-    } else {
-      setWarningText('');
-      clearError();
-    }
-  };
-
-  const borderColor = isError
-    ? 'var(--light-tomato-10, #DB4324)' // Apply error border color
-    : darkMode
-    ? 'var(--dark-border-color, #2D3748)' // Change this to the appropriate dark border color
-    : 'var(--light-border-color, #FFF0EE)';
-
-  // Define the message based on the pageType prop
-  const messageType = 'App';
-
   return (
-    <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
-      <ToolTip message={name} placement="bottom" isVisible={!isEditing && appCreationMode !== 'GIT'}>
-        <input
-          ref={inputRef}
-          type="text"
-          onChange={() => {
-            //this was quick fix. replace this with actual tooltip props and state later
-            if (document.getElementsByClassName('tooltip').length) {
-              document.getElementsByClassName('tooltip')[0].style.display = 'none';
-            }
-          }}
-          onInput={handleInput}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          onClick={() => {
-            inputRef.current.select();
-            setIsEditing(true);
-          }}
-          className={`form-control-plaintext form-control-plaintext-sm ${
-            (!isError && !isEditing) || isValid ? '' : 'is-invalid'
-          } ${isError ? 'error' : ''}`} // Add the 'error' class when there's an error
-          style={{ border: `1px solid ${borderColor}` }}
-          value={name}
-          maxLength={50}
-          data-cy="app-name-input"
+    <>
+      <div className="tw-h-full tw-flex tw-items-start tw-justify-start">
+        <ToolTip
+          message={getDisabledTooltipMessage()}
+          placement="bottom"
+          maxWidth="210px"
+          isVisible={appCreationMode !== 'GIT' || isRenameDisabled}
+        >
+          <button
+            className="edit-app-name-button tw-h-8 tw-min-w-[100px] tw-max-w-[240px] tw-rounded-lg tw-pr-1 tw-w-auto tw-font-medium tw-outline-none tw-bg-transparent tw-border tw-border-transparent tw-shadow-none tw-group tw-transition-all tw-duration-300 tw-flex tw-items-center tw-relative tw-justify-start"
+            style={{
+              cursor: isRenameDisabled ? 'not-allowed' : 'pointer',
+              opacity: isRenameDisabled ? 0.6 : 1,
+            }}
+            type="button"
+            data-cy="edit-app-name-button"
+            onClick={() => !isRenameDisabled && setShowRenameModal(true)}
+            disabled={isRenameDisabled}
+          >
+            <span
+              className="tw-font-title-large tw-truncate tw-w-full tw-block tw-text-start group-hover:tw-w-[calc(100%-24px)] tw-text-[var(--slate12)]"
+              data-cy="editor-app-name-input"
+            >
+              {appName}
+            </span>
+            {!isRenameDisabled && (
+              <span className="tw-absolute tw-right-0.5 tw-top-1 tw-text-icon-default tw-hidden group-hover:tw-block tw-w-7 tw-h-7 tw-items-center tw-justify-center">
+                <PenLine width="16" height="16" name="pencil" />
+              </span>
+            )}
+          </button>
+        </ToolTip>
+      </div>
+
+      {showRenameModal && (
+        <AppModal
+          show={showRenameModal}
+          closeModal={() => setShowRenameModal(false)}
+          processApp={handleRenameApp}
+          selectedAppId={appId}
+          selectedAppName={appName}
+          title={appType === 'module' ? 'Rename module' : 'Rename app'}
+          titleAdornment={(() => {
+            const { currentBranch } = useWorkspaceBranchesStore.getState();
+            const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+            if (!isOnFeatureBranch) return null;
+            return (
+              <ToolTip
+                message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                placement="top"
+                width="272px"
+              >
+                <span className="tw-inline-flex tw-items-center tw-ml-2">
+                  <TriangleAlert size={18} className="tw-text-[var(--icon-warning)]" />
+                </span>
+              </ToolTip>
+            );
+          })()}
+          actionButton={appType === 'module' ? 'Rename module' : 'Rename app'}
+          actionLoadingButton={'Renaming'}
+          appType={appType}
         />
-      </ToolTip>
-      <InfoOrErrorBox
-        active={isError || isEditing}
-        message={
-          errorMessage ||
-          warningText ||
-          (name.length >= 50
-            ? 'Maximum length has been reached'
-            : `${messageType} name should be unique and max 50 characters`)
-        }
-        isWarning={warningText || name.length >= 50}
-        isError={isError}
-        darkMode={darkMode}
-        additionalClassName={isError ? 'error' : ''}
-      />
-    </div>
+      )}
+    </>
   );
 }
 

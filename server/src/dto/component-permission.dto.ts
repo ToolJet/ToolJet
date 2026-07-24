@@ -43,8 +43,10 @@ export interface GroupPermissionsData {
   appDelete: boolean;
   workflowCreate: boolean;
   workflowDelete: boolean;
-  folderCRUD: boolean;
+  folderCreate: boolean;
+  folderDelete: boolean;
   orgConstantCRUD: boolean;
+  tjdbCRUD: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
   appPromote: boolean;

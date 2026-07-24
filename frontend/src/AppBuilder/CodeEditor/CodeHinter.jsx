@@ -11,6 +11,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isNumber } from 'lodash';
 import { Alert } from '@/_ui/Alert/Alert';
 import TJDBCodeEditor from './TJDBHinter';
+import { writeCodehinterPopupEditorDimensions } from '@/_helpers/codehinterPortalDimensions';
 
 const CODE_EDITOR_TYPE = {
   fxEditor: SingleLineCodeEditor.EditorBridge,
@@ -64,6 +65,10 @@ const CodeHinter = ({
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
+  const onPortalDimensionsChange = React.useCallback((dims) => {
+    writeCodehinterPopupEditorDimensions(dims);
+  }, []);
+
   const RenderCodeEditor = CODE_EDITOR_TYPE[type];
 
   return (
@@ -78,6 +83,8 @@ const CodeHinter = ({
           setIsOpen,
           handleTogglePopupExapand,
           forceUpdate,
+          onPortalDimensionsChange,
+          canRefresh: restProps.canRefresh,
         }}
         componentName={componentName}
         disabled={disabled}
@@ -98,7 +105,7 @@ const Portal = ({ children, ...restProps }) => {
 const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false, isQueryManager = false }) => {
   const size = 16;
   const topRef = isNumber(position?.height) ? Math.floor(position?.height) - 30 : 32;
-  let top = isMultiEditor ? 270 : topRef > 32 ? topRef : 0;
+  let top = topRef > 32 ? topRef : 0;
   // for query manager we allow the height of query manager to be dynamic, so we need to render the popup icon at the bottom of code editor
   const renderAtBottom = isQueryManager && (isMultiEditor || topRef > 32);
 

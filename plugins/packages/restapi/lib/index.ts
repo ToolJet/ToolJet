@@ -18,24 +18,25 @@ import {
   cookiesToString,
   sanitizeSearchParams,
   getAuthUrl,
+  validateUrlForSSRF,
+  getSSRFProtectionOptions,
 } from '@tooljet-plugins/common';
 const FormData = require('form-data');
 const JSON5 = require('json5');
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions } from './types';
+import { SignatureV4 } from '@smithy/signature-v4';
+import { Sha256 } from '@aws-crypto/sha256-js';
+function isFileObject(value: unknown): value is Record<string, string> {
+  if (typeof value !== 'object' || value === null) return false;
+  const objectKeys = Object.keys(value);
 
-function isFileObject(value) {
-  const keys = Object.keys(value);
-
+  // Check keys common to both old and new file object formats.
+  // 'base64Data' is specific enough to avoid false positives on regular objects.
   return (
-    typeof value === 'object' &&
-    keys.length > 0 &&
-    keys.includes('name') && // example.zip
-    keys.includes('type') && // application/zip
-    keys.includes('content') && // raw'ish bytes (contains new lines - \n)
-    keys.includes('dataURL') && // data url representation
-    keys.includes('base64Data') && // data in base64
-    keys.includes('filePath')
+    objectKeys.includes('name') && // filename e.g. example.zip
+    objectKeys.includes('type') && // MIME type e.g. application/zip
+    objectKeys.includes('base64Data') // file content encoded as base64
   );
 }
 
@@ -53,6 +54,10 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     const hasDataSource = dataSourceId !== undefined;
     const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
+
+    // SSRF Protection: Validate URL before making request
+    await validateUrlForSSRF(url);
+
     const _requestOptions = await this.constructValidatedRequestOptions(
       context,
       sourceOptions,
@@ -64,8 +69,12 @@ export default class RestapiQueryService implements QueryService {
     if (_requestOptions.status === 'needs_oauth') return _requestOptions;
     const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
 
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    // Pass requestOptions to properly merge hooks and other options
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+
     try {
-      const response = await got(url, requestOptions);
+      const response = await got(url, finalOptions);
       const { result, requestObject, responseObject } = this.handleResponse(response);
 
       return {
@@ -102,8 +111,14 @@ export default class RestapiQueryService implements QueryService {
 
     const body = this.constructRequestBody(sourceOptions, queryOptions, hasDataSource);
     this.addBodyToRequest(_requestOptions, body);
+    let authValidatedRequestOptions;
 
-    const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
+    if (sourceOptions['auth_type'] === 'aws_v4') {
+      authValidatedRequestOptions = await this.handleAwsSigV4Authentication(sourceOptions, _requestOptions, { url });
+      return authValidatedRequestOptions;
+    }
+
+    authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
       _requestOptions
@@ -183,7 +198,14 @@ export default class RestapiQueryService implements QueryService {
     }
 
     // Sanitize and append search parameters
-    for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource)) {
+    // eslint-disable-next-line prefer-const
+    for (let [key, value] of sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource)) {
+      if (Array.isArray(value) || Object.prototype.toString.call(value) === '[object Object]') {
+        // If the value is an array or object, stringify it
+        value = JSON.stringify(value);
+        searchParams.append(key, value);
+        continue;
+      }
       searchParams.append(key, String(value));
     }
 
@@ -233,23 +255,28 @@ export default class RestapiQueryService implements QueryService {
   }
 
   private setMultipartFormDataBody(requestOptions: OptionsOfTextResponseBody, body: any) {
-    if (body && Object.values(body).some(isFileObject)) {
-      const form = new FormData();
-      Object.entries(body).forEach(([key, value]: [string, Record<string, string>]) => {
-        if (isFileObject(value)) {
-          const fileBuffer = Buffer.from(value.base64Data || '', 'base64');
-          form.append(key, fileBuffer, {
-            filename: value?.name || '',
-            contentType: value?.type || '',
-            knownLength: fileBuffer.length,
-          });
-        } else if (value != null) {
+    if (!body) return;
+
+    const form = new FormData();
+    Object.entries(body).forEach(([key, value]: [string, Record<string, string>]) => {
+      if (isFileObject(value)) {
+        const fileBuffer = Buffer.from(value.base64Data || '', 'base64');
+        form.append(key, fileBuffer, {
+          filename: value?.name || '',
+          contentType: value?.type || '',
+          knownLength: fileBuffer.length,
+        });
+      } else if (value != null) {
+        // Stringify Arrays and Objects before appending to form
+        if (Array.isArray(value) || Object.prototype.toString.call(value) === '[object Object]') {
+          form.append(key, JSON.stringify(value));
+        } else {
           form.append(key, value);
         }
-      });
-      requestOptions.body = form;
-      requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
-    }
+      }
+    });
+    requestOptions.body = form;
+    requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
   }
 
   private handleResponse(response: any) {
@@ -332,13 +359,20 @@ export default class RestapiQueryService implements QueryService {
           },
         };
         break;
+      case 'none':
+        httpsParams = {
+          https: {
+            rejectUnauthorized: false,
+          },
+        };
+        break;
       default:
         break;
     }
 
     if (process.env.NODE_EXTRA_CA_CERTS) {
       'https' in httpsParams
-        ? (httpsParams.https.certificateAuthority = httpsParams.https?.certificateAuthority.concat([
+        ? (httpsParams.https.certificateAuthority = (httpsParams.https?.certificateAuthority || []).concat([
             ...tls.rootCertificates,
             readFileSync(process.env.NODE_EXTRA_CA_CERTS),
           ]))
@@ -350,6 +384,59 @@ export default class RestapiQueryService implements QueryService {
     }
 
     return httpsParams;
+  }
+
+  async handleAwsSigV4Authentication(
+    sourceOptions: any,
+    requestOptions: any,
+    additionalOptions?: any
+  ): Promise<QueryResult> {
+    let credentials;
+
+    if (sourceOptions['use_credential_provider_chain']) {
+      const { defaultProvider } = await import('@aws-sdk/credential-provider-node');
+      credentials = defaultProvider();
+    } else {
+      credentials = {
+        accessKeyId: sourceOptions['aws_access_key_id'],
+        secretAccessKey: sourceOptions['aws_secret_access_key'],
+      };
+    }
+
+    const url = new URL(additionalOptions.url);
+
+    const signer = new SignatureV4({
+      credentials,
+      region: sourceOptions['aws_region'],
+      service: sourceOptions['aws_service'],
+      sha256: Sha256,
+    });
+    const getBodyForSigning = (requestOptions: any): string | undefined => {
+      if (requestOptions.body) return requestOptions.body;
+      if (requestOptions.json) return JSON.stringify(requestOptions.json);
+      if (requestOptions.form) return new URLSearchParams(requestOptions.form).toString();
+      return undefined;
+    };
+
+    const signedRequest = await signer.sign({
+      method: requestOptions.method.toUpperCase(),
+      hostname: url.hostname,
+      protocol: url.protocol,
+      path: url.pathname,
+      headers: {
+        ...requestOptions.headers,
+        host: url.hostname,
+      },
+      body: getBodyForSigning(requestOptions),
+    });
+
+    return {
+      status: 'ok',
+      data: {
+        ...requestOptions,
+        headers: signedRequest.headers,
+      },
+    };
   }
 
   private getResponse(response) {

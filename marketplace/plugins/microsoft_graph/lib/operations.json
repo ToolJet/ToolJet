@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Microsoft Graph datasource",
+  "description": "A schema defining Microsoft_graph datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "ms_graph_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": {
+        "Outlook": "@spec/microsoft_graph/outlook",
+        "Calendar": "@spec/microsoft_graph/calendar",
+        "Users": "@spec/microsoft_graph/users",
+        "Teams": "@spec/microsoft_graph/teams",
+        "OneDrive": "@spec/microsoft_graph/onedrive",
+        "SharePoint": "@spec/microsoft_graph/sharepoint"
+      }
+    }
+  }
+}

@@ -48,7 +48,7 @@
       "description": "Enter port"
     },
     "database": {
-      "label": "Database Name",
+      "label": "Database name",
       "key": "database",
       "type": "text",
       "description": "Name of the database"

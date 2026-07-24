@@ -271,3 +271,16 @@ export const redactHeaders = (headers) => {
   });
   return redactedHeaders;
 };
+
+export function getTooljetEdition(): string {
+  if (process.env.TOOLJET_EDITION) {
+    return process.env.TOOLJET_EDITION.toLowerCase();
+  }
+  return 'ce';
+}
+
+export function throwIfSignalAborted(signal: AbortSignal, timeout: number) {
+  if (signal.aborted) {
+    throw new QueryError(`Defined query timeout of ${timeout}ms exceeded when running query.`, `Query timed out`, {});
+  }
+}

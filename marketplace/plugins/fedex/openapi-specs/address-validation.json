@@ -1,0 +1,1225 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Address Validation APi",
+		"version": "1.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://apis-sandbox.fedex.com",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "https://apis.fedex.com",
+			"description": "Production Server"
+		}
+	],
+	"paths": {
+		"/address/v1/addresses/resolve": {
+			"post": {
+				"summary": "Validate Address",
+				"description": "Use this endpoint to get address resolution details. These details are the outcome of validation and resolution of the input address. An address is stated as resolved when the input address matches the known reference data.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.<i>",
+				"operationId": "Validate Address",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/body"
+							}
+						}
+					},
+					"required": false
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AdvcResponseVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "STANDARDIZED.ADDRESS.NOTFOUND",
+											"message": "Standardized address is not found."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/address/v1/addresses/resolve\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/address/v1/addresses/resolve\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/address/v1/addresses/resolve\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/address/v1/addresses/resolve');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/address/v1/addresses/resolve\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/address/v1/addresses/resolve\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/address/v1/addresses/resolve\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"AdvcResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "Unique identifier returned in the reply and helps you match the request to the reply.<br>Example: XXX_ORDERXXXX789",
+						"example": "XXX_ORDERXXXX789"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br><br> Example: XXX_ORDERXXXX789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO"
+					}
+				},
+				"description": "Wrapper class for AddressResolutionOutputVO. It holds transactionId and output."
+			},
+			"BaseProcessOutputVO": {
+				"$ref": "#/components/schemas/AddressResolutionOutputVOV3"
+			},
+			"AddressResolutionOutputVOV3": {
+				"type": "object",
+				"properties": {
+					"resolvedAddresses": {
+						"type": "array",
+						"description": "Indicates the list of resolved addresses. The detailed resolved address includes city, state, postal information, and resolution method.",
+						"items": {
+							"$ref": "#/components/schemas/ResolvedAddress"
+						}
+					},
+					"alerts": {
+						"type": "array",
+						"description": "Indicates API Alerts includes alert type, alert code, and alert message that is received when the address is resolved.",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					}
+				},
+				"description": "Indicates the resolved address parameters."
+			},
+			"ResolvedAddress": {
+				"type": "object",
+				"properties": {
+					"streetLinesToken": {
+						"type": "array",
+						"description": "Indicates the resolved street address lines.<br>Example: [\\\"7372 PARKRIDGE BLVD\\\", \\\"APT 286, 2903 sprank\\\"]",
+						"example": [
+							"7372 PARKRIDGE BLVD",
+							"APT 286"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "This is resolved city name.<br> Example: IRVING",
+						"example": "IRVING"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is resolved state or province code.<br>Example: TX<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State Or Province Code</a>",
+						"example": "TX"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "This is resolved ISO alpha 2 country code.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"customerMessage": {
+						"type": "array",
+						"description": "Returns messages pertaining to the resolved address indicating if any additional information is required.<br><br>Following are informational code and messages with respect to the results:<ul><li><i>INVALID.SUITE.NUMBER</i> &ndash; Invalid or missing Apartment/Suite</li><li><i>SUITE.NUMBER.REQUIRED</i> &ndash; Invalid or missing Apartment/Suite</li><li><i>PARTIAL.STREET.MATCH</i> &ndash; A street address is required for delivery. The entered address is a street number range.</li><li><i>MISSING.OR.AMBIGUOUS.DIRECTIONAL</i> &ndash; Invalid or missing address directional.</li><li><i>INTERPOLATED.STREET.ADDRESS</i> &ndash; Unable to confirm exact street number for the entered street name. The address falls within a valid range for the street name.</li><li><i>RRHC.CONVERSION</i> &ndash; A street address is required for delivery. The address has been converted from a rural route.</li></ul>",
+						"items": {
+							"$ref": "#/components/schemas/CustomerMessage"
+						}
+					},
+					"cityToken": {
+						"type": "array",
+						"description": "This is the resolved city name with a token. The token is an indication to the changes made.<br> Examples: [TOK-1X3256]",
+						"example": [
+							"TOK-1X3256"
+						],
+						"items": {
+							"$ref": "#/components/schemas/ResolutionToken"
+						}
+					},
+					"postalCodeToken": {
+						"description": "This is the resolved postal code with a token. The token is an indication to the changes made.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ResolutionToken"
+							}
+						]
+					},
+					"parsedPostalCode": {
+						"$ref": "#/components/schemas/ParsedPostalCode"
+					},
+					"classification": {
+						"type": "string",
+						"description": "This is the classification type of a FedEx address.<br>Valid values:<ul><li>BUSINESS</li><li>RESIDENTIAL</li><li>MIXED (If it is a multi-tenant based address and contains both business and residential units.)</li><li>UNKNOWN (If just a zip code is provided, Address Validation Service returns 'unknown' for the business/residential classification.)</li>",
+						"example": "BUSINESS",
+						"enum": [
+							"MIXED",
+							"UNKNOWN",
+							"BUSINESS",
+							"RESIDENTIAL"
+						]
+					},
+					"postOfficeBox": {
+						"type": "boolean",
+						"description": "Indicates if the resolved address is a P.O. Box.",
+						"example": true
+					},
+					"normalizedStatusNameDPV": {
+						"type": "boolean",
+						"description": "Indicates the presence of a delivery point such as a mailbox. Provided only for US addresses that are standardized against Postal Data.",
+						"example": true
+					},
+					"standardizedStatusNameMatchSource": {
+						"type": "string",
+						"description": "Indicates the source from which the standardized address is matched. <br> Example: Postal or Map.",
+						"example": "Postal"
+					},
+					"resolutionMethodName": {
+						"type": "string",
+						"description": "Indicates the resolution method used to resolve the address. <br>Valid values: <ul><li>USPS_VALIDATE</li><li>CA_VALIDATE</li><li>GENERIC_VALIDATE</li><li>NAVTEQ_GEO_VALIDATE</li><li>TELEATLAS_GEO_VALIDATE</li></ul>",
+						"example": "USPS_VALIDATE"
+					},
+					"ruralRouteHighwayContract": {
+						"type": "boolean",
+						"description": "Indicates if the resolved address is a Rural Route or Highway Contract (US only). It returns true if it is rural route. ",
+						"example": false
+					},
+					"generalDelivery": {
+						"type": "boolean",
+						"description": "Indicates the mail service is for those without permanent address. The mails for this address are held at a post office. Only applies to addresses that can be standardized against Postal Data. Not provided for US Geo Validated addresses. <br>Note: Only returned when the address cannot be resolved.",
+						"example": false
+					},
+					"attributes": {
+						"type": "object",
+						"description": "These are the  key-value pair as additional information returned along with the address processed by the system. These attribute will list what is working and what is not on the input address. For More information, look in to Chapter Address Attributes in the Overview.<br><a onclick='loadDocReference(\"addressattributes\")'>Click here to see Address Attributes</a>",
+						"properties": {
+							"POBox": {
+								"type": "boolean",
+								"description": "true indicates the input address is a POBox.",
+								"example": false
+							},
+							"POBoxOnlyZIP": {
+								"type": "boolean",
+								"description": "True indicates a POBox only postal code.",
+								"example": false
+							},
+							"SplitZip": {
+								"type": "boolean",
+								"description": "True indicates when the address comes under a new ZIP code that did not exists previously.",
+								"example": false
+							},
+							"SuiteRequiredButMissing": {
+								"type": "boolean",
+								"description": "True indicates the resolved address includes a suite number, but it was missing in the request.",
+								"example": false
+							},
+							"InvalidSuiteNumber": {
+								"type": "boolean",
+								"description": "True indicates an invalid suite number.",
+								"example": false
+							},
+							"ResolutionInput": {
+								"type": "string",
+								"description": "Type of input information (Currently only option is RAW_ADDRESS).",
+								"example": "RAW_ADDRESS"
+							},
+							"DPV": {
+								"type": "boolean",
+								"description": "True indicates the postal delivery address is valid delivery point.",
+								"example": false
+							},
+							"ResolutionMethod": {
+								"type": "string",
+								"description": "Indicates the type of resolution method utilized to resolve the address.  Valid Values:  USPS_VALIDATE (US postal), NAVTEQ_GEO_VALIDATE or RELEATLAS_GEO_VALIDATED (US geo/map validated), CA_VALIDATE (Canada postal), GENERIC_VALIADTE (other validation).",
+								"example": "GENERIC_VALIDATE"
+							},
+							"DataVintage": {
+								"type": "string",
+								"description": "Month and year of the reference data that was used to identify the address.",
+								"example": "July 2020"
+							},
+							"MatchSource": {
+								"type": "string",
+								"description": "Indicates 'Postal' or 'Map' date was used to match the address.",
+								"example": "Postal"
+							},
+							"CountrySupported": {
+								"type": "boolean",
+								"description": "True indicates the country is supported by the Address Validation service.",
+								"example": true
+							},
+							"ValidlyFormed": {
+								"type": "boolean",
+								"description": "True indicates the address is in a valid format.",
+								"example": true
+							},
+							"Matched": {
+								"type": "boolean",
+								"description": "True indicates the address matches to a record in the address validation repository.",
+								"example": true
+							},
+							"Resolved": {
+								"type": "boolean",
+								"description": "True indicates the address was successfully resolved.",
+								"example": true
+							},
+							"Inserted": {
+								"type": "boolean",
+								"description": "True indicates the address was inserted into the Address data repository.",
+								"example": false
+							},
+							"MultiUnitBase": {
+								"type": "boolean",
+								"description": "True indicates that an input address was resolved to a standardized address for the base address of a multi-unit building. False indicates that the address was not resolved to a standardized address for the base address of a multi-unit building.",
+								"example": false
+							},
+							"ZIP11Match": {
+								"type": "boolean",
+								"description": "True indicates the input address was resolved to a standardized address based upon a Zip-11 postal code match. This is the highest level of postal code validation.",
+								"example": false
+							},
+							"ZIP4Match": {
+								"type": "boolean",
+								"description": "True indicates that the input address was resolved to a standardized address based upon at least a ZIP+4 match, for example 80003-5581.",
+								"example": false
+							},
+							"UniqueZIP": {
+								"type": "boolean",
+								"description": "True indicates that the postal code of the address is unique for a specific postal customer address. The ZIP may apply to a single unit or floor within a building, to an entire building, or to an institution or corporate campus.",
+								"example": false
+							},
+							"StreetAddress": {
+								"type": "boolean",
+								"description": "True indicates that the house number and street name were validated against reference data.",
+								"example": false
+							},
+							"RRConversion": {
+								"type": "boolean",
+								"description": "True indicates a Rural Route conversion was applied to the address in order to process it.",
+								"example": false
+							},
+							"ValidMultiUnit": {
+								"type": "boolean",
+								"description": "True indicates address contains multiple units.",
+								"example": false
+							},
+							"AddressType": {
+								"type": "string",
+								"description": "valid values:<br>RAW - address country not supported.<br>NORMALIZED - address country supported, but unable to match the address against reference data.<br>STANDARDIZED - address service was able to successfully match the address against reference data.",
+								"example": "STANDARDIZED"
+							},
+							"AddressPrecision": {
+								"type": "string",
+								"description": "Indicates the depth/precision of the address.  MULTI_TENANT_UNIT indicates that the address has valid secondary information.<br>MULTI_TENANT_BASE indicates that the address is a valid multi tentant location but secondary information either was not provided or could not be validated.<br>PO_BOX indicates that the local postal authority services the address through a PO Box.<br>UNIQUE_ZIP indicates that the address could be validated to the postal code level and that postal code is a unique zip for the USPS.<br>STREET_ADDRESS / Street indicates that the location is not a valid multi tenant location.<br>StreetBuilding indicates that the address was validated to a building name that is in the reference data.<br>StreetOrganization indicates that the address was validated to an organization name that is in the reference data.<br>StreetName indicates that the address was validated to the street name level in reference data and the house number (if provided) could not be validated.valid values:<br>MULTI_TENANT_UNIT- address consists of multiple units, some could be BUSINESS, some could be MIXED.",
+								"example": "MULTI_TENANT_UNIT"
+							},
+							"MultipleMatches": {
+								"type": "boolean",
+								"description": "True indicates the address requested has multiple matches available, usually due to a simPle difference such as a leading directional.",
+								"example": false
+							}
+						}
+					}
+				}
+			},
+			"ParsedPersonName": {
+				"required": [
+					"firstName",
+					"lastName"
+				],
+				"type": "object",
+				"properties": {
+					"firstName": {
+						"type": "string",
+						"description": "First Name <br>Example: Edwin",
+						"example": "Edwin"
+					},
+					"middleName": {
+						"type": "string",
+						"description": "Middle Name <br>Example: Thomas",
+						"example": "Thomas"
+					},
+					"lastName": {
+						"type": "string",
+						"description": "Last Name <br>Example: Luies",
+						"example": "Luies"
+					},
+					"suffix": {
+						"type": "string",
+						"description": "Suffix <br>Example: Jr",
+						"example": "Jr"
+					}
+				}
+			},
+			"EMailDetail": {
+				"type": "object",
+				"properties": {
+					"emailNotificationFormatType": {
+						"type": "string",
+						"description": "Format Type of email notification",
+						"example": "TEXT",
+						"enum": [
+							"SMS_TEXT_MESSAGE",
+							"TEXT",
+							"HTML"
+						]
+					},
+					"address": {
+						"type": "string",
+						"description": "Email address of the user",
+						"example": "genny.john15@fedex.com"
+					},
+					"permissions": {
+						"type": "string",
+						"description": "Email Permission Type",
+						"example": "DENY",
+						"enum": [
+							"GRANT",
+							"DENY"
+						]
+					}
+				},
+				"description": "EMailDetail Model"
+			},
+			"SocialMediaDetail": {
+				"type": "object",
+				"properties": {
+					"attributes": {
+						"type": "string",
+						"description": "Specifies additional attributes about this contact.",
+						"example": "None"
+					},
+					"platformId": {
+						"type": "string",
+						"description": "Specifies Platform Id",
+						"example": "GFDE/55"
+					}
+				},
+				"description": "SocialMediaDetail Model"
+			},
+			"PhoneNumberDetail": {
+				"required": [
+					"number",
+					"permissions",
+					"usage"
+				],
+				"type": "object",
+				"properties": {
+					"number": {
+						"description": "Phone Number details of the user",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/PhoneNumber"
+							}
+						]
+					},
+					"permissions": {
+						"type": "string",
+						"description": "Shows the Phone Permission Status",
+						"example": "GRANT/DENY",
+						"enum": [
+							"GRANT",
+							"DENY"
+						]
+					},
+					"usage": {
+						"type": "string",
+						"description": "Specifies the Phone Usage",
+						"example": "PRIMARY",
+						"enum": [
+							"PRIMARY",
+							"SECONDARY"
+						]
+					},
+					"type": {
+						"type": "string",
+						"description": "Phone Number Type",
+						"example": "FAX/WORK",
+						"enum": [
+							"FAX",
+							"HOME",
+							"MOBILE",
+							"PAGER",
+							"WORK"
+						]
+					},
+					"phoneNotificationFormatType": {
+						"type": "string",
+						"description": "Phone Notification Format Type",
+						"example": "SMS_TEXT_MESSAGE",
+						"enum": [
+							"SMS_TEXT_MESSAGE"
+						]
+					}
+				},
+				"description": "PhoneNumberDetail Model"
+			},
+			"PhoneNumber": {
+				"required": [
+					"areaCode",
+					"countryCode",
+					"localNumber"
+				],
+				"type": "object",
+				"properties": {
+					"areaCode": {
+						"type": "string",
+						"description": "Area-Code of given area",
+						"example": "987"
+					},
+					"extension": {
+						"type": "string",
+						"description": "Extension of the phone number",
+						"example": "1234"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "The two-letter code used to identify a country.",
+						"example": "91"
+					},
+					"personalIdentificationNumber": {
+						"type": "string",
+						"description": "Personal Identification Number",
+						"example": "8575"
+					},
+					"localNumber": {
+						"type": "string",
+						"description": "Local Number of the person",
+						"example": "9879878"
+					}
+				},
+				"description": "PhoneNumber Model"
+			},
+			"CompanyName": {
+				"required": [
+					"name"
+				],
+				"type": "object",
+				"properties": {
+					"division": {
+						"type": "string",
+						"description": "Division of the company",
+						"example": "ICE"
+					},
+					"companyCd": {
+						"type": "string",
+						"description": "Unique company code for the company",
+						"example": "W1097"
+					},
+					"name": {
+						"type": "string",
+						"description": "Name of the company",
+						"example": "FedEx"
+					},
+					"department": {
+						"type": "string",
+						"description": "Departments of the company",
+						"example": "FedEx Services"
+					},
+					"storeId": {
+						"type": "string",
+						"description": "storeId for the company",
+						"example": "15FFGT5"
+					}
+				},
+				"description": "CompanyName Model"
+			},
+			"CustomerMessage": {
+				"description": "Returns messages pertaining to the resolved address indicating if any additional information is required."
+			},
+			"ResolutionToken": {
+				"type": "object",
+				"properties": {
+					"changed": {
+						"type": "boolean",
+						"description": "Indicates if it has changed from the input address.",
+						"example": false
+					},
+					"value": {
+						"type": "string",
+						"description": "Indicates the changed value.<br> Example: SAN JUAN",
+						"example": "SAN JUAN"
+					}
+				},
+				"description": "Specifies the resolved attribute with a token indicating if it was changed or not."
+			},
+			"ParsedPostalCode": {
+				"type": "object",
+				"properties": {
+					"base": {
+						"type": "string",
+						"description": "Indicates the base.<br> Example: 00926",
+						"example": "00926"
+					},
+					"addOn": {
+						"type": "string",
+						"description": "Indicates the secondary value in Postal Code.<br> Example: 2716",
+						"example": "2716"
+					},
+					"deliveryPoint": {
+						"type": "string",
+						"description": "Indicates the tertiary value in Postal Code.<br> Example: 50",
+						"example": "50"
+					}
+				},
+				"description": "The postal code specified in a form that is supported by USPS as base, secondary and tertiary.<ul><li>Base</li><li>AddOn</li><li>DeliveryPoint</li></ul>Example: 75063-8659"
+			},
+			"Alert": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the API alert code.",
+						"example": "SHIP.RECIPIENT.POSTALCITY.MISMATCH"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the API alert message.",
+						"example": "Recipient Postal-City Mismatch."
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Indicates the API alert type.",
+						"example": "NOTE",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					}
+				},
+				"description": "Specifies the API alerts."
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "Unique identifier returned in the reply and helps you match the request to the reply.<br>Example: XXX_ORDERXXXX789",
+						"example": "bc95c0e4-b33e-42a2-80d2-334282b5d37a"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files, directories and user accounts. This includes code, message and parameters.",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					}
+				}
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: STANDARDIZED.ADDRESS.NOTFOUND"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: Standardized address is not found."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied."
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key."
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files, directories and user accounts. This includes code, message and parameters.",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				}
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files, directories and user accounts. This includes code, message and parameters.",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403"
+						}
+					}
+				}
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files, directories and user accounts. This includes code, message and parameters.",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				}
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files, directories and user accounts. This includes code, message and parameters.",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				}
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: SERVICE.UNAVAILABLE.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Indicates error parameters includes parameter key/value pairs.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Full_Schema_Validate_Address": {
+				"required": [
+					"addressesToValidate"
+				],
+				"type": "object",
+				"properties": {
+					"inEffectAsOfTimestamp": {
+						"type": "string",
+						"description": "This can be used to request the characteristics of an address had at a particular time in history. This defaults to current date time (of the Address Validation System). This is useful because the AddressValidation database is dynamic and stores historical data. Characteristics such as Business/Residential indicator may change over time.<br> Example: 2019-09-06",
+						"example": "2019-09-06"
+					},
+					"validateAddressControlParameters": {
+						"$ref": "#/components/schemas/AddressResolutionControlParameters"
+					},
+					"addressesToValidate": {
+						"type": "array",
+						"description": "Indicate the address to be validated and resolved. This includes the address details, such as streetline, state or province code, country code and postal code. <br><br><i>Note: Up to 100 of these can be submitted in a single request.</i>",
+						"items": {
+							"$ref": "#/components/schemas/ResolveContactAndAddress"
+						}
+					}
+				},
+				"description": "The request elements for address resolution."
+			},
+			"AddressResolutionControlParameters": {
+				"type": "object",
+				"properties": {
+					"includeResolutionTokens": {
+						"type": "boolean",
+						"description": "Use this to request detailed information of the address components once the validation is complete. The details specify the changes made to each address component to resolve the address.",
+						"example": true
+					}
+				},
+				"description": "Specify the parameters applied to validate the address."
+			},
+			"ResolveContactAndAddress": {
+				"required": [
+					"address"
+				],
+				"type": "object",
+				"properties": {
+					"address": {
+						"$ref": "#/components/schemas/Address"
+					},
+					"clientReferenceId": {
+						"type": "string",
+						"description": "Client Reference Id",
+						"example": "None"
+					}
+				},
+				"description": "Specifies the address details of a location."
+			},
+			"Address": {
+				"required": [
+					"streetLines",
+					"city",
+					"postalCode"
+				],
+				"properties": {
+					"streetLines": {
+						"type": "array",
+						"description": "Indicate the combination of number, street name. etc. <br>Example: [\"7372 PARKRIDGE BLVD\", \"APT 286, 2903 sprank\"].<br><br>Note:<ul><li>At least one line is required for a valid physical address; empty lines should not be included.</li><li>Maximum up to three lines & no error check if entered more than this limit.</li><li>Recommended limit per line is 35 characters.</li></ul>",
+						"example": [
+							"7372 PARKRIDGE BLVD",
+							"APT 286",
+							"2903 sprank"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "Indicate the name of city, town, etc.<br><br>Note: City is mandatory, When postalcode is not provided and includeResolutionTokens value is true in the request.",
+						"example": "IRVING"
+					},
+					"stateOrProvinceCode": {
+						"description": "Indicate the State or Province codes. The Format and presence of this field may vary depending on the country.<br>Example: TX<br><a onclick='loadDocReference(\"canadaprovincecodes\")'> Click here to see State Or Province Code</a>. Maximum length is 2",
+						"example": "TX"
+					},
+					"postalCode": {
+						"description": "Indicate the Postal Code which is an identification code of a region (usually small) for easier and accurate mail/package delivery. The format and presence of this field may vary depending on the country.<br> Example: 75063-8659<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal Code</a>",
+						"example": "75063-8659"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "Specify the ISO Alpha2 code of the country.<br>Example: US <br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					}
+				},
+				"description": "This is the Address in detail to be resolved."
+			},
+			"Address_Validation_Canada": {
+				"example": {
+					"addressesToValidate": [
+						{
+							"address": {
+								"streetLines": [
+									"Toronto City Hall 100 Queen St W"
+								],
+								"city": "Toranto",
+								"stateOrProvinceCode": "ON",
+								"postalCode": "M5H2N1",
+								"countryCode": "CA"
+							}
+						}
+					]
+				}
+			},
+			"Address_Validation_US": {
+				"example": {
+					"addressesToValidate": [
+						{
+							"address": {
+								"streetLines": [
+									"7372 PARKRIDGE BLVD",
+									"APT 286"
+								],
+								"city": "IRVING",
+								"stateOrProvinceCode": "TX",
+								"postalCode": "75063-8659",
+								"countryCode": "US"
+							}
+						}
+					]
+				}
+			},
+			"Address_Validation_for_Germany": {
+				"example": {
+					"addressesToValidate": [
+						{
+							"address": {
+								"streetLines": [
+									"Adam-von-Trott-Straße 1"
+								],
+								"city": "Berlin",
+								"stateOrProvinceCode": "",
+								"postalCode": "13627",
+								"countryCode": "DE"
+							}
+						}
+					]
+				}
+			},
+			"Address_Validation_for_Italy": {
+				"example": {
+					"addressesToValidate": [
+						{
+							"address": {
+								"streetLines": [
+									"Via Vittorio Veneto, 121"
+								],
+								"city": "Roma",
+								"postalCode": 187,
+								"countryCode": "IT"
+							}
+						}
+					]
+				}
+			},
+			"Address_Validation_for_UK": {
+				"example": {
+					"addressesToValidate": [
+						{
+							"address": {
+								"streetLines": [
+									"24 Grosvenor Square"
+								],
+								"city": "London",
+								"postalCode": "W1A 2LQ",
+								"countryCode": "GB"
+							}
+						}
+					]
+				}
+			},
+			"body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/Full_Schema_Validate_Address"
+					},
+					{
+						"$ref": "#/components/schemas/Address_Validation_Canada"
+					},
+					{
+						"$ref": "#/components/schemas/Address_Validation_US"
+					},
+					{
+						"$ref": "#/components/schemas/Address_Validation_for_Germany"
+					},
+					{
+						"$ref": "#/components/schemas/Address_Validation_for_Italy"
+					},
+					{
+						"$ref": "#/components/schemas/Address_Validation_for_UK"
+					}
+				]
+			}
+		}
+	}
+}

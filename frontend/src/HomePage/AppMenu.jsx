@@ -2,8 +2,13 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useTranslation } from 'react-i18next';
+import { authenticationService } from '@/_services';
+import { hasBuilderRole } from '@/_helpers/utils';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 export const AppMenu = function AppMenu({
+  appId,
+  appUserId,
   deleteApp,
   exportApp,
   canCreateApp,
@@ -16,9 +21,66 @@ export const AppMenu = function AppMenu({
   popoverVisible,
   setMenuOpen,
   appType,
+  ownedFolders,
 }) {
   const { t } = useTranslation();
-  const isModuleApp = appType === 'module';
+
+  const currentSession = authenticationService.currentSessionValue;
+  const currentUserId = currentSession?.current_user?.id;
+
+  const { orgGitConfig, currentBranch, isInitialized } = useWorkspaceBranchesStore();
+  const isBranchingEnabled =
+    isInitialized && orgGitConfig && (appType === 'front-end' || appType === 'module')
+      ? orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled
+      : false;
+  const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
+  const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch);
+
+  // ─── Ownership ────────────────────────────────────────────────────────────────
+  const isAppOwner = !!(appUserId && currentUserId && appUserId === currentUserId);
+
+  // ─── App-level edit access ────────────────────────────────────────────────────
+  // Backend resolves folder-derived permissions into editable_apps_id, so canEditApp
+  // already covers apps in folders owned by or explicitly shared with the user.
+  const canEditApp =
+    currentSession?.app_group_permissions?.is_all_editable ||
+    currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
+
+  const canModifyApp = canEditApp || isAppOwner;
+
+  const folderGroupPermissions = currentSession?.folder_group_permissions;
+
+  const canEditAnyFolderViaGroup =
+    folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
+
+  const isBuilder = hasBuilderRole(currentSession?.role ?? {});
+  // Builders have implicit admin-level access to module folders.
+  const isModuleBuilder = appType === 'module' && isBuilder;
+
+  // canAddAppToFolder: user can modify the app AND has at least one folder available in the dropdown.
+  const hasOwnedFolders = isAppOwner && Array.isArray(ownedFolders) && ownedFolders.length > 0;
+
+  const canAddAppToFolder =
+    !isWorkspaceBranchLocked &&
+    (canModifyApp || isModuleBuilder) &&
+    (currentSession?.admin ||
+      currentSession?.super_admin ||
+      canEditAnyFolderViaGroup ||
+      hasOwnedFolders ||
+      isModuleBuilder);
+
+  // canRemoveFromFolder: only when inside a specific folder AND user has folder-edit access.
+  const canRemoveFromFolder =
+    !isWorkspaceBranchLocked &&
+    !!currentFolder?.id &&
+    (canModifyApp || isModuleBuilder) &&
+    (currentSession?.admin ||
+      currentSession?.super_admin ||
+      folderGroupPermissions?.is_all_editable ||
+      folderGroupPermissions?.editable_folders_id?.includes(currentFolder.id) ||
+      currentFolder?.created_by === currentUserId ||
+      isModuleBuilder);
+
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {
       document.body.click();
@@ -68,20 +130,17 @@ export const AppMenu = function AppMenu({
                     onClick={() => openAppActionModal('change-icon')}
                   />
                 )}
-                {canCreateApp && appType !== 'module' && (
-                  <>
-                    <Field
-                      text={t('homePage.appCard.addToFolder', 'Add to folder')}
-                      onClick={() => openAppActionModal('add-to-folder')}
-                    />
-
-                    {currentFolder.id && (
-                      <Field
-                        text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
-                        onClick={() => openAppActionModal('remove-app-from-folder')}
-                      />
-                    )}
-                  </>
+                {canAddAppToFolder && (
+                  <Field
+                    text={t('homePage.appCard.addToFolder', 'Add to folder')}
+                    onClick={() => openAppActionModal('add-to-folder')}
+                  />
+                )}
+                {canRemoveFromFolder && (
+                  <Field
+                    text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
+                    onClick={() => openAppActionModal('remove-app-from-folder')}
+                  />
                 )}
                 {canUpdateApp && canCreateApp && appType !== 'workflow' && (
                   <>

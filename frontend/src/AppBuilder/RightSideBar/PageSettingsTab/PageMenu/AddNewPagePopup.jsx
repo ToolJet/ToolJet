@@ -1,34 +1,40 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
+import { AlertTriangle } from 'lucide-react';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Button } from '@/_ui/LeftSidebar';
 import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import { EventManager } from '../../Inspector/EventManager';
 import { kebabCase } from 'lodash';
 import Select from '@/_ui/Select';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { ToolTip } from '@/_components';
+import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
+import { shallow } from 'zustand/shallow';
+import { Button } from '@/components/ui/Button/Button';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const POPOVER_TITLES = {
   add: {
     default: 'New page',
     app: 'New nav item with app',
     url: 'New nav item with URL',
+    custom: 'New custom nav item',
     group: 'New nav group',
   },
   edit: {
     default: 'Edit page',
     app: 'Edit nav item',
     url: 'Edit nav item',
+    custom: 'Edit nav item',
     group: 'Edit nav group',
   },
 };
@@ -38,14 +44,7 @@ const OPEN_APP_MODES = [
   { label: 'Same tab', value: 'same_tab' },
 ];
 
-const POPOVER_ACTIONS = {
-  default: 'page',
-  url: 'page',
-  app: 'page',
-  group: 'group',
-};
-
-export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
+export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChange, ...props }, ref) => {
   const { moduleId } = useModuleContext();
   const { show, mode, type } = useStore((state) => state.newPagePopupConfig);
   const editingPage = useStore((state) => state.editingPage);
@@ -66,25 +65,57 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const updatePageVisibility = useStore((state) => state.updatePageVisibility);
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
-  const updatePageAppId = useStore((state) => state.updatePageAppId);
-  const currentPageId = useStore((state) => state.currentPageId);
+  const togglePageHeader = useStore((state) => state.togglePageHeader);
+  const togglePageFooter = useStore((state) => state.togglePageFooter);
+  const updatePageTargetApp = useStore((state) => state.updatePageTargetApp);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
-  const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const [page, setPage] = useState(editingPage || props?.page);
+
+  const showPageHeaderOnDesktop = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageHeader?.showOnDesktop,
+    shallow
+  );
+
+  const showPageHeaderOnMobile = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageHeader?.showOnMobile,
+    shallow
+  );
+
+  const showPageFooterOnDesktop = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageFooter?.showOnDesktop,
+    shallow
+  );
+
+  const showPageFooterOnMobile = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageFooter?.showOnMobile,
+    shallow
+  );
+  const hasCanvasPageHeaderEnabled = useStore((state) => state.license?.featureAccess?.canvasPageHeaderEnabled);
+
+  const hasCanvasPageFooterEnabled = useStore((state) => state.license?.featureAccess?.canvasPageFooterEnabled);
   const [pageName, setPageName] = useState('');
   const [handle, setHandle] = useState('');
   const [pageURL, setPageURL] = useState('');
   const [hasAutoSaved, setHasAutoSaved] = useState(false);
   const [error, setError] = useState(null);
 
-  const allpages = pages.filter((p) => p.id !== page?.id);
   const isHomePage = page?.id === homePageId;
 
   //Nav item with app
   const [appOptions, setAppOptions] = useState([]);
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
+
+  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
+  const { isValid: isLinkValid, errorMessage: linkedAppErrorMessage } = isLinkedAppValid(
+    page?.targetCorelationId,
+    linkedAppsMap
+  );
+  const isInvalid = type === 'app' && !isLinkValid;
+  const isTargetMissing = page?.targetCorelationId && !appOptions.some((opt) => opt.value === page?.targetCorelationId);
 
   useEffect(() => {
     setError(null);
@@ -124,7 +155,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         index++;
         newName = `URL ${index}`;
       }
-      const pageObj = { type: 'url', openIn: 'new_tab', url: 'https://www.tooljet.ai' };
+      const pageObj = { type: 'url', openIn: 'new_tab', url: 'https://www.tooljet.com' };
       addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
         setPage(data);
         setPageName(newName);
@@ -141,8 +172,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
 
   //Nav item with app hooks
   useEffect(() => {
-    const fetchApps = async (page) => {
-      const { apps } = await appService.getAll(page);
+    const fetchApps = async () => {
+      const { apps } = await appsService.getAllAddableApps();
       return apps;
     };
 
@@ -151,11 +182,13 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       const apps = await fetchApps(0);
       let appsOptionsList = [];
       apps
-        .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+        .filter((item) => item.slug !== undefined && item.id !== appId)
         .forEach((item) => {
           appsOptionsList.push({
-            name: item.name,
-            value: item.slug,
+            label: item.name,
+            value: item.co_relation_id,
+            slug: item.slug,
+            currentVersionId: item.current_version_id,
           });
         });
       return appsOptionsList;
@@ -188,6 +221,29 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       setPageName(editingPage.name);
     }
   }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+
+  //Custom nav item
+  useEffect(() => {
+    if (mode === 'add' && type === 'custom' && !hasAutoSaved) {
+      const existingNames = pages.map((p) => p.name.toLowerCase());
+      let index = 1;
+      let newName = `Custom ${index}`;
+      while (existingNames.includes(newName.toLowerCase())) {
+        index++;
+        newName = `Custom ${index}`;
+      }
+      const pageObj = { type: 'custom' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+      });
+
+      setHasAutoSaved(true);
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+    }
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type]);
 
   //Nav item with group
   useEffect(() => {
@@ -259,310 +315,348 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         <div className="d-flex justify-content-between align-items-center">
           <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
           <div className="actions-container">
-            {type !== 'group' && (
+            {!['group', 'custom'].includes(type) && (
               <>
                 <ToolTip message={'Go to page'} placement="bottom">
-                  <div onClick={handlePageSwitch} className="icon-btn">
-                    <SolidIcon name="arrowright01" />
-                  </div>
+                  <Button
+                    key="go-to-page-btn"
+                    fill="var(--icon-strong)"
+                    leadingIcon="arrowright01"
+                    iconOnly
+                    variant="ghost"
+                    size="medium"
+                    onClick={handlePageSwitch}
+                  />
                 </ToolTip>
               </>
             )}
 
-            <ToolTip message={`Duplicate ${POPOVER_ACTIONS[type]}`} placement="bottom">
-              <div onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))} className="icon-btn">
-                <SolidIcon name="duplicatepage" />
-              </div>
+            <ToolTip message={`Duplicate ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
+              <Button
+                key="duplicate-page-btn"
+                fill="var(--icon-strong)"
+                leadingIcon="duplicatepage"
+                iconOnly
+                variant="ghost"
+                size="medium"
+                onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))}
+              />
             </ToolTip>
 
-            <ToolTip message={`Delete ${POPOVER_ACTIONS[type]}`} placement="bottom">
-              <div
+            <ToolTip message={`Delete ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
+              <Button
+                key="delete-page-btn"
+                fill="var(--icon-strong)"
+                leadingIcon="delete01"
+                iconOnly
+                variant="ghost"
+                size="medium"
                 onClick={() => {
                   openPageEditPopover(page);
                   toggleDeleteConfirmationModal(true);
                 }}
-                className="icon-btn"
-              >
-                <SolidIcon name="delete01" />
-              </div>
+              />
             </ToolTip>
           </div>
         </div>
       </Popover.Header>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
+        <div className="pb-2">
+          <div className="col">
+            <label className="form-label">{type === 'default' ? 'Page name' : 'Label'}</label>
+            <input
+              type="text"
+              className="form-control"
+              value={pageName}
+              autoFocus={true}
+              onChange={(e) => setPageName(e.target.value)}
+              onBlur={() => {
+                pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+              }}
+              minLength="1"
+              maxLength="32"
+            />
+          </div>
+        </div>
         {type === 'default' && (
-          <>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Page name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={pageName}
-                  autoFocus={true}
-                  onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => {
-                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
-                  }}
-                  minLength="1"
-                  maxLength="32"
-                />
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Handle</label>
-                <input
-                  type="text"
-                  className={`form-control ${error ? 'is-invalid' : ''}`}
-                  onChange={(e) => onChangePageHandleValue(e)}
-                  onBlur={(e) => handleSave(e)}
-                  value={handle}
-                  minLength="1"
-                  maxLength="32"
-                />
-                <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
-                  {error}
-                </div>
-              </div>
-            </div>
-            <div className="pb-1">
-              <div className="d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon
-                  isVisibilityEnabled={false}
-                  onChange={(value) => updatePageIcon(page?.id, value)}
-                  value={page?.icon || 'IconFile'}
-                />
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Mark as home</label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={isHomePage}
-                    onChange={() => markAsHomePage(page?.id)}
-                    disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
-                  />
-                </label>
-              </div>
-              <HidePageOnNavigation
-                hidden={page?.hidden}
-                disabled={page?.disabled}
-                page={page}
-                updatePageVisibility={updatePageVisibility}
-                darkMode={darkMode}
-                isHomePage={isHomePage}
+          <div className="pb-2">
+            <div className="col">
+              <label className="form-label">Handle</label>
+              <input
+                type="text"
+                className={`form-control ${error ? 'is-invalid' : ''}`}
+                onChange={(e) => onChangePageHandleValue(e)}
+                onBlur={() => handleSave()}
+                value={handle}
+                minLength="1"
+                maxLength="32"
               />
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Disable page</label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={page?.disabled}
-                    onChange={(e) => disableOrEnablePage(page?.id, !page.disabled)}
-                    disabled={isHomePage}
-                  />
-                </label>
+              <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
+                {error}
               </div>
             </div>
-            <PageEvents page={page} allPages={pages} />
-          </>
+          </div>
         )}
         {type === 'url' && (
-          <>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Label</label>
-                <input
-                  type="text"
-                  onChange={(e) => setPageName(e.target.value)}
-                  className="form-control"
-                  value={pageName}
-                  autoFocus={true}
-                  onBlur={(e) => {
-                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
-                  }}
-                  minLength="1"
-                  maxLength="32"
-                />
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">URL</label>
-                <textarea
-                  onChange={(e) => setPageURL(e.target.value)}
-                  className="form-control"
-                  value={pageURL}
-                  onBlur={(e) => page?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
-                  minLength="1"
-                />
-              </div>
-            </div>
-
-            <div className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Open URL in</label>
-              <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
-                <ToggleGroup
-                  onValueChange={(value) => {
-                    updatePageTarget(page?.id, value);
-                  }}
-                  defaultValue={page?.openIn}
-                >
-                  {OPEN_APP_MODES.map((mode) => (
-                    <ToggleGroupItem key={mode.value} value={mode.value}>
-                      {mode.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className="d-flex justify-content-between align-items-center">
-                <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon
-                  isVisibilityEnabled={false}
-                  onChange={(value) => updatePageIcon(page?.id, value)}
-                  value={page?.icon || 'IconFile'}
-                />
-              </div>
-            </div>
-            <HidePageOnNavigation
-              hidden={page?.hidden}
-              page={page}
-              updatePageVisibility={updatePageVisibility}
-              darkMode={darkMode}
-              isHomePage={isHomePage}
-            />
-          </>
-        )}
-        {type === 'app' && (
-          <>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Label</label>
-                <input
-                  type="text"
-                  onChange={(e) => setPageName(e.target.value)}
-                  className="form-control"
-                  value={pageName}
-                  autoFocus={true}
-                  onBlur={(e) => {
-                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
-                  }}
-                  minLength="1"
-                  maxLength="32"
-                />
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className="col d-flex justify-content-between align-items-center">
-                <label className="form-label font-weight-400 mb-0">Select app</label>
-                <Select
-                  options={appOptions}
-                  search={true}
-                  value={page?.appId}
-                  onChange={(value) => {
-                    updatePageAppId(page?.id, value);
-                  }}
-                  isLoading={appOptionsLoading}
-                  placeholder={'Select...'}
-                  useMenuPortal={false}
-                  width={'168px'}
-                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-                />
-              </div>
-            </div>
-            <div className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Icon</label>
-              <Icon
-                isVisibilityEnabled={false}
-                onChange={(value) => updatePageIcon(page?.id, value)}
-                value={page?.icon || 'IconFile'}
+          <div className="pb-2">
+            <div className="col">
+              <label className="form-label">URL</label>
+              <textarea
+                onChange={(e) => setPageURL(e.target.value)}
+                className="form-control"
+                value={pageURL}
+                onBlur={(e) => page?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
+                minLength="1"
               />
             </div>
-            <div className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Open app in</label>
-              <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
-                <ToggleGroup
-                  onValueChange={(value) => {
-                    updatePageTarget(page?.id, value);
-                  }}
-                  defaultValue={page?.openIn}
-                >
-                  {OPEN_APP_MODES.map((mode) => (
-                    <ToggleGroupItem key={mode.value} value={mode.value}>
-                      {mode.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-            </div>
-            <HidePageOnNavigation
-              hidden={page?.hidden}
-              page={page}
-              updatePageVisibility={updatePageVisibility}
-              darkMode={darkMode}
-              isHomePage={isHomePage}
-            />
-          </>
+          </div>
         )}
-        {type === 'group' && (
-          <>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Label</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={pageName}
-                  autoFocus={true}
-                  onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => pageName && pageName !== page?.name && updatePageName(page?.id, pageName, true)}
-                  minLength="1"
-                  maxLength="32"
-                />
-              </div>
+        {type === 'app' && (
+          <div className="pb-2">
+            <div className="col d-flex justify-content-between align-items-center">
+              <label className="form-label">Select app</label>
+              <Select
+                options={appOptions}
+                search={true}
+                value={
+                  isTargetMissing
+                    ? { label: 'Undefined app', value: page?.targetCorelationId }
+                    : page?.targetCorelationId
+                }
+                onChange={(value) => {
+                  const selected = appOptions.find((opt) => opt.value === value);
+                  updatePageTargetApp(
+                    page?.id,
+                    value,
+                    selected?.slug ?? null,
+                    selected?.currentVersionId ?? null,
+                    moduleId
+                  );
+                }}
+                isLoading={appOptionsLoading}
+                placeholder={'Select...'}
+                useMenuPortal={false}
+                width={'168px'}
+                borderRadius="6px"
+                styles={{
+                  border: `1px solid ${isInvalid ? 'var(--border-danger-strong)' : 'var(--border-default)'} !important`,
+                }}
+                className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
+              />
             </div>
-            <div className="pb-2">
-              <div className="d-flex justify-content-between align-items-center">
-                <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon
-                  isVisibilityEnabled={false}
-                  onChange={(value) => updatePageIcon(page?.id, value)}
-                  value={page?.icon || 'IconFolder'}
-                />
+            {isInvalid && (
+              <div className="tw-mt-1 tw-flex tw-items-center tw-gap-1">
+                <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
+                <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
+                  {linkedAppErrorMessage}
+                </span>
               </div>
+            )}
+          </div>
+        )}
+        {['url', 'app'].includes(type) && (
+          <div className="d-flex justify-content-between align-items-center pb-2">
+            <label className="form-label">Open {type === 'url' ? 'URL' : 'app'} in</label>
+            <div className="ms-auto position-relative app-mode-switch">
+              <ToggleGroup
+                onValueChange={(value) => {
+                  updatePageTarget(page?.id, value);
+                }}
+                defaultValue={page?.openIn}
+              >
+                {OPEN_APP_MODES.map((mode) => (
+                  <ToggleGroupItem key={mode.value} value={mode.value}>
+                    {mode.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </div>
-            <HidePageOnNavigation
-              hidden={page?.hidden}
-              page={page}
-              updatePageVisibility={updatePageVisibility}
-              darkMode={darkMode}
-              isHomePage={isHomePage}
+          </div>
+        )}
+        <div className="pb-3">
+          <div className="d-flex justify-content-between align-items-center">
+            <label className="form-label font-weight-400 mb-0">Icon</label>
+            <Icon
+              isVisibilityEnabled={false}
+              onChange={(value) => updatePageIcon(page?.id, value)}
+              value={page?.icon || 'IconFile'}
             />
-          </>
+          </div>
+        </div>
+        <div className={`${['default', 'custom'].includes(type) ? 'pb-3' : ''}`}>
+          {type === 'default' && (
+            <div className=" d-flex justify-content-between align-items-center pb-2">
+              <label className="form-label font-weight-400 mb-0">Mark as home</label>
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isHomePage}
+                  onChange={() => markAsHomePage(page?.id)}
+                  disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
+                />
+              </label>
+            </div>
+          )}
+          <HidePageOnNavigation
+            hidden={page?.hidden}
+            disabled={['default', 'custom'].includes(type) ? page?.disabled : false}
+            page={page}
+            updatePageVisibility={updatePageVisibility}
+            darkMode={darkMode}
+            isHomePage={isHomePage}
+          />
+          {type === 'default' && (
+            <div className=" d-flex justify-content-between align-items-center pb-2">
+              <label className="form-label font-weight-400 mb-0">Disable page</label>
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={page?.disabled}
+                  onChange={() => disableOrEnablePage(page?.id, !page.disabled)}
+                  disabled={isHomePage}
+                />
+              </label>
+            </div>
+          )}
+        </div>
+        <div className="pb-3">
+          <div className="section-header pb-2">Page header</div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on desktop
+              <LicenseTooltip
+                message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageHeaderEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageHeaderOnDesktop ?? false}
+                disabled={!hasCanvasPageHeaderEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageHeader(page?.id, checked, 'desktop');
+                }}
+              />
+            </label>
+          </div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on mobile
+              <LicenseTooltip
+                message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageHeaderEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageHeaderOnMobile ?? false}
+                disabled={!hasCanvasPageHeaderEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageHeader(page?.id, checked, 'mobile');
+                }}
+              />
+            </label>
+          </div>
+        </div>
+        <div className="pb-3">
+          <div className="section-header pb-2">Page footer</div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on desktop
+              <LicenseTooltip
+                message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageFooterEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageFooterOnDesktop ?? false}
+                disabled={!hasCanvasPageFooterEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageFooter(page?.id, checked, 'desktop');
+                }}
+              />
+            </label>
+          </div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on mobile
+              <LicenseTooltip
+                message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageFooterEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageFooterOnMobile ?? false}
+                disabled={!hasCanvasPageFooterEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageFooter(page?.id, checked, 'mobile');
+                }}
+              />
+            </label>
+          </div>
+        </div>
+        {['default', 'custom'].includes(type) && (
+          <PageEvents type={type} page={page} allPages={pages} onNestedPopoverOpenChange={onNestedPopoverOpenChange} />
         )}
       </Popover.Body>
     </Popover>
   );
 });
 
-const PageEvents = ({ page, allPages }) => {
+const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
   const getComponents = useStore((state) => state.getCurrentPageComponents);
   const components = getComponents();
+
+  const eventMapping = {
+    default: {
+      title: 'Page events',
+      event: { onPageLoad: { displayName: 'On page load' } },
+    },
+    custom: {
+      title: 'Events',
+      event: { onClick: { displayName: 'On click' } },
+    },
+  };
+
   return (
     <div className="page-events">
-      <div className="section-header pb-2">Page events</div>
-      {/* <div className="page-empty-events">
-        <SolidIcon name="nopageevents" />
-        <span className="tj-text-xsm">No events added</span>
-      </div> */}
+      <div className="section-header pb-2">{eventMapping[type].title}</div>
       <div>
         <EventManager
           component={{
@@ -574,10 +668,10 @@ const PageEvents = ({ page, allPages }) => {
           }}
           sourceId={page?.id}
           eventSourceType="page"
-          eventMetaDefinition={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
+          eventMetaDefinition={{ events: eventMapping[type].event, name: 'page' }}
           components={components}
           pages={allPages}
-          popOverCallback={(showing) => showing}
+          popOverCallback={(showing) => onNestedPopoverOpenChange?.(showing)}
         />
       </div>
     </div>

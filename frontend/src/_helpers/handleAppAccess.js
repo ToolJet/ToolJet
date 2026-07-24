@@ -1,27 +1,32 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
-import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
+import { safelyParseJSON } from '@/_helpers/utils';
 import { getSubpath, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
+import { getEnvironmentAccessFromPermissions, getSafeEnvironment } from '@/_helpers/environmentAccess';
 import _ from 'lodash';
 import queryString from 'query-string';
 import { ERROR_TYPES } from './constants';
 
 /*  appId, versionId are only for old preview URLs */
 export const handleAppAccess = async (componentType, slug, version_id, environment_id) => {
-  const previewQueryParams = getPreviewQueryParams();
   const isOldLocalPreview = version_id && environment_id ? true : false;
-  const isLocalPreview = !_.isEmpty(previewQueryParams);
-  const queryParams = {
+  const queryParams = getQueryParams();
+  const hasQueryParams = queryParams['env'] || queryParams['version'];
+  const isLocalPreview = hasQueryParams || isOldLocalPreview;
+
+  const previewQueryParams = isLocalPreview || componentType === 'editor' ? getPreviewQueryParams(slug) : {};
+  const apiQueryParams = {
     ...previewQueryParams,
     ...(isOldLocalPreview && { version_id, environment_id }),
-    access_type: isLocalPreview ? 'view' : 'edit',
+    access_type: componentType === 'editor' ? 'edit' : 'view',
   };
   const query = queryString.stringify(previewQueryParams);
   const redirectPath = !_.isEmpty(query) ? `/applications/${slug}${query ? `?${query}` : ''}` : `/apps/${slug}`;
 
   if (componentType === 'editor' || isLocalPreview || isOldLocalPreview) {
     /* Editor or app preview */
-    return appsService.validatePrivateApp(slug, queryParams).catch((error) => {
-      handleError(componentType, error, slug, redirectPath);
+    return appsService.validatePrivateApp(slug, apiQueryParams).catch((error) => {
+      const editPermission = error?.error?.editPermission;
+      handleError(componentType, error, redirectPath, editPermission, slug);
     });
   } else {
     /* Released app link [launch/sharable link] */
@@ -67,12 +72,39 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
             redirectToErrorPage(ERROR_TYPES.NO_ACCESSIBLE_PAGES);
             return;
           }
+          if (error?.data?.message === ERROR_TYPES.RESTRICTED_PREVIEW) {
+            redirectToErrorPage(ERROR_TYPES.RESTRICTED_PREVIEW);
+            return;
+          }
+          if (error?.data?.message === ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED) {
+            redirectToErrorPage(ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED);
+            return;
+          }
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);
           return;
         }
         case 401: {
           const errorObj = safelyParseJSON(error.data?.message);
-          window.location = `${getSubpath() ?? ''}/login/${errorObj?.organizationId}?redirectTo=${redirectPath}`;
+          const subpath = getSubpath() ?? '';
+          const currentSession = authenticationService.currentSessionValue;
+          // If user is already authenticated but still got 401, they lack app-level access.
+          // Show restricted error page instead of redirecting to login (which would loop).
+          if (currentSession?.current_user?.id) {
+            redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+            return;
+          }
+          // For unauthenticated app viewer URLs, redirect to app-scoped login preserving the original URL
+          if (appSlug && componentType === 'viewer') {
+            const redirectParam =
+              redirectPath && redirectPath !== `/applications/${appSlug}`
+                ? `?redirectTo=${encodeURIComponent(redirectPath)}`
+                : '';
+            window.location = `${subpath}/applications/${appSlug}/login${redirectParam}`;
+            return;
+          }
+          window.location = `${subpath}/login/${errorObj?.organizationId}?redirectTo=${encodeURIComponent(
+            redirectPath
+          )}`;
           return;
         }
         case 501: {
@@ -85,6 +117,14 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
           return;
         }
         case 404: {
+          if (error?.data?.message === ERROR_TYPES.APP_NOT_READY) {
+            redirectToErrorPage(ERROR_TYPES.APP_NOT_READY, {});
+            return;
+          }
+          redirectToErrorPage(ERROR_TYPES.INVALID, {});
+          return;
+        }
+        case 406: {
           redirectToErrorPage(ERROR_TYPES.INVALID, {});
           return;
         }
@@ -103,10 +143,26 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
   }
 };
 
-const getPreviewQueryParams = () => {
+const getPreviewQueryParams = (slug) => {
   const queryParams = getQueryParams();
+  const envParam = (queryParams['env'] || '').toLowerCase();
+
+  const session = authenticationService.currentSessionValue;
+  const appPerms = session?.app_group_permissions;
+  const hasEditPermission =
+    appPerms?.is_all_editable ||
+    (slug && Array.isArray(appPerms?.editable_apps_id) && appPerms.editable_apps_id.includes(slug));
+
+  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, slug);
+  // Pass requested environment directly to backend for all users
+  // Backend will validate environment access and return restricted-preview error if denied
+  const safeEnv = envParam;
+
+  // Only add environment_name if there's an explicit env query param
+  // Don't add default environment for apps not in editable_apps_id yet (newly created apps)
+  // The backend will determine actual permissions including ownership
   return {
     ...(queryParams['version'] && { version_name: queryParams.version }),
-    ...(queryParams['env'] && { environment_name: queryParams.env }),
+    ...(envParam && safeEnv && { environment_name: safeEnv }),
   };
 };

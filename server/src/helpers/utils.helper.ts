@@ -8,6 +8,42 @@ import { DataBaseConstraints } from './db_constraints.constants';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { decamelizeKeys } from 'humps';
 import * as semver from 'semver';
+import { BadRequestException } from '@nestjs/common';
+import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
+
+const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+
+export function validatePasswordServer(password: string | undefined | null) {
+  if (!password) {
+    return;
+  }
+
+  const isEE = String(process.env.TOOLJET_EDITION || '').toLowerCase() === 'ee';
+  const complexityEnabled = String(process.env.ENABLE_PASSWORD_COMPLEXITY_RULES ?? 'false').toLowerCase() === 'true';
+
+  if (isEE && complexityEnabled) {
+    if (!password.trim()) {
+      throw new BadRequestException('Password is required');
+    }
+    if (!PASSWORD_REGEX.test(password)) {
+      throw new BadRequestException(
+        'Password must be 12–24 characters and may include letters, numbers and special characters'
+      );
+    }
+    return;
+  }
+
+  // CE / fallback rules
+  if (!password.trim()) {
+    throw new BadRequestException('Password is required');
+  }
+  if (password.length < 5) {
+    throw new BadRequestException('Password must be at least 5 characters long');
+  }
+  if (password.length > 100) {
+    throw new BadRequestException('Password can be at max 100 characters long');
+  }
+}
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -229,11 +265,12 @@ export const generateInviteURL = (
   organizationToken?: string,
   organizationId?: string,
   source?: string,
-  redirectTo?: string
+  redirectTo?: string,
+  host?: string
 ) => {
-  const host = process.env.TOOLJET_HOST;
+  const effectiveHost = host || process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  const baseURL = `${host}${subpath ? subpath : '/'}`;
+  const baseURL = `${effectiveHost}${subpath ? subpath : '/'}`;
   const inviteSupath = `invitations/${invitationToken}`;
   const organizationSupath = `${organizationToken ? `/workspaces/${organizationToken}` : ''}`;
   let queryString = new URLSearchParams({
@@ -249,13 +286,14 @@ export const generateOrgInviteURL = (
   organizationToken: string,
   organizationId?: string,
   fullUrl = true,
-  redirectTo?: string
+  redirectTo?: string,
+  host?: string
 ) => {
-  const host = process.env.TOOLJET_HOST;
+  const effectiveHost = host || process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
+  return `${fullUrl ? `${effectiveHost}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
-  }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
+  }${redirectTo ? `&redirectTo=${encodeURIComponent(redirectTo)}` : ''}`;
 };
 
 export function extractFirstAndLastName(fullName: string) {
@@ -270,6 +308,17 @@ export function extractFirstAndLastName(fullName: string) {
     };
   }
 }
+
+export const getHostForOrganization = async (
+  organizationId: string | undefined,
+  cacheService?: { getActiveDomainForOrg(orgId: string): Promise<string | null> }
+): Promise<string> => {
+  if (organizationId && cacheService) {
+    const domain = await cacheService.getActiveDomainForOrg(organizationId);
+    if (domain) return `https://${domain}`;
+  }
+  return process.env.TOOLJET_HOST;
+};
 
 export const getServerURL = () => {
   const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
@@ -429,8 +478,173 @@ export const isValidDomain = (email: string, restrictedDomain: string): boolean 
   return true;
 };
 
+/**
+ * Validates email domain for SSO sign-in with organization/instance hierarchy.
+ * Organization domain settings override instance settings.
+ * This feature is only available in EE edition. For CE edition, always returns true.
+ * @param email - User email address
+ * @param orgDomain - Organization domain setting (backward compatible with old 'domain' field)
+ * @param instanceAllowedDomains - Instance level SSO allowed domains
+ * @returns true if domain is valid, false otherwise
+ */
+export const isValidSSODomain = (
+  email: string,
+  orgDomain: string | null | undefined,
+  instanceAllowedDomains: string | null | undefined
+): boolean => {
+  // Skip validation for CE edition, validate for EE edition
+  if (getTooljetEdition() === 'ce') {
+    return true;
+  }
+
+  if (!email) {
+    return false;
+  }
+
+  // Use organization domain if present (overrides instance), otherwise use instance setting
+  const allowedDomains = orgDomain || instanceAllowedDomains;
+
+  // If no domain restriction, allow all
+  if (!allowedDomains || !allowedDomains.trim()) {
+    return true;
+  }
+
+  const domain = email.substring(email.lastIndexOf('@') + 1);
+  if (!domain) {
+    return false;
+  }
+
+  // Check if domain is in allowed list
+  const allowedDomainList = allowedDomains
+    .split(',')
+    .map((e) => e && e.trim())
+    .filter((e) => !!e);
+
+  return allowedDomainList.includes(domain);
+};
+
+/**
+ * Validates email domain for password sign-in with organization/instance hierarchy.
+ * Organization domain settings override instance settings.
+ * Supports both allowed domains (whitelist) and restricted domains (blacklist).
+ * This feature is only available in EE edition. For CE edition, always returns true.
+ * @param email - User email address
+ * @param orgAllowedDomains - Organization level password allowed domains
+ * @param orgRestrictedDomains - Organization level password restricted domains
+ * @param instanceAllowedDomains - Instance level password allowed domains
+ * @param instanceRestrictedDomains - Instance level password restricted domains
+ * @returns true if domain is valid, false otherwise
+ */
+export const isValidPasswordDomain = (
+  email: string,
+  orgAllowedDomains: string | null | undefined,
+  orgRestrictedDomains: string | null | undefined,
+  instanceAllowedDomains: string | null | undefined,
+  instanceRestrictedDomains: string | null | undefined
+): boolean => {
+  // Skip validation for CE edition, validate for EE edition
+  if (getTooljetEdition() === 'ce') {
+    return true;
+  }
+
+  if (!email) {
+    return false;
+  }
+
+  const domain = email.substring(email.lastIndexOf('@') + 1);
+  if (!domain) {
+    return false;
+  }
+
+  // Use organization settings if present (overrides instance), otherwise use instance settings
+  const allowedDomains = orgAllowedDomains || instanceAllowedDomains;
+
+  // Check restricted domains from both org and instance (blacklist takes precedence)
+  // If domain is restricted in either org or instance, deny access
+  if (orgRestrictedDomains && orgRestrictedDomains.trim()) {
+    const orgRestrictedDomainList = orgRestrictedDomains
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e);
+
+    if (orgRestrictedDomainList.includes(domain)) {
+      return false;
+    }
+  }
+
+  if (instanceRestrictedDomains && instanceRestrictedDomains.trim()) {
+    const instanceRestrictedDomainList = instanceRestrictedDomains
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e);
+
+    if (instanceRestrictedDomainList.includes(domain)) {
+      return false;
+    }
+  }
+
+  // Check allowed domains (whitelist)
+  if (allowedDomains && allowedDomains.trim()) {
+    const allowedDomainList = allowedDomains
+      .split(',')
+      .map((e) => e && e.trim())
+      .filter((e) => !!e);
+
+    return allowedDomainList.includes(domain);
+  }
+
+  // If no restrictions configured, allow all
+  return true;
+};
+
 export const isHttpsEnabled = () => {
   return !!process.env.TOOLJET_HOST?.startsWith('https');
+};
+
+/**
+ * Returns the root domain for cross-subdomain cookie sharing (e.g. `.tooljet.com`).
+ * Allows cookies set on one subdomain (albecs.tooljet.com) to be sent by the browser
+ * to other subdomains (app.tooljet.com).
+ * Returns undefined for localhost/IP so local dev is unaffected.
+ */
+export const getCookieDomain = (): string | undefined => {
+  const host = process.env.TOOLJET_HOST;
+
+  if (!host) return undefined;
+
+  try {
+    // new URL() throws if TOOLJET_HOST is not a valid URL (e.g. missing protocol)
+    const hostname = new URL(host).hostname;
+
+    if (hostname === 'localhost') return undefined;
+
+    // Skip raw IPv4 addresses like 192.168.1.1 — domain scoping doesn't apply to IPs
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return undefined;
+
+    // Extract root domain: "sub.tooljet.com" → ".tooljet.com"
+    const parts = hostname.split('.');
+
+    if (parts.length >= 2) {
+      return '.' + parts.slice(-2).join('.');
+    }
+  } catch {
+    return undefined;
+  }
+};
+
+/**
+ * Applies SameSite=None; Secure cookie options when custom domains are enabled over HTTPS.
+ * Custom domains require cross-origin cookie support. SameSite=None requires Secure=true,
+ * which browsers reject on plain HTTP — hence the isHttpsEnabled() guard.
+ */
+export const applyCustomDomainCookieOptions = (
+  cookieOptions: { sameSite?: string | boolean; secure?: boolean },
+  configService: { get<T>(key: string): T }
+) => {
+  if (configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true' && isHttpsEnabled()) {
+    cookieOptions.sameSite = 'none';
+    cookieOptions.secure = true;
+  }
 };
 
 export function areAllUnique(array) {
@@ -506,4 +720,177 @@ export function objectGUIDtoString(buffer) {
 
 export function isValidEmail(value: any): boolean {
   return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+export function normalizeEnvSlug(key: string): string {
+  // Convert `my-workspace` → `my_workspace`
+  return key.replace(/-/g, '_');
+}
+export function isAzureEntraIdIssuer(issuer?: string): boolean {
+  if (!issuer) return false;
+  const microsoftDomains = [
+    '.microsoftonline.com',
+    '.microsoftonline.us',
+    '.chinacloudapi.cn',
+    '.microsoftonline.de',
+    '.b2clogin.com',
+  ];
+  if (issuer.startsWith('https://sts.windows.net/')) {
+    return true;
+  }
+  return microsoftDomains.some((domain) => issuer.includes(domain));
+}
+
+export function throwIfSignalAborted(signal: AbortSignal, timeout: number) {
+  if (signal.aborted) {
+    throw new QueryError(`Defined query timeout of ${timeout}ms exceeded when running query.`, 'Query timed out', {});
+  }
+}
+
+/**
+ * Validates email domain for SSO sign-in with organization/instance hierarchy.
+ * Fetches instance settings internally. Organization domain settings override instance settings.
+ * This feature is only available in EE edition. For CE edition, always returns true.
+ * @param email - User email address
+ * @param orgDomain - Organization domain setting (backward compatible with old 'domain' field)
+ * @param instanceSettingsUtilService - Instance settings util service to fetch settings
+ * @param isInstanceSSO - Whether this is instance-level SSO (domain already contains instance value)
+ * @returns Promise<boolean> - true if domain is valid, false otherwise
+ */
+export async function validateSSODomain(
+  email: string,
+  orgDomain: string | null | undefined,
+  instanceSettingsUtilService: any,
+  isInstanceSSO: boolean = false
+): Promise<boolean> {
+  // Skip validation for CE edition, validate for EE edition
+  if (getTooljetEdition() === 'ce') {
+    return true;
+  }
+
+  if (!email) {
+    return false;
+  }
+
+  // For instance SSO, orgDomain already contains instance value, so use it directly
+  if (isInstanceSSO) {
+    return isValidSSODomain(email, null, orgDomain);
+  }
+
+  // Fetch instance settings
+  const instanceSettings = await instanceSettingsUtilService.getSettings([INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS]);
+  const instanceAllowedDomains = instanceSettings?.ALLOWED_DOMAINS;
+
+  return isValidSSODomain(email, orgDomain, instanceAllowedDomains);
+}
+
+/**
+ * Validates email domain for password sign-in with organization/instance hierarchy.
+ * Fetches instance settings internally. Organization domain settings override instance settings.
+ * Supports both allowed domains (whitelist) and restricted domains (blacklist).
+ * This feature is only available in EE edition. For CE edition, always returns true.
+ * @param email - User email address
+ * @param orgAllowedDomains - Organization level password allowed domains
+ * @param orgRestrictedDomains - Organization level password restricted domains
+ * @param instanceSettingsUtilService - Instance settings util service to fetch settings
+ * @returns Promise<boolean> - true if domain is valid, false otherwise
+ */
+export async function validatePasswordDomain(
+  email: string,
+  orgAllowedDomains: string | null | undefined,
+  orgRestrictedDomains: string | null | undefined,
+  instanceSettingsUtilService: any
+): Promise<boolean> {
+  // Skip validation for CE edition, validate for EE edition
+  if (getTooljetEdition() === 'ce') {
+    return true;
+  }
+
+  if (!email) {
+    return false;
+  }
+
+  // Fetch instance settings
+  const instanceSettings = await instanceSettingsUtilService.getSettings([
+    INSTANCE_SYSTEM_SETTINGS.PASSWORD_ALLOWED_DOMAINS,
+    INSTANCE_SYSTEM_SETTINGS.PASSWORD_RESTRICTED_DOMAINS,
+  ]);
+
+  return isValidPasswordDomain(
+    email,
+    orgAllowedDomains,
+    orgRestrictedDomains,
+    instanceSettings?.PASSWORD_ALLOWED_DOMAINS,
+    instanceSettings?.PASSWORD_RESTRICTED_DOMAINS
+  );
+}
+
+/**
+ * Resolves workspace constants in an options array for OAuth token exchange.
+ * Options come as array of { key: string, value: string, encrypted: boolean }
+ */
+export async function resolveOptionsArrayForOAuth(
+  options: Array<object>,
+  resolveConstantsFn: (value: string) => Promise<string>
+): Promise<Array<object>> {
+  const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
+  const resolvedOptions: Array<object> = [];
+
+  for (const option of options) {
+    const value = option['value'];
+    if (typeof value === 'string') {
+      constantMatcher.lastIndex = 0;
+      if (constantMatcher.test(value)) {
+        const resolved = await resolveConstantsFn(value);
+        resolvedOptions.push({ ...option, value: resolved });
+      } else {
+        resolvedOptions.push(option);
+      }
+    } else {
+      resolvedOptions.push(option);
+    }
+  }
+
+  return resolvedOptions;
+}
+
+/**
+ * Resolves workspace constants in source options for OAuth flows (generating auth URLs).
+ * Source options come as an object with key-value structure.
+ */
+export async function resolveSourceOptionsForOAuth(
+  sourceOptions: any,
+  resolveConstantsFn: (value: string) => Promise<string>
+): Promise<any> {
+  if (!sourceOptions || typeof sourceOptions !== 'object') {
+    return sourceOptions;
+  }
+
+  const constantMatcher = /\{\{(constants|secrets|globals\.server)\..*?\}\}/g;
+  const resolvedOptions = { ...sourceOptions };
+
+  for (const key of Object.keys(resolvedOptions)) {
+    const option = resolvedOptions[key];
+
+    // Handle options in { value: '...' } format
+    if (option && typeof option === 'object' && 'value' in option) {
+      const value = option.value;
+      if (typeof value === 'string') {
+        constantMatcher.lastIndex = 0;
+        if (constantMatcher.test(value)) {
+          const resolved = await resolveConstantsFn(value);
+          resolvedOptions[key] = { ...option, value: resolved };
+        }
+      }
+    }
+    // Handle direct string values
+    else if (typeof option === 'string') {
+      constantMatcher.lastIndex = 0;
+      if (constantMatcher.test(option)) {
+        const resolved = await resolveConstantsFn(option);
+        resolvedOptions[key] = resolved;
+      }
+    }
+  }
+
+  return resolvedOptions;
 }

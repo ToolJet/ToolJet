@@ -53,4 +53,12 @@ export class AiUtilService implements IAiUtilService {
   async createNewConversation(userId, appId, conversationType): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
+  async getConversationsList(appId: string, userId: string, conversationType: string): Promise<any[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getConversationById(conversationId: string, userId: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
 }

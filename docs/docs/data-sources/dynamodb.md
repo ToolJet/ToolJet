@@ -67,7 +67,7 @@ To perform queries on **DynamoDB**, click on the **+ Add** button in the query m
 </div>
 
 :::tip
-You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/beta/app-builder/custom-code/transform-data)
+You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
 :::
 
 #### Supported Operations
@@ -86,7 +86,7 @@ You can apply transformations to the query results. Refer to our transformations
 
 ### List Tables
 
-Returns an array of table names associated with the current account and endpoint. The output from _List Tables_ is paginated, with each page returning a maximum of 100 table names.
+Returns an array of table names associated with the current account and endpoint. The output from *List Tables* is paginated, with each page returning a maximum of 100 table names.
 
 <div style={{textAlign: 'center'}}>
 
@@ -141,13 +141,12 @@ Retrieves all items that have a specific partition key. You must specify the par
   "ConsistentRead": true,
   "ProjectionExpression": "Id, PostedBy, ReplyDateTime",
   "KeyConditionExpression": "Id = :v1 AND PostedBy BETWEEN :v2a AND :v2b",
-  "ExpressionAttributeValues":
-    {
-      ":v1": { "S": "Amazon DynamoDB#DynamoDB Thread 1" },
-      ":v2a": { "S": "User A" },
-      ":v2b": { "S": "User C" },
-    },
-  "ReturnConsumedCapacity": "TOTAL",
+  "ExpressionAttributeValues": {
+    ":v1": { "S": "Amazon DynamoDB#DynamoDB Thread 1" },
+    ":v2a": { "S": "User A" },
+    ":v2b": { "S": "User C" }
+  },
+  "ReturnConsumedCapacity": "TOTAL"
 }
 ```
 
@@ -168,7 +167,9 @@ Retrieves all items in the specified table or index. You can retrieve entire ite
 #### Example
 
 ```yaml
-{ "TableName": "<table_name>" }
+{
+  "TableName": "<table_name>"
+}
 ```
 
 <div style={{textAlign: 'center'}}>
@@ -190,13 +191,16 @@ Deletes a single item from a table. You must specify the primary key for the ite
 
 ```yaml
 {
-  "Key":
-    {
-      "ForumName": { "S": "Amazon DynamoDB" },
-      "Subject": { "S": "How do I update multiple items?" },
+  "Key": {
+    "ForumName": {
+      "S": "Amazon DynamoDB"
     },
+    "Subject": {
+      "S": "How do I update multiple items?"
+    }
+  },
   "ConditionExpression": "attribute_not_exists(Replies)",
-  "ReturnValues": "ALL_OLD",
+  "ReturnValues": "ALL_OLD"
 }
 ```
 
@@ -219,9 +223,15 @@ Update an item in DynamoDB by specifying the primary key and providing new attri
 ```yaml
 {
   "TableName": "USER_DETAILS_with_local",
-  "Key": { "USER_ID": 1, "USER_NAME": "Nick" },
+  "Key": {
+    "USER_ID": 1,
+    "USER_NAME": "Nick"
+  },
   "UpdateExpression": "set USER_AGE = :age, USER_FEE = :fee",
-  "ExpressionAttributeValues": { ":age": 40, ":fee": 230545 },
+  "ExpressionAttributeValues": {
+    ":age": 40,
+    ":fee": 230545
+  }
 }
 ```
 
@@ -257,27 +267,48 @@ This operation in DynamoDB enables you to create a new table by specifying its n
 
 ```yaml
 {
-  "AttributeDefinitions":
-    [
-      { "AttributeName": "USER_ID", "AttributeType": "N" },
-      { "AttributeName": "USER_FEE", "AttributeType": "N" },
-    ],
-  "KeySchema": [{ "AttributeName": "USER_ID", "KeyType": "HASH" }],
-  "LocalSecondaryIndexes":
-    [
-      {
-        "IndexName": "USER_FEE",
-        "KeySchema":
-          [
-            { "AttributeName": "USER_ID", "KeyType": "HASH" },
-            { "AttributeName": "USER_FEE", "KeyType": "RANGE" },
-          ],
-        "Projection": { "ProjectionType": "KEYS_ONLY" },
-      },
-    ],
-  "ProvisionedThroughput": { "ReadCapacityUnits": 1, "WriteCapacityUnits": 1 },
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "USER_ID",
+      "AttributeType": "N"
+    },
+    {
+      "AttributeName": "USER_FEE",
+      "AttributeType": "N"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "USER_ID",
+      "KeyType": "HASH"
+    }
+  ],
+  "LocalSecondaryIndexes": [
+    {
+      "IndexName": "USER_FEE",
+      "KeySchema": [
+        {
+          "AttributeName": "USER_ID",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "USER_FEE",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "KEYS_ONLY"
+      }
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 1,
+    "WriteCapacityUnits": 1
+  },
   "TableName": "USER_FEE_LOCAL",
-  "StreamSpecification": { "StreamEnabled": false },
+  "StreamSpecification": {
+    "StreamEnabled": false
+  }
 }
 ```
 
@@ -300,8 +331,12 @@ This operation allows you to create or replace an item in a table. It enables yo
 ```yaml
 {
   "TableName": "USER_DETAILS_with_localS",
-  "Item":
-    { "USER_ID": 1, "USER_NAME": "NICK", "USER_AGE": 34, "USER_FEE": 1234.56 },
+  "Item": {
+    "USER_ID": 1,
+    "USER_NAME": "NICK",
+    "USER_AGE": 34,
+    "USER_FEE": 1234.56
+  }
 }
 ```
 

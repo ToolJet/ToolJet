@@ -5,6 +5,7 @@ import { EntityManager, DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import * as crypto from 'crypto';
 
 /**
  * Creates a custom tooljet database connection using a tenant user, for the respective workspace.
@@ -196,7 +197,7 @@ export async function grantTenantRoleToTjdbAdminRole(
 
 export async function syncTenantSchemaWithPostgrest(tooljetDbTransactionManager: EntityManager, tooljetDbUser: string) {
   await tooljetDbTransactionManager.query(`CREATE SCHEMA IF NOT EXISTS postgrest`);
-  await tooljetDbTransactionManager.query(`GRANT USAGE ON SCHEMA postgrest to ${tooljetDbUser}`);
+  await tooljetDbTransactionManager.query(`GRANT USAGE ON SCHEMA postgrest to "${tooljetDbUser}"`);
   await tooljetDbTransactionManager.query(`create or replace function postgrest.pre_config()
         returns void as $$
         select
@@ -267,4 +268,36 @@ export function validateTjdbJSONBColumnInputs(jsonbColumnList: Array<string>, in
     }
   });
   return { inValidValueColumnsList, updatedRequestBody: body };
+}
+
+export function generateTJDBPasswordForRole(length = 30) {
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  const symbols = '!@#$%^&*()-_=+[]{};:,.<>?/';
+
+  const allChars = uppercase + lowercase + numbers + symbols;
+
+  const mandatoryChars = [
+    uppercase[Math.floor(Math.random() * uppercase.length)],
+    lowercase[Math.floor(Math.random() * lowercase.length)],
+    numbers[Math.floor(Math.random() * numbers.length)],
+    symbols[Math.floor(Math.random() * symbols.length)],
+  ];
+
+  // Fill the rest securely
+  console.log(Array.from(crypto.randomBytes(length - mandatoryChars.length)));
+  const remaining = Array.from(crypto.randomBytes(length - mandatoryChars.length)).map(
+    (b) => allChars[b % allChars.length]
+  );
+
+  // Combine and shuffle
+  const passwordArray = mandatoryChars.concat(remaining);
+
+  for (let i = passwordArray.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(0, i + 1);
+    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+  }
+
+  return passwordArray.join('');
 }

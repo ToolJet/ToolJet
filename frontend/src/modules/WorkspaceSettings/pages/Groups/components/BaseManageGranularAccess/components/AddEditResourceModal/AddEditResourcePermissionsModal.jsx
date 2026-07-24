@@ -6,6 +6,7 @@ import AppPermissionsActions from './AppPermissionActionContainer';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DsPermissionsActions from './DataSourcPermissionActionContainer';
 import WorkflowPermissionsActions from './WorkflowPermissionActionContainer';
+import FolderPermissionsActions from './FolderPermissionActionContainer';
 import { RESOURCE_TYPE } from '../../../../index';
 
 function AddEditResourcePermissionsModal({
@@ -23,11 +24,17 @@ function AddEditResourcePermissionsModal({
   addableApps,
   darkMode,
   groupName,
+  isBuilderLevel,
+  hasEndUsers,
+  selectedEnvironments,
+  setSelectedEnvironments,
+  isBasicPlan,
 }) {
   const isCustom = currentState?.isCustom;
   const newPermissionName = currentState?.newPermissionName;
   const initialPermissionState = currentState?.initialPermissionState;
   const initialPermissionStateDs = currentState?.initialPermissionStateDs;
+  const initialPermissionStateFolder = currentState?.initialPermissionStateFolder;
   const errors = currentState?.errors;
   const isAll = currentState?.isAll;
   const getAllResourceText = (resourceType) => {
@@ -38,6 +45,8 @@ function AddEditResourcePermissionsModal({
         return 'This will select all workflows in the workspace including any new workflows created';
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'This will select all data sources in the workspace including any new connections created';
+      case RESOURCE_TYPE.FOLDERS:
+        return 'This will select all folders in the workspace including any new folders created';
     }
   };
 
@@ -45,6 +54,7 @@ function AddEditResourcePermissionsModal({
     [RESOURCE_TYPE.APPS]: 'apps',
     [RESOURCE_TYPE.WORKFLOWS]: 'workflows',
     [RESOURCE_TYPE.DATA_SOURCES]: 'data sources',
+    [RESOURCE_TYPE.FOLDERS]: 'folders',
   };
 
   const getAllResourceLabel = (resourceType) => {
@@ -55,6 +65,8 @@ function AddEditResourcePermissionsModal({
         return 'All workflows';
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'All data sources';
+      case RESOURCE_TYPE.FOLDERS:
+        return 'All folders';
       default:
         return 'All resources';
     }
@@ -71,7 +83,6 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canEdit: !prevState.initialPermissionState.canEdit,
                   canView: prevState.initialPermissionState.canEdit,
-                  ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
                 },
               }));
             }}
@@ -81,7 +92,6 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canView: !prevState.initialPermissionState.canView,
                   canEdit: prevState.initialPermissionState.canView,
-                  ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
                 },
               }));
             }}
@@ -95,6 +105,12 @@ function AddEditResourcePermissionsModal({
             }}
             disableBuilderLevelUpdate={disableBuilderLevelUpdate}
             initialPermissionState={initialPermissionState}
+            selectedEnvironments={selectedEnvironments}
+            setSelectedEnvironments={setSelectedEnvironments}
+            groupName={groupName}
+            isBuilderLevel={isBuilderLevel}
+            hasEndUsers={hasEndUsers}
+            isBasicPlan={isBasicPlan}
           />
         );
 
@@ -107,7 +123,6 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canEdit: !prevState.initialPermissionState.canEdit,
                   canView: prevState.initialPermissionState.canEdit,
-                  ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
                 },
               }));
             }}
@@ -117,7 +132,6 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canView: !prevState.initialPermissionState.canView,
                   canEdit: prevState.initialPermissionState.canView,
-                  ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
                 },
               }));
             }}
@@ -135,6 +149,23 @@ function AddEditResourcePermissionsModal({
         );
 
       case RESOURCE_TYPE.DATA_SOURCES:
+        return (
+          <DsPermissionsActions
+            updateParentState={updateParentState}
+            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            initialPermissionStateDs={initialPermissionStateDs}
+          />
+        );
+
+      case RESOURCE_TYPE.FOLDERS:
+        return (
+          <FolderPermissionsActions
+            updateParentState={updateParentState}
+            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            initialPermissionStateFolder={initialPermissionStateFolder}
+          />
+        );
+
       default:
         return (
           <DsPermissionsActions
@@ -240,9 +271,7 @@ function AddEditResourcePermissionsModal({
               <input
                 className="form-check-input"
                 type="radio"
-                disabled={
-                  !addableApps || addableApps?.length === 0 || disableBuilderLevelUpdate || groupName === 'builder'
-                }
+                disabled={!addableApps || disableBuilderLevelUpdate || groupName === 'builder'}
                 checked={isCustom}
                 onClick={() => {
                   !isCustom &&

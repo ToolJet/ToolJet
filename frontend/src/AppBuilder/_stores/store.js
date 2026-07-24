@@ -5,6 +5,7 @@ import { createAppSlice } from './slices/appSlice';
 import { createLoaderSlice } from './slices/loaderSlice';
 import { createLeftSideBarSlice } from './slices/leftSideBarSlice';
 import { createComponentsSlice } from './slices/componentsSlice';
+import { createFlexContainerSlice } from './slices/flexContainerSlice';
 import { createRightSideBarSlice } from './slices/rightSideBarSlice';
 import { createModeSlice } from './slices/modeSlice';
 import { createQueryPanelSlice } from './slices/queryPanelSlice';
@@ -13,9 +14,10 @@ import { createDataSourceSlice } from './slices/dataSourceSlice';
 import { createUndoRedoSlice } from './slices/undoRedoSlice';
 import { createLayoutSlice } from './slices/layoutSlice';
 import { immer } from 'zustand/middleware/immer';
+// eslint-disable-next-line import/no-unresolved
+import { enableMapSet } from 'immer';
 import { createResolvedSlice } from './slices/resolvedSlice';
 import { createEnvironmentsAndVersionsSlice } from './slices/environmentsAndVersionsSlice';
-import { createEditorLicenseSlice } from './slices/editorLicenseSlice';
 import { createAppVersionSlice } from './slices/appVersionSlice';
 import { createPageMenuSlice } from './slices/pageMenuSlice';
 import { createLicenseSlice } from './slices/licenseSlice';
@@ -29,9 +31,15 @@ import { createGitSyncSlice } from './slices/gitSyncSlice';
 import { createAiSlice } from './slices/aiSlice';
 import { createFixWithAiSlice } from './slices/fixWithAi';
 import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
-import { createFormComponentSlice } from './slices/formComponentSlice';
+import { createFormComponentSlice } from './slices/componentSlices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+import { createLibrarySlice } from './slices/librarySlice';
+import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
+import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
+import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
+import { createBranchSlice } from './slices/branchSlice';
+enableMapSet();
 
 export default create(
   zustandDevTools(
@@ -41,6 +49,7 @@ export default create(
       ...createAppSlice(...state),
       ...createLoaderSlice(...state),
       ...createLeftSideBarSlice(...state),
+      ...createFlexContainerSlice(...state),
       ...createComponentsSlice(...state),
       ...createRightSideBarSlice(...state),
       ...createModeSlice(...state),
@@ -51,7 +60,6 @@ export default create(
       ...createResolvedSlice(...state),
       ...createLayoutSlice(...state),
       ...createEnvironmentsAndVersionsSlice(...state),
-      // ...createEditorLicenseSlice(...state),
       ...createAppVersionSlice(...state),
       ...createPageMenuSlice(...state),
       ...createLicenseSlice(...state),
@@ -65,9 +73,15 @@ export default create(
       ...createAiSlice(...state),
       ...createFixWithAiSlice(...state),
       ...createWhiteLabellingSlice(...state),
-      ...createFormComponentSlice(...state),
       ...createInspectorSlice(...state),
       ...createModuleSlice(...state),
+      ...createLibrarySlice(...state),
+      ...createDataQueryFolderSlice(...state),
+      // component slices
+      ...createFormComponentSlice(...state),
+      ...listViewComponentSlice(...state),
+      ...tableComponentSlice(...state),
+      ...createBranchSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

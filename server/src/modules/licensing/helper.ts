@@ -53,6 +53,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.GIT_SYNC:
       return licenseInstance.gitSync;
 
+    case LICENSE_FIELD.WORKSPACE_ENV:
+      return licenseInstance.workspaceEnv;
+
     case LICENSE_FIELD.CUSTOM_STYLE:
       return licenseInstance.customStyling;
 
@@ -72,6 +75,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.MULTI_ENVIRONMENT:
       return licenseInstance.multiEnvironment;
+
+    case LICENSE_FIELD.MULTIPLAYER_EDIT:
+      return licenseInstance.multiPlayerEdit;
 
     case LICENSE_FIELD.VALID:
       return licenseInstance.isValid && !licenseInstance.isExpired;
@@ -113,11 +119,61 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.AI_FEATURE:
       return licenseInstance.aiFeature;
 
+    case LICENSE_FIELD.AI_PLAN:
+      return licenseInstance.aiPlan;
+
     case LICENSE_FIELD.AI:
       return licenseInstance.ai;
 
+    case LICENSE_FIELD.SCIM:
+      return licenseInstance.scim;
+
     case LICENSE_FIELD.PLAN:
       return licenseInstance.plan;
+    case LICENSE_FIELD.MODULES:
+      return licenseInstance.moduleEnabled;
+    case LICENSE_FIELD.CUSTOM_GROUPS:
+      return licenseInstance.customGroups;
+    case LICENSE_FIELD.APP_PERMISSIONS_COMPONENT:
+      return licenseInstance.appPermissionComponent;
+    case LICENSE_FIELD.APP_PERMISSIONS_QUERY:
+      return licenseInstance.appPermissionQuery;
+    case LICENSE_FIELD.APP_PERMISSIONS_PAGES:
+      return licenseInstance.appPermissionPages;
+    case LICENSE_FIELD.APP_PAGES_ENABLED:
+      return licenseInstance.appPagesEnabled;
+    case LICENSE_FIELD.APP_PAGES_HEADER_AND_LOGO:
+      return licenseInstance.appPagesHeaderAndLogoEnabled;
+    case LICENSE_FIELD.APP_PAGES_NAV_GROUP:
+      return licenseInstance.appPagesAddNavGroupEnabled;
+    case LICENSE_FIELD.CANVAS_PAGE_HEADER:
+      return licenseInstance.canvasPageHeaderEnabled;
+    case LICENSE_FIELD.CANVAS_PAGE_FOOTER:
+      return licenseInstance.canvasPageFooterEnabled;
+
+    case LICENSE_FIELD.CUSTOM_DOMAINS:
+      return licenseInstance.customDomains;
+
+    case LICENSE_FIELD.GOOGLE:
+      return licenseInstance.google;
+
+    case LICENSE_FIELD.GITHUB:
+      return licenseInstance.github;
+
+    case LICENSE_FIELD.APP_PAGES_LIMIT:
+      return licenseInstance.appPagesLimit;
+
+    case LICENSE_FIELD.OBSERVABILITY_ENABLED:
+      return licenseInstance.observabilityEnabled;
+
+    case LICENSE_FIELD.APP_HISTORY:
+      return licenseInstance.appHistory;
+
+    case LICENSE_FIELD.QUERY_FOLDERS:
+      return licenseInstance.queryFolders;
+
+    case LICENSE_FIELD.APP_JS_LIBRARIES:
+      return licenseInstance.appJsLibraries;
 
     default:
       return licenseInstance.terms;

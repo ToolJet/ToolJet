@@ -113,6 +113,10 @@ export class UpdateUserDto {
   @IsEnum(Status)
   @IsOptional()
   status?: Status;
+
+  @IsString()
+  @IsOptional()
+  defaultOrganizationId?: string;
 }
 
 export class UpdateUserWorkspaceDto {

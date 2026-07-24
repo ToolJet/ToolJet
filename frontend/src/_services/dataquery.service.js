@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { getActiveBranchId } from '@/_helpers/active-branch';
 
 export const dataqueryService = {
   create,
@@ -12,6 +13,7 @@ export const dataqueryService = {
   updateStatus,
   bulkUpdateQueryOptions,
   createWorkflowQuery,
+  invoke,
 };
 
 function getAll(appVersionId, mode) {
@@ -19,7 +21,7 @@ function getAll(appVersionId, mode) {
   return fetch(`${config.apiUrl}/data-queries/${appVersionId}?mode=${mode}`, requestOptions).then(handleResponse);
 }
 
-function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
+function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id, folder_id) {
   const body = {
     app_id,
     app_version_id,
@@ -28,6 +30,7 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
     options,
     data_source_id,
     plugin_id,
+    ...(folder_id ? { folder_id } : {}),
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
@@ -88,7 +91,7 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId, mode) {
+function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
@@ -103,18 +106,30 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
     url = `${config.apiUrl}/data-queries/${queryId}/run`;
   }
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+    signal,
+  };
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function preview(query, options, versionId, environmentId) {
+function preview(query, options, versionId, environmentId, signal) {
   const body = {
     query,
     options: options,
     app_version_id: versionId,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+    signal,
+  };
   return fetch(
     `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${
       environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
@@ -133,4 +148,37 @@ function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}/data-source`, requestOptions).then(
     handleResponse
   );
+}
+
+function invoke(dataSourceId, methodName, environmentId, args, resolvedOptions) {
+  const body = {
+    method: methodName,
+    environmentId: environmentId,
+    args: args,
+    ...(resolvedOptions ? { resolvedOptions } : {}),
+  };
+
+  let url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+  const branchId = getActiveBranchId();
+  if (branchId) {
+    url += `?branch_id=${branchId}`;
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(url, requestOptions).then(handleResponse);
+}
+
+export function getAllTablesForADataSource(dataSourceId, environmentId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  let url = `${config.apiUrl}/data-queries/${dataSourceId}/list-tables/${environmentId}`;
+  const branchId = getActiveBranchId();
+  if (branchId) {
+    url += `?branch_id=${branchId}`;
+  }
+  return fetch(url, requestOptions).then(handleResponse);
 }

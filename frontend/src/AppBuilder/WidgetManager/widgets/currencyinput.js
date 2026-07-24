@@ -43,6 +43,17 @@ export const currencyinputConfig = {
       displayName: 'Enable currency change',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    showFlag: {
+      type: 'toggle',
+      displayName: 'Show currency flag',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -55,10 +66,34 @@ export const currencyinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
       section: 'additionalActions',
     },
     tooltip: {
@@ -67,6 +102,7 @@ export const currencyinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   validation: {
@@ -93,6 +129,12 @@ export const currencyinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -116,20 +158,9 @@ export const currencyinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
-    width: {
-      type: 'slider',
-      displayName: 'Width',
-      accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
-      isFxNotRequired: true,
-    },
     auto: {
       type: 'checkbox',
-      displayName: 'auto',
-      showLabel: false,
+      displayName: 'Width',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
@@ -137,6 +168,46 @@ export const currencyinputConfig = {
         value: 'side',
       },
       isFxNotRequired: true,
+    },
+    width: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
     },
 
     backgroundColor: {
@@ -169,21 +240,21 @@ export const currencyinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
-    icon: {
-      type: 'icon',
-      displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
-      accordian: 'field',
-      visibility: false,
-    },
-    iconColor: {
-      type: 'colorSwatches',
-      displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
-      accordian: 'field',
-      visibility: false,
-      showLabel: false,
-    },
+    // icon: {
+    //   type: 'icon',
+    //   displayName: 'Icon',
+    //   validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
+    //   accordian: 'field',
+    //   visibility: false,
+    // },
+    // iconColor: {
+    //   type: 'colorSwatches',
+    //   displayName: 'Icon color',
+    //   validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-icon)' },
+    //   accordian: 'field',
+    //   visibility: false,
+    //   showLabel: false,
+    // },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
@@ -276,21 +347,28 @@ export const currencyinputConfig = {
       label: { value: 'Label' },
       placeholder: { value: 'Enter amount' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       isCountryChangeEnabled: { value: '{{true}}' },
+      showFlag: { value: '{{true}}' },
       decimalPlaces: { value: '2' },
+      numberFormat: { value: 'us' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      iconColor: { value: 'var(--cc-default-icon)' },
+      // iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
@@ -298,8 +376,9 @@ export const currencyinputConfig = {
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
-      icon: { value: 'IconHome2' },
-      iconVisibility: { value: false },
+      // icon: { value: 'IconHome2' },
+      // iconVisibility: { value: false },
+      widthType: { value: 'ofComponent' },
     },
   },
 };

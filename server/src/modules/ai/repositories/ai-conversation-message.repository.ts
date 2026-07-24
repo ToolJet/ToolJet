@@ -25,7 +25,7 @@ export class AiConversationMessageRepository extends Repository<AiConversationMe
   async findById(id: string): Promise<AiConversationMessage> {
     return await this.findOne({
       where: { id },
-      relations: ['conversation', 'votes'],
+      relations: ['aiResponseVote', 'aiConversation'],
     });
   }
 
@@ -50,6 +50,28 @@ export class AiConversationMessageRepository extends Repository<AiConversationMe
     await dbTransactionWrap((manager: EntityManager) => {
       return manager.update(AiConversationMessage, id, updatableData);
     }, manager || this.manager);
+  }
+
+  async findFirstUserMessageByConversationId(conversationId: string): Promise<AiConversationMessage | null> {
+    return await this.findOne({
+      where: {
+        aiConversationId: conversationId,
+        messageType: 'user',
+        isLatest: true,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+  }
+
+  async countByConversationId(conversationId: string): Promise<number> {
+    return await this.count({
+      where: {
+        aiConversationId: conversationId,
+        isLatest: true,
+      },
+    });
   }
 
   async findConversationMessages(conversationId: string, limit: number = 5): Promise<AiConversationMessage[]> {

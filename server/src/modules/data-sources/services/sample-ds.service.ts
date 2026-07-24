@@ -6,7 +6,8 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { ConfigService } from '@nestjs/config';
 import { DataSourcesUtilService } from '../util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -28,16 +29,23 @@ export class SampleDataSourceService {
     }, manager);
   }
 
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   *
+   * Used in migrations:
+   * - 1726649944702-AddConnectionTypeToSampleDataSources.ts
+   * - 1731279588337-ReplaceTheSampleDBConnectionValues.ts
+   */
   async updateSampleDs(manager?: EntityManager) {
     const options = [
       {
         key: 'host',
-        value: this.configService.get<string>('PG_HOST'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_HOST') || this.configService.get<string>('PG_HOST'),
         encrypted: true,
       },
       {
         key: 'port',
-        value: this.configService.get<string>('PG_PORT'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PORT') || this.configService.get<string>('PG_PORT'),
         encrypted: true,
       },
       {
@@ -46,18 +54,18 @@ export class SampleDataSourceService {
       },
       {
         key: 'username',
-        value: this.configService.get<string>('PG_USER'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_USER') || this.configService.get<string>('PG_USER'),
         encrypted: true,
       },
       {
         key: 'password',
-        value: this.configService.get<string>('PG_PASS'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
         encrypted: true,
       },
       {
         key: 'ssl_enabled',
-        value: false,
-        encrypted: true,
+        value: this.configService.get<string>('PGSSLMODE') === 'require' ? true : false,
+        encrypted: false,
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
       { key: 'connection_type', value: 'manual', encrypted: false },
@@ -91,12 +99,12 @@ export class SampleDataSourceService {
     const options = [
       {
         key: 'host',
-        value: this.configService.get<string>('PG_HOST'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_HOST') || this.configService.get<string>('PG_HOST'),
         encrypted: true,
       },
       {
         key: 'port',
-        value: this.configService.get<string>('PG_PORT'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PORT') || this.configService.get<string>('PG_PORT'),
         encrypted: true,
       },
       {
@@ -105,18 +113,18 @@ export class SampleDataSourceService {
       },
       {
         key: 'username',
-        value: this.configService.get<string>('PG_USER'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_USER') || this.configService.get<string>('PG_USER'),
         encrypted: true,
       },
       {
         key: 'password',
-        value: this.configService.get<string>('PG_PASS'),
+        value: this.configService.get<string>('SAMPLE_PG_DB_PASS') || this.configService.get<string>('PG_PASS'),
         encrypted: true,
       },
       {
         key: 'ssl_enabled',
-        value: false,
-        encrypted: true,
+        value: this.configService.get<string>('PGSSLMODE') === 'require' ? true : false,
+        encrypted: false,
       },
       { key: 'ssl_certificate', value: 'none', encrypted: false },
       { key: 'connection_type', value: 'manual', encrypted: false },
@@ -128,13 +136,23 @@ export class SampleDataSourceService {
 
       const allEnvs: AppEnvironment[] = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
 
+      // Create default DataSourceVersion + DataSourceVersionOptions
+      const dsv = manager.create(DataSourceVersion, {
+        dataSourceId: dataSource.id,
+        name: dataSource.name,
+        isDefault: true,
+        isActive: true,
+        branchId: null,
+      });
+      const savedDsv = await manager.save(DataSourceVersion, dsv);
+
       await Promise.all(
         allEnvs?.map(async (env) => {
           const parsedOptions = await this.dataSourceUtilService.parseOptionsForCreate(options);
           await manager.save(
-            manager.create(DataSourceOptions, {
+            manager.create(DataSourceVersionOptions, {
+              dataSourceVersionId: savedDsv.id,
               environmentId: env.id,
-              dataSourceId: dataSource.id,
               options: parsedOptions,
             })
           );

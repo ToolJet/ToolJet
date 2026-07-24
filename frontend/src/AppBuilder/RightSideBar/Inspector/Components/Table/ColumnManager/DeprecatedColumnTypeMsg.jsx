@@ -17,7 +17,15 @@ export const checkIfTableColumnDeprecated = (columnType) => {
   return DEPRECATED_COLUMN_TYPES.some((ct) => ct.value === columnType);
 };
 
-export const TooltipBody = ({ columnLabel }) => {
+export const TooltipBody = ({ columnLabel, isDeprecatedStyle }) => {
+  if (isDeprecatedStyle) {
+    return (
+      <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+        {/* <div className="font-weight-bold mb-2">Deprecating input widget type</div> */}
+        <div>{`This style will be deprecated in the future releases`}</div>
+      </div>
+    );
+  }
   return (
     <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
       <div className="font-weight-bold mb-2">Deprecating column type</div>
@@ -26,13 +34,18 @@ export const TooltipBody = ({ columnLabel }) => {
   );
 };
 
-export const DeprecatedColumnTooltip = ({ columnType, children }) => {
+export const DeprecatedColumnTooltip = ({ columnType, children, isDeprecatedStyle }) => {
   const deprecatedColumnType = DEPRECATED_COLUMN_TYPES.find((ct) => ct.value === columnType);
   return (
     <ToolTip
-      message={<TooltipBody columnLabel={deprecatedColumnType?.currentAlternativeColumnLabel} />}
-      show={deprecatedColumnType ?? false}
-      placement="left"
+      message={
+        <TooltipBody
+          columnLabel={deprecatedColumnType?.currentAlternativeColumnLabel}
+          isDeprecatedStyle={isDeprecatedStyle}
+        />
+      }
+      show={(deprecatedColumnType || isDeprecatedStyle) ?? false}
+      placement={isDeprecatedStyle ? 'bottom' : 'left'}
     >
       {children}
     </ToolTip>

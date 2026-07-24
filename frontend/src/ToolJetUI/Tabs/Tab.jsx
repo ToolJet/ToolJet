@@ -1,21 +1,11 @@
 import React from 'react';
-import BootstrapTab from 'react-bootstrap/Tab';
-import cx from 'classnames';
-import './tabs.scss';
 
-const Tab = ({ darkMode, eventKey, title, className, children, ...restProps }) => {
-  return (
-    <BootstrapTab
-      eventKey={eventKey}
-      title={title}
-      className={cx(className, {
-        'theme-dark dark-theme': darkMode,
-      })}
-      {...restProps}
-    >
-      {children}
-    </BootstrapTab>
-  );
+// Simple Tab component - just a props container
+// Actual rendering is handled by Tabs parent component
+const Tab = ({ eventKey, title, children, disabled = false, className, ...restProps }) => {
+  // This component doesn't render anything directly
+  // It's used by Tabs to extract eventKey, title, and children
+  return null;
 };
 
 export default Tab;

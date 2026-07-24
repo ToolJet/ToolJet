@@ -2,6 +2,7 @@ import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
 import { resolveReferences } from '@/_helpers/utils';
+import { LabeledDivider } from './Components/Form/_components';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -52,26 +53,52 @@ export function renderCustomStyles(
     componentConfig.component == 'Table' ||
     componentConfig.component == 'DropdownV2' ||
     componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'Cascader' ||
     componentConfig.component == 'RadioButtonV2' ||
+    componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Button' ||
+    componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
     componentConfig.component == 'RangeSlider' ||
-    componentConfig.component == 'FilePicker'
+    componentConfig.component == 'DatetimePickerV2' ||
+    componentConfig.component == 'RangeSliderV2' ||
+    componentConfig.component == 'DatePickerV2' ||
+    componentConfig.component == 'TextArea' ||
+    componentConfig.component == 'Timepicker' ||
+    componentConfig.component == 'PhoneInput' ||
+    componentConfig.component == 'CurrencyInput' ||
+    componentConfig.component == 'DaterangePicker' ||
+    componentConfig.component == 'StarRating' ||
+    componentConfig.component == 'PopoverMenu' ||
+    componentConfig.component == 'ReorderableList' ||
+    componentConfig.component == 'KeyValuePair' ||
+    componentConfig.component == 'ProgressBar' ||
+    componentConfig.component == 'TreeSelect' ||
+    componentConfig.component == 'FilePicker' ||
+    componentConfig.component == 'FileInput' ||
+    componentConfig.component == 'FileButton' ||
+    componentConfig.component == 'ColorPicker'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
-    const getResolvedValue = (key) => {
-      return paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
+    const getResolvedValue = (key, parentObjectKey = 'styles') => {
+      if (componentConfig.component == 'PopoverMenu' && key == 'buttonType') {
+        return (
+          componentDefinition?.properties?.buttonType && resolveReferences(componentDefinition?.properties?.buttonType)
+        );
+      }
+      const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
+      return value && resolveReferences(value);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
       return conditionallyRender.reduce((acc, condition) => {
-        const { key, value } = condition;
-        if (paramTypeDefinition?.[key] ?? value) {
-          const resolvedValue = getResolvedValue(key);
+        const { key, value, parentObjectKey } = condition;
+        if ((paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key]) ?? value) {
+          const resolvedValue = getResolvedValue(key, parentObjectKey);
           acc.push(resolvedValue?.value !== value);
         }
         return acc;
@@ -145,22 +172,63 @@ export function renderElement(
 
   if (
     componentConfig.component == 'DropDown' ||
+    componentConfig.component == 'DropdownV2' ||
+    componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'Image' ||
-    componentConfig.component == 'RangeSliderV2'
+    componentConfig.component == 'RangeSliderV2' ||
+    componentConfig.component == 'Statistics' ||
+    componentConfig.component == 'Table' ||
+    componentConfig.component == 'CircularProgressBar' ||
+    componentConfig.component == 'KeyValuePair' ||
+    componentConfig.component == 'ProgressBar' ||
+    componentConfig.component == 'ButtonGroupV2' ||
+    componentConfig.component == 'FilePicker' ||
+    componentConfig.component == 'FileInput' ||
+    componentConfig.component == 'FileButton' ||
+    componentConfig.component == 'Tabs'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
 
+    const getResolvedValue = (key, parentObjectKey = paramType) => {
+      const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
+      return value && resolveReferences(value);
+    };
+
+    const utilFuncForMultipleChecks = (conditionallyRender) => {
+      return conditionallyRender.reduce((acc, condition) => {
+        const { key, value, parentObjectKey } = condition;
+        if ((paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key]) ?? value) {
+          const resolvedValue = getResolvedValue(key, parentObjectKey);
+          acc.push(resolvedValue?.value !== value);
+        }
+        return acc;
+      }, []);
+    };
+
     if (conditionallyRender) {
-      const { key, value } = conditionallyRender;
-      if (paramTypeDefinition?.[key] ?? value) {
-        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key]);
-        if (resolvedValue?.value !== value) return;
+      const isConditionallyRenderArray = Array.isArray(conditionallyRender);
+
+      if (isConditionallyRenderArray && utilFuncForMultipleChecks(conditionallyRender).includes(true)) {
+        return;
+      } else if (!isConditionallyRenderArray) {
+        const { key, value, parentObjectKey } = conditionallyRender;
+        if ((paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key]) ?? value) {
+          const resolvedValue = getResolvedValue(key, parentObjectKey);
+          if (Array.isArray(value) ? !value.includes(resolvedValue?.value) : resolvedValue?.value !== value) {
+            return;
+          }
+        }
       }
     }
+  }
+
+  if (meta?.type === 'sectionSubHeader') {
+    return <LabeledDivider label={meta.displayName} />;
   }
 
   return (

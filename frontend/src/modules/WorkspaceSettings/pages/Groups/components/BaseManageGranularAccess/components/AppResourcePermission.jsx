@@ -5,12 +5,14 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import EnvironmentTags from '../../EnvironmentTags';
+
 function AppResourcePermissions({
   updateOnlyGranularPermissions,
   permissions,
   currentGroupPermission,
   openEditPermissionModal,
-  isBasicPlan,
+  isEditable,
 }) {
   const [onHover, setHover] = useState(false);
   const [notClickable, setNotClickable] = useState(false);
@@ -32,9 +34,9 @@ function AppResourcePermissions({
         setHover(false);
       }}
       onClick={() => {
-        !isRoleGroup && !isBasicPlan && !notClickable && openEditPermissionModal(permissions);
+        !isRoleGroup && isEditable && !notClickable && openEditPermissionModal(permissions);
       }}
-      data-cy="granular-access-permission"
+      data-cy="apps-granular-access"
     >
       <div className="resource-name">
         <SolidIcon name="app" width="20px" className="resource-icon" />
@@ -73,11 +75,10 @@ function AppResourcePermissions({
                       updateOnlyGranularPermissions(permissions, {
                         canEdit: !appsPermissions.canEdit,
                         canView: appsPermissions.canEdit,
-                        ...(!appsPermissions.canEdit && { hideFromDashboard: false }),
                       });
                   }}
                   checked={appsPermissions.canEdit}
-                  disabled={isRoleGroup || disableEditUpdate || isBasicPlan}
+                  disabled={isRoleGroup || disableEditUpdate || !isEditable}
                   data-cy="app-edit-radio"
                 />
                 <span className="form-check-label" data-cy="app-edit-label">
@@ -110,27 +111,18 @@ function AppResourcePermissions({
                     });
                 }}
                 checked={appsPermissions.canView}
-                disabled={isRoleGroup || disableEditUpdate || isBasicPlan}
+                disabled={isRoleGroup || disableEditUpdate || !isEditable}
                 data-cy="app-view-radio"
               />
               <span className="form-check-label" data-cy="app-view-label">
                 {'View'}
               </span>
               <span class={`tj-text-xxsm`} data-cy="app-view-helper-text">
-                Only access released version of apps
+                Access preview & released versions of apps
               </span>
             </label>
           </div>
-          <OverlayTrigger
-            overlay={
-              !appsPermissions.canView ? (
-                <Tooltip id="tooltip-disable-edit-update">Can be configured only with view permission</Tooltip>
-              ) : (
-                <span></span>
-              )
-            }
-            placement="top"
-          >
+          <OverlayTrigger overlay={<span></span>} placement="top">
             <div
               onMouseEnter={() => {
                 setNotClickable(true);
@@ -149,7 +141,7 @@ function AppResourcePermissions({
                     });
                   }}
                   checked={appsPermissions.hideFromDashboard}
-                  disabled={isRoleGroup || !appsPermissions.canView || isBasicPlan}
+                  disabled={isRoleGroup || (!appsPermissions.canView && !appsPermissions.canEdit) || !isEditable}
                   data-cy="app-hide-from-dashboard-radio"
                 />
                 <span className="form-check-label" data-cy="app-hide-from-dashboard-label">
@@ -163,6 +155,9 @@ function AppResourcePermissions({
           </OverlayTrigger>
         </div>
       </div>
+      <div className="environment-column">
+        <EnvironmentTags permissions={permissions} isAll={permissions.isAll} />
+      </div>
       <div>
         <GroupChipTD groups={apps} />
       </div>
@@ -175,8 +170,8 @@ function AppResourcePermissions({
             onClick={() => {
               openEditPermissionModal(permissions);
             }}
-            disabled={isRoleGroup || isBasicPlan}
-            data-cy="edit-permission-button"
+            disabled={isRoleGroup || !isEditable}
+            data-cy="edit-apps-granular-access"
           />
         )}
       </div>

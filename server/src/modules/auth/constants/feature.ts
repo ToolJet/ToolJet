@@ -63,5 +63,11 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.AI_COOKIE_DELETE]: {
       isPublic: true,
     },
+    [FEATURE_KEY.AI_MFA_REQUEST_OTP]: {
+      isPublic: true,
+    },
+    [FEATURE_KEY.AI_MFA_VERIFY_OTP]: {
+      isPublic: true,
+    },
   },
 };

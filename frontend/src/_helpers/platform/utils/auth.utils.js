@@ -9,7 +9,12 @@ export const onInvitedUserSignUpSuccess = (response, navigate) => {
     noWorkspaceAttachedInTheSession: currentUser?.current_organization_id ? false : true,
     currentUser,
   });
-  navigate(organizationInviteUrl);
+  if (organizationInviteUrl) {
+    navigate(organizationInviteUrl);
+  } else {
+    // User was directly activated into the workspace (no pending org invite step)
+    navigate(currentUser?.current_organization_slug ? `/${currentUser.current_organization_slug}` : '/');
+  }
 };
 
 export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
@@ -36,7 +41,7 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
   });
 
   const redirectPath = redirectTo || getCookie('redirectPath');
-  const path = getRedirectURL(redirectPath);
+  const path = getRedirectURL(redirectPath, true);
   const archivedCase = isCurrentOrganizationArchived && !noActiveWorkspaces;
 
   eraseRedirectUrl();
@@ -57,12 +62,17 @@ export const onLoginSuccess = (userResponse, navigate, redirectTo = null) => {
         .then(({ ai_cookies }) => {
           // Update AI cookies in the session for cloud
           updateCurrentSession({ ai_cookies });
-          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, () => {
-            updateCurrentSession({
-              isUserLoggingIn: false,
-            });
-            navigate(path);
-          });
+          authorizeUserAndHandleErrors(
+            current_organization_id,
+            current_organization_slug,
+            () => {
+              updateCurrentSession({
+                isUserLoggingIn: false,
+              });
+              navigate(path);
+            },
+            path
+          );
         });
     }
   }
@@ -73,4 +83,31 @@ export const extractErrorObj = (errorResponse) => {
   const message =
     errorDetails?.message?.message || errorDetails?.error || errorResponse?.error || 'something went wrong';
   return { ...errorDetails, message };
+};
+
+export const getPostSignupRedirectPath = ({ redirectTo, organizationSlug }) => {
+  const hasRedirect = Boolean(redirectTo);
+  const hasSlug = Boolean(organizationSlug);
+
+  const isApplicationRoute = /^\/applications\//.test(redirectTo || '');
+
+  if (hasRedirect) {
+    if (isApplicationRoute) {
+      return redirectTo;
+    }
+
+    // Default: prepend workspace slug
+    if (hasSlug) {
+      return `/${organizationSlug}${redirectTo.startsWith('/') ? '' : '/'}${redirectTo}`;
+    }
+
+    return redirectTo;
+  }
+
+  // No redirectTo
+  if (hasSlug) {
+    return `/${organizationSlug}`;
+  }
+
+  return '/home';
 };

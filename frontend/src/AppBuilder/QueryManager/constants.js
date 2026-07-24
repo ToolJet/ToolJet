@@ -44,11 +44,19 @@ export const customToggles = {
     label: 'Run this query on application load',
     translatedLabel: 'editor.queryManager.runQueryOnApplicationLoad',
   },
+  runOnDependencyChange: {
+    dataCy: 'run-on-dependency-change',
+    action: 'runOnDependencyChange',
+    label: 'Run this query on dependency change',
+    translatedLabel: 'editor.queryManager.runOnDependencyChange',
+  },
   requestConfirmation: {
     dataCy: 'confirmation-before-run',
     action: 'requestConfirmation',
     label: 'Request confirmation before running query',
     translatedLabel: 'editor.queryManager.confirmBeforeQueryRun',
+    fx: true,
+    fxKey: 'requestConfirmationFx',
   },
   showSuccessNotification: {
     dataCy: 'notification-on-success',
@@ -116,3 +124,16 @@ const allDefaultSources = {
 export const defaultSources = isWorkflowsFeatureEnabled()
   ? allDefaultSources
   : Object.fromEntries(Object.entries(allDefaultSources).filter(([key]) => key !== 'workflows'));
+
+export const workflowDefaultSources = {
+  ...defaultSources,
+  'If condition': { kind: 'if', id: 'if', name: 'If condition' },
+  Response: { kind: 'response', id: 'response', name: 'Response' },
+  Loop: { kind: 'loop', id: 'loop', name: 'Loop' },
+  Agent: { kind: 'agent', id: 'agent', name: 'Agent' },
+};
+
+// Query kinds where abort is unavailable. These execute outside fetch() so AbortController
+// cannot cancel the underlying work — runjs/runpy run in-browser, workflows use SSE.
+// Used by AbortButton (to hide it) and QueryKeyHooks (to disable Cmd+. shortcut).
+export const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);

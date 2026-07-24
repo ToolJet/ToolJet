@@ -54,7 +54,9 @@ export const eeGroupsText = {
     AddDsButton: "Add",
     dsNameHeader: "Datasource name",
 };
-
+export const multiEnvText = {
+    releasedAppText: "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+}
 export const instanceSettingsText = {
     pageTitle: "Settings",
     allUsersTab: "All users",

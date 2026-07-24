@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -13,7 +14,9 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -32,6 +35,10 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     component?.component?.definition?.properties?.useDynamicOptions?.value,
     currentState
   );
+  const commonBackgroundColor = component?.component?.definition?.styles?.commonBackgroundColor?.value;
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
+  const getContainerChildrenMapping = useStore((state) => state.getContainerChildrenMapping, shallow);
 
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
@@ -92,7 +99,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         disable: { value: '{{false}}' },
         iconVisibility: { value: '{{false}}' },
         icon: { value: 'IconHome2' },
-        fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+        fieldBackgroundColor: { value: commonBackgroundColor },
       };
     };
 
@@ -128,12 +135,34 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     reorderTabItems(source.index, destination.index);
   };
 
+  const handleOnFxPress = (item, property, active) => {
+    const updatedTabItems = tabItems.map((tabItem) => {
+      if (tabItem.id === item.id) {
+        return {
+          ...tabItem,
+          [property]: {
+            ...tabItem[property],
+            fxActive: active,
+          },
+        };
+      }
+      return tabItem;
+    });
+    setTabItems(updatedTabItems);
+    updateAllTabItemsParams(updatedTabItems);
+  };
+
   const handleValueChange = (item, value, property, index) => {
     const updatedTabItems = tabItems.map((tabItem) => {
       if (tabItem.id === item.id) {
         return {
           ...tabItem,
-          [property]: value,
+          [property]: ['title', 'id'].includes(property)
+            ? value
+            : {
+                ...tabItem[property],
+                ...value,
+              },
         };
       }
       return tabItem;
@@ -145,6 +174,31 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
       const [isValid] = validateTabId(value, item?.id);
       if (!isValid) {
         return;
+      }
+
+      const tabsComponentId = component.id;
+      const oldTabId = item.id;
+      const newTabId = value;
+
+      const oldParentId = `${tabsComponentId}-${oldTabId}`;
+      const newParentId = `${tabsComponentId}-${newTabId}`;
+
+      // Collect all child components that need to be reparented
+      const childIdsToReparent = getContainerChildrenMapping(oldParentId);
+
+      // Batch update all parent changes together using setComponentLayout
+      if (childIdsToReparent.length > 0) {
+        const batchLayouts = childIdsToReparent.reduce((layouts, childId) => {
+          // Use empty layout object since we only want to update the parent
+          layouts[childId] = {};
+          return layouts;
+        }, {});
+
+        setComponentLayout(batchLayouts, newParentId, 'canvas', {
+          updateParent: true,
+          skipUndoRedo: false,
+          saveAfterAction: true,
+        });
       }
     }
 
@@ -218,6 +272,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _renderOverlay = (item, index) => {
+    const iconVisibility =
+      item?.iconVisibility?.value !== undefined ? getResolvedValue(item?.iconVisibility?.value) : item?.iconVisibility;
+
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
         <Popover.Body onClick={(e) => e.stopPropagation()}>
@@ -271,6 +328,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onVisibilityChange={(value) => onChangeVisibility(item, { value: true }, 'iconVisibility', index)}
               fieldMeta={{ type: 'icon', displayName: 'Icon' }}
               paramType={'icon'}
+              iconVisibility={iconVisibility}
             />
           </div>
 
@@ -307,6 +365,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => {
                 handleValueChange(item, { value }, 'loading', index);
               }}
+              onFxPress={(active) => handleOnFxPress(item, 'loading', active)}
+              fxActive={item?.loading?.fxActive}
               fieldMeta={{ type: 'toggle', displayName: 'Loading' }}
               paramType={'toggle'}
             />
@@ -324,7 +384,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Visibility'}
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
-              onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
+              onFxPress={(active) => handleOnFxPress(item, 'visible', active)}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -345,7 +405,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Disable'}
               paramName={'disable'}
               onChange={(value) => handleValueChange(item, { value }, 'disable', index)}
-              onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
+              onFxPress={(active) => handleOnFxPress(item, 'disable', active)}
               fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -519,6 +579,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {

@@ -4,9 +4,9 @@ export const workspaceConstantsText = {
     secretsConstantInfo: "To resolve a secret workspace constant use {{secrets.access_token}}Read documentation",
     emptyStateHeader: "No Workspace constants yet",
     emptyStateText:
-        "Use workspace constants seamlessly within both the app builder and data source connections across the platform.",
+        "Use global workspace constants seamlessly within the app builder and data source connections across the platform.",
     addNewConstantButton: "+ Create new constant",
-    addConstatntText: "Add new constant in production ",
+    addConstatntText: (env) => `Add new constant in ${env} `,
     constantCreatedToast: (type) => { return `${type} constant created successfully!` },
     secretConstantCreatedToast: "Secret constant created successfully!",
     constantsExisitToast: (type) => { return `${type} constant already exists!` },
@@ -15,6 +15,6 @@ export const workspaceConstantsText = {
     globalConstHelperText: 'The values can be used anywhere in the product',
     secretsConstHelperText: 'The values are hidden and can only be used in data sources and queries',
     addConstantButton: 'Add constant',
-    noResultFoundHeader: 'No workspace constants found',
+    noResultFoundHeader: 'No global constants found',
     secretsHiddenText: 'Values of secret constants are hidden',
 };

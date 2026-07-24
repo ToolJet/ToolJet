@@ -24,6 +24,13 @@ export interface SendPasswordResetEmailPayload {
   token: string;
   firstName?: string;
   organizationId: string;
+  redirectTo?: string;
+}
+
+export interface SendEmailOtpPayload {
+  name: string;
+  otp: string;
+  email: string;
 }
 
 export interface SendCommentMentionEmailPayload {

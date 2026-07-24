@@ -4,12 +4,12 @@ variable "ami_name" {
 
 variable "instance_type" {
   type    = string
-  default = "t2.large"
+  default = "t2.xlarge"
 }
 
 variable "ami_region" {
   type    = string
-  default = "us-west-2"
+  default = "us-west-1"
 }
 
 variable "ami_groups" {
@@ -17,9 +17,9 @@ variable "ami_groups" {
   default = ["all"]
 }
 
-variable "ami_regions" {
+variable "snapshot_groups" {
   type    = list(string)
-  default = ["us-west-1","us-east-1", "us-east-2", "eu-central-1", "ap-northeast-1", "ca-central-1"]
+  default = ["all"]
 }
 
 variable "PACKER_BUILDER_TYPE" {

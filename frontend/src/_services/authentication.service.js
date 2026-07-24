@@ -7,10 +7,8 @@ import {
   handleResponseWithoutValidation,
   authHeader,
 } from '@/_helpers';
-import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
-import queryString from 'query-string';
-import { getRedirectTo, getRedirectToWithParams } from '@/_helpers/routes';
+import { getRedirectTo } from '@/_helpers/routes';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -22,6 +20,7 @@ const currentSessionSubject = new BehaviorSubject({
   app_group_permissions: null,
   data_source_group_permissions: null,
   workflow_group_permissions: null,
+  folder_group_permissions: null,
   role: null,
   organizations: [],
   isUserLoggingIn: false,
@@ -256,11 +255,11 @@ function verifyToken(token, organizationToken) {
     });
 }
 
-function forgotPassword(email) {
+function forgotPassword(email, redirectTo) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }) }),
   };
 
   return fetch(`${config.apiUrl}/forgot-password`, requestOptions).then(handleResponse);

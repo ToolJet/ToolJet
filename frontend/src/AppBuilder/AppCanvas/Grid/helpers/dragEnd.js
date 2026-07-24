@@ -50,11 +50,9 @@
  * - Enables **modular and flexible** widget movement across different UI sections.
  */
 import { getMouseDistanceFromParentDiv } from '../gridUtils';
-import {
-  RESTRICTED_WIDGETS_CONFIG,
-  RESTRICTED_WIDGET_SLOTS_CONFIG,
-} from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
-import { DROPPABLE_PARENTS } from '../../appCanvasConstants';
+
+import { DROPPABLE_PARENTS, NESTING_LEVEL_LIMITS } from '../../appCanvasConstants';
+import { isDroppingRestrictedWidget } from '../gridUtils';
 
 const CANVAS_ID = 'canvas';
 const REAL_CANVAS_ID = 'real-canvas';
@@ -168,7 +166,7 @@ export class DragContext {
   }
 
   get isDroppable() {
-    const { dragged, target, isModuleEditor } = this;
+    const { dragged, target, isModuleEditor, widgets } = this;
 
     // If the target is the canvas and we are in module editor,
     // then we don't want to drop the widget outside the module
@@ -176,18 +174,30 @@ export class DragContext {
       return false;
     }
 
-    const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
-    const restrictedWidgetsOnTargetSlot = RESTRICTED_WIDGET_SLOTS_CONFIG?.[target.slotType] || [];
+    const isRestrictedWidget = isDroppingRestrictedWidget(target, dragged);
 
-    const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
-    return !restrictedWidgets.includes(dragged.widgetType);
+    if (isRestrictedWidget) {
+      return false;
+    }
+
+    // Check nesting depth restrictions (e.g., Listview: 2, Table: 3)
+    if (isNestingLimitReached(target.slotId, widgets, dragged.widgetType)) {
+      return false;
+    }
+
+    return true;
   }
 }
 
 /**
  * Constructs the **dragging context** by gathering all relevant details from the event.
+ * @param {Object} params - Parameters for building the context.
+ * @param {Object} params.event - The drag event.
+ * @param {Array} params.widgets - The list of all widgets.
+ * @param {boolean} params.isModuleEditor - Whether we are in module editor mode.
+ * @param {Array} params.excludeWidgetIds - Optional array of widget IDs to exclude from drop target detection.
  */
-export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
+export function dragContextBuilder({ event, widgets, isModuleEditor = false, excludeWidgetIds = [] }) {
   const draggedWidgetId = event.target.id;
   const draggedWidget = getWidgetById(widgets, draggedWidgetId);
   const sourceSlotId = draggedWidget.parent;
@@ -201,8 +211,8 @@ export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
     isModuleEditor,
   });
 
-  // Determine the potential drop target
-  const targetSlotId = getDroppableSlotIdOnScreen(event, widgets);
+  // Determine the potential drop target (exclude all selected widgets in multi-select)
+  const targetSlotId = getDroppableSlotIdOnScreen(event, widgets, excludeWidgetIds);
   context.updateTarget(targetSlotId);
 
   return context;
@@ -211,21 +221,40 @@ export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
 /**
  * Given an event, finds the **nearest valid droppable slot**.
  */
-export const getDroppableSlotIdOnScreen = (event, widgets) => {
-  // Hack: This is a temporary solution. We need to find a better way to handle this.
-  // We have added this solution to fix dragging widget not being correctly dropped when it is there is scroll
+/**
+ * Given an event, finds the **nearest valid droppable slot**.
+ * @param {Object} event - The drag event with clientX, clientY coordinates.
+ * @param {Array} widgets - The list of all widgets.
+ * @param {Array} excludeWidgetIds - Optional array of widget IDs to exclude from being considered as drop targets.
+ */
+export const getDroppableSlotIdOnScreen = (event, widgets, excludeWidgetIds = []) => {
   const widgetType = getWidgetById(widgets, event.target.id)?.component?.component || CANVAS_ID;
-  if (!DROPPABLE_PARENTS.has(widgetType) && widgetType !== 'ModuleViewer') {
+
+  // Build a Set of all IDs to exclude (includes event.target.id + any additional excluded IDs)
+  const excludeIds = new Set([event.target.id, ...excludeWidgetIds]);
+
+  // TO:DO - Have to remove this condition for ModuleViewer
+  if (widgetType !== 'ModuleViewer') {
     const targetElems = document.elementsFromPoint(event.clientX, event.clientY);
-    const draggedOverElements = targetElems.filter(
-      (ele) => (ele.id !== event.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
-    );
+    const draggedOverElements = targetElems.filter((ele) => {
+      // Extract widget ID from element (handles both 'canvas-<id>' and direct '<id>' formats)
+      const elementWidgetId = ele.id.replace('canvas-', '')?.slice(0, 36);
+      // Exclude if this element belongs to any of the dragged widgets
+      return !excludeIds.has(elementWidgetId) && ele.classList.contains('real-canvas');
+    });
     const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
     const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
 
     // Determine potential new parent
     const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
-    return newParentId == 'canvas' ? undefined : newParentId;
+
+    // Also check if newParentId itself is one of the excluded widgets
+    if (newParentId && excludeIds.has(newParentId.slice(0, 36))) {
+      // Skip this and try to find the next valid parent
+      return undefined;
+    }
+
+    return newParentId === 'canvas' ? undefined : newParentId;
   } else {
     const [slotId] = document
       .elementsFromPoint(event.clientX, event.clientY)
@@ -238,6 +267,7 @@ export const getDroppableSlotIdOnScreen = (event, widgets) => {
         const widgetType = getWidgetById(widgets, slotId.slice(0, 36))?.component?.component || CANVAS_ID;
         return DROPPABLE_PARENTS.has(widgetType);
       });
+
     return slotId;
   }
 };
@@ -247,6 +277,42 @@ export const getDroppableSlotIdOnScreen = (event, widgets) => {
  */
 export function getWidgetById(boxList, targetId) {
   return boxList.find((box) => box.id === targetId) ?? null;
+}
+
+/**
+ * Checks if a target slot is inside a NESTED ListView (has 2+ ListView ancestors).
+ * This allows: Canvas → ListView → ListView (2 levels)
+ * But blocks: Canvas → ListView → ListView → ListView (3+ levels)
+ *
+ * Performance: O(depth) - typically 2-3 iterations max.
+ *
+ * @param {string} slotId - The slot ID to check
+ * @param {Array} widgets - Array of all widgets
+ * @param {string} widgetType - The widget type to check nesting for
+ * @returns {boolean} - True if nesting limit (from NESTING_LEVEL_LIMITS) is reached
+ */
+export function isNestingLimitReached(slotId, widgets, widgetType) {
+  const limit = NESTING_LEVEL_LIMITS[widgetType];
+  if (!limit) return false;
+
+  let currentParentId = slotId;
+  let count = 0;
+  const visited = new Set();
+
+  while (currentParentId && currentParentId !== 'canvas' && currentParentId !== 'real-canvas') {
+    const baseId = currentParentId?.length > 36 ? currentParentId.slice(0, 36) : currentParentId;
+    if (visited.has(baseId)) return false;
+    visited.add(baseId);
+    const parentWidget = widgets.find((w) => w.id === baseId);
+
+    if (parentWidget?.component?.component === widgetType) {
+      count++;
+      if (count >= limit) return true;
+    }
+
+    currentParentId = parentWidget?.component?.parent;
+  }
+  return false;
 }
 
 /**
@@ -267,9 +333,6 @@ const extractSlotId = (element) => {
  * @returns {Object} { left, top } - The computed position.
  */
 export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gridWidth, dragged) => {
-  let left = event.lastEvent?.translate[0];
-  let top = event.lastEvent?.translate[1];
-
   if (isParentChangeAllowed) {
     // Compute the relative position inside the new container
     const { left: adjustedLeft, top: adjustedTop } = getMouseDistanceFromParentDiv(
@@ -289,4 +352,85 @@ export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gr
     left: dragged.left * gridWidth,
     top: dragged.top,
   };
+};
+
+/**
+ * Checks if the target is a ModuleContainer (in app editor, not module editor).
+ *
+ * @param {string} targetSlotId - The target slot ID.
+ * @param {boolean} isModuleEditor - Whether we are in module editor mode.
+ * @returns {boolean} - True if the target is a ModuleContainer.
+ */
+export const isTargetModuleContainer = (targetSlotId, isModuleEditor) => {
+  if (isModuleEditor) return false;
+  let el = document.getElementById(`canvas-${targetSlotId}`);
+  while (el) {
+    if (el.getAttribute && el.getAttribute('component-type') === 'ModuleContainer') return true;
+    el = el.parentElement;
+  }
+  return false;
+};
+
+/**
+ * Computes the position for a widget being dropped using getBoundingClientRect.
+ * This is used for both single and multi-drag scenarios.
+ *
+ * @param {HTMLElement} widgetElement - The dragged widget's DOM element.
+ * @param {string} targetSlotId - The target slot ID.
+ * @param {number} gridWidth - The grid width for snapping.
+ * @param {number} gridHeight - The grid height for snapping (default 10).
+ * @returns {Object} - { left, top } - The computed position.
+ */
+export const computeWidgetDropPosition = (widgetElement, targetSlotId, gridWidth, gridHeight = 10) => {
+  const parentDiv = document.getElementById('canvas-' + targetSlotId) || document.getElementById('real-canvas');
+  const parentDivRect = parentDiv?.getBoundingClientRect();
+  const targetDivRect = widgetElement.getBoundingClientRect();
+
+  // Calculate position relative to target container
+  const adjustedLeft = targetDivRect.left - parentDivRect.left;
+  const adjustedTop = targetDivRect.top - parentDivRect.top;
+
+  // Apply grid snapping
+  return {
+    left: Math.round(adjustedLeft / gridWidth) * gridWidth,
+    top: Math.round(adjustedTop / gridHeight) * gridHeight,
+  };
+};
+
+/**
+ * Gets the revert position for a widget (its original position before drag).
+ *
+ * @param {Object} widget - The widget object from boxList.
+ * @param {number} gridWidth - The grid width for the widget's container.
+ * @returns {Object} - { left, top } - The original position.
+ */
+export const getRevertPosition = (widget, gridWidth) => {
+  return {
+    left: widget.left * gridWidth,
+    top: widget.top,
+  };
+};
+
+/**
+ * Converts a slotId to a parent ID format suitable for handleDragEnd.
+ * - 'real-canvas' → null (main canvas)
+ * - other slotIds → slotId
+ *
+ * @param {string} slotId - The slot ID.
+ * @returns {string|null} - The parent ID or null for main canvas.
+ */
+export const getParentFromSlotId = (slotId) => {
+  return slotId === 'real-canvas' ? null : slotId;
+};
+
+/**
+ * Converts a slotId to a container ID format for reordering.
+ * - 'real-canvas' or undefined → 'canvas'
+ * - other slotIds → slotId
+ *
+ * @param {string} slotId - The slot ID.
+ * @returns {string} - The container ID for reordering.
+ */
+export const getContainerIdFromSlotId = (slotId) => {
+  return slotId === 'real-canvas' || !slotId ? 'canvas' : slotId;
 };

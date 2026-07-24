@@ -21,6 +21,9 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
@@ -36,6 +39,10 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const [queryString, setQueryString] = useState('');
   const [addingDataSource, setAddingDataSource] = useState(false);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
+  const [showSwitchBranchModal, setShowSwitchBranchModal] = useState(false);
+  const [pendingAddDataSource, setPendingAddDataSource] = useState(null);
+  const [pendingCreateDS, setPendingCreateDS] = useState(null);
+  const loadingSeenRef = useRef(false);
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
   const marketplaceEnabled = admin;
@@ -102,6 +109,21 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataSource, isEditing]);
 
+  // After branch switch + refetch, trigger the deferred add
+  useEffect(() => {
+    if (!pendingCreateDS) return;
+    if (isLoading) {
+      loadingSeenRef.current = true;
+    }
+    if (!isLoading && loadingSeenRef.current) {
+      const ds = pendingCreateDS;
+      loadingSeenRef.current = false;
+      setPendingCreateDS(null);
+      createDataSource(ds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources, isLoading, pendingCreateDS]);
+
   const handleHideModal = (ds) => {
     if (dataSources?.length) {
       if (!isEditing) {
@@ -159,23 +181,47 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     setFilteredDataSources([...filtered]);
   };
 
-  const createDataSource = (dataSource) => {
+  const createDataSource = async (dataSource) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch) {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     const { id } = dataSource;
-    const selectedDataSource = dataSource.manifestFile?.data?.source ?? dataSource;
-    const name = dataSource.manifestFile?.data?.source?.kind ?? dataSource.kind;
+    const selectedDataSource =
+      dataSource.manifestFile?.data?.['tj:source'] ?? dataSource.manifestFile?.data?.source ?? dataSource;
+    const name =
+      dataSource.manifestFile?.data?.['tj:source']?.kind ??
+      dataSource.manifestFile?.data?.source?.kind ??
+      dataSource.kind;
     const options =
-      (dataSource?.defaults ?? dataSource.options) ||
-      (dataSource.manifestFile.data.defaults ?? dataSource.manifestFile.data.options);
+      dataSource?.defaults ??
+      dataSource?.options ??
+      dataSource?.manifestFile?.data?.defaults ??
+      dataSource?.manifestFile?.data?.source?.options ??
+      {};
     const pluginId = id;
     const kind = selectedDataSource?.kind;
     const scope = 'global';
 
-    const parsedOptions = Object?.keys(options)?.map((key) => {
-      const keyMeta = selectedDataSource.options[key];
+    const encryptedSet = new Set(dataSource?.manifestFile?.data?.['tj:encrypted'] ?? []);
+    const parsedOptions = Object.keys(options).map((key) => {
+      const keyMeta = selectedDataSource?.options?.[key];
+      const isEncrypted = keyMeta ? keyMeta.encrypted : encryptedSet.has(key);
       return {
-        key: key,
-        value: options[key].value,
-        encrypted: keyMeta ? keyMeta.encrypted : false,
+        key,
+        value: options[key]?.value,
+        encrypted: isEncrypted,
         ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
       };
     });
@@ -244,7 +290,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     const datasources = queryString && queryString.length > 0 ? filteredDataSources : datasourcesGroups();
 
     return (
-      <div className="datasource-list-container">
+      <div className="datasource-list-container" id="datasource-list-container">
         <div className="datasource-list">
           <div className="datasource-search-holder">
             <SearchBox
@@ -299,9 +345,15 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       updateSidebarNAV(type);
       setSelectedDataSource(null);
       setTimeout(() => {
+        const container = document.getElementById('datasource-list-container'); //container to scroll
         const element = document.getElementById(activekey);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+
+        if (container && element) {
+          const offsetTop = element.offsetTop - container.offsetTop;
+          container.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth',
+          });
         }
       }, 100);
     };
@@ -316,16 +368,35 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     );
   };
 
+  const isWorkspaceBranchLocked = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && isDefault);
+  });
+
   const renderCardGroup = (source, type) => {
-    const canAddDataSource = canCreateDataSource();
+    const hasCreatePermission = canCreateDataSource();
+    const canAddDataSource = hasCreatePermission && !isWorkspaceBranchLocked;
     const addDataSourceBtn = (item) => (
-      <ToolTip message="You do not have permission to add a data source" show={!canAddDataSource} placement="bottom">
+      <ToolTip
+        message={!hasCreatePermission ? 'You do not have permission to add a data source' : ''}
+        show={!hasCreatePermission}
+        placement="bottom"
+      >
         <div>
           <ButtonSolid
-            disabled={addingDataSource || !canAddDataSource}
+            disabled={addingDataSource || !hasCreatePermission}
             isLoading={addingDataSource}
             variant="secondary"
-            onClick={() => createDataSource(item)}
+            onClick={() => {
+              if (isWorkspaceBranchLocked) {
+                setPendingAddDataSource(item);
+                setShowSwitchBranchModal(true);
+              } else {
+                createDataSource(item);
+              }
+            }}
             data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
           >
             <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
@@ -361,8 +432,10 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       <>
         <div className="row row-deck mt-3">
           {datasources.map((item) => {
-            const tags =
+            const marketplaceTags =
               pluginsWithTags[item.kind] || pluginsWithTags[item.pluginId] || pluginsWithTags[item.plugin_id] || [];
+            const manifestTags = item?.tags || [];
+            const tags = [...new Set([...marketplaceTags, ...manifestTags])];
             return (
               <Card
                 key={item.key}
@@ -474,6 +547,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     <div className="row gx-0">
       <Sidebar renderSidebarList={renderSidebarList} updateSelectedDatasource={updateSelectedDatasource} />
       <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
+        <WorkspaceLockedBanner pageContext="data sources" />
         {containerRef && containerRef?.current && selectedDataSource && (
           <DataSourceManager
             showBackButton={selectedDataSource ? false : true}
@@ -492,6 +566,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
             showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            isWorkspaceBranchLocked={isWorkspaceBranchLocked}
             environmentLoading={environmentLoading}
             tags={tags}
           />
@@ -499,6 +574,23 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         {isLoading && loadingState()}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}
       </div>
+      {showSwitchBranchModal && (
+        <WorkspaceSwitchBranchModal
+          show={showSwitchBranchModal}
+          onClose={() => {
+            setShowSwitchBranchModal(false);
+            setPendingAddDataSource(null);
+          }}
+          onBranchSwitch={() => {
+            if (pendingAddDataSource) {
+              loadingSeenRef.current = false;
+              setPendingCreateDS(pendingAddDataSource);
+              setPendingAddDataSource(null);
+            }
+            setShowSwitchBranchModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

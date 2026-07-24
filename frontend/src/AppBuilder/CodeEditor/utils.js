@@ -33,7 +33,6 @@ function traverseAST(node, callback) {
 export const isInsideParent = (element, className) => {
   while (element) {
     if (element.classList?.contains(className)) {
-      console.log('element.classList', element.classList);
       return true;
     }
     element = element.parentElement;
@@ -147,6 +146,21 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
   } else {
     try {
       const state = useStore.getState().getResolvedState();
+
+      // ListView children have per-row arrays in exposedValues.components.
+      // Flatten to row 0 so the preview can resolve sibling references
+      // like {{components.button1.text}} without hitting an array.
+      let components = state?.components;
+      if (isJsCode && components) {
+        const hasArrayEntry = Object.values(components).some(Array.isArray);
+        if (hasArrayEntry) {
+          components = {};
+          for (const [name, value] of Object.entries(state.components)) {
+            components[name] = Array.isArray(value) ? value[0] || {} : value;
+          }
+        }
+      }
+
       const evalFunction = Function(
         [
           'variables',
@@ -165,7 +179,7 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
       );
       result = evalFunction(
         isJsCode ? state?.variables : undefined,
-        isJsCode ? state?.components : undefined,
+        isJsCode ? components : undefined,
         isJsCode ? state?.queries : undefined,
         isJsCode ? state?.globals : undefined,
         isJsCode ? state?.page : undefined,

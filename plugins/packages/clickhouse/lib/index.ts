@@ -1,7 +1,9 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
-const { ClickHouse } = require('clickhouse');
 const JSON5 = require('json5');
+import { createClient } from '@clickhouse/client';
+import { Parser } from 'node-sql-parser';
+
 
 export default class Click implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -11,13 +13,37 @@ export default class Click implements QueryService {
     try {
       switch (operation) {
         case 'sql': {
-          result = await clickhouseClient.query(query).toPromise();
+          const isDRLQuery = this.isDRLQuery(query);
+
+          if (isDRLQuery) {
+            const format = 'JSONEachRow';
+            const resultSet = await clickhouseClient.query({
+              query,
+              format: format
+            });
+
+            let data = await resultSet.json();
+
+            result = data;
+
+          } else {
+            await clickhouseClient.command({
+              query
+            });
+            result = { r:1 }; //for backward compatibility
+          }
+
           break;
         }
         case 'insert': {
-          result = await clickhouseClient
-            .insert(`INSERT INTO ${tablename} (${fields.join(',')})`, this.parseJSON(query))
-            .toPromise();
+          const rows = this.parseJSON(query);
+          await clickhouseClient.insert({
+            table: tablename,
+            values: rows,
+            columns: fields,
+            format: 'JSONEachRow'
+          });
+          result = { r:1 }; //for backward compatibility
           break;
         }
       }
@@ -30,37 +56,31 @@ export default class Click implements QueryService {
     };
   }
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+
+
     const clickhouse = await this.getConnection(sourceOptions);
-    const query = 'SHOW DATABASES';
     if (!clickhouse) {
       throw new Error('Invalid credentials');
     }
-    await clickhouse.query(query).toPromise();
+    const resultSet = await clickhouse.query({
+      query: 'SHOW DATABASES',
+      format: 'JSON',
+    });
+    await resultSet.json();
     return {
       status: 'ok',
     };
+
+
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const { port, host, protocol, database, username, password, usePost, trimQuery, isUseGzip, debug, raw } =
-      sourceOptions;
-    const clickhouse = new ClickHouse({
-      url: `${protocol}://${host}`,
-      port: port || 8123,
-      debug: debug || false,
-      basicAuth:
-        username?.length > 0 && password?.length > 0
-          ? { username: username || 'default', password: password || ' ' }
-          : 'null',
-      isUseGzip: isUseGzip || false,
-      trimQuery: trimQuery || false,
-      usePost: usePost || false,
-      format: 'json', // "json" || "csv" || "tsv"
-      raw: raw || false,
-      config: {
-        output_format_json_quote_64bit_integers: 0,
-        enable_http_compression: 0,
-        ...(database?.length > 0 && { database: database }),
-      },
+    const { port, host, protocol, database, username, password } = sourceOptions;
+    const url = `${protocol}://${host}:${port}`;
+    const clickhouse = createClient({
+      host: url,
+      username: username || 'default',
+      password: password || '',
+      database: database || 'default',
     });
     return clickhouse;
   }
@@ -70,4 +90,32 @@ export default class Click implements QueryService {
 
     return JSON5.parse(json);
   }
+
+  private isDRLQuery(query: string): boolean {
+    try {
+      const parser = new Parser();
+      const trimmed = query.trim();
+
+      const parsed = parser.astify(trimmed);
+      const ast = Array.isArray(parsed) ? parsed[0] : parsed;
+
+      if (!ast || !ast.type) return false;
+
+      // DRL types
+      const drlTypes = ['select', 'show', 'describe', 'desc', 'exists'];
+
+      return drlTypes.includes(ast.type.toLowerCase());
+    } catch (e) {
+      // Fallback for simple queries without AST support
+      const q = query.trim().toUpperCase();
+      return (
+        q.startsWith('SELECT') ||
+        q.startsWith('SHOW') ||
+        q.startsWith('DESCRIBE') ||
+        q.startsWith('DESC') ||
+        q.startsWith('EXISTS')
+      );
+    }
+  }
+
 }

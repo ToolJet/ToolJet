@@ -1,10 +1,12 @@
 import React from 'react';
-import Feat from './feat-image.svg';
-import FeatImageDark from './feat-image-dark.svg';
+import mainImage from './mainImage.svg?url';
+import mainImageDark from './mainImageDark.svg?url';
 
 const FeatImage = () => {
+  // New Images are used.
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  return darkMode ? <FeatImageDark /> : <Feat />;
+
+  return <img src={darkMode ? mainImageDark : mainImage} alt="Tooljet features" />;
 };
 
 export default FeatImage;

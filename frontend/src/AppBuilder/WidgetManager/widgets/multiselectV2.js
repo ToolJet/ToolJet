@@ -1,6 +1,6 @@
 export const multiselectV2Config = {
   name: 'Multiselect',
-  displayName: 'Multiselect',
+  displayName: 'Multi Select',
   description: 'Multiple item selector',
   defaultSize: {
     width: 10,
@@ -121,6 +121,15 @@ export const multiselectV2Config = {
       },
       accordian: 'Options',
     },
+    maxLimit: {
+      type: 'code',
+      displayName: 'Max selection limit',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+      },
+      accordian: 'Options',
+      placeholder: '{{2}}',
+    },
     showAllSelectedLabel: {
       type: 'toggle',
       displayName: 'Show "All items are selected"',
@@ -160,6 +169,20 @@ export const multiselectV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    serverSideSearch: {
+      type: 'clientServerSwitch',
+      displayName: 'Search type',
+      options: [
+        { displayName: 'Client side', value: 'clientSide' },
+        { displayName: 'Server side', value: 'serverSide' },
+      ],
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+      conditionallyRender: {
+        key: 'showSearchInput',
+        value: true,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -172,10 +195,34 @@ export const multiselectV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
       section: 'additionalActions',
     },
     tooltip: {
@@ -184,6 +231,7 @@ export const multiselectV2Config = {
       validation: { schema: { type: 'string' }, defaultValue: '' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -198,6 +246,12 @@ export const multiselectV2Config = {
       type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'label',
+    },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
       accordian: 'label',
     },
     alignment: {
@@ -223,10 +277,10 @@ export const multiselectV2Config = {
       accordian: 'label',
       isFxNotRequired: true,
     },
-    labelWidth: {
-      type: 'slider',
+    auto: {
+      type: 'checkbox',
       displayName: 'Width',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
         key: 'alignment',
@@ -234,17 +288,45 @@ export const multiselectV2Config = {
       },
       isFxNotRequired: true,
     },
-    auto: {
-      type: 'checkbox',
-      displayName: 'auto',
+    labelWidth: {
+      type: 'slider',
       showLabel: false,
-      validation: { schema: { type: 'boolean' } },
       accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
       isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
     },
 
     fieldBackgroundColor: {
@@ -342,24 +424,29 @@ export const multiselectV2Config = {
       values: { value: ['1', '2'] },
       advanced: { value: `{{false}}` },
       showAllOption: { value: '{{false}}' },
+      maxLimit: { value: '' },
       optionsLoadingState: { value: '{{false}}' },
       sort: { value: 'none' },
       placeholder: { value: 'Select the options' },
       showAllSelectedLabel: { value: '{{true}}' },
       showClearBtn: { value: '{{true}}' },
       showSearchInput: { value: '{{true}}' },
+      serverSideSearch: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       schema: {
         value:
-          "{{[\t{label: 'option1',value: 1,disable: false,visible: true,default: true},{label: 'option2',value: 2,disable: false,visible: true},{label: 'option3',value: 3,disable: false,visible: true}\t]}}",
+          "{{[\t{label: 'option1',value: 1,caption: null,disable: false,visible: true,default: true},{label: 'option2',value: 2,caption: null,disable: false,visible: true},{label: 'option3',value: 3,caption: null,disable: false,visible: true}\t]}}",
       },
       options: {
         value: [
           {
             label: 'option1',
             value: '1',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: false },
@@ -367,6 +454,7 @@ export const multiselectV2Config = {
           {
             label: 'option2',
             value: '2',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: true },
@@ -374,6 +462,7 @@ export const multiselectV2Config = {
           {
             label: 'option3',
             value: '3',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: false },
@@ -381,10 +470,12 @@ export const multiselectV2Config = {
         ],
       },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       labelWidth: { value: '33' },
       auto: { value: '{{true}}' },
       fieldBorderRadius: { value: '6' },
@@ -400,6 +491,7 @@ export const multiselectV2Config = {
       iconVisibility: { value: false },
       iconColor: { value: 'var(--cc-default-icon)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
+      widthType: { value: 'ofComponent' },
     },
   },
 };

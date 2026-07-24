@@ -13,7 +13,6 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
-import { AppGitSync } from './app_git_sync.entity';
 import { GroupPermission } from './group_permission.entity';
 import { User } from './user.entity';
 import { GroupApps } from './group_apps.entity';
@@ -69,12 +68,14 @@ export class App extends BaseEntity {
   @Column({ name: 'workflow_enabled', default: false })
   workflowEnabled: boolean;
 
-
   @Column({ name: 'is_initialised_from_prompt', default: false })
   isInitialisedFromPrompt: boolean;
 
   @Column({ name: 'app_generated_from_prompt', default: false })
   appGeneratedFromPrompt: boolean;
+
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
 
   @Column({
     type: 'enum',
@@ -91,12 +92,23 @@ export class App extends BaseEntity {
       name: string;
       id: string;
       loadingStates: string[];
-      appInitialisationPrompt?: string;
     }[];
+    appInitialisationPrompt?: string;
     appName?: string;
     completedSteps: string[];
     activeStep: string;
     version: string;
+    dataSource: {
+      kind: string;
+      name: string;
+      id: string;
+    };
+    dataSourceContext?: string | null;
+    threadId?: string | null;
+    chatMessages?: any[];
+    interrupt?: boolean;
+    interruptId?: string | null;
+    moduleDescription?: string;
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
@@ -136,18 +148,20 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
-  @OneToOne(() => AppGitSync, (appGitSync) => appGitSync.app, { onDelete: 'CASCADE' })
-  appGitSync: AppGitSync;
-
-  @OneToMany(() => GroupApps, (groupApps) => groupApps.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => GroupApps, (groupApps) => groupApps.app, {
+    onDelete: 'CASCADE',
+  })
   appGroups: GroupApps[];
 
   //Depreciated
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
   appGroupPermissions: AppGroupPermission[];
 
-  @OneToMany(() => AiConversation, (aiConversation) => aiConversation.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => AiConversation, (aiConversation) => aiConversation.app, {
+    onDelete: 'CASCADE',
+  })
   aiConversations: AiConversation[];
 
   public editingVersion;
+  public isStub: boolean;
 }

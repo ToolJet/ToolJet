@@ -8,4 +8,4 @@ The Super Admin in ToolJet plays a critical role in managing the instance by hav
 ## Advanced Control and Customization
 Beyond regular management tasks, Super Admins can implement more intricate settings like white labeling, enabling multiplayer editing, and managing instance licenses. They also have the power to restrict personal workspace creation for users, ensuring tighter control over the workspace environment. These advanced capabilities underscore the Super Admin's pivotal role in overseeing the comprehensive management and customization of the ToolJet instance.
 
-Read more about super admins **[here](/docs/enterprise/superadmin/)**.
+Read more about super admins **[here](/docs/user-management/role-based-access/super-admin)**.

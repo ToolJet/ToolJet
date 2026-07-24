@@ -13,9 +13,14 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SessionModule } from '@modules/session/module';
 import { SubModule } from '@modules/app/sub-module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
 
 export class DataSourcesModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       DataSourcesService,
       DataSourcesController,
@@ -30,7 +35,9 @@ export class DataSourcesModule extends SubModule {
       'services/sample-ds.service',
     ]);
 
-    return {
+    const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
+
+    return this.cacheModule(cacheKey, {
       module: DataSourcesModule,
       imports: [
         await AppEnvironmentsModule.register(configs),
@@ -40,6 +47,7 @@ export class DataSourcesModule extends SubModule {
         await TooljetDbModule.register(configs),
         await SessionModule.register(configs),
         await InMemoryCacheModule.register(configs),
+        await AppPermissionsModule.register(configs!),
       ],
       providers: [
         DataSourcesService,
@@ -47,14 +55,15 @@ export class DataSourcesModule extends SubModule {
         VersionRepository,
         AppsRepository,
         DataSourcesUtilService,
+        DataQueriesUtilService,
         PluginsServiceSelector,
         PluginsRepository,
         SampleDataSourceService,
         FeatureAbilityFactory,
         OrganizationRepository,
       ],
-      controllers: [DataSourcesController],
+      controllers: isMainImport ? [DataSourcesController] : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
-    };
+    });
   }
 }

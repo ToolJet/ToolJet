@@ -119,10 +119,32 @@ export enum LICENSE_FIELD {
   META = 'metadata',
   WORKFLOWS = 'workflows',
   GIT_SYNC = 'gitSyncEnabled',
+  WORKSPACE_ENV = 'workspaceEnvEnabled',
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',
+  AI_PLAN = 'aiPlan',
   EXTERNAL_API = 'externalApiEnabled',
+  APP_HISTORY = 'appHistoryEnabled',
+  APP_JS_LIBRARIES = 'appJsLibrariesEnabled',
+  SCIM = 'scimEnabled',
   PLAN = 'plan',
+  MODULES = 'modulesEnabled',
+  CUSTOM_GROUPS = 'customGroupsEnabled',
+  APP_PAGES_ENABLED = 'appPagesEnabled',
+  APP_PAGES_HEADER_AND_LOGO = 'appPagesHeaderAndLogoEnabled',
+  APP_PAGES_NAV_GROUP = 'appPagesAddNavGroupEnabled',
+  CANVAS_PAGE_HEADER = 'canvasPageHeaderEnabled',
+  CANVAS_PAGE_FOOTER = 'canvasPageFooterEnabled',
+  APP_PERMISSIONS_COMPONENT = 'appPermissionComponentEnabled',
+  APP_PERMISSIONS_QUERY = 'appPermissionQueryEnabled',
+  APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
+  CUSTOM_DOMAINS = 'customDomainsEnabled',
+  APP_PAGES_LIMIT = 'appPagesLimit',
+  GOOGLE = 'googleEnabled',
+  GITHUB = 'githubEnabled',
+  OBSERVABILITY_ENABLED = 'observabilityEnabled',
+  MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
+  QUERY_FOLDERS = 'queryFoldersEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -162,6 +184,7 @@ export enum FEATURE_KEY {
   GET_DOMAINS = 'get_domains',
   GET_TERMS = 'get_terms',
   UPDATE_LICENSE = 'update_license',
+  UPDATE_ENV_LICENSE_SETTING = 'update_env_license_setting',
   GET_APP_LIMITS = 'get_app_limits',
   CHECK_AUDIT_LOGS_LICENSE = 'check_audit_logs_license',
   GET_AUDIT_LOGS_MAX_DURATION = 'get_audit_logs_max_duration',
@@ -170,6 +193,7 @@ export enum FEATURE_KEY {
   GET_WORKFLOW_LIMITS = 'get_workflow_limits',
   GENERATE_CLOUD_TRIAL_LICENSE = 'generate_cloud_trial_license',
   GENERATE_EE_TRIAL_LICENSE = 'generate_ee_trial_license',
+  GET_SELFHOST_CUSTOMER = 'getSelfhostCustomer',
 }
 
 export const ORGANIZATION_INSTANCE_KEY = 'INSTANCE';

@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { IAppEnvironmentResponse } from './IAppEnvironmentResponse';
 import { AppVersion } from '@entities/app_version.entity';
 
@@ -18,6 +18,11 @@ export interface IAppEnvironmentUtilService {
     manager?: EntityManager
   ): Promise<{ shouldRenderPromoteButton: boolean; shouldRenderReleaseButton: boolean }>;
   getSelectedVersion(selectedEnvironmentId: string, appId: string, manager?: EntityManager): Promise<any>;
+  resolveEnvironmentId(
+    organizationId: string,
+    requestedEnvironmentId?: string,
+    manager?: EntityManager
+  ): Promise<string>;
   get(
     organizationId: string,
     id?: string,
@@ -26,7 +31,12 @@ export interface IAppEnvironmentUtilService {
     licenseCheck?: boolean
   ): Promise<AppEnvironment>;
   getAll(organizationId: string, appId?: string, manager?: EntityManager): Promise<AppEnvironment[]>;
-  getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions>;
+  getOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId?: string,
+    branchId?: string
+  ): Promise<DataSourceVersionOptions>;
   init(
     editorVersion: Partial<AppVersion>,
     organizationId: string,

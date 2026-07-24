@@ -1,7 +1,7 @@
 import { isEmpty, isEqual, get } from 'lodash';
 import React from 'react';
 import { JSONNode } from './JSONNode';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { ToolTip } from '@/_components/ToolTip';
 
@@ -274,6 +274,7 @@ export class JSONTreeViewer extends React.Component {
             inspectorTree={this.props.treeType === 'inspector'}
             debuggerTree={this.props.treeType === 'debugger'}
             renderCurrentNodeInfoIcon={this.renderCurrentNodeInfoIcon}
+            showFullNodeValue={this.props.showFullNodeValue ?? false}
           />
         </ErrorBoundary>
       </div>

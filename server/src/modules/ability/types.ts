@@ -23,18 +23,29 @@ export interface UserPermissions {
   appRelease: boolean;
   dataSourceCreate: boolean;
   dataSourceDelete: boolean;
-  folderCRUD: boolean;
+
+  folderCreate: boolean;
+  folderDelete: boolean;
   orgConstantCRUD: boolean;
+  tjdbCRUD: boolean;
   orgVariableCRUD: boolean;
   [MODULES.APP]?: UserAppsPermissions;
   [MODULES.GLOBAL_DATA_SOURCE]?: UserDataSourcePermissions;
   [MODULES.WORKFLOWS]?: UserWorkflowPermissions;
+  [MODULES.FOLDER]?: UserFolderPermissions;
 }
 export interface UserWorkflowPermissions {
   editableWorkflowsId: string[];
   isAllEditable: boolean;
   executableWorkflowsId: string[];
   isAllExecutable: boolean;
+}
+
+export interface EnvironmentPermissionSet {
+  development: boolean;
+  staging: boolean;
+  production: boolean;
+  released: boolean;
 }
 
 export interface UserAppsPermissions {
@@ -44,6 +55,8 @@ export interface UserAppsPermissions {
   isAllViewable: boolean;
   hiddenAppsId: string[];
   hideAll: boolean;
+  environmentAccess?: EnvironmentPermissionSet;
+  appSpecificEnvironmentAccess?: Record<string, EnvironmentPermissionSet>;
 }
 
 export interface UserDataSourcePermissions {
@@ -51,4 +64,13 @@ export interface UserDataSourcePermissions {
   isAllUsable: boolean;
   configurableDataSourceId: string[];
   isAllConfigurable: boolean;
+}
+
+export interface UserFolderPermissions {
+  editableFoldersId: string[];
+  isAllEditable: boolean;
+  viewableFoldersId: string[];
+  isAllViewable: boolean;
+  editAppsInFoldersId: string[];
+  isAllEditApps: boolean;
 }

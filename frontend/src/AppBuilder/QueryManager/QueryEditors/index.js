@@ -9,6 +9,7 @@ import { Runpy } from './Runpy';
 import { Openapi } from './Openapi';
 import { Workflows } from './Workflows';
 import Grpc from './GRPC';
+import Grpcv2 from './GRPCv2';
 import tooljetDbOperations from './TooljetDatabase/operations.json';
 
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
@@ -38,6 +39,7 @@ export const allSources = {
   Runpy,
   Openapi,
   Grpc,
+  Grpcv2,
   Workflows,
 };
 

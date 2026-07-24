@@ -67,6 +67,7 @@ const DropDownSelect = ({
   setColumnDefaultValue = () => {},
   showControlComponent = false,
   placeholder = '',
+  dataCy = 'show-ds-popover-button',
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -194,8 +195,9 @@ const DropDownSelect = ({
         <Popover
           key={'page.i'}
           id={popoverId.current}
-          className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
-            } tjdb-workflow-query-editor-popover-index`}
+          className={`${
+            darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
+          } tjdb-workflow-query-editor-popover-index`}
           style={{
             width: isForeignKeyInEditCell
               ? '300px'
@@ -340,7 +342,7 @@ const DropDownSelect = ({
               'font-weight-normal',
               'px-1'
             )}
-            data-cy={`show-ds-popover-button`}
+            data-cy={dataCy}
           >
             <ToolTip
               message={fetchTooltipMessageForDropdownSelected(selected)}

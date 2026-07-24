@@ -26,7 +26,6 @@ ToolJet requires the following to connect to a OracleDB datasource:
 
 :::info
 ToolJet includes Oracle Instant Client versions 21.10 and 11.2. If you need to use a different client library version:
-
 - For cloud deployments: You can add a custom client library to a directory of your choice or mount it as a volume in the container.
 - For local setups: You can specify the path to your custom Oracle Client Library.
 
@@ -38,16 +37,15 @@ This allows ToolJet to locate and use the specific drivers for Oracle database c
 ToolJet runs Oracle DB connections in thick mode. By default, ToolJet includes Oracle instant client versions 21.10 and 11.2. These client versions determine which Oracle Database versions you can connect to.
 
 #### Available Client Versions
-
 - Oracle Instant Client 21.10
 - Oracle Instant Client 11.2
 
 #### Compatibility
-
 The instant client version affects which Oracle Database versions you can connect to:
 
 - Oracle Instant Client 21.10 is compatible with Oracle Database 11.2 and later versions.
 - Oracle Instant Client 11.2 is compatible with Oracle Database 10.2 and later versions.
+
 
 </div>
 
@@ -92,7 +90,7 @@ GUI mode can be used to query Oracle database without writing queries.
 2. Choose the operation **Bulk update using primary key**.
 3. Enter the **Table** name and **Primary key** column name.
 4. In the editor, enter the records in the form of an array of objects.
-
+  
 ```json
 [
   {
@@ -109,7 +107,7 @@ GUI mode can be used to query Oracle database without writing queries.
 <img className="screenshot-full" src="/img/datasource-reference/oracledb/gui.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/beta/app-builder/custom-code/transform-data)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
 :::
 
 </div>

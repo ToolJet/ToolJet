@@ -1,6 +1,6 @@
 export const dividerConfig = {
   name: 'HorizontalDivider',
-  displayName: 'Horizontal divider',
+  displayName: 'Horizontal Divider',
   description: 'Separator between components',
   component: 'Divider',
   defaultSize: {
@@ -28,12 +28,30 @@ export const dividerConfig = {
       },
       section: 'additionalActions',
     },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
       validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {},
@@ -107,6 +125,20 @@ export const dividerConfig = {
       },
       accordian: 'Divider',
     },
+    textWrap: {
+      type: 'switch',
+      displayName: 'Text wrap',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'wrap',
+      },
+      options: [
+        { displayName: 'Wrap', value: 'wrap' },
+        { displayName: 'No wrap', value: 'nowrap' },
+      ],
+      accordian: 'Divider',
+      isFxNotRequired: true,
+    },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box Shadow',
@@ -141,6 +173,7 @@ export const dividerConfig = {
       label: { value: '' },
       visibility: { value: '{{true}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
@@ -148,6 +181,7 @@ export const dividerConfig = {
       labelAlignment: { value: 'center' },
       dividerStyle: { value: 'solid' },
       labelColor: { value: 'var(--cc-placeholder-text)' },
+      textWrap: { value: 'wrap' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },

@@ -1,4 +1,5 @@
 import React from 'react';
+import { generateCypressDataCy } from '../../modules/common/helpers/cypressHelpers.js';
 
 export const Checkbox = ({ label, isChecked, onChange, key = '', value }) => {
   const handleOnchange = (event) => {
@@ -15,8 +16,11 @@ export const Checkbox = ({ label, isChecked, onChange, key = '', value }) => {
         type="checkbox"
         onChange={handleOnchange}
         checked={isChecked}
+        data-cy={`${generateCypressDataCy(label)}-checkbox-input`}
       />
-      <label className="form-check-label">{label}</label>
+      <label className="form-check-label" data-cy={`${generateCypressDataCy(label)}-label`}>
+        {label}
+      </label>
     </div>
   );
 };

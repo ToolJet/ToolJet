@@ -20,6 +20,12 @@ export class AiConversation {
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  archived: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  preview: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
@@ -28,6 +34,9 @@ export class AiConversation {
 
   @Column({ name: 'app_id' })
   appId: string;
+
+  @Column({ type: 'json', nullable: true, default: {} })
+  metadata: Record<string, any>;
 
   @Column({
     type: 'enum',

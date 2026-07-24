@@ -3,7 +3,8 @@ import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { EventHandler, Target } from '@entities/event_handler.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
@@ -21,7 +22,16 @@ import { DataSourceScopes } from '@modules/data-sources/constants';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { WorkflowBundle } from '@entities/workflow_bundle.entity';
+import { App } from '@entities/app.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
+import {
+  parseParentIdAndSuffix,
+  remapFlexContainerChildOrder,
+  remapParentIdForVersionCopy,
+  shouldSkipComponentOnVersionCopy,
+} from '../helpers/version-copy-parent.helper';
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
@@ -38,9 +48,9 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
-        (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+      appVersion.showViewerNavigation = versionFrom.showViewerNavigation;
+      appVersion.globalSettings = versionFrom.globalSettings;
+      appVersion.pageSettings = versionFrom.pageSettings;
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -80,6 +90,11 @@ export class VersionsCreateService implements IVersionsCreateService {
         oldComponentToNewComponentMapping,
         oldPageToNewPageMapping
       );
+
+      const app = await manager.findOne(App, { where: { id: appVersion.appId } });
+      if (app?.type === APP_TYPES.WORKFLOW) {
+        await this.copyWorkflowBundlesForVersion(manager, appVersion.id, versionFrom.id);
+      }
     }, manager);
   }
 
@@ -118,6 +133,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             name: dataSource.name,
             kind: dataSource.kind,
             type: dataSource.type,
+            co_relation_id: dataSource?.co_relation_id,
             appVersionId: appVersion.id,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
@@ -131,6 +147,7 @@ export class VersionsCreateService implements IVersionsCreateService {
               options: dataQuery.options,
               dataSourceId: newDataSource.id,
               appVersionId: appVersion.id,
+              co_relation_id: dataQuery?.co_relation_id,
             };
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
 
@@ -146,6 +163,7 @@ export class VersionsCreateService implements IVersionsCreateService {
               newEvent.event = event.event;
               newEvent.index = event.index ?? index;
               newEvent.appVersionId = appVersion.id;
+              newEvent.co_relation_id = event?.co_relation_id;
 
               await manager.save(newEvent);
             });
@@ -163,6 +181,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             options: globalQuery.options,
             dataSourceId: globalQuery.dataSourceId,
             appVersionId: appVersion.id,
+            co_relation_id: globalQuery?.co_relation_id,
           };
 
           const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
@@ -178,6 +197,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             newEvent.event = event.event;
             newEvent.index = event.index ?? index;
             newEvent.appVersionId = appVersion.id;
+            newEvent.co_relation_id = event?.co_relation_id;
 
             await manager.save(newEvent);
           });
@@ -198,23 +218,73 @@ export class VersionsCreateService implements IVersionsCreateService {
 
       for (const appEnvironment of appEnvironments) {
         for (const dataSource of dataSources) {
-          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+          // Read source options from the default DataSourceVersion
+          const sourceDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: dataSource.id, isDefault: true },
           });
+          const sourceDsvo = sourceDsv
+            ? await manager.findOne(DataSourceVersionOptions, {
+                where: { dataSourceVersionId: sourceDsv.id, environmentId: appEnvironment.id },
+              })
+            : null;
+          const sourceOptions = sourceDsvo?.options || {};
 
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(sourceOptions);
           const newOptions = await this.dataSourceUtilService.parseOptionsForCreate(convertedOptions, false, manager);
           await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
 
-          await manager.save(
-            manager.create(DataSourceOptions, {
-              options: newOptions,
-              dataSourceId: dataSourceMapping[dataSource.id],
-              environmentId: appEnvironment.id,
-            })
-          );
+          // Create default DSV + DSVO for the new version's data source
+          const newDsId = dataSourceMapping[dataSource.id];
+          let defaultDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: newDsId, isDefault: true },
+          });
+          if (!defaultDsv) {
+            const ds = await manager.findOne(DataSource, { where: { id: newDsId }, select: ['id', 'name'] });
+            defaultDsv = await manager.save(
+              manager.create(DataSourceVersion, {
+                dataSourceId: newDsId,
+                name: ds?.name || 'v1',
+                isDefault: true,
+                isActive: true,
+                branchId: null,
+              })
+            );
+          }
+          const existingDsvo = await manager.findOne(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: defaultDsv.id, environmentId: appEnvironment.id },
+          });
+          if (!existingDsvo) {
+            await manager.save(
+              manager.create(DataSourceVersionOptions, {
+                dataSourceVersionId: defaultDsv.id,
+                environmentId: appEnvironment.id,
+                options: newOptions,
+              })
+            );
+          }
         }
       }
+
+      // Removed: version-specific DSVs (app_version_id) are no longer created.
+      // Released versions now read from the main-branch default DSV (is_default = true).
+      // for (const globalDs of globalDataSources) {
+      //   const dsvName = globalDs.name || 'v1';
+      //   const existingDsv = await manager.findOne(DataSourceVersion, {
+      //     where: { dataSourceId: globalDs.id, name: dsvName, branchId: null, isActive: true, isDefault: false },
+      //   });
+      //   if (existingDsv) { continue; }
+      //   let sourceDsv = await manager.findOne(DataSourceVersion, {
+      //     where: { dataSourceId: globalDs.id, appVersionId: versionFrom.id },
+      //   });
+      //   if (!sourceDsv) {
+      //     sourceDsv = await manager.findOne(DataSourceVersion, { where: { dataSourceId: globalDs.id, isDefault: true } });
+      //   }
+      //   const newDsv = await manager.save(manager.create(DataSourceVersion, {
+      //     dataSourceId: globalDs.id, name: dsvName, isDefault: false, isActive: true,
+      //     appVersionId: appVersion.id, branchId: null, versionFromId: sourceDsv?.id || null,
+      //   }));
+      //   ... copy DsvOptions ...
+      // }
     }
 
     return oldDataQueryToNewMapping;
@@ -292,6 +362,20 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
       }
     }
+
+    // Handle workflow definitions - remap DataQuery IDs in definition.queries
+    if (definition?.queries && Array.isArray(definition.queries)) {
+      definition.queries = definition.queries.map((query) => {
+        if (query.id && dataQueryMapping[query.id]) {
+          return {
+            ...query,
+            id: dataQueryMapping[query.id],
+          };
+        }
+        return query;
+      });
+    }
+
     return definition;
   }
 
@@ -349,17 +433,6 @@ export class VersionsCreateService implements IVersionsCreateService {
     const oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
-    const parseParentIdAndSuffix = (parentIdString: string) => {
-      if (!parentIdString) {
-        return { baseId: null, suffix: null };
-      }
-      const match = parentIdString.match(/([a-fA-F0-9-]{36})-(.+)/);
-      if (match) {
-        return { baseId: match[1], suffix: match[2] };
-      }
-      return { baseId: parentIdString, suffix: null };
-    };
-
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
       if (componentParentId) {
         const { baseId } = parseParentIdAndSuffix(componentParentId);
@@ -400,7 +473,19 @@ export class VersionsCreateService implements IVersionsCreateService {
           index: page.index,
           disabled: page.disabled,
           hidden: page.hidden,
+          pageHeader: page.pageHeader,
+          pageFooter: page.pageFooter,
+          icon: page.icon,
+          type: page.type,
+          openIn: page.openIn,
+          appId: page.appId,
+          targetCorelationId: page.targetCorelationId,
+          url: page.url,
+          pageGroupId: page.pageGroupId,
+          pageGroupIndex: page.pageGroupIndex,
+          isPageGroup: page.isPageGroup,
           appVersionId: appVersion.id,
+          co_relation_id: page.co_relation_id,
         })
       );
       oldPageToNewPageMapping[page.id] = savedPage.id;
@@ -420,19 +505,26 @@ export class VersionsCreateService implements IVersionsCreateService {
         newEvent.event = event.event;
         newEvent.index = event.index ?? index;
         newEvent.appVersionId = appVersion.id;
+        newEvent.co_relation_id = event?.co_relation_id;
 
         await manager.save(newEvent);
       });
 
+      const originalPageComponents = page.components.filter(
+        (component) => !shouldSkipComponentOnVersionCopy(component)
+      );
+      const validComponentIds = new Set(page.components.map((component) => component.id));
+
       const tempNewComponents: Component[] = [];
-      for (const component of page.components) {
+      for (const component of originalPageComponents) {
         const newComponent = new Component();
         newComponent.id = uuid.v4();
+        newComponent.co_relation_id = component?.co_relation_id;
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
         tempNewComponents.push(newComponent);
       }
 
-      for (const originalComponent of page.components) {
+      for (const originalComponent of originalPageComponents) {
         const newComponent = tempNewComponents.find(
           (c) => c.id === oldComponentToNewComponentMapping[originalComponent.id]
         );
@@ -465,28 +557,35 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
 
         if (parentId) {
-          const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(originalComponent, page.components, parentId);
-          const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
-          const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, page.components);
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(
+              originalComponent,
+              originalPageComponents,
+              parentId
+            );
+            const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
+            const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, originalPageComponents);
 
-          if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
-            const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+            if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
+              const { suffix } = parseParentIdAndSuffix(parentId);
+              parentId = remapParentIdForVersionCopy(
+                parentId,
+                oldComponentToNewComponentMapping,
+                validComponentIds,
+                suffix
+              );
+            } else if (isKanbanModalChildFlag) {
+              parentId = remapParentIdForVersionCopy(
+                parentId,
+                oldComponentToNewComponentMapping,
+                validComponentIds,
+                'modal'
+              );
             } else {
-              parentId = null;
+              parentId = remapParentIdForVersionCopy(parentId, oldComponentToNewComponentMapping, validComponentIds);
             }
-          } else if (isKanbanModalChildFlag) {
-            const { baseId: originalBaseParentId } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-modal`;
-            } else {
-              parentId = null;
-            }
-          } else {
-            parentId = oldComponentToNewComponentMapping[parentId];
           }
         }
 
@@ -495,11 +594,14 @@ export class VersionsCreateService implements IVersionsCreateService {
         originalComponent.layouts.forEach((layout) => {
           const newLayout = new Layout();
           newLayout.id = uuid.v4();
+          newLayout.co_relation_id = layout?.co_relation_id;
           newLayout.type = layout.type;
           newLayout.top = layout.top;
           newLayout.left = layout.left;
           newLayout.width = layout.width;
           newLayout.height = layout.height;
+          if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+          if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
           newLayout.componentId = newComponent.id;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
@@ -511,8 +613,8 @@ export class VersionsCreateService implements IVersionsCreateService {
         const componentEvents = allEvents.filter((event) => event.sourceId === originalComponent.id);
         componentEvents.forEach(async (event, index) => {
           const newEvent = new EventHandler();
-
           newEvent.id = uuid.v4();
+          newEvent.co_relation_id = event?.co_relation_id;
           newEvent.name = event.name;
           newEvent.sourceId = newComponent.id;
           newEvent.target = event.target;
@@ -556,6 +658,10 @@ export class VersionsCreateService implements IVersionsCreateService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+        // remapped explicitly to the new component ids — otherwise the saved flex-child order
+        // is lost on draft/version creation (issue #5153).
+        remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
         return updateEntityReferences(component, mappings);
       });
 
@@ -597,7 +703,11 @@ export class VersionsCreateService implements IVersionsCreateService {
     for (const event of allEvents) {
       const eventDefinition = updateEntityReferences(event.event, mappings);
 
-      if (eventDefinition?.actionId === 'run-query') {
+      if (
+        eventDefinition?.actionId === 'run-query' ||
+        eventDefinition?.actionId === 'reset-query' ||
+        eventDefinition?.actionId === 'abort-query'
+      ) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 
@@ -617,8 +727,34 @@ export class VersionsCreateService implements IVersionsCreateService {
         eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
       }
       event.event = eventDefinition;
-
       await manager.save(event);
+    }
+  }
+
+  protected async copyWorkflowBundlesForVersion(
+    manager: EntityManager,
+    newAppVersionId: string,
+    sourceAppVersionId: string
+  ): Promise<void> {
+    const sourceBundles = await manager.find(WorkflowBundle, {
+      where: { appVersionId: sourceAppVersionId },
+    });
+
+    for (const bundle of sourceBundles) {
+      await manager.save(
+        manager.create(WorkflowBundle, {
+          appVersionId: newAppVersionId,
+          language: bundle.language,
+          runtimeVersion: bundle.runtimeVersion,
+          dependencies: bundle.dependencies,
+          bundleBinary: bundle.bundleBinary,
+          bundleSize: bundle.bundleSize,
+          bundleSha: bundle.bundleSha,
+          status: bundle.status,
+          generationTimeMs: bundle.generationTimeMs,
+          error: bundle.error,
+        })
+      );
     }
   }
 }

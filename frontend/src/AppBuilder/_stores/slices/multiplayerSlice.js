@@ -1,6 +1,3 @@
-import { componentTypes } from '../../WidgetManager';
-import { find } from 'lodash';
-
 const initialState = {
   ymap: undefined,
 };

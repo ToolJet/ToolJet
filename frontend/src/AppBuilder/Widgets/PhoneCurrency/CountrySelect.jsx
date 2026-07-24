@@ -6,10 +6,11 @@ import { CustomOption } from './CustomOption';
 import { CustomValueContainer } from './CustomValueContainer';
 import useStore from '@/AppBuilder/_stores/store';
 
-export const CountrySelect = ({ value, onChange, options, ...rest }) => {
+export const CountrySelect = ({ value, onChange, options, dataCy, ...rest }) => {
   const {
     isCountryChangeEnabled,
     isCurrencyInput = false,
+    showFlag,
     disabledState,
     borderRadius,
     isValid,
@@ -121,6 +122,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         }
       }}
       ref={dropdownRef}
+      data-cy={`${String(dataCy).toLowerCase()}-country-select-dropdown`}
     >
       <Select
         options={options}
@@ -131,6 +133,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         useCustomStyles={true}
         menuPortalTarget={document.body}
         isCurrencyInput={isCurrencyInput}
+        showFlag={showFlag}
         isCountryChangeEnabled={isCountryChangeEnabled}
         {...(filterOption && { filterOption })}
         components={{

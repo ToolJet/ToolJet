@@ -29,13 +29,19 @@
   "properties": {
     "connection_type": {
       "label": "Connection type",
-			"key": "connection_type",
-			"type": "dropdown-component-flip",
-			"description": "Single select dropdown for connection type",
-			"list": [
-				{ "value": "cloud", "name": "Cloud" },
-				{ "value": "local", "name": "Local" }
-			]
+      "key": "connection_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for connection type",
+      "list": [
+        {
+          "value": "cloud",
+          "name": "Cloud"
+        },
+        {
+          "value": "local",
+          "name": "Local"
+        }
+      ]
     },
     "cloud": {
       "instanceUrl": {
@@ -46,7 +52,7 @@
         "placeholder": "https://your-weaviate-instance.com"
       },
       "apiKey": {
-        "label": "API Key",
+        "label": "API key",
         "key": "apiKey",
         "type": "password",
         "description": "Enter your Weaviate API Key",

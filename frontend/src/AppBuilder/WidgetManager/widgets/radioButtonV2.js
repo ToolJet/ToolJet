@@ -54,6 +54,20 @@ export const radiobuttonV2Config = {
       },
       accordian: 'Options',
     },
+    layout: {
+      type: 'select',
+      displayName: 'Layout',
+      options: [
+        { name: 'Row', value: 'row' },
+        { name: 'Column', value: 'column' },
+        { name: 'Wrap', value: 'wrap' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'row',
+      },
+      accordian: 'Options',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -67,10 +81,31 @@ export const radiobuttonV2Config = {
 
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
       section: 'additionalActions',
     },
     tooltip: {
@@ -82,6 +117,7 @@ export const radiobuttonV2Config = {
       },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -92,6 +128,12 @@ export const radiobuttonV2Config = {
       type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      accordian: 'label',
+    },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
       accordian: 'label',
     },
     alignment: {
@@ -116,9 +158,10 @@ export const radiobuttonV2Config = {
       ],
       accordian: 'label',
     },
-    labelWidth: {
-      type: 'slider',
+    auto: {
+      type: 'checkbox',
       displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
         key: 'alignment',
@@ -126,17 +169,45 @@ export const radiobuttonV2Config = {
       },
       isFxNotRequired: true,
     },
-    auto: {
-      type: 'checkbox',
-      displayName: 'auto',
+    labelWidth: {
+      type: 'slider',
       showLabel: false,
-      validation: { schema: { type: 'boolean' } },
       accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
       isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
     },
     borderColor: {
       type: 'colorSwatches',
@@ -153,9 +224,6 @@ export const radiobuttonV2Config = {
         schema: { type: 'string' },
       },
       accordian: 'switch',
-      tip: 'Checked background',
-      tooltipStyle: {},
-      tooltipPlacement: 'bottom',
     },
     switchOffBackgroundColor: {
       type: 'colorSwatches',
@@ -164,9 +232,6 @@ export const radiobuttonV2Config = {
         schema: { type: 'string' },
       },
       accordian: 'switch',
-      tip: 'Unchecked background',
-      tooltipStyle: {},
-      tooltipPlacement: 'bottom',
     },
     handleColor: {
       type: 'colorSwatches',
@@ -267,8 +332,11 @@ export const radiobuttonV2Config = {
         ],
       },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
+      layout: { value: 'row' },
       optionsLoadingState: { value: '{{false}}' },
       optionVisibility: { value: '{{[true, true, true]}}' },
       optionDisable: { value: '{{[false, false, false]}}' },
@@ -276,10 +344,13 @@ export const radiobuttonV2Config = {
         value:
           "{{[\t{label: 'option1',value: '1',disable: false,visible: true,default: true},{label: 'option2',value: '2',disable: false,visible: true},{label: 'option3',value: '3',disable: false,visible: true}\t]}}",
       },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       direction: { value: 'left' },
       alignment: { value: 'side' },
       auto: { value: '{{true}}' },
@@ -290,6 +361,7 @@ export const radiobuttonV2Config = {
       handleColor: { value: 'var(--cc-surface1-surface)' },
       optionsTextColor: { value: 'var(--cc-primary-text)' },
       padding: { value: 'default' },
+      widthType: { value: 'ofComponent' },
     },
   },
 };

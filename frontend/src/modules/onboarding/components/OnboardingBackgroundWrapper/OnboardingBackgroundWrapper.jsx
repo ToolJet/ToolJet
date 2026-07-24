@@ -1,7 +1,7 @@
 import React from 'react';
 import './resources/styles/background.styles.scss';
 import { defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { useWhiteLabellingStore, useWhiteLabelBanner } from '@/_stores/whiteLabellingStore';
 import WhiteLabellingBackgroundWrapper from '@/modules/onboarding/components/WhiteLabellingBackgroundWrapper';
 const OnboardingBackgroundWrapper = ({
   LeftSideComponent,
@@ -11,8 +11,13 @@ const OnboardingBackgroundWrapper = ({
   leftSize = 5,
 }) => {
   const whiteLabelFavIcon = useWhiteLabellingStore((state) => state.whiteLabelFavicon);
+  const isDefaultWhiteLabel = useWhiteLabellingStore((state) => state.isDefaultWhiteLabel);
+  const whiteLabelBanner = useWhiteLabelBanner();
   const isWhiteLabelLogoApplied = whiteLabelFavIcon !== defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
-  if (window.location.pathname != '/setup' && isWhiteLabelLogoApplied) {
+  const hasBanner = !isDefaultWhiteLabel && !!whiteLabelBanner;
+  const pathSegments = window.location.pathname.split('/').filter(Boolean);
+  const currentRoute = pathSegments[pathSegments.length - 1];
+  if (currentRoute !== 'setup' && isWhiteLabelLogoApplied && !hasBanner) {
     const ContentComponent = MiddleComponent ? MiddleComponent : LeftSideComponent;
     return <WhiteLabellingBackgroundWrapper MiddleComponent={() => <ContentComponent />} />;
   }
@@ -27,12 +32,18 @@ const OnboardingBackgroundWrapper = ({
           </div>
         ) : (
           <div className="row h-100">
-            <div className={`col-md-${leftSize} leftside-wrapper d-flex`}>
+            <div
+              className={`col-12 col-md-${leftSize} leftside-wrapper d-flex
+              justify-content-center justify-content-md-start
+              align-items-center align-items-xxl-start`}
+            >
               <LeftSideComponent />
             </div>
-            <div className={`col-md-${rightSize} rightside-wrapper d-flex align-items-center justify-content-end`}>
-              <RightSideComponent />
-            </div>
+            {RightSideComponent && (
+              <div className={`col-md-${rightSize} rightside-wrapper d-flex align-items-center justify-content-end`}>
+                <RightSideComponent />
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -12,8 +12,7 @@ ToolJet can connect to GCS buckets and perform various operation on them.
 To establish a connection with the Google Cloud Storage data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to a GCS datasource:
-
-- **JSON Private Key**
+- **JSON Private Key** 
 
 You can follow the [google documentation](https://cloud.google.com/docs/authentication/getting-started) to get started.
 
@@ -31,7 +30,7 @@ You can follow the [google documentation](https://cloud.google.com/docs/authenti
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/beta/app-builder/custom-code/transform-data)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
 
 #### Supported operations
@@ -50,7 +49,6 @@ Query results can be transformed using transformations. Read our transformations
 Reads the content of a file from GCS.
 
 #### Required Parameter
-
 - **Bucket**
 - **File Name**
 
@@ -61,13 +59,11 @@ Reads the content of a file from GCS.
 Uploads a file to GCS.
 
 #### Required Parameter
-
 - **Bucket**
 - **File name**
 - **Upload data**
 
 #### Optional Parameter
-
 - **Content Type**
 - **Encoding**
 
@@ -84,11 +80,9 @@ Retrieves a list of available buckets.
 Lists files within a specific GCS bucket.
 
 #### Required Parameter
-
 - **Bucket**
 
 #### Optional Parameter
-
 - **Prefix**
 
 <img className="screenshot-full" src="/img/datasource-reference/gcs/listFiles.png" alt="gcs query" style={{marginBottom:'15px'}} />
@@ -98,12 +92,10 @@ Lists files within a specific GCS bucket.
 Generates a signed URL for downloading a file.
 
 #### Required Parameter
-
 - **Bucket**
 - **File Name**
 
 #### Optional Parameter
-
 - **Expires in**
 
 <img className="screenshot-full" src="/img/datasource-reference/gcs/urlDownload.png" alt="gcs query" style={{marginBottom:'15px'}} />
@@ -113,12 +105,10 @@ Generates a signed URL for downloading a file.
 Generates a signed URL for uploading a file.
 
 #### Required Parameter
-
 - **Bucket**
 - **File name**
 
 #### Optional Parameter
-
 - **Expires in**
 - **Content Type**
 

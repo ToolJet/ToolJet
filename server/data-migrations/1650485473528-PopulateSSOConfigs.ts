@@ -57,7 +57,7 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
         // adding form configs for organizations which does not have any
         if (
           !organization.ssoConfigs?.some((og) => {
-            og?.sso === 'form';
+            return og?.sso === 'form';
           })
         ) {
           await entityManager
@@ -75,7 +75,7 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
           isSingleOrganization &&
           googleEnabled &&
           !organization.ssoConfigs?.some((og) => {
-            og?.sso === 'google';
+            return og?.sso === 'google';
           })
         ) {
           await entityManager
@@ -95,7 +95,7 @@ export class PopulateSSOConfigs1650485473528 implements MigrationInterface {
           isSingleOrganization &&
           gitEnabled &&
           !organization.ssoConfigs?.some((og) => {
-            og?.sso === 'git';
+            return og?.sso === 'git';
           })
         ) {
           await entityManager

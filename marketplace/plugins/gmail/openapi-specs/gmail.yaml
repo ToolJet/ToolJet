@@ -1,0 +1,1784 @@
+openapi: 3.0.3
+info:
+  title: Gmail API
+  description: |
+    The Gmail API lets you view and manage Gmail mailbox data like threads, messages, and labels.
+    
+    This specification is generated from Google's Discovery Document and provides comprehensive
+    coverage of the Gmail API v1 endpoints.
+  version: v1
+  contact:
+    name: Google
+    url: https://developers.google.com/gmail/api
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://developers.google.com/terms
+
+servers:
+  - url: https://gmail.googleapis.com
+    description: Gmail API production server
+
+security:
+  - OAuth2: []
+
+paths:
+  /gmail/v1/users/{userId}/profile:
+    get:
+      summary: Get user profile
+      description: Gets the current user's Gmail profile.
+      operationId: getUserProfile
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.compose
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+  /gmail/v1/users/{userId}/messages:
+    get:
+      summary: List messages
+      description: Lists the messages in the user's mailbox.
+      operationId: listMessages
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: maxResults
+          in: query
+          description: Maximum number of messages to return (default 100, max 500)
+          schema:
+            type: integer
+            format: int32
+            default: 100
+            maximum: 500
+        - name: pageToken
+          in: query
+          description: Page token to retrieve a specific page of results
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Only return messages matching the specified query
+          schema:
+            type: string
+        - name: labelIds
+          in: query
+          description: Only return messages with labels that match all specified label IDs
+          schema:
+            type: array
+            items:
+              type: string
+        - name: includeSpamTrash
+          in: query
+          description: Include messages from SPAM and TRASH in the results
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListMessagesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+    post:
+      summary: Insert message
+      description: Directly inserts a message into the user's mailbox similar to IMAP APPEND
+      operationId: insertMessage
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: internalDateSource
+          in: query
+          description: Source for Gmail's internal date of the message
+          schema:
+            type: string
+            enum: [receivedTime, dateHeader]
+            default: receivedTime
+        - name: deleted
+          in: query
+          description: Mark as permanently deleted (not TRASH)
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+          message/*:
+            schema:
+              type: string
+              format: byte
+      responses:
+        '200':
+          description: Message inserted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.insert
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/messages/{messageId}:
+    get:
+      summary: Get message
+      description: Gets the specified message.
+      operationId: getMessage
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: messageId
+          in: path
+          required: true
+          description: The ID of the message to retrieve
+          schema:
+            type: string
+        - name: format
+          in: query
+          description: The format to return the message in
+          schema:
+            type: string
+            enum: [minimal, full, raw, metadata]
+            default: full
+        - name: metadataHeaders
+          in: query
+          description: When format is METADATA, only include specified headers
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Message retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.addons.current.message.action
+          - https://www.googleapis.com/auth/gmail.addons.current.message.metadata
+          - https://www.googleapis.com/auth/gmail.addons.current.message.readonly
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+    delete:
+      summary: Delete message
+      description: Immediately and permanently deletes the specified message
+      operationId: deleteMessage
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: messageId
+          in: path
+          required: true
+          description: The ID of the message to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Message deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+
+  /gmail/v1/users/{userId}/messages/{messageId}/modify:
+    post:
+      summary: Modify message
+      description: Modifies the labels on the specified message.
+      operationId: modifyMessage
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: messageId
+          in: path
+          required: true
+          description: The ID of the message to modify
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyMessageRequest'
+      responses:
+        '200':
+          description: Message modified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/messages/{messageId}/trash:
+    post:
+      summary: Trash message
+      description: Moves the specified message to the trash.
+      operationId: trashMessage
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: messageId
+          in: path
+          required: true
+          description: The ID of the message to trash
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Message moved to trash successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/messages/{messageId}/untrash:
+    post:
+      summary: Untrash message
+      description: Removes the specified message from the trash.
+      operationId: untrashMessage
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: messageId
+          in: path
+          required: true
+          description: The ID of the message to remove from trash
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Message removed from trash successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/messages/send:
+    post:
+      summary: Send message
+      description: Sends the specified message to the recipients in the To, Cc, and Bcc headers.
+      operationId: sendMessage
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+          message/*:
+            schema:
+              type: string
+              format: byte
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.addons.current.action.compose
+          - https://www.googleapis.com/auth/gmail.compose
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.send
+
+  /gmail/v1/users/{userId}/messages/batchDelete:
+    post:
+      summary: Batch delete messages
+      description: Deletes many messages by message ID.
+      operationId: batchDeleteMessages
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchDeleteMessagesRequest'
+      responses:
+        '200':
+          description: Messages deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+
+  /gmail/v1/users/{userId}/messages/batchModify:
+    post:
+      summary: Batch modify messages
+      description: Modifies the labels on the specified messages.
+      operationId: batchModifyMessages
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchModifyMessagesRequest'
+      responses:
+        '200':
+          description: Messages modified successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/messages/{messageId}/attachments/{attachmentId}:
+    get:
+      summary: Get attachment
+      description: Gets the specified message attachment.
+      operationId: getAttachment
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: messageId
+          in: path
+          required: true
+          description: The ID of the message containing the attachment
+          schema:
+            type: string
+        - name: attachmentId
+          in: path
+          required: true
+          description: The ID of the attachment
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Attachment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessagePartBody'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.addons.current.message.action
+          - https://www.googleapis.com/auth/gmail.addons.current.message.readonly
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+  /gmail/v1/users/{userId}/threads:
+    get:
+      summary: List threads
+      description: Lists the threads in the user's mailbox.
+      operationId: listThreads
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: maxResults
+          in: query
+          description: Maximum number of threads to return (default 100, max 500)
+          schema:
+            type: integer
+            format: int32
+            default: 100
+            maximum: 500
+        - name: pageToken
+          in: query
+          description: Page token to retrieve a specific page of results
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Only return threads matching the specified query
+          schema:
+            type: string
+        - name: labelIds
+          in: query
+          description: Only return threads with labels that match all specified label IDs
+          schema:
+            type: array
+            items:
+              type: string
+        - name: includeSpamTrash
+          in: query
+          description: Include threads from SPAM and TRASH in the results
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Threads retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListThreadsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+  /gmail/v1/users/{userId}/threads/{threadId}:
+    get:
+      summary: Get thread
+      description: Gets the specified thread.
+      operationId: getThread
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: threadId
+          in: path
+          required: true
+          description: The ID of the thread to retrieve
+          schema:
+            type: string
+        - name: format
+          in: query
+          description: The format to return the messages in
+          schema:
+            type: string
+            enum: [full, metadata, minimal]
+            default: full
+        - name: metadataHeaders
+          in: query
+          description: When format is METADATA, only include specified headers
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Thread retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Thread'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.addons.current.message.action
+          - https://www.googleapis.com/auth/gmail.addons.current.message.metadata
+          - https://www.googleapis.com/auth/gmail.addons.current.message.readonly
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+    delete:
+      summary: Delete thread
+      description: Immediately and permanently deletes the specified thread
+      operationId: deleteThread
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: threadId
+          in: path
+          required: true
+          description: The ID of the thread to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thread deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+
+  /gmail/v1/users/{userId}/threads/{threadId}/modify:
+    post:
+      summary: Modify thread
+      description: Modifies the labels applied to the thread.
+      operationId: modifyThread
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: threadId
+          in: path
+          required: true
+          description: The ID of the thread to modify
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyThreadRequest'
+      responses:
+        '200':
+          description: Thread modified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Thread'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/threads/{threadId}/trash:
+    post:
+      summary: Trash thread
+      description: Moves the specified thread to the trash.
+      operationId: trashThread
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: threadId
+          in: path
+          required: true
+          description: The ID of the thread to trash
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thread moved to trash successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Thread'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/threads/{threadId}/untrash:
+    post:
+      summary: Untrash thread
+      description: Removes the specified thread from the trash.
+      operationId: untrashThread
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: threadId
+          in: path
+          required: true
+          description: The ID of the thread to remove from trash
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thread removed from trash successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Thread'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/drafts:
+    get:
+      summary: List drafts
+      description: Lists the drafts in the user's mailbox.
+      operationId: listDrafts
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: maxResults
+          in: query
+          description: Maximum number of drafts to return (default 100, max 500)
+          schema:
+            type: integer
+            format: int32
+            default: 100
+            maximum: 500
+        - name: pageToken
+          in: query
+          description: Page token to retrieve a specific page of results
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Only return draft messages matching the specified query
+          schema:
+            type: string
+        - name: includeSpamTrash
+          in: query
+          description: Include drafts from SPAM and TRASH in the results
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Drafts retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDraftsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.compose
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+    post:
+      summary: Create draft
+      description: Creates a new draft with the DRAFT label.
+      operationId: createDraft
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Draft'
+          message/*:
+            schema:
+              type: string
+              format: byte
+      responses:
+        '200':
+          description: Draft created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Draft'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.addons.current.action.compose
+          - https://www.googleapis.com/auth/gmail.compose
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/drafts/{draftId}:
+    get:
+      summary: Get draft
+      description: Gets the specified draft.
+      operationId: getDraft
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: draftId
+          in: path
+          required: true
+          description: The ID of the draft to retrieve
+          schema:
+            type: string
+        - name: format
+          in: query
+          description: The format to return the draft in
+          schema:
+            type: string
+            enum: [minimal, full, raw, metadata]
+            default: full
+      responses:
+        '200':
+          description: Draft retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Draft'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.compose
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+    put:
+      summary: Update draft
+      description: Replaces a draft's content.
+      operationId: updateDraft
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: draftId
+          in: path
+          required: true
+          description: The ID of the draft to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Draft'
+          message/*:
+            schema:
+              type: string
+              format: byte
+      responses:
+        '200':
+          description: Draft updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Draft'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.addons.current.action.compose
+          - https://www.googleapis.com/auth/gmail.compose
+          - https://www.googleapis.com/auth/gmail.modify
+
+    delete:
+      summary: Delete draft
+      description: Immediately and permanently deletes the specified draft.
+      operationId: deleteDraft
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: draftId
+          in: path
+          required: true
+          description: The ID of the draft to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Draft deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.addons.current.action.compose
+          - https://www.googleapis.com/auth/gmail.compose
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/drafts/send:
+    post:
+      summary: Send draft
+      description: Sends the specified, existing draft to the recipients.
+      operationId: sendDraft
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Draft'
+          message/*:
+            schema:
+              type: string
+              format: byte
+      responses:
+        '200':
+          description: Draft sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.addons.current.action.compose
+          - https://www.googleapis.com/auth/gmail.compose
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/labels:
+    get:
+      summary: List labels
+      description: Lists all labels in the user's mailbox.
+      operationId: listLabels
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Labels retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListLabelsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.labels
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+    post:
+      summary: Create label
+      description: Creates a new label.
+      operationId: createLabel
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Label'
+      responses:
+        '200':
+          description: Label created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.labels
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/labels/{labelId}:
+    get:
+      summary: Get label
+      description: Gets the specified label.
+      operationId: getLabel
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: labelId
+          in: path
+          required: true
+          description: The ID of the label to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Label retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.labels
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+    put:
+      summary: Update label
+      description: Updates the specified label.
+      operationId: updateLabel
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: labelId
+          in: path
+          required: true
+          description: The ID of the label to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Label'
+      responses:
+        '200':
+          description: Label updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.labels
+          - https://www.googleapis.com/auth/gmail.modify
+
+    patch:
+      summary: Patch label
+      description: Patch the specified label.
+      operationId: patchLabel
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: labelId
+          in: path
+          required: true
+          description: The ID of the label to patch
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Label'
+      responses:
+        '200':
+          description: Label patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.labels
+          - https://www.googleapis.com/auth/gmail.modify
+
+    delete:
+      summary: Delete label
+      description: Immediately and permanently deletes the specified label.
+      operationId: deleteLabel
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: labelId
+          in: path
+          required: true
+          description: The ID of the label to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Label deleted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.labels
+          - https://www.googleapis.com/auth/gmail.modify
+
+  /gmail/v1/users/{userId}/history:
+    get:
+      summary: List history
+      description: Lists the history of all changes to the given mailbox.
+      operationId: listHistory
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - name: maxResults
+          in: query
+          description: Maximum number of history records to return (default 100, max 500)
+          schema:
+            type: integer
+            format: int32
+            default: 100
+            maximum: 500
+        - name: pageToken
+          in: query
+          description: Page token to retrieve a specific page of results
+          schema:
+            type: string
+        - name: startHistoryId
+          in: query
+          required: true
+          description: Returns history records after the specified startHistoryId
+          schema:
+            type: string
+            format: uint64
+        - name: labelId
+          in: query
+          description: Only return messages with a label matching the ID
+          schema:
+            type: string
+        - name: historyTypes
+          in: query
+          description: History types to be returned by the function
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [messageAdded, messageDeleted, labelAdded, labelRemoved]
+      responses:
+        '200':
+          description: History retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListHistoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+  /gmail/v1/users/{userId}/watch:
+    post:
+      summary: Watch mailbox
+      description: Set up or update a push notification watch on the user's mailbox.
+      operationId: watchMailbox
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchRequest'
+      responses:
+        '200':
+          description: Watch set up successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WatchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+  /gmail/v1/users/{userId}/stop:
+    post:
+      summary: Stop watching mailbox
+      description: Stop receiving push notifications for the given user mailbox.
+      operationId: stopWatch
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Watch stopped successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      security:
+        - OAuth2:
+          - https://mail.google.com/
+          - https://www.googleapis.com/auth/gmail.metadata
+          - https://www.googleapis.com/auth/gmail.modify
+          - https://www.googleapis.com/auth/gmail.readonly
+
+components:
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      description: The user's email address. The special value "me" can be used to indicate the authenticated user.
+      schema:
+        type: string
+        default: me
+
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://accounts.google.com/o/oauth2/auth
+          tokenUrl: https://oauth2.googleapis.com/token
+          scopes:
+            https://mail.google.com/: Read, compose, send, and permanently delete all your email from Gmail
+            https://www.googleapis.com/auth/gmail.addons.current.action.compose: Manage drafts and send emails when you interact with the add-on
+            https://www.googleapis.com/auth/gmail.addons.current.message.action: View your email messages when you interact with the add-on
+            https://www.googleapis.com/auth/gmail.addons.current.message.metadata: View your email message metadata when the add-on is running
+            https://www.googleapis.com/auth/gmail.addons.current.message.readonly: View your email messages when the add-on is running
+            https://www.googleapis.com/auth/gmail.compose: Manage drafts and send emails
+            https://www.googleapis.com/auth/gmail.insert: Add emails into your Gmail mailbox
+            https://www.googleapis.com/auth/gmail.labels: See and edit your email labels
+            https://www.googleapis.com/auth/gmail.metadata: View your email message metadata such as labels and headers, but not the email body
+            https://www.googleapis.com/auth/gmail.modify: Read, compose, and send emails from your Gmail account
+            https://www.googleapis.com/auth/gmail.readonly: View your email messages and settings
+            https://www.googleapis.com/auth/gmail.send: Send email on your behalf
+            https://www.googleapis.com/auth/gmail.settings.basic: See, edit, create, or change your email settings and filters in Gmail
+            https://www.googleapis.com/auth/gmail.settings.sharing: Manage your sensitive mail settings, including who can manage your mail
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Profile:
+      type: object
+      description: Profile for a Gmail user
+      properties:
+        emailAddress:
+          type: string
+          description: The user's email address
+        messagesTotal:
+          type: integer
+          format: int32
+          description: The total number of messages in the mailbox
+        threadsTotal:
+          type: integer
+          format: int32
+          description: The total number of threads in the mailbox
+        historyId:
+          type: string
+          format: uint64
+          description: The ID of the mailbox's current history record
+
+    Message:
+      type: object
+      description: An email message
+      properties:
+        id:
+          type: string
+          description: The immutable ID of the message
+        threadId:
+          type: string
+          description: The ID of the thread the message belongs to
+        labelIds:
+          type: array
+          items:
+            type: string
+          description: List of IDs of labels applied to this message
+        snippet:
+          type: string
+          description: A short part of the message text
+        historyId:
+          type: string
+          format: uint64
+          description: The ID of the last history record that modified this message
+        internalDate:
+          type: string
+          format: int64
+          description: The internal message creation timestamp (epoch ms)
+        payload:
+          $ref: '#/components/schemas/MessagePart'
+        sizeEstimate:
+          type: integer
+          format: int32
+          description: Estimated size in bytes of the message
+        raw:
+          type: string
+          format: byte
+          description: The entire email message in RFC 2822 format and base64url encoded
+
+    MessagePart:
+      type: object
+      description: A single MIME message part
+      properties:
+        partId:
+          type: string
+          description: The immutable ID of the message part
+        mimeType:
+          type: string
+          description: The MIME type of the message part
+        filename:
+          type: string
+          description: The filename of the attachment
+        headers:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessagePartHeader'
+          description: List of headers on this message part
+        body:
+          $ref: '#/components/schemas/MessagePartBody'
+        parts:
+          type: array
+          items:
+            type: object
+            properties:
+              partId:
+                type: string
+                description: The immutable ID of the message part
+              mimeType:
+                type: string
+                description: The MIME type of the message part
+              filename:
+                type: string
+                description: The filename of the attachment
+              headers:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessagePartHeader'
+                description: List of headers on this message part
+              body:
+                $ref: '#/components/schemas/MessagePartBody'
+          description: The child MIME message parts (simplified to avoid circular references)
+
+    MessagePartHeader:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the header before the ':' separator
+        value:
+          type: string
+          description: The value of the header after the ':' separator
+
+    MessagePartBody:
+      type: object
+      description: The body of a single MIME message part
+      properties:
+        attachmentId:
+          type: string
+          description: When present, contains the ID of an external attachment
+        size:
+          type: integer
+          format: int32
+          description: Number of bytes for the message part data
+        data:
+          type: string
+          format: byte
+          description: The body data of a MIME message part as base64url encoded string
+
+    ListMessagesResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          description: List of messages
+        nextPageToken:
+          type: string
+          description: Token to retrieve the next page of results
+        resultSizeEstimate:
+          type: integer
+          format: uint32
+          description: Estimated total number of results
+
+    ModifyMessageRequest:
+      type: object
+      properties:
+        addLabelIds:
+          type: array
+          items:
+            type: string
+          description: A list of IDs of labels to add to this message
+        removeLabelIds:
+          type: array
+          items:
+            type: string
+          description: A list of IDs of labels to remove from this message
+
+    BatchDeleteMessagesRequest:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+          description: The IDs of the messages to delete
+
+    BatchModifyMessagesRequest:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+          description: The IDs of the messages to modify
+        addLabelIds:
+          type: array
+          items:
+            type: string
+          description: A list of label IDs to add to messages
+        removeLabelIds:
+          type: array
+          items:
+            type: string
+          description: A list of label IDs to remove from messages
+
+    Thread:
+      type: object
+      description: A collection of messages representing a conversation
+      properties:
+        id:
+          type: string
+          description: The unique ID of the thread
+        snippet:
+          type: string
+          description: A short part of the message text
+        historyId:
+          type: string
+          format: uint64
+          description: The ID of the last history record that modified this thread
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The immutable ID of the message
+              threadId:
+                type: string
+                description: The ID of the thread the message belongs to
+              labelIds:
+                type: array
+                items:
+                  type: string
+                description: List of IDs of labels applied to this message
+              snippet:
+                type: string
+                description: A short part of the message text
+              historyId:
+                type: string
+                format: uint64
+                description: The ID of the last history record that modified this message
+              internalDate:
+                type: string
+                format: int64
+                description: The internal message creation timestamp (epoch ms)
+          description: The list of messages in the thread (simplified to avoid deep nesting)
+
+    ListThreadsResponse:
+      type: object
+      properties:
+        threads:
+          type: array
+          items:
+            $ref: '#/components/schemas/Thread'
+          description: List of threads
+        nextPageToken:
+          type: string
+          description: Token to retrieve the next page of results
+        resultSizeEstimate:
+          type: integer
+          format: uint32
+          description: Estimated total number of results
+
+    ModifyThreadRequest:
+      type: object
+      properties:
+        addLabelIds:
+          type: array
+          items:
+            type: string
+          description: A list of IDs of labels to add to this thread
+        removeLabelIds:
+          type: array
+          items:
+            type: string
+          description: A list of IDs of labels to remove from this thread
+
+    Draft:
+      type: object
+      description: A draft email in the user's mailbox
+      properties:
+        id:
+          type: string
+          description: The immutable ID of the draft
+        message:
+          type: object
+          properties:
+            id:
+              type: string
+              description: The immutable ID of the message
+            threadId:
+              type: string
+              description: The ID of the thread the message belongs to
+            labelIds:
+              type: array
+              items:
+                type: string
+              description: List of IDs of labels applied to this message
+            snippet:
+              type: string
+              description: A short part of the message text
+            raw:
+              type: string
+              format: byte
+              description: The entire email message in RFC 2822 format and base64url encoded
+
+    ListDraftsResponse:
+      type: object
+      properties:
+        drafts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Draft'
+          description: List of drafts
+        nextPageToken:
+          type: string
+          description: Token to retrieve the next page of results
+        resultSizeEstimate:
+          type: integer
+          format: uint32
+          description: Estimated total number of results
+
+    Label:
+      type: object
+      description: Labels are used to categorize messages and threads
+      properties:
+        id:
+          type: string
+          description: The immutable ID of the label
+        name:
+          type: string
+          description: The display name of the label
+        messageListVisibility:
+          type: string
+          enum: [show, hide]
+          description: The visibility of messages with this label in the message list
+        labelListVisibility:
+          type: string
+          enum: [labelShow, labelShowIfUnread, labelHide]
+          description: The visibility of the label in the label list
+        type:
+          type: string
+          enum: [system, user]
+          description: The owner type for the label
+        messagesTotal:
+          type: integer
+          format: int32
+          description: The total number of messages with the label
+        messagesUnread:
+          type: integer
+          format: int32
+          description: The number of unread messages with the label
+        threadsTotal:
+          type: integer
+          format: int32
+          description: The total number of threads with the label
+        threadsUnread:
+          type: integer
+          format: int32
+          description: The number of unread threads with the label
+        color:
+          $ref: '#/components/schemas/LabelColor'
+
+    LabelColor:
+      type: object
+      properties:
+        textColor:
+          type: string
+          description: The text color of the label, represented as hex string
+        backgroundColor:
+          type: string
+          description: The background color represented as hex string
+
+    ListLabelsResponse:
+      type: object
+      properties:
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+          description: List of labels
+
+    History:
+      type: object
+      description: A record of a change to the user's mailbox
+      properties:
+        id:
+          type: string
+          format: uint64
+          description: The mailbox sequence ID
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              threadId:
+                type: string
+              snippet:
+                type: string
+          description: List of messages changed in this history record (simplified)
+        messagesAdded:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryMessageAdded'
+          description: Messages added to the mailbox
+        messagesDeleted:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryMessageDeleted'
+          description: Messages deleted from the mailbox
+        labelsAdded:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryLabelAdded'
+          description: Labels added to messages
+        labelsRemoved:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryLabelRemoved'
+          description: Labels removed from messages
+
+    HistoryMessageAdded:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            id:
+              type: string
+            threadId:
+              type: string
+            snippet:
+              type: string
+
+    HistoryMessageDeleted:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            id:
+              type: string
+            threadId:
+              type: string
+            snippet:
+              type: string
+
+    HistoryLabelAdded:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            id:
+              type: string
+            threadId:
+              type: string
+            snippet:
+              type: string
+        labelIds:
+          type: array
+          items:
+            type: string
+          description: Label IDs added to the message
+
+    HistoryLabelRemoved:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            id:
+              type: string
+            threadId:
+              type: string
+            snippet:
+              type: string
+        labelIds:
+          type: array
+          items:
+            type: string
+          description: Label IDs removed from the message
+
+    ListHistoryResponse:
+      type: object
+      properties:
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/History'
+          description: List of history records
+        nextPageToken:
+          type: string
+          description: Token to retrieve the next page of results
+        historyId:
+          type: string
+          format: uint64
+          description: The ID of the mailbox's current history record
+
+    WatchRequest:
+      type: object
+      description: Set up or update a new push notification watch
+      properties:
+        labelIds:
+          type: array
+          items:
+            type: string
+          description: List of label_ids to restrict notifications about
+        labelFilterBehavior:
+          type: string
+          enum: [include, exclude]
+          description: Filtering behavior of labelIds list specified
+        topicName:
+          type: string
+          description: A fully qualified Google Cloud Pub/Sub API topic name
+
+    WatchResponse:
+      type: object
+      description: Push notification watch response
+      properties:
+        historyId:
+          type: string
+          format: uint64
+          description: The ID of the mailbox's current history record
+        expiration:
+          type: string
+          format: int64
+          description: When Gmail will stop sending notifications (epoch millis)
+
+    Error:
+      type: object
+      description: Error response
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+              description: HTTP status code
+            message:
+              type: string
+              description: Error message
+            status:
+              type: string
+              description: Error status

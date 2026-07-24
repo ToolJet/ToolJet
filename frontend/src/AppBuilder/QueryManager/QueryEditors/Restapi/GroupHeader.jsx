@@ -1,5 +1,5 @@
 import React from 'react';
-import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
+import { CustomToggleSwitch } from '@/AppBuilder/QueryManager/Components/CustomToggleSwitch';
 
 const GroupHeader = ({ paramType, descText, setBodyToggle, bodyToggle }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';

@@ -21,6 +21,15 @@ export const modalV2Config = {
       },
       section: 'additionalActions',
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Modal trigger visibility',
@@ -28,6 +37,13 @@ export const modalV2Config = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
     },
     disabledTrigger: {
       type: 'toggle',
@@ -95,6 +111,28 @@ export const modalV2Config = {
     hideOnEsc: { type: 'toggle', displayName: 'Close on escape key', section: 'additionalActions' },
     closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside', section: 'additionalActions' },
     hideCloseButton: { type: 'toggle', displayName: 'Hide close button', section: 'additionalActions' },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   events: {
     onOpen: { displayName: 'On open' },
@@ -173,9 +211,53 @@ export const modalV2Config = {
     },
   ],
   styles: {
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger',
+      visibility: false,
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon color',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger',
+      visibility: false,
+    },
+    direction: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' } },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'trigger',
+    },
     headerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Header background color',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'header',
+    },
+    headerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'header',
+    },
+    bodyBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
@@ -184,39 +266,120 @@ export const modalV2Config = {
     },
     footerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Footer background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
-      accordian: 'container',
+      accordian: 'footer',
     },
-    bodyBackgroundColor: {
+    footerDividerColor: {
       type: 'colorSwatches',
-      displayName: 'Body background color',
+      displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: 'var(--cc-default-border)',
       },
-      accordian: 'container',
+      accordian: 'footer',
     },
     triggerButtonBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Trigger button background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
       },
-      accordian: 'container',
+      accordian: 'trigger button',
+    },
+    triggerButtonHoverBackgroundMode: {
+      type: 'switch',
+      displayName: 'Hover background',
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
+      accordian: 'trigger button',
+      isFxNotRequired: true,
+    },
+    triggerButtonHoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: {
+        key: 'triggerButtonHoverBackgroundMode',
+        value: 'manual',
+      },
+      accordian: 'trigger button',
     },
     triggerButtonTextColor: {
       type: 'colorSwatches',
-      displayName: 'Trigger button text color',
+      displayName: 'Text',
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
       },
-      accordian: 'container',
+      accordian: 'trigger button',
+    },
+    triggerButtonTextSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+      accordian: 'trigger button',
+    },
+    triggerButtonFontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
+      accordian: 'trigger button',
+    },
+    triggerButtonContentAlignment: {
+      type: 'alignButtons',
+      displayName: 'Content alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'trigger button',
+    },
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger button',
+      visibility: false,
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon color',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger button',
+      visibility: false,
+    },
+    direction: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' } },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'trigger button',
     },
   },
   exposedVariables: {
@@ -263,7 +426,10 @@ export const modalV2Config = {
     },
     properties: {
       loadingState: { value: `{{false}}` },
+      dynamicHeight: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledTrigger: { value: '{{false}}' },
       disabledModal: { value: '{{false}}' },
       useDefaultButton: { value: `{{true}}` },
@@ -277,14 +443,27 @@ export const modalV2Config = {
       modalHeight: { value: '{{400}}' },
       headerHeight: { value: 80 },
       footerHeight: { value: 80 },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
+      icon: { value: 'IconAlignBoxBottomLeft' },
+      iconVisibility: { value: false },
+      iconColor: { value: 'var(--cc-surface1-surface)' },
+      direction: { value: 'left' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
-      triggerButtonTextColor: { value: '#ffffffff' },
+      triggerButtonHoverBackgroundMode: { value: 'auto' },
+      triggerButtonHoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
+      triggerButtonTextColor: { value: 'var(--cc-surface1-surface)' },
+      triggerButtonTextSize: { value: '{{14}}' },
+      triggerButtonFontWeight: { value: 'normal' },
+      triggerButtonContentAlignment: { value: 'center' },
+      headerDividerColor: { value: 'var(--cc-default-border)' },
+      footerDividerColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

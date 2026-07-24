@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 import Layout from '@/_ui/Layout';
 import { authenticationService } from '@/_services';
 import { ManageOrgConstantsSettings } from '@/modules/WorkspaceSettings/components';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 
 export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   const navigate = useNavigate();
@@ -15,8 +17,9 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
 
   useEffect(() => {
     if (!canCreateVariableOrConstant()) {
+      const edition = fetchEdition();
       toast.error("You don't have access to Workspace constants", { style: { maxWidth: '400px' } });
-      navigate('/');
+      navigate(`/${getWorkspaceId()}${edition === 'ce' ? '/' : '/home'}`);
     }
   }, [canCreateVariableOrConstant]);
   return (

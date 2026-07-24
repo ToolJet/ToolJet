@@ -14,6 +14,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_DOMAINS]: {},
     [FEATURE_KEY.GET_TERMS]: {},
     [FEATURE_KEY.UPDATE_LICENSE]: {},
+    [FEATURE_KEY.UPDATE_ENV_LICENSE_SETTING]: {},
     [FEATURE_KEY.GET_ORGANIZATION_LIMITS]: {},
     [FEATURE_KEY.GET_APP_LIMITS]: {},
     [FEATURE_KEY.CHECK_AUDIT_LOGS_LICENSE]: {
@@ -28,5 +29,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GENERATE_EE_TRIAL_LICENSE]: {
       isPublic: true,
     },
+    [FEATURE_KEY.GET_SELFHOST_CUSTOMER]: {},
   },
 };

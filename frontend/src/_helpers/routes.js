@@ -5,25 +5,30 @@ import { authenticationService } from '@/_services/authentication.service';
 import queryString from 'query-string';
 import _ from 'lodash';
 import { eraseCookie, getCookie } from '.';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+
+export const routes = {
+  dashboard: '/',
+  editor: '/apps/:slug/:pageHandle',
+  preview: '/applications/:slug/versions/:versionId/:pageHandle',
+  launch: '/applications/:slug/:pageHandle',
+  workspace_settings: '/workspace-settings/users',
+  workspace_settings_builder: '/workspace-settings/themes',
+  settings: '/settings',
+  database: '/database',
+  integrations: '/integrations/marketplace',
+  data_sources: '/data-sources',
+  audit_logs: '/audit-logs',
+  home: '/home',
+  workflows: '/workflows',
+  workspace_constants: '/workspace-constants',
+  profile_settings: '/profile-settings',
+  modules: '/modules',
+  subscription: '/settings/subscription',
+  license: '/settings/license',
+};
 
 export const getPrivateRoute = (page, params = {}) => {
-  const routes = {
-    dashboard: '/',
-    editor: '/apps/:slug/:pageHandle',
-    preview: '/applications/:slug/versions/:versionId/:pageHandle',
-    launch: '/applications/:slug/:pageHandle',
-    workspace_settings: '/workspace-settings/users',
-    settings: '/settings',
-    database: '/database',
-    integrations: '/integrations/marketplace',
-    data_sources: '/data-sources',
-    audit_logs: '/audit-logs',
-    workflows: '/workflows',
-    workspace_constants: '/workspace-constants',
-    profile_settings: '/profile-settings',
-    modules: '/modules',
-  };
-
   let url = routes[page];
   const urlParams = url?.split('/').map((path) => {
     if (path.startsWith(':')) {
@@ -68,7 +73,18 @@ export const getPathname = (path, excludeSlug = false) => {
   return getSubpath() ? (path || pathname).replace(getSubpath(), '') : path || pathname;
 };
 
-export const getHostURL = () => `${window.public_config?.TOOLJET_HOST}${getSubpath() ?? ''}`;
+export const getHostURL = () => {
+  const base = isCustomDomain() ? window.location.origin : window.public_config?.TOOLJET_HOST;
+  return `${stripTrailingSlash(base)}${getSubpath() ?? ''}`;
+};
+
+/** Always returns the base TOOLJET_HOST URL (never the custom domain).
+ *  Use this when generating links that should point to the platform host,
+ *  e.g. workspace link previews for newly created workspaces. */
+export const getBaseHostURL = () => {
+  const base = window.public_config?.TOOLJET_HOST || window.location.origin;
+  return `${stripTrailingSlash(base)}${getSubpath() ?? ''}`;
+};
 
 export const dashboardUrl = (data, redirectTo, relativePath) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
@@ -171,7 +187,7 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
     const newPath = paths.join('/');
-    return newPath ? `/${newPath}` : '/';
+    return newPath ? `/${newPath}` : '/home'; //Redirect to Home Page
   }
   return pathname;
 };
@@ -193,7 +209,7 @@ export const returnWorkspaceIdIfNeed = (path) => {
   }
   return `/${getWorkspaceId()}`;
 };
-export const getRedirectURL = (path) => {
+export const getRedirectURL = (path, isUserLoggingIn = false) => {
   let redirectLoc = '/';
   const instanceLevelRoutes = [
     '/all-users',
@@ -202,8 +218,19 @@ export const getRedirectURL = (path) => {
     '/white-labelling',
     '/instance-login',
     '/smtp',
+    '/llm-key',
     '/license',
   ];
+  if (isUserLoggingIn && !path) {
+    const role = authenticationService?.currentSessionValue?.role?.name;
+    const isEndUser = role === 'end-user';
+    const isCommunityEdition = fetchEdition() === 'ce';
+
+    if (isEndUser || isCommunityEdition) {
+      path = '/'; // End-users and CE Edon't have access to Home route
+    }
+  }
+
   if (path) {
     if (instanceLevelRoutes.includes(path)) {
       redirectLoc = `/settings${path}`;
@@ -226,7 +253,8 @@ export const getRedirectTo = (paramObj) => {
   let combined = Array.from(params.entries())
     .map((param) => param.join('='))
     .join('&');
-  return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/';
+  console.log(combined, 'combined');
+  return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/home'; //default redirect to
 };
 
 export const getPreviewQueryParams = () => {
@@ -262,7 +290,39 @@ export const eraseRedirectUrl = () => {
   return redirectPath;
 };
 
-export const redirectToWorkflows = (data, redirectTo, relativePath = null) => {
-  const workflowUrl = `${dashboardUrl(data, redirectTo, relativePath)}/workflows`;
-  window.location = workflowUrl;
+/** Detects whether the app is loaded on a custom domain by comparing
+ *  window.location.hostname against TOOLJET_HOST. Returns false if
+ *  TOOLJET_HOST is not configured or malformed. */
+export const isCustomDomain = () => {
+  const tooljetHost = window?.public_config?.TOOLJET_HOST;
+  if (!tooljetHost) return false;
+  try {
+    const tooljetHostname = new URL(tooljetHost).hostname;
+    return window.location.hostname !== tooljetHostname;
+  } catch (e) {
+    console.error('[isCustomDomain] TOOLJET_HOST is not a valid URL:', tooljetHost, e);
+    return false;
+  }
+};
+
+/** Redirect to the main TOOLJET_HOST, preserving the current path and query string. Returns true if redirected. */
+export const redirectToMainHost = () => {
+  const tooljetHost = window?.public_config?.TOOLJET_HOST;
+  if (tooljetHost) {
+    window.location.href = `${stripTrailingSlash(tooljetHost)}${window.location.pathname}${window.location.search}`;
+    return true;
+  }
+  console.error('[redirectToMainHost] TOOLJET_HOST is not configured — cannot redirect to main host');
+  return false;
+};
+
+/** Returns the HTTPS URL for an organization's custom domain, or null if the
+ *  org has no custom domain or their license has expired. */
+export const getTargetDomainURL = (organization) => {
+  const customDomain = organization?.custom_domain;
+  if (!customDomain) return null;
+  if (organization?.license_type?.is_expired) return null;
+  // Strip any accidental protocol prefix stored in the DB
+  const hostname = customDomain.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+  return `https://${hostname}`;
 };

@@ -8,3 +8,10 @@ export const confirmVersionModalSelectors = {
   modal: '[data-cy="confirm-dialogue-box-text"]',
   yesButton: '[data-cy="yes-button"]',
 };
+
+export const versionSwitcherSelectors = {
+  versionSwitcherButton: '[data-cy="version-switcher-button"]',
+  versionStatusDot: '[data-cy="version-status-dot"]',
+  versionName: '[data-cy="version-name"]',
+  versionEnvironmentName: '[data-cy="version-environment-name"]',
+};

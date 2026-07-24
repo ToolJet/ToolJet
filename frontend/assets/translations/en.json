@@ -138,14 +138,20 @@
         "appVersionManager": {
             "version": "Version",
             "currentlyReleased": "Currently Released",
-            "createVersion": "Create new version",
+            "createVersion": "Create version",
+            "saveVersion": "Save version",
+            "createDraftVersion": "Create draft version",
             "versionName": "Version name",
-            "createVersionFrom": "Create version from",
+            "versionDescription": "Version description",
+            "createVersionFrom": "Create from version",
             "save": "Save",
             "create": "Create Version",
-            "editVersion": "Edit Version",
+            "editVersion": "Edit version",
             "deleteVersion": "Do you really want to delete this version ({{version}})?",
             "enterVersionName": "Enter version name",
+            "enterVersionDescription": "Enter version description",
+            "versionNameHelper": "Version name cannot contain spaces, special characters or exceed 25 characters",
+            "versionDescriptionHelper": "Description must be max 500 characters",
             "versionAlreadyReleased": "You cannot make changes to a version that has already been released. \n Create a new version or switch to a different version if you want to make changes."
         },
         "queries": "Queries",
@@ -188,6 +194,7 @@
             "runQueryOnApplicationLoad": "Run this query on application load",
             "confirmBeforeQueryRun": "Request confirmation before running query",
             "notificationOnSuccess": "Show notification on success",
+            "runOnDependencyChange": "Run this query on dependency change",
             "successMessage": "Success Message",
             "queryRanSuccessfully": "Query ran successfully",
             "notificationDuration": "Notification duration (s)",
@@ -307,7 +314,8 @@
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
                         "folder": "Folder",
-                        "dataSource": "Data sources"
+                        "dataSource": "Data sources",
+                        "tooljetDatabase": "ToolJet Database"
                     },
                     "groupOptions": {
                         "deleteGroup": "Delete Group",
@@ -440,10 +448,11 @@
             "to": "to"
         },
         "noApplicationFound": "No Applications found",
+        "noWorkflowFound": "No workflows found",
         "thisFolderIsEmpty": "This folder is empty",
         "nonAccessibleFolderApps": "You do not have access to any applications in this folder.",
         "deleteAppAndData": "The app {{appName}} and the associated data will be permanently deleted, do you want to continue?",
-        "deleteWorkflowAndData": "Are you sure you want to delete the workflow {{appName}}? This action will not only remove it from the system but also from all the apps where it is currently in use. Please confirm to proceed.",
+        "deleteWorkflowAndData": "The workflow {{appName}} and the associated data will be permanently deleted, do you want to continue?",
         "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
         "change": "Change",
         "templateCard": {
@@ -575,6 +584,8 @@
             "general": "General",
             "validation": "Validation",
             "structure": "Structure",
+            "data": "Data",
+            "additionalActions": "Additional Actions",
             "documentation": "Read documentation for {{componentMeta}}",
             "widgetNameEmptyError": "Widget name cannot be empty",
             "componentNameExistsError": "Component name already exists",
@@ -644,6 +655,9 @@
             "enableTimeSelection": "Enable time selection?",
             "enableDateSelection": "Enable date selection?",
             "disabledDates": "Disabled dates",
+            "minDate": "Min Date",
+            "maxDate": "Max Date",
+            "makeThisFieldMandatory": "Make this field mandatory",
             "setChecked": "Set checked",
             "status": "status",
             "defaultStatus": "Default status",
@@ -695,6 +709,9 @@
             "parseContent": "Parse content",
             "fileType": "File type",
             "dateFormat": "Date format",
+            "timeFormat": "Time Format",
+            "displayIn": "Display in",
+            "storeIn": "Store in",
             "defaultDate": "Default date",
             "events": "Events",
             "resources": "Resources",
@@ -849,11 +866,11 @@
             "description": "User-controlled on-off switch"
         },
         "Textarea": {
-            "displayName": "Textarea",
+            "displayName": "Text Area",
             "description": "Multi-line text input"
         },
         "DateRangePicker": {
-            "displayName": "Range Picker",
+            "displayName": "Date Range Picker",
             "description": "Choose date ranges"
         },
         "Text": {
@@ -873,7 +890,7 @@
             "description": "Single item selector"
         },
         "Multiselect": {
-            "displayName": "Multiselect",
+            "displayName": "Multi Select",
             "description": "Multiple item selector"
         },
         "RichTextEditor": {
@@ -1033,5 +1050,28 @@
             "text": "Back",
             "tip": "Back to Home"
         }
+    },
+    "datepicker": {
+        "months": {
+            "january": "January",
+            "february": "February",
+            "march": "March",
+            "april": "April",
+            "may": "May",
+            "june": "June",
+            "july": "July",
+            "august": "August",
+            "september": "September",
+            "october": "October",
+            "november": "November",
+            "december": "December"
+        }
+    },
+    "notifications": {
+        "empty": "No notifications",
+        "markAllRead": "Mark all as read",
+        "technicalDetails": "Technical details",
+        "copy": "Copy",
+        "copied": "Copied"
     }
 }

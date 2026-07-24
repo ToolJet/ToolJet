@@ -2,10 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { componentTypes } from '../WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
-import { toast } from 'react-hot-toast';
-import _, { debounce } from 'lodash';
+import _ from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
-import { findHighestLevelofSelection, getMouseDistanceFromParentDiv } from './Grid/gridUtils';
+import { getMouseDistanceFromParentDiv } from './Grid/gridUtils';
 import {
   CANVAS_WIDTHS,
   NO_OF_GRIDS,
@@ -16,7 +15,9 @@ import {
   TAB_CANVAS_PADDING,
   MODAL_CANVAS_PADDING,
   LISTVIEW_CANVAS_PADDING,
+  HOVER_CLICK_OUTLINE_BORDER,
 } from './appCanvasConstants';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -42,29 +43,40 @@ export const addNewWidgetToTheEditor = (
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const { e } = useGridStore.getState().getGhostDragPosition();
+  const { e, frozenTargetRect } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
 
   const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
     e,
     parentId === 'canvas' ? 'real-canvas' : parentId,
-    parentCanvasType
+    parentCanvasType,
+    frozenTargetRect
   );
-  let [left, top] = snapToGrid(subContainerWidth, _left, _top);
+  const scrollTop = realCanvasRef?.scrollTop;
+  const subContainerWidths = useGridStore.getState().subContainerWidths;
+  const targetCanvasId = parentId && parentId !== 'canvas' ? parentId : 'canvas';
+  const fallbackGridWidth = subContainerWidth ? subContainerWidth / NO_OF_GRIDS : subContainerWidths.canvas || 1;
+  const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
+  let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
 
   // Adjust widget width based on the dropping canvas width
-  const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
-  let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;
+  let width = Math.round((defaultWidth * mainCanvasGridWidth) / gridWidth);
 
   let customLayouts = undefined;
 
   if (moduleInfo) {
+    // Pin the dragged ModuleViewer to the module's current version's module_reference_id
+    // (a stable cross-instance id from the modules list). Falls back to '' (unpinned) if
+    // the module has no version yet. Users can opt into follow-latest semantics via the
+    // inspector ("Current branch" option writes '' back to value).
     componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
-    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
-    componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
+    componentData.definition.properties.moduleVersionId = {
+      value: moduleInfo.versionId ?? '',
+      versionName: moduleInfo.versionName ?? '',
+    };
     componentData.definition.properties.visibility = { value: true };
     customLayouts = moduleInfo?.moduleContainer?.layouts;
 
@@ -75,6 +87,19 @@ export const addNewWidgetToTheEditor = (
     for (const { name, default_value } of inputItems) {
       componentData.definition.properties[name] = { value: default_value };
     }
+
+    // Module editor's additional-action settings act as the instance defaults;
+    // the instance properties stay editable in the app (override). API responses
+    // snake_case definition keys (see input_items above), so check both forms.
+    const moduleContainerProperties = moduleInfo.moduleContainer?.component.definition.properties;
+    const copyModuleDefault = (snakeKey, camelKey) => {
+      const defaultValue = moduleContainerProperties?.[snakeKey]?.value ?? moduleContainerProperties?.[camelKey]?.value;
+      if (defaultValue !== undefined) {
+        componentData.definition.properties[camelKey] = { value: defaultValue };
+      }
+    };
+    copyModuleDefault('dynamic_height', 'dynamicHeight');
+    copyModuleDefault('collapse_when_hidden', 'collapseWhenHidden');
   }
 
   // Ensure minimum width
@@ -92,6 +117,40 @@ export const addNewWidgetToTheEditor = (
   }
 
   const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
+
+  // When dropping into a FlexContainer, use flex layout fields instead of grid fields
+  const parentComponentType =
+    parentId && parentId !== 'canvas' ? useStore.getState().getComponentTypeFromId(parentId) : null;
+  const isFlexContainerParent = parentComponentType === 'FlexContainer';
+
+  let activeLayoutData;
+  let nonActiveLayoutData;
+
+  if (isFlexContainerParent) {
+    const dropHeightPx = customLayouts ? customLayouts[currentLayout].height : defaultHeight;
+    const dropWidthPx = customLayouts ? customLayouts[currentLayout].width * gridWidth : defaultWidth * gridWidth;
+
+    const flexLayout = createDefaultFlexChildLayout({
+      widthPx: dropWidthPx,
+      height: dropHeightPx,
+    });
+    activeLayoutData = flexLayout;
+    nonActiveLayoutData = { ...flexLayout };
+  } else {
+    activeLayoutData = {
+      top: top,
+      left: left,
+      width: customLayouts ? customLayouts[currentLayout].width : width,
+      height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
+    };
+    nonActiveLayoutData = {
+      top: top,
+      left: left,
+      width: customLayouts ? customLayouts[nonActiveLayout].width : width,
+      height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
+    };
+  }
+
   const newComponent = {
     id: uuidv4(),
     name: componentName,
@@ -100,18 +159,8 @@ export const addNewWidgetToTheEditor = (
       parent: parentId === 'canvas' ? null : parentId,
     },
     layouts: {
-      [currentLayout]: {
-        top: top,
-        left: left,
-        width: customLayouts ? customLayouts[currentLayout].width : width,
-        height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
-      },
-      [nonActiveLayout]: {
-        top: top,
-        left: left,
-        width: customLayouts ? customLayouts[nonActiveLayout].width : width,
-        height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
-      },
+      [currentLayout]: activeLayoutData,
+      [nonActiveLayout]: nonActiveLayoutData,
     },
     withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),
   };
@@ -148,8 +197,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       const height = layout.height ? layout.height : componentMeta.defaultSize.height;
       const top = layout.top ? layout.top : 0;
       const left = layout.left ? layout.left : 0;
-      const newComponentDefinition = {
+      const newComponentProperties = {
         ...componentData.definition.properties,
+      };
+      const newComponentStyles = {
+        ...componentData.definition.styles,
       };
 
       if (_.isArray(properties) && properties.length > 0) {
@@ -158,11 +210,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
             ? `{{${customResolverVariable}.${accessorKey}}}`
             : defaultValue[prop] || '';
 
-          _.set(newComponentDefinition, prop, {
+          _.set(newComponentProperties, prop, {
             value: accessor,
           });
         });
-        _.set(componentData, 'definition.properties', newComponentDefinition);
+        _.set(componentData, 'definition.properties', newComponentProperties);
       }
 
       if (_.isArray(styles) && styles.length > 0) {
@@ -171,11 +223,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
             ? `{{${customResolverVariable}.${accessorKey}}}`
             : defaultValue[prop] || '';
 
-          _.set(newComponentDefinition, prop, {
+          _.set(newComponentStyles, prop, {
             value: accessor,
           });
         });
-        _.set(componentData, 'definition.styles', newComponentDefinition);
+        _.set(componentData, 'definition.styles', newComponentStyles);
       }
 
       if (currentLayout === 'mobile') {
@@ -240,10 +292,37 @@ export function computeComponentName(componentType, currentComponents) {
   return _componentName;
 }
 
-export const getAllChildComponents = (allComponents, parentId) => {
+// Walks the ancestor chain of `newParentId`; returns true if `componentId`
+// appears anywhere along it (assigning it as the new parent would close a
+// cycle), or if the chain is already cyclic (defensive — protects against
+// corrupt trees from past multiplayer races / git-sync merges).
+export const wouldCreateParentCycle = (componentId, newParentId, allComponents, getBaseParentId) => {
+  if (!componentId || !newParentId) return false;
+  const toBase = (id) => (getBaseParentId ? getBaseParentId(id) || id : id);
+  const visited = new Set();
+  let currentId = toBase(newParentId);
+  while (currentId) {
+    if (currentId === componentId) return true;
+    if (visited.has(currentId)) return true;
+    visited.add(currentId);
+    const parentRef = allComponents[currentId]?.component?.parent;
+    if (!parentRef) return false;
+    currentId = toBase(parentRef);
+  }
+  return false;
+};
+
+// Internal worker that threads `visited` across recursion. A cyclic parent
+// chain (multiplayer race / git-sync merge / legacy corrupt data) would
+// otherwise infinite-loop and freeze the editor.
+const collectChildComponents = (allComponents, parentId, visited) => {
+  if (!parentId || visited.has(parentId)) return [];
+  visited.add(parentId);
+
   const childComponents = [];
 
   Object.keys(allComponents).forEach((componentId) => {
+    if (visited.has(componentId)) return;
     const componentParentId = allComponents[componentId].component?.parent;
 
     const isParentTabORCalendar =
@@ -251,6 +330,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
       allComponents[parentId]?.component?.component === 'Container' ||
+      allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
       allComponents[parentId]?.component?.component === 'ModalV2';
 
@@ -262,8 +342,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
         childComponent.isParentTabORCalendar = true;
         childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
         childComponents.push(childComponent);
-        // Recursively find children of the current child component
-        const childrenOfChild = getAllChildComponents(allComponents, componentId);
+        const childrenOfChild = collectChildComponents(allComponents, componentId, visited);
         childComponents.push(...childrenOfChild);
       }
     }
@@ -274,8 +353,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
       childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
       childComponents.push(childComponent);
 
-      // Recursively find children of the current child component
-      const childrenOfChild = getAllChildComponents(allComponents, componentId);
+      const childrenOfChild = collectChildComponents(allComponents, componentId, visited);
       childComponents.push(...childrenOfChild);
     }
   });
@@ -283,431 +361,9 @@ export const getAllChildComponents = (allComponents, parentId) => {
   return childComponents;
 };
 
-const getSelectedText = () => {
-  let selectedText = '';
-  if (window.getSelection) {
-    selectedText = window.getSelection().toString();
-  } else if (window.document.selection) {
-    selectedText = document.selection.createRange().text;
-  }
-  return selectedText || null;
+export const getAllChildComponents = (allComponents, parentId) => {
+  return collectChildComponents(allComponents, parentId, new Set());
 };
-
-// TODO: Move this function to componentSlice
-export const copyComponents = ({ isCut = false, isCloning = false }) => {
-  const selectedText = window.getSelection()?.toString().trim();
-  if (selectedText) {
-    navigator.clipboard.writeText(selectedText);
-    return;
-  }
-
-  const selectedComponents = useStore.getState().getSelectedComponentsDefinition();
-  if (selectedComponents.length < 1) return getSelectedText();
-  const allComponents = useStore.getState().getCurrentPageComponents();
-  const currentPageId = useStore.getState().getCurrentPageId();
-  // if parent is selected, then remove the parent from the selected components
-  const filteredSelectedComponents = selectedComponents.filter((selectedComponent) => {
-    const parentComponentId = isChildOfTabsOrCalendar(selectedComponent, allComponents)
-      ? selectedComponent.component.parent.split('-').slice(0, -1).join('-')
-      : selectedComponent?.component?.parent;
-    if (parentComponentId) {
-      // Check if the parent component is also selected
-      const isParentSelected = selectedComponents.some((comp) => comp.id === parentComponentId);
-
-      // If the parent is selected, filter out the child component
-      if (isParentSelected) {
-        return false;
-      }
-    }
-    return true;
-  });
-
-  let newComponents = [],
-    newComponentObj = {},
-    addedComponentId = new Set();
-
-  for (let selectedComponent of filteredSelectedComponents) {
-    if (addedComponentId.has(selectedComponent.id)) continue;
-    const events = useStore.getState().eventsSlice.getEventsByComponentsId(selectedComponent.id);
-    const component = {
-      component: allComponents[selectedComponent.id]?.component,
-      layouts: allComponents[selectedComponent.id]?.layouts,
-      parent: allComponents[selectedComponent.id]?.component?.parent,
-      id: selectedComponent.id,
-      events,
-    };
-    // Skip if this component has already been processed
-    addedComponentId.add(selectedComponent.id);
-
-    newComponents.push(component);
-    const children = getAllChildComponents(allComponents, selectedComponent.id);
-
-    if (children.length > 0) {
-      newComponents.push(...children);
-    }
-
-    newComponentObj = {
-      newComponents,
-      isCut,
-      isCloning,
-      pageId: currentPageId,
-    };
-  }
-  useStore.getState().setLastCanvasClickPosition(null);
-  if (isCloning) {
-    const parentId = allComponents[selectedComponents[0]?.id]?.parent ?? undefined;
-    debouncedPasteComponents(parentId, newComponentObj);
-    toast.success('Component cloned succesfully');
-  } else if (isCut) {
-    navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    useStore.getState().deleteComponents(
-      selectedComponents.map((component) => component.id),
-      'canvas',
-      { isCut }
-    );
-  } else {
-    navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    const successMessage =
-      newComponentObj?.newComponents?.length > 1 ? 'Components copied successfully' : 'Component copied successfully';
-    toast.success(successMessage);
-  }
-};
-
-const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-  const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
-  const parentComponent = allComponents?.[parentId];
-  if (parentComponent) {
-    return (
-      parentComponent.component.component === 'Tabs' ||
-      parentComponent.component.component === 'Calendar' ||
-      parentComponent.component.component === 'Container' ||
-      parentComponent.component.component === 'Form' ||
-      parentComponent.component.component === 'ModalV2'
-    );
-  }
-
-  return false;
-};
-
-function calculateComponentPosition(component, existingComponents, layout, targetParentId) {
-  const MAX_ITERATIONS = 1000;
-  let safetyCounter = 0;
-
-  const parentId = component.component?.parent ? component.component.parent : 'canvas';
-  const gridWidth = useGridStore.getState().subContainerWidths[parentId];
-  const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
-
-  // Initialize position either from click or component layout
-  let newLeft = component.layouts[layout].left;
-  let newTop = component.layouts[layout].top;
-
-  if (lastCanvasClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
-    newLeft = Math.round(lastCanvasClickPosition.x / gridWidth);
-    newTop = Math.round(lastCanvasClickPosition.y / 10) * 10;
-  }
-  // Ensure component stays within bounds
-  if (newLeft + component.layouts[layout].width > NO_OF_GRIDS) {
-    newLeft = NO_OF_GRIDS - component.layouts[layout].width;
-  }
-  newLeft = Math.max(0, newLeft);
-  newTop = Math.max(0, newTop);
-
-  // Sort components once for efficient overlap checking
-  const sortedComponents = existingComponents.sort((a, b) => {
-    return a.layouts[layout].top - b.layouts[layout].top;
-  });
-
-  let foundSpace = false;
-  while (!foundSpace && safetyCounter < MAX_ITERATIONS) {
-    foundSpace = true;
-    safetyCounter++;
-
-    const hasOverlap = sortedComponents.some((existing) => {
-      // Skip distant components
-      if (Math.abs(existing.layouts[layout].top - newTop) > 1000) {
-        return false;
-      }
-
-      const existingTop = existing.layouts[layout].top;
-      const existingBottom = existingTop + existing.layouts[layout].height;
-      const existingLeft = existing.layouts[layout].left;
-      const existingRight = existingLeft + existing.layouts[layout].width;
-      const newBottom = newTop + component.layouts[layout].height;
-      const newRight = newLeft + component.layouts[layout].width;
-
-      return newTop < existingBottom && newBottom > existingTop && newLeft < existingRight && newRight > existingLeft;
-    });
-
-    if (hasOverlap) {
-      foundSpace = false;
-      newTop += 10;
-    }
-  }
-
-  // Safety fallback
-  if (safetyCounter >= MAX_ITERATIONS) {
-    console.warn('Position calculation safety limit reached');
-    newTop = 0;
-    newLeft = 0;
-  }
-
-  return { newTop, newLeft };
-}
-
-function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
-  // Filter top-level components
-  const parentComponents = components.filter(
-    (c) => !c.component?.parent || c.component?.component?.parent !== targetParentId
-  );
-
-  if (parentComponents.length === 0) {
-    return components.map((component) => ({
-      id: component.id,
-      top: component.layouts[layout].top,
-      left: component.layouts[layout].left,
-    }));
-  }
-  // Calculate group dimensions
-  const bounds = parentComponents.reduce(
-    (bounds, component) => {
-      const compLayout = component.layouts[layout];
-      return {
-        minTop: Math.min(bounds.minTop, compLayout.top),
-        minLeft: Math.min(bounds.minLeft, compLayout.left),
-        maxRight: Math.max(bounds.maxRight, compLayout.left + compLayout.width),
-        maxBottom: Math.max(bounds.maxBottom, compLayout.top + compLayout.height),
-      };
-    },
-    { minTop: Infinity, minLeft: Infinity, maxRight: -Infinity, maxBottom: -Infinity }
-  );
-  const groupDimensions = {
-    width: bounds.maxRight - bounds.minLeft,
-    height: bounds.maxBottom - bounds.minTop,
-  };
-
-  // Create a virtual component representing the entire group
-  const virtualGroupComponent = {
-    layouts: {
-      [layout]: {
-        top: bounds.minTop,
-        left: bounds.minLeft,
-        width: groupDimensions.width,
-        height: groupDimensions.height,
-      },
-    },
-  };
-
-  // Use calculateComponentPosition to find a suitable position for the group
-  const { newTop, newLeft } = calculateComponentPosition(
-    virtualGroupComponent,
-    existingComponents,
-    layout,
-    targetParentId
-  );
-
-  // Calculate position deltas
-  const deltaTop = newTop - bounds.minTop;
-  const deltaLeft = newLeft - bounds.minLeft;
-
-  // Return updated positions
-  return components.map((component) => {
-    const compLayout = component.layouts[layout];
-    const isPasteTargetParent = component.component?.component?.parent === targetParentId;
-    // Only update position for top-level components
-    if (!component.component?.parent || !isPasteTargetParent) {
-      return {
-        id: component.id,
-        top: compLayout.top + deltaTop,
-        left: compLayout.left + deltaLeft,
-      };
-    }
-
-    // Keep child components in their relative positions
-    return {
-      id: component.id,
-      top: compLayout.top,
-      left: compLayout.left,
-    };
-  });
-}
-
-export const debouncedPasteComponents = debounce(pasteComponents, 300);
-
-export function pasteComponents(targetParentId, copiedComponentObj) {
-  const finalComponents = [];
-  const componentMap = {};
-  let parentComponent = undefined;
-  const components = useStore.getState().getCurrentPageComponents();
-  const currentPageId = useStore.getState().getCurrentPageId();
-  const { isCut = false, pageId, isCloning = false, newComponents: pastedComponents = [] } = copiedComponentObj;
-  const isGroup = findHighestLevelofSelection(pastedComponents).length > 1;
-
-  // Prevent pasting if the parent subcontainer was deleted during a cut operation
-  if (
-    targetParentId &&
-    // Check if targetParentId is deleted from the components
-    !Object.keys(components).find(
-      (key) =>
-        targetParentId === key ||
-        (components?.[key]?.component.component === 'Tabs' &&
-          targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
-        (['Container', 'Form', 'ModalV2'].includes(components?.[key]?.component.component) &&
-          ['header', 'footer'].some((section) => targetParentId.includes(section)))
-    )
-  ) {
-    return;
-  }
-  if (targetParentId) {
-    const id = Object.keys(components).filter((key) => targetParentId.startsWith(key));
-    parentComponent = components[id];
-  }
-
-  const componentIdMappingSet = new Map(),
-    formComponentIds = new Set();
-
-  pastedComponents.forEach((component) => {
-    component = deepClone(component);
-    const newComponentId = isCut ? component.id : uuidv4();
-    if (!isCut) componentIdMappingSet.set(component.id, newComponentId);
-    if (component.component.component === 'Form') formComponentIds.add(newComponentId);
-    const componentName = computeComponentName(component.component.component, {
-      ...components,
-      ...Object.fromEntries(finalComponents.map((component) => [component.id, component])),
-    });
-    const parentRef = component.isParentTabORCalendar
-      ? component.component.parent.split('-').slice(0, -1).join('-')
-      : component.component.parent;
-    const isParentAlsoCopied = parentRef && componentMap[parentRef];
-
-    componentMap[component.id] = newComponentId;
-    let isChild = isParentAlsoCopied ? component.component.parent : targetParentId;
-
-    const componentMeta = componentTypes.find((comp) => comp.component === component?.component?.component);
-    const componentData = _.merge({}, componentMeta, component.component);
-    if (targetParentId && !componentData.parent) {
-      isChild = component.component.parent;
-    }
-
-    if (!parentComponent && !isParentAlsoCopied && !isCloning) {
-      isChild = undefined;
-      componentData.parent = null;
-    }
-    if (parentComponent && !component.isParentTabORCalendar) {
-      componentData.parent = isParentAlsoCopied ?? targetParentId;
-    } else if (isChild && component.isParentTabORCalendar) {
-      const parentId = component.component.parent.split('-').slice(0, -1).join('-');
-      const childTabId = component.component.parent.split('-').at(-1);
-      componentData.parent = `${componentMap[parentId]}-${childTabId}`;
-    } else if (isChild) {
-      const isParentInMap = componentMap[isChild] !== null;
-      componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
-    }
-
-    const currentLayout = useStore.getState().currentLayout;
-
-    componentData.definition.others.showOnDesktop.value = currentLayout === 'desktop' ? `{{true}}` : `{{false}}`;
-    componentData.definition.others.showOnMobile.value = currentLayout === 'mobile' ? `{{true}}` : `{{false}}`;
-
-    // Adjust width if parent changed
-    let width = component.layouts[currentLayout].width;
-
-    component.layouts[currentLayout] = {
-      ...component.layouts[currentLayout],
-      width,
-    };
-
-    const newComponent = {
-      component: {
-        ...componentData,
-        name: componentName,
-      },
-      layouts: component.layouts,
-      id: newComponentId,
-      name: componentName,
-      events: component.events,
-    };
-
-    finalComponents.push(newComponent);
-  });
-  const canAddToParent = useStore.getState().canAddToParent;
-  const fc = finalComponents.filter((component) => {
-    return canAddToParent(component?.component.parent, component?.component.component);
-  });
-  const filteredFinalComponents = fc.map((component) => {
-    if (formComponentIds.has(component.id)) {
-      const fields = component.component.definition?.properties?.fields?.value || [];
-      fields.forEach((field) => {
-        field.componentId = componentIdMappingSet.get(field.componentId) || field.componentId;
-      });
-    }
-    return component;
-  });
-
-  const filteredComponentsCount = filteredFinalComponents.length;
-
-  if (currentPageId === pageId) {
-    const components = useStore.getState().getCurrentPageComponents();
-    const finalComponentWithUpdatedLayout = filteredFinalComponents.map((component) => {
-      const layout = useStore.getState().currentLayout;
-      let existingComponents = [];
-
-      // Include all components for position calculation
-      if (component.component.parent) {
-        existingComponents = Object.values(components).filter((c) => c.component.parent === component.component.parent);
-      } else {
-        existingComponents = Object.values(components);
-      }
-
-      // Add already processed components to existingComponents
-      const processedComponents = finalComponentWithUpdatedLayout || [];
-      existingComponents = [...existingComponents, ...processedComponents];
-      if (isGroup) {
-        // Handle group positioning
-        const groupPositions = calculateGroupPosition(
-          filteredFinalComponents,
-          existingComponents,
-          layout,
-          targetParentId
-        );
-        const position = groupPositions.find((pos) => pos.id === component.id);
-
-        return {
-          ...component,
-          layouts: {
-            ...component.layouts,
-            [layout]: {
-              ...component.layouts[layout],
-              top: position.top,
-              left: position.left,
-            },
-          },
-        };
-      } else {
-        // Handle single component positioning
-        const { newTop, newLeft } = calculateComponentPosition(component, existingComponents, layout, targetParentId);
-        return {
-          ...component,
-          layouts: {
-            ...component.layouts,
-            [layout]: {
-              ...component.layouts[layout],
-              top: newTop,
-              left: newLeft,
-            },
-          },
-        };
-      }
-    });
-
-    useStore.getState().pasteComponents(finalComponentWithUpdatedLayout);
-  } else {
-    useStore.getState().pasteComponents(filteredFinalComponents);
-  }
-
-  filteredComponentsCount > 0 &&
-    !isCloning &&
-    toast.success(`Component${filteredComponentsCount > 1 ? 's' : ''} pasted successfully`);
-}
 
 export const getCanvasWidth = (moduleId = 'canvas') => {
   if (moduleId !== 'canvas') {
@@ -743,7 +399,10 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
   if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
   else if (
     slotName &&
-    (parentComponent === 'Form' || parentComponent === 'Container' || parentComponent === 'ModalV2')
+    (parentComponent === 'Form' ||
+      parentComponent === 'Container' ||
+      parentComponent === 'Accordion' ||
+      parentComponent === 'ModalV2')
   ) {
     return `${parentId}-${slotName}`;
   }
@@ -760,6 +419,9 @@ export const getParentWidgetFromId = (parentType, parentId) => {
   }
   return parentType;
 };
+
+export const getDropTargetLabel = (widgetType, slotType) =>
+  slotType === 'header' || slotType === 'footer' ? slotType : widgetType;
 
 export const getTabId = (parentId) => {
   return parentId.split('-').slice(0, -1).join('-');
@@ -779,26 +441,47 @@ export const getSubContainerIdWithSlots = (parentId) => {
 
 export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
   let padding = 2; //Need to update this 2 to correct value for other subcontainers
-  if (componentType === 'Container' || componentType === 'Form') {
-    padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  if (
+    componentType === 'Container' ||
+    componentType === 'Form' ||
+    componentType === 'Accordion' ||
+    componentType === 'FlexContainer'
+  ) {
+    padding =
+      2 * CONTAINER_FORM_CANVAS_PADDING +
+      2 * SUBCONTAINER_CANVAS_BORDER_WIDTH +
+      2 * BOX_PADDING +
+      2 * HOVER_CLICK_OUTLINE_BORDER;
   }
-  // if (componentType === 'Tabs') {
-  //   padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
-  // }
   if (componentType === 'ModalV2') {
     const isModalHeader = componentId?.includes('header');
     if (isModalHeader) {
-      const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
-        ?.hideCloseButton;
-      padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
+      const isModalHeaderCloseBtnHidden = useStore.getState().getResolvedComponent(componentId.slice(0, 36))
+        ?.properties?.hideCloseButton;
+      padding = 2 * (MODAL_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER) + (isModalHeaderCloseBtnHidden ? 0 : 56);
     } else {
-      padding = 2 * MODAL_CANVAS_PADDING;
+      padding = 2 * MODAL_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER;
     }
   }
   if (componentType === 'Listview') {
-    padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
+    padding = 2 * LISTVIEW_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 5 + 2 * HOVER_CLICK_OUTLINE_BORDER; // 5 is accounting for scrollbar
   }
+  if (componentType === 'Tabs') {
+    padding =
+      2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * HOVER_CLICK_OUTLINE_BORDER;
+  }
+
   return canvasWidth - padding;
+};
+
+export const getSubContainerHeightAfterPadding = (componentType) => {
+  let height = '100%';
+  if (componentType === 'Tabs') {
+    height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px + 2.5px)`;
+  } else {
+    height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px)`;
+  }
+  return height;
 };
 
 export const addDefaultButtonIdToForm = (formComponent, defaultChildComponents) => {

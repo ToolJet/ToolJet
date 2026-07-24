@@ -1,0 +1,30 @@
+.canvas-component {
+   .code-editor-component {
+        .cm-scroller {
+            background-color: var(--cc-surface1-surface);
+        }
+        .cm-editor  {
+            border: none;
+        }
+
+        .cm-content {
+            background-color: var(--cc-code-editor-background-color);
+        }
+   }
+
+   .code-editor-widget {
+    background-color: var(--cc-surface1-surface) !important;
+   }
+   
+}
+
+.dynamic-height-target {
+    .canvas-component {
+        .code-editor-widget {
+            .cm-scroller {
+                overflow-y: hidden !important;
+                min-height: var(--cc-code-editor-min-height) !important;
+            }
+        }
+    }
+}

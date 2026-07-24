@@ -1,5 +1,6 @@
 import React from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
@@ -9,9 +10,9 @@ import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-
 const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
+  'Pagination',
   'Container',
   'TextInput',
   'TextArea',
@@ -25,6 +26,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'DropdownV2',
   'MultiselectV2',
   'Button',
+  'AudioRecorder',
+  'Camera',
   'RichTextEditor',
   'Image',
   'CodeEditor',
@@ -38,7 +41,23 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RangeSliderV2',
   'Link',
   'FilePicker',
+  'FileInput',
   'Listview',
+  'Statistics',
+  'StarRating',
+  'CircularProgressBar',
+  'Kanban',
+  'Html',
+  'TagsInput',
+  'JSONExplorer',
+  'JSONEditor',
+  'ProgressBar',
+  'IFrame',
+  'Accordion',
+  'ReorderableList',
+  'ColorPicker',
+  'FileButton',
+  'FlexContainer',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -57,7 +76,30 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Tabs: 'Data',
   RangeSlider: 'Data',
   Link: 'Data',
+  PopoverMenu: 'Data',
+  Statistics: 'Data',
+  StarRating: 'Data',
+  CircularProgressBar: 'Data',
+  Kanban: 'Board configuration',
+  ProgressBar: 'Data',
+  AudioRecorder: 'Content',
+  Camera: 'Content',
+  Accordion: 'Data',
+  JSONExplorer: 'Data',
+  JSONEditor: 'Data',
+  ColorPicker: 'Data',
+  FileButton: 'Data',
+  FlexContainer: 'Layout',
 };
+
+// Widgets whose tooltip lives in `properties` (additionalActions section) AND
+// whose tooltip we explicitly moved out of `general` in this PR. Suppressing
+// the legacy General-section Tooltip field for these prevents the duplicate
+// Tooltip UX (one in General, one in Additional Actions). For other widgets
+// in SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY (Button et al.), the pre-existing
+// duplicate is left as-is — a broader cleanup is tracked for phase 2 alongside
+// the migration of the remaining 13 widgets out of the General-section path.
+const SUPPRESS_GENERAL_TOOLTIP_FOR = ['ModalV2', 'Container'];
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -70,6 +112,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     apps,
     components,
     pages,
+    selectedComponentId,
   } = restProps;
 
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
@@ -106,7 +149,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     validations,
     darkMode,
     pages,
-    additionalActions
+    additionalActions,
+    selectedComponentId
   );
 
   return <Accordion items={accordionItems} />;
@@ -127,7 +171,8 @@ export const baseComponentProperties = (
   validations,
   darkMode,
   pages,
-  additionalActions
+  additionalActions,
+  selectedComponentId
 ) => {
   // Add widget title to section key to filter that property section from specified widgets' settings
   const accordionFilters = {
@@ -139,6 +184,7 @@ export const baseComponentProperties = (
     ),
     General: [
       'Modal',
+      'Pagination',
       'TextInput',
       'PasswordInput',
       'TextArea',
@@ -159,7 +205,23 @@ export const baseComponentProperties = (
       'VerticalDivider',
       'Link',
       'FilePicker',
+      'FileInput',
       'Tabs',
+      'Statistics',
+      'StarRating',
+      'CircularProgressBar',
+      'Kanban',
+      'ProgressBar',
+      'AudioRecorder',
+      'Camera',
+      'JSONExplorer',
+      'JSONEditor',
+      'IFrame',
+      'Accordion',
+      'ColorPicker',
+      'FileButton',
+      'Listview',
+      'FlexContainer',
     ],
     Layout: [],
   };
@@ -250,8 +312,34 @@ export const baseComponentProperties = (
       </>
     ),
   });
+  // Skip the legacy General-section Tooltip field for widgets whose tooltip
+  // we moved into `properties` (additionalActions). Without this, ModalV2
+  // and Container would render two "Tooltip" fields in the inspector: a stale
+  // one in General (no longer read by the renderer) and the working one in
+  // Additional Actions. See SUPPRESS_GENERAL_TOOLTIP_FOR at the top of the file.
+  if (!SUPPRESS_GENERAL_TOOLTIP_FOR.includes(component?.component?.component)) {
+    items.push({
+      title: `${i18next.t('widget.common.general', 'General')}`,
+      isOpen: true,
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            layoutPropertyChanged,
+            dataQueries,
+            'tooltip',
+            'general',
+            currentState,
+            allComponents
+          )}
+        </>
+      ),
+    });
+  }
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
     isOpen: true,
     children: additionalActions?.map((property) => {
@@ -299,6 +387,7 @@ export const baseComponentProperties = (
       </>
     ),
   });
+
   return items.filter(
     (item) => !(item.title in accordionFilters && accordionFilters[item.title].includes(componentMeta.component))
   );

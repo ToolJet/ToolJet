@@ -3,7 +3,7 @@ name: Update LTS Table
 on:
   workflow_dispatch:  # manually triggered
   schedule:
-    - cron: '30 5 * * 1,4'
+    - cron: '0 9 * * 1,3,5'  # 9am UTC — Monday, Wednesday, Friday
 
 jobs:
   update-lts:
@@ -14,7 +14,7 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: documentation
 
       - name: 🛠 Setup Git
         run: |
@@ -29,7 +29,19 @@ jobs:
       - name: 🧠 Run regenerate_lts_table.sh
         run: bash ./docs/regenerate_lts_table.sh
 
+      - name: 🔍 Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No new patch found — skipping PR."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "✅ New patch detected — creating PR."
+          fi
+
       - name: 📦 Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
@@ -37,9 +49,10 @@ jobs:
           branch: auto/update-lts-${{ github.run_id }}
           title: "docs: update LTS version table"
           body: "Automated update of the LTS version table from DockerHub."
-          base: develop
+          base: documentation
 
       - name: 🤖 Auto-merge the PR (fallback if needed)
+        if: steps.changes.outputs.changed == 'true'
         run: |
           echo "ℹ️  Attempting auto-merge of PR #${PR_NUMBER}..."
           gh pr merge --squash --auto "$PR_NUMBER" --repo ToolJet/ToolJet || {

@@ -8,7 +8,7 @@ import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
 import { OrganizationConstantType } from './constants';
 import { OrganizationConstantRepository } from './repository';
-const secretValue = '**********';
+const secretValue = '********';
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
   constructor(
@@ -28,26 +28,23 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
-          // Skip processing values if type is SECRET and decryptSecretValue is false
-          if (constant.type === OrganizationConstantType.SECRET && !decryptSecretValue) {
-            return {
-              name: constant.constantName,
-            };
-          }
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
-              const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
               let resolvedValue = '';
+
+              const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
               if (value) {
                 if (constant.type === OrganizationConstantType.SECRET) {
                   resolvedValue = decryptSecretValue
                     ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
-                    : secretValue;
+                    : value.value
+                    ? secretValue
+                    : '';
                 } else {
                   resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
                     organizationId,
                     value.value
-                  ); // Constant type values are always decrypted
+                  );
                 }
               }
 
@@ -68,7 +65,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
         })
       );
 
-      return constantsWithValues;
+      return constantsWithValues.filter(Boolean);
     });
   }
 

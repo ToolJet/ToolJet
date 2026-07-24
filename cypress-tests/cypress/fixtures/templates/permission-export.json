@@ -1,0 +1,919 @@
+{
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "id": "b1da34b0-d379-4a16-b538-c53988ce9cb3",
+          "type": "front-end",
+          "name": "Permission",
+          "slug": "b1da34b0-d379-4a16-b538-c53988ce9cb3",
+          "isPublic": null,
+          "isMaintenanceOn": false,
+          "icon": "apps",
+          "organizationId": "440f6d17-7b67-4a2f-b936-b097ae4987f5",
+          "currentVersionId": null,
+          "userId": "71006fd7-a521-4a70-a9e8-50bf1b2feb7a",
+          "workflowApiToken": null,
+          "workflowEnabled": false,
+          "isInitialisedFromPrompt": false,
+          "appGeneratedFromPrompt": false,
+          "appBuilderMode": "visual",
+          "aiGenerationMetadata": null,
+          "createdAt": "2025-10-23T07:54:34.158Z",
+          "creationMode": "DEFAULT",
+          "updatedAt": "2025-10-23T07:54:34.158Z",
+          "__loaded": true,
+          "editingVersion": {
+            "id": "65f4d96c-86e1-4fd1-87ed-fec4402459a6",
+            "name": "v1",
+            "definition": null,
+            "globalSettings": {
+              "appInMaintenance": false,
+              "canvasMaxWidth": 100,
+              "canvasMaxWidthType": "%",
+              "canvasMaxHeight": 2400,
+              "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+              "backgroundFxQuery": "",
+              "appMode": "light"
+            },
+            "pageSettings": null,
+            "showViewerNavigation": true,
+            "homePageId": "576f5562-e90c-4e74-80ad-52f324ebe385",
+            "appId": "b1da34b0-d379-4a16-b538-c53988ce9cb3",
+            "currentEnvironmentId": "a447b425-2e91-4d4f-b7a5-4c5030727570",
+            "promotedFrom": null,
+            "createdAt": "2025-10-23T07:54:34.239Z",
+            "updatedAt": "2025-10-23T07:54:34.158Z"
+          },
+          "components": [],
+          "pages": [
+            {
+              "id": "576f5562-e90c-4e74-80ad-52f324ebe385",
+              "name": "Home",
+              "handle": "home",
+              "index": 1,
+              "disabled": null,
+              "hidden": null,
+              "icon": null,
+              "createdAt": "2025-10-23T07:54:34.158Z",
+              "updatedAt": "2025-10-23T07:54:34.559Z",
+              "autoComputeLayout": true,
+              "appVersionId": "65f4d96c-86e1-4fd1-87ed-fec4402459a6",
+              "pageGroupIndex": 1,
+              "pageGroupId": null,
+              "isPageGroup": false,
+              "url": null,
+              "openIn": "new_tab",
+              "type": "default",
+              "appId": ""
+            }
+          ],
+          "events": [],
+          "dataQueries": [
+            {
+              "id": "71860d56-0183-4b6d-abd3-a883d6b95f9f",
+              "name": "user2-Datasource",
+              "options": {
+                "method": "get",
+                "url": "",
+                "url_params": [],
+                "headers": [],
+                "cookies": [],
+                "body": [],
+                "json_body": null,
+                "body_toggle": false,
+                "retry_network_errors": true,
+                "transformationLanguage": "javascript",
+                "enableTransformation": false
+              },
+              "dataSourceId": "187eecfc-804a-4eb2-acce-790b7d1ae571",
+              "appVersionId": "65f4d96c-86e1-4fd1-87ed-fec4402459a6",
+              "createdAt": "2025-10-23T07:54:48.034Z",
+              "updatedAt": "2025-10-23T07:58:20.699Z"
+            },
+            {
+              "id": "4576378e-ca60-450f-8624-08fecb61311d",
+              "name": "user1-Datasource",
+              "options": {
+                "method": "get",
+                "url": "",
+                "url_params": [],
+                "headers": [],
+                "cookies": [],
+                "body": [],
+                "json_body": null,
+                "body_toggle": false,
+                "retry_network_errors": true,
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "params": [
+                  {
+                    "key": "",
+                    "value": ""
+                  }
+                ]
+              },
+              "dataSourceId": "cbc2e4ba-d18d-419e-ad67-bbb550372ccc",
+              "appVersionId": "65f4d96c-86e1-4fd1-87ed-fec4402459a6",
+              "createdAt": "2025-10-23T07:55:00.088Z",
+              "updatedAt": "2025-10-23T07:58:17.137Z"
+            }
+          ],
+          "dataSources": [
+            {
+              "id": "cbc2e4ba-d18d-419e-ad67-bbb550372ccc",
+              "name": "datasource 1",
+              "kind": "restapi",
+              "type": "default",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "440f6d17-7b67-4a2f-b936-b097ae4987f5",
+              "scope": "global",
+              "createdAt": "2025-10-23T07:52:51.485Z",
+              "updatedAt": "2025-10-23T07:53:56.589Z"
+            },
+            {
+              "id": "187eecfc-804a-4eb2-acce-790b7d1ae571",
+              "name": "datasource 2",
+              "kind": "restapi",
+              "type": "default",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "440f6d17-7b67-4a2f-b936-b097ae4987f5",
+              "scope": "global",
+              "createdAt": "2025-10-23T07:52:55.888Z",
+              "updatedAt": "2025-10-23T07:54:07.279Z"
+            }
+          ],
+          "appVersions": [
+            {
+              "id": "65f4d96c-86e1-4fd1-87ed-fec4402459a6",
+              "name": "v1",
+              "definition": null,
+              "globalSettings": {
+                "appInMaintenance": false,
+                "canvasMaxWidth": 100,
+                "canvasMaxWidthType": "%",
+                "canvasMaxHeight": 2400,
+                "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+                "backgroundFxQuery": "",
+                "appMode": "light"
+              },
+              "pageSettings": null,
+              "showViewerNavigation": true,
+              "homePageId": "576f5562-e90c-4e74-80ad-52f324ebe385",
+              "appId": "b1da34b0-d379-4a16-b538-c53988ce9cb3",
+              "currentEnvironmentId": "a447b425-2e91-4d4f-b7a5-4c5030727570",
+              "promotedFrom": null,
+              "createdAt": "2025-10-23T07:54:34.239Z",
+              "updatedAt": "2025-10-23T07:54:34.158Z"
+            }
+          ],
+          "appEnvironments": [
+            {
+              "id": "a447b425-2e91-4d4f-b7a5-4c5030727570",
+              "organizationId": "440f6d17-7b67-4a2f-b936-b097ae4987f5",
+              "name": "development",
+              "isDefault": false,
+              "priority": 1,
+              "enabled": true,
+              "createdAt": "2025-10-23T06:53:18.274Z",
+              "updatedAt": "2025-10-23T06:53:18.274Z"
+            },
+            {
+              "id": "997be53a-9036-436e-b895-b8bdcb9fe5df",
+              "organizationId": "440f6d17-7b67-4a2f-b936-b097ae4987f5",
+              "name": "staging",
+              "isDefault": false,
+              "priority": 2,
+              "enabled": true,
+              "createdAt": "2025-10-23T06:53:18.281Z",
+              "updatedAt": "2025-10-23T06:53:18.281Z"
+            },
+            {
+              "id": "c880083f-4d77-46d0-b10d-2fc1d4b1633f",
+              "organizationId": "440f6d17-7b67-4a2f-b936-b097ae4987f5",
+              "name": "production",
+              "isDefault": true,
+              "priority": 3,
+              "enabled": true,
+              "createdAt": "2025-10-23T06:53:18.282Z",
+              "updatedAt": "2025-10-23T06:53:18.282Z"
+            }
+          ],
+          "dataSourceOptions": [
+            {
+              "id": "4cfae2f3-c395-4516-a098-6be77db2a7ea",
+              "dataSourceId": "cbc2e4ba-d18d-419e-ad67-bbb550372ccc",
+              "environmentId": "997be53a-9036-436e-b895-b8bdcb9fe5df",
+              "options": {
+                "url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "5317aae9-cc51-442d-b74d-e587b19a77ae",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "455d6b04-5f7f-495d-ae40-1945ff162651",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "60d0245d-3cdd-49ed-985e-547b7c84c66f",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-23T07:52:51.489Z",
+              "updatedAt": "2025-10-23T07:52:51.503Z"
+            },
+            {
+              "id": "774b8fe4-567b-4e05-b83c-88186b536cd6",
+              "dataSourceId": "cbc2e4ba-d18d-419e-ad67-bbb550372ccc",
+              "environmentId": "a447b425-2e91-4d4f-b7a5-4c5030727570",
+              "options": {
+                "url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "a73b7e1f-d0d5-48dd-8f06-2097a7788c90",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "bd969afc-0178-4d4e-8da3-62300ce90727",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "a28342d3-1627-4d3e-bbc2-0a23d4b43d6a",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-23T07:52:51.489Z",
+              "updatedAt": "2025-10-23T07:53:56.588Z"
+            },
+            {
+              "id": "efc23dca-508c-419e-9225-f8de80205863",
+              "dataSourceId": "cbc2e4ba-d18d-419e-ad67-bbb550372ccc",
+              "environmentId": "c880083f-4d77-46d0-b10d-2fc1d4b1633f",
+              "options": {
+                "url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "e173c374-5d01-4b1f-9128-b12b03366f9b",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "6d99f634-8d81-4e91-9267-2ef74bccc0fc",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "e918adfc-bc60-4743-80b3-29f37b45e57e",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-23T07:52:51.489Z",
+              "updatedAt": "2025-10-23T07:52:51.498Z"
+            },
+            {
+              "id": "a572185d-0e38-4942-bb4c-e8850451302b",
+              "dataSourceId": "187eecfc-804a-4eb2-acce-790b7d1ae571",
+              "environmentId": "997be53a-9036-436e-b895-b8bdcb9fe5df",
+              "options": {
+                "url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "1227833c-dd48-40ec-a3b1-6c8fabfb684c",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "56c0b8fc-0fab-4e3e-8a31-9307b1207fa7",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "7f16ed95-5a67-4079-82ad-5b6e13ac3dec",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-23T07:52:55.891Z",
+              "updatedAt": "2025-10-23T07:52:55.904Z"
+            },
+            {
+              "id": "054b164b-ee8d-42f3-acfc-e3fa1befcee4",
+              "dataSourceId": "187eecfc-804a-4eb2-acce-790b7d1ae571",
+              "environmentId": "a447b425-2e91-4d4f-b7a5-4c5030727570",
+              "options": {
+                "url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "ba50fa12-44ed-4a07-b3e3-b5a7529ebe88",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "e8b0cc23-c489-4382-8e01-4a6c80051797",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "5c67fb8b-690f-41ea-a1f4-3338ce1146a7",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-23T07:52:55.891Z",
+              "updatedAt": "2025-10-23T07:54:07.279Z"
+            },
+            {
+              "id": "acc1a260-c00d-4da9-b3c6-76c339978834",
+              "dataSourceId": "187eecfc-804a-4eb2-acce-790b7d1ae571",
+              "environmentId": "c880083f-4d77-46d0-b10d-2fc1d4b1633f",
+              "options": {
+                "url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "efe63edf-d2ec-4b54-bed0-400d0d3234b4",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "fbc8c6df-9ef2-47c4-807f-befef882f541",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "a05bbe06-d25d-4231-a81b-50bcbb1e5113",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-23T07:52:55.891Z",
+              "updatedAt": "2025-10-23T07:52:55.897Z"
+            }
+          ],
+          "schemaDetails": {
+            "multiPages": true,
+            "multiEnv": true,
+            "globalDataSources": true
+          },
+          "modules": []
+        }
+      }
+    }
+  ],
+  "tooljet_version": "3.20.25-ee-lts"
+}

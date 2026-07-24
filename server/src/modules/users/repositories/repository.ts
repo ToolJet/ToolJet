@@ -19,6 +19,7 @@ import { OrganizationUser } from '@entities/organization_user.entity';
 import { isSuperAdmin } from '@helpers/utils.helper';
 import * as uuid from 'uuid';
 import { USER_ROLE } from '@modules/group-permissions/constants';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 
 type UserFilterOptions = { searchText?: string; status?: string; page?: number };
 
@@ -45,7 +46,7 @@ export class UserRepository extends Repository<User> {
     let whereOptions: FindOptionsWhere<User> | FindOptionsWhere<User>[] = findOptions;
 
     if (options?.searchText) {
-      const searchLower = options.searchText.toLowerCase();
+      const searchLower = options.searchText.trim().toLowerCase();
 
       // Create an array of OR conditions
       whereOptions = [
@@ -53,8 +54,21 @@ export class UserRepository extends Repository<User> {
         { ...findOptions, firstName: ILike(`%${searchLower}%`) },
         { ...findOptions, lastName: ILike(`%${searchLower}%`) },
       ];
-    }
 
+      const parts = searchLower.split(/\s+/);
+
+      if (parts.length > 1) {
+        const firstWord = parts[0];
+        const lastWord = parts.slice(1).join(' ');
+
+        whereOptions.push({
+          ...findOptions,
+          firstName: ILike(`%${firstWord}%`),
+          lastName: ILike(`%${lastWord}%`),
+        });
+      }
+    }
+    
     const [items, total] = await this.manager.findAndCount(User, {
       select: {
         id: true,
@@ -181,6 +195,31 @@ export class UserRepository extends Repository<User> {
     }, manager || this.manager);
   }
 
+  async getUsersWithActiveOrganizations(
+    statusList: string[],
+    roles: USER_ROLE[],
+    manager?: EntityManager
+  ): Promise<User[]> {
+    const repo = (manager || this.manager).getRepository(User);
+
+    const users = await repo
+      .createQueryBuilder('user')
+      .select('user.id')
+      .innerJoinAndSelect('user.organizationUsers', 'organizationUsers')
+      .innerJoinAndSelect('organizationUsers.organization', 'organization')
+      .innerJoinAndSelect('user.userPermissions', 'userPermissions')
+      .where('user.status != :archivedUser', { archivedUser: USER_STATUS.ARCHIVED })
+      .andWhere('organizationUsers.status IN (:...statusList)', { statusList })
+      // Exclude archived organizations
+      .andWhere('organization.status != :archivedOrg', { archivedOrg: WORKSPACE_STATUS.ARCHIVE })
+      .andWhere('userPermissions.name IN (:...roles)', { roles })
+      // CRITICAL: Ensure the permission belongs to the same active organization
+      .andWhere('userPermissions.organizationId = organizationUsers.organizationId')
+      .getMany();
+
+    return users;
+  }
+
   async findByEmail(
     email: string,
     organizationId?: string,
@@ -207,7 +246,7 @@ export class UserRepository extends Repository<User> {
             organizationUsers: {
               organizationId: organizationId,
               status: In(statusList),
-              organization: { status: WORKSPACE_STATUS.ACTIVE },
+              organization: { status: In([WORKSPACE_STATUS.ACTIVE, WORKSPACE_STATUS.ARCHIVE]) },
             },
           },
           relations: ['organizationUsers', 'organizationUsers.organization'],

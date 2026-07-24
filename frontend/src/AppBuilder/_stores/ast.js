@@ -53,8 +53,11 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
     /\b(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(['"]?\])?/g;
 
   let match;
-  if (input.startsWith('{{{') && input.endsWith('}}}')) {
-    const inputContent = input.slice(3, -3);
+  // Tolerate whitespace between an inner object literal's closing `}` and the outer `}}`
+  // template markers — e.g. `{{{ x: y } }}` should be treated the same as `{{{x: y}}}`.
+  const tripleBraceCandidate = input.startsWith('{{{') ? input.replace(/\}\s*\}\}$/, '}}}') : input;
+  if (tripleBraceCandidate.startsWith('{{{') && tripleBraceCandidate.endsWith('}}}')) {
+    const inputContent = tripleBraceCandidate.slice(3, -3);
     input = `{{({${inputContent}})}}`;
     const matches = findExpression(input);
     for (const match of matches) {
@@ -379,7 +382,11 @@ function createReferenceObject(entityType, path, uuidMappings, componentIdNameMa
 
   if (entityType === 'components' || entityType === 'queries') {
     entityNameOrId = path[1];
-    entityKey = path[2];
+    // Skip numeric index segments so refs like components.textinput1[0].value
+    // register against components.textinput1.value (matches emit shape inside list views).
+    let keyIdx = 2;
+    while (keyIdx < path.length - 1 && /^\d+$/.test(path[keyIdx])) keyIdx++;
+    entityKey = path[keyIdx];
 
     if (entityNameOrId.startsWith('__UUID_PLACEHOLDER_')) {
       entityNameOrId = uuidMappings[entityNameOrId];

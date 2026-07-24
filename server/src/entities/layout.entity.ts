@@ -6,6 +6,9 @@ export class Layout {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @Column({ type: 'enum', enumName: 'layout_type', enum: ['desktop', 'mobile'] })
   type: string;
 
@@ -20,6 +23,12 @@ export class Layout {
 
   @Column({ type: 'double precision' })
   height: number;
+
+  @Column({ type: 'double precision', name: 'width_px', nullable: true })
+  widthPx: number | null;
+
+  @Column({ type: 'boolean', name: 'fill_width', nullable: true })
+  fillWidth: boolean | null;
 
   @Column({ name: 'component_id' })
   componentId: string;

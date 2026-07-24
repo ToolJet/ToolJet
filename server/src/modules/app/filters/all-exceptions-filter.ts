@@ -1,5 +1,6 @@
 import { TooljetDatabaseError } from '@modules/tooljet-db/types';
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { SentryExceptionCaptured } from '@sentry/nestjs';
 import { Logger } from 'nestjs-pino';
 import { QueryFailedError } from 'typeorm';
 
@@ -19,6 +20,7 @@ enum PostgresErrorCode {
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(private readonly logger: Logger) {}
 
+  @SentryExceptionCaptured()
   catch(exception: any, host: ArgumentsHost) {
     try {
       const ctx = host.switchToHttp();

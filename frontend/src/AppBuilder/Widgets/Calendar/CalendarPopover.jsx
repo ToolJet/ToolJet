@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const CalendarEventPopover = function ({
   id,
@@ -16,6 +17,7 @@ export const CalendarEventPopover = function ({
   const [showPopover, setShow] = useState(show);
   const [top, setTop] = useState(0);
   const [left, setLeft] = useState(0);
+  const isResizing = useStore((state) => state.resizingComponentId === id);
 
   const minHeight = 400;
   let calendarBounds;
@@ -29,6 +31,7 @@ export const CalendarEventPopover = function ({
       !parentRef.current.contains(event.target) &&
       !event.target.closest('.editor-sidebar') &&
       !event.target.closest('.left-sidebar-item ') &&
+      !event.target.closest('.right-sidebar .left-sidebar-inspector') && // Right sidebar toggle button for adding components
       !isMoveableControlClicked(event)
     ) {
       popoverClosed();
@@ -48,13 +51,32 @@ export const CalendarEventPopover = function ({
 
   useEffect(() => {
     if (offset?.top && showPopover) {
-      const _left = offset.left - calendarBounds.x + offset.width;
-      const _top = ((offset.top - calendarBounds.y) * 100) / calendarBounds.height;
+      let _left = offset.left - calendarBounds.x + offset.width;
+      let _top = offset.top - calendarBounds.y;
+
+      if (parentRef.current) {
+        const realCanvasElement = document.getElementById('real-canvas');
+        const realCanvasBounds = realCanvasElement.getBoundingClientRect();
+
+        if (
+          offset.left - realCanvasBounds.x + offset.width + parentRef.current.offsetWidth >
+          realCanvasElement.clientWidth
+        ) {
+          _left = _left - parentRef.current.offsetWidth;
+          _top = _top + offset.height;
+        }
+      }
+
       setTop(_top);
       setLeft(_left);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset?.top, showPopover]);
+
+  useEffect(() => {
+    if (isResizing) popoverClosed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isResizing]);
 
   if (calendarElement && showPopover) {
     calendarBounds = calendarElement.getBoundingClientRect();
@@ -72,8 +94,9 @@ export const CalendarEventPopover = function ({
 
   return (
     <div>
-      {showPopover && (
+      {/* {showPopover && (
         <div
+          // TODO: Need to confirm if this was a fix for some old issue, if not then can remove it
           style={{
             // backgroundColor: 'rgba(0, 0, 0, 0.6)', // This can be used for testing the overlay
             top: -(calendarBounds.y + top),
@@ -85,7 +108,7 @@ export const CalendarEventPopover = function ({
           }}
           onClick={() => popoverClosed()}
         ></div>
-      )}
+      )} */}
       <div
         style={{
           position: 'absolute',
@@ -93,7 +116,7 @@ export const CalendarEventPopover = function ({
           width: '300px',
           maxWidth: '300px',
           minHeight,
-          top: `${top}%`,
+          top,
           left,
           display: showPopover ? 'block' : 'none',
         }}

@@ -14,6 +14,7 @@ export function Confirm({
   confirmButtonText = '',
   cancelButtonText = '',
   callCancelFnOnConfirm = true,
+  headerStyle = {},
 }) {
   const [showModal, setShow] = useState(show);
   const { t } = useTranslation();
@@ -47,7 +48,7 @@ export function Confirm({
       contentClassName={darkMode ? 'dark-theme' : ''}
     >
       {title && (
-        <Modal.Header>
+        <Modal.Header style={headerStyle}>
           <Modal.Title>{title}</Modal.Title>
           <span onClick={handleClose}>
             <SolidIcon

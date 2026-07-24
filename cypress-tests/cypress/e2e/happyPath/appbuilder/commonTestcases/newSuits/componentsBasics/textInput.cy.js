@@ -8,7 +8,12 @@ import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
 
 
-describe('Text Input Component Tests', () => {
+// testIsolation:false — cypress-real-dnd caches its CDP client for the spec
+// run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+
+// test drags throw "No dragIntercepted". Keeping the AUT stable across tests
+// keeps the drag intercept valid. Each test still re-logs-in + creates its own
+// app in beforeEach, so shared browser state is not relied upon.
+describe('Text Input Component Tests', { testIsolation: false }, () => {
     const functions = [
 
         {
@@ -94,13 +99,13 @@ describe('Text Input Component Tests', () => {
         cy.apiLogin();
         cy.apiCreateApp(`${fake.companyName}-Textinput-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Text Input", 500, 500);
+        cy.dragAndDropWidget("Text Input", 500, 100);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
-        cy.get(".tooltip-inner").invoke("hide");
+        cy.hideTooltip();
 
         openNode("components");
         openAndVerifyNode("textinput1", exposedValues, verifyNodeData);

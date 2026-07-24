@@ -17,6 +17,7 @@ export const INPUT_COMPONENTS_FOR_FORM = [
   'NumberInput',
   'DropdownV2',
   'MultiselectV2',
+  'Cascader',
   'RadioButtonV2',
   'DatetimePickerV2',
   'Checkbox',
@@ -25,6 +26,10 @@ export const INPUT_COMPONENTS_FOR_FORM = [
   'TimePicker',
   'DaterangePicker',
   'TextArea',
+  'StarRating',
+  'TagsInput',
+  'ColorPicker',
+  'ButtonGroupV2',
 ];
 
 export const JSON_DIFFERENCE = {

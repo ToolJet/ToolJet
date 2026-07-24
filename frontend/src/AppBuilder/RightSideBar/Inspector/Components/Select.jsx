@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -14,8 +15,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
-import { sortArray } from '@/Editor/Components/DropdownV2/utils';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -33,6 +34,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const isInitialRender = useRef(true);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
+  const isTagsInput = component?.component?.component === 'TagsInput';
+  const isRadioButton = component?.component?.component === 'RadioButtonV2';
+  const isDropdownV2 = component?.component?.component === 'DropdownV2';
+  const isCaptionEnabled = isDropdownV2 || isMultiSelect;
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
   const sort = component?.component?.definition?.properties?.sort?.value;
@@ -64,7 +69,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _markedAsDefault = getResolvedValue(
-    component?.component?.definition?.properties[isMultiSelect ? 'values' : 'value']?.value
+    component?.component?.definition?.properties[isMultiSelect || isTagsInput ? 'values' : 'value']?.value
   );
 
   const [options, setOptions] = useState([]);
@@ -78,7 +83,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Options') {
+    } else if (
+      componentMeta?.properties[key]?.accordian === 'Options' ||
+      componentMeta?.properties[key]?.accordian === 'Tags'
+    ) {
       optionsProperties.push(key);
     } else {
       properties.push(key);
@@ -119,6 +127,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     return {
       value,
       label,
+      ...(isCaptionEnabled ? { caption: null } : {}),
       visible: { value: '{{true}}' },
       disable: { value: '{{false}}' },
       default: { value: '{{false}}' },
@@ -164,6 +173,19 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     updateOptions(_options);
   };
 
+  const handleCaptionChange = (caption, index) => {
+    const _options = options.map((option, i) => {
+      if (i === index) {
+        return {
+          ...option,
+          caption: caption === '' ? null : caption,
+        };
+      }
+      return option;
+    });
+    updateOptions(_options);
+  };
+
   const reorderOptions = async (startIndex, endIndex) => {
     const result = [...options];
     const [removed] = result.splice(startIndex, 1);
@@ -183,7 +205,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const handleMarkedAsDefaultChange = (value, index) => {
     const isMarkedAsDefault = getResolvedValue(value);
-    if (isMultiSelect) {
+    if (isMultiSelect || isTagsInput) {
       const _value = options[index]?.value;
       let _markedAsDefault = [];
       if (isMarkedAsDefault && !markedAsDefault.includes(_value)) {
@@ -282,7 +304,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOverlay = (item, index) => {
     return (
-      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme theme-dark'} inspector-select-options-popover`}
+        style={{ minWidth: '248px' }}
+      >
         <Popover.Body>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
@@ -312,9 +337,25 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleValueChange(value, index)}
             />
           </div>
+          {isCaptionEnabled && (
+            <div className="field mb-3" data-cy={`input-and-label-option-caption`}>
+              <label className="font-weight-500 mb-1 font-size-12">{'Option caption'}</label>
+              <CodeHinter
+                type={'basic'}
+                initialValue={item?.caption ?? ''}
+                theme={darkMode ? 'monokai' : 'default'}
+                mode="javascript"
+                lineNumbers={false}
+                placeholder={'Optional description'}
+                onChange={(value) => handleCaptionChange(value, index)}
+              />
+            </div>
+          )}
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              initialValue={isMultiSelect ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value}
+              initialValue={
+                isMultiSelect || isTagsInput ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value
+              }
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -492,7 +533,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
-    title: 'Options',
+    title: isTagsInput ? 'Tags' : 'Options',
     isOpen: true,
     children: (
       <>
@@ -551,6 +592,19 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             currentState,
             allComponents
           )}
+        {isMultiSelect &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'maxLimit',
+            'properties',
+            currentState,
+            allComponents,
+            darkMode,
+            componentMeta.properties?.maxLimit?.placeholder
+          )}
         {isSortingEnabled &&
           renderElement(
             component,
@@ -558,6 +612,50 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             paramUpdated,
             dataQueries,
             'sort',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isTagsInput &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'allowNewTags',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isTagsInput &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'enableSearch',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isTagsInput &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'serverSideSearch',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isRadioButton &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'layout',
             'properties',
             currentState,
             allComponents
@@ -604,6 +702,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {

@@ -28,6 +28,7 @@ export const Item = React.memo(
         cardDataAsObj = {},
         setLastSelectedCard,
         cardData,
+        dataCy,
         ...props
       },
       ref
@@ -55,7 +56,11 @@ export const Item = React.memo(
             height: `${Number(cardHeight) || 100}px`,
           }}
           ref={ref}
+          data-cy={dataCy ? `${dataCy}-card-${value}` : undefined}
           onClick={({ target }) => {
+            const { properties } = kanbanProps;
+            const { openModalOnCardClick } = properties;
+            if (!openModalOnCardClick) return;
             if (
               target.style.cursor.includes('resize') ||
               target?.classList?.contains('delete-icon') ||

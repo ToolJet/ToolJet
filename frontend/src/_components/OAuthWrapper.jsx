@@ -1,12 +1,16 @@
 import OAuth from '@/_ui/OAuth';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { datasourceService } from '@/_services';
+import { getHostURL } from '@/_helpers/routes';
+import { datasourceService, authenticationService } from '@/_services';
 import { capitalize } from 'lodash';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Input from '@/_ui/Input';
 import cx from 'classnames';
+import { Modal } from 'react-bootstrap';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const OAuthWrapper = ({
   optionchanged,
@@ -17,31 +21,71 @@ const OAuthWrapper = ({
   workspaceConstants,
   optionsChanged,
   isDisabled,
+  isWorkspaceBranchLocked = false,
   multiple_auth_enabled,
   scopes,
   oauth_configs,
   currentAppEnvironmentId,
 }) => {
+  // Inner OAuth fields stay locked when the workspace branch is locked (default
+  // branch + branching enabled). The save button uses `isDisabled` alone so an
+  // edit to an encrypted field on the default branch can still be saved.
+  const isFieldsDisabled = isDisabled || isWorkspaceBranchLocked;
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
-  const needConnectionButton =
-    options?.auth_type?.value === 'oauth2' &&
-    options?.grant_type?.value === 'authorization_code' &&
-    multiple_auth_enabled !== true;
-  const dataSourceNameCapitalize = capitalize(selectedDataSource?.plugin?.name || selectedDataSource?.kind);
+  const [initialOptions, setInitialOptions] = useState(null);
+  const [initialName, setInitialName] = useState(null);
+  useEffect(() => {
+    if (selectedDataSource?.id && !initialOptions) {
+      setInitialOptions(options);
+      setInitialName(selectedDataSource.name);
+    }
+  }, [selectedDataSource?.id, options, initialOptions]);
 
-  const hostUrl = window.public_config?.TOOLJET_HOST;
-  const subPathUrl = window.public_config?.SUB_PATH;
-  const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;
-  const redirectUri = fullUrl;
+  const hasFieldsChanged = () => {
+    if (!selectedDataSource?.id || !initialOptions) {
+      return true;
+    }
+
+    if (selectedDataSource?.name !== initialName) {
+      return true;
+    }
+
+    const optionKeys = Object.keys(options || {});
+    for (const key of optionKeys) {
+      const currentValue = options[key]?.value;
+      const initialValue = initialOptions[key]?.value;
+      if (currentValue !== initialValue) {
+        return true;
+      }
+    }
+    return false;
+  };
+  const needConnectionButton =
+    selectedDataSource.kind !== 'openapi' &&
+    options?.auth_type?.value === 'oauth2' &&
+    options?.grant_type?.value === 'authorization_code';
+  const dataSourceNameCapitalize = capitalize(
+    selectedDataSource?.plugin?.manifestFile?.data?.source?.name || selectedDataSource?.kind
+  );
+  const redirectUri = `${getHostURL()}/oauth2/authorize`;
+
+  const docLink =
+    selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
 
   function authorizeWithProvider() {
     const provider = selectedDataSource?.kind;
     const plugin_id = selectedDataSource?.plugin?.id;
     const source_options = options;
+    const organizationId = authenticationService.currentSessionValue?.current_organization_id;
     setAuthStatus('waiting_for_url');
 
-    const fetchArgs = plugin_id ? [provider, plugin_id, source_options] : [provider, null, source_options];
+    // Pass envId, orgId to resolve workspace constants on the backend
+    const fetchArgs = plugin_id
+      ? [provider, plugin_id, source_options, currentAppEnvironmentId, organizationId]
+      : [provider, null, source_options, currentAppEnvironmentId, organizationId];
 
     datasourceService
       .fetchOauth2BaseUrl(...fetchArgs)
@@ -72,7 +116,6 @@ const OAuthWrapper = ({
   return (
     <div>
       <div>
-        <label className="form-label">Connection type</label>
         <OAuth
           isGrpc={false}
           grant_type={options?.grant_type?.value}
@@ -98,14 +141,14 @@ const OAuthWrapper = ({
           multiple_auth_enabled={options?.multiple_auth_enabled?.value}
           optionchanged={optionchanged}
           workspaceConstants={workspaceConstants}
-          isDisabled={isDisabled}
+          isDisabled={isFieldsDisabled}
           options={options}
           optionsChanged={optionsChanged}
           selectedDataSource={selectedDataSource}
           oauth_configs={oauth_configs}
         />
       </div>
-      {oauth_configs.allowed_scope_field && (
+      {oauth_configs?.allowed_scope_field && (
         <div>
           <label className="form-label mt-3">Scope(s)</label>
           <Input
@@ -115,7 +158,7 @@ const OAuthWrapper = ({
             value={scopes}
             workspaceConstants={workspaceConstants}
           />
-          {oauth_configs.scopeHelperText?.length > 0 && (
+          {oauth_configs?.scopeHelperText?.length > 0 && (
             <span className="text-muted" style={{ fontSize: '12px' }}>
               {oauth_configs.scopeHelperText}
             </span>
@@ -126,9 +169,9 @@ const OAuthWrapper = ({
         <label className="form-label mt-3">Redirect URI</label>
         <Input
           value={redirectUri}
-          helpText={`In ${dataSourceNameCapitalize}, use the URL above when prompted to enter an OAuth callback or redirect URL`}
+          helpText="Save this URL as callback or redirect URL in your OAuth app."
           type="copyToClipboard"
-          disabled="true"
+          disabled={true}
           className="form-control"
         />
       </div>
@@ -140,45 +183,121 @@ const OAuthWrapper = ({
               type="checkbox"
               checked={multiple_auth_enabled}
               onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
+              disabled={isFieldsDisabled}
             />
             <div>
               <span className="form-check-label">Authentication required for all users</span>
               <span className="text-muted" style={{ fontSize: '12px' }}>
-                User will be redirected to OAuth flow once first query of this data source is run in an app.
+                Other users will be redirected to OAuth flow once first query of this data source is run in an app.
               </span>
             </div>
           </label>
         </div>
       )}
-      {needConnectionButton && (
-        <div className="row mt-3">
-          <center>
-            {authStatus === 'waiting_for_token' && (
-              <div>
-                <Button
-                  className={`m2 ${isSaving ? ' loading' : ''}`}
-                  disabled={isSaving}
-                  onClick={() => saveDataSource()}
-                >
-                  {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
-                </Button>
-              </div>
-            )}
-
-            {(!authStatus || authStatus === 'waiting_for_url') && (
-              <Button
-                className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
-                disabled={isSaving}
-                onClick={() => authorizeWithProvider()}
-              >
-                {t(
-                  `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
-                  `Connect to ${dataSourceNameCapitalize}`
-                )}
-              </Button>
-            )}
-          </center>
+      {oauth_configs?.allowed_dynamic_params_field && (
+        <div>
+          <label className="form-check form-switch mt-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              checked={options?.[oauth_configs.allowed_dynamic_params_field.key]?.value || false}
+              onChange={() =>
+                optionchanged(
+                  oauth_configs.allowed_dynamic_params_field.key,
+                  !options?.[oauth_configs.allowed_dynamic_params_field.key]?.value
+                )
+              }
+            />
+            <div>
+              <span className="form-check-label">{oauth_configs.allowed_dynamic_params_field.label}</span>
+              {oauth_configs.allowed_dynamic_params_field.help_text && (
+                <span className="text-muted" style={{ fontSize: '12px' }}>
+                  {oauth_configs.allowed_dynamic_params_field.help_text}
+                </span>
+              )}
+            </div>
+          </label>
         </div>
+      )}
+      {needConnectionButton && (
+        <Modal.Footer
+          style={{
+            marginTop: '32px',
+            borderTop: '1px solid var(--border-weak)',
+            marginLeft: '-24px',
+            marginRight: '-24px',
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            paddingTop: '6px',
+            paddingBottom: 0,
+          }}
+        >
+          <>
+            <div className="col">
+              <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
+              <a
+                className="color-primary tj-docs-link tj-text-sm"
+                data-cy="link-read-documentation"
+                href={docLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('globals.readDocumentation', 'Read documentation')}
+              </a>
+            </div>
+            <div className="col-auto d-flex gap-2">
+              {selectedDataSource?.kind === 'googlesheetsv2' ? (
+                <>
+                  <ButtonSolid
+                    className={`m2 googlesheetsv2-save-btn${isSaving ? ' btn-loading' : ''}`}
+                    isLoading={isSaving}
+                    disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                    onClick={() => saveDataSource()}
+                    variant="tertiary"
+                  >
+                    {t('globals.save', 'Save')}
+                  </ButtonSolid>
+                  {(!authStatus || authStatus === 'waiting_for_url') && (
+                    <ButtonSolid
+                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
+                      isLoading={authStatus === 'waiting_for_url'}
+                      disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                      onClick={() => authorizeWithProvider()}
+                      variant="primary"
+                    >
+                      {t(`${selectedDataSource.kind}.saveAndConnect${dataSourceNameCapitalize}`, 'Save and Connect')}
+                    </ButtonSolid>
+                  )}
+                </>
+              ) : (
+                <>
+                  {authStatus === 'waiting_for_token' && (
+                    <Button
+                      className={`m2 ${isSaving ? ' loading' : ''}`}
+                      disabled={isSaving}
+                      onClick={() => saveDataSource()}
+                    >
+                      {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+                    </Button>
+                  )}
+
+                  {(!authStatus || authStatus === 'waiting_for_url') && (
+                    <Button
+                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
+                      disabled={isSaving}
+                      onClick={() => authorizeWithProvider()}
+                    >
+                      {t(
+                        `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
+                        `Connect to ${dataSourceNameCapitalize}`
+                      )}
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        </Modal.Footer>
       )}
     </div>
   );

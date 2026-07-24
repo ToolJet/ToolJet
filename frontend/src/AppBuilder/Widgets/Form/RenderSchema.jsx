@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, Suspense } from 'react';
 import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -38,21 +38,23 @@ const RenderSchema = ({ component, parent, id, onOptionChange, onOptionsChange, 
 
   const formId = `${parent}-${id}`;
   return (
-    <ComponentToRender
-      properties={component?.definition?.properties}
-      styles={component?.definition?.styles}
-      generalProperties={component?.definition?.general}
-      generalStyles={component?.definition?.generalStyles}
-      width={component?.defaultSize?.width}
-      height={component?.defaultSize?.height}
-      setExposedVariable={setExposedVariable}
-      setExposedVariables={setExposedVariables}
-      validate={validate}
-      darkMode={darkMode}
-      fireEvent={fireEvent}
-      formId={formId}
-      id={id}
-    />
+    <Suspense fallback="Loading...">
+      <ComponentToRender
+        properties={component?.definition?.properties}
+        styles={component?.definition?.styles}
+        generalProperties={component?.definition?.general}
+        generalStyles={component?.definition?.generalStyles}
+        width={component?.defaultSize?.width}
+        height={component?.defaultSize?.height}
+        setExposedVariable={setExposedVariable}
+        setExposedVariables={setExposedVariables}
+        validate={validate}
+        darkMode={darkMode}
+        fireEvent={fireEvent}
+        formId={formId}
+        id={id}
+      />
+    </Suspense>
   );
 };
 

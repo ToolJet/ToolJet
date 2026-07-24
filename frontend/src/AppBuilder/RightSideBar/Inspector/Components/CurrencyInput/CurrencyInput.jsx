@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { baseComponentProperties } from '../DefaultComponent';
 import Select from '@/_ui/Select';
-import useStore from '@/AppBuilder/_stores/store';
+// eslint-disable-next-line import/no-unresolved
 import flags from 'react-phone-number-input/flags';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -24,15 +24,23 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
   const properties = Object.keys(componentMeta.properties);
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
-  const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id)?.properties);
-  const defaultCountry = resolvedProperties?.defaultCountry || 'US';
+  const defaultCountry = componentMeta?.definition?.properties?.defaultCountry?.value || 'US';
   const isDefaultCountryFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
+  const isNumberFormatFxOn = componentMeta?.definition?.properties?.numberFormat?.fxActive || false;
+  const numberFormat = componentMeta?.definition?.properties?.numberFormat?.value || 'us';
 
   const options = useMemo(() => {
     return Object.keys(CurrencyMap).map((country) => ({
       label: `${CurrencyMap[country].prefix} (${CurrencyMap[country].currency})`,
       value: country,
     }));
+  }, []);
+
+  const numberFormatOptions = useMemo(() => {
+    return [
+      { name: 'US / UK (eg. 1,234.56)', value: 'us' },
+      { name: 'European (eg. 1.234,56)', value: 'eu' },
+    ];
   }, []);
 
   const renderCustomOption = ({ label, value: optionValue }) => {
@@ -100,6 +108,47 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
     );
   };
 
+  const getNumberFormat = () => {
+    return (
+      <div className="mb-2">
+        <div className="d-flex justify-content-between mb-1">
+          <label className="form-label"> Number Format</label>
+          <div
+            className={cx({
+              'hide-fx': !isNumberFormatFxOn,
+            })}
+          >
+            <FxButton
+              active={isNumberFormatFxOn}
+              onPress={() => {
+                paramUpdated({ name: 'numberFormat' }, 'fxActive', !isNumberFormatFxOn, 'properties');
+              }}
+            />
+          </div>
+        </div>
+        {isNumberFormatFxOn ? (
+          <CodeHinter
+            initialValue={numberFormat}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            onChange={(value) => paramUpdated({ name: 'numberFormat' }, 'value', value, 'properties')}
+          />
+        ) : (
+          <Select
+            width="100%"
+            options={numberFormatOptions}
+            value={numberFormat}
+            customOption={renderCustomOption}
+            onChange={(value) => {
+              paramUpdated({ name: 'numberFormat' }, 'value', value, 'properties');
+            }}
+          />
+        )}
+      </div>
+    );
+  };
+
   const filteredProperties = properties.filter(
     (property) => componentMeta.properties[property].section !== 'additionalActions'
   );
@@ -127,6 +176,7 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
   );
 
   accordionItems[0].children.splice(4, 0, getCountryDropdown());
+  accordionItems[0].children.splice(5, 0, getNumberFormat());
 
   return <Accordion items={accordionItems} />;
 };

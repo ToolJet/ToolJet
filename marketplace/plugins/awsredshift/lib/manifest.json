@@ -40,7 +40,7 @@
     "database": {
       "value": "dev"
     },
-    "port":{
+    "port": {
       "value": "5439"
     }
   },
@@ -172,7 +172,7 @@
           "description": "Enter port"
         },
         "workgroup_name": {
-          "label": "Workgroup Name",
+          "label": "Workgroup name",
           "key": "workgroup_name",
           "type": "text",
           "description": "Enter workgroup name"
@@ -185,7 +185,6 @@
         }
       }
     },
-
     "iam_access_keys": {
       "access_key": {
         "label": "Access key",
@@ -201,5 +200,11 @@
       }
     }
   },
-  "required": ["region", "secret_key", "access_key", "database", "workgroup_name"]
+  "required": [
+    "region",
+    "secret_key",
+    "access_key",
+    "database",
+    "workgroup_name"
+  ]
 }

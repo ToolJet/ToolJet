@@ -31,11 +31,12 @@ import {
   generateOrgInviteURL,
   isValidDomain,
   generateWorkspaceSlug,
+  validatePasswordServer,
+  validatePasswordDomain,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Response } from 'express';
 import { LicenseCountsService } from '@modules/licensing/services/count.service';
-import { uuid4 } from '@sentry/utils';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { ActivateAccountWithTokenDto } from '@modules/onboarding/dto/activate-account-with-token.dto';
 import { AppSignupDto } from '@modules/auth/dto';
@@ -61,6 +62,7 @@ import { IOnboardingService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 @Injectable()
 export class OnboardingService implements IOnboardingService {
   constructor(
@@ -77,11 +79,30 @@ export class OnboardingService implements IOnboardingService {
     protected readonly licenseUserService: LicenseUserService,
     protected readonly instanceSettingsUtilService: InstanceSettingsUtilService,
     protected readonly metadataUtilService: MetadataUtilService,
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
-  ) {}
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+  ) { }
 
-  async signup(appSignUpDto: AppSignupDto) {
+  private async getDefaultOrOldestWorkspaceOfInstance(
+    manager: EntityManager
+  ): Promise<Organization | null> {
+    const defaultWorkspace = await manager.findOne(Organization, {
+      where: { isDefault: true },
+    });
+
+    if (defaultWorkspace) {
+      return defaultWorkspace;
+    }
+    const [oldestWorkspace] = await manager.find(Organization, {
+      order: { createdAt: 'ASC' },
+      take: 1,
+    });
+
+    return oldestWorkspace || null;
+  }
+
+  async signup(appSignUpDto: AppSignupDto, response?: Response) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
+    validatePasswordServer(password);
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Check if the configs allows user signups
@@ -98,12 +119,21 @@ export class OnboardingService implements IOnboardingService {
           throw new NotFoundException('Could not found organization details. Please verify the orgnization id');
         }
         /* Check if the workspace allows user signup or not */
-        const { enableSignUp, domain } = signingUpOrganization;
+        const { enableSignUp, passwordAllowedDomains, passwordRestrictedDomains } = signingUpOrganization;
         if (!enableSignUp) {
           throw new ForbiddenException('Workspace signup has been disabled. Please contact the workspace admin.');
         }
-        if (!isValidDomain(email, domain)) {
-          throw new ForbiddenException('You cannot sign up using the email address - Domain verification failed.');
+        if (
+          !(await validatePasswordDomain(email, passwordAllowedDomains, passwordRestrictedDomains, this.instanceSettingsUtilService))
+        ) {
+          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+        }
+      } else {
+        // No organization provided - validate against instance-level settings
+        if (
+          !(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))
+        ) {
+          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
         }
       }
 
@@ -120,7 +150,8 @@ export class OnboardingService implements IOnboardingService {
       const userParams = { email, password, firstName, lastName };
 
       // Find the default workspace
-      const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
+      const defaultWorkspace = await this.getDefaultOrOldestWorkspaceOfInstance(manager);
+
 
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
@@ -130,23 +161,33 @@ export class OnboardingService implements IOnboardingService {
           userParams,
           redirectTo,
           defaultWorkspace,
-          manager
+          manager,
+          response
         );
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
+          const edition = getTooljetEdition();
+          const isCE = edition === 'ce';
+          if (isCE && !defaultWorkspace.enableSignUp) {
+            throw new ForbiddenException(
+              'Signup is disabled for the default workspace. Please contact the workspace admin.'
+            );
+          }
           return await this.onboardingUtilService.createUserInDefaultWorkspace(
             userParams,
             defaultWorkspace,
             redirectTo,
-            manager
+            manager,
+            response
           );
         }
-        return await this.onboardingUtilService.createUserOrPersonalWorkspace(
+        return await this.onboardingUtilService.createUserInWorkspace(
           userParams,
           existingUser,
           signingUpOrganization,
           redirectTo,
-          manager
+          manager,
+          response
         );
       }
     });
@@ -155,7 +196,7 @@ export class OnboardingService implements IOnboardingService {
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
       userCreateDto;
-
+    validatePasswordServer(password);
     const nameObj = this.onboardingUtilService.splitName(name);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
@@ -228,14 +269,17 @@ export class OnboardingService implements IOnboardingService {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const user: User | undefined = await manager.findOne(User, { where: { invitationToken: token } });
+      const user: User | undefined = await manager.findOne(User, {
+        where: { invitationToken: token },
+        relations: ['organizationUsers'],
+      });
       let organizationUser: OrganizationUser;
       let isSSOVerify: boolean;
 
       const allowPersonalWorkspace =
         (await this.userRepository.count()) === 0 ||
         (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
-          'true';
+        'true';
 
       const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
       if (!(defaultWorkspace || allowPersonalWorkspace || organizationToken)) {
@@ -250,7 +294,7 @@ export class OnboardingService implements IOnboardingService {
 
       if (!password && source === URL_SSO_SOURCE) {
         /* For SSO we don't need password. let us set uuid as a password. */
-        password = uuid4();
+        password = uuid.v4();
       }
 
       if (user?.organizationUsers) {
@@ -261,6 +305,9 @@ export class OnboardingService implements IOnboardingService {
 
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
+        }
+        if (password && isPasswordMandatory(user.source)) {
+          validatePasswordServer(password);
         }
 
         const activateDefaultWorkspace =
@@ -494,6 +541,9 @@ export class OnboardingService implements IOnboardingService {
     const { email, password, organizationToken } = activateAccountWithToken;
     const signupUser = await this.userRepository.findByEmail(email);
     const invitedUser = await this.organizationUsersUtilService.findByWorkspaceInviteToken(organizationToken);
+    if (password) {
+      validatePasswordServer(password);
+    }
 
     /* Server level check for this API */
     if (!signupUser || invitedUser.email.toLowerCase() !== signupUser.email.toLowerCase()) {
@@ -521,7 +571,13 @@ export class OnboardingService implements IOnboardingService {
       );
       let defaultOrganization: Organization;
       /* CASE: if the user somehow get the invitation from workspace via super-admin */
-      if (defaultOrganizationUser && invitedUser.source !== SOURCE.SIGNUP) {
+      /* Only activate the default workspace when it is a DIFFERENT org from the invited one.
+         If they are the same org, the token must be preserved so the accept-invite page can use it. */
+      if (
+        defaultOrganizationUser &&
+        invitedUser.source !== SOURCE.SIGNUP &&
+        defaultOrganizationUser.organizationId !== invitedUser['invitedOrganizationId']
+      ) {
         await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
         defaultOrganization = await this.organizationRepository.fetchOrganization(
           defaultOrganizationUser.organizationId
@@ -679,6 +735,7 @@ export class OnboardingService implements IOnboardingService {
           to: existingUser.email,
           name: existingUser.firstName,
           invitationtoken: existingUser.invitationToken,
+          organizationId: existingUser.defaultOrganizationId,
         },
       });
       return;
@@ -723,12 +780,13 @@ export class OnboardingService implements IOnboardingService {
 
   async setupFirstUser(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { name, workspaceName, password, email } = userCreateDto;
+    validatePasswordServer(password);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
       const workspaceSlug = generateWorkspaceSlug(workspaceName || 'My workspace');
       const organization = await this.setupOrganizationsUtilService.create(
-        { name: workspaceName || 'My workspace', slug: workspaceSlug },
+        { name: workspaceName || 'My workspace', slug: workspaceSlug, isDefault: true },
         null,
         manager
       );

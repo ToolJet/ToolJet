@@ -23,13 +23,14 @@ export class PluginsService implements IPluginsService {
 
   async install(body: CreatePluginDto) {
     const { id, repo, name } = body;
-    
+
     const existingPlugin = await dbTransactionWrap((manager: EntityManager) => {
       return manager.findOne(Plugin, { where: { pluginId: id } });
     });
     if (existingPlugin) throw new BadRequestException(`Plugin '${name}' is already installed.`);
 
-    const [index, operations, icon, manifest, version] = await this.pluginsUtilService.fetchPluginFiles(id, repo);
+    const result = await this.pluginsUtilService.fetchPluginFiles(id, repo);
+    const [index, operations, icon, manifest, version, specFiles] = result;
     let shouldCreate = false;
 
     try {
@@ -44,7 +45,10 @@ export class PluginsService implements IPluginsService {
       throw new InternalServerErrorException('Invalid plugin files');
     }
 
-    return shouldCreate && (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }));
+    return (
+      shouldCreate &&
+      (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles))
+    );
   }
 
   async findAll() {
@@ -59,10 +63,17 @@ export class PluginsService implements IPluginsService {
     });
   }
 
+  async findByKind(pluginKind: string) {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.findOne(Plugin, { where: { pluginId: pluginKind } });
+    });
+  }
+
   async update(id: string, body: UpdatePluginDto) {
     const { pluginId, repo } = body;
-    const [index, operations, icon, manifest, version] = await this.pluginsUtilService.fetchPluginFiles(pluginId, repo);
-    return await this.pluginsUtilService.upgrade(id, body, version, { index, operations, icon, manifest });
+    const result = await this.pluginsUtilService.fetchPluginFiles(pluginId, repo);
+    const [index, operations, icon, manifest, version, specFiles] = result;
+    return await this.pluginsUtilService.upgrade(id, body, version, { index, operations, icon, manifest }, specFiles);
   }
 
   async remove(id: string) {
@@ -93,7 +104,8 @@ export class PluginsService implements IPluginsService {
         const plugin = await this.findOne(id);
         const { pluginId, repo, version } = plugin;
 
-        const [index, operations, icon, manifest] = await this.pluginsUtilService.fetchPluginFiles(pluginId, repo);
+        const result = await this.pluginsUtilService.fetchPluginFiles(pluginId, repo);
+        const [index, operations, icon, manifest, , specFiles] = result;
 
         const files = { index, operations, icon, manifest };
 
@@ -110,19 +122,26 @@ export class PluginsService implements IPluginsService {
           })
         );
 
+        // Update spec files via the util service
+        const specFilesMap = await this.pluginsUtilService.updateSpecFilesForReload(
+          plugin.specFilesMap,
+          specFiles,
+          manager
+        );
+
         const updatedPlugin = new Plugin();
 
         updatedPlugin.id = plugin.id;
         updatedPlugin.repo = repo || '';
         updatedPlugin.version = version;
+        updatedPlugin.specFilesMap = specFilesMap;
 
         return manager.save(updatedPlugin);
       } catch (error) {
-        await queryRunner.rollbackTransaction();
+        if (!queryRunner.isReleased) await queryRunner.rollbackTransaction();
         throw new InternalServerErrorException(error);
       } finally {
-        await queryRunner.commitTransaction();
-        await queryRunner.release();
+        if (!queryRunner.isReleased) await queryRunner.release();
       }
     });
   }
@@ -197,6 +216,7 @@ export class PluginsService implements IPluginsService {
       if (shouldAutoInstall && pluginsToBeInstalled.length) {
         for (const pluginId of pluginsToBeInstalled) {
           const pluginDetails = pluginsListIdToDetailsMap[pluginId];
+          if (!pluginDetails) continue;
           const installedPluginInfo = await this.install(pluginDetails);
           installedPluginsList.push(installedPluginInfo.name);
           installedPluginsInfo.push(installedPluginInfo);

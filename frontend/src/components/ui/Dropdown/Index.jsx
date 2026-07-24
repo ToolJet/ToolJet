@@ -4,8 +4,16 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { DropdownLabel, HelperMessage, ValidationMessage } from './DropdownUtils/DropdownUtils';
 import { noop } from 'lodash';
 import { useDropdownContext } from './DropdownProvider';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
-const DropdownComponent = ({ options = {}, onClose = noop, container, ...props }) => {
+const DropdownComponent = ({
+  options = {},
+  onClose = noop,
+  container,
+  theme = 'light',
+  showItemOverflowTooltip = false,
+  ...props
+}) => {
   const [open, setOpen] = useState(false);
   const [isValid, setIsValid] = useState(null);
   const [message, setMessage] = useState('');
@@ -80,15 +88,17 @@ const DropdownComponent = ({ options = {}, onClose = noop, container, ...props }
   };
 
   return (
-    <div>
+    <div className={props.className}>
       {props.label && <DropdownLabel label={props.label} disabled={props.disabled} required={props.required} />}
       <Select {...props} ref={selectRef} open={open} onOpenChange={handleOpenChange} onValueChange={handleChange}>
         <SelectTrigger ref={triggerRef} open={open} className={dropdownStyle} {...props}>
           <SelectValue placeholder={props.placeholder} />
         </SelectTrigger>
         <SelectContent
+          className={`${props.className}__content`}
           style={{ width: triggerWidth > 0 ? `${triggerWidth}px` : props.width }}
           container={getContainer()}
+          theme={theme}
         >
           <SelectGroup>
             {Object.keys(options).map((key) => (
@@ -101,7 +111,13 @@ const DropdownComponent = ({ options = {}, onClose = noop, container, ...props }
                 avatarFall={options[key].avatarFall}
                 key={key}
               >
-                {options[key].label ?? key}
+                {showItemOverflowTooltip ? (
+                  <OverflowTooltip whiteSpace="nowrap" placement="top">
+                    {options[key].label ?? key}
+                  </OverflowTooltip>
+                ) : (
+                  options[key].label ?? key
+                )}
               </SelectItem>
             ))}
           </SelectGroup>
@@ -140,6 +156,7 @@ DropdownComponent.propTypes = {
   trailingAction: PropTypes.oneOf(['icon', 'counter']),
   helperText: PropTypes.string,
   container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  className: PropTypes.string,
 };
 
 DropdownComponent.defaultProps = {
@@ -156,4 +173,5 @@ DropdownComponent.defaultProps = {
   leadingIcon: false,
   trailingAction: '',
   helperText: '',
+  className: '',
 };

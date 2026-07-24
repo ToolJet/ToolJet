@@ -2,73 +2,50 @@ import React from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { LogoNavDropdown, AppEnvironments } from '@/modules/Appbuilder/components';
+import LogoNavDropdown from '@/modules/Appbuilder/components/LogoNavDropdown';
 import HeaderActions from './HeaderActions';
-import { AppVersionsManager } from './AppVersionsManager';
-import RealtimeAvatars from '@/Editor/RealtimeAvatars';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
-import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
-import BuildSuggestions from './BuildSuggestions';
-import GitSyncManager from './GitSyncManager';
-import UpdatePresenceMultiPlayer from './UpdatePresenceMultiPlayer';
+import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderButtons/RightTopHeaderButtons';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { BranchDropdown } from './BranchDropdown';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import './styles/style.scss';
 
-import Steps from './Steps';
+import SaveIndicator from './SaveIndicator';
 
-export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
+export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased, aiGenerationMetadata } = useStore(
+  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
       isVersionReleased: state.isVersionReleased,
-      aiGenerationMetadata: state.appStore.modules[moduleId].app?.aiGenerationMetadata,
+      appId: state.appStore.modules[moduleId].app.appId,
+      organizationId: state.appStore.modules[moduleId].app.organizationId,
+      selectedVersion: state.selectedVersion,
     }),
     shallow
   );
-  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
 
-  const getSaveIndicator = () => {
-    if (isSaving) {
-      return 'Saving...';
-    } else if (saveError) {
-      return (
-        <div className="d-flex align-items-center" style={{ gap: '4px' }}>
-          <SolidIcon name="cloudinvalid" width="14" />
-          <p className="mb-0 text-center tj-text-xxsm">Could not save changes</p>
-        </div>
-      );
-    } else {
-      return (
-        <div className="d-flex align-items-center" style={{ gap: '4px' }}>
-          <SolidIcon name="cloudvalid" width="14" />
-          <p className="mb-0 text-center">Changes saved</p>
-        </div>
-      );
-    }
-  };
+  const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isOnWorkspaceFeatureBranch =
+    workspaceActiveBranch && !workspaceActiveBranch.is_default && !workspaceActiveBranch.isDefault;
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
-      <header className="navbar navbar-expand-md d-print-none" style={{ zIndex: 12 }}>
-        <div className="container-xl header-container">
-          <div className="d-flex w-100">
-            <h1 className="navbar-brand d-none-navbar-horizontal p-0" data-cy="editor-page-logo">
-              <LogoNavDropdown darkMode={darkMode} />
-            </h1>
-            <div className="header-inner-wrapper d-flex" style={{ width: 'calc(100% - 348px)', background: '' }}>
-              <div
-                style={{
-                  maxHeight: '48px',
-                  margin: '0px',
-                  padding: '0px',
-                  width: 'calc(100% - 348px)',
-                  justifyContent: 'space-between',
-                }}
-                className="flex-grow-1 d-flex align-items-center"
-              >
+      <header className="navbar navbar-expand-md d-print-none tw-h-12" style={{ zIndex: 12 }}>
+        <div className="container-xl header-container" data-cy="editor-header-section">
+          <div className="d-flex w-100 tw-h-9  tw-justify-between">
+            <div
+              className="header-inner-wrapper d-flex"
+              style={{
+                width: 'calc(100% - 348px)',
+                background: '',
+              }}
+            >
+              <div className="d-flex align-items-center">
                 <div
                   className="p-0 m-0 d-flex align-items-center"
                   style={{
@@ -78,69 +55,47 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                   }}
                 >
                   <div className="global-settings-app-wrapper p-0 m-0 ">
-                    <div className="d-flex flex-row">
+                    <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
+                      <LogoNavDropdown darkMode={darkMode} type={appType} />
+                    </h1>
+                    <div className="d-flex flex-row tw-mr-1">
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
+                    <div>
+                      <span
+                        className={cx('autosave-indicator tj-text-xsm', {
+                          'autosave-indicator-saving': isSaving,
+                          'text-danger': saveError,
+                          'd-none': isVersionReleased,
+                        })}
+                        data-cy="autosave-indicator"
+                      >
+                        <SaveIndicator isSaving={isSaving} saveError={saveError} />
+                      </span>
+                    </div>
                   </div>
-
-                  {isUserInZeroToOneFlow && (
-                    <Steps
-                      steps={aiGenerationMetadata?.steps?.map((step) => ({ label: step.name, value: step.id })) ?? []}
-                      activeStep={aiGenerationMetadata?.active_step}
-                    />
-                  )}
-
-                  {!isUserInZeroToOneFlow && (
-                    <>
-                      <HeaderActions darkMode={darkMode} />
-                      <div className="d-flex align-items-center">
-                        <div style={{ width: '100px' }}>
-                          <span
-                            className={cx('autosave-indicator tj-text-xsm', {
-                              'autosave-indicator-saving': isSaving,
-                              'text-danger': saveError,
-                              'd-none': isVersionReleased,
-                            })}
-                            data-cy="autosave-indicator"
-                          >
-                            {getSaveIndicator()}
-                          </span>
-                        </div>
-                        {shouldEnableMultiplayer && (
-                          <div className="mx-2 p-2">
-                            <RealtimeAvatars />
-                          </div>
-                        )}
-                        {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
-                      </div>
-                    </>
-                  )}
                 </div>
-                {!isModuleEditor && !isUserInZeroToOneFlow && <div className="navbar-seperator"></div>}
               </div>
-
-              {!isUserInZeroToOneFlow && (
-                <div className="d-flex align-items-center p-0">
-                  <div className="d-flex version-manager-container p-0 mx-2  align-items-center ">
-                    {!isModuleEditor && (
-                      <>
-                        <AppEnvironments darkMode={darkMode} />
-                        <AppVersionsManager darkMode={darkMode} />
-                        <GitSyncManager />
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
-            {!isUserInZeroToOneFlow && (
-              <>
-                <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
-                <BuildSuggestions />
-              </>
-            )}
+            <HeaderActions darkMode={darkMode} />
+
+            <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
+              <div className="d-flex align-items-center p-0">
+                <div className="d-flex version-manager-container p-0  align-items-center gap-0">
+                  {!isModuleEditor && <PreviewAndShareIcons />}
+                  <BranchDropdown appId={appId} organizationId={organizationId} />
+                  {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
+                  {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
+                    <VersionManagerErrorBoundary>
+                      <VersionManagerDropdown darkMode={darkMode} />
+                    </VersionManagerErrorBoundary>
+                  )}
+                  <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </header>

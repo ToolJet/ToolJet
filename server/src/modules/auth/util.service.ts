@@ -6,7 +6,6 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { OrganizationUser } from '../../entities/organization_user.entity';
-import { generateNextNameAndSlug } from 'src/helpers/utils.helper';
 import * as uuid from 'uuid';
 import { Organization } from '../../entities/organization.entity';
 import { EntityManager } from 'typeorm';
@@ -18,7 +17,7 @@ import {
   WORKSPACE_USER_STATUS,
   WORKSPACE_USER_SOURCE,
 } from '@modules/users/constants/lifecycle';
-import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '../instance-settings/constants';
+import { INSTANCE_SYSTEM_SETTINGS } from '../instance-settings/constants';
 import { OrganizationUsersUtilService } from '../organization-users/util.service';
 import { GROUP_PERMISSIONS_TYPE, USER_ROLE } from '@modules/group-permissions/constants';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
@@ -135,23 +134,13 @@ export class AuthUtilService implements IAuthUtilService {
   ): Promise<User> {
     // User not exist in the workspace, creating
     let user: User;
-    let defaultOrganization: Organization;
     user = await this.userRepository.findByEmail(email);
-
-    const allowPersonalWorkspace =
-      (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
-
     const organizationUser: OrganizationUser = user?.organizationUsers?.find(
       (ou) => ou.organizationId === organization.id
     );
 
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User is archived in the workspace');
-    }
-
-    if (!user && allowPersonalWorkspace) {
-      const { name, slug } = generateNextNameAndSlug('My workspace');
-      defaultOrganization = await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
@@ -163,11 +152,11 @@ export class AuthUtilService implements IAuthUtilService {
         firstName,
         lastName,
         email,
-        source: defaultOrganization?.id ? WORKSPACE_USER_SOURCE.SIGNUP : source,
-        status: defaultOrganization?.id ? USER_STATUS.ACTIVE : status,
+        source: source,
+        status: status,
         password,
-        role: defaultOrganization?.id ? USER_ROLE.ADMIN : USER_ROLE.END_USER,
-        defaultOrganizationId: defaultOrganization?.id || organization.id,
+        role: USER_ROLE.END_USER,
+        defaultOrganizationId: organization.id,
       },
       manager
     );
@@ -197,24 +186,6 @@ export class AuthUtilService implements IAuthUtilService {
       false,
       manager
     );
-    if (defaultOrganization?.id) {
-      // Setting up default organization
-      await this.organizationUsersRepository.createOne(
-        user,
-        defaultOrganization,
-        false,
-        manager,
-        WORKSPACE_USER_SOURCE.SIGNUP,
-        true
-      );
-      await this.organizationUsersUtilService.attachUserGroup(
-        [USER_ROLE.ADMIN],
-        defaultOrganization.id,
-        user.id,
-        false,
-        manager
-      );
-    }
     return user;
   }
 
@@ -324,23 +295,39 @@ export class AuthUtilService implements IAuthUtilService {
           }
         }
       } else {
-        // No role specified -> finding role
-        newRole = await this.findUserRoleFromGroups(customGroups, manager);
-        if (newRole === USER_ROLE.END_USER) {
-          // If new role is end user and but user is app owner, assign editor role
-          const appCounts = await manager.count(App, {
-            where: {
-              userId: userId,
-              organizationId: organizationId,
-            },
-          });
-          if (appCounts > 0) {
-            newRole = USER_ROLE.END_USER;
+        // No explicit role group mapped from IdP — derive role from custom groups if present,
+        // only elevating (never demoting). If no custom groups, preserve existing role.
+        const existingRoleObj = await this.rolesRepository.getUserRole(userId, organizationId, manager);
+        const existingRole = existingRoleObj?.name as USER_ROLE;
+
+        if (existingRole) {
+          if (customGroups.length > 0) {
+            // Infer required role from custom groups. If it demands a higher privilege
+            // than the user currently holds, elevate — never demote.
+            const inferredRole = await this.findUserRoleFromGroups(customGroups, manager);
+            newRole = rolePriority[inferredRole] < rolePriority[existingRole] ? inferredRole : existingRole;
+          } else {
+            newRole = existingRole;
+          }
+        } else {
+          // New user with no existing role — infer from custom group permissions
+          newRole = await this.findUserRoleFromGroups(customGroups, manager);
+          if (newRole === USER_ROLE.END_USER) {
+            // If new role is end user but user is app owner, assign editor role
+            const appCounts = await manager.count(App, {
+              where: {
+                userId: userId,
+                organizationId: organizationId,
+              },
+            });
+            if (appCounts > 0) {
+              newRole = USER_ROLE.END_USER;
+            }
           }
         }
       }
 
-      // Remove user from existing role
+      // Remove user from existing custom groups (will be re-added below from IdP mapping)
       await this.groupPermissionsUtilService.deleteFromAllCustomGroupUser(userId, organizationId);
 
       /* Sync LDAP / SAML / OIDC groups before signup to the workspace */

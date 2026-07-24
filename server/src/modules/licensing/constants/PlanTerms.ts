@@ -26,6 +26,9 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     comments: false,
     customThemes: false,
     serverSideGlobalResolve: false,
+    queryFolders: false,
+    scim: false,
+    observability: false,
   },
   domains: [],
   workflows: {
@@ -43,6 +46,38 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   },
   auditLogs: {
     maximumDays: 0,
+  },
+  app: {
+    pages: {
+      enabled: false,
+      count: '',
+      features: {
+        appHeaderAndLogo: false,
+        addNavGroup: false,
+        canvasPageHeader: false,
+        canvasPageFooter: false,
+      },
+    },
+    permissions: {
+      component: false,
+      query: false,
+      pages: false,
+    },
+    features: {
+      promote: false,
+      release: false,
+      history: false,
+      jsLibraries: false,
+    },
+  },
+  modules: {
+    enabled: false,
+  },
+  permissions: {
+    customGroups: false,
+  },
+  observability: {
+    enabled: false,
   },
 };
 

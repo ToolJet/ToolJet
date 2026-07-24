@@ -1,5 +1,12 @@
 import { toast } from 'react-hot-toast';
 
+export const noDataFoundChildDataFormat = (path, keyName) => ({
+  id: `empty-${path}`,
+  name: `No ${keyName || path} found`,
+  children: [],
+  metadata: { noData: true },
+});
+
 export const formatInspectorDataMisc = (obj, type, searchablePaths = new Set()) => {
   if (typeof obj !== 'object' || obj === null) return [];
   const data = Object.entries(obj).sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: 'base' }));
@@ -9,6 +16,13 @@ export const formatInspectorDataMisc = (obj, type, searchablePaths = new Set()) 
     else if (!Array.isArray(obj)) {
       data = Object.entries(obj);
     }
+
+    if (path === 'page.variables' && level === 2 && data?.length === 0) {
+      const key = path.split('.').at(-1);
+
+      return [noDataFoundChildDataFormat(path, key)];
+    }
+
     return data.reduce((acc, [name, value]) => {
       const currentPath = path + `.${name}`;
       searchablePaths.add(currentPath);

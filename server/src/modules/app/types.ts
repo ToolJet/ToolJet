@@ -21,6 +21,7 @@ export interface FeatureConfig {
   isPublic?: boolean;
   isSuperAdminFeature?: boolean;
   shouldNotSkipPublicApp?: boolean;
+  allowFailedAuditLogs?: boolean;
 }
 
 export interface ResourceDetails {

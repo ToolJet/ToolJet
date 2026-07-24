@@ -6,6 +6,9 @@ import classNames from 'classnames';
 import { computeColor } from '@/_helpers/utils';
 import { Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import useStore from '@/AppBuilder/_stores/store';
+
+const coerceColorString = (v) => (typeof v === 'string' ? v : '');
 
 const BaseColorSwatches = ({
   value,
@@ -19,11 +22,19 @@ const BaseColorSwatches = ({
   component,
   styleDefinition,
   componentType = 'color',
-  CustomOptionList = () => { },
-  SwatchesToggle = () => { },
+  componentId,
+  CustomOptionList = () => {},
+  SwatchesToggle = () => {},
   onReset,
 }) => {
-  value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
+  const computeColorForPopoverMenu = useStore((state) => state.computeColorForPopoverMenu);
+  value = coerceColorString(value);
+  if (component == 'PopoverMenu') {
+    value = computeColorForPopoverMenu(value, meta, componentId);
+  } else if (component == 'Button' || component == 'FileButton') {
+    value = computeColor(styleDefinition, value, meta, component);
+  }
+  value = coerceColorString(value);
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
@@ -52,14 +63,19 @@ const BaseColorSwatches = ({
     let aHex = Math.round(255 * alpha).toString(16);
     return alpha === 0 ? '00' : aHex.length < 2 ? `0${aHex}` : aHex;
   };
+
   const handleColorChange = (color) => {
-    const hexCode = `${color.hex}${decimalToHex(color?.rgb?.a ?? 1.0)}`;
+    const { r, g, b, a } = color.rgb;
+    const toHex = (n) => n.toString(16).padStart(2, '0');
+    const hexCode = `#${toHex(r)}${toHex(g)}${toHex(b)}${decimalToHex(a ?? 1.0)}`;
     onChange(hexCode);
   };
+
   const eventPopover = () => {
     return (
       <Popover
         className={classNames(
+          'codebuilder-color-swatches-popover',
           { 'dark-theme': darkMode },
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
@@ -136,9 +152,9 @@ const BaseColorSwatches = ({
         >
           {colorMap?.[value]
             ? colorMap[value]
-              .split('/')
-              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-              .join('/')
+                .split('/')
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join('/')
             : value}
         </div>
         {typeof onReset === 'function' && (
@@ -175,6 +191,7 @@ const BaseColorSwatches = ({
               fallbackPlacements={['top', 'left']}
               rootClose={true}
               overlay={eventPopover()}
+              rootCloseEvent="mousedown" // close picker when mousedown anywhere on screen
             >
               {ColorPickerInputBox()}
             </OverlayTrigger>

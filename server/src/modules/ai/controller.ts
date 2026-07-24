@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Res, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Res, NotFoundException, Query } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import { Response } from 'express';
 import { IAiController } from './interfaces/IController';
@@ -7,7 +7,7 @@ import { FEATURE_KEY } from './constants';
 
 @Controller('ai')
 export class AiController implements IAiController {
-  constructor() {}
+  constructor() { }
 
   @InitFeature(FEATURE_KEY.FETCH_ZERO_STATE)
   @Get('/zero-state')
@@ -38,6 +38,17 @@ export class AiController implements IAiController {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.REWIND_STEP)
+  @Post('conversation/rewind-step')
+  async rewindStep(
+    @User() user,
+    @Param('conversationId') conversationId: string,
+    @Body() body,
+    @Res() response: Response
+  ) {
+    throw new NotFoundException();
+  }
+
   @InitFeature(FEATURE_KEY.REGENERATE_MESSAGE)
   @Post('conversation/regenerate-message')
   async regenerateAiMessage(@User() user, @Param('parentMessageId') parentMessageId: string) {
@@ -53,6 +64,28 @@ export class AiController implements IAiController {
   @InitFeature(FEATURE_KEY.GET_CREDITS_BALANCE)
   @Get('/get-credits-balance')
   async getCreditsBalance(@User() user) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.LIST_CONVERSATIONS)
+  @Get('conversations')
+  async listConversations(
+    @User() user,
+    @Query('appId') appId: string,
+    @Query('conversationType') conversationType: string
+  ) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_CONVERSATION)
+  @Post('conversation')
+  async createConversation(@User() user, @Body() body) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.GET_CONVERSATION)
+  @Get('conversation/:conversationId')
+  async getConversationById(@User() user, @Param('conversationId') conversationId: string) {
     throw new NotFoundException();
   }
 }

@@ -77,7 +77,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
   return (
     <div className="tab-content-wrapper tj-db-field-wrapper mt-2">
       <div className="d-flex tooljetdb-worflow-operations mb-2">
-        <label className="form-label flex-shrink-0" data-cy="label-column-filter">
+        <label className="form-label flex-shrink-0" data-cy="tooljetdb-update-rows-filter-label">
           Filter
         </label>
 
@@ -116,7 +116,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
       </div>
 
       <div className="fields-container d-flex tooljetdb-worflow-operations">
-        <label className="form-label flex-shrink-0" data-cy="label-column-filter">
+        <label className="form-label flex-shrink-0" data-cy="tooljetdb-update-rows-columns-label">
           Columns
         </label>
         <div className={`field-container flex-grow-1  d-flex custom-gap-6 flex-column `}>
@@ -144,6 +144,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
               size="sm"
               onClick={addNewColumnOptionsPair}
               className="d-flex justify-content-start width-fit-content cursor-pointer"
+              data-cy="tooljetdb-update-rows-add-column-button"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path

@@ -2,8 +2,8 @@ import { IsString, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
 
 export class PreviewWorkflowNodeDto {
   @IsString()
-  @IsNotEmpty()
-  queryId: string;
+  @IsOptional()
+  queryId?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -18,8 +18,8 @@ export class PreviewWorkflowNodeDto {
   app?: string;
 
   @IsString()
-  @IsOptional()
-  appEnvId?: string;
+  @IsNotEmpty()
+  appEnvId: string;
 
   @IsObject()
   @IsOptional()

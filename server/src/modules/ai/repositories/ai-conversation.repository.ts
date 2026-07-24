@@ -14,16 +14,16 @@ export class AiConversationRepository extends Repository<AiConversation> {
     userId: string,
     conversationType: 'generate' | 'learn'
   ): Promise<AiConversation> {
+    // First try to find the active conversation
+    const activeConversation = await this.findOne({
+      where: { appId, userId, conversationType, active: true },
+    });
+    if (activeConversation) return activeConversation;
+
+    // Fallback: most recently created
     return await this.findOne({
-      where: {
-        appId,
-        userId,
-        conversationType,
-      },
-      relations: ['aiConversationMessages'],
-      order: {
-        createdAt: 'DESC',
-      },
+      where: { appId, userId, conversationType },
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -33,7 +33,10 @@ export class AiConversationRepository extends Repository<AiConversation> {
     conversationType: 'generate' | 'learn',
     manager?: EntityManager
   ): Promise<AiConversation> {
-    return dbTransactionWrap((manager: EntityManager) => {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      // Deactivate all existing conversations for this app/user/type
+      await manager.update(AiConversation, { appId, userId, conversationType }, { active: false });
+
       const conversation = manager.create(AiConversation, {
         userId,
         appId,
@@ -41,6 +44,29 @@ export class AiConversationRepository extends Repository<AiConversation> {
       });
       return manager.save(conversation);
     }, manager || this.manager);
+  }
+
+  async findAllByAppAndUser(
+    appId: string,
+    userId: string,
+    conversationType: 'generate' | 'learn'
+  ): Promise<AiConversation[]> {
+    return await this.find({
+      where: {
+        appId,
+        userId,
+        conversationType,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
+  async findById(conversationId: string): Promise<AiConversation> {
+    return await this.findOne({
+      where: { id: conversationId },
+    });
   }
 
   async createOne(conversation: Partial<AiConversation>, manager?: EntityManager): Promise<AiConversation> {
@@ -53,5 +79,20 @@ export class AiConversationRepository extends Repository<AiConversation> {
     await dbTransactionWrap((manager: EntityManager) => {
       return manager.update(AiConversation, id, updatableData);
     }, manager || this.manager);
+  }
+
+  async setActive(
+    conversationId: string,
+    appId: string,
+    userId: string,
+    conversationType: 'generate' | 'learn'
+  ): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      // Deactivate all conversations of same app/user/type
+      await manager.update(AiConversation, { appId, userId, conversationType }, { active: false });
+
+      // Activate the target conversation
+      await manager.update(AiConversation, conversationId, { active: true });
+    }, this.manager);
   }
 }

@@ -1,25 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import { OverlayTrigger, Navbar, Offcanvas } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import classNames from 'classnames';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
-import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 import HeaderActions from '@/AppBuilder/Header/HeaderActions';
-import { AppEnvironments } from '@/modules/Appbuilder/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
+import Loader from '@/ToolJetUI/Loader/Loader';
+// import { AppEnvironments } from '@/modules/Appbuilder/components';
+// import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
+// Lazy load editor-only components to reduce viewer bundle size
+const AppVersionsManager = lazy(() =>
+  import('@/AppBuilder/Header/AppVersionsManager').then((m) => ({ default: m.AppVersionsManager }))
+);
+const AppEnvironments = lazy(() =>
+  import('@/modules/Appbuilder/components').then((m) => ({ default: m.AppEnvironments }))
+);
 
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const appType = useAppType();
-  const { setShowUndoRedoBtn, editingVersion } = useStore(
+  const { setShowUndoRedoBtn, editingVersion, selectedVersion } = useStore(
     (state) => ({
       setShowUndoRedoBtn: state?.setShowUndoRedoBtn,
       editingVersion: state?.editingVersion,
+      selectedVersion: state?.selectedVersion,
     }),
     shallow
   );
+
+  // In sub-branch preview, lock version and env selectors so user cannot switch
+  const isSubBranch = selectedVersion?.versionType === 'branch';
 
   const [previewNavbar, togglePreviewNavbar] = useState(false);
 
@@ -35,14 +47,22 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           Preview settings
         </span>
         {editingVersion && appType !== 'module' && (
-          <>
-            <AppVersionsManager darkMode={darkMode} />
+          <Suspense
+            fallback={
+              <div className="d-flex justify-content-center" style={{ width: '304px' }}>
+                <div className="d-flex align-items-center" style={{ width: '16px', height: '16px' }}>
+                  <Loader width={16} height={16} />
+                </div>
+              </div>
+            }
+          >
+            <AppVersionsManager darkMode={darkMode} disabled={isSubBranch} />
             <div className="navbar-seperator"></div>
-            <AppEnvironments darkMode={darkMode} />
-          </>
+            <AppEnvironments darkMode={darkMode} disabled={isSubBranch} />
+          </Suspense>
         )}
         <span style={{ marginLeft: appType === 'module' && '10px' }}>
-          <HeaderActions showToggleLayoutBtn darkMode={darkMode} />
+          <HeaderActions showToggleLayoutBtn darkMode={darkMode} showPreviewBtn={false} />
         </span>
       </div>
     </div>
@@ -88,7 +108,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           {previewNavbar && (
             <Offcanvas.Body>
               {appType !== 'module' && (
-                <>
+                <Suspense fallback={null}>
                   <span style={{ marginTop: '4px' }}>
                     <AppEnvironments darkMode={darkMode} />
                   </span>
@@ -96,7 +116,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                   <span>
                     <AppVersionsManager darkMode={darkMode} />
                   </span>
-                </>
+                </Suspense>
               )}
 
               <div
@@ -106,7 +126,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                 style={{ backgroundColor: !darkMode && '#fcfcfd' }}
               >
                 <span style={{ marginRight: '24px' }}>Layout</span>
-                <HeaderActions showToggleLayoutBtn showFullWidth={true} darkMode={darkMode} />
+                <HeaderActions showToggleLayoutBtn showFullWidth={true} darkMode={darkMode} showPreviewBtn={false} />
               </div>
             </Offcanvas.Body>
           )}

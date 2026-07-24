@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import Select from '@/_ui/Select';
 import { useTranslation } from 'react-i18next';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { resolveReferences } from '@/_helpers/utils';
 import styles from '@/_ui/Select/styles';
-import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 const TIMEZONE_OPTIONS = [
@@ -78,9 +78,11 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
   const { t } = useTranslation();
   const items = [];
   const [isDateDisplayFormatFxOn, setIsDateDisplayFormatFxOn] = useState(
+    // eslint-disable-next-line no-constant-binary-expression
     !column?.notActiveFxActiveFields?.includes('dateFormat') ?? true
   );
   const [isParseDateFormatFxOn, setIsParseDateFormatFxOn] = useState(
+    // eslint-disable-next-line no-constant-binary-expression
     !column?.notActiveFxActiveFields?.includes('parseDateFormat') ?? true
   );
 

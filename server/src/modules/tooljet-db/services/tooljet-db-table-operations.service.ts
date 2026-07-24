@@ -28,9 +28,9 @@ import {
   decryptTooljetDatabasePassword,
   grantTenantRoleToTjdbAdminRole,
   isSQLModeDisabled,
+  generateTJDBPasswordForRole,
 } from 'src/helpers/tooljet_db.helper';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
-import * as crypto from 'crypto';
 import {
   PostgrestError,
   TooljetDatabaseColumn,
@@ -427,6 +427,14 @@ export class TooljetDbTableOperationsService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
+    const isTableInUse = await this.findQueriesLinkedToTable(internalTable.id);
+
+    if (isTableInUse) {
+      throw new BadRequestException(
+        "Table can't be deleted, it is being used in app queries"
+      );
+    }
+
     const tenantSchema = findTenantSchema(organizationId);
     const queryRunner = this.manager.connection.createQueryRunner();
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
@@ -460,6 +468,29 @@ export class TooljetDbTableOperationsService {
       await queryRunner.release();
       await tjdbQueryRunner.release();
     }
+  }
+
+  private async findQueriesLinkedToTable(tableId: string): Promise<boolean> {
+    const result = await this.manager.query(
+      `
+        SELECT EXISTS (
+          SELECT 1
+          FROM data_queries dq
+          INNER JOIN data_sources ds
+            ON dq.data_source_id = ds.id
+          INNER JOIN (
+            SELECT DISTINCT ON (app_id) id
+            FROM app_versions
+            ORDER BY app_id, created_at DESC
+          ) latest_versions ON latest_versions.id = dq.app_version_id
+          WHERE ds.kind = 'tooljetdb'
+            AND dq.options::text LIKE $1
+        ) AS exists
+      `,
+      [`%${tableId}%`]
+    );
+
+    return result[0]?.exists ?? false;
   }
 
   protected async editTable(organizationId: string, params) {
@@ -866,8 +897,9 @@ export class TooljetDbTableOperationsService {
   }
 
   protected async joinTable(organizationId: string, params: Record<string, any>) {
-    const { joinQueryJson, dataQuery, user } = params;
-    if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
+    const { joinQueryJson: rawJoinQueryJson, dataQuery, user } = params;
+    if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");
+    const joinQueryJson = this.normalizeJoinQueryJsonToNewFormat(rawJoinQueryJson);
 
     const tjdbTenantConfigs = isSQLModeDisabled()
       ? {
@@ -950,6 +982,60 @@ export class TooljetDbTableOperationsService {
         // });
       }
     }
+  }
+
+  private normalizeFieldToNewFormat(field: Record<string, any>): Record<string, any> {
+    if (!field) return field;
+    const result: Record<string, any> = { type: field.type };
+    if (field.table !== undefined) result.table = field.table;
+    result.columnName = field.columnName ?? field.column_name;
+    if (field.value !== undefined) result.value = field.value;
+    if (field.jsonpath !== undefined) result.jsonpath = field.jsonpath;
+    return result;
+  }
+
+  private normalizeConditionsToNewFormat(conditions: Record<string, any>): Record<string, any> {
+    if (!conditions) return conditions;
+    const rawConditionsList: Array<Record<string, any>> = conditions.conditions_list ?? [];
+    return {
+      operator: conditions.operator,
+      conditionsList: rawConditionsList.map((condition) => ({
+        operator: condition.operator,
+        leftField: this.normalizeFieldToNewFormat(condition.leftField ?? condition.left_field),
+        rightField: this.normalizeFieldToNewFormat(condition.rightField ?? condition.right_field),
+      })),
+    };
+  }
+
+  private normalizeJoinQueryJsonToNewFormat(queryJson: Record<string, any>): Record<string, any> {
+    if (!queryJson?.joins?.length) return queryJson;
+
+    const firstJoin = queryJson.joins[0];
+    const isOldFormat =
+      'join_type' in firstJoin ||
+      'conditions_list' in (firstJoin?.conditions ?? {}) ||
+      'conditions_list' in (queryJson?.conditions ?? {});
+
+    if (!isOldFormat) return queryJson;
+
+    return {
+      ...queryJson,
+      joins: queryJson.joins.map((join) => ({
+        id: join.id,
+        table: join.table,
+        joinType: join.joinType ?? join.join_type,
+        conditions: this.normalizeConditionsToNewFormat(join.conditions),
+      })),
+      ...(queryJson.conditions && {
+        conditions: this.normalizeConditionsToNewFormat(queryJson.conditions),
+      }),
+      order_by: (queryJson.order_by ?? []).map((orderByEntry) => ({
+        table: orderByEntry.table,
+        columnName: orderByEntry.columnName ?? orderByEntry.column_name,
+        direction: orderByEntry.direction,
+        ...(orderByEntry.jsonpath !== undefined && { jsonpath: orderByEntry.jsonpath }),
+      })),
+    };
   }
 
   protected buildJoinQuery(
@@ -1552,7 +1638,7 @@ export class TooljetDbTableOperationsService {
 
     const dbUser = `user_${organizationId}`;
     const dbSchema = `workspace_${organizationId}`;
-    const dbPassword = crypto.randomBytes(8).toString('hex');
+    const dbPassword = generateTJDBPasswordForRole();
     const tjDbName = this.configService.get('TOOLJET_DB');
     const tooljetDbAdminUser = this.configService.get('TOOLJET_DB_USER');
 

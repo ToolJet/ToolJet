@@ -5,9 +5,11 @@ import _, { isEmpty, throttle } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
+import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppData';
+import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
 
 const initialState = {
-  sortBy: 'updated_at',
+  sortBy: 'custom',
   sortOrder: 'desc',
   isDeletingQueryInProcess: false,
   creatingQueryInProcessId: null,
@@ -47,7 +49,11 @@ export const createDataQuerySlice = (set, get) => ({
     },
     sortDataQueries: (sortBy, sortOrder, moduleId = 'canvas') => {
       set((state) => {
-        const newSortOrder = sortOrder ? sortOrder : state.sortOrder === 'asc' ? 'desc' : 'asc';
+        if (sortBy === 'custom') {
+          state.dataQuery.sortBy = 'custom';
+          return;
+        }
+        const newSortOrder = sortOrder ? sortOrder : state.dataQuery.sortOrder === 'asc' ? 'desc' : 'asc';
         state.dataQuery.sortBy = sortBy;
         state.dataQuery.sortOrder = newSortOrder;
         state.dataQuery.queries.modules[moduleId] = sortByAttribute(
@@ -57,7 +63,14 @@ export const createDataQuerySlice = (set, get) => ({
         );
       });
     },
-    createDataQuery: (selectedDataSource, shouldRunQuery, customOptions = {}, moduleId = 'canvas', queryName) => {
+    createDataQuery: (
+      selectedDataSource,
+      shouldRunQuery,
+      customOptions = {},
+      moduleId = 'canvas',
+      queryName,
+      extraProperties = {}
+    ) => {
       let name;
       const appVersionId = get().currentVersionId;
       const appId = get().appStore.modules[moduleId].app.appId;
@@ -81,16 +94,19 @@ export const createDataQuerySlice = (set, get) => ({
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
       const runOnCreate = options.runOnCreate;
-
+      const callbackFunction = extraProperties?.callbackFunction;
       let cleanSelectedQuery = { ...selectedQuery };
-      if(selectedQuery?.permissions) {
+      if (selectedQuery?.permissions) {
         delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
       }
+
+      const folderId = extraProperties?.folderId;
 
       set((state) => {
         state.dataQuery.queries.modules[moduleId] = [
           {
             ...cleanSelectedQuery,
+            plugin_id: selectedDataSource.pluginId || selectedDataSource.plugin_id || null,
             data_source_id: dataSourceId,
             app_version_id: appVersionId,
             options,
@@ -104,12 +120,11 @@ export const createDataQuerySlice = (set, get) => ({
       });
       setSelectedQuery(tempId);
       setNameInputFocused(true);
-
       dataqueryService
-        .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
+        .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId)
         .then((data) => {
           set((state) => {
-            state.creatingQueryInProcessId = null;
+            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
               if (query.id === tempId) {
                 return {
@@ -121,6 +136,10 @@ export const createDataQuerySlice = (set, get) => ({
               return query;
             });
           });
+          // EE: add the real folder mapping from the backend response
+          if (data.folderMapping) {
+            get().queryFolders?.addRealQueryMapping?.(data.folderMapping);
+          }
           setSelectedQuery(data.id);
           if (shouldRunQuery) setQueryToBeRun(data);
 
@@ -148,6 +167,11 @@ export const createDataQuerySlice = (set, get) => ({
               data: [],
               rawData: [],
               id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
             },
             moduleId
           );
@@ -155,10 +179,13 @@ export const createDataQuerySlice = (set, get) => ({
           if (runOnCreate) {
             get().queryPanel.runQuery(data.id, data.name, undefined, undefined, {}, true, false, moduleId);
           }
+          if (callbackFunction) {
+            callbackFunction(data);
+          }
         })
         .catch((error) => {
           set((state) => {
-            state.creatingQueryInProcessId = null;
+            state.dataQuery.creatingQueryInProcessId = null;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].filter(
               (query) => query.id !== tempId
             );
@@ -239,6 +266,8 @@ export const createDataQuerySlice = (set, get) => ({
             );
             delete state.resolvedStore.modules[moduleId].exposedValues.queries[queryId];
           });
+          // EE: clean up folder mapping for the deleted query
+          get().queryFolders?.removeQueryMapping?.(queryId);
         })
         .catch((e) => {
           if (e.statusCode === 403) {
@@ -252,6 +281,7 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .finally(() => setIsAppSaving(false));
 
+      clearQueryRerunTimer(queryId);
       get().removeNode(`queries.${queryId}`, moduleId);
       get().updateDependencyValues(`queries.${queryId}`, moduleId);
     },
@@ -260,7 +290,7 @@ export const createDataQuerySlice = (set, get) => ({
         state.dataQuery.creatingQueryInProcessId = uuidv4();
       });
       const { eventsSlice } = get();
-      const { getEventsByComponentsId, createAppVersionEventHandlers } = eventsSlice;
+      const { getEventsByComponentsId, bulkCreateAppVersionEventHandlers } = eventsSlice;
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const queryToClone = { ...dataQueries.find((query) => query.id === id) };
       let newName = queryToClone.name + '_copy';
@@ -308,23 +338,40 @@ export const createDataQuerySlice = (set, get) => ({
               data: [],
               rawData: [],
               id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
             },
             moduleId
           );
 
-          const events = getEventsByComponentsId(queryToClone.id);
+          const events = getEventsByComponentsId(queryToClone.id) || [];
 
-          events.forEach((event) => {
-            const newEvent = {
-              event: {
-                ...event.event,
-              },
-              eventType: event.target,
-              attachedTo: data.id,
-              index: event.index,
-            };
-            createAppVersionEventHandlers(newEvent, moduleId);
-          });
+          // Collect all events for bulk creation, filtering out invalid events
+          // Ensure data.id (new query ID) is valid before creating events
+          if (data?.id && events.length > 0) {
+            const newQueryId = data.id;
+            const eventsToCreate = events
+              .filter((event) => event?.event && event?.target && event?.index != null)
+              .map((event) => ({
+                name: event.name,
+                event: {
+                  ...event.event,
+                },
+                eventType: event.target,
+                attachedTo: newQueryId,
+                index: event.index,
+              }))
+              .filter((event) => event.attachedTo && event.eventType && event.event);
+
+            // Create all events in a single bulk request
+            // TODO: Extend query creation API to include events for single history entry
+            if (eventsToCreate.length > 0) {
+              bulkCreateAppVersionEventHandlers(eventsToCreate, moduleId);
+            }
+          }
 
           if (queryToClone.permissions && queryToClone.permissions.length !== 0) {
             const body = {
@@ -430,6 +477,28 @@ export const createDataQuerySlice = (set, get) => ({
           return query;
         });
       });
+
+      // Update query dependency registrations when options change.
+      // Pass `options` (with entity names), not `newOptions` (with IDs), because
+      // registerQueryDependencies uses extractAndReplaceReferencesFromString which handles name→ID mapping.
+      if (options.runOnDependencyChange) {
+        get().registerQueryDependencies(selectedQuery.id, selectedQuery.name, selectedQuery.kind, options, moduleId);
+      } else {
+        // Toggle turned off — clean up __options__ sentinel node if it exists
+        const optionsPath = `queries.${selectedQuery.id}.__options__`;
+        const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
+        if (depGraph && depGraph.hasNode(optionsPath)) {
+          set(
+            (state) => {
+              state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
+              return { ...state };
+            },
+            false,
+            'clearQueryOptionsDeps'
+          );
+        }
+      }
+
       setSelectedQuery(selectedQuery?.id);
     },
     saveData: throttle((newValues, moduleId = 'canvas') => {
@@ -487,8 +556,9 @@ export const createDataQuerySlice = (set, get) => ({
           });
         });
     }, 500),
-    runOnLoadQueries: async (moduleId = 'canvas') => {
-      const queries = get().dataQuery.queries.modules[moduleId];
+    runOnLoadQueries: async (moduleId = 'canvas', queryList = null) => {
+      const queries = Array.isArray(queryList) ? queryList : get().dataQuery.queries.modules[moduleId];
+
       try {
         for (const query of queries) {
           if (
@@ -514,20 +584,102 @@ export const createDataQuerySlice = (set, get) => ({
         return Promise.reject(error);
       }
     },
+    performDeletionUpdationAndCreationOfQuery: (queriesInfo, moduleId = 'canvas') => {
+      if (!(queriesInfo?.delete?.length || queriesInfo?.update?.length || queriesInfo?.create?.length)) return;
+
+      const queryIdsToDelete = new Set(queriesInfo.delete?.map((query) => query.id) ?? []);
+      const queriesToUpdate = new Map(queriesInfo.update?.map((query) => [query.id, query]) ?? []);
+      const queriesToCreate = (queriesInfo.create ?? []).map(normalizeQueryTransformationOptions);
+
+      set(
+        (state) => {
+          const queriesValueInState = state.dataQuery.queries.modules[moduleId];
+          const queryNameIdMapping = get().modules[moduleId].queryNameIdMapping;
+          const componentNameIdMapping = get().modules[moduleId].componentNameIdMapping;
+
+          const updatedQueriesValue = queriesValueInState
+            .filter((query) => {
+              const queryToBeDeleted = queryIdsToDelete.has(query.id);
+
+              if (queryToBeDeleted) {
+                delete state.modules[moduleId].queryNameIdMapping[query.name];
+                delete state.modules[moduleId].queryIdNameMapping[query.id];
+
+                delete state.resolvedStore.modules[moduleId].exposedValues.queries[query.id];
+
+                get().removeNode(`queries.${query.id}`, moduleId);
+                get().updateDependencyValues(`queries.${query.id}`, moduleId);
+              }
+
+              return !queryToBeDeleted;
+            })
+            .map((query) => {
+              if (queriesToUpdate.has(query.id)) {
+                const updatedQuery = normalizeQueryTransformationOptions(queriesToUpdate.get(query.id));
+
+                const newOptions = replaceQueryOptionsEntityReferencesWithIds(
+                  updatedQuery.options,
+                  componentNameIdMapping,
+                  queryNameIdMapping
+                );
+
+                state.modules[moduleId].queryIdNameMapping[query.id] = updatedQuery.name;
+
+                return { ...updatedQuery, options: { ...newOptions } };
+              }
+
+              return query;
+            });
+
+          queriesToCreate.forEach((query) => {
+            updatedQueriesValue.push(query);
+
+            state.modules[moduleId].queryNameIdMapping[query.name] = query.id;
+            state.modules[moduleId].queryIdNameMapping[query.id] = query.name;
+          });
+
+          state.dataQuery.queries.modules[moduleId] = updatedQueriesValue;
+
+          const currentSelectedQueryId = state.queryPanel.selectedQuery?.id;
+          if (currentSelectedQueryId && queriesToUpdate.has(currentSelectedQueryId)) {
+            const updatedSelectedQuery = updatedQueriesValue.find((q) => q.id === currentSelectedQueryId);
+            if (updatedSelectedQuery) {
+              state.queryPanel.selectedQuery = updatedSelectedQuery;
+              /** Keep selectedDataSource in sync
+               *  - This path mutates selectedQuery directly (not via setSelectedQuery)
+               *  - so re-resolve the datasource here to avoid rendering against a stale one.
+               */
+              state.queryPanel.selectedDataSource = get().queryPanel.resolveDataSourceForQuery(updatedSelectedQuery);
+            }
+          }
+        },
+        false,
+        'performDeletionUpdationAndCreationOfQuery'
+      );
+
+      queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
+
+      get().rebuildQueryHints(moduleId);
+    },
   },
 });
 
 const sortByAttribute = (data, sortBy, order) => {
+  if (sortBy === 'updated_at') {
+    return data.sort((a, b) => {
+      const aTime = new Date(a.updated_at ?? 0).getTime();
+      const bTime = new Date(b.updated_at ?? 0).getTime();
+      return order === 'asc' ? aTime - bTime : bTime - aTime;
+    });
+  }
   if (order === 'asc') {
-    if (sortBy === 'kind' || sortBy === 'updated_at') {
-      // sort by name first and then by the attribute
+    if (sortBy === 'kind') {
       return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
     }
     return data.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
   }
   if (order === 'desc') {
-    if (sortBy === 'kind' || sortBy === 'updated_at') {
-      // sort by name first and then by the attribute
+    if (sortBy === 'kind') {
       return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
     }
     return data.sort((a, b) => b[sortBy].localeCompare(a[sortBy]));

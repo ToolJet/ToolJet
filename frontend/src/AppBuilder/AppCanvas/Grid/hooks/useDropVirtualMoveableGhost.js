@@ -6,16 +6,19 @@ import { clearActiveTargetClassNamesAfterSnapping } from '@/AppBuilder/AppCanvas
 export const useDropVirtualMoveableGhost = () => {
   const ghostElementRef = useRef(null);
   const isActiveRef = useRef(false);
+  const moveableGhostClass = 'disable-moveable-line';
 
   const getMoveableRef = useGridStore((state) => state.moveableRef);
   const setVirtualTarget = useGridStore((state) => state.actions.setVirtualTarget);
 
-  const createGhostMoveElement = (componentSize) => {
-    if (ghostElementRef.current) return;
+  const toggleMoveableGhostClass = (shouldEnable) => {
     const mainEditorCanvas = document.getElementById('main-editor-canvas');
-    mainEditorCanvas.classList.add('disable-moveable-line');
-    const ghost = document.createElement('div');
-    ghost.id = 'moveable-virtual-ghost-element';
+    if (!mainEditorCanvas) return;
+    mainEditorCanvas.classList.toggle(moveableGhostClass, shouldEnable);
+  };
+
+  const applyGhostElementStyles = (ghost, componentSize) => {
+    toggleMoveableGhostClass(true);
     ghost.className = 'moveable-ghost target';
     ghost.style.cssText = `
       position: absolute;
@@ -30,7 +33,25 @@ export const useDropVirtualMoveableGhost = () => {
       left: 0;
       border: 1px solid #4af;
     `;
+  };
+
+  const createGhostMoveElement = (componentSize) => {
+    if (ghostElementRef.current) return ghostElementRef.current;
+    const existingGhost = document.getElementById('moveable-virtual-ghost-element');
+    if (existingGhost) {
+      applyGhostElementStyles(existingGhost, componentSize);
+      ghostElementRef.current = existingGhost;
+      return existingGhost;
+    }
+    const ghost = document.createElement('div');
+    ghost.id = 'moveable-virtual-ghost-element';
+    applyGhostElementStyles(ghost, componentSize);
     const container = document.getElementById('real-canvas');
+
+    if (!container) {
+      toggleMoveableGhostClass(false);
+      return null;
+    }
     container.appendChild(ghost);
     ghostElementRef.current = ghost;
     return ghost;
@@ -48,10 +69,10 @@ export const useDropVirtualMoveableGhost = () => {
 
   const activateMoveableGhost = (componentSize, mousePosition, canvasRef) => {
     if (isActiveRef.current) return;
+    const ghost = createGhostMoveElement(componentSize);
+    if (!ghost) return;
 
     isActiveRef.current = true;
-
-    const ghost = createGhostMoveElement(componentSize, canvasRef);
     if (ghost && mousePosition) {
       updateMoveableGhostPosition(mousePosition, canvasRef);
 
@@ -68,7 +89,7 @@ export const useDropVirtualMoveableGhost = () => {
             button: 0,
             buttons: 1,
           });
-          moveableInstance.waitToChangeTarget().then((e) => {
+          moveableInstance.waitToChangeTarget().then(() => {
             moveableInstance.dragStart(fakeEvent, ghost);
           });
           setVirtualTarget(ghost);
@@ -80,23 +101,25 @@ export const useDropVirtualMoveableGhost = () => {
   };
 
   const deactivateMoveableGhost = () => {
-    if (!isActiveRef.current) return;
+    if (!isActiveRef.current && !ghostElementRef.current) {
+      toggleMoveableGhostClass(false);
+      return;
+    }
 
     isActiveRef.current = false;
 
-    const moveableInstance = getMoveableRef;
-    if (moveableInstance && ghostElementRef.current) {
-      try {
-        setVirtualTarget(null);
+    try {
+      setVirtualTarget(null);
+      if (ghostElementRef.current) {
         ghostElementRef.current.remove();
         ghostElementRef.current = null;
-        const mainEditorCanvas = document.getElementById('main-editor-canvas');
-        mainEditorCanvas.classList.remove('disable-moveable-line');
-        const selectedComponents = useStore.getState().selectedComponents;
-        clearActiveTargetClassNamesAfterSnapping(selectedComponents);
-      } catch (error) {
-        console.warn('Failed to trigger moveable dragEnd:', error);
       }
+      const selectedComponents = useStore.getState().selectedComponents;
+      clearActiveTargetClassNamesAfterSnapping(selectedComponents);
+    } catch (error) {
+      console.warn('Failed to trigger moveable dragEnd:', error);
+    } finally {
+      toggleMoveableGhostClass(false);
     }
   };
 

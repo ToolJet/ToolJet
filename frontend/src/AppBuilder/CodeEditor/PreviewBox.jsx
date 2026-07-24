@@ -14,10 +14,12 @@ import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
+import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-
+import cx from 'classnames';
 import { findDefault } from '../_utils/component-properties-validation';
 import FixWithAi from './FixWithAi';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -133,7 +135,7 @@ export const PreviewBox = ({
   const globalServerConstantsRegex = /\{\{.*globals\.server.*\}\}/;
 
   const getPreviewContent = (content, type) => {
-    if (content === undefined || content === null) return currentValue;
+    if (content === undefined) return currentValue;
     try {
       switch (type) {
         case 'Object':
@@ -336,6 +338,16 @@ const RenderResolvedValue = ({
   );
 };
 
+function FixIssueTooltipContent() {
+  return (
+    <>
+      <h5 className="tw-font-medium">Auto-fix</h5>
+
+      <p className="tw-text-base tw-mb-0">Diagnose and resolve errors instantly to keep your apps running smoothly</p>
+    </>
+  );
+}
+
 const PreviewContainer = ({
   children,
   isFocused,
@@ -345,6 +357,9 @@ const PreviewContainer = ({
   previewRef,
   showPreview,
   onAiSuggestionAccept,
+  wrapperWidth,
+  overlayKey,
+  isInsideQueryManager,
   ...restProps
 }) => {
   const {
@@ -361,6 +376,7 @@ const PreviewContainer = ({
   } = restProps;
 
   const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
   const fetchErrorFixUsingAi = useStore((state) => state.fetchErrorFixUsingAi);
   const clearChatHistory = useStore((state) => state.clearChatHistory);
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow); // TODO: check if moduleId needs to be passed here
@@ -459,7 +475,7 @@ const PreviewContainer = ({
   const popover = (
     <Popover
       bsPrefix="codehinter-preview-popover"
-      id="popover-basic"
+      id="codehinter-preview-box-popover"
       className={`${darkMode && 'dark-theme'}`}
       style={{
         zIndex: 1400,
@@ -472,8 +488,12 @@ const PreviewContainer = ({
           border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
           padding: isEmpty(validationSchema) && !validationFn && '0px',
           boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
-          width: '250px',
-          maxWidth: '350px',
+          ...(wrapperWidth
+            ? { width: wrapperWidth }
+            : {
+                width: '250px',
+                maxWidth: '350px',
+              }),
         }}
       >
         <div>
@@ -491,16 +511,22 @@ const PreviewContainer = ({
                   <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
 
-                {aiFeaturesEnabled && (
-                  <Button
-                    size="medium"
-                    variant="outline"
-                    leadingIcon="tooljetai"
-                    className="mt-2"
-                    onClick={handleFixErrorWithAI}
+                {aiFeaturesEnabled && !isAiBlockedByBranch && (
+                  <ToolTip
+                    placement="left"
+                    message={<FixIssueTooltipContent />}
+                    tooltipClassName="[&_.tooltip-inner]:tw-text-left [&_.tooltip-inner]:tw-p-3"
                   >
-                    Fix with AI
-                  </Button>
+                    <Button
+                      size="medium"
+                      variant="outline"
+                      leadingIcon="tooljetai"
+                      className="mt-2"
+                      onClick={handleFixErrorWithAI}
+                    >
+                      Auto-fix
+                    </Button>
+                  </ToolTip>
                 )}
               </Alert>
             </div>
@@ -520,7 +546,11 @@ const PreviewContainer = ({
                   Expected
                 </span>
               </div>
-              <Card className={darkMode && 'bg-slate2'}>
+              <Card
+                className={cx({
+                  'bg-slate2': darkMode,
+                })}
+              >
                 <Card.Body
                   className="p-1"
                   style={{
@@ -563,7 +593,10 @@ const PreviewContainer = ({
           )}
 
           <Card
-            className={darkMode && 'bg-slate2'}
+            className={cx({
+              'bg-slate2': darkMode,
+              'query-manager-input-preview-popover-card': isInsideQueryManager,
+            })}
             style={{
               borderColor: errorStateActive ? 'var(--tomato8)' : 'var(--slate6)',
             }}
@@ -585,13 +618,17 @@ const PreviewContainer = ({
     </Popover>
   );
 
+  const initialPlacement = isInsideQueryManager ? 'bottom-start' : previewPlacement || 'left';
+  const hasValue = currentValue !== '' && currentValue !== undefined && currentValue !== null;
+
   return (
     <>
       {!isPortalOpen && (
         <Overlay
-          placement={previewPlacement || 'left'}
+          key={overlayKey}
+          placement={initialPlacement}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
-          show={showPreview}
+          show={showPreview && hasValue}
           rootClose
           shouldUpdatePosition={true}
           container={document.body}
@@ -599,6 +636,7 @@ const PreviewContainer = ({
             modifiers: [
               {
                 name: 'flip',
+                enabled: isInsideQueryManager,
                 options: {
                   fallbackPlacements: ['top', 'bottom', 'left', 'right'],
                   flipVariations: true,
@@ -619,6 +657,48 @@ const PreviewContainer = ({
                 name: 'offset',
                 options: {
                   offset: [0, 3],
+                },
+              },
+              {
+                name: 'detectViewportOverflowObserver',
+                enabled: true,
+                phase: 'write',
+                effect: ({ state, instance }) => {
+                  const popperEl = state?.elements?.popper;
+
+                  if (!popperEl || typeof IntersectionObserver === 'undefined') return;
+
+                  let rafId = null;
+
+                  const io = new IntersectionObserver(
+                    (entries) => {
+                      const ent = entries[0];
+                      if (!ent) return;
+
+                      // intersectionRatio < 1 => partially/fully out of viewport
+                      if (ent.intersectionRatio < 1) {
+                        if (rafId) return;
+
+                        rafId = requestAnimationFrame(() => {
+                          try {
+                            instance.update();
+                          } catch (e) {
+                            /* error */
+                          } finally {
+                            rafId = null;
+                          }
+                        });
+                      }
+                    },
+                    { threshold: [0, 0.01, 0.5, 1] }
+                  );
+
+                  io.observe(popperEl);
+
+                  return () => {
+                    io.disconnect();
+                    if (rafId) cancelAnimationFrame(rafId);
+                  };
                 },
               },
             ],
@@ -664,7 +744,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
 
     const typeOfValue = typeof prettyPrintedJson;
 
-    if (typeOfValue === 'object' || typeOfValue === 'array') {
+    if (prettyPrintedJson !== null && (typeOfValue === 'object' || typeOfValue === 'array')) {
       showJSONTree = true;
     } else {
       prettyPrintedJson = preview;

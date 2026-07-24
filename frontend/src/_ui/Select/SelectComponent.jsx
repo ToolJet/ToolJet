@@ -1,11 +1,23 @@
 import React from 'react';
 import _ from 'lodash';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import defaultStyles from './styles';
-
-export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
+const CustomInput = (props) => {
+  return <components.Input {...props} data-cy={`${props.selectProps.dataCy || ''}-select-dropdown-input`} />;
+};
+export const SelectComponent = ({
+  options = [],
+  value,
+  onChange,
+  closeMenuOnSelect,
+  darkMode,
+  creatable = false,
+  ...restProps
+}) => {
   const selectRef = React.useRef(null);
   const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
+  const SelectElement = creatable ? CreatableSelect : Select;
   const {
     isMulti = false,
     styles = {},
@@ -25,8 +37,8 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     borderRadius,
     openMenuOnFocus = false,
     customClassPrefix = '',
+    dataCy = '',
   } = restProps;
-
   const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
   const selectOptions =
     Array.isArray(options) && options.length === 0
@@ -37,9 +49,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
           }
           return option;
         });
-
   const currentValue = value ? selectOptions.find((option) => option.value === value) || value : defaultValue;
-
   const handleOnChange = (data) => {
     if (isMulti) {
       onChange(data);
@@ -47,17 +57,14 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       onChange(data.value);
     }
   };
-
   const renderCustomOption = (option) => {
     if (customOption) {
       return customOption(option);
     }
-
     return option.label;
   };
-
   return (
-    <Select
+    <SelectElement
       {...restProps}
       ref={selectRef}
       selectRef={selectRef} // Exposed ref for custom components if needed
@@ -65,7 +72,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       isDisabled={isDisabled || isLoading}
       options={selectOptions}
       value={currentValue}
-      isSearchable={hasSearch}
+      isSearchable={restProps.isSearchable ?? hasSearch}
       onChange={handleOnChange}
       placeholder={placeholder}
       styles={customStyles}
@@ -76,6 +83,10 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
       classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
+      components={{
+        Input: CustomInput,
+        ...restProps.components,
+      }}
     />
   );
 };

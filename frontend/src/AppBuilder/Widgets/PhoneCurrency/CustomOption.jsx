@@ -6,7 +6,7 @@ import TickV3 from '@/_ui/Icon/solidIcons/TickV3';
 
 export const CustomOption = (props) => {
   const { label, value: optionValue, isSelected } = props;
-  const { darkMode } = props?.selectProps || {};
+  const { darkMode, showFlag = true } = props?.selectProps || {};
 
   const optionStyle = {
     display: 'flex',
@@ -27,7 +27,7 @@ export const CustomOption = (props) => {
   return (
     <components.Option {...props}>
       <div style={optionStyle}>
-        <div>{FlagIcon ? <FlagIcon style={{ width: '22px', height: '16px' }} /> : null}</div>
+        <div>{FlagIcon && showFlag ? <FlagIcon style={{ width: '22px', height: '16px' }} /> : null}</div>
         {label}
         <div style={{ marginLeft: 'auto', display: isSelected ? 'block' : 'none' }}>
           <TickV3 width="13.33px" height="11.27px" />

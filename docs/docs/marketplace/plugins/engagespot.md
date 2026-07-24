@@ -25,6 +25,7 @@ ToolJet connects to your Engagespot account, allowing you to send notifications,
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/engagespot/engagespot_install.png" alt="Engagespot API Key" />
 </div>
 
+
 :::info
 You can change your Engagespot BaseURL by enable custom endpoint.
 :::
@@ -46,7 +47,7 @@ Click on `+Add` button of the [query manager](/docs/app-builder/query-panel/#que
 <br/>
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Read our [transformations documentation](/docs/tutorial/transformations).
 :::
 
 </div>
@@ -56,10 +57,9 @@ Query results can be transformed using transformations. Read our [transformation
 ## Query Operations
 
 You can create query for Engagespot data source to perform several actions such as:
-
-1. **[Create or Update User](#create-or-update-user)**
-2. **[Send Notification](#send-notification)**
-3. **[Generate User Token](#generate-user-token)**
+  1. **[Create or Update User](#create-or-update-user)**
+  2. **[Send Notification](#send-notification)**
+  3. **[Generate User Token](#generate-user-token)** 
 
 </div>
 
@@ -67,9 +67,8 @@ You can create query for Engagespot data source to perform several actions such 
 
 ### Create OR Update User
 
-#### Required Parameters:
-
-- **User Identifier** - Unique user identifier.
+  #### Required Parameters:
+  - **User Identifier** - Unique user identifier.
 
 <div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/marketplace/plugins/engagespot/create_user.png" alt="engagespot create user" />
@@ -86,10 +85,9 @@ The user profile column accepts any key-value pairs in valid JSON object format.
 
 ### Send Notification
 
-#### Required Parameters:
-
-- **Reciepient** - Unique user identifier.
-- **Notification Title** - The title for your notification.
+  #### Required Parameters:
+  - **Reciepient** - Unique user identifier. 
+  - **Notification Title** - The title for your notification.
 
 <div style={{textAlign: 'center'}}>
 <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/engagespot/send_notification.png" alt="engagespot send notitication"/>
@@ -102,9 +100,8 @@ The user profile column accepts any key-value pairs in valid JSON object format.
 
 ### Generate User Token
 
-#### Required Parameters:
-
-- **User Identifier** - Unique user identifier.
+  #### Required Parameters:
+  - **User Identifier** - Unique user identifier.
 
 <div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/marketplace/plugins/engagespot/generate_token.png" alt="engagespot generate token" />
@@ -120,7 +117,6 @@ To generate user tokens, ensure you provide a Signing Key when establishing a co
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Adding the In-App Inbox element to your ToolJet app
-
-To set up an In-App Inbox element in your ToolJet application, refer to the [Adding In-App](https://docs.engagespot.co/docs/plugins/tooljet/adding-the-inbox-component) guide.
+   To set up an In-App Inbox element in your ToolJet application, refer to the [Adding In-App](https://docs.engagespot.co/docs/plugins/tooljet/adding-the-inbox-component) guide.
 
 </div>

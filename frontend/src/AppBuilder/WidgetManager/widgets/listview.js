@@ -3,17 +3,17 @@ export const listviewConfig = {
   displayName: 'List View',
   description: 'List multiple items',
   defaultSize: {
-    width: 30,
-    height: 320,
+    width: 15,
+    height: 450,
   },
   defaultChildren: [
     {
       componentName: 'Image',
       layout: {
-        top: 0,
+        top: 10,
         left: 3,
-        height: 100,
-        width: 7,
+        height: 80,
+        width: 6,
       },
       properties: ['source'],
       accessorKey: 'imageURL',
@@ -24,7 +24,7 @@ export const listviewConfig = {
         top: 30,
         left: 11,
         height: 30,
-        width: 14,
+        width: 12,
       },
       properties: ['text'],
       accessorKey: 'text',
@@ -33,9 +33,9 @@ export const listviewConfig = {
       componentName: 'Button',
       layout: {
         top: 30,
-        left: 26,
+        left: 25,
         height: 30,
-        width: 18,
+        width: 17,
       },
       // incrementWidth: 2,
       properties: ['text'],
@@ -48,9 +48,16 @@ export const listviewConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    dataSourceSelector: {
+      type: 'dropdownMenu',
+      displayName: 'Data source',
+      options: [{ name: 'Raw JSON', value: 'rawJson' }],
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }, { type: 'object' }] } },
+      newLine: true,
+    },
     data: {
       type: 'code',
-      displayName: 'List data',
+      displayName: ' ',
       validation: {
         schema: {
           type: 'union',
@@ -61,6 +68,19 @@ export const listviewConfig = {
         },
         defaultValue: "[{text: 'Sample text 1'}]",
       },
+      conditionallyRender: {
+        key: 'dataSourceSelector',
+        value: 'rawJson',
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
     },
     dynamicHeight: {
       type: 'toggle',
@@ -70,6 +90,59 @@ export const listviewConfig = {
         defaultValue: false,
       },
       section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
     mode: {
       type: 'select',
@@ -150,23 +223,7 @@ export const listviewConfig = {
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
+        defaultValue: 'var(--cc-weak-border)',
       },
     },
     borderRadius: {
@@ -176,6 +233,11 @@ export const listviewConfig = {
         schema: { type: 'number' },
         defaultValue: 6,
       },
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
     },
   },
   exposedVariables: {
@@ -187,6 +249,7 @@ export const listviewConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      dataSourceSelector: { value: 'rawJson' },
       data: {
         value: `{{[
     { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
@@ -199,8 +262,15 @@ export const listviewConfig = {
       rowHeight: {
         value: '100',
       },
+      loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       visible: { value: '{{true}}' },
+      visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
       enablePagination: { value: '{{false}}' },
@@ -208,10 +278,9 @@ export const listviewConfig = {
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderColor: { value: 'var(--cc-default-border)' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '{{6}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

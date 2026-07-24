@@ -16,6 +16,37 @@ export const htmlConfig = {
         defaultValue: `<body><div><h1>Hello World</h1></div></body>`,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -23,16 +54,41 @@ export const htmlConfig = {
   },
   events: {},
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
       validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
+      accordian: 'container',
     },
   },
   exposedVariables: {},
+  actions: [
+    {
+      handle: 'setRawHTML',
+      displayName: 'Set raw html',
+      params: [
+        { handle: 'setRawHTML', displayName: 'Value', defaultValue: '<body><div><h1>Hello World</h1></div></body>' },
+      ],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -43,10 +99,15 @@ export const htmlConfig = {
         value: `<body><main><section class="hero" style="height:306px;display: flex;
             justify-content: center;padding:0 1px;align-items: center;text-align:center">You can build your custom HTML-CSS template here</section></main></body>`,
       },
+      dynamicHeight: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      loadingState: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

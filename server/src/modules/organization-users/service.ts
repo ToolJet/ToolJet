@@ -27,6 +27,7 @@ import { UpdateOrgUserDto } from './dto';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { Organization } from '@entities/organization.entity';
+import { decamelizeKeys } from 'humps';
 @Injectable()
 export class OrganizationUsersService implements IOrganizationUsersService {
   constructor(
@@ -133,6 +134,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       );
       await this.organizationUsersUtilService.updateUserStatus(userId, USER_STATUS.ARCHIVED, manager);
       const organizationIds = archivedUserWorkspaces.map((user) => user.organizationId);
+      await this.onArchiveFromAll(userId, organizationIds, manager);
       const auditLogEntry = {
         userId: user.id,
         organizationIds: organizationIds,
@@ -150,6 +152,8 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
+
+  protected async onArchiveFromAll(userId: string, organizationIds: string[], manager: EntityManager): Promise<void> {}
 
   async unarchiveUser(userId: string, user: User): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -446,6 +450,35 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       current_page: parseInt(page || 1),
     };
 
-    return { meta, users };
+    return this.decamelizeUsersResponse(meta, users);
+  }
+
+  async decamelizeUsersResponse(
+    meta: {
+      total_pages: number;
+      total_count: number;
+      current_page: number;
+    },
+    users: any[]
+  ): Promise<{
+    meta: {
+      total_pages: number;
+      total_count: number;
+      current_page: number;
+    };
+    users: any[];
+  }> {
+    const decamelizedUsers = users.map((user) => {
+      const { userMetadata, ...restUser } = user;
+      return {
+        ...decamelizeKeys(restUser),
+        user_metadata: userMetadata, // keep nested metadata untouched
+      };
+    });
+
+    return {
+      meta,
+      users: decamelizedUsers,
+    };
   }
 }

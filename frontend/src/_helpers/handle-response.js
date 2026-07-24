@@ -3,18 +3,30 @@ import * as ReactDOM from 'react-dom';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
-import { sessionService } from '@/_services';
-import { redirectToSwitchOrArchivedAppPage } from './routes';
+import { sessionService, authenticationService } from '@/_services';
+import { redirectToSwitchOrArchivedAppPage, redirectToErrorPage } from './routes';
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
+import { refreshSsoInfo } from './refreshSsoInfo';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
   copyToClipboard(text);
 };
 
-export function handleResponse(response, avoidRedirection = false, queryParamToUpdate = null) {
+export function handleResponse(
+  response,
+  avoidRedirection = false,
+  queryParamToUpdate = null,
+  avoidUpgradeModal = false
+) {
+  // Check if OIDC tokens were refreshed on the backend.
+  // Also checked in http-client.js to cover both legacy fetch and HttpClient call paths.
+  if (response.headers.get('X-SSO-Info-Updated') === 'true') {
+    refreshSsoInfo(); // Fire-and-forget — don't block the current request
+  }
+
   return response.text().then((text) => {
     let modalBody = (
       <>
@@ -31,12 +43,37 @@ export function handleResponse(response, avoidRedirection = false, queryParamToU
     );
     const data = text && JSON.parse(text);
     if (!response.ok) {
+      // Custom friendly error messages
+      if (response.status === 422 && typeof data?.message === 'string') {
+        if (data.message.includes('value too long for type character varying(50)')) {
+          data.message = 'Failed to duplicate group.\nName exceeds 50 characters.';
+        }
+      }
       if ([401].indexOf(response.status) !== -1) {
-        // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-        const errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;
-        const workspaceId = errorMessageJson?.organizationId;
-        avoidRedirection ? sessionService.logout(false, workspaceId) : location.reload(true);
+        // Skip redirect on app-scoped auth pages — they handle their own auth
+        const isAppAuthPage = /^\/applications\/[^/]+\/(login|signup|forgot-password|reset-password)/.test(
+          window.location.pathname
+        );
+        // Skip reload for public app viewers — they operate without auth,
+        // so 401 on authenticated-only endpoints is expected and not an error
+        const currentSession = authenticationService?.currentSessionValue;
+        const isPublicAppAccess = currentSession?.authentication_failed && currentSession?.load_app;
+        if (!isAppAuthPage && !isPublicAppAccess) {
+          // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
+          let errorMessageJson;
+          try {
+            errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;
+          } catch {
+            // data.message is not valid JSON (e.g., "license violation - Maximum user limit reached")
+          }
+          const workspaceId = errorMessageJson?.organizationId;
+          avoidRedirection ? sessionService.logout(false, workspaceId) : location.reload(true);
+        }
       } else if ([403].indexOf(response.status) !== -1 && data?.message === ERROR_TYPES.NO_ACCESSIBLE_PAGES) {
+        handleError('', { data });
+      } else if ([403].indexOf(response.status) !== -1 && data?.message === ERROR_TYPES.RESTRICTED_PREVIEW) {
+        handleError('', { data });
+      } else if ([403].indexOf(response.status) !== -1 && data?.message === ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED) {
         handleError('', { data });
       } else if ([451].indexOf(response.status) !== -1) {
         // a popup will show when the response meet the following conditions
@@ -78,11 +115,14 @@ export function handleResponse(response, avoidRedirection = false, queryParamToU
           edition: edition,
         });
 
-        if (!message?.includes('expired')) {
-          ReactDOM.render(modalEl, document.getElementById('modal-div'));
+        const modalContainer = document.getElementById('modal-div');
+        if (!message?.includes('expired') && !avoidUpgradeModal && modalContainer) {
+          ReactDOM.render(modalEl, modalContainer);
         }
       } else if ([400].indexOf(response.status) !== -1) {
         redirectToSwitchOrArchivedAppPage(data);
+      } else if (response.status === 404 && data?.message === 'App is not available on this branch') {
+        redirectToErrorPage(ERROR_TYPES.APP_NOT_ON_BRANCH);
       }
       const error = (data && data.message) || response.statusText;
       return Promise.reject({ error, data, statusCode: response?.status });

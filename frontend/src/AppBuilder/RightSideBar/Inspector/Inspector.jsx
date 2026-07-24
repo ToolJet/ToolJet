@@ -40,16 +40,25 @@ import { Select } from './Components/Select';
 import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-// import { componentTypes } from '@/Editor/WidgetManager/components';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
-import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
+import { copyComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
 import { Chat } from './Components/Chat.jsx';
+import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
-
+import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
+import { Navigation } from './Components/Navigation';
+import { v4 as uuidv4 } from 'uuid';
+import { Button } from '@/components/ui/Button/Button';
+import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { Cascader } from './Components/Cascader/Cascader';
+import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
+import '../ComponentManagerTab/styles.scss';
 const INSPECTOR_HEADER_OPTIONS = [
   {
     label: 'Inspect',
@@ -86,7 +95,7 @@ const INSPECTOR_HEADER_OPTIONS = [
   },
 ];
 
-const NEW_REVAMPED_COMPONENTS = [
+export const NEW_REVAMPED_COMPONENTS = [
   'Text',
   'TextInput',
   'TextArea',
@@ -105,6 +114,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
+  'TagsInput',
   'Button',
   'Icon',
   'Image',
@@ -117,7 +127,34 @@ const NEW_REVAMPED_COMPONENTS = [
   'Link',
   'Steps',
   'FilePicker',
+  'FileInput',
+  'Tags',
   'Chat',
+  'PopoverMenu',
+  'Statistics',
+  'StarRating',
+  'CircularProgressBar',
+  'ProgressBar',
+  'CustomComponent',
+  'Html',
+  'AudioRecorder',
+  'Camera',
+  'CodeEditor',
+  'Form',
+  'JSONExplorer',
+  'JSONEditor',
+  'KeyValuePair',
+  'IFrame',
+  'Navigation',
+  'TreeSelect',
+  'Cascader',
+  'Accordion',
+  'ReorderableList',
+  'ColorPicker',
+  'FileButton',
+  'ButtonGroupV2',
+  'FlexContainer',
+  'Pagination',
 ];
 
 export const Inspector = ({
@@ -127,19 +164,21 @@ export const Inspector = ({
   selectedComponentId,
   handleRightSidebarToggle,
 }) => {
+  const { isModuleEditor } = useModuleContext();
   const allComponents = useStore((state) => state.getCurrentPageComponents());
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -231,6 +270,25 @@ export const Inspector = ({
     if (attr) {
       oldValue = allParams[param.name][attr];
       allParams[param.name][attr] = value;
+
+      // When commonBackgroundColor changes for Tabs component, sync to all tab items if dynamic options are disabled
+      if (
+        component.component.component === 'Tabs' &&
+        param.name === 'commonBackgroundColor' &&
+        paramType === 'styles'
+      ) {
+        const useDynamicOptions = getResolvedValue(newDefinition.properties?.useDynamicOptions?.value);
+        if (!useDynamicOptions && newDefinition.properties?.tabItems?.value) {
+          const updatedTabItems = newDefinition.properties.tabItems.value.map((tabItem) => ({
+            ...tabItem,
+            fieldBackgroundColor: { value },
+          }));
+          newDefinition.properties.tabItems.value = updatedTabItems;
+          // // Also update the store for tabItems
+          setComponentProperty(selectedComponentId, 'tabItems', updatedTabItems, 'properties', 'value', false);
+          setTabsPropertiesPanelKey(uuidv4());
+        }
+      }
       const defaultValue = getDefaultValue(value);
       // This is needed to have enable pagination in Table as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
@@ -253,13 +311,6 @@ export const Inspector = ({
       }
       if (param.type === 'select' && defaultValue) {
         allParams[defaultValue.paramName]['value'] = defaultValue.value;
-      }
-      if (param.name === 'secondarySignDisplay') {
-        if (value === 'negative') {
-          newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-        } else if (value === 'positive') {
-          newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-        }
       }
     } else {
       oldValue = allParams[param.name];
@@ -338,13 +389,6 @@ export const Inspector = ({
         if (param.type === 'select' && defaultValue) {
           allParams[defaultValue.paramName]['value'] = defaultValue.value;
         }
-        if (param.name === 'secondarySignDisplay') {
-          if (value === 'negative') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
-          } else if (value === 'positive') {
-            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
-          }
-        }
       } else {
         allParams[param.name] = value;
       }
@@ -412,10 +456,10 @@ export const Inspector = ({
       setTimeout(() => setInputFocus(), 0);
     }
     if (value === 'delete') {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
     if (value === 'permission') {
-      if (!licenseValid) return;
+      if (!hasAppPermissionComponent) return;
       toggleComponentPermissionModal(true);
     }
     if (value === 'duplicate') {
@@ -424,7 +468,11 @@ export const Inspector = ({
     setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
-    if (!componentMeta?.definition?.generalStyles) {
+    if (
+      !componentMeta?.definition?.generalStyles ||
+      componentMeta?.styles?.boxShadow ||
+      ['ModuleContainer', 'ModuleViewer'].includes(componentMeta?.component)
+    ) {
       return null;
     }
     const items = [];
@@ -477,22 +525,30 @@ export const Inspector = ({
   };
 
   const propertiesTab = isMounted && (
-    <div className={`${shouldFreeze && 'disabled'}`}>
-      <GetAccordion
-        componentName={componentMeta.component}
-        layoutPropertyChanged={layoutPropertyChanged}
-        component={component}
-        paramUpdated={paramUpdated}
-        paramsUpdated={paramsUpdated}
-        dataQueries={dataQueries}
-        componentMeta={componentMeta}
-        components={allComponents}
-        currentState={currentState}
-        darkMode={darkMode}
-        pages={pages}
-        allComponents={allComponents}
-      />
-    </div>
+    <FlexChildInspectorProvider
+      selectedComponentId={selectedComponentId}
+      allComponents={allComponents}
+      widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
+    >
+      <div className={`${shouldFreeze && 'disabled'}`}>
+        <GetAccordion
+          tabsPropertiesPanelKey={tabsPropertiesPanelKey}
+          componentName={componentMeta.component}
+          layoutPropertyChanged={layoutPropertyChanged}
+          component={component}
+          paramUpdated={paramUpdated}
+          paramsUpdated={paramsUpdated}
+          dataQueries={dataQueries}
+          componentMeta={componentMeta}
+          components={allComponents}
+          currentState={currentState}
+          darkMode={darkMode}
+          pages={pages}
+          allComponents={allComponents}
+          selectedComponentId={selectedComponentId}
+        />
+      </div>
+    </FlexChildInspectorProvider>
   );
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
@@ -524,15 +580,13 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
-  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const renderAppNameInput = () => {
     if (isModuleContainer) {
       return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
     }
 
     return (
-      <div className="input-icon" style={{ marginLeft: '8px' }}>
+      <div className="input-icon">
         <input
           onChange={(e) => setNewComponentName(e.target.value)}
           type="text"
@@ -546,108 +600,124 @@ export const Inspector = ({
     );
   };
 
-  const renderTabs = () => (
-    <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
-      <Tab eventKey="properties" title="Properties">
-        {propertiesTab}
-      </Tab>
-      <Tab eventKey="styles" title="Styles">
-        {stylesTab}
-      </Tab>
-    </Tabs>
-  );
+  const renderTabs = () => {
+    return (
+      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
+        <Tab eventKey="properties" title="Properties">
+          {propertiesTab}
+        </Tab>
+        <Tab eventKey="styles" title="Styles">
+          {stylesTab}
+        </Tab>
+      </Tabs>
+    );
+  };
 
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
-        <div className={`row inspector-component-title-input-holder ${shouldFreeze && 'disabled'}`}>
-          <div className="p-0 width-unset flex-shrink-0" onClick={() => clearSelectedComponents()}>
-            <span
-              data-cy={`inspector-close-icon`}
-              className="cursor-pointer d-flex align-items-center "
-              style={{ height: '28px' }}
-            >
-              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
-            </span>
-          </div>
-          <div className={`flex-shrink p-0 width-unset ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
-          {!isModuleContainer && (
-            <>
-              <div className="width-unset" data-cy={'component-inspector-options'}>
-                <OverlayTrigger
-                  trigger={'click'}
-                  placement={'bottom-end'}
-                  rootClose={false}
-                  show={showHeaderActionsMenu}
-                  overlay={
-                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                      <Popover.Body bsPrefix="list-item-popover-body">
-                        {INSPECTOR_HEADER_OPTIONS.map((option) => {
-                          const optionBody = (
-                            <div
-                              data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                              className="list-item-popover-option"
-                              key={option?.value}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleInspectorHeaderActions(option.value);
-                              }}
-                            >
-                              <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
+          <div className={`panel-header-name ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          <div className="panel-header-actions">
+            {!isModuleContainer && (
+              <>
+                <div data-cy={'component-inspector-options'}>
+                  <OverlayTrigger
+                    trigger={'click'}
+                    placement={'bottom-end'}
+                    rootClose={false}
+                    show={showHeaderActionsMenu}
+                    overlay={
+                      <Popover
+                        id="list-menu"
+                        className={classNames({ 'dark-theme': darkMode }, 'inspector-header-actions-menu')}
+                      >
+                        <Popover.Body bsPrefix="list-item-popover-body">
+                          {INSPECTOR_HEADER_OPTIONS.map((option) => {
+                            const optionBody = (
                               <div
-                                className={classNames('list-item-option-menu-label', {
-                                  'color-tomato9': option.value === 'delete',
-                                  'color-disabled': option.value === 'permission' && !licenseValid,
-                                })}
+                                data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                                className="list-item-popover-option"
+                                key={option?.value}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleInspectorHeaderActions(option.value);
+                                }}
                               >
-                                {option?.label}
+                                <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                                <div
+                                  className={classNames('list-item-option-menu-label', {
+                                    'color-tomato9': option.value === 'delete',
+                                    'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
+                                  })}
+                                >
+                                  {option?.label}
+                                </div>
+                                {option.value === 'permission' &&
+                                  !hasAppPermissionComponent &&
+                                  option.trailingIcon &&
+                                  option.trailingIcon}
                               </div>
-                              {option.value === 'permission' &&
-                                !licenseValid &&
-                                option.trailingIcon &&
-                                option.trailingIcon}
-                            </div>
-                          );
+                            );
 
-                          return option.value === 'permission' ? (
-                            <ToolTip
-                              key={option.value}
-                              message={'Component permissions are available only in paid plans'}
-                              placement="left"
-                              show={!licenseValid}
-                            >
-                              {optionBody}
-                            </ToolTip>
-                          ) : (
-                            optionBody
-                          );
-                        })}
-                      </Popover.Body>
-                    </Popover>
+                            return option.value === 'permission' ? (
+                              <ToolTip
+                                key={option.value}
+                                message={
+                                  "You don't have access to component permissions. Upgrade your plan to access this feature."
+                                }
+                                placement="left"
+                                show={!hasAppPermissionComponent}
+                              >
+                                {optionBody}
+                              </ToolTip>
+                            ) : (
+                              optionBody
+                            );
+                          })}
+                        </Popover.Body>
+                      </Popover>
+                    }
+                  >
+                    <Button
+                      iconOnly
+                      leadingIcon="ellipsis-vertical"
+                      onClick={() => setShowHeaderActionsMenu(true)}
+                      variant="ghost"
+                      size="medium"
+                      isLucid={true}
+                      data-cy="menu-icon"
+                    />
+                  </OverlayTrigger>
+                </div>
+                <AppPermissionsModal
+                  modalType="component"
+                  resourceId={selectedComponentId}
+                  resourceName={allComponents[selectedComponentId]?.component?.name}
+                  showModal={showComponentPermissionModal}
+                  toggleModal={toggleComponentPermissionModal}
+                  darkMode={darkMode}
+                  fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
+                  createPermission={(id, appId, body) =>
+                    appPermissionService.createComponentPermission(appId, id, body)
                   }
-                >
-                  <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                    <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
-                  </span>
-                </OverlayTrigger>
-              </div>
-              <AppPermissionsModal
-                modalType="component"
-                resourceId={selectedComponentId}
-                resourceName={allComponents[selectedComponentId]?.component?.name}
-                showModal={showComponentPermissionModal}
-                toggleModal={toggleComponentPermissionModal}
-                darkMode={darkMode}
-                fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
-                createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
-                updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
-                deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
-                onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
-              />
-            </>
-          )}
-          <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleRightSidebarToggle}>
-            <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
+                  updatePermission={(id, appId, body) =>
+                    appPermissionService.updateComponentPermission(appId, id, body)
+                  }
+                  deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
+                  onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
+                />
+              </>
+            )}
+            <Button
+              iconOnly
+              leadingIcon="x"
+              onClick={handleRightSidebarToggle}
+              variant="ghost"
+              size="medium"
+              isLucid={true}
+              data-cy="inspector-close-button"
+            />
           </div>
         </div>
 
@@ -666,13 +736,15 @@ const getDocsLink = (componentMeta) => {
     case 'ToggleSwitchV2':
       return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
     case 'DropdownV2':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'DropDown':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'MultiselectV2':
-      return 'https://docs.tooljet.ai/docs/widgets/multiselect';
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
     case 'DaterangePicker':
-      return 'https://docs.tooljet.ai/docs/widgets/date-range-picker';
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
+    case 'RangeSliderV2':
+      return 'https://docs.tooljet.com/docs/widgets/range-slider';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }
@@ -700,6 +772,10 @@ const widgetsWithStyleConditions = {
 };
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+  // Custom CSS class (the "Advanced" group) is an enterprise feature gated by the
+  // `customStyling` license flag. When the license is absent the field is hidden, but
+  // the saved value is left untouched in the schema so it returns if the license is re-enabled.
+  const hasCustomStyling = useStore((state) => state.license.featureAccess?.customStyling);
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
   if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
@@ -722,9 +798,16 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
     return null;
   }
 
-  return Object.keys(
-    NEW_REVAMPED_COMPONENTS.includes(component.component.component) ? groupedProperties : componentMeta.styles
-  ).map((style) => {
+  const isRevamped = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+  // Universal styles (e.g. the "Advanced" group holding `cssClass`) are spread first in
+  // combineProperties, so without this they'd render at the top. Pin "Advanced" last.
+  const orderedStyleKeys = isRevamped
+    ? Object.keys(groupedProperties)
+        .filter((key) => key !== 'Advanced' || hasCustomStyling)
+        .sort((a, b) => (a === 'Advanced' ? 1 : b === 'Advanced' ? -1 : 0))
+    : Object.keys(componentMeta.styles).filter((key) => key !== 'cssClass' || hasCustomStyling);
+
+  return orderedStyleKeys.map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 
@@ -811,18 +894,20 @@ const handleRenderingConditionalStyles = (
 };
 
 const GetAccordion = React.memo(
-  ({ componentName, ...restProps }) => {
+  ({ componentName, tabsPropertiesPanelKey, ...restProps }) => {
     switch (componentName) {
       case 'Table':
         return <Table {...restProps} />;
 
       case 'Tabs':
-        return <TabsLayout {...restProps} />;
+        return <TabsLayout {...restProps} key={tabsPropertiesPanelKey} />;
 
       case 'Chart':
         return <Chart {...restProps} />;
 
+      case 'FileButton': // fall-through to FilePicker
       case 'FilePicker':
+      case 'FileInput':
         return <FilePicker {...restProps} />;
 
       case 'ModalV2':
@@ -843,7 +928,11 @@ const GetAccordion = React.memo(
       case 'DropdownV2':
       case 'MultiselectV2':
       case 'RadioButtonV2':
+      case 'TagsInput':
         return <Select {...restProps} />;
+
+      case 'Tags':
+        return <Tags {...restProps} />;
 
       case 'Chat':
         return <Chat {...restProps} />;
@@ -865,6 +954,19 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+
+      case 'ButtonGroupV2':
+      case 'PopoverMenu':
+      case 'ReorderableList':
+        return <PopoverMenu {...restProps} />;
+      case 'KeyValuePair':
+        return <KeyValuePair {...restProps} />;
+      case 'Navigation':
+        return <Navigation {...restProps} />;
+      case 'TreeSelect':
+        return <TreeSelect {...restProps} />;
+      case 'Cascader':
+        return <Cascader {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

@@ -46,7 +46,7 @@ export class UpdateFolderDto {
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
-  @MaxLength(25, { message: 'Folder name cannot be longer than 25 characters' })
+  @MaxLength(50, { message: 'Folder name cannot be longer than 50 characters' })
   @MinLength(0, { message: 'Folder name cannot be empty' })
   name: string;
 }

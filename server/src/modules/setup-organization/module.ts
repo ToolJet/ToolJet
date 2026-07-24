@@ -13,13 +13,17 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { SubModule } from '@modules/app/sub-module';
 
 export class SetupOrganizationsModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { SetupOrganizationsService, SetupOrganizationsUtilService, SetupOrganizationsController } =
       await this.getProviders(configs, 'setup-organization', ['service', 'util.service', 'controller']);
 
     const { FeatureAbilityFactory } = await this.getProviders(configs, 'organizations', ['ability']);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: SetupOrganizationsModule,
       imports: [
         await GroupPermissionsModule.register(configs),
@@ -31,7 +35,7 @@ export class SetupOrganizationsModule extends SubModule {
         await InstanceSettingsModule.register(configs),
         await TooljetDbModule.register(configs),
       ],
-      controllers: [SetupOrganizationsController],
+      controllers: isMainImport ? [SetupOrganizationsController] : [],
       providers: [
         SetupOrganizationsService,
         SetupOrganizationsUtilService,
@@ -41,6 +45,6 @@ export class SetupOrganizationsModule extends SubModule {
         DataSourcesRepository,
       ],
       exports: [SetupOrganizationsUtilService],
-    };
+    });
   }
 }

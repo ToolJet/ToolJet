@@ -3,8 +3,9 @@ import cx from 'classnames';
 import OrgConstantVariablesPreviewBox from '../../_components/OrgConstantsVariablesResolver';
 import SolidIcon from '../Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
+import { cn } from '@/lib/utils';
 
-const Input = ({ helpText, onBlur, ...props }) => {
+const Input = ({ classes, helpText, onBlur, ...props }) => {
   const { workspaceVariables, workspaceConstants, value, type, disabled, encrypted, isWorkspaceConstant } = props;
   const [isFocused, setIsFocused] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -13,10 +14,13 @@ const Input = ({ helpText, onBlur, ...props }) => {
   const iconType = showPassword ? 'eye' : 'eyedisable';
 
   useEffect(() => {
-    if (isWorkspaceConstant) {
+    if (
+      isWorkspaceConstant ||
+      (typeof value === 'string' && value.startsWith('{{') && (type === 'password' || encrypted))
+    ) {
       setShowPassword(true);
     }
-  }, [isWorkspaceConstant]);
+  }, [isWorkspaceConstant, value]);
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -38,7 +42,7 @@ const Input = ({ helpText, onBlur, ...props }) => {
   };
 
   return (
-    <div className="tj-app-input">
+    <div className={cn('tj-app-input', classes?.inputContainer)}>
       <div
         className={cx('', { 'tj-app-input-wrapper': type === 'password' || type === 'copyToClipboard' || encrypted })}
       >
@@ -46,6 +50,7 @@ const Input = ({ helpText, onBlur, ...props }) => {
           {...props}
           type={inputType}
           onFocus={() => setIsFocused(true)}
+          disabled={disabled}
           onBlur={(event) => {
             setIsFocused(false);
             onBlur(event);

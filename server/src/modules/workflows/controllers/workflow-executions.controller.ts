@@ -76,7 +76,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
     throw new Error('Method not implemented.');
   }
 
-  @InitFeature(FEATURE_KEY.EXECUTE_WORKFLOW)
+  @InitFeature(FEATURE_KEY.EXECUTE_WORKFLOW_FROM_APP)
   @Post(':id/trigger')
   async trigger(
     @Param('id') id: string,

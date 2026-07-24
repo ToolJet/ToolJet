@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Googlecalendar datasource",
@@ -11,7 +10,7 @@
       "key": "google_operation",
       "type": "react-component-api-endpoint",
       "description": "Single select dropdown for operation",
-      "specUrl": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/google_calendar.json "
+      "specUrl": "@spec/googlecalendar/googlecalendar"
     }
   }
 }

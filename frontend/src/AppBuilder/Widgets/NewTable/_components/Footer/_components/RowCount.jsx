@@ -8,11 +8,7 @@ export const RowCount = memo(({ dataLength, id }) => {
   const totalRecords = useTableStore((state) => state.getTableProperties(id)?.totalRecords, shallow);
 
   return (
-    <span
-      data-cy={`footer-number-of-records`}
-      className="font-weight-500"
-      style={{ color: 'var(--cc-table-record-text-color)' }}
-    >
+    <span data-cy={`footer-number-of-records`} className="font-weight-400" style={{ color: 'var(--cc-primary-text)' }}>
       {clientSidePagination && !serverSidePagination && `${dataLength} Records`}
       {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
     </span>

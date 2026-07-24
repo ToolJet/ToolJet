@@ -32,25 +32,38 @@ export async function signedUrlForGet(minioClient: MinioClient, queryOptions: ob
 
 export async function getObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
   const stream = await minioClient.getObject(queryOptions['bucket'], queryOptions['objectName']);
-  const streamToString = (stream: Stream) =>
-    new Promise((resolve, reject) => {
-      const chunks = [];
+  const streamToBuffer = (stream: Stream) =>
+    new Promise<Buffer>((resolve, reject) => {
+      const chunks: any[] = [];
       stream.on('data', (chunk) => chunks.push(chunk));
       stream.on('error', reject);
-      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
     });
-  const bodyContents = await streamToString(stream);
+  const bufferData = await streamToBuffer(stream);
 
-  return { Body: bodyContents };
+  return { 
+    Body: bufferData.toString('utf-8'),
+    rawData: bufferData 
+  };
 }
 
 export async function uploadObject(minioClient: MinioClient, queryOptions: object): Promise<object> {
+  let data = queryOptions['data'];
+  if(isBase64(data)){
+    data = Buffer.from(data, 'base64');
+  }
+
   return await minioClient.putObject(
     queryOptions['bucket'],
     queryOptions['objectName'],
-    queryOptions['data'],
+    data,
     queryOptions['contentType'] && { contentType: queryOptions['contentType'] }
   );
+}
+
+const isBase64 = (str: string) => {
+  const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+  return str.length % 4 === 0 && base64Regex.test(str);
 }
 
 export async function signedUrlForPut(minioClient: MinioClient, queryOptions: object): Promise<object> {

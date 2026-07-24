@@ -1,16 +1,20 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import useStore from '@/AppBuilder/_stores/store';
 
-export const DragGhostWidget = () => {
+export const DragResizeGhostWidget = () => {
   const draggingComponentId = useStore((state) => state.draggingComponentId);
+  const isGroupDragging = useStore((state) => state.isGroupDragging);
+  const isGroupResizing = useStore((state) => state.isGroupResizing);
+  const resizingComponentId = useStore((state) => state.resizingComponentId);
 
-  if (!draggingComponentId) return null;
+  if (!draggingComponentId && !resizingComponentId && !isGroupDragging && !isGroupResizing) return null;
 
-  return (
+  const ghost = (
     <div
-      id="moveable-drag-ghost"
+      id="moveable-ghost-widget"
       style={{
-        zIndex: 4,
+        zIndex: 1060,
         position: 'absolute',
         background: '#D9E2FC',
         opacity: '0.7',
@@ -20,21 +24,8 @@ export const DragGhostWidget = () => {
       }}
     />
   );
-};
 
-export const ResizeGhostWidget = () => {
-  const resizingComponentId = useStore((state) => state.resizingComponentId);
-  if (!resizingComponentId) return null;
+  const ghostHost = document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementById('real-canvas');
 
-  return (
-    <div
-      id="resize-ghost-widget"
-      style={{
-        zIndex: 4,
-        position: 'absolute',
-        background: '#D9E2FC',
-        opacity: '0.7',
-      }}
-    ></div>
-  );
+  return ghostHost ? createPortal(ghost, ghostHost) : ghost;
 };

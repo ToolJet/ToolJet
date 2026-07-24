@@ -1,6 +1,6 @@
 export const multiselectConfig = {
   name: 'MultiselectLegacy',
-  displayName: 'Multiselect (Legacy)',
+  displayName: 'Multi Select (Legacy)',
   description: 'Multiple item selector',
   defaultSize: {
     width: 12,

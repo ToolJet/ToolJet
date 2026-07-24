@@ -10,6 +10,7 @@ import {
 } from '../dto';
 import { GetQueryVariables, UpdateOptions } from '../types';
 import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 export interface IDataSourcesService {
   getForApp(
@@ -20,15 +21,25 @@ export interface IDataSourcesService {
 
   getAll(query: GetQueryVariables, user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
 
-  create(createDataSourceDto: CreateDataSourceDto, user: User): Promise<DataSource>;
+  create(createDataSourceDto: CreateDataSourceDto, user: User, branchId?: string): Promise<DataSource>;
 
-  update(updateDataSourceDto: UpdateDataSourceDto, user: User, updateOptions: UpdateOptions): Promise<void>;
+  update(
+    updateDataSourceDto: UpdateDataSourceDto,
+    user: User,
+    updateOptions: UpdateOptions,
+    branchId?: string
+  ): Promise<void>;
 
-  delete(dataSourceId: string, user: User): Promise<void>;
+  delete(dataSourceId: string, user: User, branchId?: string): Promise<void>;
 
   changeScope(dataSourceId: string, user: User): Promise<void>;
 
-  findOneByEnvironment(dataSourceId: string, environmentId: string, organizationId?: string): Promise<DataSource>;
+  findOneByEnvironment(
+    dataSourceId: string,
+    environmentId: string,
+    organizationId?: string,
+    branchId?: string
+  ): Promise<DataSource>;
 
   testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
 
@@ -42,4 +53,14 @@ export interface IDataSourcesService {
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
     user: User
   ): Promise<void>;
+
+  invokeMethod(
+    dataSource: DataSource,
+    methodName: string,
+    user: User,
+    environmentId: string,
+    args?: any,
+    branchId?: string,
+    resolvedOptions?: object
+  ): Promise<QueryResult>;
 }

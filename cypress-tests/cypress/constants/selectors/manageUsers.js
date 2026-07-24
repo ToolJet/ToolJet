@@ -28,7 +28,7 @@ export const usersSelector = {
   buttonUploadCsvFile: '[data-cy="button-upload-csv-file"]',
   fullNameError: '[data-cy="error-message-fullname"]',
   emailError: '[data-cy="error-message-email"]',
-  pageLogo: "[data-cy=page-logo]",
+  pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy=page-logo]',
   invitePageHeader: '[data-cy="invite-page-header"]',
   invitePgaeSubHeader: '[data-cy="invite-page-sub-header"]',
   acceptInvite: "[data-cy=accept-invite-button]",
@@ -77,5 +77,7 @@ export const usersSelector = {
   editUserDetailsButton: '[data-cy="edit-user-details-button"]',
   fullNameLabel: '[data-cy="label-full-name-input-field"]',
   groupChip: '[data-cy="group-chip"]',
+  groupSelector: '[data-cy="user-group-select"]>>>>>',
+  groupSelectInput: '[data-cy="group-check-input"]',
 
 };

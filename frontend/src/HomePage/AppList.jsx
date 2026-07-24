@@ -38,11 +38,14 @@ const AppList = (props) => {
                     canCreateApp={props.canCreateApp}
                     canDeleteApp={props.canDeleteApp}
                     canUpdateApp={props.canUpdateApp}
+                    canViewApp={props.canViewApp}
                     deleteApp={props.deleteApp}
                     exportApp={props.exportApp}
                     appActionModal={props.appActionModal}
                     appType={props.appType}
                     basicPlan={props?.basicPlan || false}
+                    moduleEnabled={props?.moduleEnabled || false}
+                    ownedFolders={props.ownedFolders}
                   />
                 </div>
               );

@@ -31,10 +31,30 @@ export const buttonConfig = {
       validation: { schema: { type: 'boolean' } },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
       section: 'additionalActions',
     },
     tooltip: {
@@ -43,6 +63,7 @@ export const buttonConfig = {
       validation: { schema: { type: 'string' } },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -73,6 +94,41 @@ export const buttonConfig = {
       },
       accordian: 'button',
     },
+    hoverBackgroundMode: {
+      type: 'switch',
+      displayName: 'Hover background',
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
+      conditionallyRender: {
+        key: 'type',
+        value: 'primary',
+      },
+      accordian: 'container',
+      isFxNotRequired: true,
+    },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: [
+        {
+          key: 'type',
+          value: 'primary',
+        },
+        {
+          key: 'hoverBackgroundMode',
+          value: 'manual',
+        },
+      ],
+      accordian: 'container',
+    },
     textColor: {
       type: 'colorSwatches',
       displayName: 'Text color',
@@ -80,6 +136,27 @@ export const buttonConfig = {
         schema: { type: 'string' },
         defaultValue: false,
       },
+      accordian: 'button',
+    },
+    textSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+      accordian: 'button',
+    },
+    fontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
       accordian: 'button',
     },
     borderColor: {
@@ -97,6 +174,15 @@ export const buttonConfig = {
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
+      },
+      accordian: 'button',
+    },
+    contentAlignment: {
+      type: 'alignButtons',
+      displayName: 'Content alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
       },
       accordian: 'button',
     },
@@ -212,18 +298,25 @@ export const buttonConfig = {
     properties: {
       text: { value: `Button` },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
-      textColor: { value: '#FFFFFF' },
+      textSize: { value: '{{14}}' },
+      fontWeight: { value: 'normal' },
+      textColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-primary-brand)' },
       loaderColor: { value: 'var(--cc-surface1-surface)' },
+      contentAlignment: { value: 'center' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: 'var(--cc-primary-brand)' },
-      iconColor: { value: 'var(--cc-default-icon)' },
+      hoverBackgroundMode: { value: 'auto' },
+      hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
+      iconColor: { value: 'var(--cc-surface1-surface)' },
       direction: { value: 'left' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },

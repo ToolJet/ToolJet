@@ -38,8 +38,8 @@
     "@tooljet-plugins/googlesheets": "file:packages/googlesheets",
     "@tooljet-plugins/graphql": "file:packages/graphql",
     "@tooljet-plugins/grpc": "file:packages/grpc",
+    "@tooljet-plugins/grpcv2": "file:packages/grpcv2",
     "@tooljet-plugins/influxdb": "file:packages/influxdb",
-    "@tooljet-plugins/jira": "file:packages/jira",
     "@tooljet-plugins/mailgun": "file:packages/mailgun",
     "@tooljet-plugins/mariadb": "file:packages/mariadb",
     "@tooljet-plugins/minio": "file:packages/minio",
@@ -65,11 +65,15 @@
     "@tooljet-plugins/twilio": "file:packages/twilio",
     "@tooljet-plugins/typesense": "file:packages/typesense",
     "@tooljet-plugins/woocommerce": "file:packages/woocommerce",
-    "@tooljet-plugins/zendesk": "file:packages/zendesk"
+    "@tooljet-plugins/zendesk": "file:packages/zendesk",
+    "snowflake-sdk": "^2.4.0"
   },
   "peerDependencies": {
     "form-data": "^4.0.0",
     "typescript": "^4.9.5"
+  },
+  "overrides": {
+    "tar": "^7.5.3"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",
@@ -83,7 +87,7 @@
     "eslint-plugin-jest": "^24.7.0",
     "eslint-plugin-prettier": "^3.4.1",
     "jest": "^27.5.1",
-    "lerna": "^5.5.2",
+    "lerna": "^9.0.3",
     "prettier": "^2.8.3",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.1.5"

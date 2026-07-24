@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
+import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 
 var _ = require('lodash');
 
@@ -47,8 +48,22 @@ export const create = (fn) => {
   return store;
 };
 
+// Slice factories hold state in closures (e.g. batch managers) that setState-based
+// resetters can't reach. Slices register an explicit resetter here so resetAllStores
+// clears that closure state too.
+// phase 'post' runs AFTER the state replace — needed when the resetter must repair
+// values inside the restored initial state (e.g. class instances that were mutated
+// in place, which the captured initialState shares by reference).
+const postResetters = [];
+export const registerResetter = (fn, { phase = 'pre' } = {}) => {
+  (phase === 'post' ? postResetters : resetters).push(fn);
+};
+
 export const resetAllStores = () => {
   for (const resetter of resetters) {
+    resetter();
+  }
+  for (const resetter of postResetters) {
     resetter();
   }
 };
@@ -432,8 +447,8 @@ export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}
     const entityId = componentNameIdMapping[entityName]
       ? componentNameIdMapping[entityName]
       : queryNameIdMapping[entityName]
-        ? queryNameIdMapping[entityName]
-        : entityName;
+      ? queryNameIdMapping[entityName]
+      : entityName;
     diffObj = dfs(diffObj, entityName, entityId);
   });
   return diffObj;
@@ -469,32 +484,16 @@ export function replaceQueryOptionsEntityReferencesWithIds(
   return options;
 }
 
-export function createReferencesLookup(currentState, forQueryParams = false, initalLoad = false) {
+export function createReferencesLookup(
+  currentState,
+  forQueryParams = false,
+  initalLoad = false,
+  forWorkflowsSuggestions = false
+) {
   if (forQueryParams && _.isEmpty(currentState['parameters'])) {
     return { suggestionList: [] };
   }
-  const actions = [
-    'runQuery',
-    'setVariable',
-    'unsetAllVariables',
-    'unSetVariable',
-    'showAlert',
-    'logout',
-    'showModal',
-    'closeModal',
-    'setLocalStorage',
-    'copyToClipboard',
-    'goToApp',
-    'generateFile',
-    'setPageVariable',
-    'unsetAllPageVariables',
-    'unsetPageVariable',
-    'switchPage',
-    'logInfo',
-    'log',
-    'logError',
-    'toggleAppMode',
-  ];
+  const actions = ACTIONS;
 
   const suggestionList = [];
   const map = new Map();
@@ -514,6 +513,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
       } else {
         if (path === 'queries') {
           map.set(`${path}.${key}.run()`, { type: 'Function' });
+          map.set(`${path}.${key}.reset()`, { type: 'Function' });
         }
         newPath = `${path}.${key}`;
       }
@@ -540,7 +540,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
   map.forEach((__, key) => {
     return suggestionList.push({ hint: key, type: __.type });
   });
-  if (!forQueryParams) {
+  if (!forQueryParams && !forWorkflowsSuggestions) {
     actions.forEach((action) => {
       suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
     });
@@ -560,7 +560,7 @@ export function convertAllKeysToSnakeCase(o) {
     const newO = {};
     for (const origKey in o) {
       if (Object.prototype.hasOwnProperty.call(o, origKey)) {
-        if (!['pages', 'events'].includes(origKey)) {
+        if (!['pages', 'events', 'linkedApps'].includes(origKey)) {
           const newKey = origKey
             .split(/(?=[A-Z])/)
             .join('_')
@@ -778,8 +778,8 @@ export const baseTheme = {
         },
         weak: {
           light: '#E4E7EB',
-          dark: '#EEF0F1',
-        }
+          dark: '#2B3036',
+        },
       },
     },
     systemStatus: {
@@ -820,3 +820,47 @@ export const baseTheme = {
     },
   },
 };
+
+export const blobToDataURL = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => resolve(reader.result);
+  });
+};
+
+export const blobToBinary = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsBinaryString(blob);
+    reader.onloadend = () => resolve(reader.result);
+  });
+};
+
+export const formatSecondsToHHMMSS = (totalSeconds) => {
+  const seconds = Number.isFinite(totalSeconds) ? Math.max(0, Math.floor(totalSeconds)) : 0;
+  const hh = String(Math.floor(seconds / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
+};
+
+// Validate a go-to-app link target by looking up its correlationId in the linkedApps map populated on app load.
+export function isLinkedAppValid(correlationId, linkedAppsMap) {
+  if (!correlationId) return { isValid: true, errorMessage: null };
+
+  const entry = linkedAppsMap?.[correlationId];
+  if (!entry || !entry.slug) {
+    return {
+      isValid: false,
+      errorMessage: `App ${correlationId} undefined. Check if the linked app exists and has a released version.`,
+    };
+  }
+  if (!entry.currentVersionId) {
+    return {
+      isValid: false,
+      errorMessage: 'Check if the linked app has a released version.',
+    };
+  }
+  return { isValid: true, errorMessage: null };
+}

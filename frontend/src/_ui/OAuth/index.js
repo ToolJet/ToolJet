@@ -32,9 +32,10 @@ const OAuth = ({
   optionsChanged,
   selectedDataSource,
   oauth_configs,
+  isRestApi = false,
 }) => {
   const { allowed_auth_types } = oauth_configs || {};
-  const authOptions = (isGrpc = false) => {
+  const authOptions = (isGrpc = false, isRestApi = false) => {
     const options = [
       { name: 'None', value: 'none' },
       { name: 'Basic', value: 'basic' },
@@ -49,6 +50,10 @@ const OAuth = ({
       options.push({ name: 'API Key', value: 'api_key' });
     }
 
+    if (isRestApi) {
+      options.push({ name: 'AWS v4', value: 'aws_v4' });
+    }
+
     if (allowed_auth_types && allowed_auth_types.length > 0) {
       return options.filter((option) => allowed_auth_types.includes(option.value));
     }
@@ -59,14 +64,22 @@ const OAuth = ({
 
   return (
     <>
-      <Select
-        options={authOptions(isGrpc)}
-        value={auth_type}
-        onChange={(value) => optionchanged('auth_type', value)}
-        width={'100%'}
-        useMenuPortal={false}
-        isDisabled={isDisabled}
-      />
+      {authOptions(isGrpc).length > 1 && (
+        <>
+          <label className="form-label" data-cy="authentication-type-dropdown-label">
+            Authentication type
+          </label>
+          <Select
+            options={authOptions(isGrpc, isRestApi)}
+            value={auth_type}
+            onChange={(value) => optionchanged('auth_type', value)}
+            width={'100%'}
+            useMenuPortal={false}
+            isDisabled={isDisabled}
+            dataCy="authentication-type"
+          />
+        </>
+      )}
       <ElementToRender
         add_token_to={add_token_to}
         header_prefix={header_prefix}
@@ -94,6 +107,7 @@ const OAuth = ({
         optionsChanged={optionsChanged}
         selectedDataSource={selectedDataSource}
         oauth_configs={oauth_configs}
+        isDisabled={isDisabled}
       />
     </>
   );

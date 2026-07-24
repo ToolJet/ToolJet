@@ -6,12 +6,14 @@ import {
   AppGitPullDto,
   AppGitPushDto,
   AppImportRequestDto,
+  AutoDeployBodyDto,
+  SaveVersionBodyDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
 export interface IExternalApisController {
   // Gets list of all users in the system
-  getAllUsers(): Promise<any>;
+  getAllUsers(groupNamesString?: string): Promise<any>;
 
   // Retrieves a single user by ID
   getUser(id: string): Promise<any>;
@@ -42,7 +44,9 @@ export interface IExternalApisAppsController {
 
   pushVersionToGit(appId: string, versionId: string, payload: AppGitPushDto): Promise<any>;
 
-  autoDeployApp(appId: string): Promise<any>;
+  autoDeployApp(appIdOrSlug: string, body: AutoDeployBodyDto): Promise<any>;
+
+  saveAppVersion(appIdOrSlug: string, body: SaveVersionBodyDto): Promise<any>;
 
   getAllWorkspaceApps(workspaceId: string): Promise<any>;
 

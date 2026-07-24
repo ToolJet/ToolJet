@@ -1,11 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import handlebars from 'handlebars';
-import { generateInviteURL, generateOrgInviteURL, getTooljetEdition } from 'src/helpers/utils.helper';
+import {
+  generateInviteURL,
+  generateOrgInviteURL,
+  getHostForOrganization,
+  getTooljetEdition,
+} from 'src/helpers/utils.helper';
+import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
 import {
   SendWelcomeEmailPayload,
   SendOrganizationUserWelcomeEmailPayload,
   SendCommentMentionEmailPayload,
   SendPasswordResetEmailPayload,
+  SendEmailOtpPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
@@ -39,7 +46,8 @@ export class EmailService implements IEmailService {
 
   constructor(
     protected readonly emailUtilService: EmailUtilService,
-    protected readonly whiteLabellingUtilService: WhiteLabellingUtilService
+    protected readonly whiteLabellingUtilService: WhiteLabellingUtilService,
+    @Optional() protected readonly customDomainCacheService?: CustomDomainCacheService
   ) {
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.SUB_PATH = process.env.SUB_PATH;
@@ -86,8 +94,9 @@ export class EmailService implements IEmailService {
       redirectTo,
     } = payload;
     await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
-    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo);
+    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo, host);
     const subject = isOrgInvite ? `Welcome to ${organizationName || 'ToolJet'}` : 'Set up your account!';
     const footerText = isOrgInvite
       ? 'You have received this email as an invitation to join ToolJet’s workspace'
@@ -124,8 +133,9 @@ export class EmailService implements IEmailService {
   async sendOrganizationUserWelcomeEmail(payload: SendOrganizationUserWelcomeEmailPayload) {
     const { to, name, sender, invitationtoken, organizationName, organizationId, redirectTo } = payload;
     await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const subject = `Welcome to ${organizationName || 'ToolJet'}`;
-    const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo);
+    const inviteUrl = generateOrgInviteURL(invitationtoken, organizationId, true, redirectTo, host);
     const templateData = {
       name: name || '',
       inviteUrl,
@@ -149,10 +159,16 @@ export class EmailService implements IEmailService {
   }
 
   async sendPasswordResetEmail(payload: SendPasswordResetEmailPayload) {
-    const { to, token, firstName, organizationId } = payload;
+    const { to, token, firstName, organizationId, redirectTo } = payload;
     await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
+    const effectiveHost = this.stripTrailingSlash(host);
     const subject = 'Reset your password';
-    const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
+    const basePath = this.SUB_PATH ? this.SUB_PATH : '/';
+    const appSlug = redirectTo?.match(/^\/applications\/([^/?]+)/)?.[1];
+    const url = appSlug
+      ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
+      : `${effectiveHost}${basePath}reset-password/${token}`;
     const templateData = {
       name: firstName || '',
       resetLink: url,
@@ -166,6 +182,28 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(to, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because a request to reset your password was made',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  async sendOtpEmail(payload: SendEmailOtpPayload) {
+    const { name, otp, email } = payload;
+    await this.init();
+    const subject = 'ToolJet | OTP to Verify Email';
+    const templateData = {
+      name,
+      otp,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const templatePath = 'otp_verify.hbs';
+    const htmlEmailContent = this.compileTemplate(templatePath, templateData);
+
+    return await this.sendEmail(email, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because a request to signUp was made',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });

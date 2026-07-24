@@ -11,6 +11,7 @@ export enum FEATURE_KEY {
   GET_BY_SLUG = 'APP_VIEW',
   RELEASE = 'release',
   APP_PUBLIC_UPDATE = 'app_public_update',
+  GET_APP_AUTHENTICATION_CONFIG = 'get_app_authentication_config',
 }
 
 export enum APP_TYPES {
@@ -18,6 +19,8 @@ export enum APP_TYPES {
   WORKFLOW = 'workflow',
   MODULE = 'module',
 }
+
+export const APPS_PAGE_SIZE = 9;
 
 export enum LayoutDimensionUnits {
   COUNT = 'count',

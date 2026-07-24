@@ -1,4 +1,4 @@
-name: Maketplace plugin build
+name: Marketplace plugin build
 
 on:
   pull_request_target:
@@ -6,50 +6,35 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   PR_NUMBER: ${{ github.event.number }}
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
-  deploy-marketplace-plugin:
+  build-plugins:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read          # nothing else — this job runs fork code
 
     steps:
-      - name: Sync repo
-        uses: actions/checkout@v3
-
-      - name: Check if PR is from the same repo
-        id: check_repo
-        run: echo "::set-output name=is_fork::$(if [[ '${{ github.event.pull_request.head.repo.full_name }}' != '${{ github.event.pull_request.base.repo.full_name }}' ]]; then echo true; else echo false; fi)"
-
-      - name: Fetch the remote branch if it's a forked PR
-        if: steps.check_repo.outputs.is_fork == 'true'
-        run: |
-          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
-          git checkout ${{ env.BRANCH_NAME }}
-
-      - name: Checkout
-        if: steps.check_repo.outputs.is_fork == 'false'
-        uses: actions/checkout@v3
+      - name: Checkout PR code (fork or same-repo)
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.18.2
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_MAR_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
-          aws-region: us-east-2
+          node-version: 22.15.1
 
       - name: Install and build dependencies in order
+        working-directory: marketplace
         run: |
-          cd marketplace
           echo "🔧 Installing all workspace dependencies"
           npm install
 
@@ -60,36 +45,122 @@ jobs:
           PLUGINS=$(ls plugins | grep -v '^common$')
           for plugin in $PLUGINS; do
             echo "🔨 Building plugin: $plugin"
-            npm run build --workspace=plugins/$plugin || exit 1
+            npm run build --workspace="plugins/$plugin" || exit 1
           done
 
-
-      - name: Build marketplace plugins and capture summary
+      - name: Package built artifacts (dist + manifest only)
+        working-directory: marketplace
         run: |
-          cd marketplace
-          echo "🚀 Uploading to S3"
-          AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js | tee upload_summary.log
+          # Only build outputs leave this job. No package.json, no node_modules,
+          # no scripts — those would be fork-controlled and must not cross over.
+          tar -czf /tmp/plugin-dist.tar.gz \
+            plugins/*/dist \
+            plugins/*/manifest.json 2>/dev/null || \
+          tar -czf /tmp/plugin-dist.tar.gz plugins/*/dist
+
+      - name: Upload artifact for deploy job
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketplace-plugin-dist
+          path: /tmp/plugin-dist.tar.gz
+          retention-days: 1
+
+
+  deploy-plugins:
+    needs: build-plugins
+    # Independent guard (defense in depth) — do NOT rely on `needs` alone.
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write     # for the status comment
+      issues: write            # for label updates
+
+    steps:
+      - name: Checkout BASE branch (trusted scripts only)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+
+      - name: Download built artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: marketplace-plugin-dist
+          path: /tmp/artifact
+
+      # ── Treat the artifact as hostile data ──────────────────────────────────
+      - name: Validate artifact paths (reject traversal / absolute paths)
+        run: |
+          if tar -tzf /tmp/artifact/plugin-dist.tar.gz | grep -E '(^/|(^|/)\.\.(/|$))'; then
+            echo "❌ Artifact contains unsafe paths (absolute or ../). Aborting."
+            exit 1
+          fi
+          echo "✅ Artifact paths look safe."
+
+      - name: Extract artifact into ISOLATED staging dir
+        run: |
+          rm -rf /tmp/staging
+          mkdir -p /tmp/staging
+          # Never extract over the repo tree. No ownership/perms from the tar.
+          tar -xzf /tmp/artifact/plugin-dist.tar.gz -C /tmp/staging \
+            --no-same-owner --no-same-permissions
+
+      - name: Promote ONLY dist/manifest of already-known plugins
+        working-directory: marketplace
+        run: |
+          shopt -s nullglob
+          for distdir in /tmp/staging/plugins/*/dist; do
+            plugin="$(basename "$(dirname "$distdir")")"
+            # Refuse anything that isn't a plugin dir present in the trusted tree.
+            if [ -d "plugins/$plugin" ]; then
+              echo "→ Placing dist for known plugin: $plugin"
+              rm -rf "plugins/$plugin/dist"
+              cp -r "$distdir" "plugins/$plugin/dist"
+              if [ -f "/tmp/staging/plugins/$plugin/manifest.json" ]; then
+                cp "/tmp/staging/plugins/$plugin/manifest.json" "plugins/$plugin/manifest.json"
+              fi
+            else
+              echo "⚠️  Skipping unknown plugin from artifact: $plugin"
+            fi
+          done
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_MAR_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Upload to S3 (trusted base-branch script)
+        working-directory: marketplace
+        run: |
+          echo "🚀 Uploading to S3 using base-branch script"
+          AWS_BUCKET=tooljet-plugins-stage bash scripts/upload-to-s3.sh | tee upload_summary.log
 
       - name: Extract upload summary
         id: upload_summary
         run: |
           SUMMARY=$(awk '/UPLOAD SUMMARY/,0' marketplace/upload_summary.log)
-          echo "UPLOAD_SUMMARY<<EOF" >> $GITHUB_ENV
-          echo "$SUMMARY" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          {
+            echo "UPLOAD_SUMMARY<<EOF"
+            echo "$SUMMARY"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
 
       - name: Comment on success
         if: success()
-        uses: actions/github-script@v5
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const runId = process.env.GITHUB_RUN_ID;
             const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${runId}`;
-            const summary = process.env.UPLOAD_SUMMARY;
-            const body = `Marketplace Plugin added to stage bucket\n\n🔍 [View Deployment Logs & Summary](${runUrl})\n\n\`\`\`\n${summary}\n\`\`\``;
-
-            github.rest.issues.createComment({
+            const summary = process.env.UPLOAD_SUMMARY || '';
+            const body = `Marketplace Plugin added to stage bucket\n\n` +
+                         `🔍 [View Deployment Logs & Summary](${runUrl})\n\n` +
+                         `\`\`\`\n${summary}\n\`\`\``;
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -98,7 +169,7 @@ jobs:
 
       - name: Label update on success
         if: success()
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             try {
@@ -107,27 +178,25 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 name: 'deploy-marketplace-plugin'
-              })
+              });
             } catch (e) {
-              console.log(e)
+              console.log(e);
             }
-
             await github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: ['marketplace-plugin-deployed']
-            })
+            });
 
       - name: Comment on failure
         if: failure()
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const runId = process.env.GITHUB_RUN_ID;
             const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${runId}`;
-
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

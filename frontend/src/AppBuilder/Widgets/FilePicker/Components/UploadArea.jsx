@@ -13,6 +13,9 @@ const UploadArea = ({
   isDragReject,
   isDisabled,
   isFocused,
+  isVisible,
+  isLoading,
+  isMandatory,
   uiErrorMessage,
   onFocus,
   onBlur,
@@ -24,6 +27,8 @@ const UploadArea = ({
   maxCount,
   fileTypeCategory,
   selectedFilesLength,
+  id,
+  dataCy,
 }) => {
   // --- Refactored Conditions for Readability ---
   const canShowInstructionText = !isDragActive && selectedFilesLength < maxCount;
@@ -53,7 +58,16 @@ const UploadArea = ({
       tabIndex={isDisabled ? -1 : 0}
       style={{ borderRadius: `${borderRadius}px`, height }}
     >
-      <input {...getInputProps()} />
+      <input
+        {...getInputProps()}
+        aria-labelledby={`${id}-label`}
+        id={`component-${id}`}
+        aria-hidden={!isVisible}
+        aria-disabled={isDisabled}
+        aria-busy={isLoading}
+        aria-required={isMandatory}
+        data-cy={`${dataCy}-input-field`}
+      />
 
       {hasUiError && (
         <div className="ui-error-message-container">
@@ -63,17 +77,33 @@ const UploadArea = ({
 
       {!hasUiError && (
         <>
-          {canShowInstructionText && <p className="dropzone-instruction">{instructionText}</p>}
+          {canShowInstructionText && (
+            <p className="dropzone-instruction" data-cy={`${dataCy}-drag-drop-instruction-text`}>
+              {instructionText}
+            </p>
+          )}
 
-          {showGenericDropMessage && <p className="dropzone-message">Drop the files here ...</p>}
+          {showGenericDropMessage && (
+            <p className="dropzone-message" data-cy={`${dataCy}-drag-drop-message`}>
+              Drop the files here ...
+            </p>
+          )}
           {showAcceptDropMessage && (
-            <p className="dropzone-message">
+            <p className="dropzone-message" data-cy={`${dataCy}-drop-file-to-start-uploading-message`}>
               <SolidIcon name="pageUpload" width="25px" height="25px" fill="var(--primary-brand)" />
               Drop file to start uploading
             </p>
           )}
-          {showRejectDropMessage && <p className="dropzone-message">Cannot upload these files</p>}
-          {showDisabledMessage && <p className="dropzone-message">Maximum files uploaded</p>}
+          {showRejectDropMessage && (
+            <p className="dropzone-message" data-cy={`${dataCy}-cannot-upload-these-files-message`}>
+              Cannot upload these files
+            </p>
+          )}
+          {showDisabledMessage && (
+            <p className="dropzone-message" data-cy={`${dataCy}-maximum-files-uploaded-message`}>
+              Maximum files uploaded
+            </p>
+          )}
         </>
       )}
     </div>

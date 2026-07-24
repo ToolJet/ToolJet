@@ -1,4 +1,4 @@
-import { organizationService, authenticationService, sessionService } from '@/_services';
+import { organizationService, authenticationService, sessionService, appsService } from '@/_services';
 import {
   pathnameToArray,
   getSubpath,
@@ -6,11 +6,29 @@ import {
   getPathname,
   getRedirectToWithParams,
   redirectToErrorPage,
+  isCustomDomain,
+  redirectToMainHost,
+  excludeWorkspaceIdFromURL,
 } from './routes';
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
+import { customDomainService } from '@/_services/custom-domain.service';
+import { sessionTransferService } from '@/_services/session-transfer.service';
+const REDIRECT_KEY = 'tj_cd_redirect_ts';
+const REDIRECT_COOLDOWN_MS = 10 * 1000; // 10 seconds
+
+function hasRecentRedirectAttempt() {
+  const ts = sessionStorage.getItem(REDIRECT_KEY);
+  if (!ts) return false;
+  return Date.now() - Number(ts) < REDIRECT_COOLDOWN_MS;
+}
+
+function setRedirectAttempt() {
+  sessionStorage.setItem(REDIRECT_KEY, String(Date.now()));
+}
+
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -22,10 +40,29 @@ import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
     CASE-4. If the page is app viewer and there is no valid session. consider the app is public 
 */
 
-export const authorizeWorkspace = () => {
-  /* Default APIs */
-  const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-  // fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
+export const authorizeWorkspace = async () => {
+  let workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+
+  // On a custom domain, resolve which workspace owns it.
+  // Note: clearRedirectAttempt() is NOT called here because sessionStorage is
+  // origin-scoped — the custom domain cannot clear the base domain's flag.
+  // The base domain's cooldown expires naturally after REDIRECT_COOLDOWN_MS.
+  if (isCustomDomain()) {
+    try {
+      const resolved = await customDomainService.resolveCustomDomain(window.location.hostname);
+      const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId || '';
+
+      // A custom domain maps to exactly one workspace — always trust the
+      // resolved slug. The URL's first path segment may be a page route
+      // (e.g., 'home', 'database') rather than a real workspace slug when
+      // the base domain redirect strips the slug from the URL.
+      workspaceIdOrSlug = resolvedSlug;
+    } catch (e) {
+      console.error('[authorizeWorkspace] Failed to resolve custom domain:', e);
+      if (redirectToMainHost()) return;
+    }
+  }
+
   if (!isThisExistedRoute()) {
     updateCurrentSession({
       triggeredOnce: true,
@@ -87,7 +124,7 @@ export const authorizeWorkspace = () => {
           fetchWhiteLabelDetails(workspaceIdOrSlug);
         }
       )
-      .catch((error) => {
+      .catch(async (error) => {
         fetchWhiteLabelDetails(workspaceIdOrSlug);
         const isDesiredStatusCode =
           (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
@@ -115,6 +152,7 @@ export const authorizeWorkspace = () => {
             const subpath = getSubpath();
             window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
           }
+          return;
         }
         if (!isApplicationsPath) {
           /* CASE-3 */
@@ -122,7 +160,42 @@ export const authorizeWorkspace = () => {
             authentication_status: false,
           });
         } else if (isApplicationsPath) {
-          /* CASE-4 */
+          /* CASE-4: For app viewer paths, check if app is public before redirecting to login */
+          const pathSegments = getPathname(null, true).split('/').filter(Boolean);
+          const appSlug = pathSegments[1]; // /applications/:slug/...
+          const searchParams = new URLSearchParams(window.location.search);
+          const isLocalPreview = !!(searchParams.get('version') || searchParams.get('env'));
+          if (appSlug) {
+            try {
+              const appConfig = await appsService.getAppAuthenticationConfig(appSlug);
+              //For preview validateSession will handle the authentication and authorization
+              if (appConfig?.isPublic && !isLocalPreview) {
+                // Public app or preview URL — let validateSession in the route handle auth
+                updateCurrentSession({
+                  authentication_failed: true,
+                  load_app: true,
+                });
+                return;
+              }
+            } catch (configErr) {
+              // App doesn't exist (e.g., slug was changed) — show invalid-link error
+              if (configErr?.data?.statusCode === 404) {
+                redirectToErrorPage(ERROR_TYPES.INVALID);
+                return;
+              }
+              // For other errors (network), fall through to login redirect
+            }
+            const subpath = getSubpath() ?? '';
+            const currentPath = getPathname(null, true);
+            const currentSearch = window.location.search;
+            const fullRedirectPath = `${currentPath}${currentSearch}`;
+            const redirectParam =
+              fullRedirectPath !== `/applications/${appSlug}`
+                ? `?redirectTo=${encodeURIComponent(fullRedirectPath)}`
+                : '';
+            window.location.href = `${subpath}/applications/${appSlug}/login${redirectParam}`;
+            return;
+          }
           updateCurrentSession({
             authentication_failed: true,
             load_app: true,
@@ -130,7 +203,6 @@ export const authorizeWorkspace = () => {
         }
       });
   }
-  // });
 };
 
 const isThisExistedRoute = () => {
@@ -150,6 +222,11 @@ const isThisExistedRoute = () => {
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
   const pathnames = pathnameToArray();
   if (pathnames.includes('login') && pathnames.includes('sso')) {
+    return true;
+  }
+  // App-scoped auth pages handle their own auth
+  const appAuthPages = ['login', 'signup', 'forgot-password', 'reset-password'];
+  if (pathnames[0] === 'applications' && appAuthPages.includes(pathnames[2])) {
     return true;
   }
   const checkPath = () => existedPaths.find((path) => pathnames[subpath ? subpathArray.length : 0] === path);
@@ -176,7 +253,7 @@ export const updateCurrentSession = (newSession) => {
     CASE-3: If CASE-2 fails (indicating the need to log in to the workspace or having an invalid session), the user is directed to the workspace login page.
     CASE-4: During the execution of CASE-2, if the user has a valid session but encounters errors such as an incorrect workspace ID or non-existent workspace, they will be directed to the switch-workspace page.
 */
-export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callback = null) => {
+export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callback = null, redirectPath = null) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
@@ -185,7 +262,38 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
 
   authenticationService
     .authorize()
-    .then((data) => {
+    .then(async (data) => {
+      // Redirect to custom domain via session transfer token to carry auth
+      // across domains. The CF Worker proxies /api/* with redirect:'manual',
+      // so the backend's 302 + Set-Cookie flows through to the browser.
+      const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+      if (data.custom_domain && !isCustomDomain() && !isLocalhost && !hasRecentRedirectAttempt()) {
+        const slug = data.current_organization_slug || data.current_organization_id;
+        // Use explicit redirectPath when provided (e.g. from SSO callback where
+        // window.location.pathname is /sso/google, not the intended destination).
+        const pathWithoutSlug = excludeWorkspaceIdFromURL(redirectPath || window.location.pathname);
+        // App viewer paths (/applications/, /embed-apps/) use no workspace slug prefix on
+        // custom domains — the custom domain identifies the workspace, so the URL format is
+        // /applications/:slug, not /:workspaceSlug/applications/:slug.
+        const isViewerPath = pathWithoutSlug.startsWith('/applications/') || pathWithoutSlug.startsWith('/embed-apps/');
+        setRedirectAttempt();
+        try {
+          const { token } = await sessionTransferService.createTransferToken();
+          // When redirectPath is explicitly provided (e.g. from SSO callback), the current
+          // page's search/hash belong to the OAuth response (#id_token=..., ?code=...) and
+          // must not be forwarded to the destination. Use empty string in that case.
+          const searchAndHash = redirectPath ? '' : `${window.location.search}${window.location.hash}`;
+          const redirect = encodeURIComponent(
+            isViewerPath ? `${pathWithoutSlug}${searchAndHash}` : `/${slug}${pathWithoutSlug}${searchAndHash}`
+          );
+          window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
+          return;
+        } catch (e) {
+          console.error('[authorizeWorkspace] Transfer token failed:', e);
+          // Fall through to normal store hydration — user stays on base domain
+        }
+      }
+
       useStore.getState().setUser({
         email: data.current_user.email,
         firstName: data.current_user.first_name,

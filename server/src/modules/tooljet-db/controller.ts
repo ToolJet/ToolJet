@@ -152,6 +152,7 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.BULK_UPLOAD)
   @UseInterceptors(FileInterceptor('file'))
   @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async bulkUpload(@Param('organizationId') organizationId, @Param('tableName') tableName, @UploadedFile() file: any) {
     if (file?.size > this.MAX_CSV_FILE_SIZE) {
       throw new BadRequestException(`File size cannot be greater than ${this.MAX_CSV_FILE_SIZE / (1024 * 1024)}MB`);

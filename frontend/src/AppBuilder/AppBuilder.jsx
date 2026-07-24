@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useAppData from '@/AppBuilder/_hooks/useAppData';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
@@ -16,8 +16,7 @@ import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
-
-import ArtifactPreview from './ArtifactPreview';
+import { useNavigate } from 'react-router-dom';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -30,17 +29,24 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   useAppData(appId, moduleId, darkMode);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
   const isModuleEditor = appType === 'module';
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
-  const appBuilderMode = useStore((state) => state.appStore.modules[moduleId]?.app?.appBuilderMode ?? 'visual');
-
-  const isUserInZeroToOneFlow = appBuilderMode === 'ai';
+  const navigate = useNavigate();
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
 
   const changeToDarkMode = (newMode) => {
     updateIsTJDarkMode(newMode);
     switchDarkMode(newMode);
   };
+
+  useEffect(() => {
+    if (hasModuleAccess === false && isModuleEditor) {
+      navigate('/error/restricted');
+    }
+  }, [hasModuleAccess, isModuleEditor]);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
@@ -55,28 +61,21 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       <ErrorBoundary>
         <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
           <Suspense fallback={<div>Loading...</div>}>
-            <EditorHeader darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
+            <EditorHeader darkMode={darkMode} appType={appType} />
 
-            <LeftSidebar
-              switchDarkMode={changeToDarkMode}
-              darkMode={darkMode}
-              isUserInZeroToOneFlow={isUserInZeroToOneFlow}
-            />
+            <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
           </Suspense>
-          {isUserInZeroToOneFlow ? (
-            <ArtifactPreview darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
-          ) : (
-            <>
-              {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
-              <DndProvider backend={HTML5Backend}>
-                <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
-                <QueryPanel darkMode={darkMode} />
-                <RightSidebarToggle darkMode={darkMode} />
-                <RightSideBar darkMode={darkMode} />
-              </DndProvider>
-              <Popups darkMode={darkMode} />
-            </>
+
+          {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
+            <RealtimeCursors />
           )}
+          <DndProvider backend={HTML5Backend}>
+            <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
+            <QueryPanel darkMode={darkMode} />
+            <RightSidebarToggle darkMode={darkMode} />
+            <RightSideBar darkMode={darkMode} />
+          </DndProvider>
+          <Popups darkMode={darkMode} />
         </ModuleProvider>
       </ErrorBoundary>
     </div>

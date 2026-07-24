@@ -6,7 +6,7 @@ export class BaseConfigDTO {
   @IsNotEmpty()
   gitType: GITConnectionType;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsNotEmpty()
   gitUrl: string;
 }
@@ -44,11 +44,11 @@ export class GithubHttpsConfigDTO extends BaseConfigDTO {
   @IsNotEmpty()
   githubAppPrivateKey: string;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsOptional()
   githubEnterpriseUrl?: string;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsOptional()
   githubEnterpriseApiUrl?: string;
 }
@@ -65,7 +65,7 @@ export class GitLabConfigDTO extends BaseConfigDTO {
   @IsNotEmpty()
   gitLabProjectAccessToken: string;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsOptional()
   gitLabEnterpriseUrl?: string;
 }

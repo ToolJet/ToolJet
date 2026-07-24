@@ -15,6 +15,7 @@ export default ({
   buttonText,
   width,
   dataCy,
+  classes = null,
 }) => {
   function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
@@ -68,6 +69,7 @@ export default ({
     isDisabled,
     buttonText,
     dataCy,
+    classes,
   };
 
   return isRenderedAsQueryEditor ? (

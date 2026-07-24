@@ -3,7 +3,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 const ObjectNode = ({ value }) => {
   return (
     <div className="json-viewer-node-value" style={{ color: '#FF7F0E' }}>
-      <OverflowTooltip tooltipClassName="inspector-node-tooltip" maxLetters={32} style={{ width: '100%' }}>{`{${
+      <OverflowTooltip tooltipClassName="inspector-node-tooltip" style={{ width: '100%' }}>{`{${
         Object.keys(value).length
       }}`}</OverflowTooltip>
     </div>

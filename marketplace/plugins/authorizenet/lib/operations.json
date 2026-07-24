@@ -1,0 +1,238 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Authorize.Net datasource",
+  "description": "A schema defining Authorize.Net datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "chargeCreditCard"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        { "value": "charge_credit_card", "name": "Charge a Credit Card" },
+        { "value": "authorize_credit_card", "name": "Authorize a Credit Card" },
+        { "value": "capture_authorized_amount", "name": "Capture a Previously Authorized Amount" },
+        { "value": "refund_transaction", "name": "Refund a Transaction" },
+        { "value": "void_transaction", "name": "Void a Transaction" },
+        { "value": "charge_customer_profile", "name": "Charge a Customer Profile" },
+        { "value": "create_customer_pofile", "name": "Create a Customer Profile" },
+        { "value": "get_customer_profile", "name": "Get Customer Profile" },
+        { "value": "get_customer_profileIds", "name": "Get Customer Profile IDs" },
+        { "value": "update_customer_profile", "name": "Update Customer Profile" },
+        { "value": "delete_customer_profile", "name": "Delete Customer Profile" },
+        { "value": "create_customer_payment_profile", "name": "Create Customer Payment Profile" },
+        { "value": "get_customer_payment_profile", "name": "Get Customer Payment Profile" },
+        { "value": "validate_customer_payment_profile", "name": "Validate Customer Payment Profile" },
+        { "value": "update_customer_payment_profile", "name": "Update Customer Payment Profile" },
+        { "value": "delete_customer_payment_profile", "name": "Delete Customer Payment Profile" },
+        { "value": "create_customer_profile_from_transaction", "name": "Create Customer Profile from Transaction" }
+      ]
+    },
+    "charge_credit_card": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for charging a credit card",
+        "placeholder": "{\n  \"amount\": \"5.00\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expirationDate\": \"2025-12\",\n  \"cardCode\": \"123\",\n  \"refId\": \"123456\",\n  \"lineItems\": {\n    \"lineItem\": [\n      {\n        \"itemId\": \"1\",\n        \"name\": \"Product Name\",\n        \"description\": \"Product Description\",\n        \"quantity\": \"1\",\n        \"unitPrice\": \"5.00\"\n      }\n    ]\n  },\n  \"tax\": {\n    \"amount\": \"0.50\",\n    \"name\": \"Sales Tax\",\n    \"description\": \"State Tax\"\n  },\n  \"billTo\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"address\": \"123 Main St\",\n    \"city\": \"Seattle\",\n    \"state\": \"WA\",\n    \"zip\": \"98101\",\n    \"country\": \"US\"\n  }\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: amount, cardNumber, expirationDate. Optional: cardCode (CVV), refId (max 20 chars), lineItems, tax, duty, shipping, poNumber, customer, billTo, shipTo, customerIP, transactionSettings, userFields, processingOptions, subsequentAuthInformation, authorizationIndicatorType. See Authorize.Net documentation for complete field specifications."
+      }
+    },
+    "authorize_credit_card": {
+       "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for authorizing a credit card",
+        "placeholder": "{\n  \"amount\": \"5.00\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expirationDate\": \"2025-12\",\n  \"cardCode\": \"123\",\n  \"refId\": \"123456\",\n  \"lineItems\": {\n    \"lineItem\": [\n      {\n        \"itemId\": \"1\",\n        \"name\": \"Product Name\",\n        \"description\": \"Product Description\",\n        \"quantity\": \"1\",\n        \"unitPrice\": \"5.00\"\n      }\n    ]\n  },\n  \"tax\": {\n    \"amount\": \"0.50\",\n    \"name\": \"Sales Tax\",\n    \"description\": \"State Tax\"\n  },\n  \"billTo\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"address\": \"123 Main St\",\n    \"city\": \"Seattle\",\n    \"state\": \"WA\",\n    \"zip\": \"98101\",\n    \"country\": \"US\"\n  }\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: amount, cardNumber, expirationDate. Optional: cardCode (CVV), refId (max 20 chars), lineItems, tax, duty, shipping, poNumber, customer, billTo, shipTo, customerIP, userFields, processingOptions, subsequentAuthInformation, authorizationIndicatorType. See Authorize.Net documentation for complete field specifications."
+      }
+    },
+    "capture_authorized_amount": {
+       "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for capturing a previously authorized amount",
+        "placeholder": "{\n  \"refTransId\": \"1234567890\",\n  \"amount\": \"5.00\",\n  \"refId\": \"123456\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: refTransId (original authorization transaction ID), amount (must be <= authorized amount). Optional: refId (max 20 chars for reference tracking). See Authorize.Net documentation for complete request format."
+      } 
+    },
+    "refund_transaction": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for refunding a transaction",
+        "placeholder": "{\n  \"transId\": \"80048625878\",\n  \"amount\": \"1.00\",\n  \"cardNumber\": \"0015\",\n  \"expirationDate\": \"XXXX\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the refund details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "void_transaction": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for voiding a transaction",
+        "placeholder": "{\n  \"transId\": \"12345678\",\n  \"refId\": \"optional-ref-123\",\n  \"terminalNumber\": \"optional-terminal\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: transId (transaction ID to void). Optional: refId (your reference ID, max 20 chars), terminalNumber (in-store terminal identifier)."
+      }
+    },
+    "charge_customer_profile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for charging a customer profile",
+        "placeholder": "{\n  \"customerProfileId\": \"40338125\",\n  \"customerPaymentProfileId\": \"1000177237\",\n  \"amount\": \"45.00\",\n  \"refId\": \"123456\",\n  \"lineItems\": {\n    \"lineItem\": [\n      {\n        \"itemId\": \"1\",\n        \"name\": \"vase\",\n        \"description\": \"Cannes logo\",\n        \"quantity\": \"18\",\n        \"unitPrice\": \"45.00\"\n      }\n    ]\n  }\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: customerProfileId, customerPaymentProfileId (or use nested profile structure), amount. Optional: refId (max 20 chars), lineItems, tax, duty, shipping, poNumber, customer, billTo, shipTo, customerIP, processingOptions, subsequentAuthInformation, authorizationIndicatorType. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "create_customer_pofile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for creating a customer profile",
+        "placeholder": "{\n  \"email\": \"customer@example.com\",\n  \"description\": \"Customer Name\",\n  \"merchantCustomerId\": \"12345\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the customer profile details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "get_customer_profile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for getting a customer profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"refId\": \"ref123\",\n  \"includeIssuerInfo\": true\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide customer profile retrieval parameters as JSON.\n\nParameters:\n• customerProfileId (required): Payment gateway-assigned ID\n• refId (optional): Merchant reference ID (up to 20 chars)\n• merchantCustomerId (optional): Merchant customer ID (up to 20 chars)\n• email (optional): Customer email (up to 255 chars)\n• unmaskExpirationDate (optional): Return unmasked expiration date (boolean)\n• includeIssuerInfo (optional): Include issuer number (IIN) in response (boolean)\n\nSee Authorize.Net documentation for complete details."
+      }
+    },
+    "get_customer_profileIds": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for getting customer profile IDs (optional)",
+        "placeholder": "{}",
+        "height": "300px",
+        "mandatory": false,
+        "tooltip": "Optionally provide parameters as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "update_customer_profile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for updating a customer profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"email\": \"newemail@example.com\",\n  \"description\": \"Updated Name\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the updated customer profile details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "delete_customer_profile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for deleting a customer profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the customer profile ID as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "create_customer_payment_profile": {
+       "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for creating a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expirationDate\": \"2025-12\",\n  \"cardCode\": \"123\",\n  \"billTo\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"address\": \"123 Main St\",\n    \"city\": \"Bellevue\",\n    \"state\": \"WA\",\n    \"zip\": \"98004\",\n    \"country\": \"US\",\n    \"phoneNumber\": \"000-000-0000\"\n  },\n  \"defaultPaymentProfile\": false,\n  \"validationMode\": \"liveMode\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: customerProfileId, cardNumber, expirationDate. Optional: cardCode, billTo (firstName, lastName, company, address, city, state, zip, country, phoneNumber, faxNumber), defaultPaymentProfile (boolean), validationMode ('liveMode' or 'testMode'), refId (max 20 chars). See Authorize.Net documentation for complete request format."
+      }
+    },
+    "get_customer_payment_profile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for getting a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"10000\",\n  \"customerPaymentProfileId\": \"20000\",\n  \"includeIssuerInfo\": \"true\",\n  \"refId\": \"get-payment-001\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: customerProfileId, customerPaymentProfileId. Optional: includeIssuerInfo (string 'true' or 'false' to include issuer information in response), refId (max 20 chars for reference tracking). See Authorize.Net documentation for complete request format."      }
+    },
+    "validate_customer_payment_profile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for validating a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"customerPaymentProfileId\": \"234567\",\n  \"validationMode\": \"testMode\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Provide the validation details as JSON. See Authorize.Net documentation for complete request format."
+      }
+    },
+    "update_customer_payment_profile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for updating a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"10000\",\n  \"customerPaymentProfileId\": \"20000\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expirationDate\": \"2026-01\",\n  \"billTo\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"address\": \"123 Main St.\",\n    \"city\": \"Bellevue\",\n    \"state\": \"WA\",\n    \"zip\": \"98004\",\n    \"country\": \"US\",\n    \"phoneNumber\": \"000-000-0000\"\n  },\n  \"defaultPaymentProfile\": false,\n  \"validationMode\": \"liveMode\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: customerProfileId, customerPaymentProfileId, cardNumber, expirationDate. Optional: cardCode, billTo (firstName, lastName, company, address, city, state, zip, country, phoneNumber, faxNumber), defaultPaymentProfile (boolean), validationMode ('liveMode' or 'testMode'), refId (max 20 chars). See Authorize.Net documentation for complete request format."
+      }
+    },
+    "delete_customer_payment_profile": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for deleting a customer payment profile",
+        "placeholder": "{\n  \"customerProfileId\": \"123456\",\n  \"customerPaymentProfileId\": \"234567\",\n  \"refId\": \"delete-payment-001\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: customerProfileId (customer profile ID), customerPaymentProfileId (payment profile ID to delete). Optional: refId (max 20 chars for reference tracking). See Authorize.Net documentation for complete request format."
+      }
+    },
+    "create_customer_profile_from_transaction": {
+      "requestBody": {
+        "label": "Request body",
+        "key": "requestBody",
+        "type": "codehinter",
+        "description": "JSON request body for creating a customer profile from a transaction",
+        "placeholder": "{\n  \"transId\": \"1234567890\",\n  \"customer\": {\n    \"merchantCustomerId\": \"CUST123\",\n    \"description\": \"Customer description\",\n    \"email\": \"customer@example.com\"\n  },\n  \"profileType\": \"regular\",\n  \"refId\": \"create-profile-001\"\n}",
+        "height": "300px",
+        "mandatory": true,
+        "tooltip": "Required: transId (transaction ID from successful transaction). At least one of the following must be provided in customer object: merchantCustomerId (max 20 chars), description (max 255 chars), or email (max 255 chars). Optional: profileType ('guest' or 'regular', defaults to 'regular'), refId (max 20 chars). See Authorize.Net documentation for complete request format."      }
+    }
+  }
+}

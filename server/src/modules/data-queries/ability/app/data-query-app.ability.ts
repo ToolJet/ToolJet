@@ -3,6 +3,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 import { FeatureAbility } from './index';
 
 export function defineDataQueryAppAbility(
@@ -11,19 +12,18 @@ export function defineDataQueryAppAbility(
   app: App
 ): void {
   const appId = app?.id;
-  const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
+  const { superAdmin, isAdmin, userPermission, isBuilder, isEndUser } = UserAllPermissions;
   const resourcePermissions = userPermission?.[MODULES.APP];
   const isAllEditable = !!resourcePermissions?.isAllEditable;
   const isCanCreate = userPermission.appCreate;
   const isCanDelete = userPermission.appDelete;
   const isAllViewable = !!resourcePermissions?.isAllViewable;
-  const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
   if (app?.isPublic) {
     can([FEATURE_KEY.RUN_VIEWER], App);
   }
 
-  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
+  if (isAdmin || superAdmin || (app?.type === APP_TYPES.MODULE && isBuilder)) {
     can(
       [
         FEATURE_KEY.CREATE,
@@ -46,6 +46,7 @@ export function defineDataQueryAppAbility(
       [
         FEATURE_KEY.GET,
         FEATURE_KEY.UPDATE,
+        FEATURE_KEY.UPDATE_DATA_SOURCE,
         FEATURE_KEY.UPDATE_ONE,
         FEATURE_KEY.RUN_EDITOR,
         FEATURE_KEY.RUN_VIEWER,
@@ -63,6 +64,7 @@ export function defineDataQueryAppAbility(
       [
         FEATURE_KEY.GET,
         FEATURE_KEY.UPDATE,
+        FEATURE_KEY.UPDATE_DATA_SOURCE,
         FEATURE_KEY.UPDATE_ONE,
         FEATURE_KEY.RUN_EDITOR,
         FEATURE_KEY.RUN_VIEWER,
@@ -76,12 +78,17 @@ export function defineDataQueryAppAbility(
   }
 
   if (isAllViewable) {
-    can([FEATURE_KEY.RUN_VIEWER], App);
+    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }
 
   if (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) {
-    can([FEATURE_KEY.RUN_VIEWER], App);
+    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
+    return;
+  }
+
+  if (isEndUser) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }
 }

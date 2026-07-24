@@ -1,12 +1,14 @@
-import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '@helpers/utils.helper';
+import { AppVersionType } from '@entities/app_version.entity';
 
 export class VersionCreateDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty({ message: 'Version name cannot be empty.' })
   @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
   versionName: string;
 
   @IsUUID()
@@ -16,6 +18,16 @@ export class VersionCreateDto {
   @IsUUID()
   @IsOptional()
   environmentId: string;
+
+  @IsOptional()
+  versionDescription: string;
+
+  @IsOptional()
+  versionType?: AppVersionType;
+
+  @IsUUID()
+  @IsOptional()
+  branchId?: string;
 }
 
 export class PromoteVersionDto {
@@ -23,4 +35,17 @@ export class PromoteVersionDto {
   @IsUUID()
   @Transform(({ value }) => sanitizeInput(value))
   currentEnvironmentId: string;
+}
+export class DraftVersionDto {
+  @IsUUID()
+  versionFromId: string;
+
+  @IsUUID()
+  environmentId: string;
+
+  @IsOptional()
+  versionDescription: string;
+
+  @IsOptional()
+  versionType?: AppVersionType;
 }

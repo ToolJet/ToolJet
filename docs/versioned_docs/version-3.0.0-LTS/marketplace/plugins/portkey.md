@@ -53,7 +53,7 @@ This operation generates text completions based on a given prompt.
     <img className="screenshot-full" src="/img/marketplace/plugins/portkey/completion.png" alt="Completion Operation for Portkey" />
 </div>
 
-    <details>
+    <details id="tj-dropdown">
     <summary>**Response Example**</summary>
     ```json
 {
@@ -96,7 +96,7 @@ This operation generates chat completions based on a series of messages.
     <img className="screenshot-full" src="/img/marketplace/plugins/portkey/chat.png" alt="Chat Operation for Portkey" />
 </div>
 
-  <details>
+  <details id="tj-dropdown">
   <summary>**Response Example**</summary>
 ```json
 {
@@ -141,7 +141,7 @@ This operation generates completions based on a pre-defined prompt.
     <img className="screenshot-full" src="/img/marketplace/plugins/portkey/prompt-completion.png" alt="Prompt Completion Operation for Portkey" />
 </div>
 
-  <details>
+  <details id="tj-dropdown">
   <summary>**Response Example**</summary>
 ```json
 {
@@ -185,7 +185,7 @@ This operation creates embeddings for given input text.
     <img className="screenshot-full" src="/img/marketplace/plugins/portkey/embedding.png" alt="Create Embedding Operation for Portkey" />
 </div>
 
-  <details>
+  <details id="tj-dropdown">
   <summary>**Response Example**</summary>
 ```json
 {

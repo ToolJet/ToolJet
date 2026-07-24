@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderElement } from '../Utils';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const CustomComponent = function CustomComponent({
@@ -24,6 +24,7 @@ export const CustomComponent = function CustomComponent({
         initialValue={args.value ?? {}}
         onChange={(value) => paramUpdated({ name: 'data' }, 'value', value, 'properties')}
         componentName={`component/${component.component.name}/data`}
+        canRefresh={true}
       />
     ),
   });
@@ -32,16 +33,17 @@ export const CustomComponent = function CustomComponent({
     title: 'Code',
     children: (
       <CodeHinter
-        type="basic"
+        type="multiline"
         initialValue={code.value ?? {}}
         theme={darkMode ? 'monokai' : 'base16-light'}
         lang="jsx"
         lineNumbers={true}
-        className="custom-component"
+        className="custom-component custom-component-inspector-multiline"
         onChange={(value) => paramUpdated({ name: 'code' }, 'value', value, 'properties')}
         componentName={`component/${component.component.name}/code`}
         height={400}
         hideSuggestion={true}
+        canRefresh={true}
       />
     ),
   });

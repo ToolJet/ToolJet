@@ -8,6 +8,8 @@ import {
   getRefreshedToken,
   validateAndSetRequestOptionsBasedOnAuthType,
   getAuthUrl,
+  validateUrlForSSRF,
+  getSSRFProtectionOptions,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -55,6 +57,10 @@ export default class Openapi implements QueryService {
     const { request, query, header, path: pathParams } = params;
     const resolvedHost = sourceOptions.host || host;
     const url = new URL(resolvedHost + this.resolvePathParams(pathParams, path));
+
+    // SSRF Protection: Validate URL before making request
+    await validateUrlForSSRF(url.toString());
+
     const parsedRequest = request ? this.parseRequest(request) : undefined;
     const json =
       operation !== 'get' && parsedRequest && Object.keys(parsedRequest).length > 0
@@ -84,16 +90,21 @@ export default class Openapi implements QueryService {
 
     const requestOptions = data as OptionsOfTextResponseBody;
 
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    // Pass requestOptions to properly merge hooks and other options
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+
     let result = {};
     let requestObject = {};
     let responseObject = {};
     let responseHeaders = {};
 
     try {
-      const response = await got(url, requestOptions);
+      const response = await got(url, finalOptions);
       const contentType = response.headers['content-type'];
 
-      result = contentType !== 'application/json' ? response.body : JSON.parse(response.body);
+      result = contentType && contentType.includes('application/json') ? JSON.parse(response.body) : response.body;
+
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,
@@ -145,5 +156,31 @@ export default class Openapi implements QueryService {
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
     return getRefreshedToken(sourceOptions, error, userId, isAppPublic);
+  }
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string
+  ): Promise<QueryResult> {
+    try {
+      const spec = sourceOptions.spec; 
+      const paths = spec?.paths || {};
+
+      const endpoints = Object.entries(paths).flatMap(([path, methods]: [string, any]) =>
+        Object.keys(methods)
+          .filter((m) => ['get','post','put','patch','delete','head','options'].includes(m))
+          .map((method) => ({
+            path,
+            method: method.toUpperCase(),
+            summary: methods[method]?.summary || '',
+            operationId: methods[method]?.operationId || '',
+          }))
+      );
+
+      return { status: 'ok', data: endpoints };
+    } catch (err) {
+      throw new QueryError('Could not fetch endpoints', err.message, {});
+    }
   }
 }

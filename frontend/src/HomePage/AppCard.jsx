@@ -7,13 +7,17 @@ import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link, useNavigate } from 'react-router-dom';
 import urlJoin from 'url-join';
+import queryString from 'query-string';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
-import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
-import { validateName, decodeEntities } from '@/_helpers/utils';
+import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
+import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
+import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
+import { toast } from 'react-hot-toast';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -24,20 +28,53 @@ export default function AppCard({
   exportApp,
   appActionModal,
   canUpdateApp,
+  canViewApp,
   currentFolder,
   appType,
+  ownedFolders,
   ...props
 }) {
   const canUpdate = canUpdateApp(app);
+  const canView = canViewApp ? canViewApp(app) : false;
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { wsCurrentBranch, wsActions } = useWorkspaceBranchesStore((state) => ({
+    wsCurrentBranch: state.currentBranch,
+    wsActions: state.actions,
+  }));
   const cardRef = useRef();
-  const [popoverVisible, setPopoverVisible] = useState(true);
+  const [popoverVisible, setPopoverVisible] = useState(false);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
   const tooltipRef = useRef(null);
+
+  const handleEditClick = async (e) => {
+    // When workspace branching is active, verify current branch still exists on remote
+    if (wsCurrentBranch) {
+      e.preventDefault();
+      try {
+        const existsOnRemote = await wsActions.checkBranchExistsOnRemote(wsCurrentBranch.name);
+        if (!existsOnRemote) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        // check failed (network error, etc.) — allow navigation
+      }
+      navigate(getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }));
+    }
+    posthogHelper.captureEvent('click_edit_button_on_card', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      app_id: app?.id,
+      folder_id: currentFolder?.id,
+    });
+  };
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -119,6 +156,23 @@ export default function AppCard({
     console.error('App icon not found', app.icon);
   }
 
+  // Calculate released app access before LaunchButton definition
+  const session = authenticationService.currentSessionValue;
+  const appPerms = session?.app_group_permissions;
+
+  // Backend resolves all folder-derived permissions into editable_apps_id, viewable_apps_id,
+  // and appSpecificEnvironmentAccess at session time — no frontend folder checks needed.
+  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
+
+  // Check if user is a builder based on role, not just editable apps
+  const isBuilder = hasBuilderRole(session?.role ?? {});
+
+  const hasNonReleasedPreviewAccess =
+    environmentAccess.development || environmentAccess.staging || environmentAccess.production;
+
+  // Builders need explicit released access. End users can launch if the app is released.
+  const canAccessReleased = !isBuilder || environmentAccess.released;
+
   const LaunchButton =
     appType === 'workflow' ? (
       <div>
@@ -145,6 +199,8 @@ export default function AppCard({
           message={
             app?.current_version_id === null
               ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+              : !canAccessReleased
+              ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
               : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
           }
         >
@@ -152,15 +208,15 @@ export default function AppCard({
             type="button"
             className={cx(
               ` launch-button tj-text-xsm ${
-                app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+                app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
+                  ? 'tj-disabled-btn '
+                  : 'tj-tertiary-btn'
               }`
             )}
-            disabled={app?.current_version_id === null || app?.is_maintenance_on}
+            disabled={app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased}
             onClick={() => {
-              if (app?.current_version_id) {
-                window.open(
-                  urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
-                );
+              if (app?.current_version_id && canAccessReleased) {
+                window.open(urlJoin(getHostURL(), `/applications/${app.slug}`));
               } else {
                 navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
               }
@@ -171,7 +227,7 @@ export default function AppCard({
               name="rightarrrow"
               width="14"
               fill={
-                app?.current_version_id === null || app?.is_maintenance_on
+                app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
                   ? '#4C5155'
                   : darkMode
                   ? '#FDFDFE'
@@ -187,6 +243,33 @@ export default function AppCard({
       </div>
     );
 
+  const ViewButton = (
+    <div>
+      <button
+        type="button"
+        className="tj-primary-btn tj-text-xsm edit-button"
+        style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+        onClick={() => {
+          const pageHandle = app.home_page_handle || 'home';
+          const slugOrId = isValidSlug(app.slug) ? app.slug : app.id;
+
+          // For preview, use first available environment from user's actual permissions.
+          const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
+          // Don't add env param if license is invalid or multi-environment feature is not available
+          const queryParams = props.basicPlan ? {} : { env: defaultEnv };
+          const previewQuery = queryString.stringify(queryParams);
+
+          const previewUrl = `/applications/${slugOrId}/${pageHandle}${previewQuery ? `?${previewQuery}` : ''}`;
+
+          window.open(previewUrl, '_blank');
+        }}
+        data-cy="preview-button"
+      >
+        {t('globals.preview', 'Preview')}
+      </button>
+    </div>
+  );
+
   function AppNameDisplay({ tooltipRef }) {
     const AppName = (
       <h3
@@ -199,23 +282,23 @@ export default function AppCard({
     );
 
     return isNameOverflowing ? (
-      <ToolTip trigger={['hover']} message={app.name}>
+      <ToolTip trigger={['hover']} message={app.name} maxWidth="210px" tooltipClassName="long-name-tooltip">
         {AppName}
       </ToolTip>
     ) : (
       AppName
     );
   }
-
+  const isStub = app?.app_versions?.[0]?.is_stub;
   return (
     <ToolTip
-      message="Modules are available only on paid plans"
+      message="Modules are not available on your current plan."
       placement="bottom"
-      show={appType === 'module' && props.basicPlan}
+      show={appType === 'module' && !props.moduleEnabled}
     >
       <div className="card homepage-app-card card--clickable" ref={cardRef}>
         <div
-          className={appType === 'module' && props.basicPlan ? 'disabled-module' : ''}
+          className={appType === 'module' && !props.moduleEnabled ? 'disabled-module' : ''}
           key={app?.id}
           ref={hoverRef}
           data-cy={`${app?.name?.toLowerCase().replace(/\s+/g, '-')}-card`}
@@ -230,15 +313,26 @@ export default function AppCard({
                 </div>
               </div>
               <div visible={focused ? true : undefined}>
-                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
                   <AppMenu
+                    appId={app?.id}
+                    appUserId={app?.user_id}
                     onMenuOpen={onMenuToggle}
                     openAppActionModal={appActionModalCallBack}
                     canCreateApp={canCreateApp()}
                     canDeleteApp={canDeleteApp(app)}
                     canUpdateApp={canUpdateApp(app)}
                     deleteApp={() => deleteApp(app)}
-                    exportApp={() => exportApp(app)}
+                    exportApp={() => {
+                      if (isStub && appType !== 'workflow') {
+                        toast.error(
+                          'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                          { position: 'top-center' }
+                        );
+                        return;
+                      }
+                      exportApp(app);
+                    }}
                     isMenuOpen={setMenuOpen}
                     popoverVisible={popoverVisible}
                     setMenuOpen={setMenuOpen}
@@ -246,6 +340,7 @@ export default function AppCard({
                     currentFolder={currentFolder}
                     appType={appType}
                     appCreationMode={app?.creation_mode || app?.creationMode}
+                    ownedFolders={ownedFolders}
                   />
                 )}
               </div>
@@ -271,16 +366,7 @@ export default function AppCard({
                     to={getPrivateRoute('editor', {
                       slug: isValidSlug(app.slug) ? app.slug : app.id,
                     })}
-                    onClick={() => {
-                      posthogHelper.captureEvent('click_edit_button_on_card', {
-                        workspace_id:
-                          authenticationService?.currentUserValue?.organization_id ||
-                          authenticationService?.currentSessionValue?.current_organization_id,
-                        app_id: app?.id,
-                        folder_id: currentFolder?.id,
-                      });
-                    }}
-                    reloadDocument
+                    onClick={handleEditClick}
                   >
                     <button
                       type="button"
@@ -295,7 +381,8 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {appType !== 'module' && LaunchButton}
+            {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
+            {!isStub && appType !== 'module' && LaunchButton}
           </div>
         </div>
       </div>

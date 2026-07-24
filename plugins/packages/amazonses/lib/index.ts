@@ -1,8 +1,8 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
 import { SendEmailCommand, SendEmailCommandInput, SESv2Client } from '@aws-sdk/client-sesv2';
 import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
+import { STSClient, AssumeRoleCommand } from '@aws-sdk/client-sts';
 import { SourceOptions, QueryOptions, AssumeRoleCredentials } from './types';
-const AWS = require('aws-sdk');
 
 export default class AmazonSES implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -42,29 +42,26 @@ export default class AmazonSES implements QueryService {
     };
   }
 
-  async getAssumeRoleCredentials(roleArn: string): Promise<AssumeRoleCredentials> {
-    const sts = new AWS.STS();
+  async getAssumeRoleCredentials(roleArn: string, region: string): Promise<AssumeRoleCredentials> {
+    const sts = new STSClient({ region });
 
-    return new Promise((resolve, reject) => {
-      const timestamp = new Date().getTime();
-      const roleName = roleArn.split('/')[1];
-      const params = {
-        RoleArn: roleArn,
-        RoleSessionName: `s3-${roleName}-${timestamp}`,
-      };
-
-      sts.assumeRole(params, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({
-            accessKeyId: data.Credentials.AccessKeyId,
-            secretAccessKey: data.Credentials.SecretAccessKey,
-            sessionToken: data.Credentials.SessionToken,
-          });
-        }
-      });
+    const timestamp = new Date().getTime();
+    const roleName = roleArn.split('/')[1];
+    const command = new AssumeRoleCommand({
+      RoleArn: roleArn,
+      RoleSessionName: `s3-${roleName}-${timestamp}`,
     });
+
+    try {
+      const data = await sts.send(command);
+      return {
+        accessKeyId: data.Credentials.AccessKeyId,
+        secretAccessKey: data.Credentials.SecretAccessKey,
+        sessionToken: data.Credentials.SessionToken,
+      };
+    } catch (error) {
+      throw new QueryError('Failed to assume role', error.message, {});
+    }
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<SESv2Client> {
@@ -72,20 +69,26 @@ export default class AmazonSES implements QueryService {
     const useRoleArn = sourceOptions['instance_metadata_credentials'] === 'aws_arn_role';
     const region = sourceOptions['region'];
 
-    let credentials = null;
     if (useAWSInstanceProfile) {
       return new SESv2Client({ region, credentials: fromInstanceMetadata() });
     } else if (useRoleArn) {
-      const assumeRoleCredentials = await this.getAssumeRoleCredentials(sourceOptions['role_arn']);
-      credentials = new AWS.Credentials(
-        assumeRoleCredentials.accessKeyId,
-        assumeRoleCredentials.secretAccessKey,
-        assumeRoleCredentials.sessionToken
-      );
+      const assumeRoleCredentials = await this.getAssumeRoleCredentials(sourceOptions['role_arn'], region);
+      return new SESv2Client({
+        region,
+        credentials: {
+          accessKeyId: assumeRoleCredentials.accessKeyId,
+          secretAccessKey: assumeRoleCredentials.secretAccessKey,
+          sessionToken: assumeRoleCredentials.sessionToken,
+        },
+      });
     } else {
-      credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
+      return new SESv2Client({
+        region,
+        credentials: {
+          accessKeyId: sourceOptions['access_key'],
+          secretAccessKey: sourceOptions['secret_key'],
+        },
+      });
     }
-
-    return new SESv2Client({ region, credentials });
   }
 }

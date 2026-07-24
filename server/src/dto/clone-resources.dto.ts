@@ -9,6 +9,10 @@ export class CloneResourcesDto {
 
   @IsUUID()
   organization_id: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
 
 export class CloneAppDto {

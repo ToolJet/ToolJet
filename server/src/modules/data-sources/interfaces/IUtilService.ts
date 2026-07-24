@@ -8,9 +8,18 @@ export interface IDataSourcesUtilService {
 
   getServiceAndRpcNames(protoDefinition: any): { [key: string]: string[] };
 
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   * Used in: 1639734070615-BackfillDataSourcesAndQueriesForAppVersions.ts
+   */
   parseOptionsForCreate(options: Array<object>, resetSecureData?: boolean, manager?: EntityManager): Promise<any>;
 
-  parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, manager: EntityManager): Promise<any>;
+  parseOptionsForUpdate(
+    dataSource: DataSource,
+    options: Array<object>,
+    manager: EntityManager,
+    userId: string
+  ): Promise<any>;
 
   testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
 
@@ -28,7 +37,11 @@ export interface IDataSourcesUtilService {
     manager?: EntityManager
   ): Promise<void>;
 
-  parseOptionsForOauthDataSource(options: Array<object>, resetSecureData?: boolean): Promise<Array<object>>;
+  parseOptionsForOauthDataSource(
+    options: Array<object>,
+    resetSecureData?: boolean,
+    userId?: string
+  ): Promise<Array<object>>;
 
   resolveConstants(value: string, organizationId: string, environmentId: string, user?: User): Promise<string>;
 

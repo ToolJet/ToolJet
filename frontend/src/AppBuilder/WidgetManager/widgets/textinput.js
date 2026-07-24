@@ -35,6 +35,12 @@ export const textinputConfig = {
         defaultValue: 'Default value',
       },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -47,10 +53,31 @@ export const textinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
       section: 'additionalActions',
     },
     tooltip: {
@@ -59,6 +86,7 @@ export const textinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   validation: {
@@ -85,6 +113,12 @@ export const textinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -108,20 +142,10 @@ export const textinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
-    width: {
-      type: 'slider',
-      displayName: 'Width',
-      accordian: 'label',
-      conditionallyRender: {
-        key: 'alignment',
-        value: 'side',
-      },
-      isFxNotRequired: true,
-    },
+
     auto: {
       type: 'checkbox',
-      displayName: 'auto',
-      showLabel: false,
+      displayName: 'Width',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'label',
       conditionallyRender: {
@@ -129,6 +153,46 @@ export const textinputConfig = {
         value: 'side',
       },
       isFxNotRequired: true,
+    },
+    width: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
     },
 
     backgroundColor: {
@@ -153,6 +217,12 @@ export const textinputConfig = {
       type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'field',
+    },
+    placeholderTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
       accordian: 'field',
     },
     errTextColor: {
@@ -275,13 +345,19 @@ export const textinputConfig = {
       label: { value: 'Label' },
       placeholder: { value: 'Enter your input' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
+      placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
@@ -297,6 +373,7 @@ export const textinputConfig = {
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },
+      widthType: { value: 'ofComponent' },
     },
   },
 };

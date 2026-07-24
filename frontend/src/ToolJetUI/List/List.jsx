@@ -11,6 +11,7 @@ import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 import SortableList from '@/_components/SortableList';
 import { DeprecatedColumnTooltip } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
 import Icons from '@/_ui/Icon/solidIcons/index';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 function List({ children, ...restProps }) {
   return <ListGroup {...restProps}>{children}</ListGroup>;
@@ -54,7 +55,7 @@ function ListItem({
           )}
           <div
             className="col text-truncate cursor-pointer"
-            data-cy={`pages-name-${String(primaryText).toLowerCase()}`}
+            data-cy={`pages-name-${generateCypressDataCy(primaryText)}`}
             style={Icon ? { paddingLeft: '0px' } : { paddingLeft: '8px' }}
           >
             {primaryText}

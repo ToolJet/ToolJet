@@ -1,3 +1,102 @@
+:root {
+    /* Font families */
+    --font-family-inter: 'Inter', sans-serif;
+    --font-family-geist-mono: 'Geist Mono', monospace;
+
+    /* Font weights */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semi-bold: 600;
+
+    /* Font sizes */
+    --font-size-display-small: 32px;
+    --font-size-xx-large: 20px;
+    --font-size-x-large: 16px;
+    --font-size-large: 14px;
+    --font-size-default: 12px;
+    --font-size-small: 11px;
+
+    /* Line heights */
+    --line-height-display-medium: 56px;
+    --line-height-xx-large: 32px;
+    --line-height-x-large: 24px;
+    --line-height-large: 20px;
+    --line-height-default: 18px;
+    --line-height-small: 16px;
+
+    /* Letter spacing */
+    --letter-spacing-display-medium: -0.64px;
+    --letter-spacing-xx-large: -0.4px;
+    --letter-spacing-x-large: -0.32px;
+    --letter-spacing-large: -0.28px;
+    --letter-spacing-default: -0.24px;
+    --letter-spacing-small: -0.22px;
+} 
+
+
+
+/* inter-100 - latin */
+@font-face {
+    font-display: swap;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100;
+    src: url('/assets/fonts/inter-v12-latin/inter-v12-latin-100.woff2') format('woff2');
+  }
+  
+  /* inter-200 - latin */
+  @font-face {
+    font-display: swap;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 200;
+    src: url('/assets/fonts/inter-v12-latin/inter-v12-latin-200.woff2') format('woff2');
+  }
+  
+  /* inter-300 - latin */
+  @font-face {
+    font-display: swap;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 300;
+    src: url('/assets/fonts/inter-v12-latin/inter-v12-latin-300.woff2') format('woff2');
+  }
+  
+  /* inter-regular - latin */
+  @font-face {
+    font-display: swap;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    src: url('/assets/fonts/inter-v12-latin/inter-v12-latin-regular.woff2') format('woff2');
+  }
+  
+  /* inter-500 - latin */
+  @font-face {
+    font-display: swap;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    src: url('/assets/fonts/inter-v12-latin/inter-v12-latin-500.woff2') format('woff2');
+  }
+  
+  /* inter-600 - latin */
+  @font-face {
+    font-display: swap;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    src: url('/assets/fonts/inter-v12-latin/inter-v12-latin-600.woff2') format('woff2');
+  }
+  
+  /* inter-700 - latin */
+  @font-face {
+    font-display: swap;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    src: url('/assets/fonts/inter-v12-latin/inter-v12-latin-700.woff2') format('woff2');
+  }
 //Typography
 .tj-text {
     font-family: 'IBM Plex Sans';

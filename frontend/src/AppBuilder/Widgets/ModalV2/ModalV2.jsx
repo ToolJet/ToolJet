@@ -1,12 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
 import { useResetZIndex } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalZIndex';
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
-import { useEventListener } from '@/_hooks/use-event-listener';
 import { ModalWidget } from '@/AppBuilder/Widgets/ModalV2/Components/Modal';
-
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
   getModalBodyHeight,
   getModalHeaderHeight,
@@ -16,6 +15,8 @@ import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFa
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 export const ModalV2 = function Modal({
   id,
@@ -28,8 +29,14 @@ export const ModalV2 = function Modal({
   fireEvent,
   dataCy,
   height,
+  currentMode,
+  currentLayout,
+  componentCount,
+  subContainerIndex,
+  componentType,
 }) {
   const { moduleId } = useModuleContext();
+  const { contextPath } = useSubcontainerContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -43,21 +50,47 @@ export const ModalV2 = function Modal({
     showFooter,
     headerHeight,
     footerHeight,
+    dynamicHeight,
   } = properties;
   const {
+    iconColor,
+    direction,
+    iconVisibility,
     headerBackgroundColor,
     footerBackgroundColor,
     bodyBackgroundColor,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundMode,
+    triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
     triggerButtonTextColor,
+    triggerButtonTextSize = 14,
+    triggerButtonFontWeight,
+    triggerButtonContentAlignment,
     boxShadow,
+    headerDividerColor,
+    footerDividerColor,
   } = styles;
+  const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
+  const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
+    ? normalizedTriggerButtonTextSize
+    : 14;
+  const computedTriggerButtonLineHeight = computedTriggerButtonFontSize * 1.42;
+  const computedTriggerButtonIconSize = computedTriggerButtonLineHeight * 0.8;
+  const normalizedTriggerButtonFontWeight = triggerButtonFontWeight === 'medium' ? 500 : triggerButtonFontWeight;
+  const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
+    ? normalizedTriggerButtonFontWeight
+    : normalizedTriggerButtonFontWeight === '0'
+    ? 0
+    : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
+  const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const iconName = styles.icon;
 
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
@@ -66,6 +99,7 @@ export const ModalV2 = function Modal({
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
+
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
@@ -92,8 +126,6 @@ export const ModalV2 = function Modal({
     setShowModal(true);
   }
 
-  // useEventListener('resize', onShowSideEffects, window);
-
   const onShowModal = () => {
     openModal();
     setSelectedComponentAsModal(id);
@@ -101,31 +133,42 @@ export const ModalV2 = function Modal({
 
   const onHideModal = () => {
     hideModal();
-    setSelectedComponentAsModal(null);
+    clearSelectedComponents();
   };
+
+  const showModalRef = useRef(false);
+  useEffect(() => {
+    showModalRef.current = showModal;
+  }, [showModal]);
 
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
       return;
     }
-    const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
-    // Scroll to top of canvas content when modal is opened and disbale page overflow
+
     if (showModal) {
-      if (canvasContent) {
-        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
-        canvasContent.style.setProperty('overflow', 'hidden', 'important');
-      }
+      onShowSideEffects();
     } else {
-      if (canvasContent) {
-        canvasContent.style.setProperty('overflow', 'auto', 'important');
-      }
+      onHideSideEffects();
     }
 
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
+
+  // If modal is unmounted while open (e.g. parent page switches via an action
+  // fired from inside the modal), onHide never runs and canvas-content keeps
+  // the inline `overflow: hidden !important` set by onShowSideEffects, leaving
+  // the next page unscrollable.
+  useEffect(() => {
+    return () => {
+      if (showModalRef.current) {
+        onHideSideEffects();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)
@@ -152,6 +195,30 @@ export const ModalV2 = function Modal({
     onHideModal,
     onShowModal,
   });
+  // Memoized: this lands in useDynamicHeight's effect deps. A fresh array per
+  // render (e.g. inside a Listview row, where Viewer re-renders on every
+  // canvasUpdater tick) would refire the effect → scheduleReflow → flushReflows →
+  // incrementCanvasUpdater → re-render, freezing the preview in a reflow loop.
+  const contextIndices = useMemo(
+    () => (contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex),
+    [contextPath, subContainerIndex]
+  );
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+    // Includes footerHeight + showFooter so resizing/toggling the footer
+    // also triggers a reflow (configured slot heights feed into the modal's
+    // computed body height).
+    value: JSON.stringify({ headerHeight, footerHeight, showHeader, showFooter, showModal }),
+    visibility: isVisible,
+    subContainerIndex: contextIndices,
+    componentType,
+  });
 
   const customStyles = createModalStyles({
     height,
@@ -165,9 +232,15 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     footerHeightPx,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundMode,
+    triggerButtonHoverBackgroundColor,
     triggerButtonTextColor,
     isVisible,
     boxShadow,
+    headerDividerColor,
+    footerDividerColor,
+    direction,
+    triggerButtonContentAlignment,
   });
 
   const { modalWidth, parentRef } = useModalEventSideEffects({
@@ -184,12 +257,14 @@ export const ModalV2 = function Modal({
       className="d-flex align-items-center"
       data-disabled={isDisabledTrigger}
       data-cy={dataCy}
-      style={{ height: '100%' }}
+      style={{
+        height: '100%',
+      }}
     >
       {useDefaultButton && isVisible && (
         <button
           disabled={isDisabledTrigger}
-          className="jet-button btn btn-primary overflow-hidden"
+          className="jet-btn btn btn-primary overflow-hidden"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -204,14 +279,39 @@ export const ModalV2 = function Modal({
           }}
           data-cy={`${dataCy}-launch-button`}
         >
-          {triggerButtonLabel ?? 'Show Modal'}
+          {/* To maintain backward compatibility, apply class only if icon is visible */}
+          <span
+            className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}
+            style={{
+              fontSize: `${computedTriggerButtonFontSize}px`,
+              lineHeight: `${computedTriggerButtonLineHeight}px`,
+              fontWeight: computedTriggerButtonFontWeight,
+            }}
+          >
+            {triggerButtonLabel ?? 'Show Modal'}
+          </span>
+          {iconVisibility && (
+            <TablerIcon
+              iconName={iconName}
+              fallbackIcon="IconHome2"
+              style={{
+                width: `${computedTriggerButtonIconSize}px`,
+                height: `${computedTriggerButtonIconSize}px`,
+                color: iconColor,
+              }}
+              className="tw-flex-shrink-0"
+              stroke={1.5}
+            />
+          )}
         </button>
       )}
 
       <ModalWidget
         show={showModal}
         contentClassName="modal-component"
-        container={document.getElementsByClassName('real-canvas')[0]}
+        container={
+          document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0]
+        }
         size={size}
         keyboard={true}
         enforceFocus={false}
@@ -232,6 +332,7 @@ export const ModalV2 = function Modal({
           customStyles,
           parentRef,
           id,
+          moduleId,
           title,
           titleAlignment,
           hideTitleBar,
@@ -253,6 +354,8 @@ export const ModalV2 = function Modal({
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
           darkMode,
+          subContainerIndex: contextIndices,
+          isDynamicHeightEnabled,
         }}
       />
     </div>

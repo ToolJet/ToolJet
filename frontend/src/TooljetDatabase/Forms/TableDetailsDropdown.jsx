@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ToolTip } from '@/_components/ToolTip';
-import DropDownSelect from '../../Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import DropdownInformation from '../Icons/dropdownInfo.svg';
 import { isEmpty } from 'lodash';

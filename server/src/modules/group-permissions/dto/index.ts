@@ -25,11 +25,19 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
-  folderCRUD: boolean;
+  folderCreate: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  folderDelete: boolean;
 
   @IsBoolean()
   @IsOptional()
   orgConstantCRUD: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  tjdbCRUD: boolean;
 
   @IsBoolean()
   @IsOptional()
@@ -72,7 +80,7 @@ export class AddGroupUserDto {
 
   @IsBoolean()
   @IsOptional()
-  allowRoleChange: boolean;
+  allowRoleChange?: boolean;
 
   @IsOptional()
   @IsArray()
@@ -93,4 +101,16 @@ export class DuplicateGroupDtoBase {
 export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   addDataSource: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addWorkflows: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addFolders: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addGroupAdmins?: boolean;
 }

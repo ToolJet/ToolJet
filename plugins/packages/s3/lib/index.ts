@@ -8,9 +8,8 @@ import {
   signedUrlForPut,
   removeObject,
 } from './operations';
-import AWS from 'aws-sdk';
 import { S3Client } from '@aws-sdk/client-s3';
-
+import { STSClient, AssumeRoleCommand, AssumeRoleCommandOutput } from '@aws-sdk/client-sts';
 import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
 
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
@@ -22,31 +21,40 @@ export default class S3QueryService implements QueryService {
     const client = await this.getConnection(sourceOptions);
     let result = {};
 
+    const allowDynamicConnectionParameters =
+      this._normalizeBool(sourceOptions.allow_dynamic_connection_parameters) ?? true;
+    const resolvedQueryOptions: QueryOptions = {
+      ...queryOptions,
+      bucket: allowDynamicConnectionParameters
+        ? queryOptions.bucket || sourceOptions.bucket_name
+        : sourceOptions.bucket_name,
+    };
+
     try {
       switch (operation) {
         case Operation.CreateBucket:
-          result = await createBucket(client, queryOptions);
+          result = await createBucket(client, { ...resolvedQueryOptions, bucket: queryOptions.bucket });
           break;
         case Operation.ListBuckets:
           result = await listBuckets(client, {});
           break;
         case Operation.ListObjects:
-          result = await listObjects(client, queryOptions);
+          result = await listObjects(client, resolvedQueryOptions);
           break;
         case Operation.GetObject:
-          result = await getObject(client, queryOptions);
+          result = await getObject(client, resolvedQueryOptions);
           break;
         case Operation.UploadObject:
-          result = await uploadObject(client, queryOptions);
+          result = await uploadObject(client, resolvedQueryOptions);
           break;
         case Operation.SignedUrlForGet:
-          result = await signedUrlForGet(client, queryOptions);
+          result = await signedUrlForGet(client, resolvedQueryOptions);
           break;
         case Operation.SignedUrlForPut:
-          result = await signedUrlForPut(client, queryOptions);
+          result = await signedUrlForPut(client, resolvedQueryOptions);
           break;
         case Operation.RemoveObject:
-          result = await removeObject(client, queryOptions);
+          result = await removeObject(client, resolvedQueryOptions);
           break;
       }
     } catch (error) {
@@ -68,51 +76,67 @@ export default class S3QueryService implements QueryService {
     };
   }
 
-  async getAssumeRoleCredentials(roleArn: string): Promise<AssumeRoleCredentials> {
-    const sts = new AWS.STS();
+  async getAssumeRoleCredentials(roleArn: string, region: string): Promise<AssumeRoleCredentials> {
+    const stsClient = new STSClient({ region });
 
-    return new Promise((resolve, reject) => {
-      const timestamp = new Date().getTime();
-      const roleName = roleArn.split('/')[1];
-      const params = {
-        RoleArn: roleArn,
-        RoleSessionName: `s3-${roleName}-${timestamp}`,
-      };
+    const timestamp = new Date().getTime();
+    const roleName = roleArn.split('/')[1];
 
-      sts.assumeRole(params, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({
-            accessKeyId: data.Credentials.AccessKeyId,
-            secretAccessKey: data.Credentials.SecretAccessKey,
-            sessionToken: data.Credentials.SessionToken,
-          });
-        }
-      });
+    const command = new AssumeRoleCommand({
+      RoleArn: roleArn,
+      RoleSessionName: `s3-${roleName}-${timestamp}`,
     });
+
+    try {
+      const data: AssumeRoleCommandOutput = await stsClient.send(command);
+
+      return {
+        accessKeyId: data.Credentials?.AccessKeyId,
+        secretAccessKey: data.Credentials?.SecretAccessKey,
+        sessionToken: data.Credentials?.SessionToken,
+      };
+    } catch (err) {
+      throw new Error(`Failed to assume role: ${err.message}`);
+    }
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
+  async getConnection(sourceOptions: SourceOptions): Promise<S3Client> {
     const region = sourceOptions['region'];
+    const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
     const useRoleArn = sourceOptions['instance_metadata_credentials'] === 'aws_arn_role';
+    const useDefaultCredentialProviderChain =
+      sourceOptions['instance_metadata_credentials'] === 'default_credentials_provider_chain';
 
     if (useAWSInstanceProfile) {
-      const client = new S3Client({ region, credentials: fromInstanceMetadata() });
+      const client = new S3Client({
+        region,
+        credentials: fromInstanceMetadata({
+          timeout: 5000,
+          maxRetries: 1,
+        }),
+      });
       return client;
     } else if (useRoleArn) {
-      const assumeRoleCredentials = await this.getAssumeRoleCredentials(sourceOptions['role_arn']);
-      const credentials = new AWS.Credentials(
-        assumeRoleCredentials.accessKeyId,
-        assumeRoleCredentials.secretAccessKey,
-        assumeRoleCredentials.sessionToken
-      );
+      const assumeRoleCredentials = await this.getAssumeRoleCredentials(sourceOptions['role_arn'], region);
 
-      const client = new S3Client({ region, credentials });
+      const client = new S3Client({
+        region,
+        credentials: {
+          accessKeyId: assumeRoleCredentials.accessKeyId,
+          secretAccessKey: assumeRoleCredentials.secretAccessKey,
+          sessionToken: assumeRoleCredentials.sessionToken,
+        },
+      });
+      return client;
+    } else if (useDefaultCredentialProviderChain) {
+      const client = new S3Client({ region });
       return client;
     } else {
-      const credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
+      const credentials = {
+        accessKeyId: sourceOptions['access_key'],
+        secretAccessKey: sourceOptions['secret_key'],
+      };
+
       const endpointOptions = sourceOptions.endpoint_enabled && {
         endpoint: sourceOptions?.endpoint,
         forcePathStyle: true,
@@ -120,5 +144,11 @@ export default class S3QueryService implements QueryService {
 
       return new S3Client({ region, credentials, ...endpointOptions });
     }
+  }
+
+  private _normalizeBool(val: unknown): boolean | undefined {
+    if (val === true || val === 'true') return true;
+    if (val === false || val === 'false') return false;
+    return undefined;
   }
 }

@@ -1,34 +1,39 @@
 import { User } from '@entities/user.entity';
+import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
   GetDataSourceOauthUrlDto,
+  InvokeDataSourceMethodDto,
   TestDataSourceDto,
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
 } from '../dto';
 import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 export interface IDataSourcesController {
-  fetchGlobalDataSources(user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
+  fetchGlobalDataSources(user: User, userPermissions: UserPermissions, branchId?: string): Promise<{ data_sources: object[] }>;
 
   fetchGlobalDataSourcesForVersion(
     user: User,
     appVersionId: string,
     environmentId: string,
-    userPermissions: UserPermissions
+    userPermissions: UserPermissions,
+    branchId?: string
   ): Promise<{ data_sources: object[] }>;
 
-  createGlobalDataSources(user: User, createDataSourceDto: CreateDataSourceDto): Promise<any>;
+  createGlobalDataSources(user: User, createDataSourceDto: CreateDataSourceDto, branchId?: string): Promise<any>;
 
   update(
     user: User,
     dataSourceId: string,
     environmentId: string,
-    updateDataSourceDto: UpdateDataSourceDto
+    updateDataSourceDto: UpdateDataSourceDto,
+    branchId?: string
   ): Promise<void>;
 
-  delete(user: User, dataSourceId: string): Promise<void>;
+  delete(user: User, dataSourceId: string, branchId?: string): Promise<void>;
 
   changeScope(user: User, dataSourceId: string): Promise<void>;
 
@@ -47,5 +52,17 @@ export interface IDataSourcesController {
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
   ): Promise<void>;
 
-  decryptOptions(options: Record<string, any>): Promise<any>;
+  validateOptions(
+    user: User,
+    dataSourceId: string,
+    environmentId: string,
+    validateOptionsDto: import('../dto').ValidateOptionsDto
+  ): Promise<{ valid: boolean; errors: any[] }>;
+
+  invokeDataSourceMethod(
+    user: User,
+    invokeDto: InvokeDataSourceMethodDto,
+    dataSource: DataSourceEntity,
+    branchId?: string
+  ): Promise<QueryResult>;
 }

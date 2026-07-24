@@ -3,68 +3,25 @@ import React from 'react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const ProgramaticallyHandleProperties = ({
-  darkMode,
-  // eslint-disable-next-line no-unused-vars
-  label,
   index,
   callbackFunction,
   property,
   props = {},
   component,
   paramMeta,
-  // eslint-disable-next-line no-unused-vars
-  paramType,
-  currentState,
 }) => {
   const getValueBasedOnProperty = (property, props) => {
-    switch (property) {
-      case 'isEditable':
-        return props.isEditable;
-      case 'disableActionButton':
-        return props.disableActionButton;
-      case 'columnVisibility':
-        return props.columnVisibility;
-      case 'linkTarget':
-        return props.linkTarget;
-      case 'isAllColumnsEditable':
-        return props?.isAllColumnsEditable;
-      case 'underlineColor':
-        return props.underlineColor;
-      case 'linkColor':
-        return props.linkColor;
-      case 'useDynamicOptions':
-        return props?.useDynamicOptions;
-      case 'autoAssignColors':
-        return props?.autoAssignColors;
-      case 'makeDefaultOption':
-        return props?.[index]?.makeDefaultOption;
-      case 'textColor':
-        return props?.textColor;
-      case 'cellBackgroundColor':
-        return props?.cellBackgroundColor;
-      case 'optionsLoadingState':
-        return props?.optionsLoadingState;
-      case 'isTimeChecked':
-        return props?.isTimeChecked;
-      case 'isTwentyFourHrFormatEnabled':
-        return props?.isTwentyFourHrFormatEnabled;
-      case 'parseInUnixTimestamp':
-        return props?.parseInUnixTimestamp;
-      case 'isDateSelectionEnabled':
-        return props?.isDateSelectionEnabled;
-      case 'jsonIndentation':
-        return props?.jsonIndentation;
-      case 'labelColor':
-        return props?.labelColor;
-      case 'optionColor':
-        return props?.optionColor;
-      default:
-        return;
+    if (property === 'makeDefaultOption') {
+      return props?.[index]?.makeDefaultOption;
     }
+    return props?.[property];
   };
 
   const getInitialValue = (property, definitionObj) => {
     if (property === 'columnVisibility') {
+      return definitionObj?.value ?? `{{true}}`;
+    }
+    if (property === 'fieldVisibility') {
       return definitionObj?.value ?? `{{true}}`;
     }
     if (property === 'linkTarget') {
@@ -75,7 +32,7 @@ export const ProgramaticallyHandleProperties = ({
       return value || '{{true}}';
     }
     if (property === 'cellBackgroundColor') {
-      return definitionObj?.value ?? '';
+      return definitionObj?.value || 'var(--cc-surface1-surface)';
     }
     if (property === 'textColor') {
       return definitionObj?.value ?? '#11181C';
@@ -100,10 +57,38 @@ export const ProgramaticallyHandleProperties = ({
     if (property === 'jsonIndentation') {
       return definitionObj?.value ?? `{{true}}`;
     }
+    if (property === 'buttonVisibility') {
+      return definitionObj?.value ?? '{{true}}';
+    }
+    if (property === 'disableButton') {
+      return definitionObj?.value ?? '{{false}}';
+    }
+    if (property === 'loadingState') {
+      return definitionObj?.value ?? '{{false}}';
+    }
+    if (property === 'buttonBackgroundColor') {
+      return definitionObj?.value ?? 'var(--cc-primary-brand)';
+    }
+    if (property === 'buttonLabelColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonIconColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonLoaderColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonBorderColor') {
+      return definitionObj?.value ?? 'var(--cc-weak-border)';
+    }
+    if (property === 'buttonBorderRadius') {
+      return definitionObj?.value ?? '6';
+    }
     return definitionObj?.value ?? `{{false}}`;
   };
 
   const value = getValueBasedOnProperty(property, props);
+
   const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
   let definition;
   let initialValue;
@@ -131,7 +116,7 @@ export const ProgramaticallyHandleProperties = ({
     //to support backward compatibility, when fxActive is true for a particular column, we are passing all possible combinations which should render codehinter
     const fxActive =
       props?.fxActive && resolveReferences(props.fxActive)
-        ? ['isEditable', 'columnVisibility', 'jsonIndentation', 'linkTarget']
+        ? ['isEditable', 'columnVisibility', 'fieldVisibility', 'jsonIndentation', 'linkTarget']
         : [];
 
     const checkFxActiveFieldIsArrray = (fxActiveFieldsProperty) => {

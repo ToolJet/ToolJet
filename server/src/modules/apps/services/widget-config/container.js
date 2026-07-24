@@ -3,8 +3,8 @@ export const containerConfig = {
   displayName: 'Container',
   description: 'Group components',
   defaultSize: {
-    width: 13,
-    height: 480,
+    width: 15,
+    height: 450,
   },
   component: 'Container',
   others: {
@@ -39,6 +39,13 @@ export const containerConfig = {
         defaultValue: true,
       },
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -56,13 +63,35 @@ export const containerConfig = {
         defaultValue: true,
       },
     },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   defaultChildren: [
     {
       componentName: 'Text',
       slotName: 'header',
       layout: {
-        top: 20,
+        top: 10,
         left: 1,
         height: 40,
         width: 20,
@@ -70,27 +99,19 @@ export const containerConfig = {
       displayName: 'ContainerText',
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow', 'verticalAlignment'],
       defaultValue: {
         text: 'Container title',
         fontWeight: 'bold',
         textSize: 16,
         textColor: 'var(--cc-primary-text)',
         boxShadow: '0px 0px 0px 0px #00000090',
+        verticalAlignment: 'center',
       },
     },
   ],
   events: {},
   styles: {
-    backgroundColor: {
-      type: 'colorSwatches',
-      displayName: 'Background',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
-      },
-      accordian: 'container',
-    },
     headerBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -100,12 +121,31 @@ export const containerConfig = {
       },
       accordian: 'header',
     },
+
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'container',
+    },
+    headerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'header',
+    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'container',
     },
@@ -159,16 +199,21 @@ export const containerConfig = {
       showHeader: { value: `{{true}}` },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
-      headerHeight: { value: `{{80}}` },
+      headerHeight: { value: `{{60}}` },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '6' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },

@@ -5,3 +5,4 @@ const CreateVersionModal = (props) => {
   return <BaseCreateVersionModal {...props} />;
 };
 export default withEditionSpecificComponent(CreateVersionModal, 'Appbuilder');
+//Moved this component to version Manager header -> need to discuss and remove this file later

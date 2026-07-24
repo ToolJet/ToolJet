@@ -52,4 +52,18 @@ export class WebsiteAuthController implements IWebsiteAuthController {
   deleteAiCookies(@Res({ passthrough: true }) response: Response, @AiCookies() cookies: Record<string, any>) {
     throw new NotImplementedException();
   }
+
+  @InitFeature(FEATURE_KEY.AI_MFA_REQUEST_OTP)
+  @Get('request-otp/:identifier')
+  @UseGuards(FeatureAbilityGuard)
+  async requestOtp(@Param('identifier') identifier: string) {
+    throw new NotImplementedException();
+  }
+
+  @InitFeature(FEATURE_KEY.AI_MFA_VERIFY_OTP)
+  @Post('verify-otp/:identifier')
+  @UseGuards(FeatureAbilityGuard)
+  async verifyOtp(@Param('identifier') identifier: string, @Body() body: { otp: string }) {
+    throw new NotImplementedException();
+  }
 }

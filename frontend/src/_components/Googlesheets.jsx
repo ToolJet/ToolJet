@@ -14,6 +14,7 @@ const Googlesheets = ({
   selectedDataSource,
   currentAppEnvironmentId,
   isDisabled,
+  isWorkspaceBranchLocked = false,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const whiteLabelText = retrieveWhiteLabelText();
@@ -60,7 +61,11 @@ const Googlesheets = ({
             <div data-cy="google-sheet-connection-form-header" className="form-label">
               {t('globals.authorize', 'Authorize')}
             </div>
-            <p data-cy="google-sheet-connection-form-description">
+            <p
+              data-cy="google-sheet-connection-form-description"
+              className="text-muted"
+              style={{ fontSize: '12px', marginBottom: '12px' }}
+            >
               {t(
                 'googleSheets.enableReadAndWrite',
                 'If you want your ${whiteLabelText} apps to modify your Google sheets, make sure to select read and write access',
@@ -70,7 +75,7 @@ const Googlesheets = ({
             <div>
               <Radio
                 checked={options?.access_type?.value === 'read'}
-                disabled={authStatus === 'waiting_for_token' || isDisabled}
+                disabled={authStatus === 'waiting_for_token' || isDisabled || isWorkspaceBranchLocked}
                 onClick={() => optionchanged('access_type', 'read')}
                 text={t('googleSheets.readOnly', 'Read only')}
                 helpText={t(
@@ -81,7 +86,7 @@ const Googlesheets = ({
               />
               <Radio
                 checked={options?.access_type?.value === 'write'}
-                disabled={authStatus === 'waiting_for_token' || isDisabled}
+                disabled={authStatus === 'waiting_for_token' || isDisabled || isWorkspaceBranchLocked}
                 onClick={() => optionchanged('access_type', 'write')}
                 text={t('googleSheets.readWrite', 'Read and write')}
                 helpText={t(
@@ -94,34 +99,36 @@ const Googlesheets = ({
           </div>
         </div>
       </div>
-      <div className="row mt-3">
-        <center>
-          {authStatus === 'waiting_for_token' && (
-            <div>
+      {options?.authentication_type?.value === 'oauth2' && selectedDataSource?.kind !== 'googlesheetsv2' && (
+        <div className="row mt-3">
+          <center>
+            {authStatus === 'waiting_for_token' && (
+              <div>
+                <Button
+                  className={`m2 ${isSaving ? ' loading' : ''}`}
+                  disabled={isSaving || isDisabled}
+                  onClick={() => saveDataSource()}
+                  data-cy="button-connect-gsheet"
+                >
+                  {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+                </Button>
+              </div>
+            )}
+
+            {(!authStatus || authStatus === 'waiting_for_url') && (
               <Button
-                className={`m2 ${isSaving ? ' loading' : ''}`}
+                className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
                 disabled={isSaving || isDisabled}
-                onClick={() => saveDataSource()}
+                onClick={() => authGoogle()}
                 data-cy="button-connect-gsheet"
               >
-                {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+                {selectedDataSource?.id ? t('globals.reconnect', 'Reconnect') : t('globals.connect', 'Connect')}{' '}
+                {t('googleSheets.toGoogleSheets', 'to Google Sheets')}
               </Button>
-            </div>
-          )}
-
-          {(!authStatus || authStatus === 'waiting_for_url') && (
-            <Button
-              className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
-              disabled={isSaving || isDisabled}
-              onClick={() => authGoogle()}
-              data-cy="button-connect-gsheet"
-            >
-              {selectedDataSource?.id ? t('globals.reconnect', 'Reconnect') : t('globals.connect', 'Connect')}{' '}
-              {t('googleSheets.toGoogleSheets', 'to Google Sheets')}
-            </Button>
-          )}
-        </center>
-      </div>
+            )}
+          </center>
+        </div>
+      )}
     </div>
   );
 };

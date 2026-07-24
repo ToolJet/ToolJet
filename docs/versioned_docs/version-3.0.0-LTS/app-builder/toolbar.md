@@ -52,7 +52,7 @@ The Developer Details icon will show a profile picture of the currently active d
 You can use the Env dropdown menu to select an environment for your app: Development, Staging, or Production. This feature facilitates seamless transition through the app development cycle.
 
 :::tip
-Learn more about multi-environment configuration **[here](/docs/release-management/multi-environment/)**.
+Learn more about multi-environment configuration **[here](/docs/development-lifecycle/environment/self-hosted/multi-environment)**.
 :::
 
 <div style={{textAlign: 'center'}}>
@@ -64,7 +64,7 @@ Learn more about multi-environment configuration **[here](/docs/release-manageme
 You can manage application versions through the Version Manager. You can use this dropdown to edit a version name or adding/removing versions.
 
 :::tip
-Versioning is also helpful when working with **[multiple environments](/docs/release-management/multi-environment/)** like development, staging and production.
+Versioning is also helpful when working with **[multiple environments](/docs/development-lifecycle/environment/self-hosted/multi-environment)** like development, staging and production.
 :::
 
 <div style={{textAlign: 'center'}}>

@@ -1,10 +1,10 @@
 import React from 'react';
-import { groupPermissionV2Service } from '@/_services';
+import { groupPermissionV2Service, authenticationService } from '@/_services';
 import { Tooltip } from 'react-tooltip';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { withTranslation } from 'react-i18next';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import Modal from '@/HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import FolderList from '@/_ui/FolderList/FolderList';
@@ -19,7 +19,6 @@ import { SearchBox } from '@/_components/SearchBox';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import _ from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 
 class BaseManageGroupPermissions extends React.Component {
   constructor(props) {
@@ -93,8 +92,13 @@ class BaseManageGroupPermissions extends React.Component {
           creatingGroup: false,
           groupDuplicateOption: this.props.groupDuplicateOption,
         });
-        console.error('Error occured in duplicating: ', err);
-        toast.error('Could not duplicate group.\nPlease try again!');
+
+        console.error('Error occurred in duplicating:', err);
+
+        // Use the actual backend message if available
+        const message = err?.data?.message || err?.error || 'Could not duplicate group.\nPlease try again!';
+
+        toast.error(message);
       });
   };
 
@@ -107,6 +111,7 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   renderPopoverContent = (props, compoParam) => {
+    const isAdmin = authenticationService.currentSessionValue?.admin;
     const { groupName, id, isFeatureEnabled } = compoParam;
     const deleteGroup = () => {
       this.deleteGroup(id);
@@ -116,7 +121,7 @@ class BaseManageGroupPermissions extends React.Component {
       this.showDuplicateDiologBox(id);
     };
 
-    const isDefaultGroup = groupName == 'end-user' || groupName == 'admin' || groupName == 'builder';
+    const isDefaultGroup = groupName === 'end-user' || groupName === 'admin' || groupName === 'builder';
 
     return (
       <div
@@ -140,7 +145,7 @@ class BaseManageGroupPermissions extends React.Component {
                 leftViewBox="0  0 20 20"
                 text={'Duplicate group'}
                 onClick={duplicateGroup}
-                buttonDisable={!isFeatureEnabled}
+                buttonDisable={!isFeatureEnabled || !isAdmin}
               />
               <Field
                 customClass={this.props.darkMode ? 'dark-theme' : ''}
@@ -196,19 +201,32 @@ class BaseManageGroupPermissions extends React.Component {
       .then((data) => {
         const groupPermissions = data.groupPermissions;
         const defaultGroups = this.sortDefaultGroup(groupPermissions.filter((group) => group.type === 'default'));
-        const currentGroupId =
-          type == 'admin'
-            ? defaultGroups[0].id
-            : type == 'current'
-            ? this.findCurrentGroupDetails(groupPermissions)
-            : groupPermissions.at(-1).id;
+        const customGroups = groupPermissions.filter((group) => group.type === 'custom');
+        let currentGroupId;
+        let selectedGroupName;
+        if (type == 'admin') {
+          if (defaultGroups.length > 0) {
+            currentGroupId = defaultGroups[0].id;
+            selectedGroupName = this.humanizeifDefaultGroupName(defaultGroups[0].name);
+          } else {
+            currentGroupId = customGroups[0]?.id;
+            selectedGroupName = customGroups[0] ? this.humanizeifDefaultGroupName(customGroups[0].name) : '';
+          }
+        } else if (type == 'current') {
+          currentGroupId = this.findCurrentGroupDetails(groupPermissions);
+          selectedGroupName = this.state.selectedGroup;
+        } else {
+          currentGroupId = groupPermissions.at(-1)?.id;
+          selectedGroupName = this.state.selectedGroup;
+        }
         this.setState(
           {
-            groups: groupPermissions.filter((group) => group.type === 'custom'),
+            groups: customGroups,
             defaultGroups: defaultGroups,
-            filteredGroup: groupPermissions.filter((group) => group.type === 'custom'),
+            filteredGroup: customGroups,
             isLoading: false,
             selectedGroupPermissionId: currentGroupId,
+            selectedGroup: selectedGroupName,
             selectedGroupObject: groupPermissions.find((group) => group.id === currentGroupId),
           },
           callback
@@ -235,23 +253,38 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   changeNewGroupName = (value) => {
+    // Truncate if over 50 chars
     if (value.length > 50) {
-      this.setState({
-        newGroupName: value?.slice(0, 50).trim(),
-        isSaveBtnDisabled: false,
-      });
-      return;
+      value = value.slice(0, 50).trim();
     }
+
+    // Determine validation state
+    const isEmpty = !value;
+    const isValidFormat = /^[a-zA-Z0-9_ -]+$/.test(value);
+    const isSameAsExisting = this.state.groupToBeUpdated && this.state.groupToBeUpdated.name === value;
+
+    let isSaveBtnDisabled = true;
+    let groupNameMessage = '';
+
+    if (isEmpty) {
+      isSaveBtnDisabled = true;
+      groupNameMessage = 'Group name must be unique and max 50 characters';
+    } else if (!isValidFormat) {
+      isSaveBtnDisabled = true;
+      groupNameMessage = 'Group name can only contain letters, numbers, underscores, hyphens and spaces';
+    } else if (isSameAsExisting) {
+      isSaveBtnDisabled = true;
+      groupNameMessage = 'Group name must be unique and max 50 characters';
+    } else {
+      isSaveBtnDisabled = false;
+      groupNameMessage = '';
+    }
+
     this.setState({
       newGroupName: value,
-      isSaveBtnDisabled: false,
-      groupNameMessage: 'Group name must be unique and max 50 characters',
+      isSaveBtnDisabled,
+      groupNameMessage,
     });
-    if ((this.state.groupToBeUpdated && this.state.groupToBeUpdated.name === value) || !value) {
-      this.setState({
-        isSaveBtnDisabled: true,
-      });
-    }
   };
 
   humanizeifDefaultGroupName = (groupName) => {
@@ -270,7 +303,7 @@ class BaseManageGroupPermissions extends React.Component {
   createGroup = () => {
     const regex = /^[a-zA-Z0-9_ -]+$/;
     if (!regex.test(this.state.newGroupName)) {
-      toast.error('Group name can only contain letters, numbers, underscores and hyphens');
+      toast.error('Group name can only contain letters, numbers, underscores, hyphens and spaces');
       return;
     }
     this.setState({ creatingGroup: true });
@@ -357,6 +390,11 @@ class BaseManageGroupPermissions extends React.Component {
   };
 
   executeGroupUpdation = () => {
+    const regex = /^[a-zA-Z0-9_ -]+$/;
+    if (!regex.test(this.state.newGroupName)) {
+      toast.error('Group name can only contain letters, numbers, underscores, hyphens and spaces');
+      return;
+    }
     this.setState({ isUpdatingGroupName: true });
     groupPermissionV2Service
       .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
@@ -401,12 +439,24 @@ class BaseManageGroupPermissions extends React.Component {
     } = this.state;
 
     const { featureAccess, isFeatureEnabled, isTrial } = this.props;
+    const isAdmin = authenticationService.currentSessionValue?.admin;
     const isValidLicense = featureAccess?.licenseStatus.isLicenseValid;
     const planType = featureAccess?.licenseStatus?.licenseType;
 
+    const hasInvalidGroupNameChars = this.state.newGroupName && /[^a-zA-Z0-9_-]/.test(this.state.newGroupName);
     const grounNameErrorStyle =
-      this.state.newGroupName?.length > 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
-    const { addPermission, addApps, addUsers, addDataSource = null } = groupDuplicateOption;
+      this.state.newGroupName?.length > 50 || hasInvalidGroupNameChars
+        ? { color: '#ff0000', borderColor: '#ff0000' }
+        : {};
+    const {
+      addPermission,
+      addApps,
+      addUsers,
+      addGroupAdmins,
+      addDataSource = null,
+      addWorkflows = null,
+      addFolders = null,
+    } = groupDuplicateOption;
     const allFalse = Object.values(groupDuplicateOption).every((value) => !value);
     const isSaveBtnDisabled = creatingGroup || this.state.isSaveBtnDisabled || this.state.newGroupName?.trim() === '';
 
@@ -455,8 +505,31 @@ class BaseManageGroupPermissions extends React.Component {
                     />
                   </div>
                   <div className="col-11">
-                    <div className="tj-text " data-cy="users-label">
+                    <div className="tj-text" data-cy="users-label">
                       Users
+                    </div>
+                  </div>
+                </div>
+                <div className="row check-row">
+                  <div className="col-1 ">
+                    <input
+                      class="form-check-input"
+                      checked={addGroupAdmins}
+                      type="checkbox"
+                      onChange={() => {
+                        this.setState((prevState) => ({
+                          groupDuplicateOption: {
+                            ...prevState.groupDuplicateOption,
+                            addGroupAdmins: !prevState.groupDuplicateOption.addGroupAdmins,
+                          },
+                        }));
+                      }}
+                      data-cy="group-admins-check-input"
+                    />
+                  </div>
+                  <div className="col-11">
+                    <div className="tj-text" data-cy="group-admins-label">
+                      Group admins
                     </div>
                   </div>
                 </div>
@@ -531,20 +604,70 @@ class BaseManageGroupPermissions extends React.Component {
                     </div>
                   </div>
                 )}
+                {addWorkflows !== null && (
+                  <div className="row check-row">
+                    <div className="col-1 ">
+                      <input
+                        class="form-check-input"
+                        checked={addWorkflows}
+                        type="checkbox"
+                        onChange={() => {
+                          this.setState((prevState) => ({
+                            groupDuplicateOption: {
+                              ...prevState.groupDuplicateOption,
+                              addWorkflows: !prevState.groupDuplicateOption.addWorkflows,
+                            },
+                          }));
+                        }}
+                        data-cy="workflows-check-input"
+                      />
+                    </div>
+                    <div className="col-11">
+                      <div className="tj-text " data-cy="workflows-label">
+                        Workflows
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {addFolders !== null && (
+                  <div className="row check-row">
+                    <div className="col-1 ">
+                      <input
+                        class="form-check-input"
+                        checked={addFolders}
+                        type="checkbox"
+                        onChange={() => {
+                          this.setState((prevState) => ({
+                            groupDuplicateOption: {
+                              ...prevState.groupDuplicateOption,
+                              addFolders: !prevState.groupDuplicateOption.addFolders,
+                            },
+                          }));
+                        }}
+                        data-cy="folders-check-input"
+                      />
+                    </div>
+                    <div className="col-11">
+                      <div className="tj-text " data-cy="folders-label">
+                        Folders
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </ModalBase>
             <div className="d-flex groups-btn-container">
               <p className="tj-text" data-cy="page-title">
                 {groups?.length} Groups
               </p>
-              {!showNewGroupForm && !showGroupNameUpdateForm && (
+              {isAdmin && !showNewGroupForm && !showGroupNameUpdateForm && (
                 <LicenseTooltip
                   limits={featureAccess}
                   feature={'Custom groups'}
                   noTooltipIfValid={true}
                   isAvailable={isFeatureEnabled}
                   placement={'bottom'}
-                  customMessage={'Custom groups are available only in paid plans'}
+                  customMessage={'Custom groups are not available in your plan'}
                 >
                   <ButtonSolid
                     className="btn btn-primary create-new-group-button"
@@ -605,7 +728,9 @@ class BaseManageGroupPermissions extends React.Component {
                       <input
                         type="text"
                         required
-                        className={`form-control ${this.state.newGroupName?.length >= 50 ? 'custom-input-error' : ''}`}
+                        className={`form-control ${
+                          this.state.newGroupName?.length >= 50 || hasInvalidGroupNameChars ? 'custom-input-error' : ''
+                        }`}
                         placeholder={this.props.t(
                           'header.organization.menus.manageGroups.permissions.enterName',
                           'Enter group name'
@@ -623,7 +748,7 @@ class BaseManageGroupPermissions extends React.Component {
                     </div>
                   </div>
                 </div>
-                <div className="form-footer d-flex create-group-modal-footer">
+                <div className="form-footer d-flex create-group-modal-footer tw-px-0">
                   <ButtonSolid
                     onClick={() =>
                       this.setState({
@@ -698,7 +823,9 @@ class BaseManageGroupPermissions extends React.Component {
                     {!showGroupSearchBar ? (
                       <div className="mb-2 d-flex align-items-center">
                         <SolidIcon name="usergroup" width="18px" fill="#889096" />
-                        <span className="ml-1 group-title">CUSTOM GROUPS</span>
+                        <span className="ml-1 group-title" data-cy="custom-groups-title">
+                          CUSTOM GROUPS
+                        </span>
                         <div className="create-group-cont">
                           {isFeatureEnabled ? (
                             <ButtonSolid
@@ -711,31 +838,39 @@ class BaseManageGroupPermissions extends React.Component {
                               iconWidth="15"
                               fill="#889096"
                               className="create-group-custom"
+                              data-cy="search-icon"
                             />
                           ) : (
                             <div style={{ width: '20px' }}></div>
                           )}
-                          <LicenseTooltip
-                            limits={featureAccess}
-                            feature={'Custom groups'}
-                            noTooltipIfValid={true}
-                            isAvailable={isFeatureEnabled}
-                            placement={'right'}
-                            customMessage={'Custom groups are available only in paid plans'}
-                          >
-                            <ButtonSolid
-                              onClick={(e) => {
-                                e.preventDefault();
-                                this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
-                              }}
-                              size="sm"
-                              fill="#889096"
-                              rightIcon="plus"
-                              iconWidth="20"
-                              className="create-group-custom"
-                              disabled={!isFeatureEnabled}
-                            />
-                          </LicenseTooltip>
+                          {isAdmin && (
+                            <LicenseTooltip
+                              limits={featureAccess}
+                              feature={'Custom groups'}
+                              noTooltipIfValid={true}
+                              isAvailable={isFeatureEnabled}
+                              placement={'right'}
+                              customMessage={'Custom groups are not available in your plan'}
+                            >
+                              <ButtonSolid
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  this.setState({
+                                    newGroupName: null,
+                                    showNewGroupForm: true,
+                                    isSaveBtnDisabled: true,
+                                  });
+                                }}
+                                size="sm"
+                                fill="#889096"
+                                rightIcon="plus"
+                                iconWidth="20"
+                                className="create-group-custom"
+                                disabled={!isFeatureEnabled}
+                                data-cy="create-new-group-button-icon"
+                              />
+                            </LicenseTooltip>
+                          )}
                         </div>
                       </div>
                     ) : (
@@ -771,7 +906,7 @@ class BaseManageGroupPermissions extends React.Component {
                               isFeatureEnabled: !permissionGroup.disabled,
                             }}
                             selectedItem={
-                              this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.name)
+                              this.state.selectedGroup === this.humanizeifDefaultGroupName(permissionGroup.name)
                             }
                             onClick={
                               permissionGroup.disabled
@@ -791,7 +926,7 @@ class BaseManageGroupPermissions extends React.Component {
                                 ? this.humanizeifDefaultGroupName(permissionGroup.name)
                                 : 'Custom groups are available only in paid plans'
                             }
-                            overLayComponent={permissionGroup.disabled ? null : this.renderPopoverContent}
+                            overLayComponent={!isAdmin || permissionGroup.disabled ? null : this.renderPopoverContent}
                             className="groups-folder-list"
                             dataCy={this.humanizeifDefaultGroupName(permissionGroup.name)
                               .toLowerCase()
@@ -818,6 +953,7 @@ class BaseManageGroupPermissions extends React.Component {
                     classes="group-banner"
                     size="xsmall"
                     type={featureAccess?.licenseStatus?.licenseType}
+                    bannerType="custom-groups"
                     customMessage={'Custom groups & permissions are paid features'}
                     showCustomGroupBanner={true}
                   />
@@ -829,6 +965,7 @@ class BaseManageGroupPermissions extends React.Component {
                   <Loader />
                 ) : (
                   <ManageGroupPermissionResources
+                    key={this.state.selectedGroupPermissionId}
                     groupPermissionId={this.state.selectedGroupPermissionId}
                     darkMode={this.props.darkMode}
                     selectedGroup={this.state.selectedGroup}
@@ -841,6 +978,7 @@ class BaseManageGroupPermissions extends React.Component {
                         value: group.name,
                       };
                     })}
+                    isBuilder={this.props.isBuilder}
                     workflowEnabled={false}
                     featureAccess={featureAccess}
                   />

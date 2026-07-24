@@ -1,10 +1,13 @@
 import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { getHostURL } from '@/_helpers/routes';
 import { appVersionService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
-import { decimalToHex } from '@/Editor/editorConstants';
+import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { isLinkedAppValid } from '../utils';
+import moment from 'moment';
 
 const createUpdateObject = (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => ({
   appId,
@@ -67,6 +70,9 @@ export const createPageMenuSlice = (set, get) => {
 
   const disableOrEnablePage = createPageUpdateCommand(['disabled']);
 
+  const _togglePageHeaderCmd = createPageUpdateCommand(['pageHeader']);
+  const _togglePageFooterCmd = createPageUpdateCommand(['pageFooter']);
+
   const updatePageName = createPageUpdateCommand(['name'], (state) => {
     state.showEditPageNameInput = false;
     state.showEditingPopover = false;
@@ -76,7 +82,7 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageIcon = createPageUpdateCommand(['icon']);
   const updatePageURL = createPageUpdateCommand(['url']);
   const updatePageTarget = createPageUpdateCommand(['openIn']);
-  const updatePageAppId = createPageUpdateCommand(['appId']);
+  const updatePageTargetApp = createPageUpdateCommand(['targetCorelationId']);
 
   const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
 
@@ -177,7 +183,51 @@ export const createPageMenuSlice = (set, get) => {
     // page actions
     updatePageVisibility: (pageId, value) => updatePageVisibility(pageId, [value])(set, get),
     disableOrEnablePage: (pageId, value) => disableOrEnablePage(pageId, [value])(set, get),
-    updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
+    togglePageHeader: (pageId, checked, mode) => {
+      const pageHeaderDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageHeader;
+      const updated = {
+        ...pageHeaderDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    updatePageHeaderStyle: (pageId, styleName, value) => {
+      const pageHeaderDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageHeader;
+      const updated = {
+        ...pageHeaderDetails,
+        [styleName]: value,
+      };
+      _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    togglePageFooter: (pageId, checked, mode) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
+    updatePageFooterStyle: (pageId, styleName, value) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        [styleName]: value,
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
+    updatePageTargetApp: (pageId, coRelationId, slug = null, currentVersionId = null, moduleId = 'canvas') => {
+      const { upsertLinkedApp } = get();
+
+      // Factory handles state mutation + autosave for targetCorelationId
+      updatePageTargetApp(pageId, [coRelationId])(set, get);
+
+      // Mirror both `slug` and `currentVersionId` into the linkedApps store map so
+      // switchPageWrapper can resolve the URL and the validator can distinguish
+      // "missing target" from "no released version" — without waiting for a reload.
+      if (coRelationId) {
+        upsertLinkedApp(coRelationId, { slug, currentVersionId }, moduleId);
+      }
+    },
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);
       const pages = get().modules.canvas.pages;
@@ -256,7 +306,7 @@ export const createPageMenuSlice = (set, get) => {
         });
       }
     },
-    deletePage: async (pageId) => {
+    deletePage: async (pageId, { saveAfterAction = true } = {}) => {
       const { getAppId, getHomePageId, currentVersionId } = get();
       const appId = getAppId('canvas');
       const homePageId = getHomePageId('canvas');
@@ -280,7 +330,11 @@ export const createPageMenuSlice = (set, get) => {
         state.showEditingPopover = false;
         state.editingPage = null;
       });
-      await savePageChanges(appId, currentVersionId, pageId, diff, 'delete');
+
+      if (saveAfterAction) {
+        await savePageChanges(appId, currentVersionId, pageId, diff, 'delete');
+      }
+
       toast.success('Page deleted successfully');
     },
     /*
@@ -364,16 +418,28 @@ export const createPageMenuSlice = (set, get) => {
     reorderPages: async (reorderdPages) => {
       const diff = {};
       const currentPageId = get().getCurrentPageId('canvas');
+      const currentPageIndex = get().getCurrentPageIndex('canvas');
+      let newCurrentPageIndex = null;
+
       // update index of everything to avoid inconsistencies
       reorderdPages.forEach((page, index) => {
+        // update currentPageIndex in state in case index of current page was changed
+        if (page?.id === currentPageId && index !== currentPageIndex) {
+          newCurrentPageIndex = index;
+        }
+
         diff[page.id] = {
           index,
           pageGroupId: page.pageGroupId,
         };
       });
+
       // @todo come back to this, components can be segregated which will make this update fast compaaed to the current approach
       set((state) => {
         state.modules.canvas.pages = reorderdPages;
+        if (newCurrentPageIndex !== null) {
+          state.modules.canvas.currentPageIndex = newCurrentPageIndex;
+        }
       });
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
@@ -452,6 +518,11 @@ export const createPageMenuSlice = (set, get) => {
           newOptions[key] = hexCode;
         }
       }
+
+      set((state) => {
+        state.pageSettings.definition[type] = { ...state.pageSettings.definition[type], ...newOptions };
+      });
+
       const { getAppId, currentVersionId, currentPageId } = get();
       const appId = getAppId('canvas');
       try {
@@ -463,9 +534,6 @@ export const createPageMenuSlice = (set, get) => {
           currentPageId,
           'update'
         );
-        set((state) => {
-          state.pageSettings.definition[type] = { ...state.pageSettings.definition[type], ...newOptions };
-        });
       } catch (error) {
         toast.error('Page settings could not be saved.');
         console.error('Error updating page:', error);
@@ -482,28 +550,130 @@ export const createPageMenuSlice = (set, get) => {
       set((state) => {
         state.editingPage = page;
       }),
-    // openPageEditPopover: (type, page, ref) => {
-    //   // Assuming ref is passed for targeting
-    //   set((state) => ({
-    //     editingPage: page,
-    //     showEditingPopover: true, // Make sure this is explicitly set to true
-    //     newPagePopupConfig: {
-    //       // Set default values or infer from page
-    //       show: true, // This might be redundant if showEditingPopover is the primary flag
-    //       mode: type,
-    //       type: page?.type || 'default',
-    //     },
-    //   }));
-    //   // You might store the target ref in the state if overlays need to dynamically pick it up
-    //   // For react-bootstrap Overlay, the target is passed as a prop, not globally
-    // },
-    // And when closing:
-    // closePageEditPopover: () => {
-    //   set((state) => ({
-    //     editingPage: null,
-    //     showEditingPopover: false,
-    //     newPagePopupConfig: { show: false, mode: null, type: null },
-    //   }));
-    // },
+
+    switchToHomePage: (currentPageId, moduleId = 'canvas') => {
+      const { appStore, modules, selectedVersion, selectedEnvironment, switchPage, modeStore, isPreviewInEditor } =
+        get();
+
+      const homePageId = appStore.modules[moduleId].app.homePageId;
+      const pages = modules[moduleId].pages;
+      const selectedVersionName = selectedVersion?.name;
+      const selectedEnvironmentName = selectedEnvironment?.name;
+      const currentMode = modeStore.modules[moduleId].currentMode;
+
+      if (currentPageId === homePageId) return;
+
+      const page = pages.find((p) => p.id === homePageId);
+
+      const queryParams = {
+        version: selectedVersionName,
+        env: selectedEnvironmentName,
+      };
+
+      switchPage(
+        page?.id,
+        pages.find((p) => page.id === p?.id)?.handle,
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+      );
+    },
+
+    switchPageWrapper: (page, currentPageId, moduleId = 'canvas') => {
+      const {
+        modules,
+        selectedVersion,
+        selectedEnvironment,
+        switchPage,
+        modeStore,
+        isPreviewInEditor,
+        setCurrentPageHandle,
+        eventsSlice,
+      } = get();
+      const pages = modules[moduleId].pages;
+      const selectedVersionName = selectedVersion?.name;
+      const selectedEnvironmentName = selectedEnvironment?.name;
+      const currentMode = modeStore.modules[moduleId].currentMode;
+      const { fireEvent } = eventsSlice;
+
+      if (page?.type === 'url') {
+        if (page?.url) {
+          const finalUrl =
+            page.url.startsWith('http://') || page.url.startsWith('https://') ? page.url : `https://${page.url}`;
+          if (finalUrl) {
+            if (page.openIn === 'new_tab') {
+              window.open(finalUrl, '_blank');
+            } else {
+              window.location.href = finalUrl;
+            }
+          }
+        } else {
+          toast.error('No URL provided');
+          return false;
+        }
+        return true;
+      }
+
+      if (page?.type === 'app') {
+        if (!page?.targetCorelationId) {
+          toast.error('No app selected');
+          return false;
+        }
+
+        const linkedApps = get().appStore.modules[moduleId]?.linkedApps;
+        const appSlug = linkedApps?.[page.targetCorelationId]?.slug;
+
+        // Editor: throw → routed to debugger via logError below.
+        // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
+        if (currentMode !== 'view') {
+          const { isValid, errorMessage } = isLinkedAppValid(page.targetCorelationId, linkedApps);
+          if (!isValid) {
+            get().debugger?.log?.({
+              logLevel: 'error',
+              type: 'navigation',
+              kind: 'page-nav',
+              key: `[Page ${page.name.replace(/ /g, '_')}]`,
+              errorTarget: 'Pages',
+              error: {
+                message: errorMessage,
+                description: JSON.stringify(errorMessage, null, 2),
+              },
+              strace: 'app_level',
+              timestamp: moment().toISOString(),
+            });
+
+            return false;
+          }
+        }
+
+        const appUrl = `${getHostURL()}/applications/${appSlug}`;
+        if (page.openIn === 'new_tab') {
+          window.open(appUrl, '_blank');
+        } else {
+          window.location.href = appUrl;
+        }
+        return true;
+      }
+
+      if (page?.type === 'custom') {
+        fireEvent('onClick', page?.id, moduleId, {}, {});
+        return;
+      }
+
+      if (currentPageId === page?.id) {
+        return false;
+      }
+
+      const queryParams = {
+        version: selectedVersionName,
+        env: selectedEnvironmentName,
+      };
+
+      switchPage(
+        page?.id,
+        pages.find((p) => page.id === p?.id)?.handle,
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+      );
+      currentMode !== 'view' && setCurrentPageHandle(page.handle);
+      return true;
+    },
   };
 };

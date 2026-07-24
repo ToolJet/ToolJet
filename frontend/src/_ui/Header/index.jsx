@@ -5,6 +5,11 @@ import { useLocation } from 'react-router-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
+import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { authenticationService } from '@/_services';
 
 function Header({
   featureAccess,
@@ -12,8 +17,12 @@ function Header({
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
 }) {
-  const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const isBranchStoreInitialized = useWorkspaceBranchesStore((s) => s.isInitialized);
+  const currentSession = authenticationService.currentSessionValue;
+  const isAdmin = !!currentSession?.admin;
+  const isBuilder = !!currentSession?.user_permissions?.is_builder;
+  const canAccessGitControls = isAdmin || isBuilder;
 
   const routes = (pathEnd, path) => {
     const pathParts = path.split('/');
@@ -67,6 +76,11 @@ function Header({
 
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
+  const isWorkspaceGitPage = (pathname) => {
+    const parts = pathname.split('/').filter(Boolean);
+    return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules'].includes(parts[1]));
+  };
+  const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -145,7 +159,10 @@ function Header({
                 </div>
               </ToolTip>
             )}
-            <div className="app-header-label tw-flex tw-items-center " data-cy="app-header-label">
+            <div
+              className="app-header-label tw-flex tw-items-center "
+              data-cy={generateCypressDataCy(`breadcrumb-header-${pathname}`)}
+            >
               <Breadcrumbs darkMode={darkMode} />
             </div>
             <div
@@ -153,12 +170,20 @@ function Header({
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
-              data-cy="version-label"
             >
+              {featureAccess?.gitSync &&
+                canAccessGitControls &&
+                isBranchStoreInitialized &&
+                pathname !== 'Workspace constants' &&
+                isGitSupportedPage && (
+                  <>
+                    <WorkspaceBranchDropdown />
+                    <WorkspaceGitCTA showCommit={location.pathname.split('/').includes('data-sources')} />
+                  </>
+                )}
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
-              Version {currentVersion}
             </div>
           </div>
         </div>

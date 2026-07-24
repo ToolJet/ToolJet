@@ -27,4 +27,8 @@ export enum FEATURE_KEY {
   AI_ONBOARDING_SSO = 'aiOnboardingSSO', // POST 'sign-in/common/:ssoType
   AI_COOKIE_SET = 'aiCookieSet', // POST 'set-ai-cookie'
   AI_COOKIE_DELETE = 'aiCookieDelete', // GET 'delete-ai-cookies'
+
+  // AI MFA
+  AI_MFA_REQUEST_OTP = 'aiMfaRequestOtp', // GET 'request-otp/:identifier'
+  AI_MFA_VERIFY_OTP = 'aiMfaVerifyOtp', // POST 'verify-otp/:identifier'
 }

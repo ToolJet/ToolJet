@@ -53,6 +53,7 @@ import Timeline from './timeline.jsx';
 import Timer from './timer.jsx';
 import Toggleswitch from './toggleswitch.jsx';
 import Treeselect from './treeselect.jsx';
+import Cascader from './cascader';
 import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 import TimePicker from './timepicker.jsx';
@@ -61,6 +62,18 @@ import HorizontalDivider from './horizontalDivider.jsx';
 import PhoneInput from './phoneinput.jsx';
 import EmailInput from './emailinput.jsx';
 import Chat from './chat.jsx';
+import CurrencyInput from './currencyinput.jsx';
+import PopoverMenu from './popovermenu.jsx';
+import Progressbar from './progressbar.jsx';
+import AudioRecorder from './audiorecorder.jsx';
+import Camera from './camera.jsx';
+import TagsInput from './tagsinput.jsx';
+import Accordion from './accordion.jsx';
+import JSONExplorer from './jsonexplorer.jsx';
+import JSONEditor from './jsoneditor.jsx';
+import Navigation from './navigation.jsx';
+import FileButton from './fileButton.jsx';
+import FlexContainer from './flexcontainer.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -89,9 +102,8 @@ const WidgetIcon = (props) => {
       return <Customcomponent {...props} />;
     case 'datetimepickerlegacy':
       return <Datepicker {...props} />;
+    case 'datepickerlegacy':
     case 'datepicker':
-      return <Datepicker {...props} />;
-    case 'datepickerv2':
       return <DatepickerV2 {...props} />;
     case 'timepicker':
       return <TimePicker {...props} />;
@@ -149,6 +161,8 @@ const WidgetIcon = (props) => {
     case 'multiselectv2':
     case 'multiselectlegacy':
       return <Multiselect {...props} />;
+    case 'navigation':
+      return <Navigation {...props} />;
     case 'numberinput':
       return <Numberinput {...props} />;
     case 'pagination':
@@ -157,14 +171,16 @@ const WidgetIcon = (props) => {
       return <Passwordinput {...props} />;
     case 'pdf':
       return <Pdf {...props} />;
+    case 'popovermenu':
+      return <PopoverMenu {...props} />;
     case 'qrscanner':
       return <Qrscanner {...props} />;
     case 'radiobutton':
     case 'radiobuttonlegacy':
     case 'radiobuttonv2':
       return <RadioButton {...props} />;
+    case 'rangesliderlegacy':
     case 'rangeslider':
-    case 'rangesliderv2':
       return <Rangeslider {...props} />;
     case 'rating':
       return <Rating {...props} />;
@@ -186,6 +202,8 @@ const WidgetIcon = (props) => {
       return <Tabs {...props} />;
     case 'tags':
       return <Tags {...props} />;
+    case 'tagsinput':
+      return <TagsInput {...props} />;
     case 'text':
       return <Text {...props} />;
     case 'textarea':
@@ -204,12 +222,33 @@ const WidgetIcon = (props) => {
 
     case 'treeselect':
       return <Treeselect {...props} />;
+    case 'cascader':
+      return <Cascader {...props} />;
     case 'upstatistics':
       return <Upstatistics {...props} />;
     case 'verticaldivider':
       return <Verticaldivider {...props} />;
     case 'chat':
       return <Chat {...props} />;
+    case 'currencyinput':
+    case 'currencyinputlegacy':
+      return <CurrencyInput {...props} />;
+    case 'progressbar':
+      return <Progressbar {...props} />;
+    case 'audiorecorder':
+      return <AudioRecorder {...props} />;
+    case 'camera':
+      return <Camera {...props} />;
+    case 'accordion':
+      return <Accordion {...props} />;
+    case 'jsonexplorer':
+      return <JSONExplorer {...props} />;
+    case 'jsoneditor':
+      return <JSONEditor {...props} />;
+    case 'filebutton':
+      return <FileButton {...props} />;
+    case 'flexcontainer':
+      return <FlexContainer {...props} />;
     default:
       return <BoundedBox {...props} />;
   }

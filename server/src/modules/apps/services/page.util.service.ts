@@ -31,6 +31,24 @@ export class PageHelperService implements IPageHelperService {
     }, manager);
   }
 
+  public async findFirstPagesByVersionIds(
+    versionIds: string[],
+    manager: EntityManager
+  ): Promise<Map<string, Page>> {
+    if (versionIds.length === 0) return new Map();
+
+    const pages = await manager
+      .createQueryBuilder(Page, 'page')
+      .distinctOn(['page.appVersionId'])
+      .where('page.appVersionId IN (:...versionIds)', { versionIds })
+      .andWhere('page.isPageGroup = :isPageGroup', { isPageGroup: false })
+      .orderBy('page.appVersionId', 'ASC')
+      .addOrderBy('page.index', 'ASC')
+      .getMany();
+
+    return new Map(pages.map((p) => [p.appVersionId, p]));
+  }
+
   public async reorderPages(udpateObject, appVersionId: string, organizationId: string): Promise<void> {
     await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const updateArr = [];
@@ -48,28 +66,25 @@ export class PageHelperService implements IPageHelperService {
     manager: EntityManager,
     organizationId: string
   ): Promise<void> {
-    const appVersionId = pageDeleted.appVersionId;
-    // if user is not licensed, then just update the index of the pages
-    await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const pages = await manager.find(Page, {
-        where: {
-          appVersionId: pageDeleted.appVersionId,
-          isPageGroup: false,
-        },
-        order: {
-          index: 'ASC',
-        },
-      });
-      const updateArr = [];
-      pages.forEach((page, index) => {
-        updateArr.push(
-          manager.update(Page, page.id, {
-            index,
-          })
-        );
-      });
-      await Promise.all(updateArr);
-    }, appVersionId);
+    // Use the existing manager to avoid nested transactions
+    const pages = await manager.find(Page, {
+      where: {
+        appVersionId: pageDeleted.appVersionId,
+        isPageGroup: false,
+      },
+      order: {
+        index: 'ASC',
+      },
+    });
+    const updateArr = [];
+    for (let i = 0; i < pages.length; i++) {
+      updateArr.push(
+        manager.update(Page, pages[i].id, {
+          index: i,
+        })
+      );
+    }
+    await Promise.all(updateArr);
   }
 
   public async deletePageGroup(
@@ -90,9 +105,26 @@ export class PageHelperService implements IPageHelperService {
     page.autoComputeLayout = true;
     page.index = dto.index;
     page.appId = dto.appId;
+    page.targetCorelationId = dto.targetCorelationId ?? null;
     page.url = dto.url;
     page.type = dto.type;
     page.openIn = dto.openIn;
+    page.disabled = false;
+    page.hidden = false;
+    page.pageHeader = {
+      showOnDesktop: false,
+      showOnMobile: false,
+      backgroundColor: 'var(--cc-surface1-surface)',
+      border: 'var(--cc-weak-border)',
+      height: 60,
+    };
+    page.pageFooter = {
+      showOnDesktop: false,
+      showOnMobile: false,
+      backgroundColor: 'var(--cc-surface1-surface)',
+      border: 'var(--cc-weak-border)',
+      height: 60,
+    };
     return page;
   }
 

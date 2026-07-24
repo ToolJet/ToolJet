@@ -24,8 +24,8 @@ function EnableAutomaticSSOLoginModal({ show, enableAutomaticSSOLogin, setShowMo
   const edition = fetchEdition();
   const documentationLink =
     edition == 'cloud'
-      ? 'https://docs.tooljet.ai/docs/user-management/authentication/cloud-login/#automatic-sso-login'
-      : 'https://docs.tooljet.ai/docs/user-management/authentication/self-hosted/instance-login/#automatic-sso-login';
+      ? 'https://docs.tooljet.com/docs/user-management/authentication/cloud-login/#automatic-sso-login'
+      : 'https://docs.tooljet.com/docs/user-management/authentication/self-hosted/instance-login/#automatic-sso-login';
   const modalContent = (
     <div>
       <p data-cy="modal-message">

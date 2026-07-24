@@ -1,0 +1,2081 @@
+{
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "id": "391357c4-4d8a-4c2d-8370-8eb5de9ce01d",
+          "type": "front-end",
+          "name": "env_constants",
+          "slug": "391357c4-4d8a-4c2d-8370-8eb5de9ce01d",
+          "isPublic": false,
+          "isMaintenanceOn": false,
+          "icon": "grid",
+          "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+          "currentVersionId": null,
+          "userId": "e8c37758-52d4-41d7-9d9f-436b6e811888",
+          "workflowApiToken": null,
+          "workflowEnabled": false,
+          "isInitialisedFromPrompt": false,
+          "appGeneratedFromPrompt": false,
+          "appBuilderMode": "visual",
+          "aiGenerationMetadata": null,
+          "createdAt": "2025-10-06T16:12:34.234Z",
+          "creationMode": "DEFAULT",
+          "updatedAt": "2025-10-06T16:12:34.229Z",
+          "__loaded": true,
+          "editingVersion": {
+            "id": "421accc8-2358-4a08-bec4-89954bcda87b",
+            "name": "v1",
+            "definition": null,
+            "globalSettings": {
+              "appInMaintenance": false,
+              "canvasMaxWidth": 100,
+              "canvasMaxWidthType": "%",
+              "canvasMaxHeight": 2400,
+              "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+              "backgroundFxQuery": "",
+              "appMode": "light"
+            },
+            "pageSettings": {
+              "properties": {
+                "disableMenu": {
+                  "value": "{{false}}",
+                  "fxActive": false
+                }
+              }
+            },
+            "showViewerNavigation": true,
+            "homePageId": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+            "appId": "391357c4-4d8a-4c2d-8370-8eb5de9ce01d",
+            "currentEnvironmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+            "promotedFrom": null,
+            "createdAt": "2025-10-06T16:16:50.497Z",
+            "updatedAt": "2025-10-06T16:16:50.491Z"
+          },
+          "components": [
+            {
+              "id": "a5f6f13b-6844-4b64-af07-bde5bf68d2fa",
+              "name": "textinput1",
+              "type": "TextInput",
+              "pageId": "0da9a841-ef8c-4069-8c23-04a03b271750",
+              "parent": null,
+              "properties": {
+                "value": {
+                  "value": "{{queries.7ad25edc-0eab-4fa2-8c41-a3d0fb27d328.data}}"
+                },
+                "label": {
+                  "value": "workflow_query"
+                },
+                "placeholder": {
+                  "value": ""
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "tooltip": {
+                  "value": ""
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "borderColor": {
+                  "value": "var(--cc-default-border)"
+                },
+                "accentColor": {
+                  "value": "var(--cc-primary-brand)"
+                },
+                "errTextColor": {
+                  "value": "var(--cc-error-systemStatus)"
+                },
+                "borderRadius": {
+                  "value": "{{6}}"
+                },
+                "backgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "iconColor": {
+                  "value": "var(--cc-default-icon)"
+                },
+                "direction": {
+                  "value": "left"
+                },
+                "width": {
+                  "value": "{{33}}"
+                },
+                "alignment": {
+                  "value": "side"
+                },
+                "color": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "auto": {
+                  "value": "{{true}}"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "icon": {
+                  "value": "IconHome2"
+                },
+                "iconVisibility": {
+                  "value": false
+                },
+                "widthType": {
+                  "value": "ofComponent"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {
+                "mandatory": {
+                  "value": "{{false}}"
+                },
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": ""
+                },
+                "maxLength": {
+                  "value": ""
+                },
+                "customRule": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "layouts": [
+                {
+                  "id": "aff38b6b-d61d-42d2-9fd9-a9207ca05553",
+                  "type": "desktop",
+                  "top": 110,
+                  "left": 3,
+                  "width": 20,
+                  "height": 40,
+                  "componentId": "a5f6f13b-6844-4b64-af07-bde5bf68d2fa",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                },
+                {
+                  "id": "b8f779e5-5c86-49f2-b9fb-cd6e843f85ba",
+                  "type": "mobile",
+                  "top": 190,
+                  "left": 6,
+                  "width": 10,
+                  "height": 40,
+                  "componentId": "a5f6f13b-6844-4b64-af07-bde5bf68d2fa",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                }
+              ]
+            },
+            {
+              "id": "a309708a-2995-4b87-9ff8-0bf0d010a6d4",
+              "name": "textinput5",
+              "type": "TextInput",
+              "pageId": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+              "parent": null,
+              "properties": {
+                "value": {
+                  "value": "{{queries.273e1deb-4c55-4f17-bca6-bcffbadc55ea.data.message}}"
+                },
+                "label": {
+                  "value": "datasource_restapi_constants"
+                },
+                "placeholder": {
+                  "value": ""
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "tooltip": {
+                  "value": ""
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "borderColor": {
+                  "value": "var(--cc-default-border)"
+                },
+                "accentColor": {
+                  "value": "var(--cc-primary-brand)"
+                },
+                "errTextColor": {
+                  "value": "var(--cc-error-systemStatus)"
+                },
+                "borderRadius": {
+                  "value": "{{6}}"
+                },
+                "backgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "iconColor": {
+                  "value": "var(--cc-default-icon)"
+                },
+                "direction": {
+                  "value": "left"
+                },
+                "width": {
+                  "value": "{{33}}"
+                },
+                "alignment": {
+                  "value": "side"
+                },
+                "color": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "auto": {
+                  "value": "{{true}}"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "icon": {
+                  "value": "IconHome2"
+                },
+                "iconVisibility": {
+                  "value": false
+                },
+                "widthType": {
+                  "value": "ofComponent"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {
+                "mandatory": {
+                  "value": "{{false}}"
+                },
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": ""
+                },
+                "maxLength": {
+                  "value": ""
+                },
+                "customRule": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "layouts": [
+                {
+                  "id": "a4b60497-0747-4b07-b873-516fa6df6d37",
+                  "type": "mobile",
+                  "top": 60,
+                  "left": 6,
+                  "width": 10,
+                  "height": 40,
+                  "componentId": "a309708a-2995-4b87-9ff8-0bf0d010a6d4",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                },
+                {
+                  "id": "574d3bc6-b9da-4648-9cbb-6e4be28416fe",
+                  "type": "desktop",
+                  "top": 290,
+                  "left": 2,
+                  "width": 17,
+                  "height": 40,
+                  "componentId": "a309708a-2995-4b87-9ff8-0bf0d010a6d4",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                }
+              ]
+            },
+            {
+              "id": "4d47c300-6837-41d0-80ad-6a444f0e4d54",
+              "name": "textinput1",
+              "type": "TextInput",
+              "pageId": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+              "parent": null,
+              "properties": {
+                "value": {
+                  "value": "{{constants.envConstant}}"
+                },
+                "label": {
+                  "value": "constants_UI"
+                },
+                "placeholder": {
+                  "value": ""
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "tooltip": {
+                  "value": ""
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "borderColor": {
+                  "value": "var(--cc-default-border)"
+                },
+                "accentColor": {
+                  "value": "var(--cc-primary-brand)"
+                },
+                "errTextColor": {
+                  "value": "var(--cc-error-systemStatus)"
+                },
+                "borderRadius": {
+                  "value": "{{6}}"
+                },
+                "backgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "iconColor": {
+                  "value": "var(--cc-default-icon)"
+                },
+                "direction": {
+                  "value": "left"
+                },
+                "width": {
+                  "value": "{{33}}"
+                },
+                "alignment": {
+                  "value": "side"
+                },
+                "color": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "auto": {
+                  "value": "{{true}}"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "icon": {
+                  "value": "IconHome2"
+                },
+                "iconVisibility": {
+                  "value": false
+                },
+                "widthType": {
+                  "value": "ofComponent"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {
+                "mandatory": {
+                  "value": "{{false}}"
+                },
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": ""
+                },
+                "maxLength": {
+                  "value": ""
+                },
+                "customRule": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "layouts": [
+                {
+                  "id": "96a35597-04ed-44f2-aa02-a6031ec78dca",
+                  "type": "mobile",
+                  "top": 60,
+                  "left": 6,
+                  "width": 10,
+                  "height": 40,
+                  "componentId": "4d47c300-6837-41d0-80ad-6a444f0e4d54",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                },
+                {
+                  "id": "51ba0b7f-5a39-4927-9e33-740c63c6e416",
+                  "type": "desktop",
+                  "top": 130,
+                  "left": 2,
+                  "width": 17,
+                  "height": 40,
+                  "componentId": "4d47c300-6837-41d0-80ad-6a444f0e4d54",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                }
+              ]
+            },
+            {
+              "id": "3e325e8b-a20b-4f4c-a480-dfb8b10b188e",
+              "name": "textinput6",
+              "type": "TextInput",
+              "pageId": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+              "parent": null,
+              "properties": {
+                "value": {
+                  "value": "{{queries.f1a75a25-a284-4e3b-9755-dcf7756f148d.data.message}}"
+                },
+                "label": {
+                  "value": "datasource_restapi_secret"
+                },
+                "placeholder": {
+                  "value": "Enter your input"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "tooltip": {
+                  "value": ""
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "borderColor": {
+                  "value": "var(--cc-default-border)"
+                },
+                "accentColor": {
+                  "value": "var(--cc-primary-brand)"
+                },
+                "errTextColor": {
+                  "value": "var(--cc-error-systemStatus)"
+                },
+                "borderRadius": {
+                  "value": "{{6}}"
+                },
+                "backgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "iconColor": {
+                  "value": "var(--cc-default-icon)"
+                },
+                "direction": {
+                  "value": "left"
+                },
+                "width": {
+                  "value": "{{33}}"
+                },
+                "alignment": {
+                  "value": "side"
+                },
+                "color": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "auto": {
+                  "value": "{{true}}"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "icon": {
+                  "value": "IconHome2"
+                },
+                "iconVisibility": {
+                  "value": false
+                },
+                "widthType": {
+                  "value": "ofComponent"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {
+                "mandatory": {
+                  "value": "{{false}}"
+                },
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": ""
+                },
+                "maxLength": {
+                  "value": ""
+                },
+                "customRule": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "layouts": [
+                {
+                  "id": "58e1aa34-3c42-4ecf-92d4-f523d505c200",
+                  "type": "desktop",
+                  "top": 290,
+                  "left": 24,
+                  "width": 17,
+                  "height": 40,
+                  "componentId": "3e325e8b-a20b-4f4c-a480-dfb8b10b188e",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                },
+                {
+                  "id": "37e6e439-921b-48ec-8473-68afce1a0eef",
+                  "type": "mobile",
+                  "top": 60,
+                  "left": 6,
+                  "width": 10,
+                  "height": 40,
+                  "componentId": "3e325e8b-a20b-4f4c-a480-dfb8b10b188e",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                }
+              ]
+            },
+            {
+              "id": "f2972b61-f528-454f-a618-949fb83d98da",
+              "name": "textinput4",
+              "type": "TextInput",
+              "pageId": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+              "parent": null,
+              "properties": {
+                "value": {
+                  "value": "{{queries.473bae8f-58ab-4c25-8fb6-9cb6464c7e82.data.message}}"
+                },
+                "label": {
+                  "value": "static_restapi_secret"
+                },
+                "placeholder": {
+                  "value": ""
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "tooltip": {
+                  "value": ""
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "borderColor": {
+                  "value": "var(--cc-default-border)"
+                },
+                "accentColor": {
+                  "value": "var(--cc-primary-brand)"
+                },
+                "errTextColor": {
+                  "value": "var(--cc-error-systemStatus)"
+                },
+                "borderRadius": {
+                  "value": "{{6}}"
+                },
+                "backgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "iconColor": {
+                  "value": "var(--cc-default-icon)"
+                },
+                "direction": {
+                  "value": "left"
+                },
+                "width": {
+                  "value": "{{33}}"
+                },
+                "alignment": {
+                  "value": "side"
+                },
+                "color": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "auto": {
+                  "value": "{{true}}"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "icon": {
+                  "value": "IconHome2"
+                },
+                "iconVisibility": {
+                  "value": false
+                },
+                "widthType": {
+                  "value": "ofComponent"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {
+                "mandatory": {
+                  "value": "{{false}}"
+                },
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": ""
+                },
+                "maxLength": {
+                  "value": ""
+                },
+                "customRule": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "layouts": [
+                {
+                  "id": "4d8cf259-cc87-4503-b581-e07abc37fb24",
+                  "type": "mobile",
+                  "top": 60,
+                  "left": 6,
+                  "width": 10,
+                  "height": 40,
+                  "componentId": "f2972b61-f528-454f-a618-949fb83d98da",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                },
+                {
+                  "id": "89fcf89b-0236-416e-90f5-76d13f48fb34",
+                  "type": "desktop",
+                  "top": 210,
+                  "left": 24,
+                  "width": 17,
+                  "height": 40,
+                  "componentId": "f2972b61-f528-454f-a618-949fb83d98da",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                }
+              ]
+            },
+            {
+              "id": "507e28c7-e844-4e70-a3de-ffe3ca3c24e1",
+              "name": "textinput2",
+              "type": "TextInput",
+              "pageId": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+              "parent": null,
+              "properties": {
+                "value": {
+                  "value": "{{secrets.envSecret}}"
+                },
+                "label": {
+                  "value": "secrets_UI"
+                },
+                "placeholder": {
+                  "value": ""
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "tooltip": {
+                  "value": ""
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "borderColor": {
+                  "value": "var(--cc-default-border)"
+                },
+                "accentColor": {
+                  "value": "var(--cc-primary-brand)"
+                },
+                "errTextColor": {
+                  "value": "var(--cc-error-systemStatus)"
+                },
+                "borderRadius": {
+                  "value": "{{6}}"
+                },
+                "backgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "iconColor": {
+                  "value": "var(--cc-default-icon)"
+                },
+                "direction": {
+                  "value": "left"
+                },
+                "width": {
+                  "value": "{{33}}"
+                },
+                "alignment": {
+                  "value": "side"
+                },
+                "color": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "auto": {
+                  "value": "{{true}}"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "icon": {
+                  "value": "IconHome2"
+                },
+                "iconVisibility": {
+                  "value": false
+                },
+                "widthType": {
+                  "value": "ofComponent"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {
+                "mandatory": {
+                  "value": "{{false}}"
+                },
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": ""
+                },
+                "maxLength": {
+                  "value": ""
+                },
+                "customRule": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "layouts": [
+                {
+                  "id": "0f0f7812-5a5f-4560-a497-078240d37333",
+                  "type": "desktop",
+                  "top": 130,
+                  "left": 24,
+                  "width": 17,
+                  "height": 40,
+                  "componentId": "507e28c7-e844-4e70-a3de-ffe3ca3c24e1",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                },
+                {
+                  "id": "cb0eb41c-7e68-4193-9171-678810334663",
+                  "type": "mobile",
+                  "top": 60,
+                  "left": 6,
+                  "width": 10,
+                  "height": 40,
+                  "componentId": "507e28c7-e844-4e70-a3de-ffe3ca3c24e1",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                }
+              ]
+            },
+            {
+              "id": "a68e1baa-3b20-4c83-9176-0316a4b9145a",
+              "name": "textinput3",
+              "type": "TextInput",
+              "pageId": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+              "parent": null,
+              "properties": {
+                "value": {
+                  "value": "{{queries.02f22ead-8907-476f-b910-ecab62e4e698.data.message}}"
+                },
+                "label": {
+                  "value": "static_restapi_constant"
+                },
+                "placeholder": {
+                  "value": ""
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "tooltip": {
+                  "value": ""
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "borderColor": {
+                  "value": "var(--cc-default-border)"
+                },
+                "accentColor": {
+                  "value": "var(--cc-primary-brand)"
+                },
+                "errTextColor": {
+                  "value": "var(--cc-error-systemStatus)"
+                },
+                "borderRadius": {
+                  "value": "{{6}}"
+                },
+                "backgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "iconColor": {
+                  "value": "var(--cc-default-icon)"
+                },
+                "direction": {
+                  "value": "left"
+                },
+                "width": {
+                  "value": "{{33}}"
+                },
+                "alignment": {
+                  "value": "side"
+                },
+                "color": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "auto": {
+                  "value": "{{true}}"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "icon": {
+                  "value": "IconHome2"
+                },
+                "iconVisibility": {
+                  "value": false
+                },
+                "widthType": {
+                  "value": "ofComponent"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {
+                "mandatory": {
+                  "value": "{{false}}"
+                },
+                "regex": {
+                  "value": ""
+                },
+                "minLength": {
+                  "value": ""
+                },
+                "maxLength": {
+                  "value": ""
+                },
+                "customRule": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "layouts": [
+                {
+                  "id": "3c99b7e2-0377-4812-8346-70d50a7a0bb2",
+                  "type": "mobile",
+                  "top": 60,
+                  "left": 6,
+                  "width": 10,
+                  "height": 40,
+                  "componentId": "a68e1baa-3b20-4c83-9176-0316a4b9145a",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                },
+                {
+                  "id": "41f9468f-b5b6-4f42-8ff2-35ec88abebb9",
+                  "type": "desktop",
+                  "top": 210,
+                  "left": 2,
+                  "width": 17,
+                  "height": 40,
+                  "componentId": "a68e1baa-3b20-4c83-9176-0316a4b9145a",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2025-10-06T16:16:50.491Z"
+                }
+              ]
+            }
+          ],
+          "pages": [
+            {
+              "id": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+              "name": "Home",
+              "handle": "home",
+              "index": 1,
+              "disabled": false,
+              "hidden": false,
+              "icon": "IconBike",
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "autoComputeLayout": true,
+              "appVersionId": "421accc8-2358-4a08-bec4-89954bcda87b",
+              "pageGroupIndex": 1,
+              "pageGroupId": null,
+              "isPageGroup": false,
+              "url": null,
+              "openIn": "new_tab",
+              "type": "default",
+              "appId": "391357c4-4d8a-4c2d-8370-8eb5de9ce01d"
+            },
+            {
+              "id": "0da9a841-ef8c-4069-8c23-04a03b271750",
+              "name": "workflow",
+              "handle": "workflow",
+              "index": 999,
+              "disabled": false,
+              "hidden": false,
+              "icon": "IconBattery3Filled",
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z",
+              "autoComputeLayout": true,
+              "appVersionId": "421accc8-2358-4a08-bec4-89954bcda87b",
+              "pageGroupIndex": 2,
+              "pageGroupId": null,
+              "isPageGroup": false,
+              "url": null,
+              "openIn": "new_tab",
+              "type": "default",
+              "appId": "391357c4-4d8a-4c2d-8370-8eb5de9ce01d"
+            }
+          ],
+          "events": [],
+          "dataQueries": [
+            {
+              "id": "f1a75a25-a284-4e3b-9755-dcf7756f148d",
+              "name": "datasource_restapi_secret",
+              "options": {
+                "method": "get",
+                "url": "",
+                "url_params": [],
+                "headers": [],
+                "cookies": [],
+                "body": [],
+                "json_body": null,
+                "body_toggle": false,
+                "retry_network_errors": true,
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "runOnPageLoad": true
+              },
+              "dataSourceId": "e812d6ce-e646-4ebb-8024-f87113c050c0",
+              "appVersionId": "421accc8-2358-4a08-bec4-89954bcda87b",
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.971Z"
+            },
+            {
+              "id": "02f22ead-8907-476f-b910-ecab62e4e698",
+              "name": "static_restapi_constant",
+              "options": {
+                "method": "get",
+                "url": "{{constants.ui_url}}",
+                "url_params": [],
+                "headers": [
+                  [
+                    "{{constants.headerKey}}",
+                    "{{constants.headerValue}}"
+                  ]
+                ],
+                "cookies": [],
+                "body": [],
+                "json_body": null,
+                "body_toggle": false,
+                "retry_network_errors": null,
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "arrayValuesChanged": true,
+                "runOnPageLoad": true
+              },
+              "dataSourceId": "03ef8501-b7a1-438f-88dd-5a28693a9f70",
+              "appVersionId": "421accc8-2358-4a08-bec4-89954bcda87b",
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:51.590Z"
+            },
+            {
+              "id": "273e1deb-4c55-4f17-bca6-bcffbadc55ea",
+              "name": "datasource_restapi_constants",
+              "options": {
+                "method": "get",
+                "url": "",
+                "url_params": [],
+                "headers": [],
+                "cookies": [],
+                "body": [],
+                "json_body": null,
+                "body_toggle": false,
+                "retry_network_errors": true,
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "runOnPageLoad": true,
+                "params": [
+                  {
+                    "key": "",
+                    "value": ""
+                  }
+                ]
+              },
+              "dataSourceId": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "appVersionId": "421accc8-2358-4a08-bec4-89954bcda87b",
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:51.966Z"
+            },
+            {
+              "id": "473bae8f-58ab-4c25-8fb6-9cb6464c7e82",
+              "name": "static_restapi_secret",
+              "options": {
+                "method": "get",
+                "url": "{{secrets.ui_url}}",
+                "url_params": [],
+                "headers": [
+                  [
+                    "{{secrets.headerKey}}",
+                    "{{secrets.headerValue}}"
+                  ]
+                ],
+                "cookies": [],
+                "body": [],
+                "json_body": null,
+                "body_toggle": false,
+                "retry_network_errors": null,
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "arrayValuesChanged": true,
+                "runOnPageLoad": true
+              },
+              "dataSourceId": "03ef8501-b7a1-438f-88dd-5a28693a9f70",
+              "appVersionId": "421accc8-2358-4a08-bec4-89954bcda87b",
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:52.313Z"
+            },
+            {
+              "id": "7ad25edc-0eab-4fa2-8c41-a3d0fb27d328",
+              "name": "workflows1",
+              "options": {
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "params": [
+                  {
+                    "key": "",
+                    "value": ""
+                  }
+                ],
+                "workflowId": "9a47d6c7-c625-4b6d-9ab8-0db3e32427c1",
+                "method": "get",
+                "runOnPageLoad": false
+              },
+              "dataSourceId": "a03bd331-6f36-4216-bc06-5577f36c2d9c",
+              "appVersionId": "421accc8-2358-4a08-bec4-89954bcda87b",
+              "createdAt": "2025-10-06T16:16:50.491Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z"
+            }
+          ],
+          "dataSources": [
+            {
+              "id": "a03bd331-6f36-4216-bc06-5577f36c2d9c",
+              "name": "workflowsdefault",
+              "kind": "workflows",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "scope": "global",
+              "createdAt": "2025-10-06T16:04:55.986Z",
+              "updatedAt": "2025-10-06T16:04:55.986Z"
+            },
+            {
+              "id": "e812d6ce-e646-4ebb-8024-f87113c050c0",
+              "name": "env_secret",
+              "kind": "restapi",
+              "type": "default",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "scope": "global",
+              "createdAt": "2025-10-06T16:12:34.229Z",
+              "updatedAt": "2025-10-06T16:13:13.915Z"
+            },
+            {
+              "id": "03ef8501-b7a1-438f-88dd-5a28693a9f70",
+              "name": "restapidefault",
+              "kind": "restapi",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "scope": "global",
+              "createdAt": "2025-10-06T16:04:55.973Z",
+              "updatedAt": "2025-10-06T16:04:55.973Z"
+            },
+            {
+              "id": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "name": "env_constants",
+              "kind": "restapi",
+              "type": "default",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "scope": "global",
+              "createdAt": "2025-10-06T16:12:34.229Z",
+              "updatedAt": "2025-10-06T16:12:34.229Z"
+            }
+          ],
+          "appVersions": [
+            {
+              "id": "421accc8-2358-4a08-bec4-89954bcda87b",
+              "name": "v1",
+              "definition": null,
+              "globalSettings": {
+                "appInMaintenance": false,
+                "canvasMaxWidth": 100,
+                "canvasMaxWidthType": "%",
+                "canvasMaxHeight": 2400,
+                "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+                "backgroundFxQuery": "",
+                "appMode": "light"
+              },
+              "pageSettings": {
+                "properties": {
+                  "disableMenu": {
+                    "value": "{{false}}",
+                    "fxActive": false
+                  }
+                }
+              },
+              "showViewerNavigation": true,
+              "homePageId": "0160eaef-3f2b-4293-b60d-1763823b74c2",
+              "appId": "391357c4-4d8a-4c2d-8370-8eb5de9ce01d",
+              "currentEnvironmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "promotedFrom": null,
+              "createdAt": "2025-10-06T16:16:50.497Z",
+              "updatedAt": "2025-10-06T16:16:50.491Z"
+            }
+          ],
+          "appEnvironments": [
+            {
+              "id": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "name": "development",
+              "isDefault": false,
+              "priority": 1,
+              "enabled": true,
+              "createdAt": "2025-10-06T16:04:55.812Z",
+              "updatedAt": "2025-10-06T16:04:55.812Z"
+            },
+            {
+              "id": "ff13b51c-94dc-46b0-802b-17d3dbe05040",
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "name": "staging",
+              "isDefault": false,
+              "priority": 2,
+              "enabled": true,
+              "createdAt": "2025-10-06T16:04:55.818Z",
+              "updatedAt": "2025-10-06T16:04:55.818Z"
+            },
+            {
+              "id": "1545b967-e926-4a9e-be19-9f142bbb2517",
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "name": "production",
+              "isDefault": true,
+              "priority": 3,
+              "enabled": true,
+              "createdAt": "2025-10-06T16:04:55.820Z",
+              "updatedAt": "2025-10-06T16:04:55.820Z"
+            }
+          ],
+          "dataSourceOptions": [
+            {
+              "id": "29be1fbe-ed91-4f97-a251-d26daecdaf52",
+              "dataSourceId": "03ef8501-b7a1-438f-88dd-5a28693a9f70",
+              "environmentId": "1545b967-e926-4a9e-be19-9f142bbb2517",
+              "options": null,
+              "createdAt": "2025-10-06T16:04:55.975Z",
+              "updatedAt": "2025-10-06T16:04:55.975Z"
+            },
+            {
+              "id": "53e6e986-921a-4280-8bff-fc94cac7e2fa",
+              "dataSourceId": "03ef8501-b7a1-438f-88dd-5a28693a9f70",
+              "environmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "options": null,
+              "createdAt": "2025-10-06T16:04:55.975Z",
+              "updatedAt": "2025-10-06T16:04:55.975Z"
+            },
+            {
+              "id": "7f570fee-5abb-4332-bf82-409104755eda",
+              "dataSourceId": "03ef8501-b7a1-438f-88dd-5a28693a9f70",
+              "environmentId": "ff13b51c-94dc-46b0-802b-17d3dbe05040",
+              "options": null,
+              "createdAt": "2025-10-06T16:04:55.975Z",
+              "updatedAt": "2025-10-06T16:04:55.975Z"
+            },
+            {
+              "id": "e26129ae-dbaf-4d17-8ec5-b66605439177",
+              "dataSourceId": "a03bd331-6f36-4216-bc06-5577f36c2d9c",
+              "environmentId": "1545b967-e926-4a9e-be19-9f142bbb2517",
+              "options": null,
+              "createdAt": "2025-10-06T16:04:55.987Z",
+              "updatedAt": "2025-10-06T16:04:55.987Z"
+            },
+            {
+              "id": "d188546d-0d78-4d72-a2d6-113e09df070f",
+              "dataSourceId": "a03bd331-6f36-4216-bc06-5577f36c2d9c",
+              "environmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "options": null,
+              "createdAt": "2025-10-06T16:04:55.987Z",
+              "updatedAt": "2025-10-06T16:04:55.987Z"
+            },
+            {
+              "id": "39730ac0-332c-4df5-842b-f4c325fe347b",
+              "dataSourceId": "a03bd331-6f36-4216-bc06-5577f36c2d9c",
+              "environmentId": "ff13b51c-94dc-46b0-802b-17d3dbe05040",
+              "options": null,
+              "createdAt": "2025-10-06T16:04:55.987Z",
+              "updatedAt": "2025-10-06T16:04:55.987Z"
+            },
+            {
+              "id": "e6d07824-b64b-41c2-b6bf-f549642f5a18",
+              "dataSourceId": "e812d6ce-e646-4ebb-8024-f87113c050c0",
+              "environmentId": "ff13b51c-94dc-46b0-802b-17d3dbe05040",
+              "options": {
+                "url": {
+                  "value": "{{secrets.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "18303e57-9114-4eef-9f9d-0f4b4dbf57a6",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "0ba6610b-e31d-4ada-ad29-37fa70001eec",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "5dc792aa-c077-4113-a9c2-8a3a1165c5a7",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{secrets.headerKey}}",
+                      "{{secrets.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.307Z",
+              "updatedAt": "2025-10-06T16:13:04.941Z"
+            },
+            {
+              "id": "2c80abaf-d496-46db-bd2e-58d6d1570d98",
+              "dataSourceId": "e812d6ce-e646-4ebb-8024-f87113c050c0",
+              "environmentId": "1545b967-e926-4a9e-be19-9f142bbb2517",
+              "options": {
+                "url": {
+                  "value": "{{secrets.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "d7c2c6e0-ebfc-4f48-a217-d91638d3ed49",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "e08264f8-0976-4977-a6c9-76ca966ba3f5",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "c1b9b410-de00-4795-8b2d-06de69701917",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{secrets.headerKey}}",
+                      "{{secrets.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.309Z",
+              "updatedAt": "2025-10-06T16:13:13.914Z"
+            },
+            {
+              "id": "e4660747-5d61-4216-a806-a0145c2d62b4",
+              "dataSourceId": "e812d6ce-e646-4ebb-8024-f87113c050c0",
+              "environmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "options": {
+                "url": {
+                  "value": "{{secrets.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "2d1e85c2-86cc-450a-9f98-5170e148b2e7",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "46f87f18-e191-4900-8e19-6525ef87f3e1",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "9cad2e15-bed0-4323-9a53-811dea01cb8e",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{secrets.headerKey}}",
+                      "{{secrets.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.313Z",
+              "updatedAt": "2025-10-06T16:12:34.313Z"
+            },
+            {
+              "id": "dcf2df73-89da-4e47-a817-7054b7eb39e7",
+              "dataSourceId": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "environmentId": "ff13b51c-94dc-46b0-802b-17d3dbe05040",
+              "options": {
+                "url": {
+                  "value": "{{constants.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "76eae272-6e34-4dde-9fe6-59dc6c1b1e57",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "625b0280-af2a-4ead-82dc-c12cf0f52b16",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "bc8cc5da-8dc0-4504-a9ba-8a0a81caecf9",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{constants.headerKey}}",
+                      "{{constants.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.320Z",
+              "updatedAt": "2025-10-06T16:12:34.320Z"
+            },
+            {
+              "id": "100581b2-f680-40d2-af44-e5e40589e2ce",
+              "dataSourceId": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "environmentId": "1545b967-e926-4a9e-be19-9f142bbb2517",
+              "options": {
+                "url": {
+                  "value": "{{constants.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "99d00319-a2ac-4e86-837c-5237e4e8b8c1",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "aa9468e5-4613-4fbf-bc54-948d76f2ae39",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "4e21ae93-1ea7-4ee1-94eb-13e3f059a116",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{constants.headerKey}}",
+                      "{{constants.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.322Z",
+              "updatedAt": "2025-10-06T16:12:34.322Z"
+            },
+            {
+              "id": "1ea4bc10-623a-4c19-985c-175bf8fd51d2",
+              "dataSourceId": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "environmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "options": {
+                "url": {
+                  "value": "{{constants.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "f36efffa-83a6-485f-b8ef-c1ce4883724b",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "7e4d23ab-77f3-4e80-87f8-b283fd8502ab",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "1c0ed314-f466-4475-8aaf-faf97f793827",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{constants.headerKey}}",
+                      "{{constants.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.324Z",
+              "updatedAt": "2025-10-06T16:12:34.324Z"
+            }
+          ],
+          "schemaDetails": {
+            "multiPages": true,
+            "multiEnv": true,
+            "globalDataSources": true
+          },
+          "modules": []
+        }
+      }
+    }
+  ],
+  "tooljet_version": "3.20.13-ee-lts"
+}

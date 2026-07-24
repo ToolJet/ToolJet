@@ -5,12 +5,16 @@ import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { handleAppAccess } from '@/_helpers/handleAppAccess';
-import { getQueryParams } from '@/_helpers/routes';
+import { handleAppAccess, handleError } from '@/_helpers/handleAppAccess';
+import { getQueryParams, getSubpath } from '@/_helpers/routes';
 import queryString from 'query-string';
 import useStore from '@/AppBuilder/_stores/store';
+import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
+import { MobileEmptyState } from './MobileBlock';
+import { authenticationService, appsService } from '@/_services';
+import { getEnvironmentAccessFromPermissions, getSafeEnvironment } from '@/_helpers/environmentAccess';
 
-export const AppsRoute = ({ children, componentType }) => {
+export const AppsRoute = ({ children, componentType, darkMode }) => {
   const params = useParams();
   const location = useLocation();
   const [extraProps, setExtraProps] = useState({});
@@ -22,7 +26,7 @@ export const AppsRoute = ({ children, componentType }) => {
   const clonedElement = React.cloneElement(children, extraProps);
   const navigate = useNavigate();
   const switchPage = useStore((state) => state.switchPage);
-
+  const { shouldBlockMobile } = useMobileRouteGuard();
   /* 
    any extra logic specifc to the route can be done 
    when the session is valid state updates to true.
@@ -39,9 +43,46 @@ export const AppsRoute = ({ children, componentType }) => {
   }, [isValidSession]);
 
   useEffect(() => {
-    if (isInvalidSession) {
+    const validateSession = async () => {
+      if (!isInvalidSession || componentType !== 'viewer') return;
+
+      const { slug, versionId, environmentId } = params;
+      const queryParams = getQueryParams();
+      const isOldLocalPreview = !!(versionId && environmentId);
+      const isLocalPreview = !!(queryParams['env'] || queryParams['version'] || isOldLocalPreview);
+
+      if (!isLocalPreview && !isOldLocalPreview) {
+        /* Released app — check if the plan allows public apps */
+        try {
+          await appsService.validateReleasedApp(slug);
+        } catch (errorResponse) {
+          const editPermission = errorResponse?.error?.editPermission;
+          handleError(componentType, errorResponse, `/apps/${slug}`, editPermission, slug);
+          return;
+        }
+      } else {
+        /* Preview URL — always requires authentication (public and private apps alike). */
+        const previewQueryParams = {
+          ...(queryParams['version'] && { version_name: queryParams['version'] }),
+          ...(queryParams['env'] && { environment_name: queryParams['env'] }),
+        };
+        const apiQueryParams = {
+          ...previewQueryParams,
+          ...(isOldLocalPreview && { version_id: versionId, environment_id: environmentId }),
+          access_type: 'view',
+        };
+
+        try {
+          await appsService.validatePrivateApp(slug, apiQueryParams);
+        } catch (errorResponse) {
+          handleError(componentType, errorResponse);
+          return;
+        }
+      }
       setLoading(false);
-    }
+    };
+
+    validateSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInvalidSession]);
 
@@ -56,29 +97,83 @@ export const AppsRoute = ({ children, componentType }) => {
       const { slug, versionId, environmentId, pageHandle } = params;
       /* Validate the app permissions */
       let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
-      const { versionName, environmentName, ...restDetails } = accessDetails;
+      const { versionName, environmentName, id: appId, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
-        const search = queryString.stringify({
-          env: environmentName,
-          version: versionName,
-          ...restQueryParams,
-        });
-        /* means. the User is trying to load old preview URL. Let's change these to query params */
-        navigate(
-          { pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`, search },
-          { replace: true, state: location?.state }
-        );
+        const envFromUrl = restQueryParams.env;
+
+        // Get user's environment access permissions
+        const session = authenticationService.currentSessionValue;
+        const perms = session?.app_group_permissions;
+        const hasEditPermission =
+          perms?.is_all_editable ||
+          (appId && Array.isArray(perms?.editable_apps_id) && perms.editable_apps_id.includes(appId));
+
+        // Get environment access for this user - use appId instead of slug
+        const environmentAccess = getEnvironmentAccessFromPermissions(perms, appId);
+
+        // For all users (edit and view), validate environment access and use safe environment
+        // Even editors need to be restricted if they don't have permission to requested environment
+        const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
+        const effectiveEnv = getSafeEnvironment(environmentAccess, requestedEnv, hasEditPermission);
+
+        // Check if license is invalid/expired (basic plan) - from store
+        const storeState = useStore.getState();
+        const featureAccess = storeState?.license?.featureAccess;
+        // Only exclude env if license is explicitly expired or invalid
+        // If license status is undefined (not loaded yet), default to including env
+        const isBasicPlan =
+          featureAccess?.licenseStatus?.isExpired === true ||
+          featureAccess?.licenseStatus?.isLicenseValid === false ||
+          featureAccess?.multiEnvironment === false;
+
+        // Don't add env param for free/basic/starter plan, expired or invalid license
+        // Also don't add env if it wasn't in the original URL (user didn't request specific env)
+        const shouldIncludeEnv = !isBasicPlan && (envFromUrl || environmentName);
+
+        const queryParams = {
+          // Keep other params but let env/version below override
+          ...Object.fromEntries(Object.entries(restQueryParams).filter(([k]) => k !== 'env' && k !== 'version')),
+          version: versionName || restQueryParams.version,
+          // Only add env if license is valid AND env was explicitly requested in URL
+          ...(shouldIncludeEnv && effectiveEnv ? { env: effectiveEnv } : {}),
+        };
+
+        const newSearch = queryString.stringify(queryParams);
+        const currentSearch = location.search?.replace('?', '');
+
+        // Only navigate if the search params actually changed to avoid infinite loops
+        if (newSearch !== currentSearch) {
+          /* means. the User is trying to load old preview URL. Let's change these to query params */
+          navigate(
+            {
+              pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`,
+              search: newSearch,
+            },
+            { replace: true, state: location?.state }
+          );
+        }
       }
-      setExtraProps(restDetails);
+      // Include appId in extraProps so it's available to the app
+      setExtraProps({ ...restDetails, id: appId });
       setLoading(false);
     }
   };
 
   const handleBrowserNavigation = (e) => {
-    const { id, handle } = e.state;
-    switchPage(id, handle, [], 'canvas', true);
+    // React Router v6 stores the navigate() state under e.state.usr. Entries without
+    // page info (e.g. backing out of the app to the dashboard) must not trigger a
+    // page switch — switchPage's async flow would keep writing into the store after
+    // AppLoader unmounts and resets it.
+    const navState = e.state?.usr;
+    if (!navState?.isSwitchingPage || !navState?.id) return;
+    switchPage(navState.id, navState.handle, [], 'canvas', true);
   };
+
+  // Show mobile empty state for protected routes (editor mode)
+  if (shouldBlockMobile && componentType === 'editor') {
+    return <MobileEmptyState darkMode={darkMode} />;
+  }
 
   return <RouteLoader isLoading={isLoading}>{clonedElement}</RouteLoader>;
 };

@@ -18,7 +18,14 @@ import { Item } from './Components/Item';
 import { Container } from './Components/Container';
 import { Trash } from './Components/Trash';
 import { Modal } from './Components/Modal';
-import { getColumnData, getCardData, getData, convertArrayToObj, findContainer } from './helpers/utils';
+import {
+  getColumnData,
+  getCardData,
+  getData,
+  convertArrayToObj,
+  findContainer,
+  normalizeCardData,
+} from './helpers/utils';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -40,11 +47,11 @@ const dropAnimation = {
 
 const TRASH_ID = 'void';
 
-export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
+export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }) {
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
-  const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
+  const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard, deleteLabel } = properties;
   const { accentColor } = styles;
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const [lastSelectedCard, setLastSelectedCard] = useState({});
@@ -52,7 +59,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
   const columnDataAsObj = useMemo(() => convertArrayToObj(columnData), [JSON.stringify(columnData)]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const cardDataAsObj = useMemo(() => convertArrayToObj(cardData), [JSON.stringify(cardData)]);
+  const normalizedCardData = useMemo(() => normalizeCardData(cardData), [JSON.stringify(cardData)]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const cardDataAsObj = useMemo(() => convertArrayToObj(normalizedCardData), [JSON.stringify(normalizedCardData)]);
 
   const [items, setItems] = useState({});
   const [containers, setContainers] = useState([]);
@@ -86,15 +96,8 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
   }, []);
 
   // Check if the previous filtered data is different from the current filtered data
-  if (Object.keys(diff(cardData, prevCardData.current)).length > 0) {
-    prevCardData.current = cardData;
-    // Adding listItem as key value pair to the customResolvables
-    const cardDetails = cardData.map((data) => {
-      return {
-        cardData: data,
-      };
-    });
-    // Update the customResolvables with the new listItems
+  if (Object.keys(diff(normalizedCardData, prevCardData.current)).length > 0) {
+    prevCardData.current = normalizedCardData;
     updateCardDataInCustomResolvable(cardDataAsObj);
   }
 
@@ -125,10 +128,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
   }, [showModal]);
 
   useEffect(() => {
-    setItems(() => getCardData(cardData, { ...columnDataAsObj }));
+    setItems(() => getCardData(normalizedCardData, { ...columnDataAsObj }));
     shouldUpdateData.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(cardData), JSON.stringify(columnDataAsObj)]);
+  }, [JSON.stringify(normalizedCardData), JSON.stringify(columnDataAsObj)]);
 
   useEffect(() => {
     if (shouldUpdateData.current) {
@@ -416,6 +419,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
                 }}
                 kanbanProps={kanbanProps}
                 componentType="Kanban"
+                dataCy={dataCy}
               >
                 {items[columnId] && (
                   <SortableContext items={items[columnId]} strategy={verticalListSortingStrategy}>
@@ -437,6 +441,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
                           cardDataAsObj={cardDataAsObj}
                           setLastSelectedCard={setLastSelectedCard}
                           cardData={flatCardData}
+                          dataCy={dataCy}
                         />
                       );
                     })}
@@ -449,6 +454,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
             className={cx('kanban-add-card-button jet-button btn', !enableAddCard && 'invisible')}
             style={colAccentColor}
             onClick={() => enableAddCard && fireEvent('onAddCardClick')}
+            data-cy={`${dataCy}-add-card-button`}
           >
             + Add Card
           </button>
@@ -459,7 +465,9 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
           </DragOverlay>,
           document.body
         )}
-        {showDeleteButton ? <Trash id={TRASH_ID} /> : null}
+        {showDeleteButton ? (
+          <Trash id={TRASH_ID} deleteLabel={deleteLabel} dataCy={`${dataCy}-drag-delete-button`} />
+        ) : null}
       </DndContext>
       <Modal
         showModal={showModal}
@@ -501,6 +509,7 @@ function SortableItem({
   cardDataAsObj,
   setLastSelectedCard,
   cardData,
+  dataCy,
 }) {
   const { setNodeRef, setActivatorNodeRef, listeners, isDragging, isSorting, transform, transition } = useSortable({
     id,
@@ -527,6 +536,7 @@ function SortableItem({
       cardDataAsObj={cardDataAsObj}
       setLastSelectedCard={setLastSelectedCard}
       cardData={cardData}
+      dataCy={dataCy}
     />
   );
 }
