@@ -4,18 +4,7 @@ import { dataSourceText } from "Texts/dataSource";
 import { restAPIText } from "Texts/restAPI";
 import { mongoDbText } from "Texts/mongoDb";
 import { airtableText } from "Texts/airTable";
-
-const closeDSModal = () => {
-  cy.get("body").then(($body) => {
-    cy.wait(500);
-    if (
-      $body.find('[data-cy="button-close-ds-connection-modal"]> img').length > 0
-    ) {
-      cy.get('[data-cy="button-close-ds-connection-modal"]').realClick();
-      closeDSModal();
-    }
-  });
-};
+import { closeDSModal } from "Support/utils/dataSource";
 
 describe("Data Sources Page", () => {
   beforeEach(() => {
@@ -48,10 +37,17 @@ describe("Data Sources Page", () => {
       "have.text",
       dataSourceText.allCloudStorage
     );
+    cy.get(dataSourceSelector.pluginsLabelAndCount).should(
+      "have.text",
+      dataSourceText.pluginsLabelAndCount
+    );
 
     // "Commonly used" is built from a fixed manifest list (see
     // frontend/src/modules/common/components/DataSourceComponents/index.js), so
     // these data sources are always present regardless of installed plugins.
+    // Each of these also renders again under its real category section (e.g. REST
+    // API also appears under APIs), so the lookup is scoped to the "Commonly used"
+    // section's own card list rather than relying on `.first()` DOM ordering.
     const commonlyUsedDataSources = [
       { selector: dataSourceSelector.restApiDataSource, title: restAPIText.restAPI },
       { selector: dataSourceSelector.postgresDataSource, title: dataSourceText.postgreSQL },
@@ -60,18 +56,21 @@ describe("Data Sources Page", () => {
       { selector: dataSourceSelector.airtableDataSource, title: airtableText.airtable },
     ];
 
-    commonlyUsedDataSources.forEach(({ selector, title }) => {
-      cy.get(selector)
-        .first()
-        .scrollIntoView()
-        .within(() => {
-          cy.get(dataSourceSelector.dataSourceCardIcon(title)).should("exist");
-          cy.get(dataSourceSelector.dataSourceCardTitle(title)).should(
-            "have.text",
-            title
-          );
+    cy.get('[id="#commonlyused"]')
+      .next()
+      .within(() => {
+        commonlyUsedDataSources.forEach(({ selector, title }) => {
+          cy.get(selector)
+            .scrollIntoView()
+            .within(() => {
+              cy.get(dataSourceSelector.dataSourceCardIcon(title)).should("exist");
+              cy.get(dataSourceSelector.dataSourceCardTitle(title)).should(
+                "have.text",
+                title
+              );
+            });
         });
-    });
+      });
   });
 });
 
@@ -83,13 +82,14 @@ describe("Data Sources Page", () => {
  *   - Pre-condition: Logged-in user with access to the workspace's data sources page
  *   - Steps: Navigate to home → Click global data source icon → Verify data source
  *     category counts → Locate each commonly-used data source's card (REST API,
- *     PostgreSQL, MongoDB, Snowflake, Airtable) → Verify icon and title on each card
+ *     PostgreSQL, MongoDB, Snowflake, Airtable) within the "Commonly used" section →
+ *     Verify icon and title on each card
  *   - Expected:
  *     - Data source list header shows correct count (e.g., "All data sources (47)")
  *     - Category buttons show correct counts: Commonly used (6), Databases (18/20),
- *       APIs (24), Cloud Storages (4)
+ *       APIs (24), Cloud Storages (4), Plugins (0)
  *     - Each commonly-used data source's card renders its icon and correct title text,
  *       with no missing or blank fields
- *   - Fields verified: datasource-list-header, commonlyused/databases/apis/cloudstorage
- *     -datasource-button, data-source-{name} card icon and title
+ *   - Fields verified: datasource-list-header, commonlyused/databases/apis/cloudstorage/
+ *     plugins-datasource-button, data-source-{name} card icon and title
  */
