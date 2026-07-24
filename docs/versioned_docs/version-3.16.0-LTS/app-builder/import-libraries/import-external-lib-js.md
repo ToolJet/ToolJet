@@ -4,15 +4,72 @@ title: Using RunJS
 ---
 
 
-ToolJet allows you to use external JavaScript libraries such as Compromise for natural language processing or PapaParse for parsing CSV data in your application using RunJS queries. This helps you avoid writing complex logic from scratch.
+ToolJet allows you to use external JavaScript libraries such as Compromise for natural language processing or PapaParse for parsing CSV data in your application. You can import libraries globally so they are available across all queries, or load them on demand inside a RunJS query.
 
-This guide walks you through the process of importing and utilizing these libraries effectively.
+## Importing Libraries Globally
 
-## Choosing Libraries
+The **Libraries** section on the left sidebar lets you register external libraries once at the app level. Registered libraries are loaded at app startup and available by their variable name in all RunJS queries and transformations — no per-query import code needed.
 
-You can import various JavaScript libraries using their Content Delivery Network (CDN) links. Find the CDN links for your desired open-source projects on [jsDelivr](https://www.jsdelivr.com/). 
+### Add a Library
 
-## How to Import Libraries
+1. Open **Libraries** from the left sidebar.
+2. Click on **Add new library** button.
+3. Enter a **Variable name** — the name you will use to call the library in your code (e.g., `Papa`).
+4. Enter the **CDN URL** of a UMD or IIFE build of the library (e.g., from [jsDelivr](https://www.jsdelivr.com/) or [cdnjs](https://cdnjs.com/)).
+5. Click **+ Add library**.
+
+ToolJet fetches and validates the library. If successful, the library is saved to the app definition and is immediately available in your queries.
+
+:::info
+Only minified UMD or IIFE builds are supported. ESM and CommonJS modules are not compatible. Use the `.min.js` build from jsDelivr or cdnjs.
+:::
+
+Once added, use the library by its variable name directly in any RunJS query or transformation:
+
+```js
+// Using PapaParse added with variable name "Papa"
+const csvData = components.filepicker1.file[0].content;
+const result = Papa.parse(csvData, { header: true, skipEmptyLines: true });
+return result;
+```
+
+### Remove a Library
+
+Click the trash icon next to the library name in the **Libraries** list to remove it. The library is unregistered from the app immediately.
+
+## Preloaded JavaScript
+
+The **Preloaded JavaScript** section (within Libraries) lets you write JavaScript that runs once after all registered libraries have loaded, before any queries execute. Use it for library initialization that must happen before your app runs — for example, extending a plugin or configuring a library's defaults.
+
+To open the Preloaded JavaScript editor, click on **{ }** inside the Libraries section.
+
+**Example — extending Day.js with the UTC plugin:**
+
+```js
+dayjs.extend(dayjs_utc);
+```
+
+**Example — configuring a library default:**
+
+```js
+Papa.LocalChunkSize = 20480;
+```
+
+Click **Save script** to save it. The script runs automatically at app startup after libraries load.
+
+:::info
+The Preloaded JavaScript has access to all registered library variables and the same built-in libraries available in RunJS (Moment.js, Lodash, Axios).
+:::
+
+## Importing Libraries via a RunJS Query
+
+For libraries you only need in a single query, you can load them dynamically inside a RunJS query using `document.createElement('script')`.
+
+### Create a RunJS Query
+
+Open the query panel and create a new **RunJS** query.
+
+### How to Import Libraries
 
 Let’s walk through how to import libraries using RunJS. For example, we’ll use:
 

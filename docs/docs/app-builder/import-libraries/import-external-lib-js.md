@@ -14,7 +14,7 @@ You can import various JavaScript libraries using their Content Delivery Network
 
 ## How to Import Libraries
 
-Let’s walk through how to import libraries using RunJS. For example, we’ll use:
+Let's walk through how to import libraries using RunJS. For example, we'll use:
 
 - [Compromise](https://github.com/spencermountain/compromise): for natural language processing
 - [PapaParse](https://www.papaparse.com/): for parsing CSV data
@@ -55,7 +55,7 @@ Enable the **Run this query on application load** option in the query settings t
 
 ## Use Cases
 
-Let’s look at how you can apply these libraries in real-world use cases.
+Let's look at how you can apply these libraries in real-world use cases.
 
 ### Extracting Action Items from Meeting Notes using Compromise (NLP)
 
@@ -77,7 +77,7 @@ Preview the output in the query manager or click **Run** in the query panel to s
 
 ###  Bulk Upload Employee Data into an Employee Directory
 
-Let’s say your HR team maintains employee records in spreadsheets and wants a way to import this data quickly into your internal Employee Directory application. You can use the following code to clean up the data:
+Let's say your HR team maintains employee records in spreadsheets and wants a way to import this data quickly into your internal Employee Directory application. You can use the following code to clean up the data:
 
 ```js
 const csvData = components.filepicker1.file[0].content;
@@ -94,7 +94,7 @@ return parsedData;
 
 ## Built-in JavaScript Libraries 
 
-ToolJet comes with some essential JavaScript libraries preloaded in the RunJS environment, so you don’t need to import them manually:
+ToolJet comes with some essential JavaScript libraries preloaded in the RunJS environment, so you don't need to import them manually:
 - [Moment.js](https://momentjs.com/docs/) – for date/time formatting and manipulation
 - [Lodash](https://lodash.com/docs/) – for working with arrays, objects, and collections
 - [Axios](https://axios-http.com/docs/intro) – for making HTTP requests
