@@ -683,6 +683,10 @@ export class AppsUtilService implements IAppsUtilService {
         componentTypes.find((comp) => currentComponentData.component.component === comp.component)
       );
 
+      // Unknown/runtime-registered component types (e.g. custom component libraries) have no
+      // build-time server-side meta — skip instead of crashing on componentMeta.definition.
+      if (!componentMeta) continue;
+
       const mergedDefinition = {
         // ...componentMeta.definition,
         properties: mergeWith(

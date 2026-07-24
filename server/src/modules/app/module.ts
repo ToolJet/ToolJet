@@ -73,6 +73,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
+import { PocComponentsModule } from '@modules/poc-components/poc-components.module'; // POC: serves custom-component bundles
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -180,7 +181,8 @@ export class AppModule implements OnModuleInit, NestModule {
 
     return {
       module: AppModule,
-      imports: [...modules, ...imports],
+      imports: [...modules, ...imports, PocComponentsModule], // POC module last
+
       controllers: [AppController],
       providers: [
         ShutdownHook,

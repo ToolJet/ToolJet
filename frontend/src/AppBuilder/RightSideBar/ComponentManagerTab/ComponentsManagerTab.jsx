@@ -84,6 +84,14 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     // If modules access is denied, nothing to do here now
   }, [hasModuleAccess]);
 
+  // POC (throwaway): refresh the list when a component is registered at runtime from a manifest.
+  useEffect(() => {
+    const refresh = () =>
+      setFilteredComponents(componentTypes.map((c) => c.component).filter((c) => !IGNORED_ITEMS.includes(c)));
+    window.addEventListener('poc-registered', refresh);
+    return () => window.removeEventListener('poc-registered', refresh);
+  }, []);
+
   useEffect(() => {
     setSearchQuery('');
     filterComponents('');
