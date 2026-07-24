@@ -386,6 +386,14 @@ module.exports = {
             to: '/docs/setup/upgrade-to-v3/',
           },
           {
+            from: '/docs/build-with-ai/bring-your-own-key',
+            to: '/docs/setup/tooljet-ai/bring-your-own-key',
+          },
+          {
+            from: '/docs/build-with-ai/tj-ai-enterprise',
+            to: '/docs/setup/tooljet-ai/tj-ai-enterprise',
+          },
+          {
             from: '/docs/tj-setup/observability-otel',
             to: '/docs/tj-setup/observability/observability-otel/',
           },

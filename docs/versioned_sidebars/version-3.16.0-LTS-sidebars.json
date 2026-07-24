@@ -69,6 +69,21 @@
             },
             {
               "type": "category",
+              "label": "Setup ToolJet AI",
+              "link": {
+                "type": "doc",
+                "id": "setup/tooljet-ai/overview"
+              },
+              "items": [
+                "setup/tooljet-ai/overview",
+                "setup/tooljet-ai/cloud-with-cloud",
+                "setup/tooljet-ai/cloud-with-self-hosted",
+                "setup/tooljet-ai/bring-your-own-key",
+                "setup/tooljet-ai/tj-ai-enterprise"
+              ]
+            },
+            {
+              "type": "category",
               "label": "Migrations & Upgrades",
               "items": [
                 "setup/migration/upgrade-to-lts",
@@ -158,16 +173,32 @@
       "collapsible": false,
       "items": [
         "build-with-ai/overview",
-        "build-with-ai/generate-applications",
-        "build-with-ai/referencing-app-resources",
-        "build-with-ai/integrating-data",
-        "build-with-ai/prompting101",
-        "build-with-ai/ai-best-practices",
-        "build-with-ai/ai-docs-assistant",
-        "build-with-ai/debug-components",
-        "build-with-ai/bring-your-own-key",
-        "build-with-ai/tj-ai-enterprise",
-        "build-with-ai/ai-credits",
+        {
+              "type": "category",
+              "label": "Building Application",
+              "items": [
+                "build-with-ai/generate-applications",
+                "build-with-ai/integrating-data"
+              ]
+        },
+        {
+              "type": "category",
+              "label": "AI Assitance",
+              "items": [
+                "build-with-ai/referencing-app-resources",
+                "build-with-ai/debug-components",
+                "build-with-ai/ai-docs-assistant"
+              ]
+        },
+        {
+              "type": "category",
+              "label": "Concepts & References",
+              "items": [
+                "build-with-ai/ai-credits",
+                "build-with-ai/prompting101",
+                "build-with-ai/ai-best-practices"
+              ]
+        },
         "build-with-ai/tooljet-mcp",
         "build-with-ai/privacy"
       ]
