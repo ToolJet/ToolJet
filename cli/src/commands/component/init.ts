@@ -2,6 +2,10 @@ import { Command } from '@oclif/core';
 import * as inquirer from 'inquirer';
 import * as fs from 'fs';
 
+import { Auth } from '../../lib/component/auth';
+import { ApiClient } from '../../lib/component/api-client';
+import { scaffoldProject } from '../../lib/component/scaffolder';
+
 export default class ComponentInit extends Command {
   static description = 'Initialize a new custom component library';
 
@@ -50,14 +54,18 @@ export default class ComponentInit extends Command {
 
     const { display_name: displayName, instance_url: instanceUrl } = answers;
 
-    // TODO: Register the library on the ToolJet backend, scaffold the project
-    // directory via hygen templates, write .tooljet/config.json, and print the
-    // final success output. Deferred until the registration API endpoint and
-    // the hygen templates for this command exist. Planned flow:
-    //   1. POST {instanceUrl}/... with { name: displayName, directoryName: libraryDirectoryName } -> { id: libraryId }
-    //   2. runner(hygenArgs, { templates: ..., cwd: process.cwd(), ... }) to scaffold ./{libraryDirectoryName}
-    //   3. fs.writeFileSync(`${libraryDirectoryName}/.tooljet/config.json`, JSON.stringify({ instanceUrl, libraryId, libraryName: displayName }, null, 2))
-    //   4. this.log(`Registered library ${displayName} on ${instanceUrl} (ID: ${libraryId})`) + the three ✓ lines
+    const { apiToken } = Auth.resolve();
+
+    const client = new ApiClient(instanceUrl, apiToken);
+
+    const library = await client.createLibrary(displayName);
+
+    // Scaffold project via hygen templates
+    await scaffoldProject(libraryDirectoryName, { instanceUrl, libraryId: library.id, libraryName: library.name });
+
+    this.log(`✓ Registered library "${displayName}" on ${instanceUrl} (ID: ${library.id})`);
+    this.log(`✓ Created project directory: ./${libraryDirectoryName}/`);
+    this.log(`✓ Run: cd ${libraryDirectoryName} && npm install`);
   }
 
   private getDefaultInstanceUrl(): string {

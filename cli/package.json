@@ -77,7 +77,7 @@
     "url": "git+https://github.com/tooljet/tooljet.git"
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && tsc -b && shx cp -r src/_templates dist/_templates",
     "lint": "eslint .  '**/*.ts'",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
