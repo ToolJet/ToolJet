@@ -134,7 +134,7 @@ export const BaseInput = ({
         ? '30px'
         : '10px'
       : defaultAlignment === 'top' && hasLabel
-      ? 'calc(50% + 10px)'
+      ? `calc(50% + ${getLabelHeight(labelFontSize) / 2}px)`
       : '50%';
   const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
   const clearButton = shouldShowClearBtn ? (

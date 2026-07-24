@@ -214,16 +214,19 @@ export const ButtonGroupV2 = (props) => {
 
   const handleButtonClick = (value) => {
     const isSelected = exposedVariablesTemporaryState.selected.includes(value);
-    if (multiSelection) {
-      updateExposedVariablesState(
-        'selected',
-        isSelected
-          ? exposedVariablesTemporaryState.selected.filter((item) => item !== value)
-          : [...exposedVariablesTemporaryState.selected, value]
-      );
-    } else {
-      updateExposedVariablesState('selected', isSelected ? [] : [value]);
-    }
+    const newSelected = multiSelection
+      ? isSelected
+        ? exposedVariablesTemporaryState.selected.filter((item) => item !== value)
+        : [...exposedVariablesTemporaryState.selected, value]
+      : isSelected
+      ? []
+      : [value];
+
+    updateExposedVariablesState('selected', newSelected);
+    // Push the new selection to the store synchronously BEFORE firing the event.
+    // The batched effect that mirrors `selected` runs only after re-render,
+    // so without this, onClick actions would resolve the previous value and lag one click behind.
+    setExposedVariable('selected', newSelected);
     fireEvent('onClick');
     setUserInteracted(true);
   };

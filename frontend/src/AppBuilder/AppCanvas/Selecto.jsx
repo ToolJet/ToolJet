@@ -88,23 +88,22 @@ const EditorSelecto = () => {
           ? [...getSelectedComponents().filter((id) => !allSelectedIds.includes(id)), ...allSelectedIds]
           : allSelectedIds;
 
-        const isCanvasModal =
-          getComponentDefinition(canvasStartId.current, moduleId)?.component?.component === 'Modal' ||
-          getComponentDefinition(canvasStartId.current, moduleId)?.component?.component === 'ModalV2';
+        // Scope the marquee to the canvas it was drawn on.
+        // react-selecto matches elements by bounding-rect intersection and ignores overflow clipping,
+        // so a component that is scrolled out of view inside a subcontainer can still be hit if its (clipped) rect happens to sit under the selection box.
+        // Keeping only components that belong to the starting canvas prevents the selection (and any follow-up delete) from leaking across canvas boundaries.
+        const startCanvasId = canvasStartId.current;
+        const isMarqueeOnMainCanvas = !startCanvasId || startCanvasId === 'canvas';
+        const belongsToMarqueeCanvas = (id) => {
+          const parent = getComponentDefinition(id, moduleId)?.component?.parent;
+          return isMarqueeOnMainCanvas ? !parent : parent === startCanvasId;
+        };
 
-        const _selectedComponents = !isCanvasSelectStartEndSame
-          ? newSelection
-          : filterSelectedComponentsByHighestLevel(newSelection);
+        const _selectedComponents = (
+          !isCanvasSelectStartEndSame ? newSelection : filterSelectedComponentsByHighestLevel(newSelection)
+        ).filter(belongsToMarqueeCanvas);
 
-        if (isCanvasModal) {
-          setSelectedComponents(
-            _selectedComponents.filter(
-              (id) => getComponentDefinition(id, moduleId)?.component?.parent === canvasStartId.current
-            )
-          );
-        } else {
-          setSelectedComponents(_selectedComponents);
-        }
+        setSelectedComponents(_selectedComponents);
       }
       canvasStartId.current = null;
     },
