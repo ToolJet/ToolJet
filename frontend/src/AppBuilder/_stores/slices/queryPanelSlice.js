@@ -1126,10 +1126,10 @@ export const createQueryPanelSlice = (set, get) => ({
                 const kind = data.data?.kind;
                 localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
                 if (['slack', 'googlesheets', 'zendesk'].includes(kind)) {
-                  fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
+                  fetchOauthTokenForSlackAndGSheet(query.data_source_id || query.dataSourceId, data.data);
                   break;
                 }
-                fetchOAuthToken(url, query.data_source_id);
+                fetchOAuthToken(url, query.data_source_id || query.dataSourceId);
                 break;
               }
               case queryStatus === 'ok' ||

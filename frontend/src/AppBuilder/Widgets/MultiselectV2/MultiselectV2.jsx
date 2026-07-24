@@ -18,7 +18,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const MultiselectV2 = ({
   id,
@@ -400,6 +400,8 @@ export const MultiselectV2 = ({
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };
+
+  useFormClear(() => setInputValue([]));
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutsideSelect, { capture: true });
