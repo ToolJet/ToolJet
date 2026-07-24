@@ -68,15 +68,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.BULK_UPLOAD], InternalTable);
     }
 
-    if (isPublicAppRequest || isUserLoggedin) {
-      //For logged in users only
-      const dataQueryOrganizationId = dataQuery?.app?.organizationId;
-      const isMismatchedOrganization =
-        isUserLoggedin && !isEmpty(dataQuery) && dataQueryOrganizationId !== organizationId;
+    if (isPublicAppRequest) {
+      can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
+    }
 
-      if (!isMismatchedOrganization) {
-        can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
-      }
+    if (isUserLoggedin && (isAdmin || isBuilder)) {
+      //For logged in users only
+      can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
     can([FEATURE_KEY.VIEW_TABLE, FEATURE_KEY.VIEW_TABLES, FEATURE_KEY.JOIN_TABLES], InternalTable);
