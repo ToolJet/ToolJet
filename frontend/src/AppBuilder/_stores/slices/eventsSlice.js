@@ -1,6 +1,6 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
-import { debounce, replaceEntityReferencesWithIds } from '../utils';
+import { debounce, replaceQueryOptionsEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
@@ -208,7 +208,7 @@ export const createEventsSlice = (set, get) => ({
       //! Revisit this
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
-      const newEvents = replaceEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
+      const newEvents = replaceQueryOptionsEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
       const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
       get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
       get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);

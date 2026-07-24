@@ -2742,6 +2742,13 @@ export class AppImportExportService {
         eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
       }
 
+      if (
+        eventDefinition?.actionId === 'scroll-component-into-view' &&
+        oldComponentToNewComponentMapping[eventDefinition.componentId]
+      ) {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);
