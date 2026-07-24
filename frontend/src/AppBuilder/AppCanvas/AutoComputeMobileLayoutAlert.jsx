@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { compact, correctBounds } from './Grid/gridUtils';
+import { NO_OF_GRIDS } from './appCanvasConstants';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -35,8 +36,8 @@ export default function AutoComputeMobileLayoutAlert({ currentLayout, darkMode, 
         return { ...deepClone(currentPageComponents[key]?.layouts?.desktop), i: key };
       });
     let updatedBoxes = {};
-    let newmMobLayouts = correctBounds(mobLayouts, { cols: 43 });
-    newmMobLayouts = compact(newmMobLayouts, 'vertical', 43);
+    let newmMobLayouts = correctBounds(mobLayouts, { cols: NO_OF_GRIDS });
+    newmMobLayouts = compact(newmMobLayouts, 'vertical', NO_OF_GRIDS);
     Object.keys(currentPageComponents).forEach((id) => {
       const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
       updatedBoxes[id] = mobLayout

@@ -222,8 +222,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             y = 0;
           }
           let posX = Math.round(x / gw);
-          if (posX + newWidth > 43) {
-            newWidth = 43 - posX;
+          if (posX + newWidth > NO_OF_GRIDS) {
+            newWidth = NO_OF_GRIDS - posX;
           }
         }
 
