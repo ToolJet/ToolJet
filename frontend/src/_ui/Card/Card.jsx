@@ -3,6 +3,7 @@ import React from 'react';
 import { allSvgs } from '@tooljet/plugins/client';
 import AiBanner from '@/_ui/AiBanner';
 import LegacyBanner from '@/_ui/LegacyBanner';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const Card = ({
   title,
@@ -18,6 +19,8 @@ const Card = ({
   darkMode,
   tags = [],
 }) => {
+  const iconDataCy = `${generateCypressDataCy(title)}-icon`;
+
   const DisplayIcon = ({ src }) => {
     if (typeof src !== 'string') return;
 
@@ -31,9 +34,9 @@ const Card = ({
         }
       }
       const Icon = allSvgs[src];
-      return <Icon style={{ height, width }} className="card-icon" />;
+      return <Icon style={{ height, width }} className="card-icon" data-cy={iconDataCy} />;
     }
-    return <img src={src} width={width} height={height} alt={title} className="card-icon" />;
+    return <img src={src} width={width} height={height} alt={title} className="card-icon" data-cy={iconDataCy} />;
   };
 
   return (
@@ -55,7 +58,9 @@ const Card = ({
             <DisplayIcon src={src} />
             <br></br>
             <br></br>
-            <span className={titleClassName}>{title}</span>
+            <span className={titleClassName} data-cy={`${generateCypressDataCy(title)}-title`}>
+              {title}
+            </span>
             {actionButton}
           </center>
         </div>
