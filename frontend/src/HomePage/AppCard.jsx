@@ -313,7 +313,7 @@ export default function AppCard({
                 </div>
               </div>
               <div visible={focused ? true : undefined}>
-                {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                {(canDeleteApp(app) || canUpdateApp(app)) && (
                   <AppMenu
                     appId={app?.id}
                     appUserId={app?.user_id}

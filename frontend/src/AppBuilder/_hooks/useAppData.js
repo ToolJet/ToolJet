@@ -95,6 +95,9 @@ const useAppData = (
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
   const user = useStore((state) => state.user);
+  // Forwarded to the backend so a module-embedding parent app can grant view access
+  // (see appVersion.service.js getAll/getModuleVersionData).
+  const parentAppId = useStore((state) => state.appStore?.modules?.['canvas']?.app?.appId);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
   const setPages = useStore((state) => state.setPages);
@@ -340,16 +343,16 @@ const useAppData = (
           // versionId is a versionName string (cross-workspace stable, git-tag-backed) when the
           // bridge field is populated, a UUID module_reference_id for legacy same-workspace-only
           // pins, or '' when unpinned. The server resolver handles all three cases.
-          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode, parentAppId);
         }
       } else if (versionId) {
         // Pinned: call the by-correlation endpoint with the module_reference_id ref.
-        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode, parentAppId);
       } else {
         // Unpinned: always hit the backend — cached definition may be from the default branch,
         // not the consumer's feature branch. Server resolver correctly returns the current
         // branch's draft (or 404 if nothing is available there).
-        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode, parentAppId);
       }
     } else {
       if (isPublicAccess) {

@@ -37,7 +37,7 @@ export abstract class AbilityGuard implements CanActivate {
   protected setResourceObject(resource: any): void {
     this.resource = resource;
   }
-  protected getResource(): ResourceDetails | ResourceDetails[] {
+  protected getResource(request?: any): ResourceDetails | ResourceDetails[] {
     return;
   }
 
@@ -150,7 +150,7 @@ export abstract class AbilityGuard implements CanActivate {
         return false;
       }
 
-      const resources = this.getResource();
+      const resources = this.getResource(request);
       const resourceArray: ResourceDetails[] = Array.isArray(resources) ? resources : resources ? [resources] : [];
 
       if (user) {
