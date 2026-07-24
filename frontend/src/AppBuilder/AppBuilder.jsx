@@ -49,6 +49,11 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     }
   }, [hasModuleAccess, isModuleEditor]);
 
+  // POC (throwaway): load the externally-built PocButton into AllComponents before canvas render.
+  useEffect(() => {
+    import('@/AppBuilder/_helpers/pocLoader').then((m) => m.loadPocButton());
+  }, []);
+
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
     return (

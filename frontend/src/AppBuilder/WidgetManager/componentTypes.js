@@ -1,6 +1,7 @@
 import { widgets } from './configs/widgetConfig';
 
-const universalProps = {
+export const universalProps = {
+  // exported for POC manifest-driven registration
   properties: {},
   general: {
     tooltip: { type: 'code', displayName: 'Tooltip', validation: { schema: { type: 'string' } } },
@@ -26,7 +27,8 @@ const universalProps = {
   },
 };
 
-const combineProperties = (widget, universal, isArray = false) => {
+export const combineProperties = (widget, universal, isArray = false) => {
+  // exported for POC
   return {
     ...universal,
     ...widget,
