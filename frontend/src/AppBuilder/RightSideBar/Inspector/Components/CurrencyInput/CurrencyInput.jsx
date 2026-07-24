@@ -150,7 +150,7 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
   };
 
   const filteredProperties = properties.filter(
-    (property) => componentMeta.properties[property].section !== 'additionalActions'
+    (property) => !['additionalActions', 'deprecatedStyles'].includes(componentMeta.properties[property].section)
   );
 
   const additionalActions = properties.filter(

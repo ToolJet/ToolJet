@@ -682,36 +682,31 @@ export class AppsUtilService implements IAppsUtilService {
       const componentMeta = cloneDeep(
         componentTypes.find((comp) => currentComponentData.component.component === comp.component)
       );
-
       const mergedDefinition = {
         // ...componentMeta.definition,
-        properties: mergeWith(
-          componentMeta.definition.properties,
-          currentComponentData?.component?.definition?.properties,
-          (objValue, srcValue) => {
-            if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
-              return srcValue;
-            } else if (
-              [
-                'DropdownV2',
-                'MultiselectV2',
-                'PopoverMenu',
-                'Steps',
-                'Tabs',
-                'RadioButtonV2',
-                'Tags',
-                'TagsInput',
-                'TreeSelect',
-                'Cascader',
-                'Navigation',
-                'ButtonGroupV2',
-              ].includes(currentComponentData?.component?.component) &&
-              isArray(objValue)
-            ) {
-              return isArray(srcValue) ? srcValue : Object.values(srcValue);
-            }
+        properties: mergeWith(componentMeta.definition.properties, currentComponentData?.component?.definition?.properties, (objValue, srcValue) => {
+          if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
+            return srcValue;
+          } else if (
+            [
+              'DropdownV2',
+              'MultiselectV2',
+              'PopoverMenu',
+              'Steps',
+              'Tabs',
+              'RadioButtonV2',
+              'Tags',
+              'TagsInput',
+              'TreeSelect',
+              'Cascader',
+              'Navigation',
+              'ButtonGroupV2',
+            ].includes(currentComponentData?.component?.component) &&
+            isArray(objValue)
+          ) {
+            return isArray(srcValue) ? srcValue : Object.values(srcValue);
           }
-        ),
+        }),
         styles: merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
         generalStyles: merge(
           componentMeta.definition.generalStyles,
