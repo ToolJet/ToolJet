@@ -1,0 +1,112 @@
+---
+id: governance
+title: Governance & Access Control
+sidebar_label: 07 — Governance & Access Control
+---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
+
+# Governance & Access Control
+
+ToolJet's access control model operates at three levels: who can use an app, what they can see inside it, and what they can do within the workspace. This section covers the full permission model — from built-in roles to component-level rules — and how it integrates with your IdP.
+
+## Built-in Roles
+
+Every workspace user is assigned one of three built-in roles:
+
+| Role | What they can do |
+|---|---|
+| **Admin** | Manage users, groups, data sources, workspace settings, and all apps. Full access to everything in the workspace. |
+| **Developer** | Create, edit, and publish apps. Connect data sources. Cannot manage users or workspace-level settings. |
+| **Viewer** | Use published apps. Cannot create, edit, or access the builder. |
+
+These roles define the ceiling of what a user can do. App-level and group-level permissions can restrict further but cannot grant more than the role allows.
+
+## Custom Groups (Enterprise)
+
+On Enterprise, you can define arbitrary permission groups beyond the three built-in roles.
+
+<CapabilityGrid items={[
+  {
+    icon: '👥',
+    title: 'Group Definition',
+    description: 'Create named groups with a specific set of permissions: which apps they can access, whether they can create apps, which data sources they can use, and what actions they can perform.',
+  },
+  {
+    icon: '🔗',
+    title: 'IdP Group Sync',
+    description: 'Map ToolJet groups to groups in your IdP (Okta, Azure AD, Google Workspace, generic OIDC/SAML). When a user logs in, their group membership syncs automatically — no manual assignment.',
+  },
+  {
+    icon: '📋',
+    title: 'Granular App Access',
+    description: 'Each app can be assigned to specific groups with different permission levels. One group may have edit access; another view-only. The same app can serve different roles with different experiences.',
+  },
+  {
+    icon: '🔄',
+    title: 'Automatic Offboarding',
+    description: 'When a user is deprovisioned in the IdP (via SCIM or SSO), they lose access at next login. Group sync ensures departing employees don\'t retain app access through stale ToolJet group assignments.',
+  },
+]} />
+
+## App-Level Access Control
+
+Individual apps have their own access settings independent of workspace role:
+
+- **Private**: visible only to users explicitly granted access
+- **Workspace**: accessible to all workspace members with Viewer role or above
+- **Public**: accessible without authentication (for external-facing tools)
+
+Per-app access can be scoped to specific groups or individual users. An app can be visible to the "Support" group but hidden from "Finance" even though both are in the same workspace.
+
+## Component-Level Access Rules
+
+Within an app, individual components can be conditionally shown, hidden, or disabled based on the current user's properties.
+
+Any component's `Visibility` and `Disabled` properties accept `{{ }}` expressions. Common patterns:
+
+- `{{ currentUser.groups.includes('admin') }}` — show an action button only to admins
+- `{{ !currentUser.groups.includes('editor') }}` — disable a form field for read-only groups
+- `{{ currentUser.email === row.owner }}` — show controls only to the record owner
+
+This means a single published app can serve multiple roles with different UI surfaces — no duplicate apps required.
+
+## Page-Level Access Control
+
+Multi-page apps can restrict individual pages to specific groups. Users without access to a page are blocked at the navigation level — the page is not rendered, not just hidden in the menu.
+
+Combined with component-level rules, this allows a single app to function as a unified tool for admins, editors, and viewers with fully differentiated experiences.
+
+## Admin API
+
+Workspace user and group management is available via REST API. Use it to:
+
+- Programmatically provision users from an external HR system
+- Sync group membership from a source of truth outside your IdP
+- Automate onboarding workflows that create ToolJet users as part of a broader account setup flow
+- Audit user and group state from external monitoring tools
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'You need to map your existing IdP groups to ToolJet roles without manual assignment',
+    'Your apps serve multiple roles (admin, editor, viewer) and each role needs a different UI surface',
+    'You need to enforce page- or component-level access rules, not just app-level gating',
+    'You require automatic access revocation when users leave, driven by IdP deprovisioning',
+    'Your compliance posture requires auditable, centrally managed access control for internal tools',
+  ]}
+  notGood={[
+    'You need row-level security enforced at the ToolJet layer — ToolJet enforces UI-level access; row-level data security belongs in your database or API',
+    'You need fine-grained data source permissions (user A can query table X, user B cannot) — data source access is workspace-scoped, not user-scoped',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="👤" title="User & Workspace Management" description="SSO configuration, SCIM provisioning, and how workspaces are structured for large teams." href="/evaluate/user-management-eval" />
+  <NavCard icon="🔁" title="Development Lifecycle" description="App versioning, multi-environment promotion, and GitSync for CI/CD." href="/evaluate/development-lifecycle-eval" />
+</NavCardGrid>

@@ -1,0 +1,113 @@
+---
+id: development-lifecycle-eval
+title: Development Lifecycle
+sidebar_label: 09 — Development Lifecycle
+---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
+
+# Development Lifecycle
+
+ToolJet apps are not deployed as code — but they do have versioning, environment promotion, and Git-backed backup. This section covers how apps move from development through staging to production, how teams collaborate on apps, and what CI/CD looks like for internal tools built on ToolJet.
+
+## App Versioning
+
+Every published change to a ToolJet app creates a version snapshot. Versions are immutable — once a version is published, its state is fixed.
+
+<CapabilityGrid items={[
+  {
+    icon: '📸',
+    title: 'Immutable Snapshots',
+    description: 'Publishing an app creates a numbered version. Prior versions are retained and accessible — you can view, restore, or promote any previous version at any time.',
+  },
+  {
+    icon: '↩️',
+    title: 'Rollback',
+    description: 'Restore a prior version with one action. The rollback creates a new version based on the restored state — prior versions are never deleted.',
+  },
+  {
+    icon: '🔀',
+    title: 'Draft vs. Published',
+    description: 'Developers work in draft mode. Users always see the last published version. A draft can sit unpublished while changes are tested without affecting what users experience.',
+  },
+]} />
+
+## Multi-Environment Support
+
+Apps can be promoted across environments (development → staging → production) within a single ToolJet instance. Each environment can have its own data source credentials, so the same app queries a staging database in staging and a production database in production — without modifying queries.
+
+<CapabilityGrid items={[
+  {
+    icon: '🌍',
+    title: 'Environment Scoping',
+    description: 'Create named environments per workspace (dev, staging, prod). Promote an app version from one environment to the next. Data source connections are scoped per environment.',
+  },
+  {
+    icon: '🔑',
+    title: 'Credential Separation',
+    description: 'The same data source name resolves to different credentials per environment. Promoting an app from staging to production automatically uses the production credentials — no query edits needed.',
+  },
+  {
+    icon: '✅',
+    title: 'Promotion Workflow',
+    description: 'An admin-controlled promotion step gates which version reaches production. Approvals can be integrated with external review workflows using the GitSync API.',
+  },
+]} />
+
+## GitSync
+
+GitSync connects your ToolJet workspace to a Git repository. Apps are exported as JSON and committed to Git on each publish, creating a full version history that lives outside ToolJet.
+
+What GitSync enables:
+
+- **Backup**: every version of every app is in Git. If the ToolJet instance is lost, apps can be restored from the Git history
+- **CI/CD**: trigger a deployment from a GitHub Actions or GitLab CI pipeline using the GitSync API — promote an app version to production as part of your standard release process
+- **Audit trail**: Git history shows who changed what and when, independently of ToolJet's internal version list
+- **Disaster recovery**: restore a workspace from a Git repository, including all app definitions and configurations
+
+**GitSync is available on Business tier and above.**
+
+## CI/CD Integration
+
+The GitSync API allows external systems to interact with app promotion programmatically:
+
+```
+POST /api/v2/apps/{appId}/git/promote
+```
+
+Common pipeline patterns:
+- On merge to main, promote the associated app from staging to production
+- On PR open, auto-promote to a review environment for QA
+- On tag, cut a production release and record the version in the pipeline run
+
+The API uses the same authentication model as the rest of the ToolJet API — workspace API tokens scoped to the deployment environment.
+
+## Backup & Restore
+
+Apps can be exported individually or in bulk as JSON via the ToolJet API. The export includes component configuration, queries, event handlers, and variable definitions. Re-importing to a new instance restores the app to its exported state.
+
+For full workspace backup (apps + users + groups + data source configs), GitSync provides the most comprehensive recovery path.
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'You need a staging environment where apps can be tested against staging data before promotion to production',
+    'Your team has a Git-based workflow and wants internal tools versioned in source control alongside application code',
+    'You need automated CI/CD promotion for internal tools as part of a standard release pipeline',
+    'You require point-in-time rollback if a published app change causes a regression',
+  ]}
+  notGood={[
+    'You need parallel development branches for multiple developers to work on the same app simultaneously — app branching is on the roadmap but not yet available',
+    'You need conflict resolution tooling for collaborative editing — currently one developer edits an app at a time; simultaneous edits can overwrite each other',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="🛡️" title="Security & Compliance" description="SOC 2, GDPR, ISO 27001, the data proxy model, and audit logs." href="/evaluate/security-compliance" />
+  <NavCard icon="🏗️" title="Deployment & Infrastructure" description="How ToolJet deploys on Docker, Kubernetes, cloud providers, and air-gapped environments." href="/evaluate/deployment" />
+</NavCardGrid>
