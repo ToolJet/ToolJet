@@ -4,6 +4,7 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 var _ = require('lodash');
 
@@ -181,6 +182,7 @@ export const resolveCode = (
     }
   }
 
+  result = materializeFileHandleRefs(result);
   if (withError) return [result, error];
   return result;
 };
