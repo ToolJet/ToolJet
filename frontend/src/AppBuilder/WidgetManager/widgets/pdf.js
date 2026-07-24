@@ -27,6 +27,12 @@ export const pdfConfig = {
       displayName: 'Show download button',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   defaultSize: {
     width: 20,
@@ -80,6 +86,7 @@ export const pdfConfig = {
       showDownloadOption: {
         value: `{{true}}`,
       },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {
