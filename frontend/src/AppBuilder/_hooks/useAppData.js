@@ -324,8 +324,8 @@ const useAppData = (
         if (!moduleMode && setConversation && setDocsConversation) {
           setConversation(conversation);
           setDocsConversation(docsConversation);
-          // important to control ai inputs
-          getCreditBalance();
+          // important to control ai inputs — only the editor's AI builder panel reads credit balance
+          mode === 'edit' && getCreditBalance();
         }
 
         // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
@@ -393,7 +393,8 @@ const useAppData = (
           window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
-        if (initialLoadRef.current) {
+        if (initialLoadRef.current && mode === 'edit') {
+          // Feeds only the editor AI panel (globalDataSourceList) — no viewer consumer.
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 
@@ -583,7 +584,8 @@ const useAppData = (
           // Use versionId from URL if available (preview mode), otherwise use editing version
           const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
           useStore.getState().init(versionIdToInit, envFromQueryParams);
-          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+          // Only the editor Query Manager/DataSourcePicker consume globalDataSources — no viewer path reads it.
+          mode === 'edit' && fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         } else if (!isPublicAccess && moduleMode && moduleId === 'canvas') {
           // Standalone module editor: load static data sources (RunJS, RestAPI, RunPy) the same
           // way a regular app editor does. Embedded modules skip this — they inherit the parent's.
@@ -591,7 +593,7 @@ const useAppData = (
           // init() populates selectedVersion and selectedEnvironment, which useAppPreviewLink
           // needs to build the preview URL with correct ?version=...&env=... params.
           useStore.getState().init(versionIdToInit);
-          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+          mode === 'edit' && fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
         if (!moduleMode || moduleId === 'canvas') {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed

@@ -21,6 +21,13 @@ import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
 import { isHttpsEnabled, getCookieDomain } from '@helpers/utils.helper';
+import { AppVersionStatus } from '@entities/app_version.entity';
+
+// Same rationale as versions/controller.v2.ts: PUBLISHED versions are immutable (editing creates
+// a new version id), so a day-long client cache is safe. Kept `private` (not `public`) since EE's
+// getBySlug applies per-user permission-based redaction — the response isn't guaranteed identical
+// across different users of the same org, so a shared/CDN cache would be wrong here.
+const PUBLISHED_VERSION_CACHE_MAX_AGE_SECONDS = 24 * 60 * 60;
 
 @InitModule(MODULES.APP)
 @Controller('apps')
@@ -171,8 +178,20 @@ export class AppsController implements IAppsController {
   // This guard will allow access for unauthenticated user if the app is public
   @UseGuards(AppAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get('slugs/:slug')
-  appFromSlug(@User() user, @App() app: AppEntity) {
-    return this.appsService.getBySlug(app, user);
+  async appFromSlug(@User() user, @App() app: AppEntity, @Res({ passthrough: true }) res: Response) {
+    const result = await this.appsService.getBySlug(app, user);
+
+    // Only published versions are safe to cache client-side — see versions/controller.v2.ts for
+    // the full rationale (editing creates a new version id, so this response for this exact
+    // versionId will never change again).
+    if (result?.editing_version?.status === AppVersionStatus.PUBLISHED && result?.editing_version?.id) {
+      res.set({
+        'Cache-Control': `private, max-age=${PUBLISHED_VERSION_CACHE_MAX_AGE_SECONDS}, immutable`,
+        ETag: `"v-${result.editing_version.id}"`,
+      });
+    }
+
+    return result;
   }
 
   @InitFeature(FEATURE_KEY.RELEASE)

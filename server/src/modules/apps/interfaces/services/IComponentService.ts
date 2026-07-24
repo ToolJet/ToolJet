@@ -64,6 +64,10 @@ export interface IComponentsService {
     appVersionId: string
   ): Promise<void | { error: { message: string } }>;
   getAllComponents(pageId: string, manager?: EntityManager): Promise<Record<string, any>>;
+  getAllComponentsForVersion(
+    appVersionId: string,
+    manager?: EntityManager
+  ): Promise<Record<string, Record<string, any>>>;
   transformComponentData(data: object): Component[];
   createComponentWithLayout(
     componentData: Component,

@@ -2,11 +2,30 @@ import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '@modules/insta
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Injectable } from '@nestjs/common';
 import { IConfigService } from './interfaces/IService';
+import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
+
+// Instance-wide (not per-user/per-org) settings + env vars — same short TTL rationale as the
+// license-terms cache: coalesce the burst of bootstrap calls within one page load, not cache
+// across an admin actually changing an instance setting.
+const PUBLIC_CONFIG_CACHE_TTL_MS = 30_000;
+const PUBLIC_CONFIG_CACHE_KEY = 'public_config';
 
 @Injectable()
 export class ConfigService implements IConfigService {
-  constructor(protected instanceSettingsUtilService: InstanceSettingsUtilService) {}
+  constructor(
+    protected instanceSettingsUtilService: InstanceSettingsUtilService,
+    protected readonly inMemoryCacheService: InMemoryCacheService
+  ) {}
   async public_config() {
+    const cached = this.inMemoryCacheService.get(PUBLIC_CONFIG_CACHE_KEY);
+    if (cached) return cached;
+
+    const configPromise = this.computePublicConfig();
+    this.inMemoryCacheService.set(PUBLIC_CONFIG_CACHE_KEY, configPromise, PUBLIC_CONFIG_CACHE_TTL_MS);
+    return configPromise;
+  }
+
+  private async computePublicConfig() {
     const whitelistedConfigVars = process.env.ALLOWED_CLIENT_CONFIG_VARS
       ? this.fetchAllowedConfigFromEnv()
       : this.fetchDefaultConfig();

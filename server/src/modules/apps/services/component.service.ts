@@ -246,6 +246,59 @@ export class ComponentsService implements IComponentsService {
     }, externalManager);
   }
 
+  // Version-scoped equivalent of getAllComponents: fetches every component (across all pages)
+  // for an app version in a single query instead of one query per page, then groups the result
+  // by pageId. Avoids the N+1 pattern in PageService.findPagesForVersion.
+  async getAllComponentsForVersion(appVersionId: string, externalManager?: EntityManager) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const rawComponents = await manager
+        .createQueryBuilder(Component, 'component')
+        .leftJoinAndSelect('component.layouts', 'layout')
+        .leftJoin('component.page', 'page')
+        .where('page.appVersionId = :appVersionId', { appVersionId })
+        .andWhere('layout.type IN (:...types)', {
+          types: ['desktop', 'mobile'],
+        })
+        .orderBy('component.id', 'ASC')
+        .addOrderBy('layout.updatedAt', 'DESC')
+        .getMany();
+
+      const resultByPage: Record<string, Record<string, any>> = {};
+      const layoutsToUpdate: Layout[] = [];
+
+      for (const component of rawComponents) {
+        const processedLayoutsForComponent: Layout[] = [];
+
+        (component.layouts || []).forEach((layout) => {
+          if (layout && layout.type) {
+            const currentLayout = { ...layout };
+
+            if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
+              currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
+              currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
+              layoutsToUpdate.push(currentLayout);
+            }
+            processedLayoutsForComponent.push(currentLayout);
+          }
+        });
+
+        const relevantLayouts = processedLayoutsForComponent
+          .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+          .slice(0, 2);
+
+        const transformedData = this.createComponentWithLayout(component, relevantLayouts);
+        const pageResult = (resultByPage[component.pageId] ||= {});
+        pageResult[component.id] = transformedData[component.id];
+      }
+
+      if (layoutsToUpdate.length > 0) {
+        await manager.save(Layout, layoutsToUpdate);
+      }
+
+      return resultByPage;
+    }, externalManager);
+  }
+
   transformComponentData(data: object): Component[] {
     const transformedComponents: Component[] = [];
 
