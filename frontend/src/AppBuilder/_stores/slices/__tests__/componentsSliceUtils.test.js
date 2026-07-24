@@ -9,35 +9,35 @@ describe('resolveInputCanvasAlignment', () => {
     expect(
       resolveInputCanvasAlignment({
         alignment: dynamicAlignment,
-        hasLegacyLayoutProperty: true,
-        legacyLayout: false,
+        hasLegacyInputSizeProperty: true,
+        legacyInputSize: false,
         resolveValue,
       })
     ).toEqual({ alignment: 'top', isDynamicAlignment: true });
     expect(resolveValue).toHaveBeenCalledWith(dynamicAlignment);
   });
 
-  it('keeps dynamic alignment unresolved in the legacy layout', () => {
+  it('keeps dynamic alignment unresolved in the legacy input size', () => {
     const resolveValue = jest.fn(() => 'top');
 
     expect(
       resolveInputCanvasAlignment({
         alignment: dynamicAlignment,
-        hasLegacyLayoutProperty: true,
-        legacyLayout: true,
+        hasLegacyInputSizeProperty: true,
+        legacyInputSize: true,
         resolveValue,
       })
     ).toEqual({ alignment: dynamicAlignment, isDynamicAlignment: true });
     expect(resolveValue).not.toHaveBeenCalled();
   });
 
-  it('resolves dynamic alignment for widgets without the legacy layout property', () => {
+  it('resolves dynamic alignment for widgets without the legacy input size property', () => {
     const resolveValue = jest.fn(() => 'top');
 
     expect(
       resolveInputCanvasAlignment({
         alignment: dynamicAlignment,
-        hasLegacyLayoutProperty: false,
+        hasLegacyInputSizeProperty: false,
         resolveValue,
       })
     ).toEqual({ alignment: 'top', isDynamicAlignment: true });
@@ -46,7 +46,7 @@ describe('resolveInputCanvasAlignment', () => {
 });
 
 describe('calculateInputCanvasHeight', () => {
-  it('does not add top-label height when an input label is empty and legacy layout is disabled', () => {
+  it('does not add top-label height when an input label is empty and legacy input size is disabled', () => {
     expect(
       calculateInputCanvasHeight({
         height: 40,
@@ -54,12 +54,12 @@ describe('calculateInputCanvasHeight', () => {
         auto: true,
         width: 0,
         labelLength: 0,
-        legacyLayout: false,
+        legacyInputSize: false,
       })
     ).toBe(40);
   });
 
-  it('adds top-label height when an input label is empty and legacy layout is enabled', () => {
+  it('adds top-label height when an input label is empty and legacy input size is enabled', () => {
     expect(
       calculateInputCanvasHeight({
         height: 40,
@@ -67,12 +67,12 @@ describe('calculateInputCanvasHeight', () => {
         auto: true,
         width: 0,
         labelLength: 0,
-        legacyLayout: true,
+        legacyInputSize: true,
       })
     ).toBe(60);
   });
 
-  it('adds top-label height when fx resolves alignment to top and legacy layout is disabled', () => {
+  it('adds top-label height when fx resolves alignment to top and legacy input size is disabled', () => {
     expect(
       calculateInputCanvasHeight({
         height: 40,
@@ -80,13 +80,13 @@ describe('calculateInputCanvasHeight', () => {
         auto: true,
         width: 0,
         labelLength: 4,
-        legacyLayout: false,
+        legacyInputSize: false,
         isDynamicAlignment: true,
       })
     ).toBe(60);
   });
 
-  it('preserves height when fx resolves alignment to top and legacy layout is enabled', () => {
+  it('preserves height when fx resolves alignment to top and legacy input size is enabled', () => {
     expect(
       calculateInputCanvasHeight({
         height: 40,
@@ -94,7 +94,7 @@ describe('calculateInputCanvasHeight', () => {
         auto: true,
         width: 0,
         labelLength: 4,
-        legacyLayout: true,
+        legacyInputSize: true,
         isDynamicAlignment: true,
       })
     ).toBe(40);

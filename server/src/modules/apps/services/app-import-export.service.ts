@@ -51,6 +51,7 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
+import { addLegacyInputSizeToExistingComponent } from './legacy-input-size-compatibility';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -519,6 +520,7 @@ export class AppImportExportService {
 
         return {
           ...component,
+          properties: addLegacyInputSizeToExistingComponent(component.type, component.properties),
           permissions: groupPermission
             ? {
                 permissionGroup: groupPermission.users
@@ -2867,7 +2869,7 @@ function migrateProperties(
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
   tooljetVersion: string | null
 ) {
-  const properties = { ...component.properties };
+  const properties = addLegacyInputSizeToExistingComponent(componentType, component.properties);
   const styles = { ...component.styles };
   const general = { ...component.general };
   const validation = { ...component.validation };

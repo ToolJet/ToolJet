@@ -77,8 +77,8 @@ const WidgetWrapper = memo(
     const resolvedAlignment = useStore(
       (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.styles?.alignment
     );
-    const resolvedLegacyLayout = useStore(
-      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.expandFieldIfLabelEmpty
+    const resolvedLegacyInputSize = useStore(
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.legacyInputSize
     );
     const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
     const temporaryLayouts = useStore((state) => {
@@ -168,7 +168,7 @@ const WidgetWrapper = memo(
       stylesDefinition,
       moduleId,
       resolvedAlignment,
-      resolvedLegacyLayout
+      resolvedLegacyInputSize
     );
 
     // Calculate the final height based on visibility and temporary layouts.

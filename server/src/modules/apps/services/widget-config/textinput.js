@@ -12,9 +12,9 @@ export const textinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    expandFieldIfLabelEmpty: {
+    legacyInputSize: {
       type: 'toggle',
-      displayName: 'Legacy layout',
+      displayName: 'Legacy input size',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'deprecatedStyles',
       isFxNotRequired: true,
@@ -348,7 +348,7 @@ export const textinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      expandFieldIfLabelEmpty: { value: '{{false}}' },
+      legacyInputSize: { value: '{{false}}' },
       value: { value: '' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter your input' },

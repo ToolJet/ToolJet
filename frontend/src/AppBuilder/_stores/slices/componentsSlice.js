@@ -3116,7 +3116,7 @@ export const createComponentsSlice = (set, get) => ({
     stylesDefinition,
     moduleId = 'canvas',
     resolvedStyleAlignment,
-    resolvedStyleLegacyLayout
+    resolvedStyleLegacyInputSize
   ) => {
     const componentDefinition = get().getComponentDefinition(componentId, moduleId);
     const layoutData = componentDefinition?.layouts?.[currentLayout];
@@ -3136,17 +3136,17 @@ export const createComponentsSlice = (set, get) => ({
     const resolvedLabelType = labelType
       ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
       : undefined;
-    const legacyLayoutProperty = componentDefinition?.component?.definition?.properties?.expandFieldIfLabelEmpty;
-    const resolvedLegacyLayout =
-      resolvedStyleLegacyLayout ??
-      (legacyLayoutProperty
-        ? resolveDynamicValues(legacyLayoutProperty.value + '', getAllExposedValues(moduleId)) ?? false
+    const legacyInputSizeProperty = componentDefinition?.component?.definition?.properties?.legacyInputSize;
+    const resolvedLegacyInputSize =
+      resolvedStyleLegacyInputSize ??
+      (legacyInputSizeProperty
+        ? resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false
         : false);
 
     const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
       alignment: alignment.value,
-      hasLegacyLayoutProperty: Boolean(legacyLayoutProperty),
-      legacyLayout: resolvedLegacyLayout,
+      hasLegacyInputSizeProperty: Boolean(legacyInputSizeProperty),
+      legacyInputSize: resolvedLegacyInputSize,
       resolveValue: (value) => resolvedStyleAlignment ?? get().getResolvedValue(value, {}, moduleId),
     });
 
@@ -3157,7 +3157,7 @@ export const createComponentsSlice = (set, get) => ({
       width: resolvedWidth,
       auto: resolvedAuto,
       labelType: resolvedLabelType,
-      legacyLayout: resolvedLegacyLayout,
+      legacyInputSize: resolvedLegacyInputSize,
       isDynamicAlignment,
     });
   },

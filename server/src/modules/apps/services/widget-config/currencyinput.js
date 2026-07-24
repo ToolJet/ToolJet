@@ -12,9 +12,9 @@ export const currencyinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    expandFieldIfLabelEmpty: {
+    legacyInputSize: {
       type: 'toggle',
-      displayName: 'Legacy layout',
+      displayName: 'Legacy input size',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'deprecatedStyles',
       isFxNotRequired: true,
@@ -350,7 +350,7 @@ export const currencyinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      expandFieldIfLabelEmpty: { value: '{{false}}' },
+      legacyInputSize: { value: '{{false}}' },
       value: { value: '0' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter amount' },

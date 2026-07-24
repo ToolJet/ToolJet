@@ -20,9 +20,9 @@ export const cascaderConfig = {
     },
   },
   properties: {
-    expandFieldIfLabelEmpty: {
+    legacyInputSize: {
       type: 'toggle',
-      displayName: 'Legacy layout',
+      displayName: 'Legacy input size',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'deprecatedStyles',
       isFxNotRequired: true,
@@ -413,7 +413,7 @@ export const cascaderConfig = {
       customRule: { value: null },
     },
     properties: {
-      expandFieldIfLabelEmpty: { value: '{{false}}' },
+      legacyInputSize: { value: '{{false}}' },
       label: { value: 'Select' },
       placeholder: { value: 'Select an option' },
       value: { value: '' },

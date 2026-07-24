@@ -2,13 +2,13 @@ import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvas
 
 export const resolveInputCanvasAlignment = ({
   alignment,
-  hasLegacyLayoutProperty = false,
-  legacyLayout = false,
+  hasLegacyInputSizeProperty = false,
+  legacyInputSize = false,
   resolveValue,
 }) => {
   const isDynamicAlignment = alignment !== 'top' && alignment !== 'side';
   // Widgets without the compatibility toggle must retain their existing dynamic alignment resizing.
-  const shouldResolveDynamicAlignment = isDynamicAlignment && (!hasLegacyLayoutProperty || !legacyLayout);
+  const shouldResolveDynamicAlignment = isDynamicAlignment && (!hasLegacyInputSizeProperty || !legacyInputSize);
 
   return {
     alignment: shouldResolveDynamicAlignment ? resolveValue(alignment) : alignment,
@@ -23,17 +23,17 @@ export const calculateInputCanvasHeight = ({
   width = 0,
   auto = false,
   labelType,
-  legacyLayout = false,
+  legacyInputSize = false,
   isDynamicAlignment = false,
 }) => {
   let resolvedLabelLength = labelLength;
 
   // Legacy components did not resize when an fx expression changed the alignment to top.
-  if (legacyLayout && isDynamicAlignment) {
+  if (legacyInputSize && isDynamicAlignment) {
     return height;
   }
 
-  if (legacyLayout || labelType === 'auto') {
+  if (legacyInputSize || labelType === 'auto') {
     resolvedLabelLength = 1;
   }
 
