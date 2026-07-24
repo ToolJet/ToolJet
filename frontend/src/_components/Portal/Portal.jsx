@@ -16,6 +16,7 @@ const Portal = ({ children, ...restProps }) => {
     styles,
     className,
     componentName,
+    portalTitle,
     dragResizePortal,
     callgpt,
     isCopilotEnabled,
@@ -23,15 +24,15 @@ const Portal = ({ children, ...restProps }) => {
     canRefresh = false,
   } = restProps;
 
-  const [name, setName] = React.useState(componentName);
+  const [name, setName] = React.useState(portalTitle ?? componentName);
   const handleClose = (e) => {
     e.stopPropagation();
     trigger(false);
   };
 
   React.useEffect(() => {
-    setName(componentName);
-  }, [componentName]);
+    setName(portalTitle ?? componentName);
+  }, [componentName, portalTitle]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -59,6 +60,7 @@ const Portal = ({ children, ...restProps }) => {
           portalStyles={portalStyles}
           darkMode={darkMode}
           styles={styles}
+          portalTitle={name}
           componentName={name}
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
@@ -82,6 +84,7 @@ const Modal = ({
   handleClose,
   portalStyles,
   styles,
+  portalTitle,
   componentName,
   darkMode,
   dragResizePortal,
@@ -120,7 +123,7 @@ const Modal = ({
             className="codehinder-popup-badge"
             data-cy="codehinder-popup-badge"
           >
-            {componentName ?? 'Editor'}
+            {portalTitle ?? componentName ?? 'Editor'}
           </span>
         </div>
 
