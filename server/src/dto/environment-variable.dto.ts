@@ -1,34 +1,40 @@
-import { IsNotEmpty, IsOptional, IsString, IsBoolean, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 
-export enum variableType {
-  client,
-  server,
+export enum VariableType {
+  CLIENT = 'client',
+  SERVER = 'server',
 }
 
 export class CreateEnvironmentVariableDto {
+  @IsOptional()
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()
-  @IsOptional()
-  variable_name: string;
+  variable_name?: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
-  value: string;
+  value?: string;
 
-  @IsString()
-  @IsNotEmpty()
   @IsOptional()
-  @IsEnum(variableType)
-  variable_type: string;
+  @IsEnum(VariableType)
+  variable_type?: VariableType;
 
+  @IsOptional()
   @IsBoolean()
-  @IsOptional()
-  encrypted: boolean;
+  encrypted?: boolean;
 }
 
-export class UpdateEnvironmentVariableDto extends PartialType(CreateEnvironmentVariableDto) {}
+export class UpdateEnvironmentVariableDto extends PartialType(
+  CreateEnvironmentVariableDto,
+) {}
