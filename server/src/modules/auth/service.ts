@@ -128,7 +128,7 @@ export class AuthService implements IAuthService {
 
         const formConfigs: SSOConfigs = organization?.ssoConfigs?.find((sso) => sso.sso === 'form');
 
-        if (!formConfigs?.enabled) {
+        if (!formConfigs?.enabled && !isSuperAdmin(user)) {
           // no configurations in organization side or Form login disabled for the organization
           throw new UnauthorizedException('Password login is disabled for the organization');
         }
@@ -275,6 +275,7 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Only super admin can login through this url');
     }
 
-    return this.login(response, appAuthDto);
+    const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
+    return this.login(response, appAuthDto, defaultWorkspace?.id);
   }
 }
