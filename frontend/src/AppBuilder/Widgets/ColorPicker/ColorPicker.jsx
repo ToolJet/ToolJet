@@ -9,7 +9,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import './colorpicker.scss';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { SketchPicker } from 'react-color';
 import { getTinyColorInstance, getExposedColorState } from './utils';
 
@@ -103,6 +103,15 @@ export const ColorPicker = (props) => {
       ...values,
     }));
   };
+
+  const clearColorValue = () => {
+    const nextExposedColorState = getExposedColorState();
+    updateExposedVariablesStates(nextExposedColorState);
+    setExposedVariables(nextExposedColorState);
+    updateValidationState(nextExposedColorState.selectedColorHex);
+  };
+
+  useFormClear(clearColorValue);
 
   // ===== EFFECTS =====
   useBatchedUpdateEffectArray([
@@ -371,10 +380,7 @@ export const ColorPicker = (props) => {
                       aria-label="Clear"
                       onClick={(event) => {
                         event.stopPropagation();
-                        const nextExposedColorState = getExposedColorState();
-                        updateExposedVariablesStates(nextExposedColorState);
-                        setExposedVariables(nextExposedColorState);
-                        updateValidationState(nextExposedColorState.selectedColorHex);
+                        clearColorValue();
                         setUserInteracted(true);
                       }}
                     >

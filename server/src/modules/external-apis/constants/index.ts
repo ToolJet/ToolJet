@@ -33,6 +33,7 @@ export enum FEATURE_KEY {
   UNBAN_USER = 'UNBAN_USER',
   BAN_WORKSPACE = 'BAN_WORKSPACE',
   UNBAN_WORKSPACE = 'UNBAN_WORKSPACE',
+  GET_WORKSPACE_USERS_BY_GROUPS = 'GET_WORKSPACE_USERS_BY_GROUPS',
 }
 
 export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';

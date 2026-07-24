@@ -312,6 +312,10 @@ export const formConfig = {
       displayName: 'Reset Form',
     },
     {
+      handle: 'clearForm',
+      displayName: 'Clear Form',
+    },
+    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'setVisibility', displayName: 'Set Visibility', defaultValue: '{{true}}', type: 'toggle' }],

@@ -1,4 +1,4 @@
-import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto';
+import { CreateUserDto, GetWorkspaceUsersByGroupsDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto';
 import { ListGroupsQueryDto, UpdateGroupExternalDto } from '../dto/groups.dto';
 import { EntityManager } from 'typeorm';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
@@ -42,4 +42,6 @@ export interface IExternalApisService {
 
   // Deletes a custom group by id
   deleteGroup(workspaceId: string, groupId: string): Promise<void>;
+  // Gets users in a workspace filtered by group membership
+  getWorkspaceUsersByGroups(workspaceId: string, body: GetWorkspaceUsersByGroupsDto): Promise<any>;
 }

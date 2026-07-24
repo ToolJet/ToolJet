@@ -18,7 +18,7 @@ import TagsInputMenuList from './TagsInputMenuList';
 import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 const TagsInput = ({
   id,
@@ -599,6 +599,8 @@ const TagsInput = ({
       }
     });
   }, [allOptions, selected]);
+
+  useFormClear(() => setInputValues([]));
 
   // Handle click outside
   const handleClickOutside = (event) => {
