@@ -79,9 +79,10 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
 
     const inviteTokenExpiry = invitedUser?.invitationTokenExpiry;
     if (inviteTokenExpiry && new Date() > inviteTokenExpiry) {
+      const activeWorkspacesCount = await this.organizationUserRepository.getActiveWorkspacesCount(invitedUser.user.id);
       throw new GoneException({
         message: 'WORKSPACE_INVITE_LINK_EXPIRED',
-        organizationSlug: invitedUser.organizationId,
+        ...(activeWorkspacesCount > 0 && { organizationSlug: invitedUser.organization?.slug }),
       });
     }
 
@@ -89,10 +90,7 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
     if (request.body.accountToken && getTooljetEdition() === 'cloud') {
       const userInviteExpiry = user.invitationTokenExpiry;
       if (userInviteExpiry && new Date() > userInviteExpiry) {
-        throw new GoneException({
-          message: 'INVITATION_LINK_EXPIRED',
-          organizationSlug: invitedUser?.organizationId,
-        });
+        throw new GoneException({ message: 'INVITATION_LINK_EXPIRED' });
       }
     }
 

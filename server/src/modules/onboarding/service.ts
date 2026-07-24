@@ -441,9 +441,12 @@ export class OnboardingService implements IOnboardingService {
       }
 
       if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+        const activeWorkspacesCount = await this.organizationUsersRepository.getActiveWorkspacesCount(
+          organizationUser.user.id
+        );
         throw new GoneException({
           message: 'WORKSPACE_INVITE_LINK_EXPIRED',
-          organizationSlug: organizationUser.organization?.slug,
+          ...(activeWorkspacesCount > 0 && { organizationSlug: organizationUser.organization?.slug }),
         });
       }
 

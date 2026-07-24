@@ -83,7 +83,10 @@ export const InvitationPage = (darkMode = false) => {
         if (error?.statusCode === 410) {
           const variant = error?.data?.message === 'WORKSPACE_INVITE_LINK_EXPIRED' ? 'invite' : 'verification';
           setLinkExpiredVariant(variant);
-          setLinkExpiredOrgSlug(error?.data?.organizationSlug || null);
+          // This URL is for new users not yet in the instance.
+          // If workspace invite expired, the user was never added to the workspace,
+          // so CTA must go to instance login (/login), not workspace login.
+          setLinkExpiredOrgSlug(null);
         } else {
           const errMessage = utils.processErrorMessage(error);
           toast.error(errMessage, { position: 'top-center' });

@@ -58,7 +58,11 @@ const WorkspaceInvitationPage = (props) => {
       })
       .catch((errorObj) => {
         if (errorObj?.data?.statusCode === 410) {
-          setExpiredOrgSlug(errorObj?.data?.organizationSlug || null);
+          const orgSlug = errorObj?.data?.organizationSlug || null;
+          // Prevent auto-authorization on login page and prevent /error/no-active-workspace
+          // redirect when useSessionManagement fires on AuthRoute mount (Sign-in click)
+          updateCurrentSession({ authentication_status: false, noWorkspaceAttachedInTheSession: false });
+          setExpiredOrgSlug(orgSlug);
           setLinkExpired(true);
         } else {
           toast.error('Error while setting up your account.', { position: 'top-center' });

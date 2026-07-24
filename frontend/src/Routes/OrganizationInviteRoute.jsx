@@ -184,10 +184,18 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
           onLoginSuccess(user, navigate, redirectTo);
         })
         .catch((res) => {
-          toast.error(res.error || 'Something went wrong', {
-            id: 'toast-login-auth-error',
-            position: 'top-center',
-          });
+          if (res?.statusCode === 410) {
+            const orgSlug = res?.data?.organizationSlug || null;
+            updateCurrentSession({ authentication_status: false });
+            setExpiredOrgSlug(orgSlug);
+            setLinkExpired(true);
+            setLoading(false);
+          } else {
+            toast.error(res.error || 'Something went wrong', {
+              id: 'toast-login-auth-error',
+              position: 'top-center',
+            });
+          }
         });
     } else {
       appService
@@ -201,10 +209,18 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
           });
           onLoginSuccess(data, navigate);
         })
-        .catch(() => {
-          toast.error('Error while setting up your account.', {
-            position: 'top-center',
-          });
+        .catch((errorObj) => {
+          if (errorObj?.data?.statusCode === 410) {
+            const orgSlug = errorObj?.data?.organizationSlug || null;
+            updateCurrentSession({ authentication_status: false });
+            setExpiredOrgSlug(orgSlug);
+            setLinkExpired(true);
+            setLoading(false);
+          } else {
+            toast.error('Error while setting up your account.', {
+              position: 'top-center',
+            });
+          }
         });
     }
   };
