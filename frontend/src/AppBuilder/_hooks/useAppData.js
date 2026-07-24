@@ -619,6 +619,9 @@ const useAppData = (
           const moduleOwnerId = appData?.user_id ?? appData?.editing_version?.app?.user_id ?? appData?.app?.user_id;
           const canEdit = canEditModule(authenticationService.currentSessionValue, appId, moduleOwnerId);
           setIsEditorReadOnly(!canEdit);
+          // Backend git/branch-based freeze (e.g. first draft locked on main) was only ever
+          // applied to non-module editors above — modules opened as their own editor need it too.
+          setIsEditorFreezed(appData.should_freeze_editor);
         }
         setAppHomePageId(homePageId, moduleId);
         if (!moduleMode && appData.modules) {
