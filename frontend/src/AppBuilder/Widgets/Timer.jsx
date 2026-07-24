@@ -1,6 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent, dataCy }) {
+export const Timer = function Timer({
+  height,
+  properties = {},
+  styles,
+  setExposedVariable,
+  setExposedVariables,
+  fireEvent,
+  dataCy,
+}) {
   const getTimeObj = ({ HH, MM, SS, MS }) => {
     return {
       hour: isNaN(HH) ? 0 : parseInt(HH, 10),
@@ -17,6 +25,14 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   const [time, setTime] = useState(getTimeObj(getDefaultValue));
   const [state, setState] = useState('initial');
   const [intervalId, setIntervalId] = useState(0);
+
+  // Mirror the running interval id into a ref so callbacks registered in
+  // []-dep effects (e.g. the setValue CSA) can read the current id instead of
+  // closing over the mount-time value (0).
+  const intervalIdRef = useRef(0);
+  useEffect(() => {
+    intervalIdRef.current = intervalId;
+  }, [intervalId]);
 
   const TimerType = {
     COUNTDOWN: 'countDown',
@@ -40,6 +56,38 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
 
   useEffect(() => {
     setExposedVariable('value', {});
+
+    if (typeof setExposedVariables === 'function') {
+      setExposedVariables({
+        setValue: async function (newValue) {
+          // Accept both the 'HH:MM:SS:MS' string and the object shape that
+          // `value` is exposed as ({ hour, minute, second, mSecond }), so a
+          // round-trip like timer1.setValue(timer1.value) works.
+          let newTime;
+          if (typeof newValue === 'string') {
+            const parts = newValue.split(':');
+            if (parts.length < 4) return;
+            const [HH, MM, SS, MS] = parts;
+            newTime = getTimeObj({ HH, MM, SS, MS });
+          } else if (newValue && typeof newValue === 'object') {
+            const { hour, minute, second, mSecond } = newValue;
+            newTime = getTimeObj({ HH: hour, MM: minute, SS: second, MS: mSecond });
+          } else {
+            return;
+          }
+          // Hard-stop: cancel any running tick and return to the initial state
+          // so the set value is deterministic and doesn't keep counting from the
+          // new base. intervalId is read from the ref because this callback is
+          // registered in a []-dep effect (closes over the mount-time id, 0).
+          intervalIdRef.current && clearInterval(intervalIdRef.current);
+          setIntervalId(0);
+          setState('initial');
+          setTime(newTime);
+          setExposedVariable('value', newTime);
+        },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
