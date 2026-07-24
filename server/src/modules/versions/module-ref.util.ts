@@ -114,10 +114,6 @@ const DRAFT_SENTINEL = '__default_branch_draft__';
  *   ref is a non-UUID string (versionName)  → Tier 0: look by name on consumer branch
  *                                              then default. Cross-workspace stable
  *                                              because versionName is backed by a git tag.
- *                                              Tier 0b: if no tag matches, the ref may be
- *                                              a live workspace branch name (ModuleViewer
- *                                              pinned to "follow branch X") — resolve to
- *                                              that branch's own editable row.
  *   ref is a valid UUID (moduleReferenceId) → Tier 1: look by module_reference_id on
  *                                              consumer branch then default. Same-workspace
  *                                              fast path.
@@ -185,30 +181,12 @@ export async function resolveModuleRef(
       });
       if (branchlessDraft) return branchlessDraft;
     }
-    // Tier 0b — branch-name shorthand (git-sync only). The pin isn't a tagged/published
-    // version name but matches a live workspace branch — the ModuleViewer is set to
-    // "follow branch X" rather than a specific release. Resolves to that branch's own
-    // editable row: the default branch uses VERSION-type rows, any other branch uses
-    // BRANCH-type rows (see buildAppVersionInsert). Mirrors Clause 3 in
-    // resolveAllModuleViewersForVersion below — keep both in sync.
-    if (isGitSyncEnabled) {
-      const pinnedBranch = await manager.findOne(WorkspaceBranch, {
-        where: { organizationId, name: versionName },
-      });
-      if (pinnedBranch) {
-        const onPinnedBranch = await manager.findOne(AppVersion, {
-          where: {
-            appId: moduleApp.id,
-            branchId: pinnedBranch.id,
-            versionType: pinnedBranch.isDefault ? AppVersionType.VERSION : AppVersionType.BRANCH,
-            isStub: false,
-          },
-          order: { createdAt: 'DESC' },
-        });
-        if (onPinnedBranch) return onPinnedBranch;
-      }
-    }
-    // Name not found — fall through to orphan guard.
+    // Name not found — fall through to orphan guard. A non-UUID, non-empty, non-sentinel
+    // ref is only ever written as a versionName (tag) by the current pinning contract
+    // (see ModuleViewerInspector/ModuleVersionDropdown — the only persisted values are
+    // '', DRAFT_SENTINEL, or a moduleReferenceId UUID). A bare branch-name string here
+    // means legacy/malformed data from before that contract; fail clean rather than
+    // guess which branch was meant.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
