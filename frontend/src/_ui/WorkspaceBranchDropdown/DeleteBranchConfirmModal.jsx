@@ -15,7 +15,7 @@ export function DeleteBranchConfirmModal({ branchToDelete, onCancel, onDelete, o
 
   const wasDeletingRef = useRef(false);
 
-  // Auto-close and redirect on successful deletion
+  // Auto-close on successful enqueue — the delete-success notification drives any reconciliation
   useEffect(() => {
     if (wasDeletingRef.current && !isDeletingBranch && !deleteBranchError && branchToDelete) {
       const deletedName = branchToDelete.name;
@@ -26,10 +26,6 @@ export function DeleteBranchConfirmModal({ branchToDelete, onCancel, onDelete, o
         duration: 8000,
         style: { maxWidth: '420px', fontSize: '15px', fontWeight: 400 },
       });
-      const workspacePath = window.location.pathname.split('/')[1];
-      setTimeout(() => {
-        window.location.href = `/${workspacePath}`;
-      }, 1500);
     }
     wasDeletingRef.current = isDeletingBranch;
     // eslint-disable-next-line react-hooks/exhaustive-deps
