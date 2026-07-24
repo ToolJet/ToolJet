@@ -1666,25 +1666,42 @@ export const createQueryPanelSlice = (set, get) => ({
       }
       const resolvedState = get().getResolvedState(moduleId);
       const queriesInResolvedState = {};
+      // Keyed by query name. Snapshotted before run() so that a non-awaited
+      // read returns the pre-run value (consistent with preview). Updated after
+      // await so that an awaited read returns the new value.
+      const localQueryOverrides = {};
       for (const key of Object.keys(resolvedState.queries)) {
         // Pre-resolve the query ID once so each getter does a cheap O(1) store
         // read instead of calling getResolvedState (which iterates all queries
         // and components on every access).
         const queryId = get().modules[moduleId]?.queryNameIdMapping?.[key];
         const getLiveQueryState = () =>
-          queryId
+          key in localQueryOverrides
+            ? localQueryOverrides[key]
+            : queryId
             ? get().resolvedStore.modules[moduleId]?.exposedValues?.queries?.[queryId]
             : get().getResolvedState(moduleId).queries[key];
 
         const queryEntry = {
-          run: (params, callbackFns) => {
+          run: async (params, callbackFns) => {
             if (typeof params !== 'object' || params === null) {
               params = {};
             }
             const processedParams = {};
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
-            return actions.runQuery(query.name, processedParams, moduleId, callbackFns);
+            // Snapshot current value before the run starts. In real-run mode
+            // the store is immediately reset to `data: []` by setResolvedQuery,
+            // which would make a non-awaited read return [] instead of the
+            // previous value. Snapshotting here makes run and preview consistent:
+            // without await → old value, with await → new value.
+            localQueryOverrides[key] = { ...(getLiveQueryState() ?? {}) };
+            const result = await actions.runQuery(query.name, processedParams, moduleId, callbackFns);
+            // Update with the completed result so awaited reads get the new value.
+            if (result) {
+              localQueryOverrides[key] = { ...(getLiveQueryState() ?? {}), data: result.data };
+            }
+            return result;
           },
           reset: () => {
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
