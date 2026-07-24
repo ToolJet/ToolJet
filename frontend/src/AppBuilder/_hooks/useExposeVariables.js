@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
 export const useExposeState = (loadingState, visibleState, disabledState, setExposedVariables, setExposedVariable) => {
-  const [isDisabled, setDisable] = useState(disabledState || false);
-  const [isVisible, setVisibility] = useState(visibleState || true);
-  const [isLoading, setLoading] = useState(loadingState || false);
+  const [isDisabled, setDisable] = useState(disabledState ?? false);
+  const [isVisible, setVisibility] = useState(visibleState ?? true);
+  const [isLoading, setLoading] = useState(loadingState ?? false);
 
   const applyVisibility = (value) => {
     setVisibility(value);
