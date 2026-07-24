@@ -11,8 +11,13 @@
     "@oclif/plugin-help": "^5.1.12",
     "@oclif/plugin-plugins": "^2.1.0",
     "@types/inquirer": "^8.1.3",
+    "archiver": "^8.0.0",
+    "chokidar": "^4.0.3",
+    "esbuild": "^0.28.0",
+    "form-data": "^4.0.6",
     "hygen": "^6.2.0",
     "inquirer": "^7.3.3",
+    "node-fetch": "^2.7.0",
     "rimraf": "^3.0.2"
   },
   "devDependencies": {
@@ -20,6 +25,7 @@
     "@types/chai": "^4",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.9.4",
+    "@types/node-fetch": "^2.6.13",
     "@types/node-notifier": "^8.0.2",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
@@ -62,6 +68,9 @@
     "topics": {
       "plugin": {
         "description": "manage plugins options: create, delete and install"
+      },
+      "component": {
+        "description": "manage custom component libraries"
       }
     }
   },
@@ -70,7 +79,7 @@
     "url": "git+https://github.com/tooljet/tooljet.git"
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && tsc -b && shx cp -r src/_templates dist/_templates",
     "lint": "eslint .  '**/*.ts'",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
