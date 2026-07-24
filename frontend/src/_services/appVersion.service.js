@@ -21,10 +21,11 @@ export const appVersionService = {
   createDraftVersion,
 };
 
+// `parentAppId`, threaded through getAll/getModuleVersionData below, lets the backend
+// grant view access to a module when the requester has no direct module permission but
+// is embedding it in an app they can edit (see FeatureAbilityFactory.defineAbilityFor).
 function getAll(appId, parentAppId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  // `parentAppId` lets the backend grant view access to a module's version list when the
-  // requester has no direct module permission but is embedding it in an app they can edit.
   const parentAppParam = parentAppId ? `?parentAppId=${encodeURIComponent(parentAppId)}` : '';
   return fetch(`${config.apiUrl}/apps/${appId}/versions${parentAppParam}`, requestOptions).then(handleResponse);
 }
@@ -55,8 +56,6 @@ function getModuleVersionData(coRelationId, moduleReferenceId, mode, parentAppId
   // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
   // server resolver returns the latest non-stub on the consumer's branch.
   const refParam = moduleReferenceId ? `&ref=${encodeURIComponent(moduleReferenceId)}` : '';
-  // `parentAppId` lets the backend grant view access when this module has no direct
-  // permission of its own but is embedded in an app the requester can edit.
   const parentAppParam = parentAppId ? `&parentAppId=${encodeURIComponent(parentAppId)}` : '';
   return fetch(
     `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}${parentAppParam}`,

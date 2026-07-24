@@ -181,12 +181,8 @@ export async function resolveModuleRef(
       });
       if (branchlessDraft) return branchlessDraft;
     }
-    // Name not found — fall through to orphan guard. A non-UUID, non-empty, non-sentinel
-    // ref is only ever written as a versionName (tag) by the current pinning contract
-    // (see ModuleViewerInspector/ModuleVersionDropdown — the only persisted values are
-    // '', DRAFT_SENTINEL, or a moduleReferenceId UUID). A bare branch-name string here
-    // means legacy/malformed data from before that contract; fail clean rather than
-    // guess which branch was meant.
+    // Name not found — fall through to orphan guard. The pinning contract (see
+    // ModuleViewerInspector) never persists a bare branch name here, so this is legacy data.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).

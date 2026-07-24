@@ -95,9 +95,8 @@ const useAppData = (
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
   const user = useStore((state) => state.user);
-  // The top-level app containing this module instance — used to let the backend
-  // verify this module read is happening in the context of an app the user can
-  // edit, even when they have no standalone module permission.
+  // Forwarded to the backend so a module-embedding parent app can grant view access
+  // (see appVersion.service.js getAll/getModuleVersionData).
   const parentAppId = useStore((state) => state.appStore?.modules?.['canvas']?.app?.appId);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
