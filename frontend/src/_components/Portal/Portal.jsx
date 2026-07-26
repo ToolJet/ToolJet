@@ -9,6 +9,32 @@ import {
 } from '@/_helpers/codehinterPortalDimensions';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 
+export const formatHeaderTitle = (name) => {
+  if (!name || typeof name !== 'string') return 'Editor';
+
+  let formatted = name.trim();
+  if (!formatted) return 'Editor';
+
+  if (formatted.startsWith('component/')) {
+    formatted = formatted.replace('component/', '');
+  }
+
+  // Remove '/default' if present (e.g. table1/default::columns -> table1::columns)
+  formatted = formatted.replace(/\/default(?=::|$)/, '');
+
+  if (formatted.includes('::')) {
+    const segments = formatted.split('::').filter((p) => Boolean(p) && isNaN(p));
+    formatted = segments
+      .map((seg) => seg.split('/').filter(Boolean).join(' - '))
+      .join(' - ');
+  } else if (formatted.includes('/')) {
+    const parts = formatted.split('/').filter(Boolean);
+    formatted = parts.join(' - ');
+  }
+
+  return formatted || 'Editor';
+};
+
 const Portal = ({ children, ...restProps }) => {
   const {
     isOpen,
@@ -117,10 +143,10 @@ const Modal = ({
             style={{
               textTransform: 'none',
             }}
-            className="codehinder-popup-badge"
+            className="codehinder-popup-badge codehinter-popup-badge"
             data-cy="codehinder-popup-badge"
           >
-            {componentName ?? 'Editor'}
+            {formatHeaderTitle(componentName)}
           </span>
         </div>
 

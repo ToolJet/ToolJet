@@ -1,5 +1,0 @@
-dist
-.eslintrc.js
-plugins/*/__tests__/*.js
-plugins/*/dist/*
-
