@@ -1,8 +1,0 @@
-export enum FEATURE_KEY {
-  GET = 'GET',
-  CREATE = 'CREATE',
-  VERIFY = 'VERIFY',
-  DELETE = 'DELETE',
-  STATUS = 'STATUS',
-  RESOLVE = 'RESOLVE',
-}

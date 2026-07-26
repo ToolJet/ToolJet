@@ -1,1 +1,0 @@
-export { AppVersionsManager } from './AppVersionsManager';
