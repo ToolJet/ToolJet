@@ -36,7 +36,7 @@ mkdir -p "$MERGE_DIR/merged"
 npx nyc merge "$MERGE_DIR" "$MERGE_DIR/merged/coverage-final.json"
 npx nyc report \
   --temp-dir "$MERGE_DIR/merged" \
-  --reporter=html --reporter=lcov --reporter=json \
+  --reporter=html --reporter=lcov --reporter=json --reporter=text-summary \
   --report-dir="$COMBINED_DIR" \
   --exclude='test/**' \
   --exclude='migrations/**' \
