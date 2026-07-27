@@ -71,7 +71,7 @@ export const PreviewAndShareIcons = () => {
 
   useEffect(() => {
     const previewQuery = queryString.stringify({
-      version: selectedVersion?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
       ...(featureAccess?.multiEnvironment ? { env: selectedEnvironment?.name } : {}),
     });
     setAppPreviewLink(

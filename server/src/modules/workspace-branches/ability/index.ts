@@ -26,10 +26,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.DELETE_BRANCH,
           FEATURE_KEY.PUSH_WORKSPACE,
           FEATURE_KEY.PULL_WORKSPACE,
+          FEATURE_KEY.PULL_APP,
+          FEATURE_KEY.PULL_MODULE,
           FEATURE_KEY.CHECK_UPDATES,
           FEATURE_KEY.LIST_REMOTE_BRANCHES,
           FEATURE_KEY.FETCH_PULL_REQUESTS,
           FEATURE_KEY.ENSURE_DRAFT,
+          FEATURE_KEY.GET_ENTITY_TAGS,
         ],
         WorkspaceBranch
       );
@@ -43,10 +46,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.DELETE_BRANCH,
           FEATURE_KEY.PUSH_WORKSPACE,
           FEATURE_KEY.PULL_WORKSPACE,
+          FEATURE_KEY.PULL_APP,
+          FEATURE_KEY.PULL_MODULE,
           FEATURE_KEY.CHECK_UPDATES,
           FEATURE_KEY.LIST_REMOTE_BRANCHES,
           FEATURE_KEY.FETCH_PULL_REQUESTS,
           FEATURE_KEY.ENSURE_DRAFT,
+          FEATURE_KEY.GET_ENTITY_TAGS,
         ],
         WorkspaceBranch
       );

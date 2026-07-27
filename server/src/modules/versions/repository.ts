@@ -5,7 +5,7 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
@@ -70,12 +70,28 @@ export class VersionRepository extends Repository<AppVersion> {
     });
   }
 
-  findByName(name: string, appId: string, relations?: string[], manager?: EntityManager): Promise<AppVersion> {
+  async findByName(name: string, appId: string, relations?: string[], manager?: EntityManager): Promise<AppVersion> {
     const m = manager ?? this.manager;
-    return m.findOneOrFail(AppVersion, {
+    // Direct lookup by the `name` column (works for regular versions and legacy UUID-based URLs)
+    const version = await m.findOne(AppVersion, {
       where: { name, appId },
       ...(relations?.length ? { relations } : {}),
     });
+    if (version) return version;
+
+    // For branch-type versions the URL carries the human-readable branch name,
+    // but the `name` column stores a UUID. Fall back to a branch-name lookup.
+    const branchVersion = await m
+      .createQueryBuilder(AppVersion, 'v')
+      .innerJoin(WorkspaceBranch, 'b', 'v.branch_id = b.id')
+      .where('v.app_id = :appId', { appId })
+      .andWhere('b.branch_name = :branchName', { branchName: name })
+      .andWhere('v.version_type = :versionType', { versionType: AppVersionType.BRANCH })
+      .getOne();
+    if (branchVersion) return branchVersion;
+
+    // Neither matched — throw the same EntityNotFoundError the caller expects
+    return m.findOneOrFail(AppVersion, { where: { name, appId } });
   }
 
   async findLatestVersionForEnvironment(
@@ -158,6 +174,7 @@ export class VersionRepository extends Repository<AppVersion> {
       where: { id },
       relations: [
         'app',
+        'branch',
         'dataQueries',
         'dataQueries.dataSource',
         'dataQueries.plugins',
@@ -196,6 +213,7 @@ export class VersionRepository extends Repository<AppVersion> {
       .createQueryBuilder(AppVersion, 'appVersion')
       .where('appVersion.id = :id', { id })
       .leftJoinAndSelect('appVersion.app', 'app')
+      .leftJoinAndSelect('appVersion.branch', 'branch')
       .leftJoinAndSelect('appVersion.dataQueries', 'dataQueries')
       .leftJoinAndSelect('dataQueries.dataSource', 'dataSource')
       .leftJoinAndSelect('dataQueries.plugins', 'plugins')
@@ -218,8 +236,12 @@ export class VersionRepository extends Repository<AppVersion> {
 
   getVersionsInApp(appId: string, branchId?: string, manager?: EntityManager): Promise<AppVersion[]> {
     const m = manager ?? this.manager;
-    const where = branchId ? { appId, branchId, isStub: false } : { appId, isStub: false };
-    return m.find(AppVersion, { where, order: { createdAt: 'DESC' } });
+    // When branchId is provided, also include versions with null branchId
+    // (created before branching was enabled) so they remain visible on the default branch.
+    const where = branchId
+      ? [{ appId, branchId, isStub: false }, { appId, branchId: IsNull(), isStub: false }]
+      : { appId, isStub: false };
+    return m.find(AppVersion, { where, order: { createdAt: 'DESC' }, relations: ['branch'] });
   }
 
   getCount(appId: string): Promise<number> {
@@ -330,6 +352,7 @@ export class VersionRepository extends Repository<AppVersion> {
       where: { appId: app.id },
       relations: [
         'app',
+        'branch',
         'dataQueries',
         'dataQueries.dataSource',
         'dataQueries.plugins',
@@ -382,12 +405,12 @@ export class VersionRepository extends Repository<AppVersion> {
     try {
       version = await this.manager.findOneOrFail(AppVersion, {
         where: { name: versionId, appId },
-        relations: ['app'],
+        relations: ['app', 'branch'],
       });
     } catch (error) {
       version = await this.manager.findOneOrFail(AppVersion, {
         where: { id: versionId },
-        relations: ['app'],
+        relations: ['app', 'branch'],
       });
     }
     if (!version) throw new BadRequestException('Wrong version Id');

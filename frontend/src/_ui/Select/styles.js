@@ -67,9 +67,9 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
       ...provided,
       color: darkMode ? '#fff' : '#808080',
     }),
-    singleValue: (provided) => ({
+    singleValue: (provided, state) => ({
       ...provided,
-      color: darkMode ? '#fff' : '#232e3c',
+      color: state.isDisabled ? (darkMode ? '#4a5568' : '#9ca3af') : darkMode ? '#fff' : '#232e3c',
       fontSize: styles.fontSize ?? '12px',
     }),
     menuPortal: (provided) => ({ ...provided, zIndex: 2000, pointerEvents: 'auto' }),

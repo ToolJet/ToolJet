@@ -302,6 +302,7 @@ describe("Custom Group Granular Access", () => {
 
         cy.defaultWorkspaceLogin();
         cleanAllUsers();
+        cy.apiDeleteAllApps();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
@@ -916,12 +917,13 @@ describe("Custom Group Granular Access", () => {
                 });
                 cy.apiUpdateAllowSignUp(true, "organization");
                 cy.apiLogout();
-
+                cy.wait(2000);
                 //Scenario G : Signing-up with app preview link and should land on app preview
 
                 const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId1}/home?env=development&version=v1`;
                 cy.visit(previewUrl);
                 signup(data.firstName, data.email);
+                cy.wait(2000);
                 cy.waitForElement(commonSelectors.previewSettings).should('be.visible');
                 cy.get(commonWidgetSelector.draggableWidget("text1")).should(
                     "contain",
@@ -932,7 +934,7 @@ describe("Custom Group Granular Access", () => {
                 //Scenario H : Signing-up with app preview link without access, app preview should be restricted
                 loginAsAdmin();
                 cy.apiDeleteGranularPermission("end-user", ["app", "folder"]);
-
+                cy.wait(1000);
                 cy.apiLogout();
                 cy.visit(previewUrl);
                 signup(user1, email1);

@@ -164,6 +164,14 @@ export class VersionUtilService implements IVersionUtilService {
       ...extraParams,
     };
 
+    // chk_app_versions_branched_implies_draft requires non-DRAFT rows to be
+    // branchless. Detach branch_id in the SAME UPDATE as the status flip so
+    // the row never lands in the violating state, even momentarily within
+    // this statement.
+    if (appVersion.branchId) {
+      editableParams.branchId = null;
+    }
+
     const runWrite = async (mgr: EntityManager) => {
       await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);
 
@@ -488,8 +496,7 @@ export class VersionUtilService implements IVersionUtilService {
             return `Module "${name}" has active draft pinned. Pin a saved version.`;
           }
           // pin-hit + DRAFT remaining.
-          const versionName = m.resolved?.versionName ?? 'draft';
-          return `Module "${name}" version "${versionName}" is still in draft. Save the module first.`;
+          return `Module "${name}" has active draft pinned. Pin a saved version.`;
         };
         const moduleList = unique.map(formatEntry).join(' ');
         const message =
@@ -586,6 +593,13 @@ export class VersionUtilService implements IVersionUtilService {
         : await this.versionRepository.getCount(app.id);
 
       if (numVersions <= 1) {
+        if (branchId) {
+          const branch = await manager.findOne(WorkspaceBranch, { where: { id: branchId }, select: ['name'] });
+          const branchName = branch?.name ?? 'this';
+          throw new ForbiddenException(
+            `${branchName} (Draft) version is the head of the ${branchName} branch and cannot be deleted`
+          );
+        }
         throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
       }
 

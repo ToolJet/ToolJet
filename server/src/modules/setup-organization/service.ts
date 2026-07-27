@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
@@ -7,13 +7,23 @@ import { ISetupOrganizationsService } from './interfaces/IService';
 import { OrganizationInputs } from './types/organization-inputs';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
+
 @Injectable()
 export class SetupOrganizationsService implements ISetupOrganizationsService {
   constructor(
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
-  ) { }
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+    protected readonly userBanListRepository: UserBanListRepository
+  ) {}
 
   async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
+    if (user?.email) {
+      const bannedUser = await this.userBanListRepository.findByEmail(user.email);
+      if (bannedUser) {
+        throw new ForbiddenException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
+      }
+    }
+
     const organization = await this.setupOrganizationsUtilService.create(organizationInputs, user, manager);
 
     //WORKSPACE_CREATE audit

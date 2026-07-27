@@ -3,11 +3,12 @@ import { EntityManager } from 'typeorm';
 import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from './dto';
 import { ListGroupsQueryDto, UpdateGroupExternalDto } from './dto/groups.dto';
 import { IExternalApisService } from './Interfaces/IService';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 
 @Injectable()
 export class ExternalApisService implements IExternalApisService {
-  constructor() { }
-  async getAllUsers(lookupKey?: string, groupNamesString?: string, manager?: EntityManager) {
+  constructor() {}
+  async getAllUsers(lookupKey?: string, groupNamesString?: string, statuses?: USER_STATUS[], manager?: EntityManager) {
     throw new Error('Method not implemented.');
   }
   async createUser(userDto: CreateUserDto) {

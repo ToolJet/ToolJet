@@ -278,6 +278,7 @@ export const RangeSliderV2 = ({
             {enableTwoHandle !== 'slider' ? (
               <Slider
                 range
+                disabled={disabled}
                 min={min}
                 max={max}
                 defaultValue={defaultRangeValue}
@@ -318,6 +319,7 @@ export const RangeSliderV2 = ({
               />
             ) : (
               <Slider
+                disabled={disabled}
                 min={min}
                 max={max}
                 defaultValue={defaultSliderValue}

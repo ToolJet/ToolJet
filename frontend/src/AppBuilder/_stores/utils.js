@@ -560,7 +560,7 @@ export function convertAllKeysToSnakeCase(o) {
     const newO = {};
     for (const origKey in o) {
       if (Object.prototype.hasOwnProperty.call(o, origKey)) {
-        if (!['pages', 'events'].includes(origKey)) {
+        if (!['pages', 'events', 'linkedApps'].includes(origKey)) {
           const newKey = origKey
             .split(/(?=[A-Z])/)
             .join('_')
@@ -844,3 +844,23 @@ export const formatSecondsToHHMMSS = (totalSeconds) => {
   const ss = String(seconds % 60).padStart(2, '0');
   return `${hh}:${mm}:${ss}`;
 };
+
+// Validate a go-to-app link target by looking up its correlationId in the linkedApps map populated on app load.
+export function isLinkedAppValid(correlationId, linkedAppsMap) {
+  if (!correlationId) return { isValid: true, errorMessage: null };
+
+  const entry = linkedAppsMap?.[correlationId];
+  if (!entry || !entry.slug) {
+    return {
+      isValid: false,
+      errorMessage: `App ${correlationId} undefined. Check if the linked app exists and has a released version.`,
+    };
+  }
+  if (!entry.currentVersionId) {
+    return {
+      isValid: false,
+      errorMessage: 'Check if the linked app has a released version.',
+    };
+  }
+  return { isValid: true, errorMessage: null };
+}

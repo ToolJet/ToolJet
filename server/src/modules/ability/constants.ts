@@ -17,6 +17,8 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   appDelete: false,
   workflowCreate: false,
   workflowDelete: false,
+  moduleCreate: false,
+  moduleDelete: false,
   appPromote: false,
   appRelease: false,
   dataSourceCreate: false,
@@ -25,6 +27,7 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   folderCreate: false,
   folderDelete: false,
   orgConstantCRUD: false,
+  tjdbCRUD: false,
   orgVariableCRUD: false,
   [MODULES.APP]: {
     editableAppsId: [],
@@ -33,6 +36,7 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
     isAllViewable: false,
     hiddenAppsId: [],
     hideAll: false,
+    ownedAppsId: [],
   },
   [MODULES.WORKFLOWS]: {
     editableWorkflowsId: [],
@@ -40,11 +44,22 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
     executableWorkflowsId: [],
     isAllExecutable: false,
   },
+  // Modules reuse the apps permission shape, keyed separately so they never pollute app resolution.
+  [MODULES.MODULES]: {
+    editableAppsId: [],
+    isAllEditable: false,
+    viewableAppsId: [],
+    isAllViewable: false,
+    hiddenAppsId: [],
+    hideAll: false,
+    ownedAppsId: [],
+  },
 };
 
 export const RESOURCE_TO_APP_TYPE_MAP = {
   [MODULES.APP]: APP_TYPES.FRONT_END,
   [MODULES.WORKFLOWS]: APP_TYPES.WORKFLOW,
+  [MODULES.MODULES]: APP_TYPES.MODULE,
 } as const;
 
 export const DEFAULT_USER_APPS_PERMISSIONS: UserAppsPermissions = {
@@ -54,6 +69,7 @@ export const DEFAULT_USER_APPS_PERMISSIONS: UserAppsPermissions = {
   isAllViewable: false,
   hiddenAppsId: [],
   hideAll: false,
+  ownedAppsId: [],
   environmentAccess: {
     development: false,
     staging: false,

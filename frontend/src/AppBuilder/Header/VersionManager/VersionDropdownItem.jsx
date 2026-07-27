@@ -11,6 +11,7 @@ import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
+import { IconArrowBarToDown } from '@tabler/icons-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const VersionDropdownItem = ({
@@ -28,11 +29,15 @@ const VersionDropdownItem = ({
   darkMode = false,
   openMenuVersionId,
   setOpenMenuVersionId,
+  gitStatus,
+  onPull,
+  isPulling = false,
 }) => {
   const releasedVersionId = useStore((state) => state.releasedVersionId);
   const versions = useVersionManagerStore((state) => state.versions);
   const developmentVersions = useStore((state) => state.developmentVersions);
   const featureAccess = useStore((state) => state.license.featureAccess);
+  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const { appType } = useModuleContext();
   const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
 
@@ -57,6 +62,7 @@ const VersionDropdownItem = ({
   const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
   const [isHoveringActionButtons, setIsHoveringActionButtons] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isHoveringItem, setIsHoveringItem] = useState(false);
 
   // Close menu when scrolling
   useEffect(() => {
@@ -106,12 +112,13 @@ const VersionDropdownItem = ({
     !isReleased &&
     (featureAccess?.multiEnvironment ? isInProduction : isPublished);
   const canCreateVersion = isDraft; // Show create version button for drafts
+  const canOpenMoreMenu = !isEditorReadOnly; // Build-with: no-op edit/delete actions, hide entirely
 
   const renderMenu = (
     <Popover
       id={cx(`popover-positioned-bottom-end`, { 'dark-theme theme-dark': darkMode })}
       className={cx({ 'dark-theme theme-dark': darkMode })}
-      style={{ minWidth: '160px' }}
+      style={{ minWidth: '160px', zIndex: 1065 }}
     >
       <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
         {!isGitSyncEnabled && isDraft && (
@@ -155,7 +162,7 @@ const VersionDropdownItem = ({
     </Popover>
   );
 
-  const isDisabled = false;
+  const isDisabled = Boolean(version.isGitOnly);
 
   const tooltipContent = (createdFromVersionName || version.description) && (
     <div>
@@ -205,11 +212,14 @@ const VersionDropdownItem = ({
   const versionItem = (
     <div
       className={cx('version-dropdown-item', {
-        disabled: isDisabled,
         'cursor-pointer': !isDisabled,
+        'cursor-default': isDisabled,
+        'git-only': isDisabled,
       })}
       onClick={() => !isDisabled && onSelect(version)}
-      style={{ padding: '6px 4px' }}
+      onMouseEnter={() => setIsHoveringItem(true)}
+      onMouseLeave={() => setIsHoveringItem(false)}
+      style={{ padding: '6px', borderRadius: '6px' }}
     >
       <div className="d-flex align-items-start" style={{ gap: '8px' }}>
         <div style={{ width: '16px', height: '16px', flexShrink: 0 }} data-cy="selected-version-icon">
@@ -222,7 +232,7 @@ const VersionDropdownItem = ({
               <div
                 className="tj-text-sm"
                 style={{
-                  color: 'var(--text-default)',
+                  color: isDisabled ? 'var(--text-disabled)' : 'var(--text-default)',
                   fontWeight: 500,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -280,52 +290,102 @@ const VersionDropdownItem = ({
                 onMouseEnter={() => setIsHoveringActionButtons(true)}
                 onMouseLeave={() => setIsHoveringActionButtons(false)}
               >
-                {/* Promote button - shown for versions that can be promoted */}
-                {canPromote && <PromoteVersionButton version={version} variant="inline" darkMode={darkMode} />}
-
-                {/* Release button - shown in production environment */}
-                {canRelease && <ReleaseVersionButton version={version} variant="inline" darkMode={darkMode} />}
-
-                {/* Create version button - shown for drafts */}
-                {canCreateVersion && (
+                {isDisabled && (
                   <Button
                     variant="outline"
                     size="small"
-                    className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
+                    disabled={isPulling}
+                    isLoading={isPulling}
+                    className={cx(
+                      'version-pull-btn',
+                      { 'dark-theme theme-dark': darkMode },
+                      'hover:tw-bg-button-secondary'
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setOpenMenuVersionId?.(null);
-                      onCreateVersion?.(version);
+                      if (!isPulling) onPull?.(version, gitStatus);
                     }}
-                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-pull-version-button`}
+                    style={{
+                      padding: '2px 8px',
+                      fontSize: '11px',
+                      height: 'auto',
+                      color: 'var(--text-default)',
+                      fontWeight: 500,
+                      borderRadius: '4px',
+                      visibility: isHoveringItem || isPulling ? 'visible' : 'hidden',
+                    }}
                   >
-                    Save version
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <IconArrowBarToDown size={12} stroke={2} color="var(--text-default)" />
+                      Pull
+                    </span>
                   </Button>
                 )}
 
-                {/* More menu */}
-                {!isReleased && (
-                  <OverlayTrigger
-                    trigger="click"
-                    placement="bottom-end"
-                    overlay={renderMenu}
-                    rootClose
-                    show={openMenuVersionId === version.id}
-                    onToggle={(show) => {
-                      setIsMoreMenuOpen(show);
-                      setOpenMenuVersionId?.(show ? version.id : null);
-                    }}
-                  >
-                    <Button
-                      variant="ghost"
-                      size="small"
-                      iconOnly
-                      leadingIcon="morevertical01"
-                      className={cx({ 'dark-theme theme-dark': darkMode })}
-                      onClick={(e) => e.stopPropagation()}
-                      data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-more-menu-button`}
-                    />
-                  </OverlayTrigger>
+                {!isDisabled && (
+                  <>
+                    {/* Promote button - shown for versions that can be promoted */}
+                    {canPromote && <PromoteVersionButton version={version} variant="inline" darkMode={darkMode} />}
+
+                    {/* Release button - shown in production environment */}
+                    {canRelease && <ReleaseVersionButton version={version} variant="inline" darkMode={darkMode} />}
+
+                    {/* Create version button - shown for drafts */}
+                    {canCreateVersion && (
+                      <ToolTip
+                        message={
+                          isEditorReadOnly
+                            ? "You don't have access to save this version. Contact admin to know more."
+                            : 'Save this version'
+                        }
+                        placement="left"
+                        width="280px"
+                      >
+                        <span>
+                          <Button
+                            variant="outline"
+                            size="small"
+                            disabled={isEditorReadOnly}
+                            className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuVersionId?.(null);
+                              onCreateVersion?.(version);
+                            }}
+                            data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                          >
+                            Save version
+                          </Button>
+                        </span>
+                      </ToolTip>
+                    )}
+
+                    {/* More menu */}
+                    {canOpenMoreMenu && !(isGitSyncEnabled && isReleased) && (
+                      <OverlayTrigger
+                        trigger="click"
+                        placement="bottom-end"
+                        overlay={renderMenu}
+                        rootClose
+                        show={openMenuVersionId === version.id}
+                        onToggle={(show) => {
+                          setIsMoreMenuOpen(show);
+                          setOpenMenuVersionId?.(show ? version.id : null);
+                        }}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="small"
+                          iconOnly
+                          leadingIcon="morevertical01"
+                          className={cx({ 'dark-theme theme-dark': darkMode })}
+                          onClick={(e) => e.stopPropagation()}
+                          data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-more-menu-button`}
+                        />
+                      </OverlayTrigger>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -337,7 +397,7 @@ const VersionDropdownItem = ({
               ref={metadataRef}
               className="tj-text-xsm"
               style={{
-                color: 'var(--text-placeholder)',
+                color: isDisabled ? 'var(--text-disabled)' : 'var(--text-placeholder)',
                 marginTop: '2px',
                 fontSize: '11px',
                 lineHeight: '16px',
@@ -360,7 +420,7 @@ const VersionDropdownItem = ({
   );
 
   // Wrap with tooltip if there's overflow metadata and not hovering action buttons or menu open
-  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons && !isMoreMenuOpen) {
+  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons && !isMoreMenuOpen && !isPulling) {
     return (
       <ToolTip
         message={tooltipContent}

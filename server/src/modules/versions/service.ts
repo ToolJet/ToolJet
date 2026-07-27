@@ -125,10 +125,34 @@ export class VersionService implements IVersionService {
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
-    const result =
+    let result =
       app.type === APP_TYPES.MODULE
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, app.organizationId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
+
+    // On non-default branches, only show the branch's own version(s).
+    // Saved versions (VERSION-type) are only relevant on the default branch — but
+    // NOT for modules: listModuleVersions intentionally returns saved versions on
+    // all branches so the ModuleViewer inspector can detect pinned states and avoid
+    // showing "Current branch" when the pin is valid.
+    if (effectiveBranchId && app.type !== APP_TYPES.MODULE) {
+      const branch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+        where: { id: effectiveBranchId },
+        select: ['id', 'isDefault'],
+      });
+      if (branch && !branch.isDefault) {
+        result = result.filter((v) => v.versionType === AppVersionType.BRANCH);
+      }
+    }
+
+    // For branch-type versions, the `name` column holds a UUID used as an internal
+    // unique key. Replace it with the human-readable branch name from WorkspaceBranch
+    // so all consumers (export dialog, globals.appVersion.name, etc.) display correctly.
+    for (const version of result) {
+      if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
+        version.displayName = version.branch.name;
+      }
+    }
 
     if (result?.length) {
       result[0].isCurrentEditingVersion = true;
@@ -219,6 +243,12 @@ export class VersionService implements IVersionService {
 
       const editingVersion = camelizeKeys(appCurrentEditingVersion);
 
+      // For branch-type versions, expose the human-readable branch name so
+      // globals.appVersion.name resolves correctly on the frontend.
+      if (appVersion?.versionType === AppVersionType.BRANCH && appVersion.branch?.name) {
+        editingVersion['displayName'] = appVersion.branch.name;
+      }
+
       // Inject app theme
       const appTheme = await this.organizationThemesUtilService.getTheme(
         user.organizationId,
@@ -255,10 +285,21 @@ export class VersionService implements IVersionService {
     };
 
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
-    const modules = await this.appUtilService.fetchModules(app, false, undefined);
+    const modules = await this.appUtilService.fetchModules(app, false, app.appVersions?.[0]?.id);
 
     response['modules'] = await Promise.all(
       modules.map((module) => prepareResponse(module, module.editingVersion?.id))
+    );
+
+    // Top-level linkedApps map: covers main app + every module
+    // Helps frontend to resolve go-to-app link for any correlationId referenced
+    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
+    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
+    response['linkedApps'] = await this.appUtilService.collectLinkedAppsForResponse(
+      allPages,
+      allEvents,
+      app.organizationId,
+      app.appVersions?.[0]?.branchId
     );
 
     return response;

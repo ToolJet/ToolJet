@@ -1,5 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export abstract class SubModule {
   /**
@@ -18,7 +19,7 @@ export abstract class SubModule {
    * with extra register args can override.
    */
   protected static buildCacheKey(configs?: { IS_GET_CONTEXT: boolean }, ...rest: any[]): string {
-    return JSON.stringify([configs ?? {}, ...rest]);
+    return JSON.stringify([configs ?? {}, ...rest, getTooljetEdition()]);
   }
 
   /** Look up a cached DynamicModule for this subclass + cache key. */

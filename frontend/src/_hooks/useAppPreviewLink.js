@@ -48,7 +48,7 @@ export function useAppPreviewLink() {
     const suppressBranchId = currentBranch && !isBranchVersion && !isDraft;
 
     const previewQuery = queryString.stringify({
-      version: selectedVersion?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
       ...(suppressBranchId ? { is_branch: false } : {}),
     });

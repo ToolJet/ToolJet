@@ -279,7 +279,16 @@ const BaseManageOrgConstants = ({
   };
 
   const fetchConstantsAndEnvironments = async () => {
-    const orgConstants = await orgEnvironmentConstantService.getAll();
+    // Global constants keep using the decrypted endpoint (not sensitive). Secrets use the
+    // masked endpoint instead - the plaintext should never reach the frontend at all, the
+    // same way encrypted data source fields are never sent back in plaintext.
+    const [globalConstants, secretConstants] = await Promise.all([
+      orgEnvironmentConstantService.getAll(Constants.Global),
+      orgEnvironmentConstantService.getAllSecrets(),
+    ]);
+    const orgConstants = {
+      constants: [...(globalConstants?.constants ?? []), ...(secretConstants?.constants ?? [])],
+    };
 
     if (orgConstants?.constants?.length > 1) {
       orgConstants.constants.sort((a, b) => {
@@ -506,7 +515,7 @@ const BaseManageOrgConstants = ({
                     customStyles={{ minWidth: '200px', height: '32px' }}
                     disabled={isManageVarDrawerOpen}
                   >
-                    + Create new constant
+                    + Create new {activeTab === Constants.Global ? 'constant' : 'secret'}
                   </ButtonSolid>
                 )}
               </div>
@@ -585,13 +594,7 @@ const BaseManageOrgConstants = ({
 
                       <div>
                         <Button
-                          // Todo: Update link to documentation: workspace constants
-                          onClick={() =>
-                            window.open(
-                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
-                              '_blank'
-                            )
-                          }
+                          onClick={() => window.open('https://docs.tooljet.com/docs/security/constants/', '_blank')}
                           darkMode={darkMode}
                           size="sm"
                           styles={{
@@ -630,6 +633,7 @@ const BaseManageOrgConstants = ({
                       </div>
                     ) : (
                       <EmptyState
+                        activeTab={activeTab}
                         canCreateVariable={canCreateVariable()}
                         setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
                         isLoading={isLoading}

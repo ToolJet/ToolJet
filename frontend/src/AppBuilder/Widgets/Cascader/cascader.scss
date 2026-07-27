@@ -1,0 +1,38 @@
+.cascader-widget {
+  .cascader-actionable-section {
+    height: 100%;
+    min-width: 0;
+  }
+
+  .cascader-control {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    transition: border-color 0.1s ease-in-out;
+
+    &:focus-visible {
+      outline: none;
+    }
+
+    .cascader-display {
+      min-width: 0;
+    }
+
+    .cascader-clear {
+      padding: 2px;
+      border-radius: 6px;
+
+      &:hover {
+        background-color: var(--interactive-overlays-fill-hover);
+      }
+    }
+  }
+}
+
+.cascader-popover {
+  border-radius: 8px;
+
+  .cascader-menu {
+    width: 100%;
+  }
+}
