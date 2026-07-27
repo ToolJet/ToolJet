@@ -45,6 +45,8 @@ interface Features {
   [FEATURE_KEY.UPDATE_INSTANCE_GENERAL_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.GET_INSTANCE_SSO]: FeatureConfig;
   [FEATURE_KEY.DELETE_ORGANIZATION_SSO]: FeatureConfig;
+  [FEATURE_KEY.SAVE_OIDC_ENV_CONFIGS]: FeatureConfig;
+  [FEATURE_KEY.SAVE_INSTANCE_OIDC_ENV_CONFIGS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

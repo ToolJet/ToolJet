@@ -69,3 +69,19 @@ export class InstanceConfigsUpdateDto {
   @IsString()
   customLogoutUrl?: string;
 }
+
+export class UpdateOidcEnvConfigDTO {
+  @IsBoolean()
+  useEnvConfig: boolean;
+
+  // Optional — absent when toggling env-config on a brand-new, never-saved provider draft;
+  // the toggle creates the row itself in that case (see toggleOidcEnvConfig).
+  @IsOptional()
+  @IsString()
+  configId?: string;
+}
+
+export class UpdateInstanceOidcEnvConfigDTO {
+  @IsBoolean()
+  useEnvConfig: boolean;
+}

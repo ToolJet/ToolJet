@@ -35,3 +35,18 @@ export const REQUIRED_KEYS = {
   SSH: Object.values(GIT_ENV_KEYS.SSH),
   GITLAB: [GIT_ENV_KEYS.GITLAB.URL, GIT_ENV_KEYS.GITLAB.BRANCH, GIT_ENV_KEYS.GITLAB.PROJECT_ID],
 } as const;
+
+export const OIDC_ENV_KEYS = {
+  CLIENT_ID: 'OIDC_CLIENT_ID',
+  CLIENT_SECRET: 'OIDC_CLIENT_SECRET', // optional — not needed for token_endpoint_auth_method 'none'
+  WELL_KNOWN_URL: 'OIDC_WELL_KNOWN_URL',
+  NAME: 'OIDC_NAME', // optional
+  CUSTOM_SCOPES: 'OIDC_CUSTOM_SCOPES', // optional
+  CLAIM_NAME: 'OIDC_CLAIM_NAME', // optional
+  ENABLE_GROUP_SYNC: 'OIDC_ENABLE_GROUP_SYNC', // optional
+  GROUP_MAPPING: 'OIDC_GROUP_MAPPING', // optional — JSON object string, IdP group name -> ToolJet group name
+  GRANT_TYPE: 'OIDC_GRANT_TYPE', // optional — 'authorization_code' | 'pkce'
+  CODE_VERIFIER: 'OIDC_CODE_VERIFIER', // optional — only used for PKCE grant type
+} as const;
+
+export const REQUIRED_OIDC_KEYS = [OIDC_ENV_KEYS.CLIENT_ID, OIDC_ENV_KEYS.WELL_KNOWN_URL] as const;

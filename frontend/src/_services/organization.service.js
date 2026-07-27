@@ -17,6 +17,7 @@ export const organizationService = {
   updateOrganizationStatus,
   updateInheritSSO,
   deleteOIDCConfig,
+  updateOidcEnvConfig,
 };
 
 function getUsersByValue(searchInput) {
@@ -112,6 +113,16 @@ function editOrganizationConfigs(params) {
     body: JSON.stringify(params),
   };
   return fetch(`${config.apiUrl}/login-configs/organization-sso`, requestOptions).then(handleResponse);
+}
+
+function updateOidcEnvConfig(useEnvConfig, configId) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ useEnvConfig, configId }),
+  };
+  return fetch(`${config.apiUrl}/login-configs/oidc/env-configs`, requestOptions).then(handleResponse);
 }
 
 function getWorkspacesLimit() {

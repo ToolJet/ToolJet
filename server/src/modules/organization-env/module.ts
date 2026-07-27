@@ -2,6 +2,7 @@ import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { SSOConfigsRepository } from '@modules/login-configs/repository';
 
 export class OrganizationEnvModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -9,10 +10,11 @@ export class OrganizationEnvModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { OrganizationEnvRegistryService, GitSyncEnvUtilService, OrganizationEnvUtilService } =
+    const { OrganizationEnvRegistryService, GitSyncEnvUtilService, OidcEnvUtilService, OrganizationEnvUtilService } =
       await this.getProviders(configs, 'organization-env', [
         'service',
         'services/gitsync.util.service',
+        'services/oidc.util.service',
         'util.service',
       ]);
 
@@ -23,11 +25,13 @@ export class OrganizationEnvModule extends SubModule {
       providers: [
         OrganizationEnvRegistryService,
         GitSyncEnvUtilService,
+        OidcEnvUtilService,
         OrganizationEnvUtilService,
         OrganizationRepository,
         OrganizationGitSyncRepository,
+        SSOConfigsRepository,
       ],
-      exports: [GitSyncEnvUtilService, OrganizationEnvUtilService],
+      exports: [GitSyncEnvUtilService, OidcEnvUtilService, OrganizationEnvUtilService],
     });
   }
 }

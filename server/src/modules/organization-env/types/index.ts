@@ -25,3 +25,16 @@ export interface GitLabEnvConfig {
 }
 
 export type EnvProviderState = { isEnabled: boolean; isFinalized: boolean };
+
+export interface OidcEnvConfig {
+  clientId: string;
+  wellKnownUrl: string;
+  clientSecret?: string;
+  name?: string;
+  customScopes?: string;
+  claimName?: string;
+  enableGroupSync?: boolean;
+  groupMapping?: Record<string, string>;
+  grantType?: string;
+  codeVerifier?: string;
+}

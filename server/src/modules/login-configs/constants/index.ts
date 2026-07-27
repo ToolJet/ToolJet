@@ -8,4 +8,6 @@ export enum FEATURE_KEY {
   UPDATE_INSTANCE_GENERAL_CONFIGS = 'update_instance_general_configs',
   GET_INSTANCE_SSO = 'get_instance_sso',
   INSTANCE_SSO_INHERIT = 'instance_sso_inherit',
+  SAVE_OIDC_ENV_CONFIGS = 'save_oidc_env_configs',
+  SAVE_INSTANCE_OIDC_ENV_CONFIGS = 'save_instance_oidc_env_configs',
 }
