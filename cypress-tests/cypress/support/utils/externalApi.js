@@ -100,6 +100,10 @@ export const fetchWorkspaceApps = (workspaceId, headers = {}) => {
     );
 };
 
+export const allAppsDetails = (workspaceIds, headers = {}) => {
+    return apiRequest("GET", `${Cypress.env("API_URL")}/ext/workspace/${workspaceIds}/apps`, {}, headers);
+};
+
 // ---------- Modules ----------
 
 export const listWorkspaceModules = (workspaceId, headers = {}) => {
@@ -183,6 +187,12 @@ export const saveAppVersion = (appIdOrSlug, payload = {}, headers = {}) => {
 };
 
 // ---------- UI helper (used by non-externalApi specs) ----------
+
+export const createGroup = (groupName) => {
+    cy.get(groupsSelector.createNewGroupButton).click();
+    cy.clearAndType(groupsSelector.groupNameInput, groupName);
+    cy.get(groupsSelector.createGroupButton).click();
+}
 
 export const verifyUserInGroups = (email, groupNames = [], shouldExist = true, workspaceSlug = 'my-workspace') => {
     if (workspaceSlug) cy.visit(workspaceSlug);
