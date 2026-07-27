@@ -1,3 +1,37 @@
+/* Supported number formats for the Currency input.
+ * - `locale` drives the grouping POSITIONS via Intl.NumberFormat (the only way to get non-uniform grouping such as India's 2-2-3)
+ * - `groupSeparator`/`decimalSeparator` override the CHARACTERS so we render plain ASCII instead of Intl's typographic variants.
+ */
+export const NUMBER_FORMATS = {
+  us: { name: 'US / UK (eg. 1,234,567.89)', locale: 'en-US', groupSeparator: ',', decimalSeparator: '.' },
+  eu: { name: 'European (eg. 1.234.567,89)', locale: 'de-DE', groupSeparator: '.', decimalSeparator: ',' },
+  swiss: { name: "Swiss (eg. 1'234'567.89)", locale: 'de-CH', groupSeparator: "'", decimalSeparator: '.' },
+  french: { name: 'French (eg. 1 234 567,89)', locale: 'fr-FR', groupSeparator: ' ', decimalSeparator: ',' },
+  indian: { name: 'Indian (eg. 12,34,567.89)', locale: 'en-IN', groupSeparator: ',', decimalSeparator: '.' },
+};
+
+export const getNumberFormatConfig = (numberFormat) => NUMBER_FORMATS[numberFormat] || NUMBER_FORMATS.us;
+
+// Normalize a format-specific display string (e.g. EU "1.234,56") to a plain JS number.
+export const parseValueToNumber = (val, numberFormat) => {
+  if (val === undefined || val === null || val === '') return 0;
+
+  const strVal = String(val);
+
+  // Fast path: an already-canonical number (no group separators, dot decimal),
+  if (/^-?\d+\.?\d*$/.test(strVal)) {
+    return parseFloat(strVal) || 0;
+  }
+
+  const { groupSeparator, decimalSeparator } = getNumberFormatConfig(numberFormat);
+  // Strip group separators, then normalise the decimal separator to '.'.
+  let normalized = strVal.split(groupSeparator).join('');
+  if (decimalSeparator !== '.') {
+    normalized = normalized.split(decimalSeparator).join('.');
+  }
+  return parseFloat(normalized) || 0;
+};
+
 export const CurrencyMap = {
   AE: {
     currency: 'AED',

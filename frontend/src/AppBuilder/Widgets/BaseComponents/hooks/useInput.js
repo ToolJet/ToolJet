@@ -3,6 +3,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode, formatPhoneNumberIntl } from 'react-phone-number-input';
+import { parseValueToNumber } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
 
 export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWidth, alignment) => {
   return {
@@ -55,7 +56,13 @@ export const useInput = ({
   const [visibility, setVisibility] = useState(initialVisibility);
   const [loading, setLoading] = useState(loadingState);
   const [disable, setDisable] = useState(disabledState || loadingState);
-  const [validationStatus, setValidationStatus] = useState(validate(value));
+
+  const numberFormat = properties?.numberFormat;
+
+  // Validations use format-agnostic numeric value for the currency input.
+  const [validationStatus, setValidationStatus] = useState(() =>
+    validate(inputType === 'currency' ? parseValueToNumber(value, numberFormat) : value)
+  );
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
@@ -138,6 +145,9 @@ export const useInput = ({
     if (inputType === 'phone') {
       const countryCode = getCountryCallingCodeSafe(country);
       validationStatus = validate(value?.replace(`+${countryCode}`, ''));
+    } else if (inputType === 'currency') {
+      // Validations use format-agnostic numeric value for the currency input.
+      validationStatus = validate(parseValueToNumber(value, numberFormat));
     } else {
       validationStatus = validate(value);
     }
@@ -149,6 +159,8 @@ export const useInput = ({
     if (inputType === 'phone') {
       const code = getCountryCallingCodeSafe(country);
       setPhoneInputValue(`+${code}${properties.value}`);
+    } else if (inputType === 'currency') {
+      setCurrencyInputValue(`${properties.value ?? ''}`);
     } else {
       setInputValue(properties.value ?? '');
     }
@@ -173,13 +185,13 @@ export const useInput = ({
   useEffect(() => {
     if (inputType !== 'currency') return;
     setExposedVariable('setValue', async function (value, countryCode = country) {
-      if (typeof value === 'number' || !isNaN(Number(value))) {
-        setInputValue(formatNumber(value, decimalPlaces));
-      } else setInputValue(value);
+      const isNumeric = value !== '' && value !== null && value !== undefined && !isNaN(Number(value));
+      const displayValue = isNumeric ? `${formatNumber(value, decimalPlaces)}` : `${value ?? ''}`;
+      setCurrencyInputValue(displayValue);
       setCountry(countryCode);
       fireEvent('onChange');
     });
-  }, [inputType, country, decimalPlaces]);
+  }, [inputType, country, decimalPlaces, numberFormat]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -262,19 +274,31 @@ export const useInput = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
+  // Currency-only value setter.
+  // - `displayValue` is the format-specific string the field renders;
+  // - `numericValue` is the format-agnostic number exposed to apps and used for validation;
+  const setCurrencyInputValue = (displayValue, numericValue) => {
+    const nextDisplay = displayValue ?? '';
+    const nextNumber =
+      numericValue != null && !Number.isNaN(numericValue)
+        ? numericValue
+        : parseValueToNumber(nextDisplay, numberFormat);
+    setValue(nextDisplay);
+    setExposedVariable('value', nextNumber);
+    const validationStatus = validateRef.current(nextNumber);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
+
   const clearValue = () => {
-    inputType === 'phone' ? setPhoneInputValue('') : setInputValue('');
+    if (inputType === 'phone') setPhoneInputValue('');
+    else if (inputType === 'currency') setCurrencyInputValue('');
+    else setInputValue('');
     fireEvent('onChange');
   };
 
   const handleChange = (e) => {
     setInputValue(e.target.value);
-    fireEvent('onChange');
-  };
-
-  // NOTE - only used by Currency input (not phone)
-  const handlePhoneCurrencyInputChange = (value) => {
-    setInputValue(value);
     fireEvent('onChange');
   };
 
@@ -323,7 +347,7 @@ export const useInput = ({
     isMandatory,
     setInputValue,
     setPhoneInputValue,
-    handlePhoneCurrencyInputChange,
+    setCurrencyInputValue,
     handleChange,
     handleBlur,
     handleFocus,
