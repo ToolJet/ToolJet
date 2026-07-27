@@ -180,17 +180,18 @@ export class ComponentsService implements IComponentsService {
 
             await manager.update(Layout, { id: componentLayout.id }, layout);
           }
-          //Handle parent change cases. component.parent can be undefined if the element is moved form container to canvas
-          if (component) {
-            let resolvedParent = component.parent;
-            if (moduleContainerId && !resolvedParent) {
-              const existing = await manager.findOne(Component, { where: { id: componentId }, select: ['id', 'type'] });
-              if (existing?.type !== 'ModuleContainer') {
-                resolvedParent = moduleContainerId;
-              }
+        }
+
+        //Handle parent change cases. component.parent can be undefined if the element is moved form container to canvas
+        if (component) {
+          let resolvedParent = component.parent;
+          if (moduleContainerId && !resolvedParent) {
+            const existing = await manager.findOne(Component, { where: { id: componentId }, select: ['id', 'type'] });
+            if (existing?.type !== 'ModuleContainer') {
+              resolvedParent = moduleContainerId;
             }
-            await manager.update(Component, { id: componentId }, { parent: resolvedParent });
           }
+          await manager.update(Component, { id: componentId }, { parent: resolvedParent });
         }
       }
     }, appVersionId);
@@ -308,7 +309,7 @@ export class ComponentsService implements IComponentsService {
   ): Promise<string | null> {
     const appVersion = await manager.findOne(AppVersion, {
       where: { id: appVersionId },
-      select: ['id', 'appId'],
+      select: ['id', 'appId', 'homePageId'],
       relations: ['app'],
     });
 
@@ -319,7 +320,7 @@ export class ComponentsService implements IComponentsService {
     const moduleContainer = await manager.findOne(Component, {
       where: {
         type: 'ModuleContainer',
-        page: { appVersionId },
+        pageId: appVersion.homePageId,
       },
       select: ['id'],
     });
@@ -783,17 +784,18 @@ export class ComponentsService implements IComponentsService {
 
           await manager.update(Layout, { id: componentLayout.id }, layout);
         }
-        // Handle parent change cases. component.parent can be undefined if the element is moved from container to canvas
-        if (component) {
-          let resolvedParent = component.parent;
-          if (moduleContainerId && !resolvedParent) {
-            const existing = await manager.findOne(Component, { where: { id: componentId }, select: ['id', 'type'] });
-            if (existing?.type !== 'ModuleContainer') {
-              resolvedParent = moduleContainerId;
-            }
+      }
+
+      // Handle parent change cases. component.parent can be undefined if the element is moved from container to canvas
+      if (component) {
+        let resolvedParent = component.parent;
+        if (moduleContainerId && !resolvedParent) {
+          const existing = await manager.findOne(Component, { where: { id: componentId }, select: ['id', 'type'] });
+          if (existing?.type !== 'ModuleContainer') {
+            resolvedParent = moduleContainerId;
           }
-          await manager.update(Component, { id: componentId }, { parent: resolvedParent });
         }
+        await manager.update(Component, { id: componentId }, { parent: resolvedParent });
       }
     }
   }
