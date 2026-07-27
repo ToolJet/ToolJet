@@ -47,7 +47,7 @@ export const TableRow = ({
         'table-row-condensed': cellHeight === 'condensed',
       })}
       onClick={(e) => {
-        const isCheckbox = e?.target?.classList.contains('table-selector-checkbox-icon') ?? false;
+        const isCheckbox = !!e?.target?.closest?.('.table-selector-checkbox');
         handleRowClick(row, isCheckbox);
       }}
       onMouseEnter={() => {

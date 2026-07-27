@@ -87,7 +87,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
       className={cx('th tj-text-xsm font-weight-400', {
         'resizing-column': header.column.getIsResizing(),
         'has-actions': header.column.columnDef.header === 'Actions',
-        'selector-header': header.column.columnDef.type === 'selector',
+        'selector-header': column.columnType === 'selector',
         'dark-theme': darkMode,
         'pinned-column': !!pinnedPosition,
         'pinned-column-left': pinnedPosition === 'left',
@@ -143,7 +143,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
             <div
               ref={headerTextRef}
               className={cx('header-text tw-w-full', {
-                'selector-column': column.id === 'selection' && column.columnType === 'selector',
+                'selector-column': header.column.columnDef.id === 'selection' && column.columnType === 'selector',
                 'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
                 'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
               })}
