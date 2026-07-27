@@ -18,3 +18,4 @@ npm run build --workspaces
 ```bash
 AWS_ACCESS_KEY_ID=<key> SECRET_ACCESS_KEY=<secret> AWS_BUCKET=<bucket> node scripts/upload-to-s3.js
 ```
+<!-- no-op: touched to trigger the full CI build graph for PR #17301's coverage verification; safe to drop before merge -->
