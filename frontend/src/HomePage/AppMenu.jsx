@@ -164,8 +164,8 @@ export const AppMenu = function AppMenu({
                       appType === 'workflow'
                         ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
                         : appType === 'front-end'
-                        ? t('homePage.appCard.deleteApp', 'Delete app')
-                        : 'Delete module'
+                          ? t('homePage.appCard.deleteApp', 'Delete app')
+                          : 'Delete module'
                     }
                     customClass="field__danger"
                     onClick={deleteApp}

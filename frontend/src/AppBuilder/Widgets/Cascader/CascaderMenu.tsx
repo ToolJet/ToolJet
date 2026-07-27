@@ -216,8 +216,8 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
                     backgroundColor: isHighlighted
                       ? 'var(--interactive-overlays-fill-hover)'
                       : isSelected
-                      ? 'var(--cc-primary-accent-subtle, rgba(67,104,227,0.1))'
-                      : 'transparent',
+                        ? 'var(--cc-primary-accent-subtle, rgba(67,104,227,0.1))'
+                        : 'transparent',
                   }}
                 >
                   {/* Reserve the left gutter for every row (parent + leaf) so all

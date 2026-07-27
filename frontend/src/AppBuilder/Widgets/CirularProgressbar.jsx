@@ -63,10 +63,10 @@ export const CircularProgressBar = function CircularProgressBar({
           exposedVariablesTemporaryState.value >= 100
             ? completionColor
             : allowNegativeProgress
-            ? exposedVariablesTemporaryState.value >= 0
-              ? color
-              : negativeColor
-            : color,
+              ? exposedVariablesTemporaryState.value >= 0
+                ? color
+                : negativeColor
+              : color,
         text: label,
       };
 

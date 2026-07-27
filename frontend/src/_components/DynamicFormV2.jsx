@@ -526,12 +526,12 @@ const DynamicFormV2 = ({
           autoFillStrategy && key === autoFillStrategy.connectionStringKey && customValidation.valid !== null
             ? customValidation
             : skipValidation
-            ? { valid: null, message: '' }
-            : validationMessages[key]
-            ? { valid: false, message: validationMessages[key] }
-            : isRequired
-            ? { valid: true, message: '' }
-            : { valid: null, message: '' };
+              ? { valid: null, message: '' }
+              : validationMessages[key]
+                ? { valid: false, message: validationMessages[key] }
+                : isRequired
+                  ? { valid: true, message: '' }
+                  : { valid: null, message: '' };
 
         return {
           propertyKey: key,
@@ -585,8 +585,8 @@ const DynamicFormV2 = ({
         return {
           getter: key,
           options: isRenderedAsQueryEditor
-            ? options?.[key] ?? schema?.defaults?.[key]
-            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
+            ? (options?.[key] ?? schema?.defaults?.[key])
+            : (options?.[key]?.value ?? schema?.defaults?.[key]?.value),
           handleOptionChange,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,

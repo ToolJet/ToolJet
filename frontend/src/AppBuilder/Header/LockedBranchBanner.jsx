@@ -26,8 +26,8 @@ const LockedBranchBanner = ({
     reason === 'released'
       ? 'This branch has been released and is now read-only'
       : reason === 'main_config_branch'
-      ? `Master is locked. Create a branch to add or ${pageContextText}.`
-      : 'This branch has been merged and is now read-only';
+        ? `Master is locked. Create a branch to add or ${pageContextText}.`
+        : 'This branch has been merged and is now read-only';
 
   return (
     <div className={`locked-branch-banner locked-branch-banner--${variant}`} data-cy="locked-branch-banner">

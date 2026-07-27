@@ -115,18 +115,9 @@ export default [
       // prettier config (disables conflicting rules)
       ...configPrettier.rules,
 
-      // Re-enable prettier/prettier as error (after configPrettier may disable it)
-      'prettier/prettier': [
-        'error',
-        {
-          semi: true,
-          trailingComma: 'es5',
-          printWidth: 120,
-          singleQuote: true,
-          arrowParens: 'always',
-          proseWrap: 'preserve',
-        },
-      ],
+      // Re-enable prettier/prettier as error (after configPrettier may disable it).
+      // Options come from the root .prettierrc — single source of truth.
+      'prettier/prettier': 'error',
 
       // Project rules (preserved from .eslintrc.js)
       'react/prop-types': 0,

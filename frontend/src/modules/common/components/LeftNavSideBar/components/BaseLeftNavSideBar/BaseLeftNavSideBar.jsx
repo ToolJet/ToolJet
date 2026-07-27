@@ -86,8 +86,8 @@ const BaseLeftNavSideBar = ({
                     router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
                       ? '#3E63DD'
                       : darkMode
-                      ? '#4C5155'
-                      : '#C1C8CD'
+                        ? '#4C5155'
+                        : '#C1C8CD'
                   }
                 />
               </Link>

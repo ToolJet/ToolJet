@@ -7,8 +7,11 @@
     "npm": "10.9.2"
   },
   "lint-staged": {
-    "./frontend/src/**/*.{js,jsx}": [
-      "eslint --fix"
+    "frontend/src/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix --config frontend/eslint.config.mjs"
+    ],
+    "server/**/*.ts": [
+      "eslint --fix --config server/eslint.config.js"
     ]
   },
   "devDependencies": {

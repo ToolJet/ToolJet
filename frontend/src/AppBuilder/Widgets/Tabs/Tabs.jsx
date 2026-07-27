@@ -104,7 +104,7 @@ export const Tabs = function Tabs({
   const selectedText = styles?.selectedText ?? '#fff';
   const hoverBackground = styles?.hoverBackground ?? '#F1F3F4';
   const resolvedHoverBackground = hoverBackground?.startsWith('var(')
-    ? getCssVarValue(document.documentElement, hoverBackground) ?? hoverBackground
+    ? (getCssVarValue(document.documentElement, hoverBackground) ?? hoverBackground)
     : hoverBackground;
   const unselectedIcon = styles?.unselectedIcon ?? '#6A727C';
   const selectedIcon = styles?.selectedIcon ?? '#fff';
@@ -670,5 +670,4 @@ const TabContent = memo(function TabContent({
       )}
     </div>
   );
-},
-areEqual);
+}, areEqual);
