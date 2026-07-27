@@ -295,7 +295,8 @@ export class TooljetDbUtilService {
         primaryKeyColumnsInCsv,
         dataColumnsInCsv,
         organizationId,
-        internalTables
+        internalTables,
+        internalTableDatabaseColumn
       );
     });
 
@@ -309,19 +310,28 @@ export class TooljetDbUtilService {
     primaryKeyColumns: string[],
     dataColumns: string[],
     organizationId: string,
-    internalTables: InternalTable[]
+    internalTables: InternalTable[],
+    internalTableDatabaseColumn: TooljetDatabaseColumn[]
   ): Promise<number> {
     if (isEmpty(rowsToUpdate)) return 0;
 
     const tenantSchema = findTenantSchema(organizationId);
     const allColumns = [...primaryKeyColumns, ...dataColumns];
+    // The VALUES(...) list below has no target-column context for Postgres to infer parameter
+    // types from (unlike a plain INSERT), so every parameter defaults to text/unknown - explicit
+    // casts are required or comparisons like `t."id" = v."id"` fail with "operator does not
+    // exist: integer = text".
+    const columnCasts = allColumns.map((col) => {
+      const columnDetails = internalTableDatabaseColumn.find((colDetails) => colDetails.column_name === col);
+      return columnDetails ? `::${columnDetails.data_type}` : '';
+    });
 
     const allValueSets = [];
     let allPlaceholders = [];
     let parameterIndex = 1;
 
     for (const row of rowsToUpdate) {
-      const valueSet = allColumns.map(() => `$${parameterIndex++}`);
+      const valueSet = allColumns.map((col, index) => `$${parameterIndex++}${columnCasts[index]}`);
       allValueSets.push(`(${valueSet.join(', ')})`);
       allPlaceholders = allPlaceholders.concat(allColumns.map((col) => row[col]));
     }
@@ -436,7 +446,8 @@ export class TooljetDbUtilService {
         internalTableId,
         primaryKeyColumnsInCsv,
         organizationId,
-        internalTables
+        internalTables,
+        internalTableDatabaseColumn
       );
     });
 
@@ -449,19 +460,26 @@ export class TooljetDbUtilService {
     internalTableId: string,
     primaryKeyColumns: string[],
     organizationId: string,
-    internalTables: InternalTable[]
+    internalTables: InternalTable[],
+    internalTableDatabaseColumn: TooljetDatabaseColumn[]
   ): Promise<number> {
     if (isEmpty(rowsToDelete)) return 0;
 
     const tenantSchema = findTenantSchema(organizationId);
     const primaryKeyColumnsQuoted = primaryKeyColumns.map((col) => `"${col}"`).join(', ');
+    // Same reasoning as bulkUpdateRows: parameters in a bare VALUES(...) list default to
+    // text/unknown, so the IN (VALUES ...) row-constructor comparison needs explicit casts.
+    const columnCasts = primaryKeyColumns.map((col) => {
+      const columnDetails = internalTableDatabaseColumn.find((colDetails) => colDetails.column_name === col);
+      return columnDetails ? `::${columnDetails.data_type}` : '';
+    });
 
     const allValueSets = [];
     let allPlaceholders = [];
     let parameterIndex = 1;
 
     for (const row of rowsToDelete) {
-      const valueSet = primaryKeyColumns.map(() => `$${parameterIndex++}`);
+      const valueSet = primaryKeyColumns.map((col, index) => `$${parameterIndex++}${columnCasts[index]}`);
       allValueSets.push(`(${valueSet.join(', ')})`);
       allPlaceholders = allPlaceholders.concat(primaryKeyColumns.map((col) => row[col]));
     }
