@@ -8,8 +8,8 @@
 #   npm run test:cov:merge → coverage-combined/
 #
 # CI:
-#   Job 1 uploads coverage-unit/, Job 2 uploads coverage-e2e/
-#   Job 3 downloads both, runs: npm run test:cov:merge
+#   One job (test-server) runs unit then e2e sequentially, in that order, then
+#   calls this same script — same paths as local, no artifact round-trip needed.
 
 set -eo pipefail
 
