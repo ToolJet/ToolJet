@@ -6385,8 +6385,10 @@ a.step-item-disabled {
 .notification-center-badge {
   position: absolute;
   top: 2px;
-  left: 16px;
-  right: auto;
+  // right-anchored so the 99+ pill grows leftward instead of clipping at the
+  // 48px sidebar's overflow-x: hidden edge
+  left: auto;
+  right: -2px;
   margin: 0;
   padding: 2px 4px;
   height: 13px;
