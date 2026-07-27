@@ -34,6 +34,7 @@ export class ExternalApiModule extends SubModule {
       ExternalApisModulesController,
       ExternalApisTjdbController,
       ExternalApisBanController,
+      ExternalApisAppExportController,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
       'service',
@@ -42,6 +43,7 @@ export class ExternalApiModule extends SubModule {
       'controllers/modules.controller',
       'controllers/tooljet-db.controller',
       'controllers/ban.controller',
+      'controllers/app-export.controller',
     ]);
 
     return {
@@ -84,6 +86,7 @@ export class ExternalApiModule extends SubModule {
             ExternalApisModulesController,
             ExternalApisTjdbController,
             ExternalApisBanController,
+            ExternalApisAppExportController,
           ]
         : [],
       exports: [ExternalApiUtilService],
