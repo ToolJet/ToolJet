@@ -416,6 +416,7 @@ export const Table = (props) => {
         ? [
             'highlightSelectedRow',
             'disableRowDeselection',
+            'skipRowClickOnSelect',
             'showBulkSelector',
             'defaultSelectedRow',
             'selectRowOnCellEdit',

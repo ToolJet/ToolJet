@@ -251,6 +251,14 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    skipRowClickOnSelect: {
+      type: 'toggle',
+      displayName: 'Skip row click on select',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     defaultSelectedRow: {
       type: 'code',
       displayName: 'Default selected row',
@@ -837,6 +845,7 @@ export const tableConfig = {
       enableExpandableRows: { value: '{{false}}' },
       expansionHeight: { value: '{{229}}' },
       disableRowDeselection: { value: '{{false}}' },
+      skipRowClickOnSelect: { value: '{{false}}' },
     },
     events: [],
     styles: {
