@@ -45,8 +45,7 @@ export class AuthService implements IAuthService {
     response: Response,
     appAuthDto: AppAuthenticationDto,
     organizationId?: string | undefined,
-    loggedInUser?: User,
-    isSuperAdminLoginFlow = false
+    loggedInUser?: User
   ) {
     let organization: Organization;
     const { email, password, redirectTo } = appAuthDto;
@@ -170,11 +169,9 @@ export class AuthService implements IAuthService {
           },
         });
 
-        if (!isSuperAdminLoginFlow) {
-          const mfaChallenge = await this.maybeRequireMfa(user);
-          if (mfaChallenge) {
-            return mfaChallenge;
-          }
+        const mfaChallenge = await this.maybeRequireMfa(user);
+        if (mfaChallenge) {
+          return mfaChallenge;
         }
       }
 
@@ -291,6 +288,6 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Only super admin can login through this url');
     }
 
-    return this.login(response, appAuthDto, undefined, undefined, true);
+    return this.login(response, appAuthDto);
   }
 }

@@ -123,7 +123,9 @@ function superAdminLogin(email, password) {
   return fetch(`${config.apiUrl}/authenticate/super-admin`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      authenticationService.updateCurrentSession(user);
+      if (!user?.mfa_required) {
+        authenticationService.updateCurrentSession(user);
+      }
       return user;
     });
 }

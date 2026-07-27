@@ -177,6 +177,7 @@ function TwoFactorAuthCard({ darkMode }) {
             }}
             error={!!otpError}
             errorText={otpError}
+            onSubmit={confirmSetup}
             centered
           />
         </ModalBase>
@@ -205,6 +206,7 @@ function TwoFactorAuthCard({ darkMode }) {
             }}
             error={!!disableOtpError}
             errorText={disableOtpError}
+            onSubmit={confirmDisable}
           />
         </ModalBase>
       )}

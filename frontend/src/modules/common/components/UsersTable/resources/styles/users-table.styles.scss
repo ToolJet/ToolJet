@@ -36,6 +36,11 @@
     tr > td[data-name='mfa-header'] {
         max-width: 110px !important;
     }
+    
+    // thead tr,
+    // tbody tr {
+    //     justify-content: flex-start;
+    // }
 }
 
 // Keeps the row action menu reachable without horizontal scrolling, no matter how many

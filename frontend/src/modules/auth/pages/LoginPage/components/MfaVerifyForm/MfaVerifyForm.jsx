@@ -26,7 +26,7 @@ const MfaVerifyForm = ({ mfaChallenge, onVerified, onError }) => {
   }, [mfaChallenge]);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!/^\d{6}$/.test(otp)) {
       setError('Enter the 6-digit code from your authenticator app');
       return;
@@ -88,6 +88,7 @@ const MfaVerifyForm = ({ mfaChallenge, onVerified, onError }) => {
                 }}
                 error={!!error}
                 errorText={error}
+                onSubmit={handleSubmit}
               />
             </div>
             <SubmitButton

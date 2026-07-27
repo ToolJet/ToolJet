@@ -11,6 +11,7 @@ const OtpInput = ({
   autoFocus = true,
   disabled = false,
   centered = false,
+  onSubmit,
 }) => {
   const inputsRef = useRef([]);
   const digits = value.split('').concat(Array(length).fill('')).slice(0, length);
@@ -41,6 +42,12 @@ const OtpInput = ({
   };
 
   const handleKeyDown = (index, e) => {
+    if (e.key === 'Enter') {
+      if (onSubmit && digits.every((digit) => digit !== '')) {
+        onSubmit();
+      }
+      return;
+    }
     if (e.key === 'Backspace' && !digits[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
