@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { SSOConfigs, SSOType } from '@entities/sso_config.entity';
+import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 
 @Injectable()
 export class SSOConfigsRepository extends Repository<SSOConfigs> {
@@ -55,5 +55,28 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
       relations: ['organization', 'oidcGroupSyncs'],
     });
     return result;
+  }
+
+  async findOrgSamlConfig(organizationId: string): Promise<SSOConfigs | null> {
+    return this.findOne({
+      where: { organizationId, sso: SSOType.SAML, configScope: ConfigScope.ORGANIZATION },
+    });
+  }
+
+  async setUseEnvConfig(organizationId: string, useEnvConfig: boolean): Promise<SSOConfigs> {
+    const existing = await this.findOrgSamlConfig(organizationId);
+    if (!existing) {
+      return this.save(
+        this.create({
+          organizationId,
+          sso: SSOType.SAML,
+          configScope: ConfigScope.ORGANIZATION,
+          configs: {} as any,
+          enabled: false,
+          useEnvConfig,
+        })
+      );
+    }
+    return this.save({ ...existing, useEnvConfig });
   }
 }

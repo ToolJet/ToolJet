@@ -47,6 +47,7 @@ interface Features {
   [FEATURE_KEY.DELETE_ORGANIZATION_SSO]: FeatureConfig;
   [FEATURE_KEY.SAVE_OIDC_ENV_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.SAVE_INSTANCE_OIDC_ENV_CONFIGS]: FeatureConfig;
+  [FEATURE_KEY.SAVE_SAML_ENV_CONFIGS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -24,6 +24,13 @@ export const GIT_ENV_KEYS = {
   },
 } as const;
 
+export const SAML_ENV_KEYS = {
+  IDP_METADATA: 'SAML_IDP_METADATA',
+  NAME: 'SAML_NAME', // optional
+  GROUP_ATTRIBUTE: 'SAML_GROUP_ATTRIBUTE', // optional
+  GROUP_SYNC_ENABLED: 'SAML_GROUP_SYNC_ENABLED', // optional
+} as const;
+
 export const REQUIRED_KEYS = {
   HTTPS: [
     GIT_ENV_KEYS.HTTPS.URL,
@@ -34,6 +41,7 @@ export const REQUIRED_KEYS = {
   ],
   SSH: Object.values(GIT_ENV_KEYS.SSH),
   GITLAB: [GIT_ENV_KEYS.GITLAB.URL, GIT_ENV_KEYS.GITLAB.BRANCH, GIT_ENV_KEYS.GITLAB.PROJECT_ID],
+  SAML: [SAML_ENV_KEYS.IDP_METADATA],
 } as const;
 
 export const OIDC_ENV_KEYS = {

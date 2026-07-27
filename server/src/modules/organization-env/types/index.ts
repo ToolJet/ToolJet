@@ -38,3 +38,10 @@ export interface OidcEnvConfig {
   grantType?: string;
   codeVerifier?: string;
 }
+
+export interface SamlEnvConfig {
+  idpMetadata: string;
+  name?: string;
+  groupAttribute?: string;
+  groupSyncEnabled?: boolean;
+}

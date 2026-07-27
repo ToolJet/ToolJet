@@ -10,13 +10,19 @@ export class OrganizationEnvModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { OrganizationEnvRegistryService, GitSyncEnvUtilService, OidcEnvUtilService, OrganizationEnvUtilService } =
-      await this.getProviders(configs, 'organization-env', [
-        'service',
-        'services/gitsync.util.service',
-        'services/oidc.util.service',
-        'util.service',
-      ]);
+    const {
+      OrganizationEnvRegistryService,
+      GitSyncEnvUtilService,
+      OidcEnvUtilService,
+      SamlEnvUtilService,
+      OrganizationEnvUtilService,
+    } = await this.getProviders(configs, 'organization-env', [
+      'service',
+      'services/gitsync.util.service',
+      'services/oidc.util.service',
+      'services/saml.util.service',
+      'util.service',
+    ]);
 
     return this.cacheModule(cacheKey, {
       module: OrganizationEnvModule,
@@ -26,12 +32,13 @@ export class OrganizationEnvModule extends SubModule {
         OrganizationEnvRegistryService,
         GitSyncEnvUtilService,
         OidcEnvUtilService,
+        SamlEnvUtilService,
         OrganizationEnvUtilService,
         OrganizationRepository,
         OrganizationGitSyncRepository,
         SSOConfigsRepository,
       ],
-      exports: [GitSyncEnvUtilService, OidcEnvUtilService, OrganizationEnvUtilService],
+      exports: [GitSyncEnvUtilService, OidcEnvUtilService, SamlEnvUtilService, OrganizationEnvUtilService],
     });
   }
 }

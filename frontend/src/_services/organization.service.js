@@ -10,6 +10,7 @@ export const organizationService = {
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
+  updateSamlEnvConfig,
   getWorkspacesLimit,
   checkWorkspaceUniqueness,
   updateOrganization,
@@ -123,6 +124,16 @@ function updateOidcEnvConfig(useEnvConfig, configId) {
     body: JSON.stringify({ useEnvConfig, configId }),
   };
   return fetch(`${config.apiUrl}/login-configs/oidc/env-configs`, requestOptions).then(handleResponse);
+}
+
+function updateSamlEnvConfig(useEnvConfig) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ useEnvConfig }),
+  };
+  return fetch(`${config.apiUrl}/login-configs/saml/env-configs`, requestOptions).then(handleResponse);
 }
 
 function getWorkspacesLimit() {

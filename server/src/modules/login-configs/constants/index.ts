@@ -10,4 +10,5 @@ export enum FEATURE_KEY {
   INSTANCE_SSO_INHERIT = 'instance_sso_inherit',
   SAVE_OIDC_ENV_CONFIGS = 'save_oidc_env_configs',
   SAVE_INSTANCE_OIDC_ENV_CONFIGS = 'save_instance_oidc_env_configs',
+  SAVE_SAML_ENV_CONFIGS = 'save_saml_env_configs',
 }

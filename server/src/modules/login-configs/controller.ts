@@ -1,7 +1,12 @@
 import { Controller, Get, Delete, UseGuards, Body, Patch, Param } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
-import { OrganizationConfigsUpdateDto, UpdateOidcEnvConfigDTO, UpdateInstanceOidcEnvConfigDTO } from './dto';
+import {
+  OrganizationConfigsUpdateDto,
+  UpdateOidcEnvConfigDTO,
+  UpdateInstanceOidcEnvConfigDTO,
+  UpdateSamlEnvConfigDTO,
+} from './dto';
 import { User } from '@modules/app/decorators/user.decorator';
 import { ILoginConfigsController } from './interfaces/IController';
 import { LoginConfigsService } from './service';
@@ -110,6 +115,13 @@ export class LoginConfigsController implements ILoginConfigsController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch('/oidc/instance-env-configs')
   async toggleInstanceOidcEnvConfig(@Body() configData: UpdateInstanceOidcEnvConfigDTO) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.SAVE_SAML_ENV_CONFIGS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/saml/env-configs')
+  async toggleSamlEnvConfig(@Body() configData: UpdateSamlEnvConfigDTO, @User() user: UserEntity) {
     throw new NotFoundException();
   }
 }

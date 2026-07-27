@@ -85,3 +85,8 @@ export class UpdateInstanceOidcEnvConfigDTO {
   @IsBoolean()
   useEnvConfig: boolean;
 }
+
+export class UpdateSamlEnvConfigDTO {
+  @IsBoolean()
+  useEnvConfig: boolean;
+}
