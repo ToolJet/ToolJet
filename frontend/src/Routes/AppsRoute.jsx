@@ -29,11 +29,12 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
 
   // Connect the notifications WebSocket once session is valid — must not fire before
   // authentication completes or the org_id will be "null" (string), causing 401 loops.
+  // Only connect in editor mode to avoid unnecessary server load from end-user viewers.
   useEffect(() => {
-    if (isValidSession) {
+    if (isValidSession && componentType === 'editor') {
       useNotificationsStore.getState().actions.connect();
     }
-  }, [isValidSession]);
+  }, [isValidSession, componentType]);
 
   const clonedElement = React.cloneElement(children, extraProps);
   const navigate = useNavigate();
