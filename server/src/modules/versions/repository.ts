@@ -239,7 +239,10 @@ export class VersionRepository extends Repository<AppVersion> {
     // When branchId is provided, also include versions with null branchId
     // (created before branching was enabled) so they remain visible on the default branch.
     const where = branchId
-      ? [{ appId, branchId, isStub: false }, { appId, branchId: IsNull(), isStub: false }]
+      ? [
+          { appId, branchId, isStub: false },
+          { appId, branchId: IsNull(), isStub: false },
+        ]
       : { appId, isStub: false };
     return m.find(AppVersion, { where, order: { createdAt: 'DESC' }, relations: ['branch'] });
   }
