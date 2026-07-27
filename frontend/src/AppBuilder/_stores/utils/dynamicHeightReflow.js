@@ -1325,13 +1325,9 @@ export const buildReflowPatch = ({
         : resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0;
 
     // Floor a non-changed sibling at its calc-bumped canonical so a stale/raw temp can't pin a top-label input below its rendered label row.
-    if (componentId !== changedComponentId && typeof calculateMoveableBoxHeightWithId === 'function') {
-      const bumpedHeight = calculateMoveableBoxHeightWithId(
-        componentId,
-        currentLayout,
-        getComponentDefinition?.(componentId)?.component?.definition?.styles
-      );
-      if (typeof bumpedHeight === 'number') nextHeight = Math.max(nextHeight, bumpedHeight);
+    if (componentId !== changedComponentId) {
+      const bumpedHeight = getEffectiveCanonicalHeight(componentId);
+      nextHeight = Math.max(nextHeight, bumpedHeight);
     }
 
     // Merge order: canonical (base) < existing temp (carry over left/width
