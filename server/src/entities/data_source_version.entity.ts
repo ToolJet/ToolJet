@@ -36,12 +36,11 @@ export class DataSourceVersion {
   @Column({ name: 'is_synced', default: false })
   isSynced: boolean;
 
-
-  // FIXME: misnamed. Stores a content hash (truncated sha256 of the DS's git JSON,
-  // git-sync pull dedup), NOT a timestamp. Also `numeric` → node-pg returns it as a
-  // string; coerce with Number() before comparing. Rename to meta_content_hash needs a migration.
-  @Column({ name: 'meta_timestamp', type: 'numeric', precision: 15, nullable: true, default: null })
-  metaTimestamp: number;
+  // Git-sync change token: sha256 of the canonical data-source.json content that
+  // was last applied to this DSV. Pull skips the per-env options re-apply when the
+  // incoming file's hash matches this and is_synced is true.
+  @Column({ name: 'git_content_hash', type: 'varchar', length: 64, nullable: true, default: null })
+  gitContentHash: string;
 
   @Column({ name: 'branch_id', nullable: true })
   branchId: string;

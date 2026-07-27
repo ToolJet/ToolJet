@@ -508,9 +508,6 @@ describe('GitSyncController — GitLab', () => {
           isDefault: false,
           sourceBranchId: mainBranchId,
           organizationId: orgId,
-          appMetaHash: null,
-          dataSourceMetaHash: null,
-          moduleMetaHash: null,
         });
         const featBranchId: string = createBranchResp.body.id;
         expect(featBranchId).toBeDefined();
@@ -2640,54 +2637,97 @@ describe('GitSyncController — GitLab', () => {
         expect(hydratedMainModule.is_stub).toBe(false);
 
         // ─── Helpers for steps 55-60 ──────────────────────────────────────
-        // Capture-then-mutate-then-restore pattern: we manipulate main's meta
-        // files via the Gitea admin endpoint to drive detectAndThrowConflicts
-        // through specific scenarios, restoring each file after the assertion
-        // so the repo isn't corrupted for subsequent steps.
+        // Meta files are gone; conflict detection enumerates apps/, modules/, and
+        // data-sources/ directly. To drive the pull-conflict scenarios we write a
+        // single resource file whose name collides with an existing resource (but
+        // carries a fresh co_relation_id) via the simulator's /files endpoint —
+        // which lands directly on the protected `main` (git push to main is blocked).
+        // To "restore" we overwrite that file with `{}`: listGitResources /
+        // readDataSourceEntries skip json without an `id`, so the stray directory
+        // becomes invisible to enumeration (no leftover conflict, no import).
         const FILES_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/files`;
+        const CONFLICT_CLONE_URL = `${GIT_BASE_URL}/${GIT_REPO_PATH}.git`;
+        const { randomUUID: randomUUIDForMeta } = await import('crypto');
+        const cfFs = await import('fs');
+        const cfPath = await import('path');
+        const cfOs = await import('os');
+        const cfSimpleGit = (await import('simple-git')).default;
 
-        const captureGitMeta = async (metaFileName: string): Promise<string> => {
-          // The Gitea simulator at this host doesn't serve raw/contents APIs,
-          // so we shallow-clone main and read the file off disk.
-          const simpleGit = (await import('simple-git')).default;
-          const fs = await import('fs');
-          const path = await import('path');
-          const os = await import('os');
-          const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-meta-capture-'));
-          try {
-            const git = simpleGit({
-              baseDir: tmpDir,
-              timeout: { block: 30000 },
-              unsafe: { allowUnsafeCredentialHelper: true },
-            });
-            await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
-              '--branch',
-              'main',
-              '--depth',
-              '1',
-              '--single-branch',
-            ]);
-            return fs.readFileSync(path.join(tmpDir, '.meta', metaFileName), 'utf-8');
-          } finally {
-            await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
-          }
-        };
-
-        const writeGitMeta = async (metaFileName: string, content: string, message: string): Promise<void> => {
+        // Write a single file onto main via the admin /files endpoint (bypasses the
+        // protected-branch push block). `content` is JSON-stringified.
+        const writeGitFile = async (repoRelPath: string, content: any, message: string): Promise<void> => {
           const resp = await fetch(FILES_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: BASIC },
-            body: JSON.stringify({
-              ref: 'main',
-              path: `.meta/${metaFileName}`,
-              content,
-              message,
-            }),
+            body: JSON.stringify({ ref: 'main', path: repoRelPath, content: JSON.stringify(content, null, 2), message }),
           });
           if (!resp.ok) {
             const text = await resp.text().catch(() => '');
-            throw new Error(`writeGitMeta(${metaFileName}) ${resp.status} ${text}`);
+            throw new Error(`writeGitFile(${repoRelPath}) ${resp.status} ${text}`);
           }
+        };
+
+        // Clone main (read-only) and scan the working tree.
+        const scanMain = async <T>(fn: (dir: string) => T): Promise<T> => {
+          const dir = await cfFs.promises.mkdtemp(cfPath.join(cfOs.tmpdir(), 'tj-scan-'));
+          try {
+            const git = cfSimpleGit({
+              baseDir: dir,
+              timeout: { block: 30000 },
+              unsafe: { allowUnsafeCredentialHelper: true },
+            });
+            await git.clone(CONFLICT_CLONE_URL, '.', ['--branch', 'main', '--depth', '1', '--single-branch']);
+            return fn(dir);
+          } finally {
+            await cfFs.promises.rm(dir, { recursive: true, force: true }).catch(() => {});
+          }
+        };
+
+        // Return the first app/module resource name under a resource folder.
+        const firstResourceName = (resourceFolder: string): Promise<string> =>
+          scanMain((dir) => {
+            const base = cfPath.join(dir, resourceFolder);
+            for (const e of cfFs.readdirSync(base, { withFileTypes: true })) {
+              if (!e.isDirectory()) continue;
+              if (cfFs.existsSync(cfPath.join(base, e.name, 'app', 'app.json'))) return e.name;
+              for (const s of cfFs.readdirSync(cfPath.join(base, e.name), { withFileTypes: true })) {
+                if (s.isDirectory() && cfFs.existsSync(cfPath.join(base, e.name, s.name, 'app', 'app.json'))) {
+                  return s.name;
+                }
+              }
+            }
+            throw new Error(`no resource found under ${resourceFolder}`);
+          });
+
+        // Return the first datasource's name (data-sources/<dir>/data-source.json → content.name).
+        const firstDataSourceName = (): Promise<string> =>
+          scanMain((dir) => {
+            const base = cfPath.join(dir, 'data-sources');
+            for (const e of cfFs.readdirSync(base, { withFileTypes: true })) {
+              if (!e.isDirectory()) continue;
+              const f = cfPath.join(base, e.name, 'data-source.json');
+              if (cfFs.existsSync(f)) return JSON.parse(cfFs.readFileSync(f, 'utf8')).name;
+            }
+            throw new Error('no datasource found under data-sources/');
+          });
+
+        // app/app.json path for an injected conflict resource (fresh co_relation_id,
+        // colliding name under a dedicated conflict folder).
+        const conflictAppJsonPath = (resourceFolder: string, conflictFolder: string, name: string): string =>
+          `${resourceFolder}/${conflictFolder}/${name}/app/app.json`;
+
+        const pullMainExpect409 = async (): Promise<any[]> => {
+          const resp = await request
+            .agent(app.getHttpServer())
+            .post('/api/workspace-branches/pull')
+            .set('Cookie', tokenCookie)
+            .set('tj-workspace-id', orgId)
+            .query({ branch_id: mainBranchId })
+            .send({ branchId: mainBranchId })
+            .expect(409);
+          const groups = parseConflictGroups(resp.body);
+          expect(groups).not.toBeNull();
+          return groups!;
         };
 
         const parseConflictGroups = (body: any): any[] | null => {
@@ -2700,234 +2740,137 @@ describe('GitSyncController — GitLab', () => {
           }
         };
 
-        step(55, 'pull main with conflicting appMeta (intra-incoming same name) → 409 with conflict details');
-        // 55. Inject a fake corid that shares an appPath with an existing entry.
-        //     detectAndThrowConflicts must raise a 409 with the colliding
-        //     entries enumerated under conflictGroups.
-        const originalAppMeta = await captureGitMeta('appMeta.json');
-        const appMetaObj = JSON.parse(originalAppMeta);
-        // Skip non-entry keys (e.g. lastUpdatedAt) by requiring an
-        // `appPath` field on the entry itself.
-        const realAppKeys = Object.keys(appMetaObj).filter(
-          (k) => appMetaObj[k] && typeof appMetaObj[k] === 'object' && (appMetaObj[k] as any).appPath
-        );
-        expect(realAppKeys.length).toBeGreaterThan(0);
-        const sampleAppEntry = appMetaObj[realAppKeys[0]];
-
-        const { randomUUID: randomUUIDForMeta } = await import('crypto');
+        step(55, 'pull main with a git app whose name collides with an existing app → 409 with conflict details');
+        // 55. Inject an extra app dir (fresh co_relation_id) whose name matches an
+        //     existing app. Conflict detection enumerates apps/ and must raise a
+        //     409 listing both co_relation_ids under conflictGroups.
+        const existingAppName = await firstResourceName('apps');
         const fakeAppCorid = randomUUIDForMeta();
-        const conflictAppMeta = {
-          ...appMetaObj,
-          [fakeAppCorid]: {
-            appPath: sampleAppEntry.appPath,
+        const appConflictPath = conflictAppJsonPath('apps', 'e2e-conflict-app', existingAppName);
+        await writeGitFile(
+          appConflictPath,
+          {
+            id: fakeAppCorid,
+            name: existingAppName,
+            type: 'front-end',
+            slug: `e2e-conflict-${fakeAppCorid.slice(0, 8)}`,
             updatedAt: new Date().toISOString(),
           },
-        };
-        await writeGitMeta('appMeta.json', JSON.stringify(conflictAppMeta, null, 2), 'inject app meta conflict');
+          'inject app name conflict'
+        );
 
-        const appConflictPullResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .send({ branchId: mainBranchId })
-          .expect(409);
-        const appConflictGroups = parseConflictGroups(appConflictPullResp.body);
-        expect(appConflictGroups).not.toBeNull();
-        const appConflictGroup = appConflictGroups!.find((g: any) => g.type === 'app');
+        const appConflictGroups = await pullMainExpect409();
+        const appConflictGroup = appConflictGroups.find((g: any) => g.type === 'app');
         expect(appConflictGroup).toBeDefined();
         expect(appConflictGroup.conflictField).toBe('name');
         expect(appConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
         expect(appConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeAppCorid);
 
-        await writeGitMeta('appMeta.json', originalAppMeta, 'restore app meta');
+        await writeGitFile(appConflictPath, {}, 'restore: neutralize injected app conflict');
 
-        step(56, 'pull main with appMeta same name in different folders → 409 with conflict details');
+        step(56, 'pull main with app same name in a different folder → 409 with conflict details');
         // 56. Cross-folder variant of step 55. App names are unique per
-        //     (branch, type) regardless of folder, so an incoming entry whose
-        //     appPath places an app with the SAME final name under a DIFFERENT
-        //     folder still collides. The injected appPath differs from every
-        //     existing entry, but the derived name (last path segment) matches,
-        //     so detectAndThrowConflicts must still raise a 409.
-        const originalAppMetaFolder = await captureGitMeta('appMeta.json');
-        const appMetaFolderObj = JSON.parse(originalAppMetaFolder);
-        const realAppFolderKeys = Object.keys(appMetaFolderObj).filter(
-          (k) => appMetaFolderObj[k] && typeof appMetaFolderObj[k] === 'object' && (appMetaFolderObj[k] as any).appPath
-        );
-        expect(realAppFolderKeys.length).toBeGreaterThan(0);
-        const sampleAppFolderEntry = appMetaFolderObj[realAppFolderKeys[0]];
-        const sampleAppFolderSegments = sampleAppFolderEntry.appPath.split('/').filter(Boolean);
-        const sampleAppFolderName = sampleAppFolderSegments[sampleAppFolderSegments.length - 1];
-        expect(sampleAppFolderName).toBeTruthy();
-
+        //     (branch, type) regardless of folder, so an injected app with the
+        //     SAME name under a DIFFERENT folder still collides → 409.
         const fakeAppFolderCorid = randomUUIDForMeta();
-        // Same final segment (name), nested under a different folder → distinct appPath.
-        const folderedAppPath = `${sampleAppFolderSegments[0]}/e2e-conflict-folder/${sampleAppFolderName}`;
-        expect(folderedAppPath).not.toBe(sampleAppFolderEntry.appPath);
-        const folderConflictAppMeta = {
-          ...appMetaFolderObj,
-          [fakeAppFolderCorid]: {
-            appPath: folderedAppPath,
+        const appFolderConflictPath = conflictAppJsonPath('apps', 'e2e-conflict-app-folder', existingAppName);
+        await writeGitFile(
+          appFolderConflictPath,
+          {
+            id: fakeAppFolderCorid,
+            name: existingAppName,
+            type: 'front-end',
+            slug: `e2e-conflict-${fakeAppFolderCorid.slice(0, 8)}`,
             updatedAt: new Date().toISOString(),
           },
-        };
-        await writeGitMeta(
-          'appMeta.json',
-          JSON.stringify(folderConflictAppMeta, null, 2),
           'inject cross-folder app name conflict'
         );
 
-        const appFolderConflictPullResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .send({ branchId: mainBranchId })
-          .expect(409);
-        const appFolderConflictGroups = parseConflictGroups(appFolderConflictPullResp.body);
-        expect(appFolderConflictGroups).not.toBeNull();
-        const appFolderConflictGroup = appFolderConflictGroups!.find((g: any) => g.type === 'app');
+        const appFolderConflictGroups = await pullMainExpect409();
+        const appFolderConflictGroup = appFolderConflictGroups.find((g: any) => g.type === 'app');
         expect(appFolderConflictGroup).toBeDefined();
         expect(appFolderConflictGroup.conflictField).toBe('name');
         expect(appFolderConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
         expect(appFolderConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeAppFolderCorid);
 
-        await writeGitMeta('appMeta.json', originalAppMetaFolder, 'restore app meta');
+        await writeGitFile(appFolderConflictPath, {}, 'restore: neutralize injected cross-folder app conflict');
 
-        step(57, 'pull main with conflicting moduleMeta (intra-incoming same name) → 409 with conflict details');
-        // 57. Same shape as step 55 for modules.
-        const originalModuleMeta = await captureGitMeta('moduleMeta.json');
-        const moduleMetaObj = JSON.parse(originalModuleMeta);
-        const realModuleKeys = Object.keys(moduleMetaObj).filter(
-          (k) => moduleMetaObj[k] && typeof moduleMetaObj[k] === 'object' && (moduleMetaObj[k] as any).appPath
-        );
-        expect(realModuleKeys.length).toBeGreaterThan(0);
-        const sampleModuleEntry = moduleMetaObj[realModuleKeys[0]];
-
+        step(57, 'pull main with a git module whose name collides with an existing module → 409');
+        // 57. Same shape as step 55 for modules (enumerated from modules/).
+        const existingModuleName = await firstResourceName('modules');
         const fakeModuleCorid = randomUUIDForMeta();
-        const conflictModuleMeta = {
-          ...moduleMetaObj,
-          [fakeModuleCorid]: {
-            appPath: sampleModuleEntry.appPath,
+        const moduleConflictPath = conflictAppJsonPath('modules', 'e2e-conflict-module', existingModuleName);
+        await writeGitFile(
+          moduleConflictPath,
+          {
+            id: fakeModuleCorid,
+            name: existingModuleName,
+            type: 'module',
+            slug: `e2e-conflict-${fakeModuleCorid.slice(0, 8)}`,
             updatedAt: new Date().toISOString(),
           },
-        };
-        await writeGitMeta(
-          'moduleMeta.json',
-          JSON.stringify(conflictModuleMeta, null, 2),
-          'inject module meta conflict'
+          'inject module name conflict'
         );
 
-        const moduleConflictPullResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .send({ branchId: mainBranchId })
-          .expect(409);
-        const moduleConflictGroups = parseConflictGroups(moduleConflictPullResp.body);
-        expect(moduleConflictGroups).not.toBeNull();
-        const moduleConflictGroup = moduleConflictGroups!.find((g: any) => g.type === 'module');
+        const moduleConflictGroups = await pullMainExpect409();
+        const moduleConflictGroup = moduleConflictGroups.find((g: any) => g.type === 'module');
         expect(moduleConflictGroup).toBeDefined();
         expect(moduleConflictGroup.conflictField).toBe('name');
         expect(moduleConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
         expect(moduleConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeModuleCorid);
 
-        await writeGitMeta('moduleMeta.json', originalModuleMeta, 'restore module meta');
+        await writeGitFile(moduleConflictPath, {}, 'restore: neutralize injected module conflict');
 
-        step(58, 'pull main with moduleMeta same name in different folders → 409 with conflict details');
-        // 58. Cross-folder variant of step 57 for modules — same final name
-        //     under a different folder still collides on the (branch, type)
-        //     name uniqueness, so the pull must raise a 409.
-        const originalModuleMetaFolder = await captureGitMeta('moduleMeta.json');
-        const moduleMetaFolderObj = JSON.parse(originalModuleMetaFolder);
-        const realModuleFolderKeys = Object.keys(moduleMetaFolderObj).filter(
-          (k) =>
-            moduleMetaFolderObj[k] &&
-            typeof moduleMetaFolderObj[k] === 'object' &&
-            (moduleMetaFolderObj[k] as any).appPath
-        );
-        expect(realModuleFolderKeys.length).toBeGreaterThan(0);
-        const sampleModuleFolderEntry = moduleMetaFolderObj[realModuleFolderKeys[0]];
-        const sampleModuleFolderSegments = sampleModuleFolderEntry.appPath.split('/').filter(Boolean);
-        const sampleModuleFolderName = sampleModuleFolderSegments[sampleModuleFolderSegments.length - 1];
-        expect(sampleModuleFolderName).toBeTruthy();
-
+        step(58, 'pull main with module same name in a different folder → 409 with conflict details');
+        // 58. Cross-folder variant of step 57 for modules — same name under a
+        //     different folder still collides on (branch, type) uniqueness → 409.
         const fakeModuleFolderCorid = randomUUIDForMeta();
-        const folderedModulePath = `${sampleModuleFolderSegments[0]}/e2e-conflict-folder/${sampleModuleFolderName}`;
-        expect(folderedModulePath).not.toBe(sampleModuleFolderEntry.appPath);
-        const folderConflictModuleMeta = {
-          ...moduleMetaFolderObj,
-          [fakeModuleFolderCorid]: {
-            appPath: folderedModulePath,
+        const moduleFolderConflictPath = conflictAppJsonPath(
+          'modules',
+          'e2e-conflict-module-folder',
+          existingModuleName
+        );
+        await writeGitFile(
+          moduleFolderConflictPath,
+          {
+            id: fakeModuleFolderCorid,
+            name: existingModuleName,
+            type: 'module',
+            slug: `e2e-conflict-${fakeModuleFolderCorid.slice(0, 8)}`,
             updatedAt: new Date().toISOString(),
           },
-        };
-        await writeGitMeta(
-          'moduleMeta.json',
-          JSON.stringify(folderConflictModuleMeta, null, 2),
           'inject cross-folder module name conflict'
         );
 
-        const moduleFolderConflictPullResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .send({ branchId: mainBranchId })
-          .expect(409);
-        const moduleFolderConflictGroups = parseConflictGroups(moduleFolderConflictPullResp.body);
-        expect(moduleFolderConflictGroups).not.toBeNull();
-        const moduleFolderConflictGroup = moduleFolderConflictGroups!.find((g: any) => g.type === 'module');
+        const moduleFolderConflictGroups = await pullMainExpect409();
+        const moduleFolderConflictGroup = moduleFolderConflictGroups.find((g: any) => g.type === 'module');
         expect(moduleFolderConflictGroup).toBeDefined();
         expect(moduleFolderConflictGroup.conflictField).toBe('name');
         expect(moduleFolderConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
         expect(moduleFolderConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeModuleFolderCorid);
 
-        await writeGitMeta('moduleMeta.json', originalModuleMetaFolder, 'restore module meta');
+        await writeGitFile(moduleFolderConflictPath, {}, 'restore: neutralize injected cross-folder module conflict');
 
-        step(59, 'pull main with conflicting dataSourceMeta (intra-incoming same name) → 409 with conflict details');
-        // 59. Same shape as step 55 for data sources. The DS conflict
-        //     detector keys on the `name` field of the meta entry.
-        const originalDsMeta = await captureGitMeta('dataSourceMeta.json');
-        const dsMetaObj = JSON.parse(originalDsMeta);
-        const realDsKeys = Object.keys(dsMetaObj).filter(
-          (k) => dsMetaObj[k] && typeof dsMetaObj[k] === 'object' && (dsMetaObj[k] as any).name
-        );
-        expect(realDsKeys.length).toBeGreaterThan(0);
-        const sampleDsEntry = dsMetaObj[realDsKeys[0]];
-
+        step(59, 'pull main with a git datasource whose name collides with an existing DS → 409');
+        // 59. Same shape as step 55 for data sources. Conflict detection enumerates
+        //     data-sources/<dir>/data-source.json and keys on the file's `name`.
+        const existingDsName = await firstDataSourceName();
         const fakeDsCorid = randomUUIDForMeta();
-        const conflictDsMeta = {
-          ...dsMetaObj,
-          [fakeDsCorid]: {
-            ...sampleDsEntry,
-            name: sampleDsEntry.name,
-          },
-        };
-        await writeGitMeta('dataSourceMeta.json', JSON.stringify(conflictDsMeta, null, 2), 'inject ds meta conflict');
+        const dsConflictPath = 'data-sources/e2e-conflict-ds/data-source.json';
+        await writeGitFile(
+          dsConflictPath,
+          { id: fakeDsCorid, name: existingDsName, kind: 'restapi', type: 'default', options: {} },
+          'inject ds name conflict'
+        );
 
-        const dsConflictPullResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .send({ branchId: mainBranchId })
-          .expect(409);
-        const dsConflictGroups = parseConflictGroups(dsConflictPullResp.body);
-        expect(dsConflictGroups).not.toBeNull();
-        const dsConflictGroup = dsConflictGroups!.find((g: any) => g.type === 'datasource');
+        const dsConflictGroups = await pullMainExpect409();
+        const dsConflictGroup = dsConflictGroups.find((g: any) => g.type === 'datasource');
         expect(dsConflictGroup).toBeDefined();
         expect(dsConflictGroup.conflictField).toBe('name');
         expect(dsConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
         expect(dsConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeDsCorid);
 
-        await writeGitMeta('dataSourceMeta.json', originalDsMeta, 'restore ds meta');
+        await writeGitFile(dsConflictPath, {}, 'restore: neutralize injected ds conflict');
 
         step(60, 'delete data source A on a branch, then rename B → A → succeeds (branch-aware name check)');
         // 63. Regression for the CRUD rename check. Deleting a global DS on a
