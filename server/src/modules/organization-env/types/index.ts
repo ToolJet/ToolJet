@@ -45,3 +45,15 @@ export interface SamlEnvConfig {
   groupAttribute?: string;
   groupSyncEnabled?: boolean;
 }
+
+export interface LdapEnvConfig {
+  host: string;
+  port: string;
+  basedn: string;
+  name?: string;
+  ssl?: boolean;
+  // Only present when LDAP_SSL_CERTIFICATE=Certificates — omitted entirely (not just empty)
+  // when LDAP_SSL_CERTIFICATE=None or absent, even if the individual cert keys are set in .env.
+  sslCerts?: { client_key: string; client_cert: string; server_cert: string };
+  enableGroupSync?: boolean;
+}

@@ -6,6 +6,7 @@ import {
   UpdateOidcEnvConfigDTO,
   UpdateInstanceOidcEnvConfigDTO,
   UpdateSamlEnvConfigDTO,
+  UpdateLdapEnvConfigDTO,
 } from './dto';
 import { User } from '@modules/app/decorators/user.decorator';
 import { ILoginConfigsController } from './interfaces/IController';
@@ -122,6 +123,13 @@ export class LoginConfigsController implements ILoginConfigsController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch('/saml/env-configs')
   async toggleSamlEnvConfig(@Body() configData: UpdateSamlEnvConfigDTO, @User() user: UserEntity) {
+    throw new NotFoundException();
+  }
+
+  @InitFeature(FEATURE_KEY.SAVE_LDAP_ENV_CONFIGS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Patch('/ldap/env-configs')
+  async toggleLdapEnvConfig(@Body() configData: UpdateLdapEnvConfigDTO, @User() user: UserEntity) {
     throw new NotFoundException();
   }
 }

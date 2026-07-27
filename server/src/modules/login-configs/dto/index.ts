@@ -90,3 +90,8 @@ export class UpdateSamlEnvConfigDTO {
   @IsBoolean()
   useEnvConfig: boolean;
 }
+
+export class UpdateLdapEnvConfigDTO {
+  @IsBoolean()
+  useEnvConfig: boolean;
+}

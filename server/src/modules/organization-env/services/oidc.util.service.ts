@@ -52,6 +52,12 @@ export class OidcEnvUtilService implements IOidcEnvUtilService {
     return [];
   }
 
+  async getInstanceGroupSyncTemplateConfig(): Promise<
+    Array<{ organizationId: string; claimName?: string; groupMapping?: string }>
+  > {
+    return [];
+  }
+
   applyLicenseToResolvedOrgs(): Promise<void> {
     throw new Error('Method not implemented.');
   }

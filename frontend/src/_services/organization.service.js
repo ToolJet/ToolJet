@@ -11,6 +11,7 @@ export const organizationService = {
   getSSODetails,
   editOrganizationConfigs,
   updateSamlEnvConfig,
+  updateLdapEnvConfig,
   getWorkspacesLimit,
   checkWorkspaceUniqueness,
   updateOrganization,
@@ -134,6 +135,16 @@ function updateSamlEnvConfig(useEnvConfig) {
     body: JSON.stringify({ useEnvConfig }),
   };
   return fetch(`${config.apiUrl}/login-configs/saml/env-configs`, requestOptions).then(handleResponse);
+}
+
+function updateLdapEnvConfig(useEnvConfig) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ useEnvConfig }),
+  };
+  return fetch(`${config.apiUrl}/login-configs/ldap/env-configs`, requestOptions).then(handleResponse);
 }
 
 function getWorkspacesLimit() {

@@ -15,12 +15,14 @@ export class OrganizationEnvModule extends SubModule {
       GitSyncEnvUtilService,
       OidcEnvUtilService,
       SamlEnvUtilService,
+      LdapEnvUtilService,
       OrganizationEnvUtilService,
     } = await this.getProviders(configs, 'organization-env', [
       'service',
       'services/gitsync.util.service',
       'services/oidc.util.service',
       'services/saml.util.service',
+      'services/ldap.util.service',
       'util.service',
     ]);
 
@@ -33,12 +35,19 @@ export class OrganizationEnvModule extends SubModule {
         GitSyncEnvUtilService,
         OidcEnvUtilService,
         SamlEnvUtilService,
+        LdapEnvUtilService,
         OrganizationEnvUtilService,
         OrganizationRepository,
         OrganizationGitSyncRepository,
         SSOConfigsRepository,
       ],
-      exports: [GitSyncEnvUtilService, OidcEnvUtilService, SamlEnvUtilService, OrganizationEnvUtilService],
+      exports: [
+        GitSyncEnvUtilService,
+        OidcEnvUtilService,
+        SamlEnvUtilService,
+        LdapEnvUtilService,
+        OrganizationEnvUtilService,
+      ],
     });
   }
 }

@@ -57,19 +57,27 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
     return result;
   }
 
-  async findOrgSamlConfig(organizationId: string): Promise<SSOConfigs | null> {
+  async findOrgSsoConfig(organizationId: string, sso: SSOType): Promise<SSOConfigs | null> {
     return this.findOne({
-      where: { organizationId, sso: SSOType.SAML, configScope: ConfigScope.ORGANIZATION },
+      where: { organizationId, sso, configScope: ConfigScope.ORGANIZATION },
     });
   }
 
-  async setUseEnvConfig(organizationId: string, useEnvConfig: boolean): Promise<SSOConfigs> {
-    const existing = await this.findOrgSamlConfig(organizationId);
+  async findOrgSamlConfig(organizationId: string): Promise<SSOConfigs | null> {
+    return this.findOrgSsoConfig(organizationId, SSOType.SAML);
+  }
+
+  async findOrgLdapConfig(organizationId: string): Promise<SSOConfigs | null> {
+    return this.findOrgSsoConfig(organizationId, SSOType.LDAP);
+  }
+
+  async setUseEnvConfig(organizationId: string, useEnvConfig: boolean, sso: SSOType = SSOType.SAML): Promise<SSOConfigs> {
+    const existing = await this.findOrgSsoConfig(organizationId, sso);
     if (!existing) {
       return this.save(
         this.create({
           organizationId,
-          sso: SSOType.SAML,
+          sso,
           configScope: ConfigScope.ORGANIZATION,
           configs: {} as any,
           enabled: false,

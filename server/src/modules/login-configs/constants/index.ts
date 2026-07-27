@@ -11,4 +11,5 @@ export enum FEATURE_KEY {
   SAVE_OIDC_ENV_CONFIGS = 'save_oidc_env_configs',
   SAVE_INSTANCE_OIDC_ENV_CONFIGS = 'save_instance_oidc_env_configs',
   SAVE_SAML_ENV_CONFIGS = 'save_saml_env_configs',
+  SAVE_LDAP_ENV_CONFIGS = 'save_ldap_env_configs',
 }

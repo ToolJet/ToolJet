@@ -31,6 +31,21 @@ export const SAML_ENV_KEYS = {
   GROUP_SYNC_ENABLED: 'SAML_GROUP_SYNC_ENABLED', // optional
 } as const;
 
+export const LDAP_ENV_KEYS = {
+  HOST_NAME: 'LDAP_HOST_NAME',
+  PORT: 'LDAP_PORT',
+  BASE_DN: 'LDAP_BASE_DN',
+  NAME: 'LDAP_NAME', // optional
+  SSL: 'LDAP_SSL', // optional — 'true' | 'false'
+  // Only read when LDAP_SSL_CERTIFICATE is present and equal to 'Certificates' — if 'None'
+  // (or absent), these three are ignored entirely even if set in .env.
+  SSL_CERTIFICATE: 'LDAP_SSL_CERTIFICATE', // optional — 'Certificates' | 'None'
+  CLIENT_KEY: 'LDAP_CLIENT_KEY', // optional
+  CLIENT_CERTIFICATE: 'LDAP_CLIENT_CERTIFICATE', // optional
+  SERVER_CERTIFICATE: 'LDAP_SERVER_CERTIFICATE', // optional
+  ENABLE_GROUP_SYNC: 'LDAP_ENABLE_GROUP_SYNC', // optional — 'true' | 'false'
+} as const;
+
 export const REQUIRED_KEYS = {
   HTTPS: [
     GIT_ENV_KEYS.HTTPS.URL,
@@ -42,6 +57,7 @@ export const REQUIRED_KEYS = {
   SSH: Object.values(GIT_ENV_KEYS.SSH),
   GITLAB: [GIT_ENV_KEYS.GITLAB.URL, GIT_ENV_KEYS.GITLAB.BRANCH, GIT_ENV_KEYS.GITLAB.PROJECT_ID],
   SAML: [SAML_ENV_KEYS.IDP_METADATA],
+  LDAP: [LDAP_ENV_KEYS.HOST_NAME, LDAP_ENV_KEYS.PORT, LDAP_ENV_KEYS.BASE_DN],
 } as const;
 
 export const OIDC_ENV_KEYS = {
