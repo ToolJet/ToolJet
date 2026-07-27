@@ -86,7 +86,9 @@ printf "\n"
 # Shared shard config
 # ---------------------------------------------------------------------------
 SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests --forceExit)
-[ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage)
+# --coverageReporters=json: per-shard HTML/lcov would be thrown away anyway once
+# merge-coverage.mjs combines all shards below.
+[ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage --coverageReporters=json)
 
 SHARD_LOG_DIR=$(mktemp -d)
 trap 'rm -rf "$SHARD_LOG_DIR"' EXIT
@@ -211,15 +213,12 @@ fi
 # ---------------------------------------------------------------------------
 if [ "$coverage" = true ]; then
   printf "\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
-  mkdir -p .coverage/merged
-  npx nyc merge .coverage .coverage/merged/coverage-final.json 2>/dev/null
-  npx nyc report \
-    --temp-dir .coverage/merged \
-    --reporter=html --reporter=lcov --reporter=json \
-    --report-dir=coverage-e2e 2>/dev/null
-  cp .coverage/merged/coverage-final.json coverage-e2e/coverage-final.json 2>/dev/null
-  printf "\033[32mCoverage report written to coverage-e2e/\033[0m\n"
+  node scripts/merge-coverage.mjs --out coverage-e2e --reporters json,html,lcovonly,json-summary .coverage
   rm -rf .coverage
+
+  # --coverage makes jest attach a full coverageMap to every --json shard file too —
+  # strip it, coverage-e2e/coverage-final.json above is the authoritative report.
+  [ -n "$json_output_dir" ] && node scripts/strip-coverage-map.mjs "$json_output_dir"/shard-*.json
 fi
 
 # ---------------------------------------------------------------------------

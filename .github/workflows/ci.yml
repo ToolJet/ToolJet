@@ -194,7 +194,9 @@ jobs:
   test-server-unit:
     name: 'Test Suite · server-unit'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # +10 over the plain run: --coverage instruments 1286 files (v8 provider, ~1300 files
+    # incl. untested ones), most of it on maxWorkers=50% so the cost is real but bounded.
+    timeout-minutes: 40
     needs:
       - detect-changes
       - build-plugins
@@ -268,7 +270,15 @@ jobs:
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
-      - run: npm run --prefix server test -- --json --outputFile /tmp/tj-unit-results.json
+      - run: >-
+          npm run --prefix server test --
+          --coverage --coverageReporters=json
+          --json --outputFile /tmp/tj-unit-results.json
+      - name: Strip coverage map from results JSON
+        # --coverage attaches a full coverageMap to the --json output (~12MB for this
+        # suite) — coverage-unit/coverage-final.json below is the report that matters.
+        if: ${{ !cancelled() }}
+        run: node server/scripts/strip-coverage-map.mjs /tmp/tj-unit-results.json
       - name: Upload unit results for the PR comment
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -277,11 +287,21 @@ jobs:
           path: /tmp/tj-unit-results.json
           if-no-files-found: ignore
           retention-days: 1
+      - name: Upload unit coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-unit
+          path: server/coverage-unit/coverage-final.json
+          if-no-files-found: ignore
+          retention-days: 1
 
   test-server-e2e:
     name: 'Test Suite · server-e2e'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # +15 over the plain run: run-e2e.sh uses --runInBand, so jest's untested-file
+    # coverage pass (1286 files) runs in-process and serially, once per shard.
+    timeout-minutes: 45
     needs:
       - detect-changes
       - build-plugins
@@ -360,13 +380,96 @@ jobs:
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
-      - run: mkdir -p /tmp/tj-e2e-json && npm run --prefix server test:e2e -- --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
+      - run: >-
+          mkdir -p /tmp/tj-e2e-json &&
+          npm run --prefix server test:e2e:cov -- --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
       - name: Upload e2e results for the PR comment
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: full-e2e-results
           path: /tmp/tj-e2e-json/
+          if-no-files-found: ignore
+          retention-days: 1
+      - name: Upload e2e coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-e2e
+          path: server/coverage-e2e/coverage-final.json
+          if-no-files-found: ignore
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # 3a. Coverage — merges unit + e2e into one report. Informational only: never
+  #     gates the merge (see ci-gate's "Evaluate results" step), continue-on-error
+  #     so a merge failure shows a warning triangle, not a red X that confuses
+  #     reviewers into thinking the PR is blocked.
+  # ---------------------------------------------------------------------------
+  coverage-report:
+    name: 'Coverage · combined'
+    runs-on: ubuntu-latest
+    # Same image as the test jobs: coverage-final.json keys are absolute paths
+    # (/__w/ToolJet/ToolJet/...); a bare ubuntu-latest runner mounts the workspace
+    # at /home/runner/work/... instead, and the HTML reporter throws "Unable to
+    # lookup source" on every file the moment the paths don't match.
+    container: node:22.15.1-bullseye
+    timeout-minutes: 20
+    continue-on-error: true
+    needs:
+      - detect-changes
+      - test-server-unit
+      - test-server-e2e
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.server == 'true'
+      && (contains(fromJSON('["success","failure"]'), needs.test-server-unit.result)
+          || contains(fromJSON('["success","failure"]'), needs.test-server-e2e.result))
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout EE submodules
+        # collectCoverageFrom includes ee/**/*.ts, and the HTML reporter reads
+        # source files off disk to render them — the submodule must be present.
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/cache@v4
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Download unit coverage
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-unit
+          path: server/coverage-unit
+      - name: Download e2e coverage
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-e2e
+          path: server/coverage-e2e
+      - run: npm run --prefix server test:cov:merge
+      - name: Upload combined coverage report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-html
+          path: server/coverage-combined/
+          compression-level: 9
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload coverage summary for the PR comment
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-summary
+          path: server/coverage-combined/coverage-summary.json
           if-no-files-found: ignore
           retention-days: 1
 
@@ -558,6 +661,7 @@ jobs:
       - test-server-e2e
       - cypress-platform
       - cypress-marketplace
+      - coverage-report
     steps:
       - name: Evaluate results
         id: eval
@@ -582,6 +686,9 @@ jobs:
           fi
 
           failed=false
+          # coverage-report is deliberately absent from both arrays below — it's
+          # informational only (coverageThreshold is 0 everywhere) and must never
+          # affect the CI Gate status that branch protection consumes.
           builds=(
             "build-server:${{ needs.build-server.result }}"
             "build-frontend:${{ needs.build-frontend.result }}"
@@ -666,6 +773,17 @@ jobs:
           merge-multiple: true
           path: /tmp/ci-results/buildlogs
 
+      - name: Download coverage summary
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-summary
+          path: /tmp/ci-results/coverage
+
       - name: Render PR comment
         if: >-
           github.event_name == 'pull_request'
@@ -680,6 +798,7 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
           UNIT_JSON: /tmp/ci-results/tj-unit-results.json
           E2E_JSON_DIR: /tmp/ci-results/tj-e2e-json
+          COVERAGE_SUMMARY: /tmp/ci-results/coverage/coverage-summary.json
           RESULT_BUILD_SERVER: ${{ needs.build-server.result }}
           RESULT_BUILD_PLUGINS: ${{ needs.build-plugins.result }}
           RESULT_BUILD_FRONTEND: ${{ needs.build-frontend.result }}
@@ -699,6 +818,13 @@ jobs:
           else
             export UNIT_STEP_URL=$(job_url "server-unit")
             export E2E_STEP_URL=$(job_url "server-e2e")
+            artifacts_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" 2>/dev/null || echo '{}')
+            coverage_artifact_id=$(echo "$artifacts_json" | jq -r '.artifacts[]? | select(.name == "coverage-report-html") | .id' | head -1)
+            if [ -n "$coverage_artifact_id" ]; then
+              export COVERAGE_ARTIFACT_URL="${RUN_URL}/artifacts/${coverage_artifact_id}"
+            else
+              export COVERAGE_ARTIFACT_URL="${RUN_URL}#artifacts"
+            fi
           fi
           bash scripts/render-ci-comment.sh "$MODE" > /tmp/ci-comment.md
           cat /tmp/ci-comment.md >> "$GITHUB_STEP_SUMMARY"
