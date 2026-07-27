@@ -61,6 +61,7 @@ import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedM
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { TriangleAlert } from 'lucide-react';
 
@@ -256,6 +257,12 @@ class HomePageComponent extends React.Component {
       }
     });
 
+    // Store is a singleton — refetch on dashboard return; active branch may have been deleted while away.
+    if (useWorkspaceBranchesStore.getState().isInitialized) {
+      useWorkspaceBranchesStore.getState().actions.fetchBranches();
+    }
+    this._liveNotificationsUnsubscribe = subscribeLiveNotifications(this.handleGitSyncNotification);
+
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
@@ -268,7 +275,35 @@ class HomePageComponent extends React.Component {
     if (this._branchStoreUnsubscribe) {
       this._branchStoreUnsubscribe();
     }
+    if (this._liveNotificationsUnsubscribe) {
+      this._liveNotificationsUnsubscribe();
+    }
   }
+
+  // Aftermath for git-sync background jobs — live WS arrivals only, REST backfill never reaches here.
+  handleGitSyncNotification = (n) => {
+    const meta = n?.metadata;
+    if (meta?.source !== 'git-sync' || n?.type !== 'success') return;
+    const branchActions = useWorkspaceBranchesStore.getState().actions;
+    switch (meta.action) {
+      case 'git-delete-branch':
+        // fetchBranches self-heals a deleted active branch to default; the
+        // activeBranchId change triggers the apps refetch above. Silent — the
+        // notification toast already announces the deletion.
+        branchActions.fetchBranches();
+        break;
+      case 'git-pull-branch':
+        // same branch id — subscription won't fire, refetch directly
+        this.fetchApps(1, this.state.currentFolder.id);
+        this.fetchFolders();
+        break;
+      case 'git-create-branch':
+        branchActions.fetchBranches();
+        break;
+      default:
+        break;
+    }
+  };
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.appType != this.props.appType) {
@@ -1318,26 +1353,6 @@ class HomePageComponent extends React.Component {
         }
       }
 
-      // OLD: fetch remote branches for branch picker
-      // this.setState({
-      //   showGitRepositoryImportModal: true,
-      //   fetchingRemoteBranches: true,
-      //   selectedImportBranch: null,
-      //   appsFromRepos: {},
-      //   selectedAppRepo: null,
-      //   importingGitAppOperations: {},
-      //   latestCommitData: null,
-      //   selectedVersionOption: null,
-      // });
-      // useWorkspaceBranchesStore
-      //   .getState()
-      //   .actions.fetchRemoteBranches()
-      //   .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
-      //   .catch(() => {
-      //     toast.error('Failed to fetch remote branches');
-      //     this.setState({ fetchingRemoteBranches: false });
-      //   });
-
       // Auto-set branch to current workspace branch and immediately fetch apps
       const branchName = currentBranch?.name || null;
       this.setState({
@@ -1956,9 +1971,11 @@ class HomePageComponent extends React.Component {
                 <span>
                   {`The ${appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} ${
                     appToBeDeleted?.name
-                  } and the associated data will be deleted from this branch. On merge to main, `}
+                  } and the associated data will be deleted from this branch. On merge to ${
+                    useWorkspaceBranchesStore.getState().branches?.find((b) => b.is_default || b.isDefault)?.name ??
+                    'the default branch'
+                  }, `}
                   <strong>
-                    {' '}
                     {appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} and all its associated
                     versions
                   </strong>
