@@ -17,6 +17,10 @@ export class OrganizationEnvRegistryService implements IOrganizationEnvRegistryS
     return undefined;
   }
 
+  getAll(_organizationId: string): Map<string, string> | undefined {
+    return undefined;
+  }
+
   async ensureResolved(_organizationId: string): Promise<void> {}
 
   getResolvedOrganizationIds(): string[] {
