@@ -195,7 +195,9 @@ describe('GitObjectCacheService root dir resolution', () => {
   });
 
   it('falls back to the OS temp folder when no dir is configured', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const os = require('os');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require('path');
     const svc = new GitObjectCacheService({} as any);
     const p = svc.mirrorPathFor('org1', 'https://github.com/acme/repo.git');
@@ -204,8 +206,11 @@ describe('GitObjectCacheService root dir resolution', () => {
 });
 
 describe('GitObjectCacheService eviction', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const fs = require('fs');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const os = require('os');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const path = require('path');
   let root: string;
   let svc: GitObjectCacheService;
@@ -273,8 +278,11 @@ describe('GitObjectCacheService eviction', () => {
 });
 
 describe('GitObjectCacheService.cachedSparseClone fallback', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const fs = require('fs');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const os = require('os');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const path = require('path');
 
   afterEach(() => {
@@ -429,8 +437,11 @@ describe('GitObjectCacheService per-repo locking (withLock)', () => {
 });
 
 describe('GitObjectCacheService Redis fleet eviction', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const fs = require('fs');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const os = require('os');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const path = require('path');
   const CHANNEL = 'tj:git-cache:evict'; // the Redis channel pods talk on
   let redis: FakeRedisService;

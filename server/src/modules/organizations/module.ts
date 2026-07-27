@@ -18,7 +18,13 @@ export class OrganizationsModule extends SubModule {
       module: OrganizationsModule,
       imports: [await InstanceSettingsModule.register(configs), await AppEnvironmentsModule.register(configs)],
       controllers: isMainImport ? [OrganizationsController] : [],
-      providers: [OrganizationsService, OrganizationRepository, CustomDomainRepository, FeatureAbilityFactory, OrganizationsUtilService],
+      providers: [
+        OrganizationsService,
+        OrganizationRepository,
+        CustomDomainRepository,
+        FeatureAbilityFactory,
+        OrganizationsUtilService,
+      ],
       exports: [OrganizationsUtilService],
     });
   }

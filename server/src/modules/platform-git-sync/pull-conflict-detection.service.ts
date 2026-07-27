@@ -6,11 +6,7 @@ import { Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class PullConflictDetectionService {
-  async detectAndThrowConflicts(
-    _organizationId: string,
-    _branchId: string,
-    _repoPath: string
-  ): Promise<void> {
+  async detectAndThrowConflicts(_organizationId: string, _branchId: string, _repoPath: string): Promise<void> {
     // no-op in CE
   }
 }

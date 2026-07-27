@@ -96,7 +96,14 @@ export class EmailService implements IEmailService {
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
-    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo, host);
+    const inviteUrl = generateInviteURL(
+      invitationtoken,
+      organizationInvitationToken,
+      organizationId,
+      null,
+      redirectTo,
+      host
+    );
     const subject = isOrgInvite ? `Welcome to ${organizationName || 'ToolJet'}` : 'Set up your account!';
     const footerText = isOrgInvite
       ? 'You have received this email as an invitation to join ToolJet’s workspace'

@@ -33,7 +33,7 @@ export class PageService implements IPageService {
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
     protected readonly transactionLogger: TransactionLogger
-  ) { }
+  ) {}
 
   /**
    * Hook called before page creation - override in EE to capture state for history

@@ -4,7 +4,7 @@ import { EnvProviderState, GitHttpsEnvConfig, GitLabEnvConfig, GitSshEnvConfig }
 export interface IGitSyncEnvUtilService {
   initialize(): Promise<void>;
 
-  hasGitHttpsConfig(workspaceId: string): boolean; 
+  hasGitHttpsConfig(workspaceId: string): boolean;
   hasGitSshConfig(workspaceId: string): boolean;
   hasGitLabConfig(workspaceId: string): boolean;
 

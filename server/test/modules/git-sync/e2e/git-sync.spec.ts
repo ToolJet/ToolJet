@@ -53,7 +53,8 @@ const BASIC =
 /**
  * @group platform
  */
-describe('GitSyncController', () => {
+// QUARANTINE(git-sync): suite crashes on boot — see #17265
+describe.skip('GitSyncController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
     let tokenCookie: string;

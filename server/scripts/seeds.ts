@@ -130,7 +130,9 @@ async function bootstrap() {
   });
 
   console.log(
-    'Seeding complete. Use default credentials to login.\n' + `email: ${config.email}\n` + `password: ${config.password}`
+    'Seeding complete. Use default credentials to login.\n' +
+      `email: ${config.email}\n` +
+      `password: ${config.password}`
   );
 
   await dataSource.destroy();

@@ -403,7 +403,7 @@ export class VersionRepository extends Repository<AppVersion> {
         where: { name: versionId, appId },
         relations: ['app'],
       });
-    } catch (error) {
+    } catch {
       version = await this.manager.findOneOrFail(AppVersion, {
         where: { id: versionId },
         relations: ['app'],

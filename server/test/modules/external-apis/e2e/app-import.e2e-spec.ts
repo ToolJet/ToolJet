@@ -190,7 +190,9 @@ describe('External API — POST /ext/import/workspace/:workspaceId/apps', () => 
     });
 
     it('imports into a different workspace than the source', async () => {
-      const { user: user1, organization: org1 } = await createUser(app, { email: `app-import-cross-1-${Date.now()}@tooljet.io` });
+      const { user: user1, organization: org1 } = await createUser(app, {
+        email: `app-import-cross-1-${Date.now()}@tooljet.io`,
+      });
       const { organization: org2 } = await createUser(app, { email: `app-import-cross-2-${Date.now()}@tooljet.io` });
 
       const seededApp = await createApplication(app, { name: 'Portable App', user: user1 });

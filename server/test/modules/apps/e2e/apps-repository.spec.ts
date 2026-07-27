@@ -101,24 +101,38 @@ describe('AppsRepository', () => {
 
       const admin = await createAdmin(nestApp, 'apps-repo-branch-slug@tooljet.io');
       orgId = admin.user.organizationId;
-      testApp = await createApplication(nestApp, { name: 'branch-slug-test-app', user: admin.user }) as App & { organizationId: string };
+      testApp = (await createApplication(nestApp, { name: 'branch-slug-test-app', user: admin.user })) as App & {
+        organizationId: string;
+      };
 
       // Default branch — simulates a git-sync-enabled workspace.
       const mainBranch = await saveEntity(WorkspaceBranch, { organizationId: orgId, name: 'main', isDefault: true });
       mainBranchId = mainBranch.id;
 
       // Feature branch.
-      const featBranch = await saveEntity(WorkspaceBranch, { organizationId: orgId, name: 'feature/test', isDefault: false });
+      const featBranch = await saveEntity(WorkspaceBranch, {
+        organizationId: orgId,
+        name: 'feature/test',
+        isDefault: false,
+      });
       featBranchId = featBranch.id;
 
       // Default-branch version: slug = apps.id (PR #16818 stub placeholder).
       // chk_app_versions_branch_metadata requires app_name when branch_id is set.
       const mainVersion = await createApplicationVersion(nestApp, testApp);
-      await updateEntity(AppVersion, mainVersion.id, { branchId: mainBranchId, slug: testApp.id, appName: 'branch-slug-test-app' });
+      await updateEntity(AppVersion, mainVersion.id, {
+        branchId: mainBranchId,
+        slug: testApp.id,
+        appName: 'branch-slug-test-app',
+      });
 
       // Feature-branch version: holds the real canonical slug.
       const featVersion = await createApplicationVersion(nestApp, testApp);
-      await updateEntity(AppVersion, featVersion.id, { branchId: featBranchId, slug: featureSlug, appName: 'branch-slug-test-app' });
+      await updateEntity(AppVersion, featVersion.id, {
+        branchId: featBranchId,
+        slug: featureSlug,
+        appName: 'branch-slug-test-app',
+      });
     });
 
     afterAll(async () => {
@@ -155,10 +169,20 @@ describe('AppsRepository', () => {
 
       const admin = await createAdmin(nestApp, 'apps-repo-branch-pref@tooljet.io');
       const prefOrgId = admin.user.organizationId;
-      const prefApp = await createApplication(nestApp, { name: 'branch-pref-app', user: admin.user }) as App & { organizationId: string };
+      const prefApp = (await createApplication(nestApp, { name: 'branch-pref-app', user: admin.user })) as App & {
+        organizationId: string;
+      };
 
-      const mainBranch = await saveEntity(WorkspaceBranch, { organizationId: prefOrgId, name: 'main', isDefault: true });
-      const featBranch = await saveEntity(WorkspaceBranch, { organizationId: prefOrgId, name: 'feat/pref', isDefault: false });
+      const mainBranch = await saveEntity(WorkspaceBranch, {
+        organizationId: prefOrgId,
+        name: 'main',
+        isDefault: true,
+      });
+      const featBranch = await saveEntity(WorkspaceBranch, {
+        organizationId: prefOrgId,
+        name: 'feat/pref',
+        isDefault: false,
+      });
 
       const mainVer = await createApplicationVersion(nestApp, prefApp);
       await updateEntity(AppVersion, mainVer.id, {
@@ -199,7 +223,12 @@ describe('AppsRepository', () => {
       // The slug was created under testApp's org in beforeAll. Querying with a
       // different orgId must return null — no cross-org data leak.
       const otherAdmin = await createAdmin(nestApp, 'apps-repo-crossorg@tooljet.io');
-      const result = await appsRepository.findBySlug(featureSlug, otherAdmin.user.organizationId, undefined, featBranchId);
+      const result = await appsRepository.findBySlug(
+        featureSlug,
+        otherAdmin.user.organizationId,
+        undefined,
+        featBranchId
+      );
       expect(result).toBeNull();
     });
   });
@@ -216,7 +245,9 @@ describe('AppsRepository', () => {
 
       // Workspace with no WorkspaceBranch rows — simulates git-sync OFF.
       const admin = await createAdmin(nestApp, 'apps-repo-nogitsync@tooljet.io');
-      branchlessApp = await createApplication(nestApp, { name: 'no-gitsync-app', user: admin.user }) as App & { organizationId: string };
+      branchlessApp = (await createApplication(nestApp, { name: 'no-gitsync-app', user: admin.user })) as App & {
+        organizationId: string;
+      };
       const version = await createApplicationVersion(nestApp, branchlessApp);
       await updateEntity(AppVersion, version.id, { slug: branchlessSlug });
     });

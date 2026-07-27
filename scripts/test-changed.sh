@@ -1,20 +1,12 @@
 #!/usr/bin/env bash
-# Detects changed server modules and runs their Jest tests.
-# Usage: scripts/test-changed.sh [--e2e]
-#
-# --e2e   Also run e2e tests (sequential shards + CI mode via run-e2e.sh).
-#         Omit for local pre-push (unit only).
+# Detects changed server modules and runs their Jest tests (unit + e2e).
+# Usage: scripts/test-changed.sh
 #
 # Fallback: cross-cutting changes (helpers/entities/dto/lib) → run all tests.
-# Known gap: server/test/ee/ specs not matched by unit testRegex; changes to
-#   server/ee/{X} run test/modules/{X}/ only.
+# NODE_ENV=test is set by the npm scripts themselves (server/package.json,
+# run-e2e.sh) — no env needed from the caller.
 
 set -euo pipefail
-
-RUN_E2E=false
-for arg in "$@"; do
-  [[ "$arg" == "--e2e" ]] && RUN_E2E=true
-done
 
 ROOT=$(git rev-parse --show-toplevel)
 SERVER_DIR="$ROOT/server"
@@ -50,6 +42,11 @@ while IFS= read -r file; do
       mod=$(echo "$file" | sed 's|server/test/modules/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
       ;;
+    server/test/ee/*)
+      # test/ee specs aren't matched by the per-module unit regex — run everything
+      echo "EE test change in: $file"
+      RUN_ALL=true
+      ;;
     server/ee/*)
       mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
@@ -70,7 +67,7 @@ fi
 
 if [[ "$RUN_ALL" == "true" ]] || [[ ${#UNIQUE_MODULES[@]} -eq 0 ]]; then
   PATTERN=""
-  echo "Running all server unit tests"
+  echo "Running all server tests"
 else
   MODULE_REGEX=$(IFS='|'; echo "${UNIQUE_MODULES[*]}")
   PATTERN="test/modules/(${MODULE_REGEX})/"
@@ -79,36 +76,21 @@ fi
 
 cd "$SERVER_DIR"
 
-echo "--- Unit tests ---"
+unit_args=()
+e2e_args=(--ci)
 if [[ -n "$PATTERN" ]]; then
-  if [[ "${CI:-}" == "true" ]]; then
-    npm run test -- --testPathPatterns="$PATTERN" --json --outputFile /tmp/tj-unit-results.json
-  else
-    npm run test -- --testPathPatterns="$PATTERN"
-  fi
-else
-  if [[ "${CI:-}" == "true" ]]; then
-    npm run test -- --json --outputFile /tmp/tj-unit-results.json
-  else
-    npm run test
-  fi
+  unit_args+=(--testPathPatterns="$PATTERN")
+  e2e_args+=(--testPathPatterns "$PATTERN")
+fi
+if [[ "${CI:-}" == "true" ]]; then
+  unit_args+=(--json --outputFile /tmp/tj-unit-results.json)
+  mkdir -p /tmp/tj-e2e-json
+  e2e_args+=(--json-output-dir /tmp/tj-e2e-json)
 fi
 
-if [[ "$RUN_E2E" == "true" ]]; then
-  echo "--- E2e tests ---"
-  if [[ -n "$PATTERN" ]]; then
-    if [[ "${CI:-}" == "true" ]]; then
-      mkdir -p /tmp/tj-e2e-json
-      npm run test:e2e -- --testPathPatterns "$PATTERN" --ci --json-output-dir /tmp/tj-e2e-json
-    else
-      npm run test:e2e -- --testPathPatterns "$PATTERN" --ci
-    fi
-  else
-    if [[ "${CI:-}" == "true" ]]; then
-      mkdir -p /tmp/tj-e2e-json
-      npm run test:e2e -- --ci --json-output-dir /tmp/tj-e2e-json
-    else
-      npm run test:e2e -- --ci
-    fi
-  fi
-fi
+# ${arr[@]+...} guard: empty-array expansion breaks under set -u on bash 3.2 (macOS)
+echo "--- Unit tests ---"
+npm run test -- ${unit_args[@]+"${unit_args[@]}"}
+
+echo "--- E2e tests ---"
+npm run test:e2e -- "${e2e_args[@]}"

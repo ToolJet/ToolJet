@@ -11,5 +11,5 @@ export type QueryOptions = {
 };
 
 export enum Operation {
-  InvokeLambda = 'invoke_lambda'
+  InvokeLambda = 'invoke_lambda',
 }

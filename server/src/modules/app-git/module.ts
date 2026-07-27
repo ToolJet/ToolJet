@@ -52,11 +52,9 @@ export class AppGitModule extends SubModule {
       'shared/datasource-branch.util',
     ]);
 
-    const { GitConflictDetectionService } = await this.getProviders(
-      configs,
-      'platform-git-sync',
-      ['git-conflict-detection.service']
-    );
+    const { GitConflictDetectionService } = await this.getProviders(configs, 'platform-git-sync', [
+      'git-conflict-detection.service',
+    ]);
     return this.cacheModule(cacheKey, {
       module: AppGitModule,
       imports: [

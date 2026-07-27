@@ -8,7 +8,9 @@ export class VersionCreateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty({ message: 'Version name cannot be empty.' })
   @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
-  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, {
+    message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).',
+  })
   versionName: string;
 
   @IsUUID()

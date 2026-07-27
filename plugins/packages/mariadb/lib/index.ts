@@ -20,41 +20,35 @@ function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client
     const sshClient = new Client();
 
     sshClient.on('ready', () => {
-      sshClient.forwardOut(
-        '127.0.0.1',
-        0,
-        sourceOptions.host,
-        Number(sourceOptions.port),
-        (err, stream) => {
-          if (err) {
-            sshClient.end();
-            return reject(err);
-          }
-
-          stream.on('error', (streamErr) => {
-            console.error('SSH stream error (suppressed):', streamErr.message);
-          });
-
-          stream.on('close', () => {
-            setImmediate(() => {
-              try {
-                if (sshClient) sshClient.destroy();
-              } catch (e) {
-                console.error('Error closing SSH client (suppressed):', (e as Error).message);
-              }
-            });
-          });
-
-          // MariaDB driver calls socket methods that SSH Channel streams don't implement
-          const sshChannel: any = stream;
-          if (typeof sshChannel.unref !== 'function')        sshChannel.unref        = () => {};
-          if (typeof sshChannel.ref !== 'function')          sshChannel.ref          = () => {};
-          if (typeof sshChannel.setKeepAlive !== 'function') sshChannel.setKeepAlive = () => {};
-          if (typeof sshChannel.setNoDelay !== 'function')   sshChannel.setNoDelay   = () => {};
-
-          resolve({ client: sshClient, stream });
+      sshClient.forwardOut('127.0.0.1', 0, sourceOptions.host, Number(sourceOptions.port), (err, stream) => {
+        if (err) {
+          sshClient.end();
+          return reject(err);
         }
-      );
+
+        stream.on('error', (streamErr) => {
+          console.error('SSH stream error (suppressed):', streamErr.message);
+        });
+
+        stream.on('close', () => {
+          setImmediate(() => {
+            try {
+              if (sshClient) sshClient.destroy();
+            } catch (e) {
+              console.error('Error closing SSH client (suppressed):', (e as Error).message);
+            }
+          });
+        });
+
+        // MariaDB driver calls socket methods that SSH Channel streams don't implement
+        const sshChannel: any = stream;
+        if (typeof sshChannel.unref !== 'function') sshChannel.unref = () => {};
+        if (typeof sshChannel.ref !== 'function') sshChannel.ref = () => {};
+        if (typeof sshChannel.setKeepAlive !== 'function') sshChannel.setKeepAlive = () => {};
+        if (typeof sshChannel.setNoDelay !== 'function') sshChannel.setNoDelay = () => {};
+
+        resolve({ client: sshClient, stream });
+      });
     });
 
     sshClient.on('error', (err) => {
@@ -126,7 +120,11 @@ export default class Mariadb implements QueryService {
     } finally {
       if (conn) conn.release();
       if (!checkCache) {
-        try { await pool.end(); } catch (_) { /* ignore */ }
+        try {
+          await pool.end();
+        } catch (_) {
+          /* ignore */
+        }
       }
     }
   }
@@ -160,7 +158,6 @@ export default class Mariadb implements QueryService {
 
     try {
       switch (operation) {
-
         case 'list_rows': {
           const { list_rows, limit, offset } = queryOptions;
           const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
@@ -367,15 +364,16 @@ export default class Mariadb implements QueryService {
       await conn.commit();
       return affectedRows;
     } catch (error) {
-      try { await conn.rollback(); } catch (_) { /* ignore secondary rollback errors */ }
+      try {
+        await conn.rollback();
+      } catch (_) {
+        /* ignore secondary rollback errors */
+      }
       throw error;
     }
   }
 
-  private async executeBulkInTransaction(
-    conn: any,
-    queries: { query: string; params: unknown[] }[]
-  ): Promise<number> {
+  private async executeBulkInTransaction(conn: any, queries: { query: string; params: unknown[] }[]): Promise<number> {
     let totalAffected = 0;
     await conn.beginTransaction();
     try {
@@ -386,11 +384,14 @@ export default class Mariadb implements QueryService {
       await conn.commit();
       return totalAffected;
     } catch (error) {
-      try { await conn.rollback(); } catch (_) { /* ignore secondary rollback errors */ }
+      try {
+        await conn.rollback();
+      } catch (_) {
+        /* ignore secondary rollback errors */
+      }
       throw error;
     }
   }
-
 
   async invokeMethod(methodName: string, _context: unknown, sourceOptions: SourceOptions, args?: any): Promise<any> {
     if (methodName === 'listTables') {
@@ -410,15 +411,13 @@ export default class Mariadb implements QueryService {
     throw new QueryError('Method not found', `Method '${methodName}' is not supported by the MariaDB plugin`, {});
   }
 
-
   private async _fetchTables(
     sourceOptions: SourceOptions,
     search = '',
     page?: number,
     limit?: number
   ): Promise<
-    | Array<{ value: string; label: string }>
-    | { items: Array<{ value: string; label: string }>; totalCount: number }
+    Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
   > {
     let conn;
     try {
@@ -456,7 +455,12 @@ export default class Mariadb implements QueryService {
     } catch (err) {
       throw new QueryError('Could not fetch tables', err.message, {});
     } finally {
-      if (conn) try { await conn.end(); } catch (_) { /* ignore */ }
+      if (conn)
+        try {
+          await conn.end();
+        } catch (_) {
+          /* ignore */
+        }
     }
   }
 
@@ -478,10 +482,14 @@ export default class Mariadb implements QueryService {
     } catch (err) {
       throw new QueryError('Could not fetch columns', err.message, {});
     } finally {
-      if (conn) try { await conn.end(); } catch (_) { /* ignore */ }
+      if (conn)
+        try {
+          await conn.end();
+        } catch (_) {
+          /* ignore */
+        }
     }
   }
-
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     let conn;
@@ -494,10 +502,14 @@ export default class Mariadb implements QueryService {
     } catch (error) {
       throw new QueryError(`Connection test failed: ${error.sqlMessage}`, error.message, {});
     } finally {
-      if (conn) try { await conn.end(); } catch (_) { /* ignore */ }
+      if (conn)
+        try {
+          await conn.end();
+        } catch (_) {
+          /* ignore */
+        }
     }
   }
-
 
   private buildSSLObject(sourceOptions: SourceOptions, isSSH = false): any | null {
     if (!sourceOptions.ssl_enabled) return null;
@@ -573,7 +585,7 @@ export default class Mariadb implements QueryService {
     try {
       const pool = mariadb.createPool({
         ...poolConfig,
-        ...this.connectionOptions(sourceOptions), 
+        ...this.connectionOptions(sourceOptions),
       });
       pool.on('error', (error: any) => console.error(error));
       return pool;
@@ -653,14 +665,11 @@ export default class Mariadb implements QueryService {
     return this.buildConnectionPool(sourceOptions);
   }
 
-
   private computeBatchSize(records: Record<string, unknown>[]): number {
     if (!records || records.length === 0) return 1000;
     const SAMPLE_SIZE = 500;
     const sample =
-      records.length <= SAMPLE_SIZE * 2
-        ? records
-        : [...records.slice(0, SAMPLE_SIZE), ...records.slice(-SAMPLE_SIZE)];
+      records.length <= SAMPLE_SIZE * 2 ? records : [...records.slice(0, SAMPLE_SIZE), ...records.slice(-SAMPLE_SIZE)];
     const numColumns = Math.max(...sample.map((r) => Object.keys(r).length));
     if (numColumns === 0) return 1000;
     return Math.max(1, Math.floor(Mariadb.PARAM_THRESHOLD / numColumns));
@@ -673,7 +682,6 @@ export default class Mariadb implements QueryService {
     }
     return batches;
   }
-
 
   private _normalizeBool(val: unknown): boolean | undefined {
     if (val === true || val === 'true') return true;

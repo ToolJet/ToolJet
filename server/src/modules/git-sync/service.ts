@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 import { Injectable } from '@nestjs/common';
 import {
   OrganizationGitCreateDto,
@@ -9,7 +8,7 @@ import { IGitSyncService } from './Interfaces/IService';
 
 @Injectable()
 export class GitSyncService implements IGitSyncService {
-  constructor() { }
+  constructor() {}
 
   async deleteConfig(organizationId: string, organizationGit: string, gitType: string): Promise<void> {
     throw new Error('Method not implemented.');

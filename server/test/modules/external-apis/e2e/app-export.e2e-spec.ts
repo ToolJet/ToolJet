@@ -159,7 +159,9 @@ describe('External API — POST /ext/export/workspace/:workspaceId/apps/:appId',
 
   describe('exportTJDB toggle', () => {
     it('checks for TJDB tables by default when the query param is omitted', async () => {
-      const { user, organization } = await createUser(app, { email: `app-export-tjdb-default-${Date.now()}@tooljet.io` });
+      const { user, organization } = await createUser(app, {
+        email: `app-export-tjdb-default-${Date.now()}@tooljet.io`,
+      });
       const seededApp = await createApplication(app, { name: 'TJDB Default App', user });
       await createApplicationVersion(app, seededApp);
 

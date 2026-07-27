@@ -15,10 +15,7 @@ describe('PrivateAppAuthGuard', () => {
   let mockOrgRepository: { findOne: jest.Mock };
   let mockAppUtilService: object;
 
-  const makeContext = (
-    slug: string,
-    headers: Record<string, string> = {}
-  ): ExecutionContext => {
+  const makeContext = (slug: string, headers: Record<string, string> = {}): ExecutionContext => {
     const request: Record<string, any> = { params: { slug }, headers: { ...headers } };
     return {
       switchToHttp: () => ({ getRequest: () => request }),
@@ -47,15 +44,9 @@ describe('PrivateAppAuthGuard', () => {
     };
     mockOrgRepository = { findOne: jest.fn() };
     mockAppUtilService = {};
-    guard = new PrivateAppAuthGuard(
-      mockAppUtilService as any,
-      mockOrgRepository as any,
-      mockAppRepository as any
-    );
+    guard = new PrivateAppAuthGuard(mockAppUtilService as any, mockOrgRepository as any, mockAppRepository as any);
     // Default: JWT passes
-    jest
-      .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate')
-      .mockResolvedValue(true);
+    jest.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate').mockResolvedValue(true);
   });
 
   afterEach(() => jest.clearAllMocks());

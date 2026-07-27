@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import got, { Headers } from 'got';
 import { SourceOptions } from './types';
 
@@ -6,7 +6,7 @@ export default class EasyPostQueryService implements QueryService {
   authHeader(token: string): Headers {
     return {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
   }
 
@@ -43,7 +43,7 @@ export default class EasyPostQueryService implements QueryService {
       const response = await got(url, options);
       return {
         status: 'ok',
-        data: JSON.parse(response.body)
+        data: JSON.parse(response.body),
       };
     } catch (error) {
       let errorDetails = {};
@@ -64,28 +64,28 @@ export default class EasyPostQueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-  const apiKey = sourceOptions.api_key;
-  if (!apiKey) {
-    throw new QueryError('Connection failed', 'API key is required', {});
+    const apiKey = sourceOptions.api_key;
+    if (!apiKey) {
+      throw new QueryError('Connection failed', 'API key is required', {});
+    }
+    try {
+      await got('https://api.easypost.com/v2/addresses', {
+        method: 'get',
+        headers: this.authHeader(apiKey),
+        searchParams: { page_size: 1 },
+      });
+      return {
+        status: 'ok',
+        message: 'Successfully connected to EasyPost API',
+      };
+    } catch (error) {
+      throw new QueryError(
+        'EasyPost connection test failed',
+        error.response?.body || 'Failed to connect to EasyPost API',
+        {}
+      );
+    }
   }
-  try {
-    await got('https://api.easypost.com/v2/addresses', {
-      method: 'get',
-      headers: this.authHeader(apiKey),
-      searchParams: { page_size: 1 }
-    });
-    return {
-      status: 'ok',
-      message: 'Successfully connected to EasyPost API'
-    };
-  } catch (error) {
-    throw new QueryError(
-      'EasyPost connection test failed',
-      error.response?.body || 'Failed to connect to EasyPost API',
-      {}
-    );
-  }
-}
 
   private processRequestBody(body: any): any {
     if (typeof body !== 'object' || body === null) {

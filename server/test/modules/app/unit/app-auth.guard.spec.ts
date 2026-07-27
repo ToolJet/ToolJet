@@ -36,11 +36,7 @@ describe('AppAuthGuard', () => {
     mockAppRepository = { findAppBySlug: jest.fn() };
     mockOrgRepository = { findOne: jest.fn(), touchLastAccessedAt: jest.fn() };
     mockAppUtilService = { getAppOrganizationDetails: jest.fn() };
-    guard = new AppAuthGuard(
-      mockAppUtilService as any,
-      mockOrgRepository as any,
-      mockAppRepository as any
-    );
+    guard = new AppAuthGuard(mockAppUtilService as any, mockOrgRepository as any, mockAppRepository as any);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -94,16 +90,13 @@ describe('AppAuthGuard', () => {
 
       expect(mockOrgRepository.touchLastAccessedAt).toHaveBeenCalledWith('org-uuid-1');
     });
-
   });
 
   describe('when app.isPublic is false', () => {
     it('does NOT call touchLastAccessedAt', async () => {
       mockAppRepository.findAppBySlug.mockResolvedValue(makeApp({ isPublic: false }));
       mockOrgRepository.findOne.mockResolvedValue(makeOrg());
-      jest
-        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate')
-        .mockResolvedValue(true);
+      jest.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate').mockResolvedValue(true);
 
       await guard.canActivate(makeContext('my-app'));
 
