@@ -6,7 +6,7 @@ import { InternalTable } from 'src/entities/internal_table.entity';
 import { transformTjdbImportDto } from '@dto/transformers/tjdb-dto-transforms';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class TooljetDbImportExportService {

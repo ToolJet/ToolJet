@@ -1,7 +1,6 @@
 import {
   ConflictException,
   Injectable,
-  Logger,
   NotAcceptableException,
   NotImplementedException,
   Optional,
@@ -9,7 +8,7 @@ import {
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
-import { EntityManager, In, Transaction } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationStatusUpdateDto, OrganizationUpdateDto } from '@modules/organizations/dto';
 import { IOrganizationsService } from '@modules/organizations/interfaces/IService';
@@ -25,7 +24,6 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from 'src/helpers/utils.helper';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { CustomDomainRepository } from '@modules/custom-domains/repository';
-import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {

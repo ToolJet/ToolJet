@@ -2,7 +2,6 @@
  * @group platform
  */
 import {
-  resetDB,
   createUser,
   initTestApp,
   createApplication,

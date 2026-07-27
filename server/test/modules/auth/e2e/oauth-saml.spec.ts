@@ -81,6 +81,7 @@ describe('OAuthController', () => {
     describe('POST /api/oauth/sign-in/:configId | SAML sign-in', () => {
       let current_organization: Organization;
       beforeAll(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const fs = require('fs');
         const idp = fs.readFileSync('./test/__mocks__/test_idp_metadata.xml').toString('utf8');
         const { organization } = await createUser(app, {

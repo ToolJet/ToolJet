@@ -12,7 +12,7 @@
  */
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { resetDB, createUser, initTestApp, login, logout, getTooljetDbDataSource, closeTestApp } from 'test-helper';
+import { createUser, initTestApp, login, logout, getTooljetDbDataSource, closeTestApp } from 'test-helper';
 
 describe('TooljetDbController', () => {
   describe('EE (plan: enterprise)', () => {
@@ -96,10 +96,6 @@ describe('TooljetDbController', () => {
     // ---------------------------------------------------------------------------
     // Admin DDL tests | skipped when tooljetDb connection is unavailable
     // ---------------------------------------------------------------------------
-    const describeIfTooljetDb = () => (tooljetDbAvailable ? describe : describe.skip);
-
-    // We use a factory function so the `tooljetDbAvailable` flag is evaluated at
-    // runtime rather than at module-parse time.
     describe('Admin table DDL operations | create, list, delete tables', () => {
       it('admin can create a table', async function () {
         if (!tooljetDbAvailable) return;

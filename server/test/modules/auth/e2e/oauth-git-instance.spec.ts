@@ -6,7 +6,6 @@ import { mocked } from 'jest-mock';
 import got from 'got';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from '@entities/instance_settings.entity';
-import { Organization } from '@entities/organization.entity';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { User } from '@entities/user.entity';
 import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
@@ -153,7 +152,6 @@ describe('OAuthController', () => {
     // Instance SSO | super-admin flows
     // ---------------------------------------------------------------------------
     describe('POST /api/oauth/sign-in/:configId | Git instance SSO (super admin)', () => {
-      let current_organization: Organization;
       let current_user: User;
 
       beforeEach(() => {
@@ -250,7 +248,7 @@ describe('OAuthController', () => {
       });
       describe('Multi-Workspace instance level SSO', () => {
         beforeAll(async () => {
-          const { organization, user } = await createUser(app, {
+          const { user } = await createUser(app, {
             email: 'superadmin@tooljet.io',
             userType: 'instance',
             ssoConfigs: [
@@ -262,7 +260,6 @@ describe('OAuthController', () => {
               },
             ],
           });
-          current_organization = organization;
           current_user = user;
         });
         describe('sign in via Git OAuth', () => {

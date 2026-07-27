@@ -21,8 +21,11 @@ import {
 // Capture esbuild ref at load time — require() fails after Jest tears down the module env.
 let esbuildRef: { stop: () => void } | undefined;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   esbuildRef = require('esbuild');
-} catch {}
+} catch {
+  // ignore — esbuild optional at load time
+}
 
 // Deferred shutdown: after the last spec file in the worker, destroy
 // DataSources so the worker can exit. If another spec starts before
@@ -61,7 +64,9 @@ afterAll(async () => {
   }
   try {
     esbuildRef?.stop();
-  } catch {}
+  } catch {
+    // ignore — cleanup best-effort
+  }
   // Deferred teardown: if no more spec files start, destroy DB pools and
   // close cached apps. destroyAllDataSources() kills pools directly (no
   // NestJS lifecycle hooks). closeAllCachedApps() runs full NestJS shutdown.

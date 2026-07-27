@@ -148,7 +148,7 @@ export default [
       'import/no-unresolved': [
         'error',
         {
-          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
+          ignore: ['^@/', '^@tooljet/plugins', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
         },
       ],
       'react/no-unknown-property': 'off',
@@ -193,6 +193,14 @@ export default [
     settings: {
       react: {
         version: 'detect',
+      },
+      'import-x/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+        webpack: {
+          config: new URL('./webpack.config.js', import.meta.url).pathname,
+        },
       },
     },
 
@@ -266,7 +274,7 @@ export default [
       'import/no-unresolved': [
         'error',
         {
-          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
+          ignore: ['^@/', '^@tooljet/plugins', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
         },
       ],
 

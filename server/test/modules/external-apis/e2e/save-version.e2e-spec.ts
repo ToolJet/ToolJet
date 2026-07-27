@@ -246,7 +246,6 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
     it.skip('resolves app by slug', async () => {
       const { user } = await seedOrg();
       const slug = `my-app-${Date.now()}`;
-      const appRepo: Repository<App> = getDefaultDataSource().getRepository(App);
       const app = await createApplication(nestApp, { user, name: `App-${Date.now()}`, isPublic: false, slug });
       await seedDraftVersion(app as any, 'v1');
 

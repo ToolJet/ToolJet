@@ -5,7 +5,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
-import { resetDB, initTestApp, createUser, login, getEntityRepository, closeTestApp } from 'test-helper';
+import { initTestApp, createUser, login, getEntityRepository, closeTestApp } from 'test-helper';
 import { Repository } from 'typeorm';
 
 /**
@@ -15,7 +15,6 @@ describe('OnboardingController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
     let userRepository: Repository<User>;
-    let orgRepository: Repository<Organization>;
     let orgUserRepository: Repository<OrganizationUser>;
     let configService: ConfigService;
 
@@ -23,7 +22,6 @@ describe('OnboardingController', () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
       configService = app.get(ConfigService);
       userRepository = getEntityRepository(User);
-      orgRepository = getEntityRepository(Organization);
       orgUserRepository = getEntityRepository(OrganizationUser);
     });
 
@@ -254,6 +252,7 @@ describe('OnboardingController', () => {
 
     describe('Signup and invite interaction', () => {
       it('should not allow signup for an already-invited user (source: invite)', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { user, organization } = await createUser(app, {
           firstName: 'admin',
           lastName: 'admin',

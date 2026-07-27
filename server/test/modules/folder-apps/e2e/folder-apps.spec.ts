@@ -17,7 +17,6 @@ import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { AppVersion } from '@entities/app_version.entity';
-import { App } from '@entities/app.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 
@@ -122,7 +121,7 @@ describe('FolderAppsController', () => {
 
         const loggedUser = await login(nestApp);
 
-        const first = await request(nestApp.getHttpServer())
+        await request(nestApp.getHttpServer())
           .post(`/api/folder-apps`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie)

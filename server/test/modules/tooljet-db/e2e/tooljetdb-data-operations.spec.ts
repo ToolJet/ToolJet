@@ -16,7 +16,7 @@ import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
 import * as path from 'path';
-import { resetDB, createUser, initTestApp, login, getTooljetDbDataSource, closeTestApp } from 'test-helper';
+import { createUser, initTestApp, login, getTooljetDbDataSource, closeTestApp } from 'test-helper';
 
 describe('TooljetDbDataController', () => {
   describe('EE (plan: enterprise)', () => {

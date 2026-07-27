@@ -304,30 +304,6 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
   }
 }
 
-async function addEndUserGroupToUser(
-  nestApp: INestApplication,
-  user: User & { organizationId: string }
-): Promise<User> {
-  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
-  const groupPermissionsRepository = ds.getRepository(GroupPermissions);
-  const groupUsersRepository = ds.getRepository(GroupUsers);
-
-  const endUserGroup = await groupPermissionsRepository.findOneOrFail({
-    where: {
-      organizationId: user.organizationId,
-      name: 'end-user',
-    },
-  });
-
-  const groupUser = groupUsersRepository.create({
-    groupId: endUserGroup.id,
-    userId: user.id,
-  });
-  await groupUsersRepository.save(groupUser);
-
-  return user;
-}
-
 /** Assigns a user to the specified groups within their workspace, creating custom groups as needed. */
 export async function createUserGroupPermissions(
   nestApp: INestApplication,
@@ -719,7 +695,7 @@ export async function createDataSource(
     })
   );
 
-  environmentId && (await createDataSourceOption(nestApp, { dataSource, environmentId, options }));
+  if (environmentId) await createDataSourceOption(nestApp, { dataSource, environmentId, options });
 
   return dataSource;
 }

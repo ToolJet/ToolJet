@@ -1,6 +1,5 @@
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   createUser,
   initTestApp,
   login,
@@ -17,7 +16,6 @@ import {
   closeTestApp,
 } from 'test-helper';
 import { v4 as uuidv4 } from 'uuid';
-import * as request from 'supertest';
 import { AppVersion } from '@entities/app_version.entity';
 
 const prepareSampleWorlflowDefinition = (shouldIncludeWebhookParams: boolean) => {

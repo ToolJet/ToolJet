@@ -25,11 +25,7 @@ interface StoreWithDependencies {
   updateDependencyValues: (path: string, moduleId: string) => void;
 }
 
-type ImmerSet<S> = (
-  updater: (state: S) => S | Partial<S> | void,
-  replace?: boolean,
-  actionName?: string
-) => void;
+type ImmerSet<S> = (updater: (state: S) => S | Partial<S> | void, replace?: boolean, actionName?: string) => void;
 
 type StoreGet<S> = () => S;
 

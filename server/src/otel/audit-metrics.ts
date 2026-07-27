@@ -310,16 +310,7 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields, isOtelEnabled
   }
 
   try {
-    const {
-      userId,
-      organizationId,
-      resourceType,
-      actionType,
-      resourceName,
-      resourceId,
-      ipAddress,
-      metadata = {},
-    } = auditLogData;
+    const { userId, organizationId, resourceType, actionType } = auditLogData;
 
     // Prepare common attributes
     const commonAttributes = {

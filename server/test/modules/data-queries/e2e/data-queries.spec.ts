@@ -1,20 +1,15 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   createUser,
   initTestApp,
   closeTestApp,
-  createDataQuery,
   grantAppPermission,
   createAppWithDependencies,
   login,
-  createDatasourceGroupPermission,
   findEntityOrFail,
 } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { AuditLog } from 'src/entities/audit_log.entity';
-import { MODULES } from 'src/modules/app/constants/modules';
 
 /** @group platform */
 describe('DataQueriesController', () => {

@@ -19,7 +19,6 @@ import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
-import { Organization } from '@entities/organization.entity';
 
 // ---------------------------------------------------------------------------
 // Constants

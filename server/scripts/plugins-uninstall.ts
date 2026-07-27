@@ -5,7 +5,6 @@ import { EntityManager } from 'typeorm';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Plugin } from 'src/entities/plugin.entity';
-import { PluginsService } from '@modules/plugins/service';
 import { getEnvVars } from './database-config-utils';
 import { validateSync } from 'class-validator';
 import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
@@ -46,7 +45,7 @@ async function validateAndUninstallPlugins(nestApp: INestApplicationContext) {
     }
   }
 
-  invalidPluginDtos.length > 0 &&
+  if (invalidPluginDtos.length > 0)
     console.log(
       'Skipping invalid plugins:',
       invalidPluginDtos.map((dto) => dto.id),

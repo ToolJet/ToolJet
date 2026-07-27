@@ -29,7 +29,6 @@ import {
   generateInviteURL,
   generateNextNameAndSlug,
   generateOrgInviteURL,
-  isValidDomain,
   generateWorkspaceSlug,
   validatePasswordServer,
   validatePasswordDomain,

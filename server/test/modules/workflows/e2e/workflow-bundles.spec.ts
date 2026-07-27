@@ -7,7 +7,6 @@ import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
 import * as path from 'path';
 import {
-  resetDB,
   setupOrganizationAndUser,
   login,
   createWorkflowForUser,

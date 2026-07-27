@@ -118,10 +118,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'server/package-lock.json'
       - run: npm ci --prefix server
-      # 147 pre-existing manual-fix lint errors on main (unused-vars, require-imports,
-      # useless-escape…) — needs its own rehab PR; non-blocking for pipeline validation
       - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix server lint 2>&1 | tee -a /tmp/buildlog/server.log
-        continue-on-error: true
       - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
       - name: Upload lint/build log for the PR comment
         if: failure()
@@ -153,10 +150,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'frontend/package-lock.json'
       - run: npm ci --prefix frontend
-      # frontend/ee newly added to the lint glob — advisory until its rehab
-      # issue lands (mirrors the server lint debt), then drop continue-on-error
       - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix frontend lint 2>&1 | tee -a /tmp/buildlog/frontend.log
-        continue-on-error: true
       - run: set -o pipefail; npm run --prefix frontend build 2>&1 | tee -a /tmp/buildlog/frontend.log
       - name: Upload lint/build log for the PR comment
         if: failure()

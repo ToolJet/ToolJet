@@ -470,7 +470,7 @@ describe('OrganizationsController', () => {
             email: 'admin@tooljet.io',
           });
 
-          const loggedUser = await login(app);
+          await login(app);
 
           const getResponse = await request(app.getHttpServer()).get(`/api/login-configs/${organization.id}/public`);
 

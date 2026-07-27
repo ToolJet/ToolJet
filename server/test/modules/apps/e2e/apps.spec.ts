@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   createApplication,
   createUser,
   initTestApp,
@@ -306,7 +305,7 @@ describe('AppsController', () => {
           adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
           const organization = adminUserData.organization;
-          const allUserGroup = await findEntityOrFail(GroupPermissions, {
+          await findEntityOrFail(GroupPermissions, {
             name: 'end-user',
             organizationId: adminUserData.organization.id,
           } as any);
@@ -332,7 +331,7 @@ describe('AppsController', () => {
             user: anotherOrgAdminUserData.user,
           });
 
-          const nonPermissibleApp = await createApplication(
+          await createApplication(
             app,
             {
               name: 'Non Permissible App',
@@ -341,7 +340,7 @@ describe('AppsController', () => {
             false
           );
 
-          const publicApp = await createApplication(
+          await createApplication(
             app,
             {
               name: 'Public App',
@@ -358,7 +357,7 @@ describe('AppsController', () => {
             },
             false
           );
-          const appNotInFolder = await createApplication(
+          await createApplication(
             app,
             {
               name: 'App not in folder',
@@ -520,7 +519,7 @@ describe('AppsController', () => {
             user: anotherOrgAdminUserData.user,
           });
 
-          const nonPermissibleApp = await createApplication(
+          await createApplication(
             app,
             {
               name: 'Non Permissible App',
@@ -529,7 +528,7 @@ describe('AppsController', () => {
             false
           );
 
-          const publicApp = await createApplication(
+          await createApplication(
             app,
             {
               name: 'Public App',
@@ -547,7 +546,7 @@ describe('AppsController', () => {
             },
             false
           );
-          const appNotInfolder = await createApplication(
+          await createApplication(
             app,
             {
               name: 'App not in folder',

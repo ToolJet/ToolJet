@@ -47,10 +47,8 @@ jest.mock('@modules/request-context/service', () => ({
 describe('SessionService', () => {
   let service: SessionService;
   let sessionUtilService: jest.Mocked<SessionUtilService>;
-  let appsRepository: jest.Mocked<AppsRepository>;
   let organizationRepository: jest.Mocked<OrganizationRepository>;
   let organizationUserRepository: jest.Mocked<OrganizationUsersRepository>;
-  let userRepository: jest.Mocked<UserRepository>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -100,10 +98,8 @@ describe('SessionService', () => {
 
     service = module.get<SessionService>(SessionService);
     sessionUtilService = module.get(SessionUtilService);
-    appsRepository = module.get(AppsRepository);
     organizationRepository = module.get(OrganizationRepository);
     organizationUserRepository = module.get(OrganizationUsersRepository);
-    userRepository = module.get(UserRepository);
   });
 
   afterEach(() => {

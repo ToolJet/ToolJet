@@ -11,7 +11,6 @@ import * as FSPersister from '@pollyjs/persister-fs';
 import * as path from 'path';
 import { parse } from 'flatted';
 import {
-  resetDB,
   setupOrganizationAndUser,
   initTestApp,
   createCompleteWorkflow,
@@ -460,7 +459,7 @@ describe('WorkflowExecutionsController', () => {
 
           // Find the user data object in the result array
           const userData = restapiResult.find(
-            (item: any) => typeof item === 'object' && item !== null && item.hasOwnProperty('id')
+            (item: any) => typeof item === 'object' && item !== null && Object.prototype.hasOwnProperty.call(item, 'id')
           );
           expect(userData).toBeDefined();
 
@@ -761,7 +760,7 @@ describe('WorkflowExecutionsController', () => {
             try {
               const u = new URL(req.url);
               return u.hostname === 'jsonplaceholder.typicode.com' && u.pathname === '/users';
-            } catch (_) {
+            } catch {
               return false;
             }
           });
@@ -778,7 +777,9 @@ describe('WorkflowExecutionsController', () => {
               } else if (req.headers) {
                 headers = req.headers as any;
               }
-            } catch (_) {}
+            } catch {
+              // ignore — header capture best-effort
+            }
             observedRequests.push({ url: req.url, headers });
           });
 

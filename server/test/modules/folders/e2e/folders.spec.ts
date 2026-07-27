@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   createApplication,
   createApplicationVersion,
   createUser,
@@ -22,7 +21,6 @@ import {
 import { AppVersion } from 'src/entities/app_version.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';

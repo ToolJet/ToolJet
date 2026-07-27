@@ -11,7 +11,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   initTestApp,
   createAdmin,
   createEndUser,

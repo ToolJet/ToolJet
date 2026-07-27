@@ -73,7 +73,7 @@ export function resolveCode(codeContext: any): any {
         new ivm.Callback((msg: any, status: any) => {
           try {
             (addLog as any)(String(msg), undefined, String(status || 'normal'));
-          } catch (_) {
+          } catch {
             // ignore logging failures to avoid breaking sandbox
           }
         })
@@ -113,17 +113,12 @@ export function resolveCode(codeContext: any): any {
           shim.runSync(context, { timeout: 5000 });
         }
       } catch (bundleError) {
-        addLog && (addLog as any)(`Failed to load NPM packages: ${bundleError.message}`, undefined, 'failure');
+        if (addLog) (addLog as any)(`Failed to load NPM packages: ${bundleError.message}`, undefined, 'failure');
         // Continue execution without packages - don't fail the entire code execution
       }
     }
 
-    let script: ivm.Script;
-    try {
-      script = isolate.compileScriptSync(codeToExecute);
-    } catch (compileErr) {
-      throw compileErr;
-    }
+    const script: ivm.Script = isolate.compileScriptSync(codeToExecute);
 
     // const interval = setInterval(() => {
     //   const stats = isolate.getHeapStatisticsSync();
@@ -136,15 +131,11 @@ export function resolveCode(codeContext: any): any {
     // }, 1); // Monitor every 100ms
 
     // try {
-    try {
-      result = script.runSync(context, {
-        release: true,
-        timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
-        copy: true,
-      });
-    } catch (runErr) {
-      throw runErr;
-    }
+    result = script.runSync(context, {
+      release: true,
+      timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
+      copy: true,
+    });
     //   const stats = isolate.getHeapStatisticsSync();
     //   addLog("Used heap size: " + stats.used_heap_size);
     //   addLog("heap size limit: " + stats.heap_size_limit);

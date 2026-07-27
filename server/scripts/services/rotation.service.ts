@@ -1,6 +1,5 @@
 import * as hkdf from 'futoin-hkdf';
-
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 
 /**
  * DualKeyEncryptionService
@@ -135,7 +134,8 @@ export class DualKeyEncryptionService {
     aesgcm.setAuthTag(auth_tag);
 
     // Decrypt
-    const plainText = aesgcm.update(ciphertext) + aesgcm.final();
+    // same coercion the old untyped `buf + buf` did (GCM final() is empty)
+    const plainText = aesgcm.update(ciphertext).toString('utf8') + aesgcm.final().toString('utf8');
 
     return plainText;
   }
