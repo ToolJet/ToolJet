@@ -393,6 +393,12 @@ export const Table = (props) => {
     [component.component.definition.properties.useDynamicColumn?.value]
   );
 
+  // When enabled (deprecated section), the Toolbar shows the old inverted "Hide column selector" tile instead of the new "Manage columns" tile.
+  const useHideColumnSelectorButton = useMemo(
+    () => resolveReferences(component.component.definition.properties.useHideColumnSelectorButton?.value) ?? false,
+    [component.component.definition.properties.useHideColumnSelectorButton?.value]
+  );
+
   const allowSelection = useMemo(() => {
     const allowSelectionValue = component.component.definition.properties?.allowSelection?.value;
     if (allowSelectionValue) {
@@ -454,14 +460,9 @@ export const Table = (props) => {
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const additionalActions = [
-    'hideColumnSelectorButton',
-    'loadingState',
-    'visibility',
-    'collapseWhenHidden',
-    'disabledState',
-    'dynamicHeight',
-  ];
+  const additionalActions = ['loadingState', 'visibility', 'collapseWhenHidden', 'disabledState', 'dynamicHeight'];
+
+  const deprecatedProperties = ['useHideColumnSelectorButton'];
 
   // Accordion items
   const accordionItems = useMemo(
@@ -711,6 +712,7 @@ export const Table = (props) => {
             darkMode={darkMode}
             columns={columns}
             useDynamicColumn={useDynamicColumn}
+            useHideColumnSelectorButton={useHideColumnSelectorButton}
             currentState={currentState}
           />
         ),
@@ -750,6 +752,29 @@ export const Table = (props) => {
           </>
         ),
       },
+      // Deprecated properties section
+      {
+        id: 'deprecated-properties',
+        title: (
+          <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
+            <span>Enable deprecated properties</span>
+            <ToolTip
+              message={
+                <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+                  These properties are deprecated and will be removed in a future update.
+                </div>
+              }
+              show={true}
+              placement="top"
+            >
+              <span>
+                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+              </span>
+            </ToolTip>
+          </div>
+        ),
+        children: deprecatedProperties.map((option) => renderCustomElement(option)),
+      },
     ],
     [
       component,
@@ -785,6 +810,8 @@ export const Table = (props) => {
       paginationOptions,
       layoutPropertyChanged,
       additionalActions,
+      useHideColumnSelectorButton,
+      deprecatedProperties,
     ]
   );
 

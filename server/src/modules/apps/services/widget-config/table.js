@@ -95,6 +95,22 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    manageColumns: {
+      type: 'toggle',
+      displayName: 'Manage columns',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    useHideColumnSelectorButton: {
+      type: 'toggle',
+      displayName: 'Manage columns',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     enablePrevButton: {
       type: 'toggle',
       displayName: 'Enable previous page button',
@@ -856,6 +872,8 @@ export const tableConfig = {
       actions: { value: [] },
       enabledSort: { value: '{{true}}' },
       hideColumnSelectorButton: { value: '{{false}}' },
+      manageColumns: { value: '{{true}}' },
+      useHideColumnSelectorButton: { value: '{{false}}' },
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
       showRefreshButton: { value: '{{false}}' },

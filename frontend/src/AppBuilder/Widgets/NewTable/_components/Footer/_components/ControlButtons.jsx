@@ -18,6 +18,11 @@ export const ControlButtons = memo(
       (state) => state.getTableProperties(id)?.hideColumnSelectorButton,
       shallow
     );
+    const manageColumns = useTableStore((state) => state.getTableProperties(id)?.manageColumns, shallow);
+    const useHideColumnSelectorButton = useTableStore(
+      (state) => state.getTableProperties(id)?.useHideColumnSelectorButton,
+      shallow
+    );
     const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
     const downloadFileName = useTableStore((state) => state.getTableProperties(id)?.downloadFileName, shallow);
     const downloadFilteredData = useTableStore((state) => state.getTableProperties(id)?.downloadFilteredData, shallow);
@@ -229,12 +234,17 @@ export const ControlButtons = memo(
       );
     };
 
+    // Column-selector visibility
+    // - deprecated tables use the inverted `hideColumnSelectorButton` (true = hidden);
+    // - new tables use `manageColumns` (true = visible).
+    const showColumnSelectorButton = useHideColumnSelectorButton ? !hideColumnSelectorButton : !!manageColumns;
+
     const btns = [];
 
     if (showAddNewRowButton) btns.push(renderAddRowButton());
     if (showRefreshButton) btns.push(renderRefreshButton());
     if (showDownloadButton) btns.push(renderDownloadButton());
-    if (!hideColumnSelectorButton) btns.push(renderColumnSelectorButton());
+    if (showColumnSelectorButton) btns.push(renderColumnSelectorButton());
 
     return (
       <div className="d-flex footer-control-btns">

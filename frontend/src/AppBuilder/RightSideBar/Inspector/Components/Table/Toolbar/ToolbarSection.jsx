@@ -11,11 +11,25 @@ const TOOLBAR_ITEMS = [
   { key: 'showBulkUpdateActions', label: 'Update buttons' },
 ];
 
+// New tables use the `manageColumns` tile (ON = visible);
+// tables that opted into the deprecated toggle keep the legacy inverted `hideColumnSelectorButton` tile.
+const MANAGE_COLUMNS_ITEM = { key: 'manageColumns', label: 'Manage columns' };
+const HIDE_COLUMN_SELECTOR_ITEM = { key: 'hideColumnSelectorButton', label: 'Hide column selector' };
+
 /**
  * Renders the Table inspector's "Toolbar" section
  */
-export const ToolbarSection = ({ component, paramUpdated, darkMode, columns = [], useDynamicColumn = false }) => {
+export const ToolbarSection = ({
+  component,
+  paramUpdated,
+  darkMode,
+  columns = [],
+  useDynamicColumn = false,
+  useHideColumnSelectorButton = false,
+}) => {
   const [openConfigPopover, setOpenConfigPopover] = useState(null);
+
+  const items = [...TOOLBAR_ITEMS, useHideColumnSelectorButton ? HIDE_COLUMN_SELECTOR_ITEM : MANAGE_COLUMNS_ITEM];
 
   const buildConfigContent = (item) => {
     if (item.configurable === 'addNewRow') {
@@ -42,7 +56,7 @@ export const ToolbarSection = ({ component, paramUpdated, darkMode, columns = []
 
   return (
     <div data-cy="table-toolbar-section">
-      {TOOLBAR_ITEMS.map((item) => {
+      {items.map((item) => {
         // The Add-new-row column picker needs a static column list; hide the cog for dynamic-column tables.
         const isConfigurable = !!item.configurable && !(item.configurable === 'addNewRow' && useDynamicColumn);
         return (

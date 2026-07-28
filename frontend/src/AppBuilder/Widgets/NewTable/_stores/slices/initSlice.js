@@ -63,6 +63,8 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true;
         state.components[id].properties.enableNextButton = properties?.enableNextButton ?? true;
         state.components[id].properties.hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
+        state.components[id].properties.manageColumns = properties?.manageColumns ?? true;
+        state.components[id].properties.useHideColumnSelectorButton = properties?.useHideColumnSelectorButton ?? false;
         state.components[id].properties.serverSideSearch = properties?.serverSideSearch ?? false;
         state.components[id].properties.serverSideSort = properties?.serverSideSort ?? false;
         state.components[id].properties.serverSideFilter = properties?.serverSideFilter ?? false;
