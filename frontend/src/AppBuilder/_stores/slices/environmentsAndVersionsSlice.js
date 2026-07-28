@@ -364,9 +364,19 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         // Preserve versionType from API response to distinguish between regular versions and branch versions
         versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
       };
-      const appVersionEnvironment = get().environments.find(
+      // A version's own current_environment_id is how far it's been promoted (e.g. production),
+      // not necessarily the environment the user is currently viewing it under (e.g. browsing
+      // that same production-promoted version from the staging tab). Keep the user's selected
+      // environment when the version is actually available there; only fall back to the
+      // version's own environment otherwise (plain same-environment version switches, etc).
+      const versionOwnEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
       );
+      const currentSelectedEnvironment = get().selectedEnvironment;
+      const isSelectedEnvironmentValid =
+        currentSelectedEnvironment &&
+        currentSelectedEnvironment.priority <= (versionOwnEnvironment?.priority ?? -Infinity);
+      const appVersionEnvironment = isSelectedEnvironmentValid ? currentSelectedEnvironment : versionOwnEnvironment;
       let updatedVersionsArray = [...get().versionsPromotedToEnvironment];
       const versionIndex = get().versionsPromotedToEnvironment.findIndex((v) => v.id === data?.editing_version?.id);
       if (versionIndex !== -1 && data?.editing_version) {
@@ -397,6 +407,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       }
 
       set((state) => ({ ...state, ...optionsToUpdate }));
+      get().setResolvedGlobals(
+        'environment',
+        { id: appVersionEnvironment?.id, name: appVersionEnvironment?.name },
+        moduleId
+      );
 
       // Pages/components are cloned with new ids for every version (see server's
       // setupNewVersion), so the previously selected page id no longer exists on this
@@ -423,7 +438,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }
   },
 
-  environmentChangedAction: async (environment, _onSuccess, _onFailure) => {
+  environmentChangedAction: async (environment, _onSuccess, _onFailure, moduleId = 'canvas') => {
     try {
       const environmentId = environment.id;
       let selectedVersion = get().selectedVersion; // Initialize with current version
@@ -477,6 +492,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           optionsToUpdate['appVersionEnvironment'] = environment;
         }
         set((state) => ({ ...state, ...optionsToUpdate }));
+        get().setResolvedGlobals(
+          'environment',
+          { id: optionsToUpdate.appVersionEnvironment?.id, name: optionsToUpdate.appVersionEnvironment?.name },
+          moduleId
+        );
       }
       const callBackResponse = {
         selectedVersion,
