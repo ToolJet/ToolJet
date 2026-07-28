@@ -297,7 +297,12 @@ describe("ToolJet: GitSync API Validation", () => {
     });
 
     cy.gitSyncCreateBranchViaApi(branchName);
-    cy.gitSyncGetBranchId(branchName).then((id) => {
+    // Branch creation is an async queued job — cy.gitSyncGetBranchId
+    // returns "" (not null) while it's still pending, which silently
+    // passes a plain `.to.exist` check and sends an empty branchId to
+    // apiCreateAppOnBranch. Poll until it's genuinely populated, same as
+    // the later blocks do.
+    waitForBranchId(branchName).then((id) => {
       branchId = id;
       expect(branchId, "feature branch id").to.exist;
 
@@ -355,12 +360,16 @@ describe("ToolJet: GitSync API Validation", () => {
       masterAppId = response.body.id;
     });
 
+    // Guard case: pulling the SAME app again now correctly rejects it as a
+    // duplicate, since the call above just created it. The server returns
+    // 409 Conflict here (not 400) — confirmed via a single-attempt run with
+    // retries disabled.
     createAppFromGit({
       gitAppName: data.appName,
       gitBranchName: "master",
       organizationId: workspaceId,
     }).then((response) => {
-      expect(response.status).to.eq(400);
+      expect(response.status).to.eq(409);
       expect(response.body.message).to.include("already exists");
     });
 
