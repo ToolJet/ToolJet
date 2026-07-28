@@ -1,4 +1,8 @@
-import { calculateInputCanvasHeight, resolveInputCanvasAlignment } from '../componentsSliceUtils';
+import {
+  calculateInputCanvasHeight,
+  resolveInputCanvasAlignment,
+  resolveInputCanvasLabelLength,
+} from '../componentsSliceUtils';
 
 describe('resolveInputCanvasAlignment', () => {
   const dynamicAlignment = `{{components.3e6160a5-9042-42fc-ac11-aa3b71c67bf6.value ? 'top' : 'side'}}`;
@@ -123,5 +127,22 @@ describe('calculateInputCanvasHeight', () => {
         labelType: 'auto',
       })
     ).toBe(60);
+  });
+});
+
+describe('resolveInputCanvasLabelLength', () => {
+  it('uses a literal label without invoking the dynamic resolver', () => {
+    const resolveValue = jest.fn(() => '');
+
+    expect(resolveInputCanvasLabelLength('Label', resolveValue)).toBe(5);
+    expect(resolveValue).not.toHaveBeenCalled();
+  });
+
+  it('treats an fx label that resolves to an empty string as empty', () => {
+    const dynamicLabel = '{{components.textinput1.value}}';
+    const resolveValue = jest.fn(() => '');
+
+    expect(resolveInputCanvasLabelLength(dynamicLabel, resolveValue)).toBe(0);
+    expect(resolveValue).toHaveBeenCalledWith(dynamicLabel);
   });
 });

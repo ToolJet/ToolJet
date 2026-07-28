@@ -80,6 +80,9 @@ const WidgetWrapper = memo(
     const resolvedLegacyInputSize = useStore(
       (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.legacyInputSize
     );
+    const resolvedLabel = useStore(
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.label
+    );
     const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
     const temporaryLayouts = useStore((state) => {
       const layoutContext = indices ?? subContainerIndex;
@@ -103,10 +106,6 @@ const WidgetWrapper = memo(
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
-    // Dont remove this is being used to re-render the height calculations
-    const _label = useStore(
-      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.label
-    );
     // Dont remove - used to re-render height calculations when textSize changes (ProgressBar)
     // eslint-disable-next-line no-unused-vars
     const textSize = useStore(
@@ -168,7 +167,8 @@ const WidgetWrapper = memo(
       stylesDefinition,
       moduleId,
       resolvedAlignment,
-      resolvedLegacyInputSize
+      resolvedLegacyInputSize,
+      resolvedLabel
     );
 
     // Calculate the final height based on visibility and temporary layouts.

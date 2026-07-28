@@ -30,7 +30,11 @@ import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-import { calculateInputCanvasHeight, resolveInputCanvasAlignment } from './componentsSliceUtils';
+import {
+  calculateInputCanvasHeight,
+  resolveInputCanvasAlignment,
+  resolveInputCanvasLabelLength,
+} from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
@@ -3116,7 +3120,8 @@ export const createComponentsSlice = (set, get) => ({
     stylesDefinition,
     moduleId = 'canvas',
     resolvedStyleAlignment,
-    resolvedStyleLegacyInputSize
+    resolvedStyleLegacyInputSize,
+    resolvedPropertyLabel
   ) => {
     const componentDefinition = get().getComponentDefinition(componentId, moduleId);
     const layoutData = componentDefinition?.layouts?.[currentLayout];
@@ -3129,7 +3134,11 @@ export const createComponentsSlice = (set, get) => ({
     }
     const { alignment = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
     const width = stylesDefinition?.width ?? stylesDefinition?.labelWidth ?? { value: null };
-    let resolvedLabel = label?.value?.length ?? 0;
+    const resolvedLabelLength = resolveInputCanvasLabelLength(label?.value, (value) =>
+      resolvedPropertyLabel !== undefined
+        ? resolvedPropertyLabel
+        : resolveDynamicValues(value + '', getAllExposedValues(moduleId))
+    );
     const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
@@ -3153,7 +3162,7 @@ export const createComponentsSlice = (set, get) => ({
     return calculateInputCanvasHeight({
       height: layoutData?.height,
       alignment: alignment.value && resolvedAlignment,
-      labelLength: resolvedLabel,
+      labelLength: resolvedLabelLength,
       width: resolvedWidth,
       auto: resolvedAuto,
       labelType: resolvedLabelType,

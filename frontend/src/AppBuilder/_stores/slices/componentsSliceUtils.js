@@ -16,6 +16,14 @@ export const resolveInputCanvasAlignment = ({
   };
 };
 
+export const resolveInputCanvasLabelLength = (label, resolveValue) => {
+  if (label == null) return 0;
+
+  const isDynamicLabel = typeof label === 'string' && (label.includes('{{') || label.includes('%%'));
+  const resolvedLabel = isDynamicLabel ? resolveValue(label) : label;
+  return resolvedLabel == null ? 0 : String(resolvedLabel).length;
+};
+
 export const calculateInputCanvasHeight = ({
   height,
   alignment,
