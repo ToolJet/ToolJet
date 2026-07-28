@@ -41,7 +41,7 @@ export interface OidcEnvConfig {
 
 export interface SamlEnvConfig {
   idpMetadata: string;
-  name?: string;
+  name: string;
   groupAttribute?: string;
   groupSyncEnabled?: boolean;
 }
@@ -50,7 +50,7 @@ export interface LdapEnvConfig {
   host: string;
   port: string;
   basedn: string;
-  name?: string;
+  name: string;
   ssl?: boolean;
   // Only present when LDAP_SSL_CERTIFICATE=Certificates — omitted entirely (not just empty)
   // when LDAP_SSL_CERTIFICATE=None or absent, even if the individual cert keys are set in .env.
