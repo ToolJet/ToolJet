@@ -82,7 +82,7 @@ Server widget config (`src/modules/apps/services/widget-config/`) and frontend c
 
 > Tests are documentation first. Describe blocks = table of contents; `it()` = plain English; assertions = response shape. Write failing tests before implementation.
 
-**Before writing any test, read `docs/testing-philosophy.md`** — the judgment layer: what to test (behavior matrix: edition × plan × role × feature gate × tenant scope × resource state, with pruning rules), unit vs e2e placement, what to skip, when to delete a test. This section is mechanics only. Its decision checklist:
+Judgment layer: `docs/testing-philosophy.md` — what to test (behavior matrix: edition × plan × role × feature gate × tenant scope × resource state, with pruning rules), unit vs e2e placement, what to skip, when to delete a test. This section is mechanics only. The checklist below is that doc's summary (canonical here); read the full doc when placement or matrix coverage is unclear.
 
 1. What could actually break here?
 2. Needs real DB/HTTP round trip to be meaningful? → e2e. Else → unit.
