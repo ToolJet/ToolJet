@@ -8,7 +8,4 @@ if [ -s "$HOME/.nvm/nvm.sh" ]; then
 fi
 command -v node >/dev/null 2>&1 || export PATH="$PATH:/usr/local/bin:/opt/homebrew/bin"
 
-# Disabled: kept falling back to a full-suite run on unrelated changes (workflow/docs/scripts
-# edits that don't match test-changed.sh's module-detection patterns), blocking pushes on
-# pre-existing/unrelated failures. CI (run-ci / run-ci-changed) still gates every PR.
-# npm run ci:changed --silent
+npm run ci:changed --silent

@@ -200,8 +200,6 @@ jobs:
   test-server:
     name: 'Test Suite · server'
     runs-on: ubuntu-latest
-    # unit (~5min) + e2e (~20min) sequential, plus one shared setup — was 40/45 run in
-    # parallel across two jobs.
     timeout-minutes: 60
     needs:
       - detect-changes
