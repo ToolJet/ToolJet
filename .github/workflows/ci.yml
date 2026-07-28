@@ -33,10 +33,10 @@ jobs:
       # no CI Gate commit status. full = merge truth (run-ci label / push / dispatch).
       mode: ${{ (github.event_name == 'pull_request' && github.event.label.name == 'run-ci-changed') && 'changed' || 'full' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 2
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -62,13 +62,13 @@ jobs:
       || needs.detect-changes.outputs.plugins == 'true'
       || needs.detect-changes.outputs.frontend == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Checkout EE submodules
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -78,12 +78,12 @@ jobs:
       - run: set -o pipefail; npm run --prefix plugins build 2>&1 | tee -a /tmp/buildlog/plugins.log
       - name: Upload lint/build log for the PR comment
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: buildlog-plugins
           path: /tmp/buildlog/
           retention-days: 1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: plugins-dist
           path: |
@@ -102,17 +102,17 @@ jobs:
     needs: [detect-changes, build-plugins, build-marketplace]
     if: needs.detect-changes.outputs.server == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Checkout EE submodules
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: plugins-dist
           path: plugins/
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -122,7 +122,7 @@ jobs:
       - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
       - name: Upload lint/build log for the PR comment
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: buildlog-server
           path: /tmp/buildlog/
@@ -134,17 +134,17 @@ jobs:
     needs: [detect-changes, build-plugins, build-marketplace]
     if: needs.detect-changes.outputs.frontend == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Checkout EE submodules
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: plugins-dist
           path: plugins/
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -154,7 +154,7 @@ jobs:
       - run: set -o pipefail; npm run --prefix frontend build 2>&1 | tee -a /tmp/buildlog/frontend.log
       - name: Upload lint/build log for the PR comment
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: buildlog-frontend
           path: /tmp/buildlog/
@@ -166,8 +166,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.marketplace == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -182,7 +182,7 @@ jobs:
       - run: set -o pipefail; npm run --prefix marketplace build 2>&1 | tee -a /tmp/buildlog/marketplace.log
       - name: Upload lint/build log for the PR comment
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: buildlog-marketplace
           path: /tmp/buildlog/
@@ -266,17 +266,17 @@ jobs:
       ENABLE_EXTERNAL_API: 'true'
       EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Checkout EE submodules
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: plugins-dist
           path: plugins/
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         id: server-nm
         with:
           path: server/node_modules
@@ -299,7 +299,7 @@ jobs:
         run: node server/scripts/strip-coverage-map.mjs /tmp/tj-unit-results.json
       - name: Upload unit results for the PR comment
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: full-unit-results
           path: /tmp/tj-unit-results.json
@@ -315,7 +315,7 @@ jobs:
           npm run --prefix server test:e2e:cov -- --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
       - name: Upload e2e results for the PR comment
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: full-e2e-results
           path: /tmp/tj-e2e-json/
@@ -330,7 +330,7 @@ jobs:
         run: npm run --prefix server test:cov:merge
       - name: Upload combined coverage report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report-html
           path: server/coverage-combined/
@@ -339,7 +339,7 @@ jobs:
           retention-days: 7
       - name: Upload coverage summary for the PR comment
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-summary
           path: server/coverage-combined/coverage-summary.json
@@ -411,7 +411,7 @@ jobs:
       ENABLE_EXTERNAL_API: 'true'
       EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Checkout EE submodules
@@ -421,11 +421,11 @@ jobs:
           git submodule update --init --recursive
       - name: Fetch base branch for merge-base
         run: git fetch origin ${{ github.base_ref }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: plugins-dist
           path: plugins/
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         id: server-nm
         with:
           path: server/node_modules
@@ -455,7 +455,7 @@ jobs:
           esac
       - name: Upload fast-run results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fast-test-results
           path: |
@@ -595,7 +595,7 @@ jobs:
 
       # Comment pipeline — one path for both lanes: download jest JSONs,
       # render markdown via scripts/render-ci-comment.sh, upsert by marker.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: >-
           github.event_name == 'pull_request'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
@@ -606,7 +606,7 @@ jobs:
           && steps.eval.outputs.mode == 'changed'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fast-test-results
           path: /tmp/ci-results
@@ -617,7 +617,7 @@ jobs:
           && steps.eval.outputs.mode == 'full'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: full-unit-results
           path: /tmp/ci-results
@@ -628,7 +628,7 @@ jobs:
           && steps.eval.outputs.mode == 'full'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: full-e2e-results
           path: /tmp/ci-results/tj-e2e-json
@@ -638,7 +638,7 @@ jobs:
           github.event_name == 'pull_request'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: buildlog-*
           merge-multiple: true
@@ -650,7 +650,7 @@ jobs:
           && steps.eval.outputs.mode == 'full'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: coverage-summary
           path: /tmp/ci-results/coverage
@@ -708,7 +708,7 @@ jobs:
           github.event_name == 'pull_request'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -738,7 +738,7 @@ jobs:
         if: >-
           steps.eval.outputs.mode == 'full'
           && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const verdict = '${{ steps.eval.outputs.verdict }}';
@@ -757,7 +757,7 @@ jobs:
           github.event_name == 'pull_request'
           && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name)
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const prNumber = context.payload.pull_request?.number || context.issue?.number;
