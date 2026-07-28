@@ -22,6 +22,10 @@ export class OidcEnvUtilService implements IOidcEnvUtilService {
     return 0;
   }
 
+  getResolvedWorkspaceOrganizationIds(): string[] {
+    return [];
+  }
+
   setProviderState(_configId: string, _state: EnvProviderState): void {}
 
   getProviderState(_configId: string): EnvProviderState {

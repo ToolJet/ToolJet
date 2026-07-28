@@ -10,6 +10,7 @@ export interface IOidcEnvUtilService {
   getOidcConfig(organizationId: string, configId: string, envConfigIndex: number): Promise<OidcEnvConfig | null>;
   getOidcTemplateConfig(organizationId: string, envConfigIndex: number): Promise<Partial<OidcEnvConfig> | null>;
   getWorkspaceProviderCount(organizationId: string): Promise<number>;
+  getResolvedWorkspaceOrganizationIds(): string[];
   // Keyed by configId (specific sso_configs row), not organizationId — a workspace can have
   // several env-managed OIDC providers at once.
   setProviderState(configId: string, state: EnvProviderState): void;

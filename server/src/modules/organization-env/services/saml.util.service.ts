@@ -10,6 +10,10 @@ export class SamlEnvUtilService implements ISamlEnvUtilService {
     return false;
   }
 
+  getResolvedOrganizationIds(): string[] {
+    return [];
+  }
+
   async getSamlConfig(_organizationId: string): Promise<SamlEnvConfig | null> {
     return null;
   }

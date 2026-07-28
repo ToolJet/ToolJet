@@ -115,7 +115,7 @@ export class LoginConfigsController implements ILoginConfigsController {
   @InitFeature(FEATURE_KEY.SAVE_INSTANCE_OIDC_ENV_CONFIGS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch('/oidc/instance-env-configs')
-  async toggleInstanceOidcEnvConfig(@Body() configData: UpdateInstanceOidcEnvConfigDTO) {
+  async toggleInstanceOidcEnvConfig(@Body() configData: UpdateInstanceOidcEnvConfigDTO, @User() user: UserEntity) {
     throw new NotFoundException();
   }
 

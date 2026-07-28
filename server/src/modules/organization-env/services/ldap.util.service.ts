@@ -10,6 +10,10 @@ export class LdapEnvUtilService implements ILdapEnvUtilService {
     return false;
   }
 
+  getResolvedOrganizationIds(): string[] {
+    return [];
+  }
+
   async getLdapConfig(_organizationId: string): Promise<LdapEnvConfig | null> {
     return null;
   }

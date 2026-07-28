@@ -4,6 +4,7 @@ export interface ILdapEnvUtilService {
   initialize(): Promise<void>;
 
   hasLdapConfig(organizationId: string): boolean;
+  getResolvedOrganizationIds(): string[];
 
   getLdapConfig(organizationId: string): Promise<LdapEnvConfig | null>;
 

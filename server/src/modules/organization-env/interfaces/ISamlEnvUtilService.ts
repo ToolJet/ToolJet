@@ -4,6 +4,7 @@ export interface ISamlEnvUtilService {
   initialize(): Promise<void>;
 
   hasSamlConfig(organizationId: string): boolean;
+  getResolvedOrganizationIds(): string[];
 
   getSamlConfig(organizationId: string): Promise<SamlEnvConfig | null>;
 
