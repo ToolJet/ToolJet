@@ -62,15 +62,20 @@ export const REQUIRED_KEYS = {
 
 export const OIDC_ENV_KEYS = {
   CLIENT_ID: 'OIDC_CLIENT_ID',
-  CLIENT_SECRET: 'OIDC_CLIENT_SECRET', // optional — not needed for token_endpoint_auth_method 'none'
+  CLIENT_SECRET: 'OIDC_CLIENT_SECRET', // optional — not needed when GRANT_TYPE is 'pkce'
   WELL_KNOWN_URL: 'OIDC_WELL_KNOWN_URL',
-  NAME: 'OIDC_NAME', // optional
+  NAME: 'OIDC_NAME',
   CUSTOM_SCOPES: 'OIDC_CUSTOM_SCOPES', // optional
   CLAIM_NAME: 'OIDC_CLAIM_NAME', // optional
   ENABLE_GROUP_SYNC: 'OIDC_ENABLE_GROUP_SYNC', // optional
   GROUP_MAPPING: 'OIDC_GROUP_MAPPING', // optional — JSON object string, IdP group name -> ToolJet group name
-  GRANT_TYPE: 'OIDC_GRANT_TYPE', // optional — 'authorization_code' | 'pkce'
-  CODE_VERIFIER: 'OIDC_CODE_VERIFIER', // optional — only used for PKCE grant type
+  GRANT_TYPE: 'OIDC_GRANT_TYPE', // required — 'authorization_code' | 'pkce'
+  CODE_VERIFIER: 'OIDC_CODE_VERIFIER', // optional — only used for pkce grant type
 } as const;
 
-export const REQUIRED_OIDC_KEYS = [OIDC_ENV_KEYS.CLIENT_ID, OIDC_ENV_KEYS.WELL_KNOWN_URL] as const;
+export const REQUIRED_OIDC_KEYS = [
+  OIDC_ENV_KEYS.CLIENT_ID,
+  OIDC_ENV_KEYS.WELL_KNOWN_URL,
+  OIDC_ENV_KEYS.NAME,
+  OIDC_ENV_KEYS.GRANT_TYPE,
+] as const;
