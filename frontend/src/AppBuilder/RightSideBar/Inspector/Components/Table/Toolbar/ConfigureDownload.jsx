@@ -33,13 +33,13 @@ export const ConfigureDownload = ({ component, paramUpdated, onClose }) => {
   return (
     <div data-cy="configure-download-popover">
       <div className="tw-flex tw-h-11 tw-items-center tw-justify-between tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-px-4">
-        <span className="tw-font-title-large tw-text-text-default">Configure download data</span>
+        <span className="tw-font-title-default tw-text-text-default">Configure download data</span>
         <button
           type="button"
           aria-label="Close"
           data-cy="configure-download-close"
           onClick={onClose}
-          className="tw-flex tw-h-5 tw-w-5 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default tw-cursor-pointer hover:tw-text-icon-strong"
+          className="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default tw-cursor-pointer hover:tw-text-icon-strong"
         >
           <X size={14} />
         </button>

@@ -36,8 +36,8 @@ export const ToolbarTile = ({
   const handleCodeChange = (newValue) => paramUpdated(paramRef, 'value', newValue, 'properties');
 
   const tile = (
-    <div className="tw-group tw-flex tw-flex-col tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-px-3 tw-py-2 hover:tw-bg-interactive-hover">
-      <div className="tw-flex tw-min-h-5 tw-items-center tw-gap-2">
+    <div className="tw-group tw-flex tw-flex-col tw-gap-2 tw-rounded-[6px] tw-bg-interactive-default tw-px-[8px] tw-py-[7px] hover:tw-bg-interactive-hover">
+      <div className="tw-flex tw-items-center tw-gap-2">
         <span
           className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
           data-cy={`${dataCy}-label`}
@@ -55,11 +55,11 @@ export const ToolbarTile = ({
               onConfigOpenChange(!configOpen);
             }}
             className={cn(
-              'tw-flex tw-h-5 tw-w-5 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default tw-cursor-pointer hover:tw-text-icon-strong',
+              'tw-flex tw-h-5 tw-w-5 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-[4px] tw-text-icon-default tw-cursor-pointer hover:tw-text-icon-strong',
               !configOpen && 'tw-opacity-0 group-hover:tw-opacity-100'
             )}
           >
-            <Bolt size={14} />
+            <Bolt size={12} />
           </button>
         )}
 

@@ -755,6 +755,7 @@ export const Table = (props) => {
       // Deprecated properties section
       {
         id: 'deprecated-properties',
+        isOpen: false,
         title: (
           <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
             <span>Enable deprecated properties</span>

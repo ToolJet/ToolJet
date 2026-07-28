@@ -70,13 +70,13 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
   return (
     <div data-cy="configure-add-new-row-popover">
       <div className="tw-flex tw-h-11 tw-items-center tw-justify-between tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-px-4">
-        <span className="tw-font-title-large tw-text-text-default">Configure add new row</span>
+        <span className="tw-font-title-default tw-text-text-default">Configure add new row</span>
         <button
           type="button"
           aria-label="Close"
           data-cy="configure-add-new-row-close"
           onClick={onClose}
-          className="tw-flex tw-h-5 tw-w-5 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default tw-cursor-pointer hover:tw-text-icon-strong"
+          className="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default tw-cursor-pointer hover:tw-text-icon-strong"
         >
           <X size={14} />
         </button>
@@ -107,7 +107,7 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
           <span className="tw-font-body-default tw-text-text-default">Select all</span>
         </label>
 
-        <div className="tw-my-1 tw-border-0 tw-border-b tw-border-dashed tw-border-border-weak" />
+        <div className="tw-my-0.5 tw-border-0 tw-border-b tw-border-dashed tw-border-border-weak" />
 
         <div className="tw-flex tw-max-h-[240px] tw-flex-col tw-gap-1 tw-overflow-y-auto">
           {filteredItems.length === 0 ? (
