@@ -428,6 +428,14 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         get().resetUndoRedoStack();
         get().queryPanel.setSelectedQuery(null, moduleId);
         get().queryPanel.setPreviewData(null);
+
+        // Global/Page "Variables" (exposedValues.variables/page.variables) otherwise carry
+        // over from the previous version instead of resetting to the new version's declared
+        // state, and ListView/Kanban's lazy-resolution bookkeeping keeps stale entries. Scoped
+        // to just those — constants/globals are already (re)populated by the explicit calls
+        // below/elsewhere in this action, so resetting them here too would just wipe fields
+        // (theme/urlparams/mode/currentUser) that nothing repopulates in this path.
+        get().resetExposedValues(moduleId, { resetConstants: false, resetGlobals: false });
       }
 
       get().setResolvedGlobals(
