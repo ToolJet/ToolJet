@@ -2947,7 +2947,7 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-19', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat19BranchId: string = createBranch19Resp.body.id;
+        const feat19BranchId: string = await branchIdByName('feat-e2e-19', mainBranchId);
 
         const delRenameAResp = await request
           .agent(app.getHttpServer())
@@ -3018,7 +3018,7 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-orphan-app', sourceBranchId: mainBranchId })
           .expect(201);
-        const orphanAppBranchId: string = orphanAppBranchResp.body.id;
+        const orphanAppBranchId: string = await branchIdByName('feat-orphan-app', mainBranchId);
 
         const orphanSyncedAppResp = await request
           .agent(app.getHttpServer())
@@ -3114,7 +3114,7 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-orphan-mod', sourceBranchId: mainBranchId })
           .expect(201);
-        const orphanModBranchId: string = orphanModBranchResp.body.id;
+        const orphanModBranchId: string = await branchIdByName('feat-orphan-mod', mainBranchId);
 
         const orphanSyncedModResp = await request
           .agent(app.getHttpServer())
@@ -3173,7 +3173,7 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-orphan-ds', sourceBranchId: mainBranchId })
           .expect(201);
-        const orphanDsBranchId: string = orphanDsBranchResp.body.id;
+        const orphanDsBranchId: string = await branchIdByName('feat-orphan-ds', mainBranchId);
 
         const orphanSyncedDsResp = await request
           .agent(app.getHttpServer())
@@ -3243,7 +3243,7 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-meta-prop-1', sourceBranchId: mainBranchId })
           .expect(201);
-        const metaBranch1Id: string = metaBranch1Resp.body.id;
+        const metaBranch1Id: string = await branchIdByName('feat-meta-prop-1', mainBranchId);
 
         const metaCreateResp = await request
           .agent(app.getHttpServer())
@@ -3402,7 +3402,7 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-meta-prop-2', sourceBranchId: mainBranchId })
           .expect(201);
-        const metaBranch2Id: string = metaBranch2Resp.body.id;
+        const metaBranch2Id: string = await branchIdByName('feat-meta-prop-2', mainBranchId);
 
         const metaAppOnBranch2 = await request
           .agent(app.getHttpServer())
@@ -3544,7 +3544,7 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-unsynced', sourceBranchId: mainBranchId })
           .expect(201);
-        const unsyncedFeatBranchId: string = unsyncedBranchResp.body.id;
+        const unsyncedFeatBranchId: string = await branchIdByName('feat-unsynced', mainBranchId);
 
         const unsyncedAppResp = await request
           .agent(app.getHttpServer())
@@ -4301,7 +4301,10 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-edit-rules', sourceBranchId: mainBranchId })
           .expect(201);
-        const featBranchId: string = featResp.body.id;
+        // create-branch is async (returns { enqueued }); resolve the row id from the list endpoint.
+        const featBranchId: string = (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', mainBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === 'feat-edit-rules')?.id;
 
         await auth(agent().post(`/api/app-git/gitpush/${appId}/${unsyncedDraftId}`))
           .query({ branch_id: mainBranchId })
@@ -5002,7 +5005,10 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-conflicts', sourceBranchId: mainBranchId })
           .expect(201);
-        const featBranchId: string = featResp.body.id;
+        // create-branch is async (returns { enqueued }); resolve the row id from the list endpoint.
+        const featBranchId: string = (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', mainBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === 'feat-conflicts')?.id;
 
         for (const [id, name] of [
           [appRelinkId, 'cf-app-relink'],
@@ -5428,7 +5434,10 @@ describe('GitSyncController', () => {
           process.stdout.write(`\n${diag}\n`);
           throw new Error(diag);
         }
-        const featFromId: string = featFromResp.body.id;
+        // create-branch is async (returns { enqueued }); resolve the row id from the list endpoint.
+        const featFromId: string = (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', mainBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === 'feat-from-v2')?.id;
         expect(featFromId).toBeDefined();
 
         step(6, 'pull feat-from-v2 → the app is present; edit it on the feature branch');
@@ -5580,7 +5589,10 @@ describe('GitSyncController', () => {
           .query({ branch_id: mainBranchId })
           .send({ name: 'feat-ds-scope', sourceBranchId: mainBranchId })
           .expect(201);
-        const featBranchId: string = createBranchResp.body.id;
+        // create-branch is async (returns { enqueued }); resolve the row id from the list endpoint.
+        const featBranchId: string = (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', mainBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === 'feat-ds-scope')?.id;
 
         const syncedDsId: string = (
           await createDataSource('ds-scope-synced', featBranchId, 'http://synced.example.com')
