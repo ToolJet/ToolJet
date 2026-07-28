@@ -19,6 +19,8 @@ export const ControlButtons = memo(
       shallow
     );
     const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
+    const downloadFileName = useTableStore((state) => state.getTableProperties(id)?.downloadFileName, shallow);
+    const downloadFilteredData = useTableStore((state) => state.getTableProperties(id)?.downloadFilteredData, shallow);
     const hasDownloadEvent = useTableStore((state) => state.getHasDownloadEvent(id), shallow);
     const { handleRefresh, isRefreshing } = useTableRefresh(id, fireEvent);
 
@@ -117,38 +119,41 @@ export const ControlButtons = memo(
     );
 
     // Haven't seperated this into a separate component because of UI issues
-    const downlaodPopover = () => (
-      <Popover
-        id="popover-basic"
-        data-cy="popover-card"
-        className={`table-widget-popup download-popup ${darkMode && 'dark-theme'}`}
-        placement="top-end"
-      >
-        <Popover.Body>
-          <RenderButton
-            label="Download as CSV"
-            data-cy={`option-download-as-csv`}
-            onClick={() => exportToCSV(table, componentName)}
-            variant="ghostBlack"
-            className="tw-w-full justify-content-start tw-px-[8px]"
-          />
-          <RenderButton
-            label="Download as Excel"
-            data-cy={`option-download-as-excel`}
-            onClick={() => exportToExcel(table, componentName)}
-            variant="ghostBlack"
-            className="tw-w-full justify-content-start tw-px-[8px]"
-          />
-          <RenderButton
-            label="Download as PDF"
-            data-cy={`option-download-as-pdf`}
-            onClick={() => exportToPDF(table, componentName)}
-            variant="ghostBlack"
-            className="tw-w-full justify-content-start tw-px-[8px]"
-          />
-        </Popover.Body>
-      </Popover>
-    );
+    const downlaodPopover = () => {
+      const exportOptions = { downloadFileName, filtered: !!downloadFilteredData };
+      return (
+        <Popover
+          id="popover-basic"
+          data-cy="popover-card"
+          className={`table-widget-popup download-popup ${darkMode && 'dark-theme'}`}
+          placement="top-end"
+        >
+          <Popover.Body>
+            <RenderButton
+              label="Download as CSV"
+              data-cy={`option-download-as-csv`}
+              onClick={() => exportToCSV(table, componentName, exportOptions)}
+              variant="ghostBlack"
+              className="tw-w-full justify-content-start tw-px-[8px]"
+            />
+            <RenderButton
+              label="Download as Excel"
+              data-cy={`option-download-as-excel`}
+              onClick={() => exportToExcel(table, componentName, exportOptions)}
+              variant="ghostBlack"
+              className="tw-w-full justify-content-start tw-px-[8px]"
+            />
+            <RenderButton
+              label="Download as PDF"
+              data-cy={`option-download-as-pdf`}
+              onClick={() => exportToPDF(table, componentName, exportOptions)}
+              variant="ghostBlack"
+              className="tw-w-full justify-content-start tw-px-[8px]"
+            />
+          </Popover.Body>
+        </Popover>
+      );
+    };
 
     const renderAddRowButton = () => {
       return (

@@ -4,7 +4,7 @@ import generateFile from '@/_lib/generate-file';
 import moment from 'moment';
 
 // Helper function to get table data
-const getData = (table, forExcel = false) => {
+const getData = (table, forExcel = false, filtered = false) => {
   // Get headers from all visible columns
   const headers = [];
   const accessorKeys = [];
@@ -23,8 +23,10 @@ const getData = (table, forExcel = false) => {
       accessorKeys.push(column.columnDef.accessorKey || column.columnDef.header);
     });
 
-  // Get data rows
-  const data = table.getCoreRowModel().rows.map((row) => {
+  // Get data rows — 'filtered' exports the filtered + sorted rows across all pages (in display order),
+  // 'core' exports the full unfiltered dataset (default, preserves legacy behaviour)
+  const rows = (filtered ? table.getPrePaginationRowModel() : table.getCoreRowModel()).rows;
+  const data = rows.map((row) => {
     const rowData = [];
     accessorKeys.forEach((accessorKey) => {
       const cellValue = row.original[accessorKey];
@@ -50,17 +52,17 @@ const getData = (table, forExcel = false) => {
 };
 
 // Export to CSV
-export const exportToCSV = (table, componentName) => {
-  const { headers, data } = getData(table);
-  const fileName = getExportFileName(componentName);
+export const exportToCSV = (table, componentName, { downloadFileName, filtered } = {}) => {
+  const { headers, data } = getData(table, false, filtered);
+  const fileName = getExportFileName(componentName, downloadFileName);
   const csvString = Papa.unparse({ fields: headers, data });
   generateFile(fileName, csvString, 'csv');
 };
 
 // Export to Excel
-export const exportToExcel = (table, componentName) => {
-  const { headers, data } = getData(table, true);
-  const fileName = getExportFileName(componentName);
+export const exportToExcel = (table, componentName, { downloadFileName, filtered } = {}) => {
+  const { headers, data } = getData(table, true, filtered);
+  const fileName = getExportFileName(componentName, downloadFileName);
   const config = {
     filename: fileName,
     sheet: {
@@ -71,14 +73,14 @@ export const exportToExcel = (table, componentName) => {
 };
 
 // Export to PDF
-export const exportToPDF = async (table, componentName) => {
+export const exportToPDF = async (table, componentName, { downloadFileName, filtered } = {}) => {
   // Lazy load jspdf and jspdf-autotable to reduce initial bundle size (~600kb)
   // eslint-disable-next-line import/no-unresolved
   const [JsPDFNamespace, JSPDFAutoTableNamespace] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
 
-  const { headers, data } = getData(table);
+  const { headers, data } = getData(table, false, filtered);
   const pdfData = data.map((obj) => Object.values(obj));
-  const fileName = getExportFileName(componentName);
+  const fileName = getExportFileName(componentName, downloadFileName);
   const JsPDF = JsPDFNamespace.jsPDF || JsPDFNamespace.default;
   const autoTable = JSPDFAutoTableNamespace.autoTable || JSPDFAutoTableNamespace.default;
   const doc = new JsPDF();
@@ -97,6 +99,7 @@ export const exportToPDF = async (table, componentName) => {
   return;
 };
 
-const getExportFileName = (componentName) => {
-  return `${componentName}_${moment().format('DD-MM-YYYY_HH-mm')}`;
+export const getExportFileName = (componentName, downloadFileName) => {
+  const name = (downloadFileName ?? '').trim();
+  return name.length ? name : `${componentName}_${moment().format('DD-MM-YYYY_HH-mm')}`;
 };
