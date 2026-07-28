@@ -7,6 +7,10 @@ import {
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
 import toast from 'react-hot-toast';
+import queryString from 'query-string';
+import { camelCase, isEmpty, mapKeys } from 'lodash';
+import { deepCamelCase } from '@/_helpers/appUtils';
+import { baseTheme } from '../utils';
 import {
   getEnvironmentAccessFromPermissions,
   hasEnvironmentAccess,
@@ -505,6 +509,58 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           get().setResolvedConstants(orgConstants, moduleId);
           get().setSecrets(orgSecrets, moduleId);
         }
+
+        // Theme/JS-libraries/preloaded-script and page settings are stored per-version too —
+        // without this, a switch to a version with different global/page settings keeps
+        // showing the previous version's.
+        const globalSettings = mapKeys(
+          data.editing_version?.globalSettings || data.editing_version?.global_settings || data.globalSettings,
+          (value, key) => camelCase(key)
+        );
+        if (!globalSettings?.theme) {
+          globalSettings.theme = baseTheme;
+        }
+        get().setGlobalSettings(globalSettings);
+        get().setPageSettings(
+          get().computePageSettings(
+            deepCamelCase(data.editing_version?.pageSettings ?? data.editing_version?.page_settings)
+          ),
+          moduleId
+        );
+
+        // theme/urlparams/mode/currentUser essentially never change value within a session
+        // (same browser tab, same user, same dark-mode preference) — refreshed here anyway
+        // for full parity with the reference effect.
+        const exposedTheme =
+          get().globalSettings?.appMode && get().globalSettings.appMode !== 'auto'
+            ? get().globalSettings.appMode
+            : localStorage.getItem('darkMode') === 'true'
+            ? 'dark'
+            : 'light';
+        get().setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
+        get().setResolvedGlobals(
+          'urlparams',
+          JSON.parse(JSON.stringify(queryString.parse(window.location?.search))),
+          moduleId
+        );
+        get().setResolvedGlobals('mode', { value: get().getCurrentMode(moduleId) }, moduleId);
+        const rawSession = authenticationService.currentSessionValue;
+        const sessionGroups = rawSession?.group_permissions
+          ? ['all_users', ...rawSession.group_permissions.map((group) => group.name), rawSession?.role?.name]
+          : ['all_users', rawSession?.role?.name];
+        get().setResolvedGlobals(
+          'currentUser',
+          {
+            ...get().user,
+            groups: sessionGroups,
+            role: rawSession?.role?.name,
+            ssoUserInfo: rawSession?.current_user?.sso_user_info,
+            ...(rawSession?.current_user?.metadata && !isEmpty(rawSession.current_user.metadata)
+              ? { metadata: rawSession.current_user.metadata }
+              : {}),
+          },
+          moduleId
+        );
       }
 
       // Pages/components are cloned with new ids for every version (see server's
@@ -528,6 +584,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           // Event handlers are cloned with new ids per version too — without this, click/
           // onPageLoad actions stay wired to the previous version's event definitions.
           get().eventsSlice.updateEventsField('events', data.events || [], moduleId);
+          // "Go to app" link targets — stale otherwise.
+          get().setLinkedApps(data.linkedApps ?? {}, moduleId);
 
           // Queries are cloned with new ids per version too (mirrors pages above), but
           // getAppVersionData doesn't return them — without this refetch, queryNameIdMapping/
@@ -544,6 +602,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
             moduleId
           );
           get().setQueryMapping(moduleId);
+          if (dataQueries?.length > 0) {
+            get().queryPanel.setSelectedQuery(dataQueries[0]?.id, moduleId);
+          }
         }
 
         get().initDependencyGraph(moduleId);
