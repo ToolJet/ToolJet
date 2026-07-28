@@ -8,14 +8,11 @@ import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
-import { Modal, OverlayTrigger, Popover } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
-import { EllipsisVerticalIcon, Link2Icon } from 'lucide-react';
-import { getQueryUsageCount } from '@/AppBuilder/_utils/entityUsage';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import QueryUsageHoverContent from './QueryUsageHoverContent';
+import { EllipsisVerticalIcon } from 'lucide-react';
 
 const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => (
   <Modal
@@ -46,10 +43,8 @@ const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => 
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const queryNameEleRef = useRef(null);
-  const { moduleId } = useModuleContext();
 
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
-  const usageCount = useStore((state) => getQueryUsageCount(state, dataQuery.id, moduleId));
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
   const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
@@ -185,31 +180,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                   </div>
                 </ToolTip>{' '}
                 {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
-                {usageCount > 0 && (
-                  <OverlayTrigger
-                    placement="right"
-                    trigger={['hover', 'focus']}
-                    delay={{ show: 200, hide: 100 }}
-                    overlay={
-                      <Popover
-                        id={`query-usage-popover-${dataQuery.id}`}
-                        className={`query-usage-hover-popover ${darkMode ? 'dark-theme' : ''}`}
-                      >
-                        <Popover.Body>
-                          <QueryUsageHoverContent queryId={dataQuery.id} moduleId={moduleId} />
-                        </Popover.Body>
-                      </Popover>
-                    }
-                  >
-                    <span
-                      className="query-usage-count-badge"
-                      data-cy={`query-usage-count-${dataQuery.name.toLowerCase()}`}
-                    >
-                      <Link2Icon size={10} />
-                      {usageCount}
-                    </span>
-                  </OverlayTrigger>
-                )}
                 {localDs && (
                   <>
                     <a

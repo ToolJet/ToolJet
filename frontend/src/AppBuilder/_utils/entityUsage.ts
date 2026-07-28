@@ -25,11 +25,25 @@ export type UsageEntryKind =
   | 'action'
   | 'unknown';
 
+/**
+ * One reason an entry is related to the subject.
+ * - label: the raw key (a bound property, or `${eventId} · ${actionId}`)
+ * - expression: the literal binding text behind that key, when resolvable
+ * - eventId/actionId: set for event-handler details so the UI can render
+ *   "On click → Run query" instead of the raw ids
+ */
+export type UsageDetail = {
+  label: string;
+  expression?: string;
+  eventId?: string;
+  actionId?: string;
+};
+
 export type UsageEntry = {
   kind: UsageEntryKind;
   id: string | null;
   name: string;
-  details: string[];
+  details: UsageDetail[];
 };
 
 const PARAM_TYPES = new Set(['properties', 'general', 'generalStyles', 'others', 'styles', 'validation']);
@@ -60,17 +74,45 @@ const getQueryName = (state: any, id: string, moduleId: string) =>
 const getComponentName = (state: any, id: string, moduleId: string) =>
   state.getComponentDefinition?.(id, moduleId)?.component?.name;
 
-function addEntry(map: Map<string, UsageEntry>, kind: UsageEntryKind, id: string | null, name: string, detail?: string) {
+// `label` alone identifies a detail; a later occurrence only fills in a missing expression.
+export const detailOf = (label?: string, expression?: string): UsageDetail | undefined =>
+  label ? { label, ...(expression ? { expression } : {}) } : undefined;
+
+/**
+ * The literal text bound to `components.<id>.<section>.<prop>` — the expression the
+ * dependency graph node was built from. Returns undefined for non-string values.
+ */
+function componentBindingExpression(state: any, moduleId: string, componentId: string, section: string, prop: string) {
+  const value = state.getComponentDefinition?.(componentId, moduleId)?.component?.definition?.[section]?.[prop]?.value;
+  return typeof value === 'string' && value.length ? value : undefined;
+}
+
+function addEntry(
+  map: Map<string, UsageEntry>,
+  kind: UsageEntryKind,
+  id: string | null,
+  name: string,
+  detail?: UsageDetail
+) {
   const key = `${kind}:${id ?? name}`;
   let entry = map.get(key);
   if (!entry) {
     entry = { kind, id, name, details: [] };
     map.set(key, entry);
   }
-  if (detail && !entry.details.includes(detail)) entry.details.push(detail);
+  if (!detail?.label) return;
+  const existing = entry.details.find((d) => d.label === detail.label);
+  if (!existing) entry.details.push(detail);
+  else if (!existing.expression && detail.expression) existing.expression = detail.expression;
 }
 
-function addComponentEntry(state: any, moduleId: string, map: Map<string, UsageEntry>, componentId: string, detail?: string) {
+function addComponentEntry(
+  state: any,
+  moduleId: string,
+  map: Map<string, UsageEntry>,
+  componentId: string,
+  detail?: UsageDetail
+) {
   const name = getComponentName(state, componentId, moduleId);
   if (name) addEntry(map, 'component', componentId, name, detail);
   else addEntry(map, 'unknown', componentId, 'Unknown component', detail);
@@ -81,7 +123,7 @@ function addQueryEntry(
   moduleId: string,
   map: Map<string, UsageEntry>,
   queryId: string,
-  detail?: string,
+  detail?: UsageDetail,
   fallbackName?: string
 ) {
   const name = getQueryName(state, queryId, moduleId) ?? fallbackName;
@@ -91,7 +133,13 @@ function addQueryEntry(
 
 // Graph source-node paths: components.<id>.<exposed>, queries.<id>.<key>,
 // variables.<name>, page.variables.<name>, globals.<...>, constants.<...>
-function addSourceNodeEntry(state: any, moduleId: string, map: Map<string, UsageEntry>, path: string, detail?: string) {
+function addSourceNodeEntry(
+  state: any,
+  moduleId: string,
+  map: Map<string, UsageEntry>,
+  path: string,
+  detail?: UsageDetail
+) {
   const parts = path.split('.');
   switch (parts[0]) {
     case 'components':
@@ -117,27 +165,42 @@ function addSourceNodeEntry(state: any, moduleId: string, map: Map<string, Usage
   }
 }
 
-// Refs extracted by ast.js: { entityType, entityNameOrId, entityKey }
+// Refs extracted by ast.js: { entityType, entityNameOrId, entityKey }, with the
+// originating option string attached by getQueryRefs as `sourceString`.
 function addRefEntry(state: any, moduleId: string, map: Map<string, UsageEntry>, ref: any) {
-  const { entityType, entityNameOrId, entityKey } = ref;
+  const { entityType, entityNameOrId, entityKey, sourceString } = ref;
+  const detail = detailOf(entityKey, sourceString);
   switch (entityType) {
     case 'components':
-      addComponentEntry(state, moduleId, map, entityNameOrId, entityKey);
+      addComponentEntry(state, moduleId, map, entityNameOrId, detail);
       break;
     case 'queries':
-      addQueryEntry(state, moduleId, map, entityNameOrId, entityKey);
+      addQueryEntry(state, moduleId, map, entityNameOrId, detail);
       break;
     case 'variables':
-      addEntry(map, 'variable', null, entityKey);
+      addEntry(map, 'variable', null, entityKey, detailOf(sourceString && 'value', sourceString));
       break;
     case 'page':
-      if (entityNameOrId === 'variables') addEntry(map, 'pageVariable', null, entityKey);
+      if (entityNameOrId === 'variables')
+        addEntry(map, 'pageVariable', null, entityKey, detailOf(sourceString && 'value', sourceString));
       break;
     case 'globals':
-      addEntry(map, 'global', null, entityNameOrId ? `${entityNameOrId}.${entityKey}` : entityKey);
+      addEntry(
+        map,
+        'global',
+        null,
+        entityNameOrId ? `${entityNameOrId}.${entityKey}` : entityKey,
+        detailOf(sourceString && 'value', sourceString)
+      );
       break;
     case 'constants':
-      addEntry(map, 'constant', null, entityNameOrId ? `${entityNameOrId}.${entityKey}` : entityKey);
+      addEntry(
+        map,
+        'constant',
+        null,
+        entityNameOrId ? `${entityNameOrId}.${entityKey}` : entityKey,
+        detailOf(sourceString && 'value', sourceString)
+      );
       break;
     default:
       break;
@@ -193,13 +256,16 @@ function resolveEventTarget(state: any, action: any, moduleId: string): EventTar
   return { kind: 'action', id: null, name: actionId ?? 'unknown action' };
 }
 
-function eventDetail(action: any, target: EventTarget): string {
+function eventDetail(action: any, target: EventTarget): UsageDetail {
   const eventId = action.eventId;
+  const actionId = String(action.actionId);
   if (target.kind === 'variable' || target.kind === 'pageVariable') {
-    return `${eventId} · ${String(action.actionId).startsWith('unset') ? 'unsets' : 'sets'}`;
+    return { label: `${eventId} · ${actionId}`, eventId, actionId };
   }
-  if ((target.kind === 'query' && action.actionId === 'run-query') || target.kind === 'action') return eventId;
-  return `${eventId} · ${action.actionId}`;
+  if ((target.kind === 'query' && actionId === 'run-query') || target.kind === 'action') {
+    return { label: eventId, eventId, actionId };
+  }
+  return { label: `${eventId} · ${actionId}`, eventId, actionId };
 }
 
 // Memoized per options object — query saves replace options, invalidating the cache entry.
@@ -218,7 +284,9 @@ export function getQueryRefs(state: any, query: any, moduleId = 'canvas'): any[]
     const queryNameIdMapping = state.modules?.[moduleId]?.queryNameIdMapping ?? {};
     strings.forEach((str: string) => {
       try {
-        refs.push(...extractAndReplaceReferencesFromString(str, componentNameIdMapping, queryNameIdMapping).allRefs);
+        const { allRefs } = extractAndReplaceReferencesFromString(str, componentNameIdMapping, queryNameIdMapping);
+        // Keep the option text each ref came from — it is the expression shown on hover.
+        allRefs.forEach((ref: any) => refs.push({ ...ref, sourceString: str }));
       } catch (e) {
         // unparsable expression — skip
       }
@@ -248,16 +316,27 @@ export function getComponentUsage(state: any, componentId: string, moduleId = 'c
       if (parts.length >= 4 && PARAM_TYPES.has(parts[2])) {
         // Bound property node — its direct dependents are the source entities feeding it
         const property = parts.slice(3).join('.');
+        const expression = componentBindingExpression(state, moduleId, componentId, parts[2], property);
         graph.getDirectDependents(node).forEach((source: string) => {
           if (source === basePath || source.startsWith(`${basePath}.`)) return;
-          addSourceNodeEntry(state, moduleId, uses, source, property);
+          addSourceNodeEntry(state, moduleId, uses, source, detailOf(property, expression));
         });
       } else if (parts.length === 3) {
         // Exposed value node — its direct dependencies are the consumers
         graph.getDirectDependencies(node).forEach((consumer: string) => {
           const cParts = consumer.split('.');
           if (cParts[0] === 'components' && cParts.length >= 4 && cParts[1] !== componentId) {
-            addComponentEntry(state, moduleId, usedBy, cParts[1], cParts.slice(3).join('.'));
+            const consumerProperty = cParts.slice(3).join('.');
+            addComponentEntry(
+              state,
+              moduleId,
+              usedBy,
+              cParts[1],
+              detailOf(
+                consumerProperty,
+                componentBindingExpression(state, moduleId, cParts[1], cParts[2], consumerProperty)
+              )
+            );
           }
           // queries.<id>.__options__ consumers are covered by the query-refs scan below
         });
@@ -272,16 +351,16 @@ export function getComponentUsage(state: any, componentId: string, moduleId = 'c
   getQueries(state, moduleId).forEach((query: any) => {
     getQueryRefs(state, query, moduleId).forEach((ref: any) => {
       if (ref.entityType === 'components' && ref.entityNameOrId === componentId) {
-        addQueryEntry(state, moduleId, usedBy, query.id, ref.entityKey, query.name);
+        addQueryEntry(state, moduleId, usedBy, query.id, detailOf(ref.entityKey, ref.sourceString), query.name);
       }
     });
     if (componentName) {
       const { script, transformation } = getQueryCodeAnalyses(query);
       if (script?.componentRefs.includes(componentName)) {
-        addQueryEntry(state, moduleId, usedBy, query.id, 'code', query.name);
+        addQueryEntry(state, moduleId, usedBy, query.id, detailOf('code'), query.name);
       }
       if (transformation?.componentRefs.includes(componentName)) {
-        addQueryEntry(state, moduleId, usedBy, query.id, 'transformation', query.name);
+        addQueryEntry(state, moduleId, usedBy, query.id, detailOf('transformation'), query.name);
       }
     }
   });
@@ -303,7 +382,11 @@ export function getComponentUsage(state: any, componentId: string, moduleId = 'c
     if (extractTarget && extractTarget(action) === componentId) {
       const sourceId = evt?.sourceId;
       if (!sourceId) return;
-      const detail = `${action.eventId} · ${action.actionId}`;
+      const detail: UsageDetail = {
+        label: `${action.eventId} · ${action.actionId}`,
+        eventId: action.eventId,
+        actionId: action.actionId,
+      };
       if (getComponentName(state, sourceId, moduleId)) {
         addComponentEntry(state, moduleId, usedBy, sourceId, detail);
       } else if (getQueryName(state, sourceId, moduleId)) {
@@ -335,7 +418,17 @@ export function getQueryUsage(state: any, queryId: string, moduleId = 'canvas') 
       graph.getDirectDependencies(node).forEach((consumer: string) => {
         const cParts = consumer.split('.');
         if (cParts[0] === 'components' && cParts.length >= 4) {
-          addComponentEntry(state, moduleId, usedBy, cParts[1], cParts.slice(3).join('.'));
+          const consumerProperty = cParts.slice(3).join('.');
+          addComponentEntry(
+            state,
+            moduleId,
+            usedBy,
+            cParts[1],
+            detailOf(
+              consumerProperty,
+              componentBindingExpression(state, moduleId, cParts[1], cParts[2], consumerProperty)
+            )
+          );
         }
         // query consumers are covered by the query-refs scan below
       });
@@ -360,13 +453,13 @@ export function getQueryUsage(state: any, queryId: string, moduleId = 'canvas') 
       if (!analysis) return;
       analysis.componentRefs.forEach((name) => {
         const cid = componentNameIdMapping[name];
-        if (cid) addComponentEntry(state, moduleId, uses, cid, detail);
-        else addEntry(uses, 'unknown', null, name, detail);
+        if (cid) addComponentEntry(state, moduleId, uses, cid, detailOf(detail));
+        else addEntry(uses, 'unknown', null, name, detailOf(detail));
       });
       analysis.queryRefs.forEach((name) => {
         const qid = queryNameIdMapping[name];
-        if (qid && qid !== queryId) addQueryEntry(state, moduleId, uses, qid, detail);
-        else if (!qid) addEntry(uses, 'unknown', null, name, detail);
+        if (qid && qid !== queryId) addQueryEntry(state, moduleId, uses, qid, detailOf(detail));
+        else if (!qid) addEntry(uses, 'unknown', null, name, detailOf(detail));
       });
     });
   }
@@ -378,16 +471,16 @@ export function getQueryUsage(state: any, queryId: string, moduleId = 'canvas') 
     if (query.id === queryId) return;
     getQueryRefs(state, query, moduleId).forEach((ref: any) => {
       if (ref.entityType === 'queries' && ref.entityNameOrId === queryId) {
-        addQueryEntry(state, moduleId, usedBy, query.id, ref.entityKey, query.name);
+        addQueryEntry(state, moduleId, usedBy, query.id, detailOf(ref.entityKey, ref.sourceString), query.name);
       }
     });
     if (selfName) {
       const { script, transformation } = getQueryCodeAnalyses(query);
       if (script?.queryRefs.includes(selfName)) {
-        addQueryEntry(state, moduleId, usedBy, query.id, 'code', query.name);
+        addQueryEntry(state, moduleId, usedBy, query.id, detailOf('code'), query.name);
       }
       if (transformation?.queryRefs.includes(selfName)) {
-        addQueryEntry(state, moduleId, usedBy, query.id, 'transformation', query.name);
+        addQueryEntry(state, moduleId, usedBy, query.id, detailOf('transformation'), query.name);
       }
     }
   });
@@ -397,23 +490,19 @@ export function getQueryUsage(state: any, queryId: string, moduleId = 'canvas') 
     const action = evt?.event;
     if (!action || !QUERY_EVENT_ACTIONS.has(action.actionId) || action.queryId !== queryId) return;
     const sourceId = evt.sourceId;
+    const detail: UsageDetail = { label: action.eventId, eventId: action.eventId, actionId: action.actionId };
     if (getComponentName(state, sourceId, moduleId)) {
-      addComponentEntry(state, moduleId, triggeredBy, sourceId, action.eventId);
+      addComponentEntry(state, moduleId, triggeredBy, sourceId, detail);
     } else if (getQueryName(state, sourceId, moduleId)) {
-      addQueryEntry(state, moduleId, triggeredBy, sourceId, action.eventId);
+      addQueryEntry(state, moduleId, triggeredBy, sourceId, detail);
     } else {
       const page = state.modules?.[moduleId]?.pages?.find((p: any) => p.id === sourceId);
-      if (page) addEntry(triggeredBy, 'page', sourceId, page.name, action.eventId);
-      else addEntry(triggeredBy, 'unknown', sourceId, 'Unknown source', action.eventId);
+      if (page) addEntry(triggeredBy, 'page', sourceId, page.name, detail);
+      else addEntry(triggeredBy, 'unknown', sourceId, 'Unknown source', detail);
     }
   });
 
   return { uses: sorted(uses), usedBy: sorted(usedBy), triggeredBy: sorted(triggeredBy) };
-}
-
-export function getQueryUsageCount(state: any, queryId: string, moduleId = 'canvas'): number {
-  const { usedBy, triggeredBy } = getQueryUsage(state, queryId, moduleId);
-  return usedBy.length + triggeredBy.length;
 }
 
 /**
@@ -435,7 +524,7 @@ export function getQueryOwnEvents(state: any, queryId: string, moduleId = 'canva
         kind: target.kind,
         id: target.id,
         name: target.name,
-        details: target.kind === 'action' ? [] : [action.actionId],
+        details: [{ label: action.actionId, eventId: action.eventId, actionId: action.actionId }],
       };
       if (action.eventId === 'onDataQuerySuccess') onSuccess.push(entry);
       else if (action.eventId === 'onDataQueryFailure') onFailure.push(entry);
@@ -458,7 +547,7 @@ export function getPageLoadQueries(state: any, moduleId = 'canvas') {
 
   getQueries(state, moduleId).forEach((query: any) => {
     if (query.options?.runOnPageLoad || query.options?.run_on_page_load) {
-      addEntry(appLoad, 'query', query.id, query.name, 'once, when the app loads');
+      addEntry(appLoad, 'query', query.id, query.name, detailOf('once, when the app loads'));
     }
   });
 
@@ -472,8 +561,8 @@ export function getPageLoadQueries(state: any, moduleId = 'canvas') {
 
     if (QUERY_EVENT_ACTIONS.has(action.actionId) && action.queryId) {
       const name = getQueryName(state, action.queryId, moduleId) ?? action.queryName;
-      if (name) addEntry(pageLoad, 'query', action.queryId, name, 'every visit to this page');
-      else addEntry(pageLoad, 'unknown', action.queryId, 'Unknown query', 'every visit to this page');
+      if (name) addEntry(pageLoad, 'query', action.queryId, name, detailOf('every visit to this page'));
+      else addEntry(pageLoad, 'unknown', action.queryId, 'Unknown query', detailOf('every visit to this page'));
       return;
     }
 
@@ -483,112 +572,11 @@ export function getPageLoadQueries(state: any, moduleId = 'canvas') {
       kind: target.kind,
       id: target.id,
       name: target.name,
-      details: target.kind === 'action' ? [] : [action.actionId],
+      details: [{ label: action.actionId, eventId: action.eventId, actionId: action.actionId }],
     });
   });
 
   return { appLoad: sorted(appLoad), pageLoad: sorted(pageLoad), pageLoadActions };
-}
-
-export type GraphNode = { id: string; kind: UsageEntryKind; name: string; entityId: string | null };
-export type GraphEdge = { id: string; source: string; target: string; kind: 'binds' | 'triggers' };
-
-/**
- * Whole-page dependency graph for the visual graph view.
- * Nodes: all page components, all queries (orphans included — hygiene visibility),
- * plus every variable/global/constant that appears in a binding.
- * Edges point in data-flow direction (source entity feeds consumer); event links
- * (component → query it runs) are kind 'triggers'.
- */
-export function getPageDependencyGraph(state: any, moduleId = 'canvas') {
-  const nodes = new Map<string, GraphNode>();
-  const edges = new Map<string, GraphEdge>();
-
-  const addNode = (kind: UsageEntryKind, entityId: string | null, name: string) => {
-    const key = `${kind}:${entityId ?? name}`;
-    if (!nodes.has(key)) nodes.set(key, { id: key, kind, name, entityId });
-    return key;
-  };
-
-  const addEdge = (source: string, target: string, kind: 'binds' | 'triggers') => {
-    const id = `${source}->${target}:${kind}`;
-    if (!edges.has(id)) edges.set(id, { id, source, target, kind });
-  };
-
-  const pageComponents = state.getCurrentPageComponents?.(moduleId) ?? {};
-  Object.entries(pageComponents).forEach(([componentId, definition]: [string, any]) => {
-    const componentKey = addNode('component', componentId, definition?.component?.name ?? componentId);
-    const usage = getComponentUsage(state, componentId, moduleId);
-    usage.uses.forEach((entry) => addEdge(addNode(entry.kind, entry.id, entry.name), componentKey, 'binds'));
-    usage.usedBy.forEach((entry) => addEdge(componentKey, addNode(entry.kind, entry.id, entry.name), 'binds'));
-    usage.triggers.forEach((entry) => {
-      if (entry.kind === 'action') return; // show-alert/logout/etc. are not entities — noise as graph nodes
-      addEdge(componentKey, addNode(entry.kind, entry.id, entry.name), 'triggers');
-    });
-  });
-
-  // Every page query gets a node even when unconnected, so dead queries are visible.
-  getQueries(state, moduleId).forEach((query: any) => addNode('query', query.id, query.name));
-
-  return { nodes: Array.from(nodes.values()), edges: Array.from(edges.values()) };
-}
-
-export type CustomCodeScript = { id: string; name: string; kind: 'runjs' | 'runpy'; analysis: ScriptAnalysis | null };
-export type CustomCodeTransformation = { queryId: string; name: string; language: string; analysis: ScriptAnalysis | null };
-export type FxComponent = {
-  componentId: string;
-  name: string;
-  entries: { section: string; prop: string; expression: string }[];
-};
-
-/**
- * Everywhere custom code lives on the current page:
- * - scripts: RunJS/RunPy queries (RunPy is listed but never parsed)
- * - transformations: queries with enableTransformation (analysis for JS only)
- * - fxByComponent: component properties/styles switched to fx mode
- */
-export function getCustomCodeInventory(state: any, moduleId = 'canvas') {
-  const scripts: CustomCodeScript[] = [];
-  const transformations: CustomCodeTransformation[] = [];
-
-  getQueries(state, moduleId).forEach((query: any) => {
-    const { script, transformation } = getQueryCodeAnalyses(query);
-    if (query.kind === 'runjs' || query.kind === 'runpy') {
-      scripts.push({ id: query.id, name: query.name, kind: query.kind, analysis: script });
-    }
-    if (query.options?.enableTransformation) {
-      transformations.push({
-        queryId: query.id,
-        name: query.name,
-        language: query.options.transformationLanguage ?? 'javascript',
-        analysis: transformation,
-      });
-    }
-  });
-
-  const fxByComponent: FxComponent[] = [];
-  const pageComponents = state.getCurrentPageComponents?.(moduleId) ?? {};
-  Object.entries(pageComponents).forEach(([componentId, definition]: [string, any]) => {
-    const sections = definition?.component?.definition ?? {};
-    const entries: FxComponent['entries'] = [];
-    PARAM_TYPES.forEach((section) => {
-      const params = sections[section];
-      if (!params || typeof params !== 'object') return;
-      Object.entries(params).forEach(([prop, param]: [string, any]) => {
-        if (param?.fxActive === true) {
-          entries.push({ section, prop, expression: String(param.value ?? '') });
-        }
-      });
-    });
-    if (entries.length) {
-      fxByComponent.push({ componentId, name: definition?.component?.name ?? componentId, entries });
-    }
-  });
-
-  scripts.sort((a, b) => a.name.localeCompare(b.name));
-  transformations.sort((a, b) => a.name.localeCompare(b.name));
-  fxByComponent.sort((a, b) => a.name.localeCompare(b.name));
-  return { scripts, transformations, fxByComponent };
 }
 
 export type VariableUsage = {
@@ -609,7 +597,6 @@ export type VariableUsage = {
 export function getVariableUsage(state: any, moduleId = 'canvas') {
   type Row = { name: string; scope: 'app' | 'page'; setBy: Map<string, UsageEntry>; readBy: Map<string, UsageEntry> };
   const rows = new Map<string, Row>();
-  const dynamicAccessors = new Map<string, UsageEntry>();
 
   const row = (scope: 'app' | 'page', name: string): Row => {
     const key = `${scope}:${name}`;
@@ -621,8 +608,9 @@ export function getVariableUsage(state: any, moduleId = 'canvas') {
     return r;
   };
 
-  const applyAnalysis = (analysis: ScriptAnalysis | null, queryId: string, queryName: string, detail: string) => {
+  const applyAnalysis = (analysis: ScriptAnalysis | null, queryId: string, queryName: string, label: string) => {
     if (!analysis) return;
+    const detail = detailOf(label);
     analysis.variableWrites.forEach((n) => addQueryEntry(state, moduleId, row('app', n).setBy, queryId, detail, queryName));
     analysis.variableReads.forEach((n) => addQueryEntry(state, moduleId, row('app', n).readBy, queryId, detail, queryName));
     analysis.pageVariableWrites.forEach((n) =>
@@ -631,9 +619,6 @@ export function getVariableUsage(state: any, moduleId = 'canvas') {
     analysis.pageVariableReads.forEach((n) =>
       addQueryEntry(state, moduleId, row('page', n).readBy, queryId, detail, queryName)
     );
-    if (analysis.dynamicVariableOps) {
-      addQueryEntry(state, moduleId, dynamicAccessors, queryId, detail, queryName);
-    }
   };
 
   // 1. Scripts and transformations
@@ -644,9 +629,11 @@ export function getVariableUsage(state: any, moduleId = 'canvas') {
 
     // 2. {{}} refs in query options read variables
     getQueryRefs(state, query, moduleId).forEach((ref: any) => {
-      if (ref.entityType === 'variables') addQueryEntry(state, moduleId, row('app', ref.entityKey).readBy, query.id, undefined, query.name);
+      const refDetail = detailOf(ref.sourceString && 'value', ref.sourceString);
+      if (ref.entityType === 'variables')
+        addQueryEntry(state, moduleId, row('app', ref.entityKey).readBy, query.id, refDetail, query.name);
       else if (ref.entityType === 'page' && ref.entityNameOrId === 'variables')
-        addQueryEntry(state, moduleId, row('page', ref.entityKey).readBy, query.id, undefined, query.name);
+        addQueryEntry(state, moduleId, row('page', ref.entityKey).readBy, query.id, refDetail, query.name);
     });
   });
 
@@ -675,7 +662,7 @@ export function getVariableUsage(state: any, moduleId = 'canvas') {
     const scope: 'app' | 'page' = writeKind === 'variable' ? 'app' : 'page';
     const bucket = row(scope, key).setBy;
     const sourceId = evt?.sourceId;
-    const detail = action.eventId;
+    const detail: UsageDetail = { label: action.eventId, eventId: action.eventId, actionId: action.actionId };
     if (getComponentName(state, sourceId, moduleId)) addComponentEntry(state, moduleId, bucket, sourceId, detail);
     else if (getQueryName(state, sourceId, moduleId)) addQueryEntry(state, moduleId, bucket, sourceId, detail);
     else {
@@ -693,5 +680,81 @@ export function getVariableUsage(state: any, moduleId = 'canvas') {
     .map((r) => ({ name: r.name, scope: r.scope, setBy: sorted(r.setBy), readBy: sorted(r.readBy) }))
     .sort((a, b) => a.scope.localeCompare(b.scope) || a.name.localeCompare(b.name));
 
-  return { variables, dynamicAccessors: sorted(dynamicAccessors) };
+  return { variables };
+}
+
+export type QuerySection = {
+  id: string;
+  name: string;
+  query: any;
+  usage: ReturnType<typeof getQueryUsage>;
+  ownEvents: ReturnType<typeof getQueryOwnEvents>;
+  loadTriggers: { appLoad: boolean; pageLoad: boolean };
+};
+
+export type ComponentSection = {
+  id: string;
+  name: string;
+  componentType: string;
+  definition: any;
+  usage: ReturnType<typeof getComponentUsage>;
+};
+
+/**
+ * Everything the Dependencies panel renders, in one traversal.
+ *
+ * Queries, components and variables are filtered down to those that actually
+ * participate in a relationship — an entity nothing references and that
+ * references nothing is not a dependency, so it is left out of the lists.
+ */
+export function getDependencySections(state: any, moduleId = 'canvas') {
+  const runsOnLoad = getPageLoadQueries(state, moduleId);
+  const appLoadIds = new Set(runsOnLoad.appLoad.map((entry) => entry.id));
+  const pageLoadIds = new Set(runsOnLoad.pageLoad.map((entry) => entry.id));
+
+  const queries: QuerySection[] = [];
+  getQueries(state, moduleId).forEach((query: any) => {
+    const usage = getQueryUsage(state, query.id, moduleId);
+    const ownEvents = getQueryOwnEvents(state, query.id, moduleId);
+    const loadTriggers = { appLoad: appLoadIds.has(query.id), pageLoad: pageLoadIds.has(query.id) };
+    const total =
+      usage.uses.length +
+      usage.usedBy.length +
+      usage.triggeredBy.length +
+      ownEvents.onSuccess.length +
+      ownEvents.onFailure.length +
+      (loadTriggers.appLoad ? 1 : 0) +
+      (loadTriggers.pageLoad ? 1 : 0);
+    if (total === 0) return;
+    queries.push({ id: query.id, name: query.name, query, usage, ownEvents, loadTriggers });
+  });
+  queries.sort((a, b) => a.name.localeCompare(b.name));
+
+  const components: ComponentSection[] = [];
+  const pageComponents = state.getCurrentPageComponents?.(moduleId) ?? {};
+  Object.entries(pageComponents).forEach(([id, definition]: [string, any]) => {
+    const usage = getComponentUsage(state, id, moduleId);
+    if (usage.uses.length + usage.usedBy.length + usage.triggers.length === 0) return;
+    components.push({
+      id,
+      name: definition?.component?.name ?? id,
+      componentType: definition?.component?.component ?? '',
+      definition,
+      usage,
+    });
+  });
+  components.sort((a, b) => a.name.localeCompare(b.name));
+
+  const { variables: allVariables } = getVariableUsage(state, moduleId);
+  const relatedVariables = allVariables.filter((v) => v.setBy.length + v.readBy.length > 0);
+
+  return {
+    runsOnLoad,
+    queries,
+    components,
+    variables: {
+      app: relatedVariables.filter((v) => v.scope === 'app'),
+      page: relatedVariables.filter((v) => v.scope === 'page'),
+    },
+  };
 }

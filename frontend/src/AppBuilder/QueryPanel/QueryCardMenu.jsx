@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import classNames from 'classnames';
@@ -8,10 +8,8 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import { debounce } from 'lodash';
-import { Link2Icon } from 'lucide-react';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import QueryUsageModal from './QueryUsageModal';
 
 const QueryCardMenu = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
@@ -27,7 +25,6 @@ const QueryCardMenu = ({ darkMode }) => {
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
   const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
-  const [showUsageModal, setShowUsageModal] = useState(false);
 
   const QUERY_MENU_OPTIONS = [
     {
@@ -39,11 +36,6 @@ const QueryCardMenu = ({ darkMode }) => {
       label: 'Duplicate',
       value: 'duplicate',
       icon: <Copy width={16} />,
-    },
-    {
-      label: 'View usage',
-      value: 'usage',
-      icon: <Link2Icon size={16} color="var(--icon-strong)" />,
     },
     {
       label: 'Query permission',
@@ -80,9 +72,6 @@ const QueryCardMenu = ({ darkMode }) => {
     if (value === 'duplicate') {
       debouncedDuplicateQuery(selectedQuery?.id, appId);
     }
-    if (value === 'usage') {
-      setShowUsageModal(true);
-    }
     if (value === 'permission') {
       if (!hasAppPermissionQuery) return;
       toggleQueryPermissionModal(true);
@@ -104,12 +93,6 @@ const QueryCardMenu = ({ darkMode }) => {
 
   return (
     <>
-      <QueryUsageModal
-        show={showUsageModal}
-        onHide={() => setShowUsageModal(false)}
-        query={selectedQuery}
-        darkMode={darkMode}
-      />
       <Overlay
         placement="bottom-start"
         target={targetElement}

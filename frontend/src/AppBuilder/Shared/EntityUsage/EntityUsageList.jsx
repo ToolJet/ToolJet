@@ -22,7 +22,8 @@ export const EntityUsageList = ({ groups, emptyMessage = 'No dependencies yet', 
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
-      entry.name.toLowerCase().includes(term) || entry.details.some((detail) => detail.toLowerCase().includes(term))
+      entry.name.toLowerCase().includes(term) ||
+      entry.details.some((detail) => detail.label.toLowerCase().includes(term))
     );
   };
 
@@ -62,6 +63,7 @@ export const EntityUsageList = ({ groups, emptyMessage = 'No dependencies yet', 
           </div>
           {group.entries.map((entry) => {
             const navigable = !readOnly && NAVIGABLE_KINDS.has(entry.kind);
+            const detailText = entry.details.map((detail) => detail.label).join(', ');
             return (
               <div
                 key={`${entry.kind}-${entry.id ?? entry.name}`}
@@ -74,9 +76,9 @@ export const EntityUsageList = ({ groups, emptyMessage = 'No dependencies yet', 
                   <span className={`entity-usage-kind entity-usage-kind-${entry.kind}`}>{KIND_LABELS[entry.kind]}</span>
                   <span className="entity-usage-name text-truncate">{decodeEntities(entry.name)}</span>
                 </div>
-                {entry.details.length > 0 && (
-                  <div className="entity-usage-details text-truncate" title={entry.details.join(', ')}>
-                    {entry.details.join(', ')}
+                {detailText && (
+                  <div className="entity-usage-details text-truncate" title={detailText}>
+                    {detailText}
                   </div>
                 )}
               </div>

@@ -17,6 +17,26 @@ export const KIND_LABELS = {
 // Navigates the builder to a usage entry ({ kind, id, name }): components are
 // selected on canvas, queries open in the query panel, variables/globals/constants
 // open the left Inspector. Returns true when navigation happened.
+// Inspector node path for an entry, or null when the entry has no Inspector node.
+export const inspectorPathFor = (entry) => {
+  switch (entry?.kind) {
+    case 'component':
+      return `components.${entry.name}`;
+    case 'query':
+      return `queries.${entry.name}`;
+    case 'variable':
+      return `variables.${entry.name}`;
+    case 'pageVariable':
+      return `page.variables.${entry.name}`;
+    case 'global':
+      return `globals.${entry.name}`;
+    case 'constant':
+      return `constants.${entry.name}`;
+    default:
+      return null;
+  }
+};
+
 const useEntityNavigation = () => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
@@ -58,6 +78,13 @@ const useEntityNavigation = () => {
       default:
         return false;
     }
+  };
+
+  navigateToEntity.inspect = (entry) => {
+    const path = inspectorPathFor(entry);
+    if (!path) return false;
+    openLeftInspector(path);
+    return true;
   };
 
   return navigateToEntity;
