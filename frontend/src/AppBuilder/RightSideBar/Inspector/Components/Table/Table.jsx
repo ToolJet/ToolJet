@@ -769,7 +769,7 @@ export const Table = (props) => {
               placement="top"
             >
               <span>
-                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+                <Icon name={'warning'} height={14} width={14} fill="var(--icon-danger)" />
               </span>
             </ToolTip>
           </div>
