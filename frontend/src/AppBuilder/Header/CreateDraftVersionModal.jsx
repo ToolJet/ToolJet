@@ -26,6 +26,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     appId,
     selectedVersion,
     selectedEnvironment,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -38,6 +39,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
@@ -114,6 +116,11 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
   const [versionName, setVersionName] = useState('');
 
   const createVersion = () => {
+    if (isEditorReadOnly) {
+      toast.error('You do not have permission to create a draft version');
+      return;
+    }
+
     if (!selectedVersionForCreation || selectedVersionForCreation === undefined) {
       toast.error('Please select a version from.');
       return;
@@ -291,7 +298,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
                 variant="primary"
                 className=""
                 type="submit"
-                disabled={!selectedVersionForCreation || isCreatingVersion}
+                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
                 data-cy="create-draft-version-create-button"
               >
                 {isReplaceFlow

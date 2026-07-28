@@ -13,6 +13,7 @@ const initialState = {
   currentAppVersionEnvironment: null,
   restoredAppHistoryId: null, // Used to trigger app refresh flow after restoring app history
   restoreTimestamp: null, // Timestamp to ensure re-fetch even when restoring to same entry twice
+  isEditorReadOnly: false, // module opened in Build-with (view-only) mode
 };
 
 export const createAppVersionSlice = (set, get) => ({
@@ -65,6 +66,15 @@ export const createAppVersionSlice = (set, get) => ({
       'setGitSyncLicenseLocked'
     ),
 
+  setIsEditorReadOnly: (value = false) =>
+    set(
+      (state) => {
+        state.isEditorReadOnly = value;
+      },
+      false,
+      'setIsEditorReadOnly'
+    ),
+
   setAppVersions: (versions) => set(() => ({ appVersions: versions }), false, 'setAppVersions'),
 
   setAppVersionCurrentEnvironment: (environment) =>
@@ -79,12 +89,14 @@ export const createAppVersionSlice = (set, get) => ({
     const isEditorFreezed = get().isEditorFreezed;
     // Git-sync-license lock freezes the editor unconditionally (independent of the
     // skipIsEditorFreezedCheck escape hatch) — there is no editing at all in this state.
+    const isEditorReadOnly = get().isEditorReadOnly;
     const isGitSyncLicenseLocked = get().isGitSyncLicenseLocked;
     const result =
       isVersionReleased ||
       isGitSyncLicenseLocked ||
       (!skipIsEditorFreezedCheck && isEditorFreezed) ||
-      selectedVersionId === releasedVersionId;
+      selectedVersionId === releasedVersionId ||
+      isEditorReadOnly;
     return result;
   },
 

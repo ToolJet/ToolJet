@@ -66,20 +66,23 @@ function validatePrivateApp(slug, queryParams) {
 }
 
 //use default value for type of apps i.e.'front-end'
-function getAll(page, folder, searchKey, type = 'front-end') {
+function getAll(page, folder, searchKey, type = 'front-end', context = undefined) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const branchId = getActiveBranchId();
   const branchParam = branchId ? `&branch_id=${branchId}` : '';
+  const contextParam = context ? `&context=${context}` : '';
   if (page === 0)
     return fetch(
       `${config.apiUrl}/apps?all=true&folder=${folder || ''}&type=${type}${
         searchKey ? `&searchKey=${searchKey}` : ''
-      }${branchParam}`,
+      }${branchParam}${contextParam}`,
       requestOptions
     ).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}${branchParam}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${
+        folder || ''
+      }&searchKey=${searchKey}&type=${type}${branchParam}${contextParam}`,
       requestOptions
     ).then(handleResponse);
 }

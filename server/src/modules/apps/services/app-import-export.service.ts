@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
@@ -32,6 +32,14 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import {
+  resolveCorelationIdsBySlugs,
+  rewriteGoToAppBlob,
+  collectLegacyGoToAppSlug,
+  collectTableGoToAppEventBlobs,
+  resolveLegacyPageTargetSlugs,
+  resolvePageTargetCorelationId,
+} from 'src/helpers/go_to_app_link.helper';
 import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
@@ -48,6 +56,7 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
@@ -349,7 +358,8 @@ export class AppImportExportService {
     protected entityManager: EntityManager,
     protected appsRepository: AppsRepository,
     protected readonly transactionLogger: TransactionLogger,
-    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly abilityService: AbilityService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -387,14 +397,20 @@ export class AppImportExportService {
         });
       } else if (branchId && appToExport.type !== APP_TYPES.WORKFLOW) {
         // Sub-branch file export — export only the BRANCH-type row that owns
-        // this sub-branch's editable state. Default-branch exports are blocked
-        // upstream in import-export-resources/service.ts. Workflows skip the
-        // filter (they don't carry branch_id on app_versions).
-        queryAppVersions
-          .andWhere('app_versions.branchId = :branchId', { branchId })
-          .andWhere('app_versions.versionType = :branchVersionType', {
-            branchVersionType: AppVersionType.BRANCH,
-          });
+        // this sub-branch's editable state. On the default branch, all versions
+        // (VERSION-type) should be exported. Workflows skip the filter entirely
+        // (they don't carry branch_id on app_versions).
+        const branch = await manager.findOne(WorkspaceBranch, {
+          where: { id: branchId },
+          select: ['id', 'isDefault'],
+        });
+        if (branch && !branch.isDefault) {
+          queryAppVersions
+            .andWhere('app_versions.branchId = :branchId', { branchId })
+            .andWhere('app_versions.versionType = :branchVersionType', {
+              branchVersionType: AppVersionType.BRANCH,
+            });
+        }
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
@@ -858,6 +874,29 @@ export class AppImportExportService {
       }
     }
 
+    // Gate: if any referenced module is missing, the user must have module_create permission.
+    // Use the same passport-first resolution as the processing loop below, so a renamed
+    // module that still resolves via co_relation_id isn't mistaken for a missing one.
+    if (appParams?.modules?.length > 0) {
+      const missingModules = appParams.modules.filter((m) => {
+        const resolved =
+          (m?.appV2?.co_relation_id && existingByCoRel.get(m.appV2.co_relation_id)) ||
+          existingByName.get(m?.appV2?.name);
+        return !resolved;
+      });
+      if (missingModules.length > 0) {
+        const perms = await this.abilityService.resourceActionsPermission(user, {
+          organizationId: user.organizationId,
+        });
+        const canCreateModule = perms.isSuperAdmin || perms.isAdmin || !!perms.moduleCreate;
+        if (!canCreateModule) {
+          throw new ForbiddenException(
+            "This app requires creating modules, but you don't have permission to create modules. Contact admin."
+          );
+        }
+      }
+    }
+
     // If consumer is on a non-default branch, we'll need to hydrate a BRANCH-type
     // stub row for each module on that branch so the module appears in the branch's
     // Modules tab (dashboard filters by branch_id). Resolve branch once.
@@ -1106,7 +1145,8 @@ export class AppImportExportService {
         schemaUnifiedAppParams,
         user,
         isGitApp,
-        existingAppId
+        existingAppId,
+        branchId
       );
 
       const resourceMapping = await this.setupImportedAppAssociations(
@@ -1369,7 +1409,8 @@ export class AppImportExportService {
     appParams: any,
     user: User,
     isGitApp = false,
-    existingAppId?
+    existingAppId?,
+    branchId?: string
   ): Promise<App> {
     return await catchDbException(async () => {
       // Name lives on app_versions.app_name for every type; apps.name stays NULL — so the
@@ -1396,6 +1437,38 @@ export class AppImportExportService {
         }
       }
 
+      /* Preserve the source's logical identity (co_relation_id)
+       * - so cross-app references heal once the referenced app is imported into this workspace.
+       * - If an app here already carries that identity, this import is a copy of it
+       * — mint a fresh identity so existing references keep resolving to the original deterministically.
+       * - Git imports skip the conflict check: branch rows of the same logical app intentionally share the id.
+       * - When importing onto a branch, the check is branch-scoped: the same identity existing on
+       *   ANOTHER branch is the normal git-sync state, not a conflict
+       */
+      const sourceCoRelationId = appParams?.co_relation_id ?? appParams?.id;
+      let coRelationId = sourceCoRelationId ?? uuid();
+      if (!isGitApp && sourceCoRelationId) {
+        const identityHolderQb = manager
+          .createQueryBuilder(App, 'app')
+          .select('app.id')
+          .where('app.co_relation_id = :sourceCoRelationId', { sourceCoRelationId })
+          .andWhere('app.organizationId = :organizationId', { organizationId: user?.organizationId });
+        if (branchId) {
+          identityHolderQb.andWhere((sub) => {
+            const exists = sub
+              .subQuery()
+              .select('1')
+              .from(AppVersion, 'scope')
+              .where('scope.appId = app.id')
+              .andWhere('scope.branch_id = :branchId', { branchId })
+              .getQuery();
+            return 'EXISTS ' + exists;
+          });
+        }
+        const identityHolder = await identityHolderQb.getOne();
+        if (identityHolder) coRelationId = uuid();
+      }
+
       const appId = uuid();
       // Metadata lives on app_versions for every type; apps.* stays NULL/null placeholder.
       // Postgres allows multiple NULLs on apps.slug's UNIQUE column so this doesn't violate
@@ -1411,7 +1484,7 @@ export class AppImportExportService {
         icon: null,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: null,
-        co_relation_id: appParams?.id,
+        co_relation_id: coRelationId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -1644,6 +1717,14 @@ export class AppImportExportService {
         let updateHomepageId = null;
 
         if (updatedDefinition?.pages) {
+          // Back-fill `targetCorelationId` for app-type pages that only carry the
+          // legacy slug-in-`appId`. Single batched lookup per version to avoid N+1.
+          const slugToCoRelationId = await resolveLegacyPageTargetSlugs(
+            manager,
+            Object.values(updatedDefinition.pages),
+            user.organizationId
+          );
+
           for (const pageId of Object.keys(updatedDefinition?.pages)) {
             const page = updatedDefinition.pages[pageId];
 
@@ -1694,6 +1775,7 @@ export class AppImportExportService {
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,
               icon: page.icon || null,
+              targetCorelationId: resolvePageTargetCorelationId(page, slugToCoRelationId),
             });
             const pageCreated = await manager.save(newPage);
 
@@ -1749,6 +1831,21 @@ export class AppImportExportService {
 
             //Event handlers
 
+            // Normalize go-to-app blobs (legacy `slug` → `correlationId`) for every event
+            // on this page — including those nested inside Table widgets (per-action and
+            // per-toggle-column). If we omitted them, table-scoped go-to-app handlers would
+            // keep the deprecated `slug` key on import.
+            const legacyGoToAppSlugsForPage = [
+              ...pageEvents.flatMap(collectLegacyGoToAppSlug),
+              ...componentEvents.flatMap((eo) => (eo.event || []).flatMap(collectLegacyGoToAppSlug)),
+              ...collectTableGoToAppEventBlobs(savedComponents).flatMap(collectLegacyGoToAppSlug),
+            ];
+
+            const slugToCoForPage =
+              legacyGoToAppSlugsForPage.length > 0
+                ? await resolveCorelationIdsBySlugs(manager, legacyGoToAppSlugsForPage, user.organizationId)
+                : new Map<string, string>();
+
             if (pageEvents.length > 0) {
               await Promise.all(
                 pageEvents.map(async (event, index) => {
@@ -1756,7 +1853,7 @@ export class AppImportExportService {
                     name: this.getEventHandlerName(event),
                     sourceId: pageCreated.id,
                     target: Target.page,
-                    event: event,
+                    event: rewriteGoToAppBlob(event, slugToCoForPage),
                     index: pageEvents.index || index,
                     appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                   };
@@ -1776,7 +1873,7 @@ export class AppImportExportService {
                       name: this.getEventHandlerName(event),
                       sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                       target: Target.component,
-                      event: event,
+                      event: rewriteGoToAppBlob(event, slugToCoForPage),
                       index: eventObj.index || index,
                       appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                     });
@@ -1803,7 +1900,7 @@ export class AppImportExportService {
                         name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableAction,
-                        event: { ...event, ref: action.name },
+                        event: { ...rewriteGoToAppBlob(event, slugToCoForPage), ref: action.name },
                         index: event.index ?? index,
                         appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                       });
@@ -1819,7 +1916,7 @@ export class AppImportExportService {
                         name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableColumn,
-                        event: { ...event, ref: column.name },
+                        event: { ...rewriteGoToAppBlob(event, slugToCoForPage), ref: column.name },
                         index: event.index ?? index,
                         appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                       });
@@ -1885,6 +1982,17 @@ export class AppImportExportService {
     isGitApp = false
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
+
+    // Normalize go-to-app event blobs:
+    // legacy dumps store `event.slug`; current schema stores `event.correlationId`.
+    // Resolve & rewrite in place once so every downstream EventHandler create picks up the migrated blob automatically.
+    const legacyGoToAppSlugs = (importingEvents || []).flatMap((e) => collectLegacyGoToAppSlug(e?.event));
+    if (legacyGoToAppSlugs.length > 0) {
+      const slugToCo = await resolveCorelationIdsBySlugs(manager, legacyGoToAppSlugs, user.organizationId);
+      for (const handler of importingEvents) {
+        handler.event = rewriteGoToAppBlob(handler.event, slugToCo);
+      }
+    }
 
     // Dedupe key for folder mappings across ALL version iterations.
     // The DB enforces UNIQUE(child_id, child_type). In git exports, queries are cloned
@@ -1985,7 +2093,10 @@ export class AppImportExportService {
                 manager
               );
               // Find-or-create default DSV, then create DSVO
-              let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceForAppVersion.id);
+              let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(
+                manager,
+                dataSourceForAppVersion.id
+              );
               if (!defaultDsv) {
                 const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(
                   manager,
@@ -2131,6 +2242,10 @@ export class AppImportExportService {
       const oldNewIdMap = {};
       const pageGroupIdArr = [];
 
+      // Back-fill `targetCorelationId` for app-type pages that only carry the legacy
+      // slug-in-`appId`. Single batched lookup per app version to avoid N+1.
+      const slugToCoRelationId = await resolveLegacyPageTargetSlugs(manager, pagesOfAppVersion, user.organizationId);
+
       for (const page of pagesOfAppVersion) {
         const newPage = manager.create(Page, {
           name: page.name,
@@ -2149,6 +2264,7 @@ export class AppImportExportService {
           openIn: page.openIn || PageOpenIn.SAME_TAB,
           url: page.url || null,
           appId: page.appId || '',
+          targetCorelationId: resolvePageTargetCorelationId(page, slugToCoRelationId),
         });
 
         const pageCreated = await manager.save(newPage);
@@ -3228,8 +3344,9 @@ export class AppImportExportService {
     let currentEnvironmentId: string;
 
     // Check if git sync is fully enabled for the workspace (license + provider + branch).
-    const { isEnabled: isGitSyncConfigured, options: gitSyncOptions } =
-      await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
+    const { isEnabled: isGitSyncConfigured, options: gitSyncOptions } = await this.gitSyncConfigsUtilService.getDetails(
+      user?.organizationId
+    );
     const importDefaultBranchId = gitSyncOptions.defaultBranch?.id ?? null;
     // Workflows are branch-agnostic — they are not synced to git and must not be
     // scoped to a branch or use the BRANCH version type, otherwise the versions
@@ -3345,7 +3462,7 @@ export class AppImportExportService {
           branchId:
             isWorkflow || versionStatus !== AppVersionStatus.DRAFT
               ? importDefaultBranchId
-              : branchId ?? importDefaultBranchId,
+              : (branchId ?? importDefaultBranchId),
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
@@ -3665,7 +3782,10 @@ export class AppImportExportService {
           // Find-or-create default DSV, then create DSVO
           let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, newSource.id);
           if (!defaultDsv) {
-            const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(manager, newSource.id);
+            const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(
+              manager,
+              newSource.id
+            );
             defaultDsv = await manager.save(
               manager.create(DataSourceVersion, {
                 dataSourceId: newSource.id,

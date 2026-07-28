@@ -49,3 +49,4 @@ taskfile.*
 docs/superpowers/
 .codegraph/
 contexts/
+memory/
