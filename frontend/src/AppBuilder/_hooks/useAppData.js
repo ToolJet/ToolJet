@@ -374,8 +374,10 @@ const useAppData = (
         // dependency cascade over them before initDependencyGraph rebuilds — dereferencing resolved
         // entries that don't exist in the new app and throwing (caught + swallowed -> blank editor).
         // cleanUpStore installs a fresh graph + clears resolved values so the cascade starts clean.
-        // Canvas-only (mirrors the version-change effect's own cleanUpStore); modules manage their own.
-        if (!moduleMode) cleanUpStore(false);
+        // Canvas-only (mirrors the version-change effect's own cleanUpStore); embedded modules manage
+        // their own. Standalone module editor (moduleId === 'canvas') is its own canvas mount too.
+        const isFreshCanvasMount = !moduleMode || moduleId === 'canvas';
+        if (isFreshCanvasMount) cleanUpStore(false);
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
@@ -676,9 +678,15 @@ const useAppData = (
         }
         setQueryMapping(moduleId);
 
+        // On a fresh canvas mount, ignore the `selectedEnvironment` closure above — it's whatever
+        // app/module was open earlier in the same SPA session, not this one (it gets reassigned
+        // once init() resolves further down, but setResolvedGlobals below runs before that).
+        const currentSelectedEnvironment = isFreshCanvasMount ? null : selectedEnvironment;
         setResolvedGlobals(
           'environment',
-          selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
+          currentSelectedEnvironment
+            ? { id: currentSelectedEnvironment.id, name: currentSelectedEnvironment.name }
+            : editorEnvironment,
           moduleId
         );
         setResolvedGlobals(
