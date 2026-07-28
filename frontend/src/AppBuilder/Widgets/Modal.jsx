@@ -219,7 +219,7 @@ export const Modal = function Modal({
       {useDefaultButton && visibility && (
         <button
           disabled={disabledState}
-          className="jet-button btn btn-primary p-1 overflow-hidden"
+          className="jet-button btn btn-primary p-1 overflow-hidden focus-visible:!tw-outline focus-visible:!tw-outline-2 focus-visible:!tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -246,7 +246,9 @@ export const Modal = function Modal({
         }
         size={size}
         keyboard={true}
-        enforceFocus={false}
+        // Trap focus inside the modal in the released/preview app (WAI-ARIA
+        // dialog). Kept off in the editor so the inspector/canvas stay usable.
+        enforceFocus={mode !== 'edit'}
         animation={false}
         onShow={() => onShowModal()}
         onHide={() => onHideModal()}
