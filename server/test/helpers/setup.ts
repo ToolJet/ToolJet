@@ -336,7 +336,10 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   observability: { enabled: true },
   workflows: {
     enabled: true,
-    execution_timeout: 0,
+    // execution_timeout is a plain number (unlike the 'UNLIMITED' sentinel fields below) —
+    // the runtime check in workflow-executions.service.ts is `elapsedSeconds > timeout`,
+    // so 0 timed out every execution immediately instead of meaning unlimited.
+    execution_timeout: 3600,
     workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
     instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
   },

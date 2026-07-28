@@ -9,6 +9,7 @@
 #   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}  — full lane
 #   RESULT_CHANGED                     — changed lane
 #   UNIT_JSON, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
+#   COVERAGE_SUMMARY, COVERAGE_ARTIFACT_URL — for render-coverage.mjs, full lane only
 
 set -euo pipefail
 MODE="$1"
@@ -93,6 +94,16 @@ details=$(node "$SCRIPT_DIR/render-failed-tests.mjs" details || true)
 if [ -n "$details" ]; then
   echo "$details"
   echo
+fi
+
+# Coverage only in full mode — the changed lane runs a filtered test subset against
+# the full collectCoverageFrom denominator, which would report a misleading number.
+if [ "$MODE" = "full" ]; then
+  coverage=$(node "$SCRIPT_DIR/render-coverage.mjs" || true)
+  if [ -n "$coverage" ]; then
+    echo "$coverage"
+    echo
+  fi
 fi
 
 if [ "$MODE" = "full" ]; then

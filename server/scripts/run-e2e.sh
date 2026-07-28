@@ -86,7 +86,9 @@ printf "\n"
 # Shared shard config
 # ---------------------------------------------------------------------------
 SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests --forceExit)
-[ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage)
+# --coverageReporters=json: per-shard HTML/lcov would be thrown away anyway once
+# merge-coverage.mjs combines all shards below.
+[ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage --coverageReporters=json)
 
 SHARD_LOG_DIR=$(mktemp -d)
 trap 'rm -rf "$SHARD_LOG_DIR"' EXIT
@@ -211,15 +213,18 @@ fi
 # ---------------------------------------------------------------------------
 if [ "$coverage" = true ]; then
   printf "\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
-  mkdir -p .coverage/merged
-  npx nyc merge .coverage .coverage/merged/coverage-final.json 2>/dev/null
-  npx nyc report \
-    --temp-dir .coverage/merged \
-    --reporter=html --reporter=lcov --reporter=json \
-    --report-dir=coverage-e2e 2>/dev/null
-  cp .coverage/merged/coverage-final.json coverage-e2e/coverage-final.json 2>/dev/null
-  printf "\033[32mCoverage report written to coverage-e2e/\033[0m\n"
+  # CI (--ci) only ever consumes coverage-e2e/coverage-final.json downstream (via
+  # test:cov:merge) — the HTML/lcov/summary here get thrown away with the runner, so
+  # skip rendering them twice. Local standalone runs are the audience that actually
+  # opens this report, so keep the full set there.
+  merge_reporters="json,html,lcovonly,json-summary"
+  [ "$mode" = "ci" ] && merge_reporters="json"
+  node scripts/merge-coverage.mjs --out coverage-e2e --reporters "$merge_reporters" .coverage
   rm -rf .coverage
+
+  # --coverage makes jest attach a full coverageMap to every --json shard file too —
+  # strip it, coverage-e2e/coverage-final.json above is the authoritative report.
+  [ -n "$json_output_dir" ] && node scripts/strip-coverage-map.mjs "$json_output_dir"/shard-*.json
 fi
 
 # ---------------------------------------------------------------------------
