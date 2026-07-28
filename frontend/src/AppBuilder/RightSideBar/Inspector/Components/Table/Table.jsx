@@ -15,6 +15,7 @@ import List from '@/ToolJetUI/List/List';
 import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
+import ToolbarSection from './Toolbar/ToolbarSection';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 import { ToolTip } from '@/_components/ToolTip';
@@ -454,12 +455,8 @@ export const Table = (props) => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const additionalActions = [
-    'showAddNewRowButton',
-    'showDownloadButton',
-    'showRefreshButton',
     'hideColumnSelectorButton',
     'loadingState',
-    'showBulkUpdateActions',
     'visibility',
     'collapseWhenHidden',
     'disabledState',
@@ -702,6 +699,21 @@ export const Table = (props) => {
       {
         title: 'Pagination',
         children: paginationOptions.map((option) => renderCustomElement(option)),
+      },
+      // Toolbar section
+      {
+        id: 'toolbar',
+        title: 'Toolbar',
+        children: (
+          <ToolbarSection
+            component={component}
+            paramUpdated={paramUpdated}
+            darkMode={darkMode}
+            columns={columns}
+            useDynamicColumn={useDynamicColumn}
+            currentState={currentState}
+          />
+        ),
       },
       // Additional actions section
       {

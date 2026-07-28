@@ -286,6 +286,30 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    addNewRowColumns: {
+      type: 'code',
+      displayName: 'Configure add new row',
+      validation: {
+        schema: { type: 'array' },
+        defaultValue: [],
+      },
+    },
+    downloadFileName: {
+      type: 'code',
+      displayName: 'File name',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
+    },
+    downloadFilteredData: {
+      type: 'toggle',
+      displayName: 'Download only filtered data',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     selectRowOnCellEdit: {
       type: 'toggle',
       displayName: 'Select row on cell edit',
@@ -835,6 +859,9 @@ export const tableConfig = {
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
       showRefreshButton: { value: '{{false}}' },
+      addNewRowColumns: { value: '{{[]}}' },
+      downloadFileName: { value: '' },
+      downloadFilteredData: { value: '{{false}}' },
       allowSelection: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
 
