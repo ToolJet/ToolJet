@@ -1,4 +1,10 @@
-import { appEnvironmentService, appVersionService, authenticationService } from '@/_services';
+import {
+  appEnvironmentService,
+  appVersionService,
+  authenticationService,
+  dataqueryService,
+  orgEnvironmentConstantService,
+} from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
 import toast from 'react-hot-toast';
 import {
@@ -6,6 +12,7 @@ import {
   hasEnvironmentAccess,
   getSafeEnvironment,
 } from '@/_helpers/environmentAccess';
+import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppData';
 
 const initialState = {
   selectedVersion: null,
@@ -355,7 +362,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     // only kicks in for `undefined`).
     moduleId = moduleId || 'canvas';
     try {
-      const data = await appVersionService.getAppVersionData(appId, versionId, get().currentMode);
+      const data = await appVersionService.getAppVersionData(appId, versionId, get().getCurrentMode(moduleId));
       const selectedVersion = {
         id: data.editing_version.id,
         name: data.editing_version.name,
@@ -407,11 +414,90 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       }
 
       set((state) => ({ ...state, ...optionsToUpdate }));
+
+      // The App Builder's own version-switch effect (useAppData.js:880, skipped here via
+      // moduleMode) redoes all of the below unconditionally a moment after this action returns
+      // — so for the regular App Builder every one of these calls is pure redundant work (extra
+      // fetches, duplicate writes) that gets overwritten anyway. Restrict them to the module
+      // editor, which has no such follow-up effect and needs this action to be self-sufficient.
+      const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
+
+      if (isModuleApp) {
+        // Old version's undo/redo history and query-panel selection/preview no longer apply
+        // once the canvas has switched to a different version's (differently-id'd) state.
+        get().resetUndoRedoStack();
+        get().queryPanel.setSelectedQuery(null, moduleId);
+        get().queryPanel.setPreviewData(null);
+      }
+
       get().setResolvedGlobals(
         'environment',
         { id: appVersionEnvironment?.id, name: appVersionEnvironment?.name },
         moduleId
       );
+      // For branch-type versions, editing_version.name is the internal identifier — the
+      // human-readable name lives in display_name/displayName (server: versions/service.ts).
+      get().setResolvedGlobals(
+        'appVersion',
+        {
+          name: data.editing_version?.display_name || data.editing_version?.displayName || data.editing_version?.name,
+        },
+        moduleId
+      );
+
+      if (isModuleApp) {
+        // name/slug/isPublic/isMaintenanceOn are branch/version-scoped (see the app metadata
+        // storage model), so they can legitimately differ between versions — merge onto the
+        // existing app entry rather than replacing it. Unlike the App Builder's own switch
+        // path, this action never runs cleanUpStore, so a wholesale setApp() here would wipe
+        // fields (appId, co_relation_id, appType, ...) that this response doesn't carry.
+        get().setApp(
+          {
+            ...get().appStore?.modules?.[moduleId]?.app,
+            appName: data.branch_app_name || data.name,
+            slug: data.slug,
+            isPublic: data.isPublic,
+            isMaintenanceOn:
+              'is_maintenance_on' in data
+                ? data.is_maintenance_on
+                : 'isMaintenanceOn' in data
+                ? data.isMaintenanceOn
+                : false,
+            homePageId: data.editing_version?.homePageId || data.editing_version?.home_page_id,
+          },
+          moduleId
+        );
+
+        // A branch/version switch can land on a version with different active datasources.
+        get().fetchGlobalDataSources(
+          get().appStore?.modules?.[moduleId]?.app?.organizationId,
+          versionId,
+          appVersionEnvironment?.id
+        );
+
+        // Org constants/secrets are environment-scoped. Can't gate this on "did environment
+        // change" here: when this runs via environmentChangedAction's onSuccess (the
+        // dropdown's env-switch path), that action already wrote both selectedEnvironment and
+        // appVersionEnvironment to the new value before calling us — there's no pre-switch
+        // snapshot left to compare against. Always refetching is the simplest correct fix;
+        // it's one cheap, infrequent call, not a hot path.
+        if (appVersionEnvironment?.id) {
+          const { constants } = await orgEnvironmentConstantService.getConstantsFromEnvironment(
+            appVersionEnvironment.id
+          );
+          const orgConstants = {};
+          const orgSecrets = {};
+          constants.forEach((constant) => {
+            if (constant.type !== 'Secret') {
+              orgConstants[constant.name] = constant.value;
+            } else {
+              orgSecrets[constant.name] = constant.value;
+            }
+          });
+          get().setResolvedConstants(orgConstants, moduleId);
+          get().setSecrets(orgSecrets, moduleId);
+        }
+      }
 
       // Pages/components are cloned with new ids for every version (see server's
       // setupNewVersion), so the previously selected page id no longer exists on this
@@ -429,7 +515,42 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         // values, not the raw page data — without rebuilding both here (mirroring the
         // mount-time load), the component tree stays blank until a reload recomputes them.
         get().setComponentNameIdMapping(moduleId);
+
+        if (isModuleApp) {
+          // Event handlers are cloned with new ids per version too — without this, click/
+          // onPageLoad actions stay wired to the previous version's event definitions.
+          get().eventsSlice.updateEventsField('events', data.events || [], moduleId);
+
+          // Queries are cloned with new ids per version too (mirrors pages above), but
+          // getAppVersionData doesn't return them — without this refetch, queryNameIdMapping/
+          // queryIdNameMapping keep pointing at the previous version's query ids, so canvas
+          // bindings referencing a query by name can't resolve and fall back to showing the
+          // stale id instead of the name. Must run before initDependencyGraph below, which
+          // reads the current queries list to register query dependencies.
+          const dataQueries =
+            (await dataqueryService.getAll(versionId, get().getCurrentMode(moduleId))).data_queries || [];
+          dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+          get().dataQuery.setQueries(dataQueries, moduleId);
+          get().initialiseResolvedQuery(
+            dataQueries.map((query) => query.id),
+            moduleId
+          );
+          get().setQueryMapping(moduleId);
+        }
+
         get().initDependencyGraph(moduleId);
+
+        if (isModuleApp) {
+          // runOnPageLoad queries normally run via AppCanvas's Suspense-resolved ->
+          // isComponentLayoutReady(true) -> runOnLoadQueries cycle (useAppData.js), which
+          // fires on mount/remount. The App Builder still gets that for free: its
+          // version-switch effect (useAppData.js:880, skipped here via moduleMode)
+          // unmounts/remounts the canvas behind its loader, retriggering the cycle there —
+          // calling runOnLoadQueries here too would run every runOnPageLoad query twice. The
+          // module editor never unmounts on switch (no loader), so it's the only case where
+          // that cycle never fires and needs it explicitly.
+          get().dataQuery.runOnLoadQueries(moduleId);
+        }
       }
 
       onSuccess(data);
