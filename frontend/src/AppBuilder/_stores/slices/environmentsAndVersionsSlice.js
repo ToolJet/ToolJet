@@ -375,11 +375,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let optionsToUpdate = {
         selectedVersion,
         appVersionEnvironment,
-        // The version being switched to may live in a different environment than the one
-        // currently being viewed (e.g. a freshly created draft always starts on development,
-        // regardless of which environment its source version was on) — keep the header's
-        // environment display in sync with where this version actually lives.
-        selectedEnvironment: appVersionEnvironment,
         versionsPromotedToEnvironment: [...updatedVersionsArray],
         ...calculatePromoteAndReleaseButtonVisibility(
           selectedVersion.id,
@@ -556,13 +551,21 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     };
   },
   createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {
-    // Creation only — callers must follow up with changeEditorVersionAction to actually
-    // switch the editor onto the new version. It applies the full state (selectedVersion,
-    // freeze status, pages/currentPageId) from a fresh getAppVersionData fetch; a provisional
-    // set() here would just be overwritten a moment later, so don't duplicate it.
+    // Callers must follow up with changeEditorVersionAction to actually switch the editor
+    // onto the new version — it applies the full state (selectedVersion, freeze status,
+    // pages/currentPageId) from a fresh getAppVersionData fetch, so only selectedEnvironment
+    // is set provisionally here (changeEditorVersionAction doesn't touch it).
     try {
       const editorEnvironment = get().selectedEnvironment.id;
       const newVersion = await appVersionService.createDraftVersion(appId, selectedVersionId, editorEnvironment);
+      // A new draft always starts on development, regardless of which environment its
+      // source version was on — sync the header's environment display to match.
+      set((state) => ({
+        ...state,
+        selectedEnvironment: get().environments.find(
+          (environment) => environment.id === newVersion.current_environment_id
+        ),
+      }));
       onSuccess(newVersion);
     } catch (error) {
       onFailure(error);

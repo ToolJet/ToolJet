@@ -396,14 +396,20 @@ export class AppImportExportService {
         });
       } else if (branchId && appToExport.type !== APP_TYPES.WORKFLOW) {
         // Sub-branch file export — export only the BRANCH-type row that owns
-        // this sub-branch's editable state. Default-branch exports are blocked
-        // upstream in import-export-resources/service.ts. Workflows skip the
-        // filter (they don't carry branch_id on app_versions).
-        queryAppVersions
-          .andWhere('app_versions.branchId = :branchId', { branchId })
-          .andWhere('app_versions.versionType = :branchVersionType', {
-            branchVersionType: AppVersionType.BRANCH,
-          });
+        // this sub-branch's editable state. On the default branch, all versions
+        // (VERSION-type) should be exported. Workflows skip the filter entirely
+        // (they don't carry branch_id on app_versions).
+        const branch = await manager.findOne(WorkspaceBranch, {
+          where: { id: branchId },
+          select: ['id', 'isDefault'],
+        });
+        if (branch && !branch.isDefault) {
+          queryAppVersions
+            .andWhere('app_versions.branchId = :branchId', { branchId })
+            .andWhere('app_versions.versionType = :branchVersionType', {
+              branchVersionType: AppVersionType.BRANCH,
+            });
+        }
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 

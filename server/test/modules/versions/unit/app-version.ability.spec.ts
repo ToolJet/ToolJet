@@ -206,6 +206,73 @@ describe('defineAppVersionAbility', () => {
     });
   });
 
+  describe('embedded-in-editable-parent-app bypass (MODULES resource type)', () => {
+    it('grants view actions only when isEmbeddedInEditableParentApp is true, with no direct module permission', () => {
+      const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, 'module-uuid-embedded', true);
+      const ability = build();
+
+      VIEW_ACTIONS.forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
+      const editOnlyActions = ALL_ACTIONS.filter((a) => !VIEW_ACTIONS.includes(a));
+      editOnlyActions.forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
+      expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
+    });
+
+    it('grants nothing when isEmbeddedInEditableParentApp is false and there is no direct module permission', () => {
+      const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, 'module-uuid-not-embedded', false);
+      const ability = build();
+
+      VIEW_ACTIONS.forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
+    });
+
+    it('does not upgrade an embedded-view grant into edit access', () => {
+      const perms = buildPermissions({
+        isBuilder: true,
+        viewableAppsId: ['module-uuid-x'],
+        resourceType: MODULES.MODULES,
+      });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, 'module-uuid-x', true);
+      const ability = build();
+
+      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
+    });
+
+    it('direct editableAppsId grant still wins full edit access even when isEmbeddedInEditableParentApp is also true', () => {
+      const resourceId = 'module-uuid-both';
+      const perms = buildPermissions({ isBuilder: true, editableAppsId: [resourceId], resourceType: MODULES.MODULES });
+      const { can, build } = makeBuilder();
+      defineAppVersionAbility(can, perms, resourceId, true);
+      const ability = build();
+
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
+    });
+
+    it('has no effect on the APP resource type (param is MODULES-only)', () => {
+      const perms = buildPermissions({ resourceType: MODULES.APP });
+      const { can, build } = makeBuilder();
+      // 4th param passed but should be ignored entirely for MODULES.APP
+      defineAppVersionAbility(can, perms, 'app-uuid-1', true);
+      const ability = build();
+
+      VIEW_ACTIONS.forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
+    });
+  });
+
   describe('APP resource type (regression)', () => {
     it('grants all edit actions when isAllEditable is true', () => {
       const perms = buildPermissions({ isAllEditable: true, resourceType: MODULES.APP });

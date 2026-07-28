@@ -474,6 +474,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     return await dbTransactionWrap(async (manager: EntityManager) => {
       switch (granularPermissions.type) {
         case ResourceType.APP:
+        case ResourceType.MODULE:
           await this.updateAppsGroupPermission(updateResourceGroupPermissionsObject, organizationId, manager);
           break;
         case ResourceType.FOLDER:
