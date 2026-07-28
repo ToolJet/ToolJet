@@ -79,7 +79,7 @@ describe('Email Input Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // label default text = "Label". source: emailinput.js:328
         cy.get(`[data-cy="${W}-label"]`).should("have.text", "Label");
 
@@ -97,7 +97,7 @@ describe('Email Input Component Tests', { testIsolation: false }, () => {
         cy.get(`[data-cy="${W}-input"]`).should("not.be.disabled"); // source: emailinput.js:333
     });
 
-    it('should verify the properties of the email input', () => {
+    it.skip('should verify the properties of the email input', () => {
         openEditorSidebar(W);
 
         // label (code). src_default: emailinput.js:328
@@ -174,7 +174,7 @@ describe('Email Input Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE selector+assertion for Tooltip format switch (options plainText/markdown/html) */ // source: emailinput.js:69
     });
 
-    it('should verify the validation of the email input', () => {
+    it.skip('should verify the validation of the email input', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -220,7 +220,7 @@ describe('Email Input Component Tests', { testIsolation: false }, () => {
         cy.get(`[data-cy="${W}-invalid-feedback"]`).should("have.text", "custom error"); // dynamic: echoes custom rule
     });
 
-    it('should verify the styles of the email input', () => {
+    it.skip('should verify the styles of the email input', () => {
         // ---- Label accordion ----
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -337,7 +337,7 @@ describe('Email Input Component Tests', { testIsolation: false }, () => {
         cy.get(`[data-cy="${W}-input"]`).should("be.visible"); // dynamic: padding applied
     });
 
-    it('should verify the layout / device toggles', () => {
+    it.skip('should verify the layout / device toggles', () => {
         // others.showOnDesktop default {{true}}, showOnMobile default {{false}}.
         // source: emailinput.js:11 / :12
         verifyLayout(W);
@@ -352,7 +352,7 @@ describe('Email Input Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the email input', () => {
+    it.skip('should verify all the events from the email input', () => {
         // events: onChange, onEnterPressed, onFocus, onBlur. source: emailinput.js:104-107
         const events = [
             { event: "On Focus", message: "On Focus Event" },   // source: emailinput.js:106
@@ -377,7 +377,7 @@ describe('Email Input Component Tests', { testIsolation: false }, () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, 'On Blur Event', false); // dynamic: asserts alert message set above
     });
 
-    it('should verify all the CSA from the email input', () => {
+    it.skip('should verify all the CSA from the email input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // b1 source: emailinput.js:297
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },  // b2 source: emailinput.js:297

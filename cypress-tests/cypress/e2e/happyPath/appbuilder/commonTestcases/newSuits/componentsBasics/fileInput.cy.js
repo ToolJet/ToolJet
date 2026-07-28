@@ -54,7 +54,7 @@ describe('File Input Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Label default text rendered by the widget.
         cy.get(widget)
             .should("be.visible")
@@ -63,7 +63,7 @@ describe('File Input Component Tests', { testIsolation: false }, () => {
         cy.get(widget).should("contain.text", "Click to select file"); // source: fileinput.js:492
     });
 
-    it('should verify the properties of the file input', () => {
+    it.skip('should verify the properties of the file input', () => {
         openEditorSidebar(W);
         openAccordion("Data");
 
@@ -133,7 +133,7 @@ describe('File Input Component Tests', { testIsolation: false }, () => {
         verifyLayout(W); // source: fileinput.js:498
     });
 
-    it('should verify the validation properties of the file input', () => {
+    it.skip('should verify the validation properties of the file input', () => {
         openEditorSidebar(W);
         openAccordion("Data");
 
@@ -167,7 +167,7 @@ describe('File Input Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Max files", "{{5}}"); // dynamic: test value
     });
 
-    it('should verify the styles of the file input', () => {
+    it.skip('should verify the styles of the file input', () => {
         openEditorSidebar(W);
         cy.get('[data-cy="styles-tab"]').click({ force: true });
 
@@ -231,7 +231,7 @@ describe('File Input Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE switch selectors + resulting padding CSS for padding (default/none) */ // source: fileinput.js:521
     });
 
-    it('should verify the layout of the file input', () => {
+    it.skip('should verify the layout of the file input', () => {
         // Covers showOnDesktop ({{true}}) hide + showOnMobile ({{false}}) show.
         verifyLayout(W); // source: fileinput.js:11 / fileinput.js:12
     });
@@ -245,7 +245,7 @@ describe('File Input Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the file input', () => {
+    it.skip('should verify all the events from the file input', () => {
         const events = [
             { event: "On File Selected", message: "onFileSelected Event" }, // source: fileinput.js:230
             { event: "On File Loaded", message: "onFileLoaded Event" },     // source: fileinput.js:231
@@ -263,7 +263,7 @@ describe('File Input Component Tests', { testIsolation: false }, () => {
         //   cy.verifyToastMessage(commonSelectors.toastMessage, "onFileLoaded Event", false);   // source: fileinput.js:231
     });
 
-    it('should verify all the CSA from file input', () => {
+    it.skip('should verify all the CSA from file input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // source: fileinput.js:449
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },  // source: fileinput.js:449

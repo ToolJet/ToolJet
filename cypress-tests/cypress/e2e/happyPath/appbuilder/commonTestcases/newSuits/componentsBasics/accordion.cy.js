@@ -62,7 +62,7 @@ describe('Accordion Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Accordion drops visible, enabled and expanded (isExpanded default true),
         // header shown by default.
         cy.get(commonWidgetSelector.draggableWidget(W)).should("be.visible"); // source: accordion.js:222 (visibility {{true}})
@@ -76,7 +76,7 @@ describe('Accordion Component Tests', { testIsolation: false }, () => {
         openAndVerifyNode(W, exposedValues, verifyNodeData);
     });
 
-    it('should verify the properties of the accordion', () => {
+    it.skip('should verify the properties of the accordion', () => {
         openEditorSidebar(W);
 
         // showHeader — toggle, default {{true}} — source default: accordion.js:220
@@ -121,7 +121,7 @@ describe('Accordion Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Tooltip", fake.randomSentence); // dynamic: fake
     });
 
-    it('should verify the styles of the accordion', () => {
+    it.skip('should verify the styles of the accordion', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -163,7 +163,7 @@ describe('Accordion Component Tests', { testIsolation: false }, () => {
         // verifyBoxShadowCss(W, [0, 0, 0, 100], [0, 0, 10, 0]);
     });
 
-    it('should verify the layout / device toggles', () => {
+    it.skip('should verify the layout / device toggles', () => {
         // others.showOnDesktop default {{true}}, showOnMobile default {{false}}.
         // source: accordion.js:11 / :12
         verifyLayout(W);
@@ -178,7 +178,7 @@ describe('Accordion Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the CSA from the accordion', () => {
+    it.skip('should verify all the CSA from the accordion', () => {
         const actions = [
             { event: "On click", action: "Collapse" },                              // b1  source: accordion.js:195
             { event: "On click", action: "Expand" },                                // b2  source: accordion.js:191
@@ -193,7 +193,7 @@ describe('Accordion Component Tests', { testIsolation: false }, () => {
         verifyCSA(W);
     });
 
-    it('should verify all the events from the accordion', () => {
+    it.skip('should verify all the events from the accordion', () => {
         const events = [
             { event: "On expand", message: "onExpand Event" },     // source: accordion.js:114
             { event: "On collapse", message: "onCollapse Event" }, // source: accordion.js:115

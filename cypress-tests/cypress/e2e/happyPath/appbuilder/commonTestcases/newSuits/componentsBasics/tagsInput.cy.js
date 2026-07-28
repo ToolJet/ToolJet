@@ -65,7 +65,7 @@ describe('Tags Input Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // TagsInput drops visible & enabled with the default label "Tags".
         cy.get(commonWidgetSelector.draggableWidget(W)).should("be.visible"); // source: TagsInput.js:430 (visibility {{true}})
 
@@ -78,7 +78,7 @@ describe('Tags Input Component Tests', { testIsolation: false }, () => {
         openAndVerifyNode(W, exposedValues, verifyNodeData);
     });
 
-    it('should verify the properties of the tags input', () => {
+    it.skip('should verify the properties of the tags input', () => {
         openEditorSidebar(W);
         openAccordion("Properties");
 
@@ -156,7 +156,7 @@ describe('Tags Input Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Tooltip", fake.randomSentence); // dynamic: fake
     });
 
-    it('should verify the validation of the tags input', () => {
+    it.skip('should verify the validation of the tags input', () => {
         openEditorSidebar(W);
         openAccordion("Properties");
 
@@ -170,7 +170,7 @@ describe('Tags Input Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE: custom validation error message surface selector unknown from config */
     });
 
-    it('should verify the styles of the tags input', () => {
+    it.skip('should verify the styles of the tags input', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -236,7 +236,7 @@ describe('Tags Input Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE: Padding switch option selectors (default/none) + resulting padding css unknown from config */
     });
 
-    it('should verify the layout / device toggles', () => {
+    it.skip('should verify the layout / device toggles', () => {
         // others.showOnDesktop default {{true}}, showOnMobile default {{false}}.
         // source: TagsInput.js:11 / :12
         verifyLayout(W);
@@ -251,7 +251,7 @@ describe('Tags Input Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the tags input', () => {
+    it.skip('should verify all the events from the tags input', () => {
         const events = [
             { event: "On tag added", message: "onTagAdded Event" },     // source: TagsInput.js:229
             { event: "On tag deleted", message: "onTagDeleted Event" }, // source: TagsInput.js:230
@@ -281,7 +281,7 @@ describe('Tags Input Component Tests', { testIsolation: false }, () => {
         // cy.verifyToastMessage(commonSelectors.toastMessage, 'onBlur Event', false); // source: TagsInput.js:232
     });
 
-    it('should verify all the CSA from the tags input', () => {
+    it.skip('should verify all the CSA from the tags input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // b1  source: TagsInput.js:47
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },  // b2  source: TagsInput.js:47

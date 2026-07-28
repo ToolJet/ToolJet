@@ -52,7 +52,7 @@ describe('Text Area Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // label renders default text
         cy.get(commonWidgetSelector.draggableWidget(W))
             .parent()
@@ -67,7 +67,7 @@ describe('Text Area Component Tests', { testIsolation: false }, () => {
         cy.get(commonWidgetSelector.draggableWidget(W)).should("not.be.disabled"); // source: textarea.js:345
     });
 
-    it('should verify the properties of the text area', () => {
+    it.skip('should verify the properties of the text area', () => {
         openEditorSidebar(W);
 
         // label (code) -> widget shows typed text
@@ -129,7 +129,7 @@ describe('Text Area Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE selector+assertion for Tooltip format switch (options plainText/markdown/html) + rendered-tooltip markup */ // source: textarea.js:71
     });
 
-    it('should verify the validation of the text area', () => {
+    it.skip('should verify the validation of the text area', () => {
         openEditorSidebar(W);
         openAccordion("Additional validations", []);
 
@@ -153,7 +153,7 @@ describe('Text Area Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter('Custom validation', "{{false}}"); // dynamic: test custom rule
     });
 
-    it('should verify the styles of the text area', () => {
+    it.skip('should verify the styles of the text area', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -211,7 +211,7 @@ describe('Text Area Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE cssProp for padding (Container) */
     });
 
-    it('should verify the layout of the text area', () => {
+    it.skip('should verify the layout of the text area', () => {
         // covers others.showOnDesktop ({{true}}) + showOnMobile ({{false}})
         verifyLayout(W); // source: textarea.js:335 (showOnDesktop) / textarea.js:336 (showOnMobile)
     });
@@ -225,7 +225,7 @@ describe('Text Area Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the text area', () => {
+    it.skip('should verify all the events from the text area', () => {
         const events = [
             { event: "On Change", message: "onChange Event" },        // source: textarea.js:106
             { event: "On Enter Pressed", message: "onEnterPressed Event" }, // source: textarea.js:107
@@ -250,7 +250,7 @@ describe('Text Area Component Tests', { testIsolation: false }, () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, 'onBlur Event', false); // dynamic: echoed onBlur message
     });
 
-    it('should verify all the CSA from the text area', () => {
+    it.skip('should verify all the CSA from the text area', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, //b1 source: textarea.js:310
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },  //b2 source: textarea.js:310

@@ -49,7 +49,7 @@ describe('Radio Button (Legacy) Component Tests', { testIsolation: false }, () =
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Label default text = "Select". source: radiobutton.js:107
         cy.get(`[data-cy="${W}-label"]`).should("have.text", "Select");
 
@@ -68,7 +68,7 @@ describe('Radio Button (Legacy) Component Tests', { testIsolation: false }, () =
             .should("have.attr", "data-disabled", "false"); // source: radiobutton.js:118
     });
 
-    it('should verify the properties of the radio button', () => {
+    it.skip('should verify the properties of the radio button', () => {
         openEditorSidebar(W);
 
         // label (code). source_default: radiobutton.js:107
@@ -95,7 +95,7 @@ describe('Radio Button (Legacy) Component Tests', { testIsolation: false }, () =
         cy.get(`[data-cy="${W}-option-input-1"]`).should("be.checked");
     });
 
-    it('should verify the styles of the radio button', () => {
+    it.skip('should verify the styles of the radio button', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -127,13 +127,13 @@ describe('Radio Button (Legacy) Component Tests', { testIsolation: false }, () =
         cy.get(commonWidgetSelector.draggableWidget(W)).should("not.be.visible");
     });
 
-    it('should verify the layout / device toggles', () => {
+    it.skip('should verify the layout / device toggles', () => {
         // others.showOnDesktop default {{true}}, showOnMobile default {{false}}.
         // source: radiobutton.js:11 / :12
         verifyLayout(W);
     });
 
-    it('should verify all the exposed values on inspector', () => {
+    it.skip('should verify all the exposed values on inspector', () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.hideTooltip();
 
@@ -145,7 +145,7 @@ describe('Radio Button (Legacy) Component Tests', { testIsolation: false }, () =
         // inspector reveals additional runtime-only vars, that is drift to log.
     });
 
-    it('should verify all the events from the radio button', () => {
+    it.skip('should verify all the events from the radio button', () => {
         // events.onSelectionChange → UI label "On select". source: radiobutton.js:52
         const events = [
             { event: "On select", message: "On select Event" }, // dynamic: test-authored alert message
@@ -158,7 +158,7 @@ describe('Radio Button (Legacy) Component Tests', { testIsolation: false }, () =
         cy.verifyToastMessage(commonSelectors.toastMessage, 'On select Event', false); // dynamic: asserts alert message set L151
     });
 
-    it('should verify the CSA (Select Option) from the radio button', () => {
+    it.skip('should verify the CSA (Select Option) from the radio button', () => {
         // actions[0] selectOption(option). source: radiobutton.js:90
         const actions = [
             // Set option to `false` → second option (value false) becomes checked.

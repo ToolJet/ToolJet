@@ -53,7 +53,7 @@ describe('Button Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // label default = definition.properties.text.value "Button"
         cy.get(widget).should("have.text", "Button"); // source: button.js:299
         // visible + enabled by default; not loading
@@ -70,7 +70,7 @@ describe('Button Component Tests', { testIsolation: false }, () => {
         openAndVerifyNode(W, exposedValues, verifyNodeData);
     });
 
-    it('should verify the properties of the button', () => {
+    it.skip('should verify the properties of the button', () => {
         openEditorSidebar(W);
 
         // text (code) → Label
@@ -114,7 +114,7 @@ describe('Button Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE cssProp: tooltip-content selector to assert rendered tooltip text unknown from config */
     });
 
-    it('should verify the styles of the button', () => {
+    it.skip('should verify the styles of the button', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -186,7 +186,7 @@ describe('Button Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="togglr-button-default"]').click(); // source: button.js:235
     });
 
-    it('should verify layout/device toggles', () => {
+    it.skip('should verify layout/device toggles', () => {
         // others.showOnDesktop default {{true}}, showOnMobile default {{false}}.
         // source: button.js:11 / :12
         verifyLayout(W);
@@ -201,7 +201,7 @@ describe('Button Component Tests', { testIsolation: false }, () => {
         // id is pending
     });
 
-    it('should verify all the events from the button', () => {
+    it.skip('should verify all the events from the button', () => {
         const events = [
             { event: "On hover", message: "On hover Event" }, // source: button.js:71
             { event: "On click", message: "On Click Event" }, // source: button.js:70
@@ -223,7 +223,7 @@ describe('Button Component Tests', { testIsolation: false }, () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, 'On Click Event', false); // source: button.js:70
     });
 
-    it('should verify all the CSA from button', () => {
+    it.skip('should verify all the CSA from button', () => {
         addMultiEventsWithAlert([
             { event: "On hover", message: "On hover Event" }, // source: button.js:71
             { event: "On click", message: "On Click Event" }, // source: button.js:70

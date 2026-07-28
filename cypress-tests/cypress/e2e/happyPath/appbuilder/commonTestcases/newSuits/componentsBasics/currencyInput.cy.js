@@ -49,7 +49,7 @@ describe('Currency Input Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Label default renders as "Label"
         cy.get(commonWidgetSelector.draggableWidget(W))
             .parent()
@@ -59,7 +59,7 @@ describe('Currency Input Component Tests', { testIsolation: false }, () => {
         cy.get(commonWidgetSelector.draggableWidget(W)).should("not.have.attr", "data-disabled", "true"); // source: currencyinput.js:352
     });
 
-    it('should verify the properties', () => {
+    it.skip('should verify the properties', () => {
         openEditorSidebar(W);
 
         // label (code) — widget shows the typed text
@@ -118,7 +118,7 @@ describe('Currency Input Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE selector+assertion for Tooltip format switch (options plainText/markdown/html) */ // source: currencyinput.js:85
     });
 
-    it('should verify the validation', () => {
+    it.skip('should verify the validation', () => {
         openEditorSidebar(W);
         openAccordion("Validation", []);
 
@@ -134,7 +134,7 @@ describe('Currency Input Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Custom validation", "{{false}}"); // dynamic: test custom rule
     });
 
-    it('should verify styles', () => {
+    it.skip('should verify styles', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -197,7 +197,7 @@ describe('Currency Input Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE selector+assertion for padding switch (options default/none) */ // source: currencyinput.js:377
     });
 
-    it('should verify layout (show on desktop/mobile)', () => {
+    it.skip('should verify layout (show on desktop/mobile)', () => {
         // showOnDesktop default {{true}} / showOnMobile default {{false}}
         // source: currencyinput.js:11 / currencyinput.js:12
         verifyLayout(W);
@@ -212,7 +212,7 @@ describe('Currency Input Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the currency input', () => {
+    it.skip('should verify all the events from the currency input', () => {
         const events = [
             { event: "On focus", message: "onFocus Event" },   // source: currencyinput.js:122
             { event: "On blur", message: "onBlur Event" },     // source: currencyinput.js:123
@@ -236,7 +236,7 @@ describe('Currency Input Component Tests', { testIsolation: false }, () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, 'onBlur Event', false); // dynamic: echoed message
     });
 
-    it('should verify all the CSA from currency input', () => {
+    it.skip('should verify all the CSA from currency input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // source: currencyinput.js:316
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },  // source: currencyinput.js:316

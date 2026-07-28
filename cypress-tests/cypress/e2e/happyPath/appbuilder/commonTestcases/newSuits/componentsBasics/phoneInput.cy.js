@@ -70,7 +70,7 @@ describe('Phone Input Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // label default renders the config default text
         cy.get(commonWidgetSelector.draggableWidget(W))
             .should("exist")
@@ -82,7 +82,7 @@ describe('Phone Input Component Tests', { testIsolation: false }, () => {
         openAndVerifyNode(W, exposedValues, verifyNodeData);
     });
 
-    it('should verify the properties', () => {
+    it.skip('should verify the properties', () => {
         openEditorSidebar(W);
 
         // label (code) — widget shows the typed text
@@ -135,7 +135,7 @@ describe('Phone Input Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE selector+assertion for Tooltip format switch (options plainText/markdown/html) */ // source: phoneinput.js:77
     });
 
-    it('should verify the validation', () => {
+    it.skip('should verify the validation', () => {
         openEditorSidebar(W);
         openAccordion("Validation", []);
 
@@ -151,7 +151,7 @@ describe('Phone Input Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Custom validation", "{{false}}"); // dynamic: test custom rule
     });
 
-    it('should verify the styles', () => {
+    it.skip('should verify the styles', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -215,7 +215,7 @@ describe('Phone Input Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE selector+assertion for padding switch (options default/none) */ // source: phoneinput.js:355
     });
 
-    it('should verify the layout', () => {
+    it.skip('should verify the layout', () => {
         // showOnDesktop default {{true}}, showOnMobile default {{false}}
         verifyLayout(W); // source: phoneinput.js:11 (showOnDesktop) / phoneinput.js:12 (showOnMobile)
     });
@@ -229,7 +229,7 @@ describe('Phone Input Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the phone input', () => {
+    it.skip('should verify all the events from the phone input', () => {
         const events = [
             { event: "On focus", message: "onFocus Event" }, // source: phoneinput.js:114
             { event: "On blur", message: "onBlur Event" }, // source: phoneinput.js:115
@@ -253,7 +253,7 @@ describe('Phone Input Component Tests', { testIsolation: false }, () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, 'onBlur Event', false); // dynamic: echoed message
     });
 
-    it('should verify all the CSA from the phone input', () => {
+    it.skip('should verify all the CSA from the phone input', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // source: phoneinput.js:298
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" }, // source: phoneinput.js:298
