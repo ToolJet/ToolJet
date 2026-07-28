@@ -63,7 +63,8 @@ Five cases, not the 3×2×4×2 = 48 a naive cross-product would suggest.
 
 ## What MUST be covered
 
-- Every branch/conditional a service owns
+- Every service-owned branch whose outcome a caller can observe and cares about (the "what could
+  actually break?" heuristic applies here too — a label-formatting branch doesn't qualify)
 - Every error path (4xx/5xx) at the e2e layer
 - CASL/permission boundary conditions (allowed / denied / edge role)
 - Edition & plan variance where behavior actually differs (cross-ref the edition/plan table in
@@ -81,7 +82,7 @@ Five cases, not the 3×2×4×2 = 48 a naive cross-product would suggest.
 - Framework/library guarantees (TypeORM decorators, NestJS DI wiring)
 - Getters/setters, DTOs with no custom validation logic
 - Trivial pass-throughs (no branching, no transformation)
-- The same condition re-asserted at both unit and e2e layers
+- Cross-layer duplicates — see "When to delete a test"
 - Log output / console messages as assertions
 - Migrations re-run as tests (that's what `db:migrate` in CI is for)
 - Empty CE/plan gating blocks for features with no actual divergence (see "only add sections when
@@ -115,13 +116,10 @@ Addition criteria alone produce accretion, not quality. Two removal signals:
 
 ## Coverage: qualitative, not numeric
 
-No % target — coverage tooling (`test/jest-coverage.config.ts`, v8 provider) is a regression
-tripwire, not a scoreboard. Practical use:
-- Read it as a diff signal on **changed files**: did this PR add a branch with no test touching it?
-- The exclusion list (`*.module.ts`, `*.entity.ts`, `*.dto.ts`, `main.ts`, migration helpers) is
-  intentional — uncovered lines there are not gaps.
-- v8's branch accounting differs from babel's; don't chase a branch-% number, use it to spot a
-  specific untested `if`.
+No % target — coverage tooling (`test/jest-coverage.config.ts`) is a regression tripwire, not a
+scoreboard. Read it as a diff signal on **changed files**: did this PR add a branch with no test
+touching it? Don't chase a number — use it to spot a specific untested `if`. Exclusions are
+defined in the config and intentional; uncovered lines in excluded files are not gaps.
 
 ## TDD note
 
@@ -132,11 +130,11 @@ report and fails against pre-fix code.
 
 ## Anti-patterns
 
-- Over-mocking to the point the mock IS the implementation
 - Snapshotting large objects instead of asserting the shape that matters
 - One `it()` covering five behaviors — can't tell what broke
-- Re-testing a guard's CASL logic through every controller that uses it — test the guard once;
-  controllers assert "guard is applied"
+
+(Over-mocking and guard re-testing are covered by the boundary rule and the guard-unit bucket
+above — one layer per rule.)
 
 ## Worked examples
 
@@ -152,10 +150,6 @@ report and fails against pre-fix code.
 
 ## Decision checklist (before writing a test)
 
-1. What could actually break here?
-2. Does it need a real DB/HTTP round trip to be meaningful? → e2e. Else → unit.
-3. Already covered by a lower-level unit test? → don't re-assert at e2e.
-4. Trivial / framework-guaranteed? → skip.
-5. Which matrix cells (edition, plan, role, module/feature gate, tenant scope, resource state)
-   does this cover — and which are being deliberately skipped because they short-circuit or
-   don't interact?
+Canonical copy lives in `server/AGENTS.md` (always loaded): what could break; unit or e2e;
+already pinned lower; trivial/framework-guaranteed; which matrix cells covered vs deliberately
+skipped. Consult this doc when a checklist answer is ambiguous.
