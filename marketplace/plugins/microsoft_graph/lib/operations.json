@@ -15,7 +15,8 @@
         "Calendar": "@spec/microsoft_graph/calendar",
         "Users": "@spec/microsoft_graph/users",
         "Teams": "@spec/microsoft_graph/teams",
-        "OneDrive": "@spec/microsoft_graph/onedrive"
+        "OneDrive": "@spec/microsoft_graph/onedrive",
+        "SharePoint": "@spec/microsoft_graph/sharepoint"
       }
     }
   }

@@ -29,5 +29,18 @@ module.exports = (on, config) => {
   };
   on("file:preprocessor", webpack(options));
 
+  // Real HTML5 drag-and-drop via CDP. Registers cdpRealDrag / cdpRealDragInit
+  // tasks so cy.realDrag, cy.realDragAndDrop, and cy.realDragInit work in
+  // every config that loads this plugin file (all current configs do).
+  require("cypress-real-dnd/plugin").realDragDropPlugin(on);
+
+  // Temporary diagnostic log task (used by _probe.cy.js). Safe to keep.
+  on("task", {
+    log(message) {
+      console.log(message);
+      return null;
+    },
+  });
+
   return config;
 };

@@ -46,9 +46,17 @@ const AppLoginPage = () => {
     try {
       const config = await appsService.getAppAuthenticationConfig(slug);
       setAppConfig(config);
+      const redirectSearch = appRedirectPath.includes('?') ? appRedirectPath.split('?')[1] : '';
+      const redirectParams = new URLSearchParams(redirectSearch);
+      const isLocalPreview = !!(
+        searchParams.get('version') ||
+        searchParams.get('env') ||
+        redirectParams.get('version') ||
+        redirectParams.get('env')
+      );
 
-      // Public app: redirect directly to the app
-      if (config.isPublic) {
+      // Public app: redirect directly to the app not preview apps
+      if (config.isPublic && !isLocalPreview) {
         window.location.href = appRedirectPath;
         return;
       }

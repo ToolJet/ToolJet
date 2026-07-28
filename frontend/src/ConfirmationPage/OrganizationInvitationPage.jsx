@@ -27,6 +27,8 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
     this.organizationToken = new URLSearchParams(props?.location?.search).get('organizationToken');
     this.source = new URLSearchParams(props?.location?.search).get('source');
+    const redirectToParam = new URLSearchParams(props?.location?.search).get('redirectTo');
+    this.appRedirectPath = redirectToParam?.startsWith('/applications/') ? redirectToParam : null;
     this.whiteLabelText = retrieveWhiteLabelText();
     this.whiteLabelFavicon = retrieveWhiteLabelFavicon();
   }
@@ -62,7 +64,7 @@ class OrganizationInvitationPageComponent extends React.Component {
         updateCurrentSession({
           isUserLoggingIn: true,
         });
-        onLoginSuccess(data, this.props.navigate);
+        onLoginSuccess(data, this.props.navigate, this.appRedirectPath);
       })
       .catch(() => {
         toast.error('Error while setting up your account.', { position: 'top-center' });

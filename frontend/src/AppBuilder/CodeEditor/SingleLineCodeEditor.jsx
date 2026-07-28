@@ -35,6 +35,19 @@ import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
+import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+
+// Hoisted to module scope so their identity never changes: anything fed into the
+// CodeMirror `extensions` prop must stay referentially stable, otherwise
+// react-codemirror dispatches a reconfigure on every render, which permanently
+// grows style-mod's shared stylesheet and degrades the whole session.
+const staticCustomKeyMaps = [
+  ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
+  ...completionKeymap,
+];
+const tooltipExtension = tooltips({
+  parent: document.body,
+});
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, moduleId: moduleIdProp, ...restProps }) => {
   const { moduleId: contextModuleId } = useModuleContext();
@@ -372,60 +385,64 @@ const EditorInput = ({
     } else return getSuggestionsForMultiLine(context, hints, hintsWithoutParamHints, lang, paramHints); //Need multiline behaviour inside workflows editor, where suggestions are shown on each keystroke
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback(
-    (context) => autoCompleteExtensionConfig(context),
-    [isInsideQueryManager, paramHints]
+  // Stable identity, fresh values: the override function handed to CodeMirror never
+  // changes, but it always delegates to the latest closure (with current hints,
+  // suggestions and lang). A changing identity here would invalidate the extensions
+  // and force a full editor reconfigure on every render.
+  const overRideFunction = useStableCallback(autoCompleteExtensionConfig);
+
+  const autoCompleteConfig = useMemo(
+    () =>
+      autocompletion({
+        override: [overRideFunction],
+        compareCompletions: (a, b) => {
+          return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
+        },
+        aboveCursor: false,
+        defaultKeymap: true,
+        positionInfo: () => {
+          return {
+            class: 'cm-completionInfo-top cm-custom-completion-info cm-custom-singleline-completion-info',
+          };
+        },
+        maxRenderedOptions: 10,
+      }),
+    [overRideFunction]
   );
 
-  const autoCompleteConfig = autocompletion({
-    override: [overRideFunction],
-    compareCompletions: (a, b) => {
-      return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
-    },
-    aboveCursor: false,
-    defaultKeymap: true,
-    positionInfo: () => {
-      return {
-        class: 'cm-completionInfo-top cm-custom-completion-info cm-custom-singleline-completion-info',
-      };
-    },
-    maxRenderedOptions: 10,
+  const handleTabKey = useStableCallback((view) => {
+    if (completionStatus(view.state)) {
+      return acceptCompletion(view);
+    }
+    if (isOpen) {
+      const { state } = view;
+      const { selection } = state;
+      const { anchor } = selection.main;
+      const tabSize = 2;
+
+      view?.dispatch({
+        changes: { from: anchor, insert: ' '.repeat(tabSize) },
+        selection: { anchor: anchor + tabSize },
+      });
+      return true;
+    }
   });
 
-  const customKeyMaps = [
-    ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
-    ...completionKeymap,
-  ];
-
-  const customTabKeymap = keymap.of([
-    {
-      key: 'Tab',
-      run: (view) => {
-        if (completionStatus(view.state)) {
-          return acceptCompletion(view);
-        }
-        if (isOpen) {
-          const { state } = view;
-          const { selection } = state;
-          const { anchor } = selection.main;
-          const tabSize = 2;
-
-          view?.dispatch({
-            changes: { from: anchor, insert: ' '.repeat(tabSize) },
-            selection: { anchor: anchor + tabSize },
-          });
-          return true;
-        }
-      },
-    },
-    ...queryPanelKeybindings,
-  ]);
+  const customTabKeymap = useMemo(
+    () => keymap.of([{ key: 'Tab', run: handleTabKey }, ...queryPanelKeybindings]),
+    [handleTabKey, queryPanelKeybindings]
+  );
 
   const handleOnChange = React.useCallback((val) => {
     setCurrentValue(val);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleEditorChange = useStableCallback((val) => {
+    setFirstTimeFocus(false);
+    handleOnChange(val);
+    onInputChange && onInputChange(val);
+  });
 
   const handleOnBlur = () => {
     !cursorInsidePreview && setShowPreview(false);
@@ -454,6 +471,46 @@ const EditorInput = ({
   const currentEditorHeightRef = useRef(null);
   const isInsideQueryPane = !!currentEditorHeightRef?.current?.closest('.query-details');
   const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
+
+  const langExtension = useMemo(() => javascript({ jsx: lang === 'jsx' }), [lang]);
+
+  const editorExtensions = useMemo(
+    () =>
+      showSuggestions
+        ? [
+            langExtension,
+            autoCompleteConfig,
+            keymap.of([...staticCustomKeyMaps]),
+            customTabKeymap,
+            tooltipExtension,
+            // CSS forces visual wrapping for long values (e.g.
+            // REST URL with `{{...}}` interpolations). Without
+            // `lineWrapping`, CM6 still treats the doc as one
+            // unwrapped row and `drawSelection` paints a single
+            // rect for the logical line -- so selection rects
+            // miss the right-edge area on intermediate visual
+            // rows. Enable wrapping so per-row selection rects
+            // are generated.
+            EditorView.lineWrapping,
+          ]
+        : [langExtension, tooltipExtension, EditorView.lineWrapping],
+    [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap]
+  );
+
+  const basicSetupConfig = useMemo(
+    () => ({
+      lineNumbers: showLineNumbers,
+      syntaxHighlighting: true,
+      bracketMatching: true,
+      foldGutter: false,
+      highlightActiveLine: false,
+      autocompletion: true,
+      defaultKeymap: false,
+      completionKeymap: true,
+      searchKeymap: false,
+    }),
+    [showLineNumbers]
+  );
 
   const customClassNames = cx('codehinter-input single-line-codehinter-input', {
     'border-danger': error,
@@ -499,7 +556,7 @@ const EditorInput = ({
     };
   }, [isInsideQueryPane, isFocused]);
 
-  cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+  cyLabel = paramLabel?.trim() ? paramLabel.trim().toLowerCase().replace(/\s+/g, '-') : cyLabel;
 
   return (
     <div
@@ -556,50 +613,9 @@ const EditorInput = ({
               placeholder={placeholder}
               height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
               width="100%"
-              extensions={
-                showSuggestions
-                  ? [
-                      javascript({ jsx: lang === 'jsx' }),
-                      autoCompleteConfig,
-                      keymap.of([...customKeyMaps]),
-                      customTabKeymap,
-                      tooltips({
-                        parent: document.body,
-                      }),
-                      // CSS forces visual wrapping for long values (e.g.
-                      // REST URL with `{{...}}` interpolations). Without
-                      // `lineWrapping`, CM6 still treats the doc as one
-                      // unwrapped row and `drawSelection` paints a single
-                      // rect for the logical line -- so selection rects
-                      // miss the right-edge area on intermediate visual
-                      // rows. Enable wrapping so per-row selection rects
-                      // are generated.
-                      EditorView.lineWrapping,
-                    ]
-                  : [
-                      javascript({ jsx: lang === 'jsx' }),
-                      tooltips({
-                        parent: document.body,
-                      }),
-                      EditorView.lineWrapping,
-                    ]
-              }
-              onChange={(val) => {
-                setFirstTimeFocus(false);
-                handleOnChange(val);
-                onInputChange && onInputChange(val);
-              }}
-              basicSetup={{
-                lineNumbers: showLineNumbers,
-                syntaxHighlighting: true,
-                bracketMatching: true,
-                foldGutter: false,
-                highlightActiveLine: false,
-                autocompletion: true,
-                defaultKeymap: false,
-                completionKeymap: true,
-                searchKeymap: false,
-              }}
+              extensions={editorExtensions}
+              onChange={handleEditorChange}
+              basicSetup={basicSetupConfig}
               onMouseDown={() => handleFocus()}
               onBlur={() => handleOnBlur()}
               className={customClassNames}
@@ -663,7 +679,10 @@ const DynamicEditorBridge = (props) => {
   }
   const [_, error, value] =
     type === 'fxEditor' ? (shouldResolve ? resolveReferences(newInitialValue) : [false, '', newInitialValue]) : [];
-  let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
+  // See note at the data-cy derivation below: trim before the truthiness check
+  // so a whitespace-only paramLabel (showLabel:false fields) falls back to the
+  // explicit props.cyLabel instead of yielding "-input-field".
+  let cyLabel = paramLabel && paramLabel.trim() ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   useEffect(() => {
     setForceCodeBox(fxActive);

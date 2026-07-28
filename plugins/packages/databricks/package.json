@@ -19,7 +19,8 @@
   "dependencies": {
     "@types/node-int64": "^0.4.32",
     "@databricks/sql": "^1.8.2",
-    "@tooljet-plugins/common": "file:../common"
+    "@tooljet-plugins/common": "file:../common",
+    "got": "^11.8.6"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",

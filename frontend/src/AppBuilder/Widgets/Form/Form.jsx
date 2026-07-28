@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useContext } from 'react';
+import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
@@ -25,7 +26,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-import FormValidationContext from './FormValidationContext';
+import FormSignalContext from './FormSignalContext';
 
 const FormComponent = (props) => {
   const {
@@ -41,7 +42,6 @@ const FormComponent = (props) => {
     properties,
     resetComponent = () => {},
     dataCy,
-    adjustComponentPositions,
     currentLayout,
     componentCount,
     onComponentClick,
@@ -147,12 +147,12 @@ const FormComponent = (props) => {
     borderTopRightRadius: `${borderRadius}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+    overflow: 'hidden',
   };
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
@@ -188,6 +188,8 @@ const FormComponent = (props) => {
     });
     return result;
   }, shallow);
+
+  useExposedValueBatch(componentCount);
 
   // Derive childrenData from raw exposed values + component definitions (read imperatively).
   // Only recomputes when childExposedMap actually changes.
@@ -241,6 +243,7 @@ const FormComponent = (props) => {
 
   const [isValid, setValidation] = useState(true);
   const [submitAttemptCount, setSubmitAttemptCount] = useState(0);
+  const [clearCount, setClearCount] = useState(0);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
 
@@ -249,6 +252,10 @@ const FormComponent = (props) => {
       resetForm: async function () {
         setSubmitAttemptCount(0);
         resetComponent();
+      },
+      clearForm: async function () {
+        setSubmitAttemptCount(0);
+        setClearCount((n) => n + 1);
       },
       submitForm: async function () {
         if (validateOnSubmit) {
@@ -432,6 +439,8 @@ const FormComponent = (props) => {
     setCanHeight(`${roundedHeight}px`);
   }, [computedFormBodyHeight, canvasHeight]);
 
+  const formSignalContextValue = useMemo(() => ({ submitAttemptCount, clearCount }), [submitAttemptCount, clearCount]);
+
   return (
     <form
       className={`jet-container jet-form-widget ${advanced && 'jet-container-json-form'}`}
@@ -472,7 +481,7 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            <FormValidationContext.Provider value={submitAttemptCount}>
+            <FormSignalContext.Provider value={formSignalContextValue}>
               {!advanced && (
                 <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                   <SubContainer
@@ -526,7 +535,7 @@ const FormComponent = (props) => {
                     </div>
                   );
                 })}
-            </FormValidationContext.Provider>
+            </FormSignalContext.Provider>
           </fieldset>
         )}
       </div>

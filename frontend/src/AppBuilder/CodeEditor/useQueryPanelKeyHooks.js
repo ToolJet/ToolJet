@@ -1,56 +1,46 @@
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import useStore from '@/AppBuilder/_stores/store';
-import { useCallback, useEffect, useState } from 'react';
+import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export const useQueryPanelKeyHooks = (onChange, value, type) => {
-  const queryPanelHeight = useStore((state) => state.queryPanel.queryPanelHeight);
-  const runQueryOnShortcut = useStore((state) => state.queryPanel.runQueryOnShortcut);
-  const previewQueryOnShortcut = useStore((state) => state.queryPanel.previewQueryOnShortcut);
   const moduleId = useModuleId();
   const location = useLocation();
   const { pathname } = location;
 
-  const [queryPanelKeybindings, setQueryPanelKeybindings] = useState([]);
-
-  const handleRunQuery = useCallback(
-    (view) => {
-      const isEditor = pathname.includes('/apps/');
-      if (queryPanelHeight !== 0 && isEditor) {
-        onChange(type === 'multiline' ? value.current : value);
+  // Keybindings end up inside the CodeMirror `extensions` prop, so the array must
+  // keep a stable identity (see useStableCallback). Store values are read at
+  // keystroke time instead of being subscribed to.
+  const runShortcut = useStableCallback((shortcutAction) => {
+    const { queryPanelHeight, runQueryOnShortcut, previewQueryOnShortcut } = useStore.getState().queryPanel;
+    const isEditor = pathname.includes('/apps/');
+    if (queryPanelHeight !== 0 && isEditor) {
+      onChange(type === 'multiline' ? value.current : value);
+      if (shortcutAction === 'run') {
         runQueryOnShortcut();
-      }
-      return true;
-    },
-    [queryPanelHeight, onChange, runQueryOnShortcut, value]
-  );
-
-  const handlePreviewQuery = useCallback(
-    (view) => {
-      const isEditor = pathname.includes('/apps/');
-      if (queryPanelHeight !== 0 && isEditor) {
-        onChange(type === 'multiline' ? value.current : value);
+      } else {
         previewQueryOnShortcut(moduleId);
       }
-      return true;
-    },
-    [queryPanelHeight, moduleId, onChange, previewQueryOnShortcut, value]
-  );
+    }
+    return true;
+  });
 
-  useEffect(() => {
-    setQueryPanelKeybindings([
+  const queryPanelKeybindings = useMemo(
+    () => [
       {
         key: 'Mod-Enter',
         preventDefault: true,
-        run: handleRunQuery,
+        run: () => runShortcut('run'),
       },
       {
         key: 'Mod-Shift-Enter',
         preventDefault: true,
-        run: handlePreviewQuery,
+        run: () => runShortcut('preview'),
       },
-    ]);
-  }, [handleRunQuery, handlePreviewQuery]);
+    ],
+    [runShortcut]
+  );
 
   return {
     queryPanelKeybindings,

@@ -358,6 +358,7 @@ export const tableConfig = {
     onFilterChanged: { displayName: 'Filter changed' },
     onNewRowsAdded: { displayName: 'Add new rows' },
     onTableDataDownload: { displayName: 'Download data' },
+    onRefresh: { displayName: 'Refresh' },
     onHeaderClick: { displayName: 'Header clicked' },
   },
   styles: {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { renderElement } from '../Utils';
 import { baseComponentProperties } from './DefaultComponent';
 import { resolveReferences } from '@/_helpers/utils';

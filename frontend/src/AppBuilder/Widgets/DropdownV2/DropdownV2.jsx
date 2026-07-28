@@ -19,10 +19,11 @@ import { useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -78,6 +79,7 @@ export const DropdownV2 = ({
     sort,
     showClearBtn,
     showSearchInput,
+    serverSideSearch,
   } = properties;
   const {
     selectedTextColor,
@@ -101,6 +103,7 @@ export const DropdownV2 = ({
     widthType,
     menuWidthMode,
     menuCustomWidth,
+    labelFontSize,
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -329,6 +332,8 @@ export const DropdownV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  useFormClear(() => setInputValue(null));
+
   const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
 
   const menuContentWidth = useMemo(() => {
@@ -492,6 +497,7 @@ export const DropdownV2 = ({
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   return (
     <>
       <div
@@ -532,6 +538,7 @@ export const DropdownV2 = ({
           _width={_width}
           widthType={widthType}
           id={`${id}-label`}
+          fontSize={labelFontSizeValue}
         />
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
@@ -564,6 +571,7 @@ export const DropdownV2 = ({
             }}
             options={selectOptions}
             filterOption={(option, input) => {
+              if (serverSideSearch === true) return true; // server mode: render all options, no client-side filtering
               if (!input) return true;
               const needle = input.toLowerCase();
               const label = String(option?.label ?? '').toLowerCase();
@@ -581,6 +589,7 @@ export const DropdownV2 = ({
             aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
             isLoading={isDropdownLoading}
             showSearchInput={showSearchInput}
+            serverSideSearch={serverSideSearch}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             placeholder={placeholder}

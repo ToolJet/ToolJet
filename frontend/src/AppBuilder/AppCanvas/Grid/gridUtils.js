@@ -320,17 +320,24 @@ export function findHighestLevelofSelection(_selectedComponents) {
   return result;
 }
 
+const collectChildrenAndGrandchildren = (parentId, widgets, visited) => {
+  if (visited.has(parentId)) return [];
+  visited.add(parentId);
+  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
+  let result = [];
+  for (const child of children) {
+    if (visited.has(child.id)) continue;
+    result.push(child.id);
+    result = result.concat(...collectChildrenAndGrandchildren(child.id, widgets, visited));
+  }
+  return result;
+};
+
 export function findChildrenAndGrandchildren(parentId, widgets) {
   if (isEmpty(widgets)) {
     return [];
   }
-  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
-  let result = [];
-  for (const child of children) {
-    result.push(child.id);
-    result = result.concat(...findChildrenAndGrandchildren(child.id, widgets));
-  }
-  return result;
+  return collectChildrenAndGrandchildren(parentId, widgets, new Set());
 }
 
 export function adjustWidth(width, posX, gridWidth) {
@@ -728,7 +735,9 @@ export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClas
 
 export const isDroppingRestrictedWidget = (target, dragged) => {
   const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
-  const restrictedWidgetsOnTargetSlot = RESTRICTED_WIDGET_SLOTS_CONFIG?.[target.slotType] || [];
+  const restrictedWidgetsOnTargetSlot = ['header', 'footer'].includes(target.slotType)
+    ? RESTRICTED_WIDGET_SLOTS_CONFIG
+    : [];
 
   const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
   return restrictedWidgets.includes(dragged.widgetType);

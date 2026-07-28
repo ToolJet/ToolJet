@@ -21,6 +21,7 @@
     "authorizenet": "^1.0.10"
   },
   "devDependencies": {
+    "@types/authorizenet": "^1.0.2",
     "@vercel/ncc": "^0.34.0",
     "typescript": "^4.7.4"
   }

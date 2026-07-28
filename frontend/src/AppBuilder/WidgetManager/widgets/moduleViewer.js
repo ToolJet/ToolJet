@@ -11,7 +11,29 @@ export const moduleViewerConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: {},
+  properties: {
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+  },
   events: {},
   styles: {
     padding: {
@@ -35,7 +57,11 @@ export const moduleViewerConfig = {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
-    properties: {},
+    properties: {
+      visibility: { value: '{{true}}' },
+      dynamicHeight: { value: '{{false}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+    },
     events: [],
     styles: {
       backgroundColor: { value: '#fff' },

@@ -215,7 +215,7 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
         'Content-Type': 'application/x-www-form-urlencoded',
         ...(Object.keys(headersObject).length > 0 && headersObject),
       },
-      body: bodyData,
+      form: bodyData,
       responseType: 'json',
     };
     const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);

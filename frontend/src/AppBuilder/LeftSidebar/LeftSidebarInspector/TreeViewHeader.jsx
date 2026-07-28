@@ -112,7 +112,11 @@ export const TreeViewHeader = (props) => {
       {/* <div className="json-viewer-back-btn" onClick={backFn}>
         <ArrowLeft tailOpacity="1" fill={'var(--slate12)'} width={'18'} />
       </div> */}
-      <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={backFn}>
+      <div
+        style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+        onClick={backFn}
+        data-cy="inspector-detail-header-back-button"
+      >
         <span style={{ color: 'var(--slate11)' }}>{parentNode.charAt(0).toUpperCase() + parentNode.slice(1)}</span>
 
         {pathArray.length > 1 &&

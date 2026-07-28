@@ -51,6 +51,21 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   const isSecret = type === 'Workspace secret constant';
   const hiddenSecretText = 'Values of secret constants are hidden';
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
+
+  const [heightRef, currentHeight] = useHeight();
+
+  const slideInStyles = useSpring({
+    config: config.stiff,
+    from: { opacity: 0, height: 0 },
+    to: {
+      opacity: isFocused ? 1 : 0,
+      height: isFocused ? currentHeight : 0,
+    },
+  });
+
   const invalidConstants = verifyConstant(value, state.constants, state.secrets);
   let preview;
   let error;
@@ -78,10 +93,6 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     resolvedValue = errorMessage;
   }
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-
-  const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
-
   const getPreviewContent = (content, type) => {
     if (!content) return value;
 
@@ -94,23 +105,12 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
         default:
           return content;
       }
-    } catch (e) {
+    } catch {
       return undefined;
     }
   };
 
   const isConstant = type === 'Workspace global constant' || type === 'Workspace secret constant';
-
-  const [heightRef, currentHeight] = useHeight();
-
-  const slideInStyles = useSpring({
-    config: config.stiff,
-    from: { opacity: 0, height: 0 },
-    to: {
-      opacity: isFocused ? 1 : 0,
-      height: isFocused ? (isConstant ? currentHeight : currentHeight + 30) : 0,
-    },
-  });
 
   return (
     <React.Fragment>

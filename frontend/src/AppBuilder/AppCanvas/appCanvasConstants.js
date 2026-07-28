@@ -37,7 +37,7 @@ export const PAGES_SIDEBAR_WIDTH_EXPANDED = 256;
 
 export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 54;
 
-export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form', 'Accordion'];
+export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form', 'Accordion', 'FlexContainer'];
 
 // Subcontainer widget types that use per-row resolution (customResolvables)
 export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table'];
@@ -68,6 +68,7 @@ export const DROPPABLE_PARENTS = new Set([
   'Accordion',
   'Table',
   'ModuleContainer',
+  'FlexContainer',
 ]);
 export const TAB_CANVAS_PADDING = 8;
 

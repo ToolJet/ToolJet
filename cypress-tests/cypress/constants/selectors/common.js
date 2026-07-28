@@ -272,6 +272,9 @@ export const commonSelectors = {
   appNameInfoLabel: '[data-cy="app-name-info-label"]',
   createAppButton: '[data-cy="create-app"]',
   renameApptitle: '[data-cy="rename-app-title"]',
+  // Opens the Rename app modal in the editor header
+  // (frontend/src/AppBuilder/Header/EditAppName.jsx:55).
+  editAppNameButton: '[data-cy="edit-app-name-button"]',
   renameAppButton: '[data-cy="rename-app"]',
   cloneAppTitle: '[data-cy="clone-app-title"]',
   cloneAppButton: '[data-cy="clone-app"]',
@@ -340,11 +343,21 @@ export const commonWidgetSelector = {
   },
 
   widgetConfigHandle: (widgetName) => {
-    return `[data-cy="${cyParamName(widgetName)}-config-handle"]`;
+    // The old `<name>-config-handle` button no longer exists. The button that
+    // opens the right Inspector (Properties/Styles/Events) is
+    // `<name>-properties-styles-button`
+    // (frontend/src/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle.jsx:285).
+    return `[data-cy="${cyParamName(widgetName)}-properties-styles-button"]`;
   },
 
   accordion: (accordionName, index = 0) => {
-    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]:eq(${index})`;
+    // AccordionItem.js:38 builds the data-cy as
+    // `widget-accordion-${title.toLowerCase().replace(/\s+/g,'-')}` — spaces
+    // become hyphens, so multi-word titles like "Additional actions" →
+    // `widget-accordion-additional-actions` (the old space form is stale).
+    return `[data-cy="widget-accordion-${accordionName
+      .toLowerCase()
+      .replace(/\s+/g, "-")}"]:eq(${index})`;
   },
 
   nodeComponent: (componentName) => {
@@ -372,8 +385,16 @@ export const commonWidgetSelector = {
     return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`;
   },
 
-  buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
-  buttonStylesEditorSideBar: "#inspector-tab-styles",
+  // Right-Inspector close control is now `inspector-close-button`
+  // (Inspector.jsx:707) — was `inspector-close-icon`.
+  buttonCloseEditorSideBar: "[data-cy='inspector-close-button']",
+  // The right-Inspector tabs are now a custom ToolJetUI <Tabs id="inspector">
+  // (frontend/src/ToolJetUI/Tabs/Tabs.jsx) — each tab is a `button[role="tab"]`
+  // with NO id/data-cy, only a `.tab-label` span. The old `#inspector-tab-styles`
+  // (react-bootstrap id) no longer exists. There are exactly two tabs
+  // (Properties, Styles — Inspector.jsx:594-599); Styles is the 2nd nav-link,
+  // scoped to the `#inspector` Tabs wrapper.
+  buttonStylesEditorSideBar: "#inspector .nav-link:eq(1)",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
   constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
   inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',
@@ -397,7 +418,12 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspector']",
+  // NOTE: data-cy="left-sidebar-inspector" is on the OUTER sidebar wrapper div
+  // (frontend/src/AppBuilder/LeftSidebar/LeftSidebar.jsx:236), not the clickable
+  // Inspector button. The button gets data-cy="left-sidebar-inspector-button"
+  // (SidebarItem.jsx:49, tip="Inspector" -> generateCypressDataCy -> "inspector").
+  // Clicking the wrapper div is a no-op, so target the button to open the panel.
+  sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",

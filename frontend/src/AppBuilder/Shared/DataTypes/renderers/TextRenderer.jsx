@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { isCellContentOverflowing } from '../utils';
 
 /**
  * TextRenderer - Pure multiline text value renderer with editing support
@@ -45,6 +46,10 @@ export const TextRenderer = ({
   // const [isEditing, setIsEditing] = useState(false);
   const containerRef = useRef(null);
   const cellRef = useRef(null);
+  // Measured for overflow: the outer wrapper is always constrained to the fixed cell
+  // height, unlike cellRef which collapses to content height in an editable-but-not-
+  // editing cell (that collapse is why the tooltip never appeared for editable cells).
+  const wrapperRef = useRef(null);
 
   const handleContentChange = useCallback(
     (content) => {
@@ -64,9 +69,7 @@ export const TextRenderer = ({
   );
 
   const isOverflowing = useCallback(() => {
-    if (!containerRef.current || !cellRef.current) return false;
-    const { clientWidth, clientHeight, scrollWidth, scrollHeight } = cellRef.current;
-    return clientWidth < scrollWidth || clientHeight < scrollHeight;
+    return isCellContentOverflowing(wrapperRef.current);
   }, []);
 
   const cellStyle = useMemo(
@@ -112,7 +115,7 @@ export const TextRenderer = ({
         contentEditable="true"
         className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
           darkMode ? 'textarea-dark-theme' : ''
-        } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+        } justify-content-${determineJustifyContentValue(horizontalAlignment)} `}
         style={{
           color: textColor || 'inherit',
           maxWidth: containerWidth,
@@ -176,6 +179,7 @@ export const TextRenderer = ({
       show={isOverflowing() && showOverlay && !isEditing}
     >
       <div
+        ref={wrapperRef}
         className={`h-100 d-flex ${
           isOverflowing() && isEditable ? '' : 'justify-content-center'
         } flex-column position-relative`}

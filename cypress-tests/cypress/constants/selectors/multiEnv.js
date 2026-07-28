@@ -38,7 +38,7 @@ export const appEditorSelector = {
             envNameList: '[data-cy="env-name-list"]',
         },
 
-        queryDetailsContainer: '.query-details',
+        queryDetailsContainer: '.query-details > div',
     },
 };
 

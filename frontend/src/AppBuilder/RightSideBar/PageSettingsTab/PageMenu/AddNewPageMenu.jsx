@@ -89,7 +89,6 @@ export function AddNewPageMenu({ darkMode }) {
               onClick={() => handleOpenPopup('url')}
               leadingIcon="link-2"
               isLucid
-              fill="var(--icon-weak)"
               className="tw-w-full tw-justify-start"
             >
               Add nav item with URL
@@ -99,7 +98,6 @@ export function AddNewPageMenu({ darkMode }) {
               onClick={() => handleOpenPopup('app')}
               leadingIcon="app-window"
               isLucid
-              fill="var(--icon-weak)"
               className="tw-w-full tw-justify-start"
             >
               Add nav item ToolJet app
@@ -109,7 +107,6 @@ export function AddNewPageMenu({ darkMode }) {
               onClick={() => handleOpenPopup('custom')}
               leadingIcon="mouse-pointer-click"
               isLucid
-              fill="var(--icon-weak)"
               className="tw-w-full tw-justify-start"
             >
               Add custom nav item
@@ -120,7 +117,6 @@ export function AddNewPageMenu({ darkMode }) {
                 onClick={() => handleOpenPopup('group')}
                 leadingIcon="folder-open-dot"
                 isLucid
-                fill="var(--icon-weak)"
                 className={`${hasAppPagesAddNavGroupEnabled ? 'tw-w-full' : 'tw-opacity-[0.5]'} tw-justify-start`}
                 disabled={!hasAppPagesAddNavGroupEnabled}
               >

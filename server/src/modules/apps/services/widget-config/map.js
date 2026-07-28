@@ -15,7 +15,6 @@ export const mapConfig = {
     initialLocation: {
       type: 'code',
       displayName: 'Initial location',
-      tip: 'This location will be the initial center of the map',
       options: {
         mode: 'javascript',
         theme: 'duotone-light',

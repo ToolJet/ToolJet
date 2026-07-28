@@ -31,7 +31,10 @@ export const useGridStore = create(
         setSubContainerWidths: (id, width) =>
           set((state) => ({ subContainerWidths: { ...state.subContainerWidths, [id]: width } })),
         setVirtualTarget: (target) => set({ virtualTarget: target }),
-        setCurrentDragCanvasId: (canvasId) => set({ currentDragCanvasId: canvasId }),
+        setCurrentDragCanvasId: (canvasId) => {
+          if (get().currentDragCanvasId === canvasId) return;
+          set({ currentDragCanvasId: canvasId });
+        },
         setGhostDragPosition: (position) => set({ ghostDragPosition: position }),
       },
       setMoveableRef: (ref) => set({ moveableRef: ref }),

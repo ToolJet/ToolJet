@@ -90,7 +90,7 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId, mode) {
+function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
@@ -105,18 +105,30 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
     url = `${config.apiUrl}/data-queries/${queryId}/run`;
   }
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+    signal,
+  };
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function preview(query, options, versionId, environmentId) {
+function preview(query, options, versionId, environmentId, signal) {
   const body = {
     query,
     options: options,
     app_version_id: versionId,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+    signal,
+  };
   return fetch(
     `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${
       environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
@@ -137,11 +149,12 @@ function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {
   );
 }
 
-function invoke(dataSourceId, methodName, environmentId, args) {
+function invoke(dataSourceId, methodName, environmentId, args, resolvedOptions) {
   const body = {
     method: methodName,
     environmentId: environmentId,
     args: args,
+    ...(resolvedOptions ? { resolvedOptions } : {}),
   };
 
   const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;

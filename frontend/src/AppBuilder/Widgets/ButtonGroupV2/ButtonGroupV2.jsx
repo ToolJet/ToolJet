@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Label from '@/_ui/Label';
@@ -7,9 +7,9 @@ import './buttonGroupV2.scss';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 // eslint-disable-next-line import/no-unresolved
 import { cx } from 'class-variance-authority';
-import { getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { getLabelFontSize, getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -50,7 +50,10 @@ export const ButtonGroupV2 = (props) => {
     btnAlignment,
     boxShadow,
     padding,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const { label, advanced, schema, options, multiSelection, layout, loadingState, disabledState, visibility } =
     properties;
@@ -81,7 +84,7 @@ export const ButtonGroupV2 = (props) => {
     return multiSelection ? defaultValues : defaultValues.length > 0 ? [defaultValues[0]] : [];
   };
 
-  const validOptionValues = formattedOptions.map((option) => option.value);
+  const validOptionValues = useMemo(() => formattedOptions.map((option) => option.value), [formattedOptions]);
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -102,12 +105,14 @@ export const ButtonGroupV2 = (props) => {
   useShowValidationOnFormSubmit(setUserInteracted);
 
   // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
+  const updateExposedVariablesState = useCallback((key, value) => {
     setExposedVariablesTemporaryState((prevState) => ({
       ...prevState,
       [key]: value,
     }));
-  };
+  }, []);
+
+  useFormClear(() => updateExposedVariablesState('selected', []));
 
   // ===== EFFECTS =====
   useBatchedUpdateEffectArray([
@@ -335,6 +340,7 @@ export const ButtonGroupV2 = (props) => {
           top={alignment !== 'top' && '9px'}
           id={`${id}-label`}
           dataCy={dataCy}
+          fontSize={labelFontSizeValue}
         />
         <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
           {exposedVariablesTemporaryState.isLoading ? (

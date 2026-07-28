@@ -297,9 +297,12 @@ export function isNestingLimitReached(slotId, widgets, widgetType) {
 
   let currentParentId = slotId;
   let count = 0;
+  const visited = new Set();
 
   while (currentParentId && currentParentId !== 'canvas' && currentParentId !== 'real-canvas') {
     const baseId = currentParentId?.length > 36 ? currentParentId.slice(0, 36) : currentParentId;
+    if (visited.has(baseId)) return false;
+    visited.add(baseId);
     const parentWidget = widgets.find((w) => w.id === baseId);
 
     if (parentWidget?.component?.component === widgetType) {

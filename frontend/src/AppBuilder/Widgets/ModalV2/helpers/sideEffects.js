@@ -1,13 +1,16 @@
 // Side effects for modal, which include dom manipulation to hide overflow when opening
 // And cleaning up dom when modal is closed
 
+const getModalHostEl = () =>
+  document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0];
+
 export const onShowSideEffects = () => {
   const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
-  const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-  const allModalContainers = realCanvasEl.querySelectorAll('.modal');
+  const modalHostEl = getModalHostEl();
+  const allModalContainers = modalHostEl?.querySelectorAll('.modal') || [];
   const modalContainer = allModalContainers[allModalContainers.length - 1];
 
-  if (canvasElement && realCanvasEl && modalContainer) {
+  if (canvasElement && modalHostEl && modalContainer) {
     // Disable page scrolling when modal is opened
     canvasElement.style.setProperty('overflow', 'hidden', 'important');
 
@@ -22,9 +25,9 @@ export const onShowSideEffects = () => {
 
 export const onHideSideEffects = () => {
   const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
-  const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-  if (!realCanvasEl) return;
-  const allModalContainers = realCanvasEl.querySelectorAll('.modal');
+  const modalHostEl = getModalHostEl();
+  if (!modalHostEl) return;
+  const allModalContainers = modalHostEl.querySelectorAll('.modal');
   const hasManyModalsOpen = allModalContainers.length > 1;
 
   // Enable page scrolling for the canvas if there is no modal open

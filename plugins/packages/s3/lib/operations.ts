@@ -41,7 +41,7 @@ export async function signedUrlForGet(client: S3Client, options: QueryOptions): 
   };
 
   const command = new GetObjectCommand(params);
-  const url = await getSignedUrl(client, command, {
+  const url = await getSignedUrl(client as unknown as Parameters<typeof getSignedUrl>[0], command, {
     expiresIn: options.expiresIn || 3600,
   });
   return { url };
@@ -111,7 +111,7 @@ export async function signedUrlForPut(client: S3Client, options: QueryOptions): 
   };
 
   const command = new PutObjectCommand(params);
-  const url = await getSignedUrl(client, command, {
+  const url = await getSignedUrl(client as unknown as Parameters<typeof getSignedUrl>[0], command, {
     expiresIn: options.expiresIn || 3600,
   });
   return { url };

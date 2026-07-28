@@ -38,6 +38,9 @@ export const ERROR_TYPES = {
   USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
   WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
   RESTRICTED_PREVIEW: 'restricted-preview',
+  PUBLIC_APP_PLAN_RESTRICTED: 'public-app-plan-restricted',
+  WORKSPACE_SUSPENDED: 'workspace-suspended',
+  USER_SUSPENDED: 'user-suspended',
 };
 
 export const ERROR_MESSAGES = {
@@ -60,6 +63,13 @@ export const ERROR_MESSAGES = {
     message: 'Access to this environment preview is restricted. Contact admin to know more.',
     retry: false,
     cta: 'Back to home page',
+    queryParams: [],
+  },
+  'public-app-plan-restricted': {
+    title: 'Feature not available',
+    message: 'Public apps are not available in your plan. Please upgrade to share this app.',
+    cta: 'Back to home page',
+    retry: false,
     queryParams: [],
   },
   'no-accessible-pages': {
@@ -125,6 +135,16 @@ export const ERROR_MESSAGES = {
     title: 'Account not activated',
     message: 'Your account is not activated yet. Please check your email for activation link.',
     cta: 'Back to home page',
+    queryParams: [],
+  },
+  'workspace-suspended': {
+    title: 'This workspace has been suspended',
+    message: '{workspaceName} has been suspended by ToolJet. To restore access, contact ToolJet support.',
+    queryParams: [],
+  },
+  'user-suspended': {
+    title: "You've been signed out",
+    message: 'This account has been suspended by ToolJet. Contact ToolJet support for help.',
     queryParams: [],
   },
 };

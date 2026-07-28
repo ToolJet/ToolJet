@@ -12,64 +12,6 @@ export const navigationConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    orientation: {
-      type: 'switch',
-      displayName: 'Orientation',
-      validation: { schema: { type: 'string' } },
-      options: [
-        { displayName: 'Horizontal', value: 'horizontal' },
-        { displayName: 'Vertical', value: 'vertical' },
-      ],
-      accordian: 'Menu',
-    },
-    displayStyle: {
-      type: 'select',
-      displayName: 'Style',
-      validation: { schema: { type: 'string' } },
-      options: [
-        { name: 'Text and icon', value: 'textAndIcon' },
-        { name: 'Text only', value: 'textOnly' },
-        { name: 'Icon only', value: 'iconOnly' },
-      ],
-      accordian: 'Menu',
-    },
-    navItemSize: {
-      type: 'switch',
-      displayName: 'Nav item size',
-      validation: { schema: { type: 'string' }, defaultValue: 'equalWidth' },
-      options: [
-        { displayName: 'Auto', value: 'auto' },
-        { displayName: 'Equal width', value: 'equalWidth' },
-      ],
-      accordian: 'Menu',
-    },
-    horizontalAlignment: {
-      type: 'switch',
-      displayName: 'Alignment',
-      validation: { schema: { type: 'string' }, defaultValue: 'left' },
-      isIcon: true,
-      options: [
-        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
-        { displayName: 'alignhorizontalcenter', value: 'center', iconName: 'alignhorizontalcenter' },
-        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
-      ],
-      accordian: 'Menu',
-      isFxNotRequired: true,
-    },
-    verticalAlignment: {
-      type: 'switch',
-      displayName: '',
-      validation: { schema: { type: 'string' }, defaultValue: 'top' },
-      showLabel: false,
-      isIcon: true,
-      options: [
-        { displayName: 'alignverticallytop', value: 'top', iconName: 'alignverticallytop' },
-        { displayName: 'alignverticallycenter', value: 'center', iconName: 'alignverticallycenter' },
-        { displayName: 'alignverticallybottom', value: 'bottom', iconName: 'alignverticallybottom' },
-      ],
-      accordian: 'Menu',
-      isFxNotRequired: true,
-    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -136,6 +78,77 @@ export const navigationConfig = {
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
       accordian: 'Nav menu item',
     },
+    orientation: {
+      type: 'switch',
+      displayName: 'Orientation',
+      validation: { schema: { type: 'string' } },
+      options: [
+        { displayName: 'Horizontal', value: 'horizontal' },
+        { displayName: 'Vertical', value: 'vertical' },
+      ],
+      accordian: 'Nav menu item',
+    },
+    displayStyle: {
+      type: 'select',
+      displayName: 'Style',
+      validation: { schema: { type: 'string' } },
+      options: [
+        { name: 'Text and icon', value: 'textAndIcon' },
+        { name: 'Text only', value: 'textOnly' },
+        { name: 'Icon only', value: 'iconOnly' },
+      ],
+      accordian: 'Nav menu item',
+    },
+    navItemSize: {
+      type: 'switch',
+      displayName: 'Nav item size',
+      validation: { schema: { type: 'string' }, defaultValue: 'equalWidth' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Equal width', value: 'equalWidth' },
+      ],
+      accordian: 'Nav menu item',
+    },
+    horizontalAlignment: {
+      type: 'switch',
+      displayName: 'Alignment',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignhorizontalcenter', value: 'center', iconName: 'alignhorizontalcenter' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'Nav menu item',
+      isFxNotRequired: true,
+    },
+    verticalAlignment: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' }, defaultValue: 'top' },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignverticallytop', value: 'top', iconName: 'alignverticallytop' },
+        { displayName: 'alignverticallycenter', value: 'center', iconName: 'alignverticallycenter' },
+        { displayName: 'alignverticallybottom', value: 'bottom', iconName: 'alignverticallybottom' },
+      ],
+      accordian: 'Nav menu item',
+      isFxNotRequired: true,
+    },
+    subMenuAlignment: {
+      type: 'switch',
+      displayName: 'Sub menu alignment',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignhorizontalcenter', value: 'center', iconName: 'alignhorizontalcenter' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'Nav menu item',
+      isFxNotRequired: true,
+    },
     // Container styles
     backgroundColor: {
       type: 'colorSwatches',
@@ -188,7 +201,7 @@ export const navigationConfig = {
     {
       handle: 'selectItem',
       displayName: 'Select item',
-      params: [{ handle: 'id', displayName: 'Item ID', defaultValue: '', type: 'text' }],
+      params: [{ handle: 'id', displayName: 'Item ID', defaultValue: '', type: 'code' }],
     },
   ],
   definition: {
@@ -197,11 +210,6 @@ export const navigationConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      orientation: { value: 'horizontal' },
-      displayStyle: { value: 'textAndIcon' },
-      navItemSize: { value: 'equalWidth' },
-      horizontalAlignment: { value: 'left' },
-      verticalAlignment: { value: 'center' },
       menuItems: {
         value: [
           {
@@ -266,6 +274,14 @@ export const navigationConfig = {
       selectedIconColor: { value: 'var(--cc-primary-brand)' },
       selectedPillBackgroundColor: { value: 'var(--cc-surface2-surface)' },
       pillBorderRadius: { value: '6' },
+      orientation: { value: 'horizontal' },
+      displayStyle: { value: 'textAndIcon' },
+      navItemSize: { value: 'equalWidth' },
+      horizontalAlignment: { value: 'left' },
+      verticalAlignment: { value: 'center' },
+      // subMenuAlignment intentionally has no default stored value: sub-menu alignment is
+      // opt-in. Until a user sets it, children follow the legacy cascade (header in equal-width,
+      // left in Auto) — so new components behave like existing ones by default.
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '8' },

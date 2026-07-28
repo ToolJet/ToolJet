@@ -37,7 +37,14 @@ export class AiService implements IAiService {
     throw new Error('Method not implemented.');
   }
 
-  async createConversation(userId: string, appId: string, conversationType: string): Promise<any> {
+  async createConversation(
+    userId: string,
+    appId: string,
+    conversationType: string,
+    organizationId: string,
+    currentConversationId?: string,
+    handoff?: boolean
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

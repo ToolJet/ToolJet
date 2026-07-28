@@ -35,6 +35,9 @@ export class AiConversation {
   @Column({ name: 'app_id' })
   appId: string;
 
+  @Column({ type: 'json', nullable: true, default: {} })
+  metadata: Record<string, any>;
+
   @Column({
     type: 'enum',
     enum: ['generate', 'learn'],

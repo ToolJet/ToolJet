@@ -111,6 +111,40 @@ describe('UsersController', () => {
 
         expect(response.statusCode).toBe(200);
       });
+
+      it('should reject .exe file upload', async () => {
+        const userData = await createUser(app, { email: 'admin@tooljet.io' });
+        const { user } = userData;
+        const filePath = path.join(__dirname, '../__mocks__/fake.exe');
+
+        const loggedUser = await login(app);
+        userData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const response = await request(app.getHttpServer())
+          .patch('/api/profile/avatar')
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', userData['tokenCookie'])
+          .attach('file', filePath, { contentType: 'application/octet-stream' });
+
+        expect(response.statusCode).toBe(400);
+      });
+
+      it('should reject file with spoofed image extension but exe content', async () => {
+        const userData = await createUser(app, { email: 'admin@tooljet.io' });
+        const { user } = userData;
+        const filePath = path.join(__dirname, '../__mocks__/fake.exe');
+
+        const loggedUser = await login(app);
+        userData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const response = await request(app.getHttpServer())
+          .patch('/api/profile/avatar')
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', userData['tokenCookie'])
+          .attach('file', filePath, { contentType: 'image/jpeg', filename: 'avatar.jpg' });
+
+        expect(response.statusCode).toBe(400);
+      });
     });
   });
 });

@@ -19,6 +19,9 @@
     "recursive-readdir": "^2.2.3",
     "ts-jest": "^29.0.5"
   },
+  "overrides": {
+    "axios": "^1.16.1"
+  },
   "peerDependencies": {
     "typescript": "^4.9.5"
   },

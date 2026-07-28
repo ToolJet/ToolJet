@@ -28,7 +28,7 @@ export default class CohereService implements QueryService {
     
       if (error && typeof error === 'object') {
         try {
-          errorMessage = error?.body?.message || 'Unknown error';
+          errorMessage = error?.body?.message || error?.message || 'Unknown error';
           errorDetails = {
             requestId: error?.req?.id || 'N/A',
             errorType: error?.error?.type || error?.type|| error?.error?.details?.error || 'Unknown Type',

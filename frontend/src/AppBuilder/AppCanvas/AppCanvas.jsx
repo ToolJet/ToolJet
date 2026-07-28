@@ -27,14 +27,15 @@ const EditorSelecto = React.lazy(() => import('./Selecto'));
 const Grid = React.lazy(() => import('./Grid'));
 import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
+
 import useCanvasResizing from './Hooks/useCanvasResizing';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
-
   useEnableMainCanvasScroll({ canvasContentRef, enabled: !isModuleMode });
+
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -62,6 +63,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const isMobileLayout = currentLayout === 'mobile';
+  const pageLoader = useStore((state) => state.pageLoader, shallow);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -202,6 +204,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     />
   );
 
+  const gridContent =
+    currentMode === 'view' || (isMobileLayout && isAutoMobileLayout) ? null : (
+      <Suspense fallback={null}>
+        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+      </Suspense>
+    );
+
   return (
     <div>
       <div
@@ -240,7 +249,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             <div
               id="app-canvas-container"
               className={cx('tw-h-full tw-flex tw-flex-col tw-relative', {
-                '!tw-w-[450px] tw-mx-auto': isMobileLayout,
+                'tw-w-full tw-mx-auto': isMobileLayout,
               })}
               style={{ minWidth: minCanvasWidth }}
             >
@@ -253,6 +262,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 )}
                 style={{
                   overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                  ...(isMobileLayout && currentMode === 'view' ? { overflowX: 'hidden' } : {}),
                   width: '100%',
                   flex: 1,
                   minHeight: 0,
@@ -270,6 +280,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 >
                   {environmentLoadingState !== 'loading' && (
                     <SuspenseCountProvider
+                      key={currentPageId}
+                      disabled={pageLoader}
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
                     >
@@ -288,7 +300,9 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           canvasMaxWidth={canvasMaxWidth}
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
+                          gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
+                          pageLoader={pageLoader}
                         />
                       ) : (
                         <DesktopLayout
@@ -312,16 +326,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           currentMode={currentMode}
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
+                          gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
+                          pageLoader={pageLoader}
                         />
                       )}
                     </SuspenseCountProvider>
-                  )}
-
-                  {currentMode === 'view' || (isMobileLayout && isAutoMobileLayout) ? null : (
-                    <Suspense fallback={null}>
-                      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                    </Suspense>
                   )}
                 </HotkeyProvider>
               </div>

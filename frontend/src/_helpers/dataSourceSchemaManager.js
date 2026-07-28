@@ -19,17 +19,22 @@ export default class DataSourceSchemaManager {
     this.validate = this.ajv.compile(this.schema);
   }
 
-  async validateData(options) {
-    const decryptedOptions = await datasourceService.getDecryptedOptions(options);
-    const data = this._convertDataSourceOptionsToData(decryptedOptions);
+  async validateData(options, dataSourceId, environmentId) {
+    const hasStoredCredentials = Object.values(options).some((v) => v?.credential_id);
+
+    if (hasStoredCredentials && dataSourceId) {
+      // Server validates: decrypts credentials scoped to this datasource, then runs AJV.
+      return await datasourceService.validateOptions(dataSourceId, options, this.schema, environmentId);
+    }
+
+    // Local AJV for new datasources where no credentials have been saved yet.
+    const data = this._convertDataSourceOptionsToData(options);
     try {
       const valid = this.validate(data);
-      if (!valid) {
-        return { valid: false, errors: this.validate.errors };
-      }
-      return { valid: true, errors: [] };
+      return { valid: !!valid, errors: this.validate.errors || [] };
     } catch (error) {
-      console.log('Validtion error: ', error);
+      console.log('Validation error: ', error);
+      return { valid: false, errors: [] };
     }
   }
 

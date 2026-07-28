@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { renderElement } from '../../Utils';
 import { resolveReferences } from '@/_helpers/utils';
 import Popover from 'react-bootstrap/Popover';
@@ -7,6 +7,7 @@ import { EventManager } from '../../EventManager';
 import { useTranslation } from 'react-i18next';
 import { FieldPopoverContent, FieldsList } from './FieldManager';
 import { useFieldManager, usePopoverState } from './hooks';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 
 // Constants
 const ADDITIONAL_ACTIONS = [
@@ -16,6 +17,7 @@ const ADDITIONAL_ACTIONS = [
   'visibility',
   'collapseWhenHidden',
   'disabledState',
+  'tooltipFormat',
   'tooltip',
 ];
 
@@ -212,6 +214,7 @@ export const KeyValuePair = (props) => {
       },
       // Additional actions section
       {
+        id: ADDITIONAL_ACTIONS_ACCORDION_ID,
         title: 'Additional actions',
         children: ADDITIONAL_ACTIONS.map((option) => renderCustomElement(option)),
       },

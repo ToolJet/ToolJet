@@ -24,6 +24,7 @@ import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
 import { getAutoFillStrategy } from '@/_helpers/autoFillRegistry';
 import { useConnectionStringAutoFill } from '@/_hooks/useConnectionStringAutofill';
+import OracleWalletPicker from '@/_components/OracleWalletPicker';
 
 const DynamicFormV2 = ({
   schema,
@@ -149,7 +150,7 @@ const DynamicFormV2 = ({
 
   const validateOptions = React.useCallback(async () => {
     try {
-      const { valid, errors } = await dsm.validateData(options);
+      const { valid, errors } = await dsm.validateData(options, selectedDataSource?.id, currentAppEnvironmentId);
 
       const conditionallyRequiredFields = processAllOfConditions(schema, options);
       setConditionallyRequiredProperties(conditionallyRequiredFields);
@@ -184,7 +185,25 @@ const DynamicFormV2 = ({
         clearValidationMessages();
         clearValidationErrorBanner();
       } else {
-        setValidationMessages(finalErrors, schema, interactedFields);
+        // Auto-mark fields that have errors as interacted so that allOf/if/then
+        // conditional required fields (e.g. username triggered by connection_type change)
+        // are shown without requiring the user to directly touch them.
+        // Compute the updated set locally so we can pass it to setValidationMessages
+        // in the same render — avoids a second validation cycle caused by the dep change.
+        const errorFields = finalErrors
+          .map((e) =>
+            e.keyword === 'required'
+              ? e.params?.missingProperty
+              : (e.instancePath || e.dataPath || '').replace(/^[./]/, '')
+          )
+          .filter(Boolean);
+        const updatedInteractedFields = errorFields.some((f) => !interactedFields.has(f))
+          ? new Set([...interactedFields, ...errorFields])
+          : interactedFields;
+        if (updatedInteractedFields !== interactedFields) {
+          setInteractedFields(updatedInteractedFields);
+        }
+        setValidationMessages(finalErrors, schema, updatedInteractedFields);
       }
     } catch (error) {
       console.error('Validation error:', error);
@@ -253,8 +272,7 @@ const DynamicFormV2 = ({
   React.useEffect(() => {
     if (showValidationErrors) {
       setHasUserInteracted(true);
-      const allFieldKeys = Object.keys(options);
-      setInteractedFields(new Set(allFieldKeys));
+      setInteractedFields(new Set(Object.keys(options)));
     }
   }, [showValidationErrors, options]);
 
@@ -401,6 +419,8 @@ const DynamicFormV2 = ({
         return SqlAggregate;
       case 'dropdown':
         return Select;
+      case 'react-component-oracle-wallet':
+        return OracleWalletPicker;
       case 'react-component-oauth':
         return OAuthWrapper;
       // TODO: Move dropdown component flip logic to be handled here
@@ -438,7 +458,6 @@ const DynamicFormV2 = ({
         setHasUserInteracted(true);
       }
       setInteractedFields((prev) => new Set(prev).add(key));
-
       // Delegate manual edit tracking to the autofill hook
       if (autoFillStrategy) {
         handleManualFieldEdit(key, value);
@@ -641,6 +660,12 @@ const DynamicFormV2 = ({
           onChange: (value) => {
             optionchanged(key, [...value]);
           },
+        };
+      case 'react-component-oracle-wallet':
+        return {
+          value: options?.[key]?.value ?? '',
+          onChange: (val) => handleOptionChange(key, val),
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       default:
         return {};

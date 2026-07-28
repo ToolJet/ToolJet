@@ -398,7 +398,7 @@ export const SelectRenderer = ({
     >
       <>
         <div
-          className="w-100 d-flex align-items-center"
+          className="w-100 h-100 d-flex align-items-center"
           ref={containerRef}
           onClick={(e) => {
             if ((isNewRow && isEditable) || widgetType === 'KeyValuePair') {

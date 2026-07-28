@@ -379,3 +379,23 @@
 .datasource-picker-empty-banner {
   border-radius: 6px;
 }
+
+.edit-datasource-btn {
+  gap: 6px;
+  height: 32px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: var(--button-secondary);
+  box-shadow: var(--elevation-000-box-shadow);
+  color: var(--text-default);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--slate3);
+  }
+}

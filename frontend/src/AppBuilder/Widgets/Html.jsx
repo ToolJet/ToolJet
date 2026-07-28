@@ -2,15 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const Html = function ({
+  id,
   height,
+  width,
   properties,
   styles,
   darkMode,
   dataCy,
   setExposedVariable,
   setExposedVariables,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
+  componentType,
 }) {
   const { rawHtml: stringifyHTML, loadingState, disabledState, visibility } = properties || {};
   const baseStyle = {
@@ -21,6 +29,10 @@ export const Html = function ({
   const { boxShadow } = styles || {};
 
   const isInitialRender = useRef(true);
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+
+  const contentRef = useRef(null);
+  const heightChangeValue = useHeightObserver(contentRef, isDynamicHeightEnabled);
 
   const [rawHtml, setRawHtml] = useState('');
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -28,6 +40,18 @@ export const Html = function ({
     isLoading: loadingState,
     isDisabled: disabledState,
     rawHTML: stringifyHTML || '',
+  });
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
   });
 
   const updateExposedVariablesState = (key, value) => {
@@ -124,8 +148,8 @@ export const Html = function ({
         border: exposedVariablesTemporaryState.isLoading && '1px solid var(--cc-default-border)',
         borderRadius: exposedVariablesTemporaryState.isLoading && '6px',
         width: '100%',
-        height,
-        overflowY: 'auto',
+        height: isDynamicHeightEnabled ? 'auto' : height,
+        ...(isDynamicHeightEnabled ? { minHeight: height } : { overflowY: 'auto' }),
         boxShadow,
         position: 'relative',
         opacity: exposedVariablesTemporaryState.isDisabled ? 0.5 : 1,
@@ -138,6 +162,7 @@ export const Html = function ({
         <Spinner />
       ) : (
         <div
+          ref={contentRef}
           style={baseStyle}
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(rawHtml, { FORCE_BODY: true }) }}
         />

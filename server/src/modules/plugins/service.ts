@@ -45,12 +45,15 @@ export class PluginsService implements IPluginsService {
       throw new InternalServerErrorException('Invalid plugin files');
     }
 
-    return shouldCreate && (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles));
+    return (
+      shouldCreate &&
+      (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles))
+    );
   }
 
   async findAll() {
     return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(Plugin, { relations: ['iconFile', 'manifestFile'] });
+      return manager.find(Plugin, { relations: ['iconFile', 'manifestFile'], order: { name: 'ASC' } });
     });
   }
 

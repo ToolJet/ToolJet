@@ -1,0 +1,2007 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Microsoft Graph SharePoint API",
+    "description": "Microsoft Graph API specification for SharePoint sites, lists, list items, and pages",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Microsoft Graph",
+      "url": "https://developer.microsoft.com/graph"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://graph.microsoft.com/v1.0",
+      "description": "Microsoft Graph v1.0 endpoint"
+    }
+  ],
+  "security": [
+    {
+      "oauth2": []
+    }
+  ],
+  "paths": {
+    "/sites": {
+      "get": {
+        "summary": "List sites",
+        "description": "Search across SharePoint sites in the organization. Use search=* to return all sites.",
+        "operationId": "listSites",
+        "tags": ["Sites"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of sites retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      }
+    },
+    "/sites/{site-id}": {
+      "get": {
+        "summary": "Get site",
+        "description": "Retrieve the properties and relationships of a SharePoint site",
+        "operationId": "getSite",
+        "tags": ["Sites"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Site"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      }
+    },
+    "/sites/{site-id}/analytics": {
+      "get": {
+        "summary": "Get site analytics",
+        "description": "Retrieve analytics data for a SharePoint site",
+        "operationId": "getSiteAnalytics",
+        "tags": ["Analytics"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site analytics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteAnalytics"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      }
+    },
+    "/sites/{site-id}/pages": {
+      "get": {
+        "summary": "List site pages",
+        "description": "Retrieve the pages in a SharePoint site",
+        "operationId": "listSitePages",
+        "tags": ["Pages"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of pages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitePageCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      }
+    },
+    "/sites/{site-id}/lists": {
+      "get": {
+        "summary": "List lists",
+        "description": "Retrieve the collection of lists in a SharePoint site",
+        "operationId": "listLists",
+        "tags": ["Lists"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of lists retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create list",
+        "description": "Create a new list in a SharePoint site",
+        "operationId": "createList",
+        "tags": ["Lists"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "List to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateListRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "List created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharePointList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/sites/{site-id}/lists/{list-id}": {
+      "get": {
+        "summary": "Get list",
+        "description": "Retrieve the metadata for a list in a SharePoint site",
+        "operationId": "getList",
+        "tags": ["Lists"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharePointList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update list",
+        "description": "Update the properties of a SharePoint list",
+        "operationId": "updateList",
+        "tags": ["Lists"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "List properties to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateListRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharePointList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.ReadWrite.All"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete list",
+        "description": "Delete a SharePoint list",
+        "operationId": "deleteList",
+        "tags": ["Lists"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "List deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/sites/{site-id}/lists/{list-id}/items": {
+      "get": {
+        "summary": "List list items",
+        "description": "Retrieve the collection of items in a SharePoint list",
+        "operationId": "listListItems",
+        "tags": ["ListItems"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List items retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListItemCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create list item",
+        "description": "Create a new item in a SharePoint list",
+        "operationId": "createListItem",
+        "tags": ["ListItems"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "List item to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateListItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "List item created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/sites/root/drive": {
+      "get": {
+        "summary": "Get root site drive",
+        "description": "Get the default document library (drive) for the tenant's root SharePoint site",
+        "operationId": "getRootSiteDrive",
+        "tags": ["Drives"],
+        "parameters": [
+          { "$ref": "#/components/parameters/select" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Drive" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/sites/{site-id}/drive": {
+      "get": {
+        "summary": "Get site drive",
+        "description": "Get the default document library (drive) for a SharePoint site. The returned id is used for file operations.",
+        "operationId": "getSiteDrive",
+        "tags": ["Drives"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Drive" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/sites/{site-id}/drives": {
+      "get": {
+        "summary": "List site drives",
+        "description": "List all document libraries (drives) in a SharePoint site",
+        "operationId": "listSiteDrives",
+        "tags": ["Drives"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" },
+          { "$ref": "#/components/parameters/top" },
+          { "$ref": "#/components/parameters/skip" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drives retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveCollectionResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/sites/{site-id}/drives/{drive-id}": {
+      "get": {
+        "summary": "Get site drive by ID",
+        "description": "Get a specific document library (drive) in a SharePoint site by its drive ID",
+        "operationId": "getSiteDriveById",
+        "tags": ["Drives"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Drive" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}/content": {
+      "get": {
+        "summary": "Download file",
+        "description": "Download the binary content of a file from a SharePoint document library. Returns base64-encoded content with mimeType and size.",
+        "operationId": "downloadSharePointFile",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the file",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content retrieved successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}/children": {
+      "get": {
+        "summary": "List folder contents",
+        "description": "List the files and folders inside a SharePoint document library folder. Use the drive id from Get Site Drive.",
+        "operationId": "listFolderContents",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the folder. Use 'root' for the root folder.",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" },
+          { "$ref": "#/components/parameters/filter" },
+          { "$ref": "#/components/parameters/orderby" },
+          { "$ref": "#/components/parameters/top" },
+          { "$ref": "#/components/parameters/skip" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Folder contents retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveItemCollectionResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}": {
+      "get": {
+        "summary": "Get file or folder metadata",
+        "description": "Get metadata for a file or folder. The response includes @microsoft.graph.downloadUrl which can be used directly as a download link (valid for 1 hour).",
+        "operationId": "getDriveItem",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the file or folder",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" },
+          { "$ref": "#/components/parameters/expand" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveItem" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      },
+      "delete": {
+        "summary": "Delete file or folder",
+        "description": "Delete a file or folder from a SharePoint document library",
+        "operationId": "deleteDriveItem",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the file or folder to delete",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Item deleted successfully" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.ReadWrite.All"] }]
+      }
+    },
+    "/drives/{drive-id}/items/{parent-item-id}:/{filename}:/content": {
+      "put": {
+        "summary": "Upload file to folder",
+        "description": "Upload a file (up to 4 MB) to a folder in a SharePoint document library. Provide fileContent as a base64-encoded string.",
+        "operationId": "uploadFileToFolder",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "parent-item-id",
+            "in": "path",
+            "description": "The unique identifier of the destination folder. Use 'root' for the root folder.",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "filename",
+            "in": "path",
+            "description": "The name of the file to create or replace (e.g. report.pdf)",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UploadFileRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveItem" }
+              }
+            }
+          },
+          "201": {
+            "description": "File created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveItem" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.ReadWrite.All"] }]
+      }
+    },
+    "/sites/{site-id}/lists/{list-id}/items/{item-id}": {
+      "get": {
+        "summary": "Get list item",
+        "description": "Retrieve the metadata and field values of a list item",
+        "operationId": "getListItem",
+        "tags": ["ListItems"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the list item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List item retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update list item",
+        "description": "Update the column values of a list item",
+        "operationId": "updateListItem",
+        "tags": ["ListItems"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the list item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Field values to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateListItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List item updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.ReadWrite.All"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete list item",
+        "description": "Delete a list item from a SharePoint list",
+        "operationId": "deleteListItem",
+        "tags": ["ListItems"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the list item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "List item deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.ReadWrite.All"]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Site": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the site",
+            "readOnly": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The full title of the site"
+          },
+          "name": {
+            "type": "string",
+            "description": "The URL-compatible short name of the site"
+          },
+          "description": {
+            "type": "string",
+            "description": "The descriptive text for the site",
+            "nullable": true
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL that displays the site in the browser",
+            "readOnly": true
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the site was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the site was last modified",
+            "readOnly": true
+          },
+          "siteCollection": {
+            "$ref": "#/components/schemas/SiteCollection"
+          },
+          "root": {
+            "type": "object",
+            "description": "Present when this is the root site of the site collection"
+          }
+        }
+      },
+      "SiteCollection": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "The hostname of the site collection"
+          },
+          "dataLocationCode": {
+            "type": "string",
+            "description": "The geographic region code for where the data is stored"
+          }
+        }
+      },
+      "SiteCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to retrieve the next page of results"
+          },
+          "@odata.count": {
+            "type": "integer",
+            "description": "Total count of items (when $count=true)"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Site"
+            }
+          }
+        }
+      },
+      "SharePointList": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the list",
+            "readOnly": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The displayable title of the list"
+          },
+          "name": {
+            "type": "string",
+            "description": "The URL-compatible name of the list"
+          },
+          "description": {
+            "type": "string",
+            "description": "The descriptive text for the list",
+            "nullable": true
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL that displays the list in the browser",
+            "readOnly": true
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the list was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the list was last modified",
+            "readOnly": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "list": {
+            "$ref": "#/components/schemas/ListInfo"
+          }
+        }
+      },
+      "ListInfo": {
+        "type": "object",
+        "properties": {
+          "hidden": {
+            "type": "boolean",
+            "description": "Whether the list is hidden from users"
+          },
+          "template": {
+            "type": "string",
+            "description": "The list template type",
+            "enum": [
+              "genericList",
+              "documentLibrary",
+              "survey",
+              "links",
+              "announcements",
+              "contacts",
+              "events",
+              "tasks",
+              "discussionBoard",
+              "pictureLibrary",
+              "noListTemplate"
+            ]
+          }
+        }
+      },
+      "ListCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to retrieve the next page of results"
+          },
+          "@odata.count": {
+            "type": "integer",
+            "description": "Total count of items (when $count=true)"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SharePointList"
+            }
+          }
+        }
+      },
+      "CreateListRequest": {
+        "type": "object",
+        "required": ["displayName"],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The displayable title of the list"
+          },
+          "description": {
+            "type": "string",
+            "description": "The descriptive text for the list",
+            "nullable": true
+          },
+          "list": {
+            "$ref": "#/components/schemas/ListInfo"
+          }
+        }
+      },
+      "UpdateListRequest": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The displayable title of the list"
+          },
+          "description": {
+            "type": "string",
+            "description": "The descriptive text for the list",
+            "nullable": true
+          }
+        }
+      },
+      "ListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the list item",
+            "readOnly": true
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL that displays the item in the browser",
+            "readOnly": true
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the item was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the item was last modified",
+            "readOnly": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "lastModifiedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "fields": {
+            "$ref": "#/components/schemas/ListItemFields"
+          }
+        }
+      },
+      "ListItemFields": {
+        "type": "object",
+        "description": "Column values for the list item. Property names correspond to the internal names of the list columns (e.g., Title, Status).",
+        "additionalProperties": true
+      },
+      "ListItemCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to retrieve the next page of results"
+          },
+          "@odata.count": {
+            "type": "integer",
+            "description": "Total count of items (when $count=true)"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListItem"
+            }
+          }
+        }
+      },
+      "CreateListItemRequest": {
+        "type": "object",
+        "required": ["fields"],
+        "properties": {
+          "fields": {
+            "$ref": "#/components/schemas/ListItemFields"
+          }
+        }
+      },
+      "UpdateListItemRequest": {
+        "type": "object",
+        "required": ["fields"],
+        "properties": {
+          "fields": {
+            "$ref": "#/components/schemas/ListItemFields"
+          }
+        }
+      },
+      "SitePage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the page",
+            "readOnly": true
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the page"
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL that displays the page in the browser",
+            "readOnly": true
+          },
+          "pageLayoutType": {
+            "type": "string",
+            "description": "The layout type of the page",
+            "enum": [
+              "Article",
+              "Home",
+              "SingleWebPartAppPage",
+              "RepostPage",
+              "HeaderlessSearchResults",
+              "Spaces",
+              "Topic"
+            ]
+          },
+          "publishingState": {
+            "$ref": "#/components/schemas/PublishingState"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the page was created",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the page was last modified",
+            "readOnly": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "lastModifiedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          }
+        }
+      },
+      "PublishingState": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "The publishing level of the page",
+            "enum": ["checkout", "draft", "published"]
+          },
+          "versionId": {
+            "type": "string",
+            "description": "The version identifier of the page"
+          }
+        }
+      },
+      "SitePageCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to retrieve the next page of results"
+          },
+          "@odata.count": {
+            "type": "integer",
+            "description": "Total count of items (when $count=true)"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SitePage"
+            }
+          }
+        }
+      },
+      "SiteAnalytics": {
+        "type": "object",
+        "properties": {
+          "allTime": {
+            "$ref": "#/components/schemas/ActivityStats"
+          },
+          "lastSevenDays": {
+            "$ref": "#/components/schemas/ActivityStats"
+          }
+        }
+      },
+      "ActivityStats": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/ItemActionStat"
+          },
+          "create": {
+            "$ref": "#/components/schemas/ItemActionStat"
+          },
+          "delete": {
+            "$ref": "#/components/schemas/ItemActionStat"
+          },
+          "edit": {
+            "$ref": "#/components/schemas/ItemActionStat"
+          },
+          "move": {
+            "$ref": "#/components/schemas/ItemActionStat"
+          }
+        }
+      },
+      "ItemActionStat": {
+        "type": "object",
+        "properties": {
+          "actionCount": {
+            "type": "integer",
+            "description": "The number of times the action took place",
+            "nullable": true
+          },
+          "actorCount": {
+            "type": "integer",
+            "description": "The number of distinct actors that performed the action",
+            "nullable": true
+          }
+        }
+      },
+      "IdentitySet": {
+        "type": "object",
+        "properties": {
+          "application": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "device": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "user": {
+            "$ref": "#/components/schemas/Identity"
+          }
+        }
+      },
+      "Identity": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The display name of the identity"
+          },
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the identity"
+          }
+        }
+      },
+      "Drive": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the drive",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the drive"
+          },
+          "driveType": {
+            "type": "string",
+            "description": "The drive type: personal, business, or documentLibrary"
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL to the drive in the browser",
+            "readOnly": true
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "DriveCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": { "type": "string" },
+          "@odata.nextLink": { "type": "string" },
+          "value": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Drive" }
+          }
+        }
+      },
+      "DriveItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the item",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the file or folder"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes",
+            "readOnly": true
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL to view the item in the browser",
+            "readOnly": true
+          },
+          "@microsoft.graph.downloadUrl": {
+            "type": "string",
+            "description": "Pre-authenticated download URL, valid for 1 hour. Use this directly as a download link.",
+            "readOnly": true
+          },
+          "file": {
+            "type": "object",
+            "description": "Present when the item is a file",
+            "properties": {
+              "mimeType": { "type": "string" }
+            }
+          },
+          "folder": {
+            "type": "object",
+            "description": "Present when the item is a folder",
+            "properties": {
+              "childCount": { "type": "integer" }
+            }
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "createdBy": { "$ref": "#/components/schemas/IdentitySet" },
+          "lastModifiedBy": { "$ref": "#/components/schemas/IdentitySet" }
+        }
+      },
+      "DriveItemCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": { "type": "string" },
+          "@odata.nextLink": { "type": "string" },
+          "@odata.count": { "type": "integer" },
+          "value": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DriveItem" }
+          }
+        }
+      },
+      "UploadFileRequest": {
+        "type": "object",
+        "required": ["fileContent"],
+        "properties": {
+          "fileContent": {
+            "type": "string",
+            "description": "Base64-encoded content of the file to upload"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type of the file (e.g. application/pdf, image/png, text/plain). Defaults to application/octet-stream."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code"
+              },
+              "message": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "target": {
+                "type": "string",
+                "description": "The target of the error"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "innererror": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "request-id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "expand": {
+        "name": "$expand",
+        "in": "query",
+        "description": "Expand related entities",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "fields,createdBy"
+      },
+      "select": {
+        "name": "$select",
+        "in": "query",
+        "description": "Select properties to be returned",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "id,displayName,webUrl"
+      },
+      "orderby": {
+        "name": "$orderby",
+        "in": "query",
+        "description": "Order items by property values",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "displayName asc"
+      },
+      "top": {
+        "name": "$top",
+        "in": "query",
+        "description": "Number of items to return",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      },
+      "skip": {
+        "name": "$skip",
+        "in": "query",
+        "description": "Number of items to skip",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "filter": {
+        "name": "$filter",
+        "in": "query",
+        "description": "Filter items by property values",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "count": {
+        "name": "$count",
+        "in": "query",
+        "description": "Include count of items",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "search": {
+        "name": "search",
+        "in": "query",
+        "description": "Search query for site discovery",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "*"
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Authentication credentials are missing or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "The authenticated user does not have permission to perform this operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "The requested resource was not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "BadRequestError": {
+        "description": "The request is malformed or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+            "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            "scopes": {
+              "Sites.Read.All": "Read items in all site collections",
+              "Sites.ReadWrite.All": "Edit or delete items in all site collections",
+              "Sites.Manage.All": "Create, edit, and delete items and lists in all site collections",
+              "Sites.FullControl.All": "Have full control of all site collections",
+              "offline_access": "Maintain access to data you have given access to"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sites",
+      "description": "Operations on SharePoint sites"
+    },
+    {
+      "name": "Lists",
+      "description": "Operations on SharePoint lists"
+    },
+    {
+      "name": "ListItems",
+      "description": "Operations on list items"
+    },
+    {
+      "name": "Pages",
+      "description": "Operations on site pages"
+    },
+    {
+      "name": "Analytics",
+      "description": "Site usage analytics"
+    },
+    {
+      "name": "Drives",
+      "description": "SharePoint document library drives"
+    },
+    {
+      "name": "Files",
+      "description": "File and folder operations in SharePoint document libraries"
+    }
+  ]
+}

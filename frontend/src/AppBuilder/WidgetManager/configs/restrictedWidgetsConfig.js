@@ -12,7 +12,27 @@ export const RESTRICTED_WIDGETS_CONFIG = {
   Table: ['Kanban'],
 };
 
-export const RESTRICTED_WIDGET_SLOTS_CONFIG = {
-  header: ['Calendar', 'Kanban', 'Table', 'Listview', 'Container', 'Accordion'],
-  footer: ['Calendar', 'Kanban', 'Table', 'Listview', 'Container', 'Accordion'],
-};
+export const RESTRICTED_WIDGET_SLOTS_CONFIG = [
+  'Form',
+  'Container',
+  'Listview',
+  'Tabs',
+  'Kanban',
+  'Calendar',
+  'Chart',
+  'Accordion',
+  'Map',
+  'IFrame',
+  'KeyValuePair',
+  'RichTextEditor',
+  'Timeline',
+  'JSONExplorer',
+  'JSONEditor',
+  'Html',
+  'CodeEditor',
+  'Chat',
+  'TreeSelect',
+  'PDF',
+  'Camera',
+  'QrScanner',
+];

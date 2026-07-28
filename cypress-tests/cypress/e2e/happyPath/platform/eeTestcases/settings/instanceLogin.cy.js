@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
-import { logout } from "Support/utils/common";
+import { logout, apiUpdateInstanceSettings } from "Support/utils/common";
 import { allowPersonalWorkspace, passwordToggle, updateInstanceSettings } from "Support/utils/platform/eeCommon";
 
 
@@ -18,6 +18,10 @@ describe('Instance Login', () => {
         cy.apiLogin();
         cy.visit('/');
     });
+    after(() => {
+        cy.apiLogin();
+        apiUpdateInstanceSettings({customLogoutUrl: ''});
+    });
 
     it('Should verify personal workspace creation functionality', () => {
         // Enable personal workspace
@@ -29,7 +33,7 @@ describe('Instance Login', () => {
         cy.apiLogin(data.email);
         cy.visit('/');
         cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.addWorkspaceButton).should('be.visible').click();
+        cy.get(commonSelectors.addWorkspaceButton).should('be.visible').click({force: true});
         cy.get(commonSelectors.workspaceNameinput).clear().type(data.workspaceName);
         cy.wait(1000);
         cy.get(dashboardSelector.workspaceSlugInputField)
@@ -100,25 +104,25 @@ describe('Instance Login', () => {
         cy.get(commonSelectors.workspaceSettings).click();
         cy.get(commonSelectors.manageSSOOption).should('not.exist');
 
-
         updateInstanceSettings('ENABLE_WORKSPACE_LOGIN_CONFIGURATION', 'true');
         cy.reload();
         cy.get(commonSelectors.manageSSOOption).should('be.visible');
 
 
         //Set Custom logout url
-        updateInstanceSettings('CUSTOM_LOGOUT_URL', 'https://www.google.com/');
+        apiUpdateInstanceSettings({customLogoutUrl: 'https://www.google.com/'});
+        cy.wait(1000);
         logout();
         cy.url().should('include', 'https://www.google.com/');
-
+        
 
         //Reset custom logout url
         cy.apiLogin();
         cy.visit('/');
-        updateInstanceSettings('CUSTOM_LOGOUT_URL', '');
+        apiUpdateInstanceSettings({customLogoutUrl: ''});
+        cy.wait(1000);
         logout();
         cy.url().should('include', `${Cypress.config("baseUrl")}/login`);
-
 
     });
 

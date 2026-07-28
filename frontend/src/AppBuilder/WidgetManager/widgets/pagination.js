@@ -28,28 +28,37 @@ export const paginationConfig = {
         defaultValue: '{{1}}',
       },
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
   },
   validation: {},
   events: {
     onPageChange: { displayName: 'On Page Change' },
   },
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
     alignment: {
       type: 'alignButtons',
       displayName: 'Alignment',
@@ -57,12 +66,44 @@ export const paginationConfig = {
         schema: { type: 'string' },
         defaultValue: 'left',
       },
+      accordian: 'Pagination',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'Pagination',
     },
   },
   exposedVariables: {
     totalPages: null,
     currentPageIndex: null,
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
   },
+  actions: [
+    {
+      handle: 'setPage',
+      displayName: 'Set page',
+      params: [{ handle: 'page', displayName: 'Page', defaultValue: '{{1}}' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'visible', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     validation: {},
     others: {
@@ -76,12 +117,14 @@ export const paginationConfig = {
       defaultPageIndex: {
         value: '{{1}}',
       },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       alignment: { value: 'left' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

@@ -94,6 +94,9 @@ function buildQueryHints(storeState, moduleId) {
     hints.push({ hint: `queries.${name}`, type: 'Object' });
     hints.push({ hint: `queries.${name}.run()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.reset()`, type: 'Function' });
+    hints.push({ hint: `queries.${name}.getData()`, type: 'Function' });
+    hints.push({ hint: `queries.${name}.getRawData()`, type: 'Function' });
+    hints.push({ hint: `queries.${name}.getloadingState()`, type: 'Function' });
 
     if (queryData && typeof queryData === 'object') {
       hints.push(...traverseObjectToHints(queryData, `queries.${name}`, 3));
@@ -395,9 +398,14 @@ export const createCodeHinterSlice = (set, get) => ({
     // For each one found, extract listItem/cardData from customResolvables.
     let currentParentId = componentDef.component?.parent;
     let nearestListViewOrKanbanId = null;
+    // Cyclic parent chains lock up the autocomplete code path whenever the user
+    // focuses a field inside a cyclic subtree. Break instead of looping forever.
+    const visited = new Set();
 
     while (currentParentId) {
       const baseParentId = getBaseParentId(currentParentId);
+      if (visited.has(baseParentId)) break;
+      visited.add(baseParentId);
       const parentType = getParentComponentType(currentParentId, moduleId);
 
       if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {

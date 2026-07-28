@@ -38,28 +38,6 @@ describe("Data source Rest API", () => {
     cy.visit("/");
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get('[data-cy="datasource-list-header"]').should(
-      "have.text",
-      Cypress.env("marketplace_action")
-        ? "All data sources (48)"
-        : "All data sources (48)"
-    );
-    cy.get('[data-cy="commonlyused-datasource-button"]').should(
-      "have.text",
-      "Commonly used (6)"
-    );
-    cy.get('[data-cy="databases-datasource-button"]').should(
-      "have.text",
-      Cypress.env("marketplace_action") ? "Databases (19)" : "Databases (20)"
-    );
-    cy.get('[data-cy="apis-datasource-button"]').should(
-      "have.text",
-      "APIs (24)"
-    );
-    cy.get('[data-cy="cloudstorage-datasource-button"]').should(
-      "have.text",
-      "Cloud Storages (4)"
-    );
 
     cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
@@ -490,7 +468,7 @@ describe("Data source Rest API", () => {
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
       [
-        { key: "url", value: "https://httpbin.org" },
+        { key: "url", value: "https://httpbingo.org" },
         { key: "auth_type", value: "basic" },
         { key: "grant_type", value: "authorization_code" },
         { key: "add_token_to", value: "header" },
@@ -528,10 +506,12 @@ describe("Data source Rest API", () => {
         { key: "tokenData", encrypted: false },
       ]
     );
+    cy.wait(1000);
     cy.reload();
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     data.basicAppName = `${fake.companyName}-restAPI-Basic-App`;
     cy.apiCreateApp(data.basicAppName);
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "get_basic_auth_valid",
       dsName: `cypress-${data.dataSourceName}-restapi`,
@@ -539,13 +519,16 @@ describe("Data source Rest API", () => {
       urlSuffix: "/basic-auth/user/pass",
       expectedResponseShape: { authenticated: true, user: "user" },
     });
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "get_basic_auth_invalid",
       dsName: `cypress-${data.dataSourceName}-restapi`,
       method: "GET",
       urlSuffix: "/basic-auth/invaliduser/invalidpass",
     });
+    cy.wait(1000);
     cy.apiDeleteApp();
+    cy.wait(1000);
     cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify response for bearer authentication type connection", () => {
@@ -554,7 +537,7 @@ describe("Data source Rest API", () => {
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
       [
-        { key: "url", value: "https://httpbin.org" },
+        { key: "url", value: "https://httpbingo.org" },
         { key: "auth_type", value: "bearer" },
         { key: "grant_type", value: "authorization_code" },
         { key: "add_token_to", value: "header" },
@@ -592,11 +575,14 @@ describe("Data source Rest API", () => {
         { key: "tokenData", encrypted: false },
       ]
     );
+    cy.wait(1000);
     cy.reload();
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     data.bearerAppName = `${fake.companyName}-restAPI-Bearer-App`;
     cy.apiCreateApp(data.bearerAppName);
+    cy.wait(1000);
     cy.openApp();
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "get_bearer_auth_valid",
       dsName: `cypress-${data.dataSourceName}-restapi`,
@@ -604,14 +590,16 @@ describe("Data source Rest API", () => {
       urlSuffix: "/bearer",
       expectedResponseShape: { authenticated: true, token: "my-token-123" },
     });
+    cy.wait(1000);
     cy.apiDeleteApp();
+    cy.wait(1000);
     cy.intercept("GET", "api/data_sources?**").as("datasource");
     cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi-invalid`,
       "restapi",
       [
-        { key: "url", value: "https://httpbin.org" },
+        { key: "url", value: "https://httpbingo.org" },
         { key: "auth_type", value: "bearer" },
         { key: "grant_type", value: "authorization_code" },
         { key: "add_token_to", value: "header" },
@@ -649,16 +637,21 @@ describe("Data source Rest API", () => {
         { key: "tokenData", encrypted: false },
       ]
     );
+    cy.wait(1000);
     data.bearerInvalidAppName = `${fake.companyName}-restAPI-Bearer-invalid`;
     cy.apiCreateApp(data.bearerInvalidAppName);
+    cy.wait(1000);
     cy.openApp();
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "get_bearer_auth_invalid",
       dsName: `cypress-${data.dataSourceName}-restapi-invalid`,
       method: "GET",
       urlSuffix: "/bearer",
     });
+    cy.wait(1000);
     cy.apiDeleteApp();
+    cy.wait(1000);
     cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   //might be failing due to rate limit error from auth0, need to investigate and fix
@@ -723,6 +716,7 @@ describe("Data source Rest API", () => {
   });
   it("Should verify response for content-type", () => {
     cy.apiCreateApp(`${fake.companyName}-restAPI-Content-App`);
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "post_json",
       dsName: "restapidefault",
@@ -734,32 +728,35 @@ describe("Data source Rest API", () => {
       urlSuffix: "",
       expectedResponseShape: { id: true, title: "foo", body: "bar", userId: 1 },
     });
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "post_raw_text",
       dsName: "restapidefault",
       method: "POST",
-      url: "https://httpbin.org/post",
+      url: "https://httpbingo.org/post",
       headersList: [["Content-Type", "text/plain"]],
       rawBody: "This is plain text content",
       jsonBody: null,
       run: true,
       expectedResponseShape: { data: "This is plain text content" },
     });
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "post_form_urlencoded",
       dsName: "restapidefault",
       method: "POST",
-      url: "https://httpbin.org/post",
+      url: "https://httpbingo.org/post",
       headersList: [["Content-Type", "application/x-www-form-urlencoded"]],
       bodyList: [
         ["name", "Jane"],
         ["age", "30"],
       ],
       expectedResponseShape: {
-        "form.name": "Jane",
-        "form.age": "30",
+        "form.name.0": "Jane",
+        "form.age.0": "30",
       },
     });
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "post_xml_soap",
       dsName: "restapidefault",

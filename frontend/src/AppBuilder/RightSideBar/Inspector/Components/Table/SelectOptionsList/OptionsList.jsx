@@ -1,5 +1,5 @@
 import React from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NoListItem from '../NoListItem';

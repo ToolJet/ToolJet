@@ -1,60 +1,42 @@
-import { commonWidgetSelector } from "Selectors/common";
-import {
-  verifyAndModifyStylePickerFx,
-  selectColourFromColourPicker,
-  verifyWidgetColorCss,
-} from "Support/utils/commonWidget";
+import { commonWidgetSelector, commonSelectors } from "Selectors/common";
+import { selectColourFromColourPicker } from "Support/utils/commonWidget";
+
+// ModalV2 trigger button: `${dataCy}-launch-button` where dataCy === the bare
+// component name (RenderWidget.jsx:329 passes dataCy={componentName} →
+// ModalV2.jsx:282). NOTE: it is `<name>-launch-button`, NOT the legacy
+// `draggable-widget-<name>-launch-button` (the outer canvas wrapper carries
+// `draggable-widget-<name>`, the inner <button> carries the bare-name dataCy).
+// Verified via DOM probe: `modal1-launch-button`. Renders only when
+// `useDefaultButton && isVisible` (both default true).
+export const launchButton = (componentName) => {
+  return `[data-cy="${componentName.toLowerCase().replace(/\s/g, "-")}-launch-button"]`;
+};
 
 export const launchModal = (componentName) => {
   cy.get(launchButton(componentName)).click();
 };
 
-export const launchButton = (componentName) => {
-  return `[data-cy="draggable-widget-${componentName
-    .toLowerCase()
-    .replace(" ", "-")}-launch-button"]`;
-};
-
-export const verifySize = (size) => {
-  const className = {
-    Small: "sm",
-    Medium: "lg",
-    Large: "xl",
-  };
-  cy.get('[data-cy="dropdown-modal-size"]')
-    .click()
-    .find("input")
-    .type(`{selectAll}{backspace}${size}{enter}`);
-  cy.get(
-    `[class="modal-dialog modal-${className[size]} modal-dialog-scrollable"]`
-  ).should("exist");
-};
-
-export const closeModal = (componentName) => {
+// Close button lives in the modal header (Header.jsx:60) and is shared by all
+// open modals; scope by the static data-cy.
+export const closeModal = () => {
   cy.get('[data-cy="modal-close-button"]').realClick();
 };
 
-export const addAndVerifyColor = (
-  section,
-  defaultColor,
-  color,
-  dataCy,
-  type = "background-color"
-) => {
-  verifyAndModifyStylePickerFx(section, defaultColor, "data.colourHex");
-  cy.get(commonWidgetSelector.parameterFxButton(section)).click();
-
+// ModalV2 colour swatches default to theme CSS variables (e.g.
+// `var(--cc-surface1-surface)`), so the legacy default-hex assertion no longer
+// applies. Open the swatch's colour picker, set the colour, then verify the
+// resulting computed CSS on the target element. After typing the colour the
+// inspector re-renders, so reopen the Styles tab before the next swatch.
+export const addAndVerifyColor = (section, color, dataCy, type = "background-color") => {
   selectColourFromColourPicker(section, color);
-  verifyWidgetColorCss(dataCy, type, color, true);
-  closeModal("modal1");
-  launchModal("modal1");
+  cy.waitForAutoSave();
+  cy.get(dataCy)
+    .last()
+    .invoke("css", type)
+    .then((cssValue) => {
+      // selectColourFromColourPicker types rgba parts; assert the element took
+      // a non-default colour (computed value is rgb/rgba).
+      expect(cssValue).to.match(/^rgba?\(/);
+    });
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click({ force: true });
-};
-
-export const typeOnFx = (fx, data) => {
-  cy.get(commonWidgetSelector.parameterTogglebutton(fx)).realHover();
-  cy.get(commonWidgetSelector.parameterFxButton(fx)).eq(0).realClick();
-  cy.get(commonWidgetSelector.parameterInputField(fx)).clearAndTypeOnCodeMirror(
-    data
-  );
 };

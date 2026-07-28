@@ -1,3 +1,5 @@
+const mariadbEnv = Cypress.env("mariadb") || {};
+
 export const mariadbUIConfig = {
     defaultFields: [
         {
@@ -5,7 +7,7 @@ export const mariadbUIConfig = {
             fieldName: "Host",
             validations: {
                 isRequired: false,
-                placeholder: "Enter host",
+                placeholder: "localhost",
                 defaultValue: "",
                 disabled: false
             }
@@ -48,7 +50,7 @@ export const mariadbUIConfig = {
             fieldName: "Port",
             validations: {
                 isRequired: false,
-                placeholder: "Enter port",
+                placeholder: "3306",
                 defaultValue: "",
                 disabled: false
             }
@@ -65,17 +67,25 @@ export const mariadbUIConfig = {
         },
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             validations: {
                 defaultValue: false,
                 disabled: false
             }
         },
         {
-            type: "dropdown",
-            fieldName: "SSL certificate",
+            type: "toggle",
+            fieldName: "SSH tunnel",
             validations: {
-                defaultValue: "None",
+                defaultValue: false,
+                disabled: false
+            }
+        },
+        {
+            type: "toggle",
+            fieldName: "Allow dynamic connection parameters",
+            validations: {
+                defaultValue: false,
                 disabled: false
             }
         }
@@ -87,27 +97,27 @@ export const mariadbFormConfig = {
         {
             type: "input",
             fieldName: "Host",
-            text: `${Cypress.env('mariadb_host')}`
+            text: `${mariadbEnv.host}`
         },
         {
             type: "input",
             fieldName: "Port",
-            text: `${Cypress.env('mariadb_port')}`
+            text: `${mariadbEnv.port}`
         },
         {
             type: "input",
             fieldName: "Database",
-            text: `${Cypress.env('mariadb_database')}`
+            text: `${mariadbEnv.database}`
         },
         {
             type: "input",
             fieldName: "Username",
-            text: `${Cypress.env('mariadb_user')}`
+            text: `${mariadbEnv.userName}`
         },
         {
             type: "encrypted",
             fieldName: "Password",
-            text: `${Cypress.env('mariadb_password')}`
+            text: `${mariadbEnv.password}`
         }
     ],
     invalidHost: [
