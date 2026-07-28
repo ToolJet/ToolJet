@@ -589,11 +589,14 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       // Auto-activate users for non-cloud editions (skip email verification)
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
-      if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
-        const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-        const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
+      const isPasswordSignup = [SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(lifeCycleParms.source as any);
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry =
+        isPasswordSignup && !isNaN(rawExpiryDays) && rawExpiryDays > 0
           ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
           : null;
+
+      if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
         await this.userRepository.updateOne(
           user.id,
           {
@@ -605,8 +608,10 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         );
         user.status = USER_STATUS.ACTIVE;
         user.invitationToken = null;
+      } else if (isCloudEdition && passwordExpiry) {
+        await this.userRepository.updateOne(user.id, { passwordExpiry }, manager);
       }
-      
+
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
         const organizationUser = await this.organizationUserRepository.createOne(
@@ -893,11 +898,11 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       // Auto-activate users for non-cloud editions (skip email verification)
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry =
+        !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000) : null;
+
       if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
-        const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-        const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
-          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
-          : null;
         await this.userRepository.updateOne(
           user.id,
           {
@@ -914,6 +919,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         if (organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
           await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
         }
+      } else if (isCloudEdition && passwordExpiry) {
+        await this.userRepository.updateOne(user.id, { passwordExpiry }, manager);
       }
 
       // Validate license

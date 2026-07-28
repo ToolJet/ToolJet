@@ -153,7 +153,6 @@ export class OnboardingService implements IOnboardingService {
       // Find the default workspace
       const defaultWorkspace = await this.getDefaultOrOldestWorkspaceOfInstance(manager);
 
-
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
         return await this.onboardingUtilService.whatIfTheSignUpIsAtTheWorkspaceLevel(
@@ -207,6 +206,12 @@ export class OnboardingService implements IOnboardingService {
         manager
       );
 
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry =
+        password && !isNaN(rawExpiryDays) && rawExpiryDays > 0
+          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+          : null;
+
       const user = await this.onboardingUtilService.createUserWithRole(
         {
           email,
@@ -218,6 +223,7 @@ export class OnboardingService implements IOnboardingService {
           companySize,
           role,
           phoneNumber,
+          ...(passwordExpiry ? { passwordExpiry } : {}),
         },
         organization.id,
         USER_ROLE.ADMIN,
