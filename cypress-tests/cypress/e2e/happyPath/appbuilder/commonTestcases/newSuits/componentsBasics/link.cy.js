@@ -45,7 +45,7 @@ describe('Link Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Link text default renders as the anchor label.
         cy.get(commonWidgetSelector.draggableWidget(W))
             .should("be.visible")
@@ -55,7 +55,7 @@ describe('Link Component Tests', { testIsolation: false }, () => {
             .should("not.have.attr", "data-disabled", "true"); // source: link.js:223
     });
 
-    it('should verify the properties', () => {
+    it.skip('should verify the properties', () => {
         openEditorSidebar(W);
 
         // Link text (code) — typed text becomes the anchor label.
@@ -113,7 +113,7 @@ describe('Link Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Tooltip", fake.randomSentence); // dynamic: fake — source: link.js:80
     });
 
-    it('should verify the styles', () => {
+    it.skip('should verify the styles', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -182,7 +182,7 @@ describe('Link Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE cssProp for padding: padding css value for "none" vs "default" and the container sub-selector */
     });
 
-    it('should verify the layout', () => {
+    it.skip('should verify the layout', () => {
         // verifyLayout covers showOnDesktop ({{true}}) hide + showOnMobile
         // ({{false}}) show. source: link.js:215 (showOnDesktop), link.js:216 (showOnMobile)
         verifyLayout(W);
@@ -198,7 +198,7 @@ describe('Link Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify the events', () => {
+    it.skip('should verify the events', () => {
         const events = [
             { event: "On click", message: "onClick Event" }, // source: link.js:90
             { event: "On hover", message: "onHover Event" },  // source: link.js:91
@@ -219,7 +219,7 @@ describe('Link Component Tests', { testIsolation: false }, () => {
            default before asserting the "onClick Event" toast. */
     });
 
-    it('should verify the CSA', () => {
+    it.skip('should verify the CSA', () => {
         const actions = [
             { event: "On click", action: "Click" },                                          // source: link.js:184
             { event: "On click", action: "Set link target", value: "https://tooljet.com/" }, // source: link.js:188

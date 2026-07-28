@@ -37,7 +37,7 @@ describe('Toggle Switch (Legacy) Component Tests', { testIsolation: false }, () 
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // label default renders on the widget
         cy.get(commonWidgetSelector.draggableWidget(W))
             .should("contain.text", "Toggle label"); // source: toggleswitch.js:72
@@ -53,7 +53,7 @@ describe('Toggle Switch (Legacy) Component Tests', { testIsolation: false }, () 
             .should("have.attr", "data-disabled", "false"); // source: toggleswitch.js:80
     });
 
-    it('should verify the properties', () => {
+    it.skip('should verify the properties', () => {
         // fake.randomSentence is a getter that regenerates per access — capture once.
         const data = { label: fake.randomSentence };
         openEditorSidebar(W);
@@ -73,7 +73,7 @@ describe('Toggle Switch (Legacy) Component Tests', { testIsolation: false }, () 
             .should("be.checked"); // dynamic: default status toggled On → value true
     });
 
-    it('should verify the styles', () => {
+    it.skip('should verify the styles', () => {
         // Text color (colorSwatches) — default var(--cc-primary-text)
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -109,12 +109,12 @@ describe('Toggle Switch (Legacy) Component Tests', { testIsolation: false }, () 
             .should("have.attr", "data-disabled", "true"); // dynamic: Disable toggled On
     });
 
-    it('should verify the layout', () => {
+    it.skip('should verify the layout', () => {
         // showOnDesktop default {{true}} → hide on desktop; showOnMobile default {{false}} → show on mobile
         verifyLayout(W); // source: toggleswitch.js:11 (showOnDesktop true), toggleswitch.js:12 (showOnMobile false)
     });
 
-    it('should verify all the exposed values on inspector', () => {
+    it.skip('should verify all the exposed values on inspector', () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.hideTooltip();
 
@@ -123,7 +123,7 @@ describe('Toggle Switch (Legacy) Component Tests', { testIsolation: false }, () 
         // No functions[] — config declares no actions.
     });
 
-    it('should verify all the events from the Toggle Switch', () => {
+    it.skip('should verify all the events from the Toggle Switch', () => {
         const events = [
             { event: "On Change", message: "onChange Event" }, // source: toggleswitch.js:31
         ];

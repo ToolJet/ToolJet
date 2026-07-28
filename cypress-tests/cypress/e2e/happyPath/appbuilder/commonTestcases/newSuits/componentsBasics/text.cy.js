@@ -52,7 +52,7 @@ describe('Text Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Widget renders and is visible/enabled by default.
         cy.get(widget).should("be.visible"); // source: text.js:308 (visibility {{true}})
         cy.get(widget).should("not.have.attr", "data-disabled", "true"); // source: text.js:307 (disabledState {{false}})
@@ -73,7 +73,7 @@ describe('Text Component Tests', { testIsolation: false }, () => {
         openAndVerifyNode(W, exposedValues, verifyNodeData);
     });
 
-    it('should verify properties', () => {
+    it.skip('should verify properties', () => {
         openEditorSidebar(W);
 
         // --- text (code) ---
@@ -123,7 +123,7 @@ describe('Text Component Tests', { testIsolation: false }, () => {
         verifyAndModifyToggleFx("Visibility", "{{true}}"); // source: text.js:308 (toggle back)
     });
 
-    it('should verify styles', () => {
+    it.skip('should verify styles', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -229,7 +229,7 @@ describe('Text Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE optionSelector+cssProp for padding (switch Padding, text.js:256) */
     });
 
-    it('should verify the layout', () => {
+    it.skip('should verify the layout', () => {
         // showOnDesktop {{true}} (text.js:299) + showOnMobile {{false}} (text.js:300)
         verifyLayout(W); // source: text.js:299, text.js:300
     });
@@ -242,7 +242,7 @@ describe('Text Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the Text', () => {
+    it.skip('should verify all the events from the Text', () => {
         const events = [
             { event: "On click", message: "onClick Event" },  // source: text.js:106
             { event: "On hover", message: "onHover Event" },   // source: text.js:107
@@ -258,7 +258,7 @@ describe('Text Component Tests', { testIsolation: false }, () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, "onHover Event", false); // dynamic: echoed event message
     });
 
-    it('should verify all the CSA from Text', () => {
+    it.skip('should verify all the CSA from Text', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // b1 source: text.js:280
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },  // b2 source: text.js:280

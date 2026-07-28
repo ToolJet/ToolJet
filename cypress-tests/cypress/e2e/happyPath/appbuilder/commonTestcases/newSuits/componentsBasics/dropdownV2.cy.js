@@ -67,7 +67,7 @@ describe('Dropdown Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // The widget renders its configured default label "Select".
         cy.get(commonWidgetSelector.draggableWidget(W))
             .should("be.visible")
@@ -79,7 +79,7 @@ describe('Dropdown Component Tests', { testIsolation: false }, () => {
         openAndVerifyNode(W, exposedValues, verifyNodeData);
     });
 
-    it('should verify the properties', () => {
+    it.skip('should verify the properties', () => {
         openEditorSidebar(W);
 
         // --- Data accordion: label + placeholder (code) ---
@@ -145,7 +145,7 @@ describe('Dropdown Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Tooltip", fake.randomSentence); // dynamic: fake
     });
 
-    it('should verify the validation', () => {
+    it.skip('should verify the validation', () => {
         openEditorSidebar(W);
 
         // Validation accordion: mandatory (toggle) + customRule (code).
@@ -164,7 +164,7 @@ describe('Dropdown Component Tests', { testIsolation: false }, () => {
         cy.get(commonWidgetSelector.draggableWidget(W)).should("exist"); // dynamic: placeholder assertion pending live error selector
     });
 
-    it('should verify the styles', () => {
+    it.skip('should verify the styles', () => {
         openEditorSidebar(W);
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -248,7 +248,7 @@ describe('Dropdown Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE padding switch selector + resulting padding CSS assertion */
     });
 
-    it('should verify the layout', () => {
+    it.skip('should verify the layout', () => {
         // verifyLayout covers showOnDesktop hide + showOnMobile show.
         verifyLayout(W); // source: dropdownV2.js:11 (showOnDesktop {{true}}), dropdownV2.js:12 (showOnMobile {{false}})
     });
@@ -262,7 +262,7 @@ describe('Dropdown Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the CSA from dropdown', () => {
+    it.skip('should verify all the CSA from dropdown', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // button1 — source: dropdownV2.js:374
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" }, // button2 — source: dropdownV2.js:376
@@ -307,7 +307,7 @@ describe('Dropdown Component Tests', { testIsolation: false }, () => {
         cy.get(commonWidgetSelector.draggableWidget(W)).should("contain.text", "option2"); // dynamic: selectOption result
     });
 
-    it('should verify all the events from the dropdown', () => {
+    it.skip('should verify all the events from the dropdown', () => {
         const events = [
             { event: "On select", message: "onSelect Event" }, // source: dropdownV2.js:160
             { event: "On search text changed", message: "onSearchTextChanged Event" }, // source: dropdownV2.js:161

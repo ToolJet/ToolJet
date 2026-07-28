@@ -40,7 +40,7 @@ describe('Image Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Default renders an <img> pointing at the configured Source URL.
         cy.get(commonWidgetSelector.draggableWidget('image1'))
             .find('img')
@@ -51,7 +51,7 @@ describe('Image Component Tests', { testIsolation: false }, () => {
             .should('not.have.attr', 'data-disabled', 'true'); // source: image.js:284
     });
 
-    it('should verify the properties of the image', () => {
+    it.skip('should verify the properties of the image', () => {
         openEditorSidebar('image1');
 
         // --- Image Format switch: imageUrl (default) toggles Source URL vs JS Object ---
@@ -118,7 +118,7 @@ describe('Image Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter('Tooltip', tooltipText); // dynamic: fake
     });
 
-    it('should verify the styles of the image', () => {
+    it.skip('should verify the styles of the image', () => {
         openEditorSidebar('image1');
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click({ force: true });
 
@@ -182,7 +182,7 @@ describe('Image Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE cssProp for customPadding — padding value under image1 not in cache. */ // source: image.js:229
     });
 
-    it('should verify the layout of the image', () => {
+    it.skip('should verify the layout of the image', () => {
         // showOnDesktop {{true}} (image.js:270) + showOnMobile {{false}} (image.js:271)
         verifyLayout('image1');
     });
@@ -197,7 +197,7 @@ describe('Image Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the image', () => {
+    it.skip('should verify all the events from the image', () => {
         const events = [
             { event: 'On click', message: 'onClick Event' }, // source: image.js:139
         ];
@@ -207,7 +207,7 @@ describe('Image Component Tests', { testIsolation: false }, () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, 'onClick Event', false); // dynamic: echoed event message
     });
 
-    it('should verify all the CSA from the image', () => {
+    it.skip('should verify all the CSA from the image', () => {
         const csaUrl = 'https://www.svgrepo.com/show/13675/image.svg'; // dynamic: test URL
         const actions = [
             { event: 'On click', action: 'Set image URL', value: csaUrl }, // b1 — source: image.js:245

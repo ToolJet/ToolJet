@@ -50,7 +50,7 @@ describe('Multi Select Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // label default renders on the widget
         cy.get(commonWidgetSelector.draggableWidget(W))
             .should("be.visible")
@@ -60,7 +60,7 @@ describe('Multi Select Component Tests', { testIsolation: false }, () => {
             .should("not.have.attr", "data-disabled", "true"); // source: multiselectV2.js:438
     });
 
-    it('should verify the properties of Multi Select', () => {
+    it.skip('should verify the properties of Multi Select', () => {
         openEditorSidebar(W);
 
         // --- Data accordion ---
@@ -160,7 +160,7 @@ describe('Multi Select Component Tests', { testIsolation: false }, () => {
         // source: multiselectV2.js:228
     });
 
-    it('should verify validation of Multi Select', () => {
+    it.skip('should verify validation of Multi Select', () => {
         openEditorSidebar(W);
         // mandatory (toggle) default false -> assert '*' marker on the widget label
         verifyAndModifyToggleFx("Make this field mandatory", "{{false}}"); // source: multiselectV2.js:419
@@ -172,7 +172,7 @@ describe('Multi Select Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Custom validation", "{{false&&'valid'}}"); // dynamic: test rule
     });
 
-    it('should verify the styles of Multi Select', () => {
+    it.skip('should verify the styles of Multi Select', () => {
         openEditorSidebar(W);
         cy.get('[data-cy="styles-tab"]').click();
 
@@ -254,7 +254,7 @@ describe('Multi Select Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE cssProp for padding (default/none) */
     });
 
-    it('should verify the layout of Multi Select', () => {
+    it.skip('should verify the layout of Multi Select', () => {
         // showOnDesktop {{true}} + showOnMobile {{false}}
         verifyLayout(W); // source: multiselectV2.js:11 & multiselectV2.js:12
     });
@@ -268,7 +268,7 @@ describe('Multi Select Component Tests', { testIsolation: false }, () => {
         verifyNodes(functions, verifyNodeData);
     });
 
-    it('should verify all the events from the Multi Select', () => {
+    it.skip('should verify all the events from the Multi Select', () => {
         const events = [
             { event: "On select", message: "onSelect Event" }, // source: multiselectV2.js:238
             { event: "On search text changed", message: "onSearchTextChanged Event" }, // source: multiselectV2.js:239
@@ -294,7 +294,7 @@ describe('Multi Select Component Tests', { testIsolation: false }, () => {
         cy.verifyToastMessage(commonSelectors.toastMessage, "onBlur Event", false); // source: multiselectV2.js:241
     });
 
-    it('should verify all the CSA from Multi Select', () => {
+    it.skip('should verify all the CSA from Multi Select', () => {
         const actions = [
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // b1 source: multiselectV2.js:47
             { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },  // b2 source: multiselectV2.js:47

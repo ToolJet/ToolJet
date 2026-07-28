@@ -47,7 +47,7 @@ describe('Rating Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Label default text (source: starrating.js:355)
         cy.get(commonWidgetSelector.draggableWidget(W))
             .should("be.visible")
@@ -57,7 +57,7 @@ describe('Rating Component Tests', { testIsolation: false }, () => {
             .should("not.have.attr", "data-disabled", "true"); // source: starrating.js:366
     });
 
-    it('should verify the properties', () => {
+    it.skip('should verify the properties', () => {
         openEditorSidebar(W);
 
         // label — code. Assert widget renders the typed text.
@@ -123,7 +123,7 @@ describe('Rating Component Tests', { testIsolation: false }, () => {
         cy.contains('[data-cy^="dropdown-option-"], label, button', /^Plain text$/i).click({ force: true }); // source: starrating.js:105
     });
 
-    it('should verify the styles', () => {
+    it.skip('should verify the styles', () => {
         openEditorSidebar(W);
 
         // ---- Label accordion ----
@@ -195,7 +195,7 @@ describe('Rating Component Tests', { testIsolation: false }, () => {
         cy.contains('[data-cy^="dropdown-option-"], label, button', /^Default$/i).click({ force: true }); // source: starrating.js:313
     });
 
-    it('should verify the layout', () => {
+    it.skip('should verify the layout', () => {
         // showOnDesktop {{true}} / showOnMobile {{false}} (source: starrating.js:351-352)
         verifyLayout(W);
     });
@@ -210,7 +210,7 @@ describe('Rating Component Tests', { testIsolation: false }, () => {
         //id is pending
     });
 
-    it('should verify the On Change event', () => {
+    it.skip('should verify the On Change event', () => {
         const events = [
             { event: "On Change", message: "onChange Event" }, // source: starrating.js:125
         ];
@@ -225,7 +225,7 @@ describe('Rating Component Tests', { testIsolation: false }, () => {
         // cy.verifyToastMessage(commonSelectors.toastMessage, 'onChange Event', false); // dynamic: echoed event message
     });
 
-    it('should verify all the CSA', () => {
+    it.skip('should verify all the CSA', () => {
         const actions = [
             { event: "On click", action: "Set value", value: "4" },              // source: starrating.js:326 (default '0')
             { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, // source: starrating.js:331

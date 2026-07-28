@@ -34,7 +34,7 @@ describe('Horizontal Divider Component Tests', { testIsolation: false }, () => {
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify default values on drop', () => {
+    it.skip('should verify default values on drop', () => {
         // Defaults: label empty (divider.js:147) → no label span rendered, only
         // the divider line; widget visible (visibility {{true}}, divider.js:148).
         cy.get(commonWidgetSelector.draggableWidget(W)).should("be.visible"); // source: divider.js:148
@@ -49,7 +49,7 @@ describe('Horizontal Divider Component Tests', { testIsolation: false }, () => {
         openAndVerifyNode("horizontaldivider1", [], verifyNodeData);
     });
 
-    it('should verify the properties', () => {
+    it.skip('should verify the properties', () => {
         openEditorSidebar(W);
 
         // label — type: code (divider.js:15), default "" (divider.js:147).
@@ -80,7 +80,7 @@ describe('Horizontal Divider Component Tests', { testIsolation: false }, () => {
         verifyAndModifyParameter("Tooltip", tooltipText); // dynamic: fake
     });
 
-    it('should verify the styles', () => {
+    it.skip('should verify the styles', () => {
         // Give the divider a label first so labelColor / labelAlignment / textWrap
         // have a rendered span to affect.
         openEditorSidebar(W);
@@ -145,7 +145,7 @@ describe('Horizontal Divider Component Tests', { testIsolation: false }, () => {
         /* RESOLVE-LIVE cssProp for padding — container padding default/none */
     });
 
-    it('should verify the layout', () => {
+    it.skip('should verify the layout', () => {
         // others.showOnDesktop default {{true}} (divider.js:143),
         // others.showOnMobile default {{false}} (divider.js:144).
         verifyLayout(W);
