@@ -2,6 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/AppBuilder/CodeEditor';
+import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { getFlexAxisAwareMeta } from '../Components/FlexContainer/flexChildInspectorUtils';
 import { getDefinitionInitialValue } from './utils';
 
@@ -50,6 +51,12 @@ export const Code = ({
 
   const options = paramMeta?.options || {};
 
+  // `paramType` is the definition section here but the field type inside the editor, so the stash
+  // key and widget default can only be built in this scope.
+  const componentType = component?.component?.component;
+  const fxFallbackValue = componentTypeDefinitionMap[componentType]?.definition?.[paramType]?.[param.name]?.value;
+  const fxStashKey = component?.id && `${component.id}-${paramType}-${param.name}`;
+
   const getfieldName = React.useMemo(() => {
     return param.name;
   }, [param]);
@@ -82,6 +89,8 @@ export const Code = ({
         cyLabel={paramMeta?.showLabel === false ? param.name?.toLowerCase() : ''}
         setCodeEditorView={setCodeEditorView}
         canRefresh={canRefresh}
+        fxStashKey={fxStashKey}
+        fxFallbackValue={fxFallbackValue}
       />
     </div>
   );

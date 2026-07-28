@@ -16,6 +16,24 @@ export default create(
       getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
       setHoveredComponentBoundaryId: (id) =>
         set({ hoveredComponentBoundaryId: id }, false, 'setHoveredComponentBoundaryId'),
+
+      // fx expressions parked while fx is off. Deliberately not persisted — recoverable only within
+      // the tab session, which avoids a schema change on saved apps.
+      fxExpressionStash: new Map(),
+
+      stashFxExpression: (key, expression) => {
+        if (!key) return;
+        get().fxExpressionStash.set(key, expression);
+      },
+
+      // Read-and-delete, so a restored expression cannot be re-applied by a later fx toggle.
+      takeFxExpression: (key) => {
+        if (!key) return undefined;
+        const stash = get().fxExpressionStash;
+        const expression = stash.get(key);
+        stash.delete(key);
+        return expression;
+      },
     }),
     { name: 'Transient Store', anonymousActionType: 'unknown' }
   )

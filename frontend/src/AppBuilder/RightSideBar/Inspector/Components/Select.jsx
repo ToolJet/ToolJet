@@ -273,7 +273,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     updateOptions(_options);
   };
 
-  const handleOnFxPress = (active, index, key) => {
+  // `newValue` rides along so fx-off is one rebuild — `options` is a render-time snapshot.
+  const handleOnFxPress = (active, index, key, newValue) => {
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
@@ -281,6 +282,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           [key]: {
             ...option[key],
             fxActive: active,
+            ...(newValue !== undefined && { value: newValue }),
           },
         };
       }
@@ -364,7 +366,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Make this default option'}
               paramName={'isEditable'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
-              onFxPress={(active) => handleOnFxPress(active, index, 'default')}
+              onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'default', newValue)}
+              fxStashKey={`${component?.id}-options-${index}-default`}
               fxActive={item?.default?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -385,7 +388,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Visibility'}
               onChange={(value) => handleVisibilityChange(value, index)}
               paramName={'visible'}
-              onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
+              onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'visible', newValue)}
+              fxStashKey={`${component?.id}-options-${index}-visible`}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -405,7 +409,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Disable'}
               paramName={'disable'}
               onChange={(value) => handleDisableChange(value, index)}
-              onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
+              onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'disable', newValue)}
+              fxStashKey={`${component?.id}-options-${index}-disable`}
               fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',

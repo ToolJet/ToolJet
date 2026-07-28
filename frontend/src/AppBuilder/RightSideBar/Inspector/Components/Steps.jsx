@@ -221,7 +221,8 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                 )
               }
               paramName={'visible'}
-              onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
+              onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'visible', newValue)}
+              fxStashKey={`${component?.id}-steps-${index}-visible`}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -241,7 +242,8 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Disable'}
               paramName={'disable'}
               onChange={(value) => handleLabelChange('disabled', { value }, index)}
-              onFxPress={(active) => handleOnFxPress(active, index, 'disabled')}
+              onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'disabled', newValue)}
+              fxStashKey={`${component?.id}-steps-${index}-disabled`}
               fxActive={item?.disabled?.fxActive}
               fieldMeta={{
                 type: 'toggle',
