@@ -24,11 +24,6 @@ describe("ToolJet: GitSync API Validation", () => {
     : require("uuid").v4();
   const componentName = "gitSyncTestComponent";
 
-  // Cypress retries.runMode (2) can re-run a whole it() block after a later
-  // assertion in it fails — cy.gitHubCreatePR isn't retry-safe (a second
-  // attempt 422s with "A pull request already exists"). This wraps it: on
-  // that specific 422, look up and reuse the already-open PR instead of
-  // failing.
   const createOrFindPR = (headBranch, title, baseBranch = "master") => {
     const owner = Cypress.env("GITHUB_REPO_OWNER");
     const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -49,11 +44,11 @@ describe("ToolJet: GitSync API Validation", () => {
           return res.body.number;
         }
         const alreadyExists = ((res.body && res.body.errors) || []).some((e) =>
-          (e.message || "").includes("already exists")
+          (e.message || "").includes("already exists"),
         );
         expect(
           alreadyExists,
-          `PR create should either succeed or already exist (got ${res.status})`
+          `PR create should either succeed or already exist (got ${res.status})`,
         ).to.be.true;
         return cy
           .request({
@@ -62,18 +57,15 @@ describe("ToolJet: GitSync API Validation", () => {
             headers: ghHeaders,
           })
           .then((listRes) => {
-            expect(listRes.body, "existing open PR for branch").to.have.length
-              .greaterThan(0);
+            expect(
+              listRes.body,
+              "existing open PR for branch",
+            ).to.have.length.greaterThan(0);
             return listRes.body[0].number;
           });
       });
   };
 
-  // Same retry-safety concern as createOrFindPR — a retried block re-merging
-  // an already-merged PR would otherwise fail. Also polls for GitHub to
-  // finish computing mergeability before attempting the merge — `mergeable`
-  // is computed asynchronously after PR create/push, and merging too early
-  // returns 405.
   const mergeIfNotMerged = (prNumber, attempt = 1) => {
     const owner = Cypress.env("GITHUB_REPO_OWNER");
     const repo = Cypress.env("GITHUB_REPO_NAME");
@@ -108,19 +100,16 @@ describe("ToolJet: GitSync API Validation", () => {
             // Merge became stale/not-mergeable between the check above and
             // this call (or GitHub still hadn't finished) — retry once more
             // rather than fail outright.
-            expect(attempt, `GitHub merge PR #${prNumber} (final attempt)`).to
-              .be.lessThan(8);
+            expect(
+              attempt,
+              `GitHub merge PR #${prNumber} (final attempt)`,
+            ).to.be.lessThan(8);
             cy.wait(1500, { log: false });
             return mergeIfNotMerged(prNumber, attempt + 1);
           });
       });
   };
 
-  // Newly stubbed apps on a just-created branch (isStub: true, empty
-  // definition) get hydrated asynchronously, and hydration replaces the stub
-  // version with a new row (different id). Fetching the editing version too
-  // early captures the soon-to-be-superseded stub id — poll until the
-  // version is no longer a stub before using its id for any mutation.
   const waitForHydratedVersion = (appId, branchId, attempt = 1) => {
     return cy.getAuthHeaders().then((headers) => {
       return cy
@@ -133,7 +122,7 @@ describe("ToolJet: GitSync API Validation", () => {
           const version = res.body.editing_version;
           if (!version.is_stub) return version.id;
           expect(attempt, "waiting for stub version to hydrate").to.be.lessThan(
-            10
+            10,
           );
           cy.wait(1500, { log: false });
           return waitForHydratedVersion(appId, branchId, attempt + 1);
@@ -141,37 +130,53 @@ describe("ToolJet: GitSync API Validation", () => {
     });
   };
 
-  // cy.gitSyncGetBranchId falls back to "" if the branch isn't visible yet
-  // in the listing (branch creation is an enqueued async job) — "" passes
-  // chai's `.to.exist` check, silently masking the race. Poll for a real id.
+  // POST /api/workspace-branches accepts an optional sourceBranchId — when
+  // given, the new branch forks from that branch's current HEAD (and its
+  // app-stubs are hydrated from that branch's content) instead of the org's
+  // default branch. cy.gitSyncCreateBranchViaApi doesn't expose this field,
+  // so this raw request is used whenever forking off a non-default branch.
+  const createBranchFromSource = (name, sourceBranchId) => {
+    return cy.getAuthHeaders().then((headers) => {
+      return cy
+        .request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/workspace-branches`,
+          headers,
+          body: { name, sourceBranchId },
+        })
+        .then((res) => {
+          expect(
+            res.status,
+            `create branch '${name}' from source ${sourceBranchId}`,
+          ).to.eq(201);
+        });
+    });
+  };
+
   const waitForBranchId = (branchName, attempt = 1) => {
     return cy.gitSyncGetBranchId(branchName).then((id) => {
       if (id) return id;
-      expect(attempt, `waiting for branch "${branchName}" to be listed`).to.be
-        .lessThan(10);
+      expect(
+        attempt,
+        `waiting for branch "${branchName}" to be listed`,
+      ).to.be.lessThan(10);
       cy.wait(1500, { log: false });
       return waitForBranchId(branchName, attempt + 1);
     });
   };
 
-  // apiGetAppIdByNameOnBranch can resolve null/undefined immediately after a
-  // branch is created — the branch's app stubs are populated by an async
-  // queued job, not synchronously with branch creation.
   const waitForAppIdOnBranch = (appName, branchId, attempt = 1) => {
     return cy.apiGetAppIdByNameOnBranch(appName, branchId).then((id) => {
       if (id) return id;
       expect(
         attempt,
-        `waiting for "${appName}" to be stubbed onto the new branch`
+        `waiting for "${appName}" to be stubbed onto the new branch`,
       ).to.be.lessThan(20);
       cy.wait(2000, { log: false });
       return waitForAppIdOnBranch(appName, branchId, attempt + 1);
     });
   };
 
-  // Fetches the editing version id AND home page id in one call — used
-  // instead of cy.apiGetEditingVersionId when a component add/delete needs
-  // the pageId too.
   const getVersionAndHomePage = (appId, branchId) => {
     return cy.getAuthHeaders().then((headers) => {
       return cy
@@ -187,10 +192,14 @@ describe("ToolJet: GitSync API Validation", () => {
     });
   };
 
-  // Mirrors cy.apiAddComponentToApp's request shape, but branch-scoped
-  // (accepts appId/versionId/branchId directly instead of resolving by name
-  // through the session's currently-active branch).
-  const addComponent = (appId, versionId, branchId, pageId, componentId, componentName) => {
+  const addComponent = (
+    appId,
+    versionId,
+    branchId,
+    pageId,
+    componentId,
+    componentName,
+  ) => {
     return cy.getAuthHeaders().then((headers) => {
       return cy
         .request({
@@ -225,13 +234,18 @@ describe("ToolJet: GitSync API Validation", () => {
       gitUrl: Cypress.env("GITHUB_REPO_URL"),
       branchName: Cypress.env("GITSYNC_BRANCH_NAME") || "main",
       githubAppId: String(Cypress.env("GITHUB_APP_ID")),
-      githubAppInstallationId: String(Cypress.env("GITHUB_APP_INSTALLATION_ID")),
+      githubAppInstallationId: String(
+        Cypress.env("GITHUB_APP_INSTALLATION_ID"),
+      ),
       githubAppPrivateKey: Cypress.env("GITHUB_PRIVATE_KEY"),
     };
     const enterpriseApiUrl = Cypress.env("GITHUB_API_BASE_URL");
     if (enterpriseApiUrl) {
       payload.githubEnterpriseApiUrl = enterpriseApiUrl;
-      payload.githubEnterpriseUrl = enterpriseApiUrl.replace(/\/api\/v3\/?$/, "");
+      payload.githubEnterpriseUrl = enterpriseApiUrl.replace(
+        /\/api\/v3\/?$/,
+        "",
+      );
     }
     return payload;
   };
@@ -242,8 +256,6 @@ describe("ToolJet: GitSync API Validation", () => {
     cy.apiDeleteAllApps();
   });
 
-  // Setup — shared workspace + git config + the precondition feature branch
-  // (real commit, merged to master) that every later block builds on.
   it("should configure GitSync via external API and validate negative cases", () => {
     const testId = Date.now();
     data.workspaceName = `${sanitize(fake.lastName)}${testId}`;
@@ -254,7 +266,7 @@ describe("ToolJet: GitSync API Validation", () => {
       (response) => {
         workspaceId = response.body.organization_id;
         Cypress.env("workspaceId", workspaceId);
-      }
+      },
     );
 
     cy.then(() => {
@@ -271,7 +283,7 @@ describe("ToolJet: GitSync API Validation", () => {
       // EXT-GIT-09: invalid auth token rejected
       configureOrganizationGit(
         gitConfigPayload(workspaceId),
-        invalidAuthHeader
+        invalidAuthHeader,
       ).then((response) => {
         expect(response.status).to.eq(403);
       });
@@ -280,14 +292,10 @@ describe("ToolJet: GitSync API Validation", () => {
       configureOrganizationGit(gitConfigPayload(workspaceId)).then(
         (response) => {
           expect(response.status).to.eq(201);
-        }
+        },
       );
     });
 
-    // Precondition: real feature-branch commit history, merged to master —
-    // required because nothing in the external API alone can produce a
-    // pushable/pullable app for a brand-new app; it has to originate on a
-    // real feature branch, exactly like a real user would in the UI.
     cy.gitSyncCreateBranchViaApi(branchName);
     cy.gitSyncGetBranchId(branchName).then((id) => {
       branchId = id;
@@ -300,17 +308,13 @@ describe("ToolJet: GitSync API Validation", () => {
           versionId = details.versionId;
           homePageId = details.homePageId;
 
-          // Add a real, verifiable component before the initial commit —
-          // block 4 will later drop it on a feature branch, and after the
-          // pull we can directly confirm whether the deletion actually
-          // synced through, instead of only checking an HTTP status.
           addComponent(
             appId,
             versionId,
             branchId,
             homePageId,
             componentId,
-            componentName
+            componentName,
           );
 
           cy.apiEditorPush(
@@ -318,14 +322,14 @@ describe("ToolJet: GitSync API Validation", () => {
             versionId,
             `initial commit ${data.appName}`,
             branchName,
-            data.appName
+            data.appName,
           );
           cy.gitHubWaitForCommitsAhead(branchName, "master");
 
           createOrFindPR(branchName, `PR: ${data.appName}`, "master").then(
             (prNumber) => {
               return mergeIfNotMerged(prNumber);
-            }
+            },
           );
         });
       });
@@ -333,32 +337,25 @@ describe("ToolJet: GitSync API Validation", () => {
   });
 
   it("should pull the app from Git via external API and validate negative cases", () => {
-    // testIsolation clears the tj_auth_token cookie between it() blocks;
-    // cy.gitSyncGetBranchId is a cookie-based command, so re-login first.
     cy.apiLogin("dev@tooljet.io", "password", workspaceId);
 
-    // Confirm we're evaluating this against the org's default branch
-    // (master) explicitly, not relying on an implicit/leftover context.
     cy.gitSyncGetBranchId(Cypress.env("GITSYNC_BRANCH_NAME") || "master").then(
       (id) => {
         expect(id, "default branch id").to.exist;
-      }
+      },
     );
 
-    // Positive case — the app's content was merged to master in block 1's
-    // precondition, but ToolJet's DB never created a master-branch App row
-    // for it (only the feature-branch one exists) — so this is a genuine
-    // first-time pull, creating the master-branch app.
+
     createAppFromGit({
       gitAppName: data.appName,
       gitBranchName: "master",
       organizationId: workspaceId,
     }).then((response) => {
       expect(response.status).to.eq(201);
+    
+      masterAppId = response.body.id;
     });
 
-    // Guard case: pulling the SAME app again now correctly rejects it as a
-    // duplicate, since the call above just created it.
     createAppFromGit({
       gitAppName: data.appName,
       gitBranchName: "master",
@@ -377,7 +374,7 @@ describe("ToolJet: GitSync API Validation", () => {
     createAppFromGit(
       { gitAppName: data.appName, organizationId: workspaceId },
       "?createMode=git",
-      invalidAuthHeader
+      invalidAuthHeader,
     ).then((response) => {
       expect(response.status).to.eq(403);
     });
@@ -394,10 +391,7 @@ describe("ToolJet: GitSync API Validation", () => {
     });
 
     // EXT-GIT-04: push with non-existent appId/versionId.
-    // Known server bug: getAppVersionByIdOrName's fallback lookup throws an
-    // unhandled EntityNotFoundError when neither the name nor id lookup
-    // matches, so this currently returns 500, not 400. Documenting actual
-    // behavior here rather than the intended one.
+
     pushAppVersionToGit(nonExistentId, nonExistentId, {
       commitMessage: "invalid push",
     }).then((response) => {
@@ -416,168 +410,33 @@ describe("ToolJet: GitSync API Validation", () => {
       appId,
       versionId,
       { commitMessage: "invalid auth" },
-      invalidAuthHeader
+      invalidAuthHeader,
     ).then((response) => {
       expect(response.status).to.eq(403);
     });
   });
 
-  it("should pull updated changes into the existing app via external API and validate negative cases", () => {
-    const nonExistentId = "00000000-0000-0000-0000-000000000099";
-    const branchName2 = `feature2${Date.now()}`;
-    let masterBranchId;
-    let branchId2;
-
-    // testIsolation clears the tj_auth_token cookie between it() blocks, and
-    // apiSwitchBranch/renaming rely on cy.getAuthHeaders() reading that
-    // cookie — re-login before using any cookie-based command in this block.
-    cy.apiLogin("dev@tooljet.io", "password", workspaceId);
-
-    // Precondition: cut a FRESH feature branch from current master (which
-    // already has this app's content, pulled in block 2) rather than reusing
-    // block 1's original branch. That original branch's history predates
-    // master having this app at all, so merging further commits from it a
-    // second time produces a real, unresolvable conflict (confirmed via
-    // GitHub's mergeable_state: "dirty") — a brand-new branch cut from
-    // current master has no such divergence.
-    cy.gitSyncCreateBranchViaApi(branchName2);
-    waitForBranchId(branchName2).then((id) => {
-      branchId2 = id;
-      expect(branchId2, "second feature branch id").to.exist;
-
-      waitForAppIdOnBranch(data.appName, branchId2).then(
-        (branchAppId) => {
-          expect(branchAppId, "app resolved on the new branch").to.exist;
-
-          waitForHydratedVersion(branchAppId, branchId2).then(
-            (branchVersionId) => {
-              // Drop the component added in block 1 — a real, directly
-              // verifiable content change. After the pull below, we check
-              // master's app no longer has this component, rather than only
-              // checking the pull call's HTTP status.
-              cy.apiDeleteComponent(
-                branchAppId,
-                branchVersionId,
-                componentId,
-                homePageId
-              );
-
-              cy.apiEditorPush(
-                branchAppId,
-                branchVersionId,
-                `drop component commit ${data.appName}`,
-                branchName2,
-                data.appName
-              );
-              cy.gitHubWaitForCommitsAhead(branchName2, "master");
-
-              createOrFindPR(
-                branchName2,
-                `PR: update ${data.appName}`,
-                "master"
-              ).then((prNumber) => {
-                return mergeIfNotMerged(prNumber);
-              }).then(() => {
-              // GitHub's merge-commit indexing (used by the server's diff
-              // computation on pull) lags slightly behind the merge API
-              // call returning success — give it a moment to settle before
-              // pulling, otherwise the server sees no new commits yet.
-              cy.wait(4000, { log: false });
-              // Switch to master and resolve the app's master-branch version
-              // before pulling.
-              return waitForBranchId(
-                Cypress.env("GITSYNC_BRANCH_NAME") || "master"
-              );
-              }).then((id) => {
-                masterBranchId = id;
-                expect(masterBranchId, "default branch id").to.exist;
-
-                cy.apiSwitchBranch(masterBranchId);
-                waitForAppIdOnBranch(data.appName, masterBranchId).then(
-                  (resolvedAppId) => {
-                    masterAppId = resolvedAppId;
-                    expect(
-                      masterAppId,
-                      "app resolved on master after merge"
-                    ).to.exist;
-
-                    // Positive case — pull the update into the existing app
-                    // on master. Known server bug (confirmed root cause, not
-                    // a timing issue — reproduces identically even with a
-                    // settle wait before the call): AppGitOperationsUtil.
-                    // pullGitAppChanges resolves gitBranchName by looking for
-                    // an AppVersion row with versionType: BRANCH, but an app
-                    // created via createAppFromGit is stamped versionType:
-                    // VERSION, so that lookup finds nothing, gitBranchName
-                    // stays undefined, and the code falls into the legacy
-                    // non-branching pull path, which crashes reading
-                    // resourceJson.app[0] (readAppFromDistributedStructure
-                    // never returns a top-level `app` array) — surfaced here
-                    // as a 400 with "Cannot read properties of undefined
-                    // (reading '0')". Documenting actual behavior rather than
-                    // re-patching server code.
-                    pullAppChangesFromGit(masterAppId).then((response) => {
-                      expect(
-                        response.status,
-                        `pull response body: ${JSON.stringify(response.body)}`
-                      ).to.eq(400);
-                      expect(response.body.message).to.contain(
-                        "Cannot read properties of undefined"
-                      );
-                    });
-
-                    // EXT-GIT: non-existent app
-                    pullAppChangesFromGit(nonExistentId).then((response) => {
-                      expect(response.status).to.eq(400);
-                    });
-
-                    // EXT-GIT: invalid auth token rejected
-                    pullAppChangesFromGit(
-                      masterAppId,
-                      "?createMode=git",
-                      invalidAuthHeader
-                    ).then((response) => {
-                      expect(response.status).to.eq(403);
-                    });
-                  }
-                );
-              });
-            }
-          );
-        }
-      );
-    });
-  });
-
   it("should release/auto-deploy the app via external API and validate negative cases", () => {
     const nonExistentId = "00000000-0000-0000-0000-000000000099";
-    // Release the master-branch version of the app if the prior block
-    // resolved one; falls back to the feature-branch appId otherwise.
+
     const releaseTargetAppId = masterAppId || appId;
 
-    // Positive case — release without an explicit versionId/versionName
-    // resolves the app's LATEST GIT TAG, and a tag is only ever created by
-    // SAVE_APP_VERSION (publishes the draft version + best-effort creates
-    // a git tag). An app pulled in via createAppFromGit has a draft VERSION
-    // row but has never been explicitly saved, so it has no tag yet — save
-    // one first so the release call has something to resolve.
     saveAppVersion(releaseTargetAppId, {}).then((saveResponse) => {
       expect(
         saveResponse.status,
-        `save-version response body: ${JSON.stringify(saveResponse.body)}`
+        `save-version response body: ${JSON.stringify(saveResponse.body)}`,
       ).to.eq(201);
 
       releaseAppFromGit(releaseTargetAppId).then((response) => {
         expect(
           response.status,
-          `release response body: ${JSON.stringify(response.body)} (releaseTargetAppId=${releaseTargetAppId})`
+          `release response body: ${JSON.stringify(response.body)} (releaseTargetAppId=${releaseTargetAppId})`,
         ).to.eq(201);
         expect(response.body, "released app").to.have.property("id");
       });
     });
 
     // EXT-GIT: non-existent app — app lookup fails before any git logic
-    // runs, so this is a 404 (not found), not a 400.
     releaseAppFromGit(nonExistentId).then((response) => {
       expect(response.status).to.eq(404);
     });
@@ -586,7 +445,151 @@ describe("ToolJet: GitSync API Validation", () => {
     releaseAppFromGit(releaseTargetAppId, invalidAuthHeader).then(
       (response) => {
         expect(response.status).to.eq(403);
-      }
+      },
     );
+  });
+
+  it("should pull updated changes into the existing app via external API and validate negative cases", () => {
+    const nonExistentId = "00000000-0000-0000-0000-000000000099";
+    const pullBranchName = `pullbranch${Date.now()}`;
+    const updateBranchName = `pullupdate${Date.now()}`;
+    const pullAppName = `${data.appName}pull`;
+    const pullComponentId = crypto.randomUUID
+      ? crypto.randomUUID()
+      : require("uuid").v4();
+    const pullComponentName = "gitSyncPullTestComponent";
+    let pullBranchId;
+    let pullAppId;
+
+    cy.apiLogin("dev@tooljet.io", "password", workspaceId);
+
+    cy.gitSyncCreateBranchViaApi(pullBranchName);
+    waitForBranchId(pullBranchName).then((id) => {
+      pullBranchId = id;
+      expect(pullBranchId, "pull-test branch id").to.exist;
+
+      cy.apiCreateAppOnBranch(pullAppName, pullBranchId).then((app) => {
+        pullAppId = app.id;
+
+        getVersionAndHomePage(pullAppId, pullBranchId).then((details) => {
+          const pullVersionId = details.versionId;
+          const pullHomePageId = details.homePageId;
+
+          addComponent(
+            pullAppId,
+            pullVersionId,
+            pullBranchId,
+            pullHomePageId,
+            pullComponentId,
+            pullComponentName,
+          );
+
+          cy.apiEditorPush(
+            pullAppId,
+            pullVersionId,
+            `initial commit ${pullAppName}`,
+            pullBranchName,
+            pullAppName,
+          );
+          cy.gitHubWaitForCommitsAhead(pullBranchName, "master");
+
+          createBranchFromSource(updateBranchName, pullBranchId);
+          waitForBranchId(updateBranchName).then((updateBranchId) => {
+            expect(updateBranchId, "update branch id").to.exist;
+
+            waitForAppIdOnBranch(pullAppName, updateBranchId).then(
+              (updateAppId) => {
+                expect(updateAppId, "app resolved on update branch").to.exist;
+
+                waitForHydratedVersion(updateAppId, updateBranchId).then(
+                  (updateVersionId) => {
+                    cy.apiDeleteComponent(
+                      updateAppId,
+                      updateVersionId,
+                      pullComponentId,
+                      pullHomePageId,
+                    );
+
+                    cy.apiEditorPush(
+                      updateAppId,
+                      updateVersionId,
+                      `drop component commit ${pullAppName}`,
+                      updateBranchName,
+                      pullAppName,
+                    );
+                    cy.gitHubWaitForCommitsAhead(
+                      updateBranchName,
+                      pullBranchName,
+                    );
+
+                    createOrFindPR(
+                      updateBranchName,
+                      `PR: update ${pullAppName}`,
+                      pullBranchName,
+                    )
+                      .then((prNumber) => {
+                        return mergeIfNotMerged(prNumber);
+                      })
+                      .then(() => {
+                        cy.wait(4000, { log: false });
+
+                        // EXT-GIT: non-existent app
+                        pullAppChangesFromGit(nonExistentId).then(
+                          (response) => {
+                            expect(response.status).to.eq(400);
+                          },
+                        );
+
+                        // EXT-GIT: invalid auth token rejected
+                        pullAppChangesFromGit(
+                          pullAppId,
+                          "?createMode=git",
+                          invalidAuthHeader,
+                        ).then((response) => {
+                          expect(response.status).to.eq(403);
+                        });
+
+                        // Positive case — pull the merged update into the
+                        // original branch-created app.
+                        pullAppChangesFromGit(pullAppId).then((response) => {
+                          expect(
+                            response.status,
+                            `pull response body: ${JSON.stringify(response.body)}`,
+                          ).to.eq(200);
+
+                          cy.getAuthHeaders().then((headers) => {
+                            cy.request({
+                              method: "GET",
+                              url: `${Cypress.env("server_host")}/api/apps/${pullAppId}`,
+                              headers: {
+                                ...headers,
+                                "x-branch-id": pullBranchId,
+                              },
+                            }).then((appRes) => {
+                              const pages = appRes.body.pages || [];
+                              const stillHasComponent = pages.some(
+                                (page) =>
+                                  page.components &&
+                                  Object.prototype.hasOwnProperty.call(
+                                    page.components,
+                                    pullComponentId,
+                                  ),
+                              );
+                              expect(
+                                stillHasComponent,
+                                "dropped component should no longer exist after pull",
+                              ).to.be.false;
+                            });
+                          });
+                        });
+                      });
+                  },
+                );
+              },
+            );
+          });
+        });
+      });
+    });
   });
 });
