@@ -46,7 +46,7 @@ describe("ToolJet: Users API", () => {
     cy.then(() =>
       workspaceId
         ? cy.apiLogin("dev@tooljet.io", "password", workspaceId)
-        : cy.apiLogin()
+        : cy.apiLogin(),
     );
   });
 
@@ -102,7 +102,7 @@ describe("ToolJet: Users API", () => {
               groups: [{ name: data.groupName }],
             },
           ],
-        })
+        }),
       ).then((response) => {
         expect(response.status).to.eq(201);
       });
@@ -171,7 +171,7 @@ describe("ToolJet: Users API", () => {
               groups: [{ name: data.group2 }],
             },
           ],
-        })
+        }),
       ).then((response) => {
         expect(response.status).to.eq(201);
         const userId = response.body.id;
@@ -186,13 +186,13 @@ describe("ToolJet: Users API", () => {
           expect(groupNames).to.include(data.group2);
 
           const activeWorkspace = body.workspaces.find(
-            (w) => w.id === workspaceId
+            (w) => w.id === workspaceId,
           );
           expect(activeWorkspace.status).to.eq("active");
           expect(activeWorkspace.userPermission.name).to.eq("builder");
 
           const archivedWorkspace = body.workspaces.find(
-            (w) => w.id === workspaceId2
+            (w) => w.id === workspaceId2,
           );
           expect(archivedWorkspace.status).to.eq("archived");
         });
@@ -228,7 +228,7 @@ describe("ToolJet: Users API", () => {
     createUser(userPayload()).then(({ status, body }) => {
       expect(status).to.eq(400);
       expect(body.message).to.include(
-        `User with email ${data.email} already exists`
+        `User with email ${data.email} already exists`,
       );
     });
   });
@@ -240,9 +240,9 @@ describe("ToolJet: Users API", () => {
         expect(body.message).to.be.an("array").and.not.be.empty;
         const joinedMessage = body.message.join(" ").toLowerCase();
         expect(joinedMessage).to.include(
-          "status must be one of the following values: active, archived"
+          "status must be one of the following values: active, archived",
         );
-      }
+      },
     );
   });
 
@@ -298,9 +298,9 @@ describe("ToolJet: Users API", () => {
       ({ status, body }) => {
         expect(status).to.eq(422);
         expect(body.message).to.include(
-          'invalid input syntax for type uuid: "invalid12345"'
+          'invalid input syntax for type uuid: "invalid12345"',
         );
-      }
+      },
     );
   });
 

@@ -40,7 +40,7 @@ describe("ToolJet: User Role API", () => {
     cy.then(() =>
       workspaceId
         ? cy.apiLogin("dev@tooljet.io", "password", workspaceId)
-        : cy.apiLogin()
+        : cy.apiLogin(),
     );
   });
 
@@ -73,7 +73,7 @@ describe("ToolJet: User Role API", () => {
       updateUserRole(workspaceId, { newRole: "builder", userId }).then(
         ({ status }) => {
           expect(status).to.eq(200);
-        }
+        },
       );
 
       getUser(userId).then(({ status, body }) => {
@@ -91,7 +91,7 @@ describe("ToolJet: User Role API", () => {
       updateUserRole(workspaceId, { newRole: "end-user", userId }).then(
         ({ status }) => {
           expect(status).to.eq(200);
-        }
+        },
       );
 
       getUser(userId).then(({ status, body }) => {
@@ -116,7 +116,7 @@ describe("ToolJet: User Role API", () => {
         ({ status, body }) => {
           expect(status).to.eq(400);
           expect(body.message.title).to.include("Can not change user role");
-        }
+        },
       );
     });
   });
@@ -129,7 +129,7 @@ describe("ToolJet: User Role API", () => {
       }).then(({ status, body }) => {
         expect(status).to.eq(422);
         expect(body.message).to.include(
-          `invalid input syntax for type uuid: "${workspaceId}invalid"`
+          `invalid input syntax for type uuid: "${workspaceId}invalid"`,
         );
       });
     });

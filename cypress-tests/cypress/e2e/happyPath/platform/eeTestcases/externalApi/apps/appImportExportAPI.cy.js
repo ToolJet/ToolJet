@@ -46,7 +46,7 @@ describe("ToolJet: Apps Import Export API", () => {
     cy.then(() =>
       workspaceId
         ? cy.apiLogin("dev@tooljet.io", "password", workspaceId)
-        : cy.apiLogin()
+        : cy.apiLogin(),
     );
 
     cy.fixture(fixtureFiles.unnamedApp).then((fixture) => {
@@ -82,7 +82,7 @@ describe("ToolJet: Apps Import Export API", () => {
     importApp(workspaceId, namedApp).then((response) => {
       expect(response.status).to.eq(201);
       expect(response.body.message).to.include(
-        "App imported successfully into workspace"
+        "App imported successfully into workspace",
       );
     });
 
@@ -102,7 +102,7 @@ describe("ToolJet: Apps Import Export API", () => {
     importApp(workspaceId, namedApp).then((response) => {
       expect(response.status).to.eq(400);
       expect(response.body.message).to.include(
-        "This app name is already taken."
+        "This app name is already taken.",
       );
     });
   });
@@ -111,7 +111,7 @@ describe("ToolJet: Apps Import Export API", () => {
     importApp(workspaceId, {}).then(({ status, body }) => {
       expect(status).to.eq(400);
       expect(body.message.join(" ")).to.include(
-        "tooljet_version must be a string"
+        "tooljet_version must be a string",
       );
     });
   });
@@ -136,12 +136,12 @@ describe("ToolJet: Apps Import Export API", () => {
     importAndGetAppId(threeVersionsApp).then((appId) => {
       exportApp(workspaceId, appId).then((response) => {
         expect(response.status).to.eq(201);
-        expect(response.body.app, "app array in response").to.be.an("array")
-          .and.not.be.empty;
+        expect(response.body.app, "app array in response").to.be.an("array").and
+          .not.be.empty;
         const appVersions = response.body.app[0].definition.appV2.appVersions;
         expect(
           appVersions.length,
-          "should export only the latest version"
+          "should export only the latest version",
         ).to.eq(1);
         // expect(appVersions[0].name, "latest version should be v3").to.eq("v3");
       });
@@ -155,7 +155,7 @@ describe("ToolJet: Apps Import Export API", () => {
         const appVersions = response.body.app[0].definition.appV2.appVersions;
         expect(appVersions.length, "should export only v2").to.eq(1);
         expect(appVersions[0].name, "exported version should be v2").to.eq(
-          "v2"
+          "v2",
         );
       });
     });
@@ -166,8 +166,7 @@ describe("ToolJet: Apps Import Export API", () => {
       exportApp(workspaceId, appId, "?exportAllVersions=true").then(
         (response) => {
           expect(response.status).to.eq(201);
-          const appVersions =
-            response.body.app[0].definition.appV2.appVersions;
+          const appVersions = response.body.app[0].definition.appV2.appVersions;
           expect(appVersions.length, "should export all 3 versions").to.eq(3);
           const versionNames = appVersions.map((version) => version.name);
           expect(versionNames, "should contain v1, v2, v3").to.have.members([
@@ -175,7 +174,7 @@ describe("ToolJet: Apps Import Export API", () => {
             "v2",
             "v3",
           ]);
-        }
+        },
       );
     });
   });
@@ -186,7 +185,7 @@ describe("ToolJet: Apps Import Export API", () => {
         expect(response.status).to.eq(201);
         expect(
           response.body,
-          "should not include tooljet_database"
+          "should not include tooljet_database",
         ).not.to.have.property("tooljet_database");
       });
     });
@@ -198,7 +197,7 @@ describe("ToolJet: Apps Import Export API", () => {
         expect(response.status).to.eq(201);
         expect(
           response.body,
-          "should include tooljet_database"
+          "should include tooljet_database",
         ).to.have.property("tooljet_database");
       });
     });

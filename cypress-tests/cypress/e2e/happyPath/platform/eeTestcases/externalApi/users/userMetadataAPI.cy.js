@@ -32,7 +32,7 @@ describe("ToolJet: User Metadata API", () => {
     cy.then(() =>
       workspaceId
         ? cy.apiLogin("dev@tooljet.io", "password", workspaceId)
-        : cy.apiLogin()
+        : cy.apiLogin(),
     );
     cy.then(() => {
       if (!workspaceId) return;
@@ -85,15 +85,15 @@ describe("ToolJet: User Metadata API", () => {
         expect(status).to.eq(200);
         expect(body.id).to.eq(userId);
         expect(body.userDetails).to.deep.include.members(
-          metadataPayload.userDetails
+          metadataPayload.userDetails,
         );
-      }
+      },
     );
 
     getUserMetadata(workspaceId, userId).then(({ status, body }) => {
       expect(status).to.eq(200);
       expect(body.userDetails).to.deep.include.members(
-        metadataPayload.userDetails
+        metadataPayload.userDetails,
       );
     });
   });
@@ -108,7 +108,7 @@ describe("ToolJet: User Metadata API", () => {
       ({ status, body }) => {
         expect(status).to.eq(404);
         expect(body.message).to.include("Workspace not found");
-      }
+      },
     );
   });
 
@@ -122,7 +122,7 @@ describe("ToolJet: User Metadata API", () => {
       ({ status, body }) => {
         expect(status).to.eq(404);
         expect(body.message).to.include("User not found");
-      }
+      },
     );
   });
 
@@ -130,14 +130,14 @@ describe("ToolJet: User Metadata API", () => {
     getUserMetadata(workspaceId, userId, invalidAuthHeader).then(
       ({ status }) => {
         expect(status).to.eq(403);
-      }
+      },
     );
 
     updateUserMetadata(
       workspaceId,
       userId,
       metadataPayload,
-      invalidAuthHeader
+      invalidAuthHeader,
     ).then(({ status }) => {
       expect(status).to.eq(403);
     });

@@ -43,7 +43,7 @@ describe("ToolJet: Workspaces & Relations API", () => {
     cy.then(() =>
       workspaceId
         ? cy.apiLogin("dev@tooljet.io", "password", workspaceId)
-        : cy.apiLogin()
+        : cy.apiLogin(),
     );
   });
 
@@ -142,7 +142,7 @@ describe("ToolJet: Workspaces & Relations API", () => {
         expect(workspaceIds).to.include(workspaceId);
         expect(
           workspaceIds,
-          "user removed from the omitted workspace"
+          "user removed from the omitted workspace",
         ).to.not.include(workspaceId2);
       });
     });
@@ -210,7 +210,7 @@ describe("ToolJet: Workspaces & Relations API", () => {
       replaceUserWorkspace(userId, workspaceId, { status: "archived" }).then(
         ({ status }) => {
           expect(status).to.eq(200);
-        }
+        },
       );
 
       getUser(userId).then(({ body }) => {
@@ -221,7 +221,7 @@ describe("ToolJet: Workspaces & Relations API", () => {
       replaceUserWorkspace(userId, workspaceId, { status: "active" }).then(
         ({ status }) => {
           expect(status).to.eq(200);
-        }
+        },
       );
 
       getUser(userId).then(({ body }) => {
@@ -256,7 +256,7 @@ describe("ToolJet: Workspaces & Relations API", () => {
         replaceUserWorkspace(userId, workspaceId, { groups: [] }).then(
           ({ status }) => {
             expect(status).to.eq(200);
-          }
+          },
         );
 
         getUser(userId).then(({ body }) => {
@@ -299,7 +299,7 @@ describe("ToolJet: Workspaces & Relations API", () => {
           expect(workspace.status).to.eq("active");
           const groupNames = body.userGroups.map((g) => g.name);
           expect(groupNames, "groups unchanged after empty body").to.include(
-            data.group1
+            data.group1,
           );
         });
       });

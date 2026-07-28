@@ -43,7 +43,7 @@ describe("ToolJet: Modules API", () => {
     cy.then(() =>
       workspaceId
         ? cy.apiLogin("dev@tooljet.io", "password", workspaceId)
-        : cy.apiLogin()
+        : cy.apiLogin(),
     );
     return cy.fixture(fixtureFile).then((fixture) => {
       requestData = fixture;
