@@ -1,4 +1,5 @@
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 
@@ -26,5 +27,14 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
       },
     });
     return orgGit;
+  }
+
+  async findDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | undefined> {
+    const repo = manager ? manager.getRepository(WorkspaceBranch) : this.dataSource.getRepository(WorkspaceBranch);
+    const defaultBranch = await repo.findOne({
+      where: { organizationId, isDefault: true },
+      select: ['id'],
+    });
+    return defaultBranch?.id;
   }
 }

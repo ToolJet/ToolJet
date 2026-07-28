@@ -90,6 +90,7 @@ export class GitSyncModule extends SubModule {
         WorkspaceGitSyncAdapter,
         OrganizationGitSyncRepository,
         SourceControlProviderService,
+        GitMirrorWarmerService,
       ],
     });
   }
