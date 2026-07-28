@@ -17,9 +17,11 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { VersionRepository } from '@modules/versions/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { WorkspaceBanListRepository } from '@modules/organizations/repositories/workspace-ban-list.repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppsRepository } from '@modules/apps/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { OrganizationUsersModule } from '@modules/organization-users/module';
 
 export class ExternalApiModule extends SubModule {
@@ -36,6 +38,7 @@ export class ExternalApiModule extends SubModule {
       ExternalApisGroupsController,
       ExternalApisModulesController,
       ExternalApisTjdbController,
+      ExternalApisBanController,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
       'service',
@@ -44,6 +47,7 @@ export class ExternalApiModule extends SubModule {
       'controllers/groups.controller',
       'controllers/modules.controller',
       'controllers/tooljet-db.controller',
+      'controllers/ban.controller',
     ]);
 
     return this.cacheModule(cacheKey, {
@@ -72,7 +76,9 @@ export class ExternalApiModule extends SubModule {
         GroupPermissionsRepository,
         VersionRepository,
         OrganizationRepository,
+        WorkspaceBanListRepository,
         UserRepository,
+        UserBanListRepository,
         UserPersonalAccessTokenRepository,
         UserRepository,
         AppsRepository,
@@ -84,6 +90,7 @@ export class ExternalApiModule extends SubModule {
             ExternalApisGroupsController,
             ExternalApisModulesController,
             ExternalApisTjdbController,
+            ExternalApisBanController,
           ]
         : [],
       exports: [ExternalApiUtilService],

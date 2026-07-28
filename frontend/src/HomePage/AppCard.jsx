@@ -469,6 +469,28 @@ export default function AppCard({
                   </ToolTip>
                 </div>
               )}
+              {!canUpdate && canView && appType === 'module' && (
+                <div>
+                  <ToolTip message="Open in app builder">
+                    <Link
+                      to={getPrivateRoute('editor', {
+                        slug: isValidSlug(app.slug) ? app.slug : app.id,
+                      })}
+                      reloadDocument
+                    >
+                      <button
+                        type="button"
+                        className="tj-primary-btn tj-text-xsm edit-button"
+                        style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+                        data-cy="view-button"
+                      >
+                        <SolidIcon name="eye" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                        &nbsp;{t('globals.view', 'View')}
+                      </button>
+                    </Link>
+                  </ToolTip>
+                </div>
+              )}
               {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
               {!isStub && appType !== 'module' && LaunchButton}
             </div>

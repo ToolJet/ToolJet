@@ -22,9 +22,15 @@ export const appVersionService = {
   createDraftVersion,
 };
 
-function getAll(appId) {
+// `parentAppId`, threaded through getAll/getModuleVersionData below, lets the backend
+// grant view access to a module when the requester has no direct module permission but
+// is embedding it in an app they can edit (see FeatureAbilityFactory.defineAbilityFor).
+function getAll(appId, parentAppId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions`), requestOptions).then(handleResponse);
+  const parentAppParam = parentAppId ? `?parentAppId=${encodeURIComponent(parentAppId)}` : '';
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions${parentAppParam}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getOne(appId, versionId) {
@@ -49,13 +55,16 @@ function getAppVersionData(appId, versionId, mode) {
   ).then(handleResponse);
 }
 
-function getModuleVersionData(coRelationId, moduleReferenceId, mode) {
+function getModuleVersionData(coRelationId, moduleReferenceId, mode, parentAppId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
   // server resolver returns the latest non-stub on the consumer's branch.
   const refParam = moduleReferenceId ? `&ref=${encodeURIComponent(moduleReferenceId)}` : '';
+  const parentAppParam = parentAppId ? `&parentAppId=${encodeURIComponent(parentAppId)}` : '';
   return fetch(
-    appendBranchParam(`${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}`),
+    appendBranchParam(
+      `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}${parentAppParam}`
+    ),
     requestOptions
   ).then(handleResponse);
 }

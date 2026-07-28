@@ -29,6 +29,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
     orgGit,
     developmentVersions,
     isGitSyncLicenseLocked,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
@@ -42,6 +43,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
       orgGit: state.orgGit,
       developmentVersions: state.developmentVersions,
       isGitSyncLicenseLocked: state.isGitSyncLicenseLocked,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
@@ -95,18 +97,20 @@ export const EditorHeader = ({ darkMode, appType }) => {
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
-                    <div>
-                      <span
-                        className={cx('autosave-indicator tj-text-xsm', {
-                          'autosave-indicator-saving': isSaving,
-                          'text-danger': saveError,
-                          'd-none': isVersionReleased,
-                        })}
-                        data-cy="autosave-indicator"
-                      >
-                        <SaveIndicator isSaving={isSaving} saveError={saveError} />
-                      </span>
-                    </div>
+                    {!isEditorReadOnly && (
+                      <div>
+                        <span
+                          className={cx('autosave-indicator tj-text-xsm', {
+                            'autosave-indicator-saving': isSaving,
+                            'text-danger': saveError,
+                            'd-none': isVersionReleased,
+                          })}
+                          data-cy="autosave-indicator"
+                        >
+                          <SaveIndicator isSaving={isSaving} saveError={saveError} />
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

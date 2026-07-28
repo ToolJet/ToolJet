@@ -131,6 +131,7 @@ export class AppsController implements IAppsController {
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
       branchId: query.branch_id,
+      context: query.context,
     };
     return this.appsService.getAllApps(user, AppListDto, query.all === 'true');
   }

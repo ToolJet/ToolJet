@@ -234,7 +234,9 @@ export async function rollbackSuiteTransaction() {
     try {
       await _suiteQR_tj.rollbackTransaction();
       await _suiteQR_tj.release();
-    } catch { /* best effort */ }
+    } catch {
+      /* best effort */
+    }
     _suiteQR_tj = undefined;
   }
   const tjDs = getTooljetDbDataSource();
@@ -303,11 +305,25 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   database: { table: 'UNLIMITED' },
   type: LICENSE_TYPE.ENTERPRISE,
   features: {
-    auditLogs: true, oidc: true, ldap: true, saml: true,
-    customStyling: true, whiteLabelling: true, appWhiteLabelling: true, customThemes: true,
-    serverSideGlobalResolve: true, multiEnvironment: true, multiPlayerEdit: true,
-    comments: true, gitSync: true, ai: true, externalApi: true, scim: true,
-    customDomains: true, google: true, github: true,
+    auditLogs: true,
+    oidc: true,
+    ldap: true,
+    saml: true,
+    customStyling: true,
+    whiteLabelling: true,
+    appWhiteLabelling: true,
+    customThemes: true,
+    serverSideGlobalResolve: true,
+    multiEnvironment: true,
+    multiPlayerEdit: true,
+    comments: true,
+    gitSync: true,
+    ai: true,
+    externalApi: true,
+    scim: true,
+    customDomains: true,
+    google: true,
+    github: true,
   },
   auditLogs: { maximumDays: 365 },
   app: {
@@ -319,9 +335,10 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   permissions: { customGroups: true },
   observability: { enabled: true },
   workflows: {
-    // execution_timeout is consumed as a literal timeout ceiling (workflow-executions.service.ts:732),
-    // not a sentinel like the 'UNLIMITED' fields above -- 0 means "time out immediately", not "no limit".
-    enabled: true, execution_timeout: 3600,
+    // workflowExecutionTimeout is a literal timeout ceiling, not a sentinel like the
+    // 'UNLIMITED' fields above -- 0 means "time out immediately", not "no limit".
+    enabled: true,
+    execution_timeout: 3600,
     workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
     instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
   },
@@ -400,7 +417,14 @@ function buildTestLicenseInstance(terms: Partial<Terms>, expired = false): Licen
   const expiry = new Date();
   if (expired) expiry.setDate(expiry.getDate() - 1);
   else expiry.setMinutes(expiry.getMinutes() + 30);
-  return new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, terms, new Date(), new Date(), expiry, (terms as any).type ?? 'enterprise');
+  return new (LicenseBase as any)(
+    CE_BASIC_PLAN_TERMS,
+    terms,
+    new Date(),
+    new Date(),
+    expiry,
+    (terms as any).type ?? 'enterprise'
+  );
 }
 
 /**
@@ -465,11 +489,7 @@ export interface InitTestAppResult {
 
 /** Creates or reuses a cached NestJS test app for the given edition, configured with the specified license plan. */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
-  const {
-    edition = 'ee',
-    plan = 'enterprise',
-    freshApp = false,
-  } = options ?? {};
+  const { edition = 'ee', plan = 'enterprise', freshApp = false } = options ?? {};
 
   // Cache key: only edition matters. Plan reconfigures the mock, not the app.
   const isCacheable = !freshApp;
@@ -601,6 +621,4 @@ export async function resetDB() {
 
   if (existingSet.has('instance_settings'))
     await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
-
 }
-

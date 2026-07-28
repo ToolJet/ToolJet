@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button } from '@/components/ui/Rocket';
 import { FieldRow, OptionCombobox } from './shared';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 
 export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, component }) {
+  const { moduleId } = useModuleContext();
+  const upsertLinkedApp = useStore((state) => state.upsertLinkedApp);
+  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
   const [isLoading, setIsLoading] = useState(true);
   const [appOptions, setAppOptions] = useState([]);
   const queryParams = event.queryParams ?? [];
+
+  const { isValid: isLinkValid, errorMessage: linkedAppErrorMessage } = isLinkedAppValid(
+    event.correlationId,
+    linkedAppsMap
+  );
 
   useEffect(() => {
     getAllApps()
@@ -31,12 +42,37 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
   return (
     <div className="tw-flex tw-flex-col tw-gap-3" data-cy="go-to-app-panel">
       <FieldRow label="App" dataCy="go-to-app-label">
-        <OptionCombobox
-          options={appOptions}
-          value={event.slug}
-          onChange={(value) => handlerChanged(eventIndex, 'slug', value)}
-          placeholder={isLoading ? 'Loading…' : undefined}
-        />
+        <div className="tw-flex tw-flex-col tw-gap-1 tw-min-w-0 tw-flex-1">
+          <OptionCombobox
+            options={appOptions}
+            value={event.correlationId}
+            onChange={(value) => {
+              const selected = appOptions.find((opt) => opt.value === value);
+
+              // Persist only the stable id; drop the legacy `slug` key.
+              handlerChanged(eventIndex, { correlationId: value, slug: undefined });
+
+              // Mirror both `slug` and `currentVersionId` into the store so click-time URL
+              // building works without a reload AND the validator can distinguish "missing target" from "no released version".
+              upsertLinkedApp(
+                value,
+                { slug: selected?.slug ?? null, currentVersionId: selected?.currentVersionId ?? null },
+                moduleId
+              );
+            }}
+            placeholder={isLoading ? 'Loading…' : undefined}
+            invalid={!isLinkValid}
+            errLabel="Undefined app"
+          />
+          {!isLinkValid && (
+            <div className="tw-flex tw-items-center tw-gap-1">
+              <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
+              <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
+                {linkedAppErrorMessage}
+              </span>
+            </div>
+          )}
+        </div>
       </FieldRow>
 
       <div className="tw-flex tw-flex-col tw-gap-2">

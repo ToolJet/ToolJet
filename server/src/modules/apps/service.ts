@@ -67,6 +67,8 @@ import {
   assertGitSyncEditAllowedForOrg,
 } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { Component } from '@entities/component.entity';
+import { Page } from '@entities/page.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -181,12 +183,21 @@ export class AppsService implements IAppsService {
 
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
-      // Viewer role: require access_type=view explicitly; reject edit or missing
-      if (accessType?.toLowerCase() !== 'view') {
-        throw new ForbiddenException({
-          organizationId: app.organizationId,
-          type: 'restricted-preview',
-        });
+      if (app.type === APP_TYPES.MODULE && hasViewPermission) {
+        // Build-with: user can open the module builder read-only.
+        // If preview params are present we need version resolution — fall through.
+        // Only short-circuit when there is nothing to resolve.
+        if (!versionName && !environmentName && !versionId && !envId) {
+          return plainToClass(ValidateAppAccessResponseDto, { ...response, canEdit: false });
+        }
+      } else {
+        // Viewer role: require access_type=view explicitly; reject edit or missing
+        if (accessType?.toLowerCase() !== 'view') {
+          throw new ForbiddenException({
+            organizationId: app.organizationId,
+            type: 'restricted-preview',
+          });
+        }
       }
     }
     /* If the request comes from preview which needs version id */
@@ -276,6 +287,9 @@ export class AppsService implements IAppsService {
       if (envId) response['environmentName'] = environment.name;
       response['versionId'] = version.id;
       response['environmentId'] = environment.id;
+    }
+    if (!hasEditPermission && app.type === APP_TYPES.MODULE && hasViewPermission) {
+      response['canEdit'] = false;
     }
     return plainToClass(ValidateAppAccessResponseDto, response);
   }
@@ -383,10 +397,10 @@ export class AppsService implements IAppsService {
           });
       if (versionForRename?.isSynced !== false) {
         const draftVersion = await this.versionRepository.findOne({
-          where: { 
+          where: {
             appId: app.id,
-             status: AppVersionStatus.DRAFT,
-             },
+            status: AppVersionStatus.DRAFT,
+          },
         });
         if (!draftVersion) {
           throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
@@ -447,6 +461,23 @@ export class AppsService implements IAppsService {
         app.type === APP_TYPES.MODULE ? 'module' : 'app'
       );
     }
+    if (app.type === APP_TYPES.MODULE) {
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        const refCount = await manager
+          .createQueryBuilder(Component, 'component')
+          .innerJoin(Page, 'page', 'page.id = component.page_id')
+          .innerJoin(AppVersion, 'appVersion', 'appVersion.id = page.app_version_id')
+          .where("component.type = 'ModuleViewer'")
+          .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleId", { moduleId: app.id })
+          .andWhere('appVersion.app_id != :appId', { appId: app.id })
+          .getCount();
+        if (refCount > 0) {
+          throw new BadRequestException(
+            'This module is currently used in one or more apps. Remove its dependencies before deleting it.'
+          );
+        }
+      });
+    }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const schedules = await manager
@@ -499,7 +530,7 @@ export class AppsService implements IAppsService {
   }
 
   async getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any> {
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, context } = appListDto;
     // When no branchId is provided (e.g. end users) and the workspace has git-sync
     // configured, fall back to the default branch so only default-branch apps surface.
     // Non-git-sync workspaces have no orgGit; branchId stays undefined and the no-branch
@@ -529,7 +560,8 @@ export class AppsService implements IAppsService {
         isGetAll,
         branchId,
         folderId,
-        manager
+        manager,
+        context
       );
 
       // When a branch is in scope, the loaded `appVersions[0]` is the branch-specific
@@ -638,7 +670,8 @@ export class AppsService implements IAppsService {
     isGetAll: boolean,
     branchId: string | undefined,
     folderId: string | undefined,
-    manager: EntityManager
+    manager: EntityManager,
+    context?: string
   ): Promise<{ apps: AppListItem[]; totalCount: number; folderCount: number }> {
     if (folderId) {
       const folder = await this.foldersUtilService.findOne(folderId, manager);
@@ -651,10 +684,17 @@ export class AppsService implements IAppsService {
       return { apps: viewableApps, totalCount, folderCount };
     }
     if (isGetAll) {
-      const apps = await this.appsUtilService.all(user, page, searchKey, type, true, branchId);
+      const apps = await this.appsUtilService.all(user, page, searchKey, type, true, branchId, context);
       return { apps, totalCount: 0, folderCount: 0 };
     }
-    const { apps, totalCount } = await this.appsUtilService.allWithCount(user, page, searchKey, type, branchId);
+    const { apps, totalCount } = await this.appsUtilService.allWithCount(
+      user,
+      page,
+      searchKey,
+      type,
+      branchId,
+      context
+    );
     return { apps, totalCount, folderCount: 0 };
   }
 
@@ -809,6 +849,12 @@ export class AppsService implements IAppsService {
     response['definition'] = app.editingVersion?.definition;
     response['pages'] = this.appsUtilService.mergeDefaultComponentData(pagesForVersion);
     response['events'] = eventsForVersion;
+    response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
+      pagesForVersion,
+      eventsForVersion,
+      app.organizationId,
+      branchId
+    );
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion) {
@@ -974,6 +1020,16 @@ export class AppsService implements IAppsService {
     const modules = await this.appsUtilService.fetchModules(app, false, undefined);
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module)));
+
+    // Top-level linkedApps map: covers main app + every module
+    // Helps frontend to resolve go-to-app link for any correlationId referenced
+    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
+    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
+    response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
+      allPages,
+      allEvents,
+      app.organizationId
+    );
 
     return response;
   }

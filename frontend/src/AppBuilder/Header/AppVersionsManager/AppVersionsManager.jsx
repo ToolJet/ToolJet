@@ -49,6 +49,7 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
     isViewer,
     currentMode,
     allBranches,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
@@ -71,12 +72,13 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
       isViewer: state.appStore.modules[moduleId].isViewer,
       currentMode: state.modeStore.modules[moduleId].currentMode,
       allBranches: state.allBranches,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
 
   const appCreationMode = creationMode;
-  const isEditable = currentMode === 'edit';
+  const isEditable = currentMode === 'edit' && !isEditorReadOnly;
 
   // useEffect(() => {
   //   setEnvironmentAndVersionsInitStatus(true);

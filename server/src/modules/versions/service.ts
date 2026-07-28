@@ -33,6 +33,7 @@ import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -137,6 +138,21 @@ export class VersionService implements IVersionService {
       app.type === APP_TYPES.MODULE
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
+
+    // On non-default branches, only show the branch's own version(s).
+    // Saved versions (VERSION-type) are only relevant on the default branch — but
+    // NOT for modules: listModuleVersions intentionally returns saved versions on
+    // all branches so the ModuleViewer inspector can detect pinned states and avoid
+    // showing "Current branch" when the pin is valid.
+    if (effectiveBranchId && app.type !== APP_TYPES.MODULE) {
+      const branch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+        where: { id: effectiveBranchId },
+        select: ['id', 'isDefault'],
+      });
+      if (branch && !branch.isDefault) {
+        result = result.filter((v) => v.versionType === AppVersionType.BRANCH);
+      }
+    }
 
     // For branch-type versions, the `name` column holds a UUID used as an internal
     // unique key. Replace it with the human-readable branch name from WorkspaceBranch
@@ -301,10 +317,21 @@ export class VersionService implements IVersionService {
     };
 
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
-    const modules = await this.appUtilService.fetchModules(app, false, undefined);
+    const modules = await this.appUtilService.fetchModules(app, false, app.appVersions?.[0]?.id);
 
     response['modules'] = await Promise.all(
       modules.map((module) => prepareResponse(module, module.editingVersion?.id))
+    );
+
+    // Top-level linkedApps map: covers main app + every module
+    // Helps frontend to resolve go-to-app link for any correlationId referenced
+    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
+    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
+    response['linkedApps'] = await this.appUtilService.collectLinkedAppsForResponse(
+      allPages,
+      allEvents,
+      app.organizationId,
+      app.appVersions?.[0]?.branchId
     );
 
     return response;

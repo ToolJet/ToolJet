@@ -17,6 +17,7 @@ const AppCanvasBanner = ({ appId = '' }) => {
     developmentVersions,
     selectedVersion,
     setGitSyncLicenseLocked,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
@@ -25,6 +26,7 @@ const AppCanvasBanner = ({ appId = '' }) => {
       developmentVersions: state.developmentVersions,
       selectedVersion: state.selectedVersion,
       setGitSyncLicenseLocked: state.setGitSyncLicenseLocked,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
@@ -54,6 +56,14 @@ const AppCanvasBanner = ({ appId = '' }) => {
     if (isModuleEditor) {
       if (isGitSyncEnabled) {
         return <WorkspaceLockedBanner pageContext="modules" />;
+      }
+      if (isEditorReadOnly) {
+        return (
+          <FreezeVersionInfo
+            info="You don't have permission to edit this module. Contact admin to know more."
+            hide={false}
+          />
+        );
       }
       if (isCurrentVersionLocked) {
         return <FreezeVersionInfo info="This version is locked. To make edits, create a draft version." hide={false} />;
