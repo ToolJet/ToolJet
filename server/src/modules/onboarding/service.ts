@@ -369,13 +369,21 @@ export class OnboardingService implements IOnboardingService {
             ? OnboardingStatus.ACCOUNT_CREATED
             : OnboardingStatus.NOT_STARTED;
 
+        const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+        const passwordExpiry =
+          password && isPasswordMandatory(user.source) && !isNaN(rawExpiryDays) && rawExpiryDays > 0
+            ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+            : null;
+
         await this.userRepository.updateOne(
           user.id,
           {
             companyName,
             onboardingStatus,
             invitationToken: null,
+            invitationTokenExpiry: null,
             ...(isPasswordMandatory(user.source) ? { password } : {}),
+            ...(passwordExpiry ? { passwordExpiry } : {}),
             ...lifecycleParams,
             updatedAt: new Date(),
           },
@@ -640,6 +648,7 @@ export class OnboardingService implements IOnboardingService {
         {
           password,
           invitationToken: null,
+          invitationTokenExpiry: null,
           ...(password ? { password } : {}),
           ...lifecycleParams,
           updatedAt: new Date(),
