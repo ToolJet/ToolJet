@@ -314,9 +314,11 @@ export const ModalV2 = function Modal({
         }
         size={size}
         keyboard={true}
-        // Trap focus inside the modal in the released/preview app (WAI-ARIA
-        // dialog). Kept off in the editor so the inspector/canvas stay usable.
-        enforceFocus={mode !== 'edit'}
+        // Keep react-bootstrap's focus trap OFF: it continuously yanks focus back
+        // into the modal, which breaks Radix overlays (PopoverMenu/Select) that
+        // portal outside the modal DOM. A WAI-ARIA focus trap needs a Radix-safe
+        // boundary-Tab approach instead — deferred, tracked in #5307.
+        enforceFocus={false}
         animation={false}
         onShow={() => {
           onShowModal();
@@ -325,7 +327,16 @@ export const ModalV2 = function Modal({
         onHide={() => {
           onHideModal();
         }}
-        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
+        onEscapeKeyDown={(e) => {
+          // If a nested Radix overlay (PopoverMenu / Select) is open, let it
+          // consume this Escape so one keypress closes only the innermost layer.
+          // preventDefault keeps @restart/ui from calling onHide (see #5308).
+          if (document.querySelector('[data-radix-popper-content-wrapper]')) {
+            e.preventDefault();
+            return;
+          }
+          hideOnEsc && onHideModal();
+        }}
         id="modal-container"
         component-id={id}
         backdrop={'static'}
