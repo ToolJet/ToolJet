@@ -81,7 +81,13 @@ export const RadioButton = function RadioButton({
               type="radio"
               value={option.value}
               name={radioGroupName}
-              onChange={() => onSelect(option.value)}
+              onChange={() => {
+                if (disabledState) return;
+                onSelect(option.value);
+              }}
+              // native disabled: removes each option from the tab order + blocks
+              // Space/arrow selection (onChange guard is belt-and-suspenders)
+              disabled={disabledState}
               aria-disabled={disabledState}
               aria-hidden={!visibility}
               aria-labelledby={`${id}-option-${index}-label`}

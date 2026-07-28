@@ -123,11 +123,15 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
           fireEvent('onClick');
         }}
         onMouseOver={() => {
+          if (isDisabled) return;
           fireEvent('onHover');
         }}
         style={{ width: '100%', textDecorationColor: textColor }}
         ref={clickRef}
-        disabled={isDisabled}
+        // `disabled` is invalid on <a> (no-op). Use aria-disabled + tabIndex=-1 to
+        // drop it from the tab order; the onClick guard blocks activation.
+        aria-disabled={isDisabled}
+        tabIndex={isDisabled ? -1 : undefined}
       >
         <span
           className="d-flex"

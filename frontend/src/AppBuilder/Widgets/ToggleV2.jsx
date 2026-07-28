@@ -21,6 +21,7 @@ const Switch = ({
   inputId,
 }) => {
   const handleToggleChange = () => {
+    if (disabledState) return;
     setOn(!on);
     fireEvent('onChange');
     setUserInteracted(true);
@@ -76,6 +77,9 @@ const Switch = ({
             marginLeft: alignment === 'left' && '-2rem',
             border: `1 px solid ${borderColor}`,
           }}
+          // native disabled: removes the (hidden, focusable) input from the tab
+          // order + blocks Space; the wrapper div's onClick is guarded separately
+          disabled={disabledState}
           aria-disabled={disabledState}
           aria-hidden={!visibility}
           aria-required={isMandatory}

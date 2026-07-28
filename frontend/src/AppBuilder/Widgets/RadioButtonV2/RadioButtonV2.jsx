@@ -298,7 +298,10 @@ export const RadioButtonV2 = ({
                       onSelect(option.value);
                       fireEvent('onSelectionChange');
                     }}
-                    disabled={option.isDisabled}
+                    // widget-level Disable/Loading must disable every option, not
+                    // just the per-option flag — native disabled also drops it from
+                    // the tab order + blocks Space/arrow selection
+                    disabled={isDisabled || isLoading || option.isDisabled}
                     id={inputId}
                   />
                   <span

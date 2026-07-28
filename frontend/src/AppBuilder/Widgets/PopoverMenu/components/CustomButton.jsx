@@ -142,13 +142,14 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       style={{
         position: 'relative',
       }}
-      disabled={exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading}
       ref={forwardedRef}
-      {...(trigger === 'hover' && {
-        onMouseOver: () => {
-          updateExposedVariablesState('showPopover', true);
-        },
-      })}
+      {...(trigger === 'hover' &&
+        !exposedVariablesTemporaryState.isDisabled &&
+        !exposedVariablesTemporaryState.isLoading && {
+          onMouseOver: () => {
+            updateExposedVariablesState('showPopover', true);
+          },
+        })}
     >
       <button
         className={cx(
@@ -156,6 +157,9 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
           'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
         )}
         style={computedStyles}
+        // native disabled on the real button — the trigger had no disabled semantics
+        // at all before (removes it from tab order + blocks Enter/Space/click)
+        disabled={exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading}
         {...(trigger === 'click' && {
           onClick: () => {
             const newPopoverState = !exposedVariablesTemporaryState.showPopover;

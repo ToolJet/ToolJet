@@ -368,7 +368,13 @@ export const ButtonGroupV2 = (props) => {
                     fontWeight: computedFontWeight,
                   }}
                   key={index}
-                  disabled={option.isDisabled}
+                  // widget-level Disable/Loading must disable every button, not just
+                  // the per-option flag (native disabled also drops it from tab order)
+                  disabled={
+                    exposedVariablesTemporaryState.isDisabled ||
+                    exposedVariablesTemporaryState.isLoading ||
+                    option.isDisabled
+                  }
                   className={
                     'button-group-button focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
                   }

@@ -16,6 +16,8 @@ class Switch extends React.Component {
           checked={on}
           onChange={onChange}
           onClick={onClick}
+          // native disabled: removes from tab order + blocks Space/click activation
+          disabled={disabledState}
           aria-disabled={disabledState}
           aria-hidden={!visibility}
           aria-labelledby={`${id}-label`}

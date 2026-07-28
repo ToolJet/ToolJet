@@ -208,7 +208,6 @@ export const Button = function Button(props) {
         position: 'relative',
         // height,
       }}
-      disabled={disable || loading}
     >
       <button
         className={cx(
@@ -218,6 +217,9 @@ export const Button = function Button(props) {
         )}
         style={computedStyles}
         onClick={handleClick}
+        // native disabled on the real <button>: removes it from the tab order and
+        // blocks Enter/Space activation (aria-disabled alone does neither)
+        disabled={disable || loading}
         data-cy={`${generateCypressDataCy(dataCy)}-button`}
         type="default"
         onMouseOver={() => {
