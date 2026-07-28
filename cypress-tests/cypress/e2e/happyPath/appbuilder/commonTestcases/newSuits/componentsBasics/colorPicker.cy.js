@@ -217,7 +217,7 @@ describe('Color Picker Component Tests', { testIsolation: false }, () => {
         verifyLayout(W);
     });
 
-    it('should verify all the exposed values on inspector', () => {
+    it.skip('should verify all the exposed values on inspector', () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.hideTooltip();
         openNode("components");

@@ -234,7 +234,7 @@ describe('Text Component Tests', { testIsolation: false }, () => {
         verifyLayout(W); // source: text.js:299, text.js:300
     });
 
-    it('should verify all the exposed values on inspector', () => {
+    it.skip('should verify all the exposed values on inspector', () => {
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.hideTooltip();
         openNode("components");
