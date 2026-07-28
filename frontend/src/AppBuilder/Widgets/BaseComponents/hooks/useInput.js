@@ -58,10 +58,13 @@ export const useInput = ({
   const [disable, setDisable] = useState(disabledState || loadingState);
 
   const numberFormat = properties?.numberFormat;
-
+  // Value handed to validation for the currency input: a canonical numeric STRING (e.g. "1234.56").
   // Validations use format-agnostic numeric value for the currency input.
+  const getCurrencyValidationValue = (val) =>
+    val === undefined || val === null || val === '' ? '' : String(parseValueToNumber(val, numberFormat));
+
   const [validationStatus, setValidationStatus] = useState(() =>
-    validate(inputType === 'currency' ? parseValueToNumber(value, numberFormat) : value)
+    validate(inputType === 'currency' ? getCurrencyValidationValue(value) : value)
   );
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
@@ -146,8 +149,7 @@ export const useInput = ({
       const countryCode = getCountryCallingCodeSafe(country);
       validationStatus = validate(value?.replace(`+${countryCode}`, ''));
     } else if (inputType === 'currency') {
-      // Validations use format-agnostic numeric value for the currency input.
-      validationStatus = validate(parseValueToNumber(value, numberFormat));
+      validationStatus = validate(getCurrencyValidationValue(value));
     } else {
       validationStatus = validate(value);
     }
@@ -285,7 +287,8 @@ export const useInput = ({
         : parseValueToNumber(nextDisplay, numberFormat);
     setValue(nextDisplay);
     setExposedVariable('value', nextNumber);
-    const validationStatus = validateRef.current(nextNumber);
+    // Validate a canonical numeric string; empty stays empty so mandatory catches a cleared field.
+    const validationStatus = validateRef.current(nextDisplay === '' ? '' : String(nextNumber));
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };

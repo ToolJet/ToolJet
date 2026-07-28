@@ -173,7 +173,8 @@ export const CurrencyInput = (props) => {
     // `value` is still in the PREVIOUS format's separators here, so parse it with that format.
     const num = parseValueToNumber(value, previousNumberFormat.current);
     previousNumberFormat.current = numberFormat;
-    if (num !== 0 && Number.isFinite(num)) {
+    // Reformat any non-empty value; guarding on emptiness (not `num !== 0`) so "0"/"0,00" reformat too.
+    if (value !== '' && value !== null && value !== undefined && Number.isFinite(num)) {
       setCurrencyInputValue(String(num), num);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -289,7 +290,7 @@ export const CurrencyInput = (props) => {
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
             value={value}
-            decimalsLimit={Number(decimalPlaces)}
+            decimalsLimit={Number(decimalPlaces) || 0}
             intlConfig={intlConfig}
             groupSeparator={separators.groupSeparator}
             decimalSeparator={separators.decimalSeparator}
