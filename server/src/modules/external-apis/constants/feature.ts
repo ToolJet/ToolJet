@@ -113,5 +113,9 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UNBAN_WORKSPACE]: {
       isPublic: true,
     },
+    [FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
   },
 };

@@ -202,7 +202,14 @@ export const Accordion = ({
               borderRadius={borderRadius}
               headerHeight={headerHeight}
               isExpanded={exposedVariablesTemporaryState.isExpanded}
-              setExpanded={(expand) => updateExposedVariablesState('isExpanded', expand)}
+              setExpanded={(expand) => {
+                // Commit the exposed `isExpanded` to the store SYNCHRONOUSLY.
+                // The dynamic-height reflow is scheduled off the local-state flip but reads `isExpanded` from the store in resolveContainerHeight;
+                // Without this synchronous write the store value lags (it was only synced via a batched effect),
+                // so the reflow reads the stale state and siblings fail to pull up / overlap on the next toggle.
+                setExposedVariable('isExpanded', expand);
+                updateExposedVariablesState('isExpanded', expand);
+              }}
               fireEvent={fireEvent}
               isDisabled={exposedVariablesTemporaryState.isDisabled}
               chevronIconColor={chevronIconColor}
