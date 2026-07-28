@@ -13,7 +13,7 @@ import moment from 'moment-timezone';
 import cx from 'classnames';
 
 import './styles.scss';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const DatePickerV2 = ({
   height,
@@ -167,6 +167,8 @@ export const DatePickerV2 = ({
       isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates, dateFormat })
     );
   }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat]);
+
+  useFormClear(() => setInputValue(null));
 
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',

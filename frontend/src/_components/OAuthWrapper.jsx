@@ -122,6 +122,7 @@ const OAuthWrapper = ({
           client_id={options?.client_id?.value}
           client_secret={options?.client_secret?.value}
           client_auth={options?.client_auth?.value}
+          company_id={options?.company_id?.value}
           scopes={options?.scopes?.value}
           username={options?.username?.value}
           password={options?.password?.value}

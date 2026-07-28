@@ -23,7 +23,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -331,6 +331,8 @@ export const DropdownV2 = ({
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
   }, []);
+
+  useFormClear(() => setInputValue(null));
 
   const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
 
