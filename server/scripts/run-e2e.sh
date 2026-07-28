@@ -213,7 +213,13 @@ fi
 # ---------------------------------------------------------------------------
 if [ "$coverage" = true ]; then
   printf "\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
-  node scripts/merge-coverage.mjs --out coverage-e2e .coverage
+  # CI (--ci) only ever consumes coverage-e2e/coverage-final.json downstream (via
+  # test:cov:merge) — the HTML/lcov/summary here get thrown away with the runner, so
+  # skip rendering them twice. Local standalone runs are the audience that actually
+  # opens this report, so keep the full set there.
+  merge_reporters="json,html,lcovonly,json-summary"
+  [ "$mode" = "ci" ] && merge_reporters="json"
+  node scripts/merge-coverage.mjs --out coverage-e2e --reporters "$merge_reporters" .coverage
   rm -rf .coverage
 
   # --coverage makes jest attach a full coverageMap to every --json shard file too —

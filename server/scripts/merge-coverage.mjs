@@ -17,17 +17,16 @@ import libCoverage from 'istanbul-lib-coverage';
 import libReport from 'istanbul-lib-report';
 import reports from 'istanbul-reports';
 
-const REPORTERS = ['json', 'html', 'lcovonly', 'json-summary'];
-
 function parseArgs(argv) {
-  const args = { out: null, inputs: [] };
+  const args = { out: null, reporters: ['json', 'html', 'lcovonly', 'json-summary'], inputs: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--out') args.out = argv[++i];
+    else if (arg === '--reporters') args.reporters = argv[++i].split(',');
     else args.inputs.push(arg);
   }
   if (!args.out || args.inputs.length === 0) {
-    console.error('Usage: merge-coverage.mjs --out <dir> <input>...');
+    console.error('Usage: merge-coverage.mjs --out <dir> [--reporters json,html,lcovonly,json-summary] <input>...');
     process.exit(1);
   }
   return args;
@@ -48,7 +47,7 @@ function findCoverageFiles(dir) {
   return found;
 }
 
-const { out, inputs } = parseArgs(process.argv.slice(2));
+const { out, reporters, inputs } = parseArgs(process.argv.slice(2));
 
 const files = inputs.flatMap(findCoverageFiles);
 if (files.length === 0) {
@@ -69,7 +68,7 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
 const context = libReport.createContext({ dir: out, coverageMap: map });
-for (const reporter of REPORTERS) {
+for (const reporter of reporters) {
   reports.create(reporter, {}).execute(context);
 }
 

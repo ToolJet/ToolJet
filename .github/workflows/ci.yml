@@ -351,7 +351,6 @@ jobs:
       - name: Fail job if unit or e2e failed
         if: ${{ steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure' }}
         run: exit 1
-          retention-days: 1
 
   # ---------------------------------------------------------------------------
   # 3b. Fast lane (run-ci-changed) — only the jest modules the PR touches.

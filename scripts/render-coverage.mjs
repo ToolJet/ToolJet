@@ -37,7 +37,7 @@ function areaFor(filePath) {
 }
 
 function fmtPct(covered, total) {
-  if (total === 0) return '100%';
+  if (total === 0) return '—';
   return `${((covered / total) * 100).toFixed(1)}%`;
 }
 
