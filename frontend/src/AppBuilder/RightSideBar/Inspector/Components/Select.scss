@@ -1,0 +1,20 @@
+// Option details popover for the Dropdown / Multiselect inspector.
+// Matches Figma "section/dialog" (node 2390-6561): surface background, weak border,
+// 8px radius and the 300-level elevation. Design tokens keep it theme-aware — the
+// popover carries the `.dark-theme` class in dark mode, so these vars resolve per theme.
+.popover.inspector-select-options-popover {
+  background-color: var(--surfaces-surface-01);
+  border: 1px solid var(--border-weak);
+  border-radius: 8px;
+  box-shadow: var(--elevation-300-box-shadow);
+
+  .popover-header {
+    border-bottom: 1px solid var(--border-weak);
+    padding: 8px 16px;
+    background-color: var(--surfaces-surface-01);
+  }
+
+  .popover-arrow {
+    display: none;
+  }
+}

@@ -779,7 +779,7 @@ const DynamicEditorBridge = (props) => {
 
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
-      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
+      <div className={cx('d-flex align-items-center justify-content-between custom-gap-6 code-flex-wrapper')}>
         {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
