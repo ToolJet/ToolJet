@@ -213,7 +213,7 @@ fi
 # ---------------------------------------------------------------------------
 if [ "$coverage" = true ]; then
   printf "\033[1m━━━ Merging coverage ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n\n"
-  node scripts/merge-coverage.mjs --out coverage-e2e --reporters json,html,lcovonly,json-summary .coverage
+  node scripts/merge-coverage.mjs --out coverage-e2e .coverage
   rm -rf .coverage
 
   # --coverage makes jest attach a full coverageMap to every --json shard file too —

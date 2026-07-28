@@ -21,7 +21,7 @@ if [ ! -f coverage-unit/coverage-final.json ] && [ ! -f coverage-e2e/coverage-fi
   exit 1
 fi
 
-node scripts/merge-coverage.mjs --out "$COMBINED_DIR" --reporters json,html,lcovonly,json-summary coverage-unit coverage-e2e
+node scripts/merge-coverage.mjs --out "$COMBINED_DIR" coverage-unit coverage-e2e
 
 printf "\n\033[32mCombined report: %s/index.html\033[0m\n" "$COMBINED_DIR"
 printf "\033[32mlcov:           %s/lcov.info\033[0m\n" "$COMBINED_DIR"

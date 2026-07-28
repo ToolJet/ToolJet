@@ -286,6 +286,7 @@ jobs:
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Unit tests
         id: unit
+        continue-on-error: true
         run: >-
           npm run --prefix server test --
           --coverage --coverageReporters=json
@@ -303,9 +304,9 @@ jobs:
           path: /tmp/tj-unit-results.json
           if-no-files-found: ignore
           retention-days: 1
-      # No `if:` — if the unit step above failed, the job is already failed and this
-      # step (like every other unguarded step below) is skipped automatically. That
-      # skip IS the fail-fast: e2e's ~15-20min never starts on a broken unit suite.
+      # No `if:` — runs unconditionally. unit's continue-on-error keeps the job
+      # from failing on a unit failure alone, so this isn't skipped by it; both
+      # suites always get a full run (see "Fail job if unit or e2e failed" below).
       - name: E2E tests
         id: e2e
         run: >-
@@ -323,7 +324,9 @@ jobs:
         # Informational only — never gates the merge (see ci-gate's "Evaluate results"
         # step). continue-on-error so a merge failure shows a warning triangle here,
         # not a red X on the job that confuses reviewers into thinking the PR is blocked.
-        if: ${{ !cancelled() }}
+        # Runs only if both unit and e2e passed — a coverage report merged from a
+        # failing/incomplete suite would misrepresent actual coverage.
+        if: ${{ !cancelled() && steps.unit.outcome == 'success' && steps.e2e.outcome == 'success' }}
         continue-on-error: true
         run: npm run --prefix server test:cov:merge
       - name: Upload combined coverage report
@@ -342,6 +345,12 @@ jobs:
           name: coverage-summary
           path: server/coverage-combined/coverage-summary.json
           if-no-files-found: ignore
+      # unit's continue-on-error lets e2e run regardless of unit's outcome (see
+      # above) but that also hides a unit failure from the job's own conclusion —
+      # fail here explicitly so needs.test-server.result stays accurate for ci-gate.
+      - name: Fail job if unit or e2e failed
+        if: ${{ steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure' }}
+        run: exit 1
           retention-days: 1
 
   # ---------------------------------------------------------------------------
@@ -690,13 +699,7 @@ jobs:
           else
             export UNIT_STEP_URL=$(job_url "Test Suite · server")
             export E2E_STEP_URL="$UNIT_STEP_URL"
-            artifacts_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" 2>/dev/null || echo '{}')
-            coverage_artifact_id=$(echo "$artifacts_json" | jq -r '.artifacts[]? | select(.name == "coverage-report-html") | .id' | head -1)
-            if [ -n "$coverage_artifact_id" ]; then
-              export COVERAGE_ARTIFACT_URL="${RUN_URL}/artifacts/${coverage_artifact_id}"
-            else
-              export COVERAGE_ARTIFACT_URL="${RUN_URL}#artifacts"
-            fi
+            export COVERAGE_ARTIFACT_URL="${RUN_URL}#artifacts"
           fi
           bash scripts/render-ci-comment.sh "$MODE" > /tmp/ci-comment.md
           cat /tmp/ci-comment.md >> "$GITHUB_STEP_SUMMARY"

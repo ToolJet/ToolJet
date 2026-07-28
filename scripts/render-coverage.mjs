@@ -4,7 +4,7 @@
 // server/node_modules, same constraint as render-failed-tests.mjs.
 //
 // Usage:
-//   node render-coverage.mjs details   → <details> block; empty output if no summary
+//   node render-coverage.mjs   → <details> block; empty output if no summary
 //
 // Env: COVERAGE_SUMMARY (coverage-summary.json path), COVERAGE_ARTIFACT_URL (optional)
 //
@@ -80,24 +80,18 @@ const artifactLink = process.env.COVERAGE_ARTIFACT_URL
   ? ` · [full HTML report ↗](${process.env.COVERAGE_ARTIFACT_URL})`
   : '';
 
-const cmd = process.argv[2];
-if (cmd === 'details') {
-  console.log(
-    [
-      '<details>',
-      `<summary><b>📊 Coverage — ${lines.pct}% lines</b> · unit + e2e merged</summary>`,
-      '',
-      `**${fmtInt(lines.covered)} / ${fmtInt(lines.total)} lines** · ${fmtInt(filesTouched)} / ${fmtInt(fileKeys.length)} files touched${artifactLink}`,
-      '',
-      '| Area | Lines | % |',
-      '|---|---:|---:|',
-      ...rows,
-      '',
-      '<sub>v8 provider — line coverage only; branch/function counts aren\'t meaningful here because untested files contribute one synthetic branch and function each.</sub>',
-      '</details>',
-    ].join('\n')
-  );
-} else {
-  console.error(`unknown command: ${cmd}`);
-  process.exit(1);
-}
+console.log(
+  [
+    '<details>',
+    `<summary><b>📊 Coverage — ${lines.pct}% lines</b> · unit + e2e merged</summary>`,
+    '',
+    `**${fmtInt(lines.covered)} / ${fmtInt(lines.total)} lines** · ${fmtInt(filesTouched)} / ${fmtInt(fileKeys.length)} files touched${artifactLink}`,
+    '',
+    '| Area | Lines | % |',
+    '|---|---:|---:|',
+    ...rows,
+    '',
+    '<sub>v8 provider — line coverage only; branch/function counts aren\'t meaningful here because untested files contribute one synthetic branch and function each.</sub>',
+    '</details>',
+  ].join('\n')
+);

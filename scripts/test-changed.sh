@@ -2,7 +2,10 @@
 # Detects changed server modules and runs their Jest tests (unit + e2e).
 # Usage: scripts/test-changed.sh
 #
-# Fallback: cross-cutting changes (helpers/entities/dto/lib) → run all tests.
+# Fallback: cross-cutting changes (helpers/entities/dto/lib, jest config/setup) → run
+# all tests. Tooling-only changes (scripts, package.json) don't affect test selection
+# and are ignored. Anything else unrecognized under server/ also falls back to all, as
+# a safety net.
 # NODE_ENV=test is set by the npm scripts themselves (server/package.json,
 # run-e2e.sh) — no env needed from the caller.
 
@@ -55,6 +58,17 @@ while IFS= read -r file; do
       echo "Cross-cutting change in: $file"
       RUN_ALL=true
       ;;
+    server/test/jest-*.config.ts|server/test/jest-*setup*.ts)
+      echo "Test infra change in: $file"
+      RUN_ALL=true
+      ;;
+    server/scripts/*|server/package.json|server/package-lock.json)
+      echo "Non-test-selecting change (ignored): $file"
+      ;;
+    *)
+      echo "Unrecognized server change, falling back to all: $file"
+      RUN_ALL=true
+      ;;
   esac
 done <<< "${SERVER_FILES:-}"
 
@@ -65,9 +79,12 @@ if [[ ${#MODULES[@]} -gt 0 ]]; then
   done < <(printf '%s\n' "${MODULES[@]}" | sort -u)
 fi
 
-if [[ "$RUN_ALL" == "true" ]] || [[ ${#UNIQUE_MODULES[@]} -eq 0 ]]; then
+if [[ "$RUN_ALL" == "true" ]]; then
   PATTERN=""
   echo "Running all server tests"
+elif [[ ${#UNIQUE_MODULES[@]} -eq 0 ]]; then
+  echo "No test-affecting server changes — skipping."
+  exit 0
 else
   MODULE_REGEX=$(IFS='|'; echo "${UNIQUE_MODULES[*]}")
   PATTERN="test/modules/(${MODULE_REGEX})/"

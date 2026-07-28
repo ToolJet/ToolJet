@@ -99,7 +99,7 @@ fi
 # Coverage only in full mode — the changed lane runs a filtered test subset against
 # the full collectCoverageFrom denominator, which would report a misleading number.
 if [ "$MODE" = "full" ]; then
-  coverage=$(node "$SCRIPT_DIR/render-coverage.mjs" details || true)
+  coverage=$(node "$SCRIPT_DIR/render-coverage.mjs" || true)
   if [ -n "$coverage" ]; then
     echo "$coverage"
     echo
