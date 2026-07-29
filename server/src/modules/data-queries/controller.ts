@@ -28,6 +28,7 @@ import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
 import { QueryAuthGuard } from './guards/query-auth.guard';
+import { GitSyncQueryEditGuard } from './guards/git-sync-query-edit.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -52,7 +53,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
   )
   @Post('/data-sources/:dataSourceId/versions/:versionId')
   create(
@@ -71,7 +73,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
   )
   @Patch(':id/versions/:versionId')
   async updateDataQuery(
@@ -99,7 +102,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
   )
   @Delete(':id/versions/:versionId')
   async delete(@Param('id') dataQueryId) {

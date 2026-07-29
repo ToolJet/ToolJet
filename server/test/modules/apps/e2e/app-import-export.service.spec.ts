@@ -305,8 +305,11 @@ describe('EE (plan: enterprise)', () => {
       const importedRecord = await findAppWithRelations(newApp.id);
       const importedVersion = importedRecord.appVersions[0];
 
+      // On import the slug is reset to a fresh random-UUID placeholder (isolated from
+      // the source's slug), never the app id.
       expect(importedVersion.slug).not.toBe(originalSlug);
-      expect(importedVersion.slug).toBe(newApp.id);
+      expect(importedVersion.slug).not.toBe(newApp.id);
+      expect(importedVersion.slug).toMatch(UUID_PATTERN);
     });
 
     it('should produce unique slugs when importing the same export twice', async () => {
@@ -328,12 +331,13 @@ describe('EE (plan: enterprise)', () => {
       const firstRecord = await findAppWithRelations(firstImport.id);
       const secondRecord = await findAppWithRelations(secondImport.id);
 
-      expect(firstRecord.appVersions[0].slug).toBe(firstImport.id);
-      expect(secondRecord.appVersions[0].slug).toBe(secondImport.id);
+      // Each import gets its own fresh random-UUID slug placeholder, so the two are distinct.
+      expect(firstRecord.appVersions[0].slug).toMatch(UUID_PATTERN);
+      expect(secondRecord.appVersions[0].slug).toMatch(UUID_PATTERN);
       expect(firstRecord.appVersions[0].slug).not.toBe(secondRecord.appVersions[0].slug);
     });
 
-    it('should assign the same slug (= new app id) to all versions in a multi-version import', async () => {
+    it('should assign the same random-UUID slug to all versions in a multi-version import', async () => {
       const adminUserData = await createUser(nestApp, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -352,8 +356,12 @@ describe('EE (plan: enterprise)', () => {
       const importedRecord = await findAppWithRelations(newApp.id);
       const slugs = importedRecord.appVersions.map((v) => v.slug);
 
-      // All versions share the same slug = new app's id (mirrors fresh-creation invariant)
-      expect(slugs.every((s) => s === newApp.id)).toBe(true);
+      // All versions share ONE slug — a random-UUID placeholder, not the app id — kept
+      // consistent across the app's version rows by the metadata propagation trigger.
+      const [firstSlug] = slugs;
+      expect(firstSlug).toMatch(UUID_PATTERN);
+      expect(firstSlug).not.toBe(newApp.id);
+      expect(slugs.every((s) => s === firstSlug)).toBe(true);
     });
   });
 

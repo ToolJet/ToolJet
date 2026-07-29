@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, IsIn, ValidateNested, IsBoolean } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateBranchDto {
   @IsNotEmpty()
@@ -12,6 +13,14 @@ export class CreateBranchDto {
   @IsOptional()
   @IsString()
   commitSha?: string;
+
+  @IsOptional()
+  @IsUUID()
+  appId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  versionId?: string;
 
   // When the branch name was already found on remote and the user confirmed
   // via the import-confirmation modal, skip the pre-creation existence check.
@@ -51,6 +60,28 @@ export class WorkspacePullDto {
   @IsOptional()
   @IsString()
   sourceBranch?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
+}
+
+export class PullConflictResolutionDto {
+  @IsIn(['app', 'module', 'datasource'])
+  type: 'app' | 'module' | 'datasource';
+
+  @IsUUID()
+  existingCoRelationId: string;
+
+  @IsUUID()
+  incomingCoRelationId: string;
+}
+
+export class ResolveConflictsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PullConflictResolutionDto)
+  resolutions: PullConflictResolutionDto[];
 
   @IsOptional()
   @IsUUID()

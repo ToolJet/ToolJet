@@ -8,6 +8,7 @@ export const workspaceBranchesService = {
   deleteBranch,
   pushWorkspace,
   pullWorkspace,
+  resolveConflicts,
   pullApp,
   pullModule,
   ensureAppDraft,
@@ -24,11 +25,13 @@ function list() {
   );
 }
 
-function create(name, sourceBranchId, commitSha, confirmImport) {
+function create(name, sourceBranchId, commitSha, appId, versionId, confirmImport) {
   const body = {
     name,
     ...(sourceBranchId && { sourceBranchId }),
     ...(commitSha && { commitSha }),
+    ...(appId && { appId }),
+    ...(versionId && { versionId }),
     ...(confirmImport && { confirmImport }),
   };
   const requestOptions = {
@@ -84,6 +87,20 @@ function pullWorkspace(sourceBranch, branchId) {
     ...(Object.keys(body).length > 0 && { body: JSON.stringify(body) }),
   };
   return fetch(`${config.apiUrl}/workspace-branches/pull`, requestOptions).then(handleResponse);
+}
+
+function resolveConflicts(resolutions, branchId) {
+  const body = {
+    resolutions,
+    ...(branchId && { branchId }),
+  };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/workspace-branches/resolve-conflicts`, requestOptions).then(handleResponse);
 }
 
 function pullApp(appId, branchId, tagSha, tagName, tagDescription) {

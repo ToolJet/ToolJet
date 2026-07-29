@@ -11,21 +11,6 @@ export class BaseConfigDTO {
   gitUrl: string;
 }
 
-// GitHub SSH Config
-export class GithubSshConfigDTO extends BaseConfigDTO {
-  @IsString()
-  @IsNotEmpty()
-  branchName: string;
-
-  @IsString()
-  @IsOptional()
-  sshPublicKey?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  sshPrivateKey?: string;
-}
-
 // GitHub HTTPS Config
 export class GithubHttpsConfigDTO extends BaseConfigDTO {
   @IsString()
@@ -70,4 +55,4 @@ export class GitLabConfigDTO extends BaseConfigDTO {
   gitLabEnterpriseUrl?: string;
 }
 
-export type ProviderConfigDTO = GithubSshConfigDTO | GithubHttpsConfigDTO | GitLabConfigDTO;
+export type ProviderConfigDTO = GithubHttpsConfigDTO | GitLabConfigDTO;

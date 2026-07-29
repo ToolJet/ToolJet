@@ -49,6 +49,7 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppGitModule } from '@modules/app-git/module';
 import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
@@ -78,6 +79,7 @@ import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
 import { WorkspaceContextModule } from '@modules/workspace-context/module';
+import { NotificationsModule } from '@modules/notifications/module';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -146,6 +148,10 @@ export class AppModule implements OnModuleInit, NestModule {
       await EventsModule.register(configs),
       await ExternalApiModule.register(configs, true),
       await GitSyncModule.register(configs, true),
+      // Registered AFTER GitSyncModule so the legacy /git-sync/finalize/:id and
+      // /git-sync/test-connection routes are added to the Express router first; the
+      // bare :id routes in GitSyncConfigsModule come later and won't shadow them.
+      await GitSyncConfigsModule.register(configs, true),
       await AppGitModule.register(configs, true),
       await WorkspaceBranchesModule.register(configs, true),
       await CrmModule.register(configs, true),
@@ -158,6 +164,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await CustomDomainsModule.register(configs, true),
       await BackgroundProcessorModule.register(configs, true),
       await WorkspaceContextModule.register(configs, true),
+      await NotificationsModule.register(configs, true),
     ];
 
     const conditionalImports = [];

@@ -112,20 +112,13 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     if (searchKey) {
       if (branchId) {
-        query.andWhere(
-          '(LOWER(av_search.app_name) LIKE :searchKey OR (app_search.type = :workflowType AND LOWER(app_search.name) LIKE :searchKey))',
-          {
-            searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-            workflowType: APP_TYPES.WORKFLOW,
-          }
-        );
+        query.andWhere('LOWER(av_search.app_name) LIKE :searchKey', {
+          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+        });
       } else {
         query.andWhere(
-          `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = app_search.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (app_search.type = :workflowType AND LOWER(app_search.name) LIKE :searchKey))`,
-          {
-            searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-            workflowType: APP_TYPES.WORKFLOW,
-          }
+          `EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = app_search.id AND LOWER(av_s.app_name) LIKE :searchKey)`,
+          { searchKey: `%${searchKey && searchKey.toLowerCase()}%` }
         );
       }
     }
@@ -149,26 +142,17 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     if (searchKey) {
       if (branchId) {
-        // Non-workflow apps match against the branched app_versions.app_name,
-        // falling back to apps.name when the version row's app_name is NULL
-        // (un-backfilled stubs, pull-created rows, etc.). Workflows keep their
-        // name on apps.* and match against apps.name explicitly.
-        query.andWhere(
-          '(LOWER(appVersions.app_name) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))',
-          {
-            searchKey: `%${searchKey.toLowerCase()}%`,
-            workflowType: APP_TYPES.WORKFLOW,
-          }
-        );
+        // Match against the branched app_versions.app_name (this branch's row,
+        // enforced by the INNER JOIN above).
+        query.andWhere('LOWER(appVersions.app_name) LIKE :searchKey', {
+          searchKey: `%${searchKey.toLowerCase()}%`,
+        });
       } else {
-        // gitsync off: non-workflows match against any app_version's app_name;
-        // workflows match against apps.name.
+        // gitsync off: match against any app_version's app_name — every type,
+        // including workflows, carries identical metadata across its version rows.
         query.andWhere(
-          `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))`,
-          {
-            searchKey: `%${searchKey.toLowerCase()}%`,
-            workflowType: APP_TYPES.WORKFLOW,
-          }
+          `EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey)`,
+          { searchKey: `%${searchKey.toLowerCase()}%` }
         );
       }
     }
@@ -220,13 +204,13 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     if (hasSearch) {
       folderAppsQuery.where(
         branchId
-          ? // Non-workflows match against the branched app_versions.app_name,
-            // (un-backfilled or pull-created rows). Workflows keep name on apps.*.
-            '(LOWER(av_folder.app_name) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
-          : // gitsync off: non-workflows match any app_version's name;
-            // workflows match app.name.
-            `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
-        { name: `%${searchKey.toLowerCase()}%`, workflowType: APP_TYPES.WORKFLOW }
+          ? // Match against the branched app_versions.app_name (un-backfilled or
+            // pull-created rows fall back to nothing — same as before).
+            'LOWER(av_folder.app_name) LIKE :name'
+          : // gitsync off: match any app_version's name — every type, including
+            // workflows, carries identical metadata across its version rows.
+            `EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name)`,
+        { name: `%${searchKey.toLowerCase()}%` }
       );
     }
 

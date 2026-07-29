@@ -20,4 +20,16 @@ export class GitConflictDetectionService {
   ): Promise<void> {
     // CE no-op
   }
+
+  async detectImportAppConflicts(
+    _organizationId: string,
+    _branchId: string,
+    _appName: string,
+    _appCoRelationId: string,
+    _gitRepoPath: string,
+    _referencedModuleCoRelIds: Set<string>,
+    _dataSources: Array<{ id: string; name: string }>
+  ): Promise<void> {
+    // CE no-op
+  }
 }

@@ -219,6 +219,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       displayName: newVersion.display_name || newVersion.displayName || newVersion.name,
       current_environment_id: newVersion.current_environment_id,
       status: newVersion.status,
+      isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
     };
     set((state) => ({
       ...state,
@@ -243,7 +244,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     versionDescription = '',
     onSuccess,
     onFailure,
-    versionType = 'version'
+    versionType = 'version',
+    replace = false
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -253,12 +255,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionDescription,
         selectedVersionId,
         editorEnvironment,
-        versionType
+        versionType,
+        replace
       );
       const editorVersion = {
         id: newVersion.id,
         name: newVersion.name,
         current_environment_id: newVersion.current_environment_id,
+        // Use the created version's actual sync state (git-off/normal drafts are unsynced; a
+        // git single-branch replace draft stays synced), not a hardcoded false.
+        isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
       };
       set((state) => ({
         ...state,
@@ -349,9 +355,27 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       onFailure(error);
     }
   },
-  changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure) => {
+  changeEditorVersionAction: async (appId, versionId, onSuccess, onFailure, moduleId) => {
+    // moduleId is a late addition — an older, now-unused 5th arg (env override) still gets
+    // passed as `null` by one caller, so default via `||` rather than an ES6 default (which
+    // only kicks in for `undefined`).
+    moduleId = moduleId || 'canvas';
     try {
       const data = await appVersionService.getAppVersionData(appId, versionId, get().currentMode);
+      // getAppVersionData doesn't include the resolved branchName/branchId (those come from the
+      // environment-versions fetch). Carry them over from the already-enriched entry so the version
+      // selector keeps showing the branch name instead of falling back to the raw UUID version name.
+      const prevVersionEntry = get().versionsPromotedToEnvironment.find((v) => v.id === data?.editing_version?.id);
+      const branchId =
+        data.editing_version.branchId ??
+        data.editing_version.branch_id ??
+        prevVersionEntry?.branchId ??
+        prevVersionEntry?.branch_id;
+      const branchName =
+        data.editing_version.branchName ??
+        data.editing_version.branch_name ??
+        prevVersionEntry?.branchName ??
+        prevVersionEntry?.branch_name;
       const selectedVersion = {
         id: data.editing_version.id,
         name: data.editing_version.name,
@@ -359,6 +383,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         status: data.editing_version.status,
         // Preserve versionType from API response to distinguish between regular versions and branch versions
         versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
+        isSynced: data.editing_version.isSynced ?? data.editing_version.is_synced ?? false,
+        branchId,
+        branchName,
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
@@ -366,7 +393,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let updatedVersionsArray = [...get().versionsPromotedToEnvironment];
       const versionIndex = get().versionsPromotedToEnvironment.findIndex((v) => v.id === data?.editing_version?.id);
       if (versionIndex !== -1 && data?.editing_version) {
-        updatedVersionsArray[versionIndex] = data?.editing_version;
+        updatedVersionsArray[versionIndex] = { ...data.editing_version, branchId, branchName };
       }
       let optionsToUpdate = {
         selectedVersion,
@@ -380,12 +407,39 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         ),
       };
 
+      // Keep freeze state in sync with the version being switched to — otherwise it
+      // keeps whatever value was set for the previously selected version (e.g. staying
+      // frozen after switching from a locked version to a fresh, editable draft).
+      if (data.should_freeze_editor !== undefined) {
+        optionsToUpdate.isEditorFreezed = data.should_freeze_editor;
+      }
+
       // Clear currentBranch if switching to a regular version (not a branch)
       if (selectedVersion.versionType !== 'branch') {
         optionsToUpdate.currentBranch = null;
       }
 
       set((state) => ({ ...state, ...optionsToUpdate }));
+
+      // Pages/components are cloned with new ids for every version (see server's
+      // setupNewVersion), so the previously selected page id no longer exists on this
+      // version. Without this, saves keep using the stale id and the backend rejects them
+      // with "page id is required" until a full reload re-syncs pages/currentPageId.
+      if (data.pages) {
+        get().setPages(data.pages, moduleId);
+        const homePageId = data.editing_version?.homePageId || data.editing_version?.home_page_id;
+        const startingPage = data.pages.find((page) => page.id === homePageId) || data.pages[0];
+        if (startingPage) {
+          get().setCurrentPageId(startingPage.id, moduleId);
+        }
+        get().clearSelectedComponents();
+        // The canvas renders off componentNameIdMapping + the dependency graph's resolved
+        // values, not the raw page data — without rebuilding both here (mirroring the
+        // mount-time load), the component tree stays blank until a reload recomputes them.
+        get().setComponentNameIdMapping(moduleId);
+        get().initDependencyGraph(moduleId);
+      }
+
       onSuccess(data);
     } catch (error) {
       onFailure(error);
@@ -508,37 +562,32 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     const hasMultiEnvironmentAccess = get().license?.featureAccess?.multiEnvironment;
     const hasPromotePermission = authenticationService.currentSessionValue?.user_permissions?.app_promote;
     const hasReleasePermission = authenticationService.currentSessionValue?.user_permissions?.app_release;
-    // MODULE apps are not gated by app-level promote/release permissions
+    // MODULE apps are not gated by app-level promote/release permissions, but Build-with
+    // (view-only) module users must still be blocked — isEditorReadOnly carries that signal.
     const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
+    const isEditorReadOnly = get().isEditorReadOnly;
     return {
       canPromote: hasMultiEnvironmentAccess && !isLastEnvironment && !isVersionReleased,
       canRelease: !hasMultiEnvironmentAccess || isLastEnvironment || isVersionReleased,
-      isPromoteVersionEnabled: isModuleApp || hasPromotePermission,
-      isReleaseVersionEnabled: isModuleApp || hasReleasePermission,
+      isPromoteVersionEnabled: !isEditorReadOnly && (isModuleApp || hasPromotePermission),
+      isReleaseVersionEnabled: !isEditorReadOnly && (isModuleApp || hasReleasePermission),
     };
   },
   createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {
+    // Callers must follow up with changeEditorVersionAction to actually switch the editor
+    // onto the new version — it applies the full state (selectedVersion, freeze status,
+    // pages/currentPageId) from a fresh getAppVersionData fetch, so only selectedEnvironment
+    // is set provisionally here (changeEditorVersionAction doesn't touch it).
     try {
       const editorEnvironment = get().selectedEnvironment.id;
       const newVersion = await appVersionService.createDraftVersion(appId, selectedVersionId, editorEnvironment);
-      const editorVersion = {
-        id: newVersion.id,
-        name: newVersion.name,
-        current_environment_id: newVersion.current_environment_id,
-      };
+      // A new draft always starts on development, regardless of which environment its
+      // source version was on — sync the header's environment display to match.
       set((state) => ({
         ...state,
-        selectedVersion: editorVersion,
-        currentVersionId: editorVersion.id,
         selectedEnvironment: get().environments.find(
-          (environment) => environment.id === editorVersion.current_environment_id
+          (environment) => environment.id === newVersion.current_environment_id
         ),
-        versionsPromotedToEnvironment: [editorVersion],
-        appVersionsLazyLoaded: false,
-        appVersionEnvironment: get().environments.find(
-          (environment) => environment.id === editorVersion.current_environment_id
-        ),
-        ...calculatePromoteAndReleaseButtonVisibilityForCreateNewVersion(useStore.getState().featureAccess),
       }));
       onSuccess(newVersion);
     } catch (error) {

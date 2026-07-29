@@ -75,12 +75,24 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
     if (validationError) setValidationError('');
   };
 
-  const performCreate = async (name, { isImport = false, confirmImport = false } = {}) => {
+  const performCreate = async (name, confirmImport = false) => {
     setIsCreating(true);
     try {
-      const newBranch = await actions.createBranch(name, selectedSourceBranchId, undefined, confirmImport);
-      toast.success(isImport ? 'Branch imported successfully!' : 'Branch was created successfully');
-      await actions.switchBranch(newBranch.id);
+      // Branch creation runs as a background job — no branch object to switch to yet
+      const ack = await actions.createBranch(
+        name,
+        selectedSourceBranchId,
+        undefined,
+        undefined,
+        undefined,
+        confirmImport
+      );
+      toast.success(
+        ack?.isImport
+          ? 'Importing branch. It will show up in the list once ready.'
+          : 'Creating branch. It will show up in the list once ready.',
+        { style: { maxWidth: '640px' } }
+      );
       setPendingImportName(null);
       onSuccess?.();
       onClose();
@@ -121,12 +133,12 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
       return;
     }
 
-    await performCreate(branchName.trim(), { isImport: false, confirmImport: false });
+    await performCreate(branchName.trim(), false);
   };
 
   const handleConfirmImport = async () => {
     if (!pendingImportName) return;
-    await performCreate(pendingImportName, { isImport: true, confirmImport: true });
+    await performCreate(pendingImportName, true);
   };
 
   const handleKeyDown = (e) => {
