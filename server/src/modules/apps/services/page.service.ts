@@ -156,7 +156,7 @@ export class PageService implements IPageService {
         return { ...page, components, restricted: false };
       })
     );
-    return pagesWithComponents as unknown as Page[];
+    return pagesWithComponents;
   }
 
   async findOne(id: string): Promise<Page> {
