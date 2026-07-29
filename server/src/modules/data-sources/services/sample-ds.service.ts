@@ -8,6 +8,7 @@ import { DataSourcesUtilService } from '../util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { DataSourcesRepository } from '../repository';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -136,13 +137,13 @@ export class SampleDataSourceService {
 
       const allEnvs: AppEnvironment[] = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
 
-      // Create default DataSourceVersion + DataSourceVersionOptions
+      // Create the default-branch DataSourceVersion + DataSourceVersionOptions
+      const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
       const dsv = manager.create(DataSourceVersion, {
         dataSourceId: dataSource.id,
         name: dataSource.name,
-        isDefault: true,
         isActive: true,
-        branchId: null,
+        branchId: defaultBranchId,
       });
       const savedDsv = await manager.save(DataSourceVersion, dsv);
 

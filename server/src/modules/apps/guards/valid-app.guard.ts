@@ -17,10 +17,10 @@ export class ValidAppGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const { id, slug, versionId } = request.params;
     const user: User = request.user;
-    // x-branch-id pins the metadata-overlay source. Forwarding it overrides the
-    // repository's default-branch / any-row fallback so callers active on a
-    // sub-branch see that branch's name/slug/icon/is_public.
-    const branchId = (request.headers['x-branch-id'] as string) || undefined;
+    // user.branchId (resolved in the JWT strategy from the branch_id query param) pins the
+    // metadata-overlay source. It overrides the repository's default-branch / any-row fallback
+    // so callers active on a sub-branch see that branch's name/slug/icon/is_public.
+    const branchId = user?.branchId || undefined;
 
     // Check if either id or slug or user is provided, otherwise throw BadRequestException
     if (!(id || slug || user)) {

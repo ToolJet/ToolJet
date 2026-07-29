@@ -9,12 +9,16 @@ import {
   createApplicationVersion,
   updateEntity,
   saveEntity,
+  findEntityOrFail,
 } from 'test-helper';
 import { INestApplication } from '@nestjs/common';
 import { AppsRepository } from '@modules/apps/repository';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { WorkspaceBranch } from 'src/entities/workspace_branch.entity';
+import { Page } from 'src/entities/page.entity';
+import { Component } from 'src/entities/component.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 // initTestApp() can exceed 60s when Jest restarts the worker to free memory
 jest.setTimeout(120_000);
@@ -242,5 +246,55 @@ describe('AppsRepository', () => {
       expect(result).not.toBeNull();
       expect(result!.id).toBe(branchlessApp.id);
     });
+  });
+
+  // Gap check: isModuleEmbeddedInApp filters only on `app.id = parentAppId` — it never
+  // checks the parent app's organizationId. It's a pure structural check with no
+  // independent org boundary; org safety for the module-permission bypass relies entirely
+  // on the caller (editableAppsId) already being org-scoped upstream.
+  describe('isModuleEmbeddedInApp() [gap]', () => {
+    it('returns true for a parentAppId belonging to a different organization than the module', async () => {
+      let nestApp: INestApplication;
+      let appsRepository: AppsRepository;
+      ({ app: nestApp } = await initTestApp());
+      appsRepository = nestApp.get<AppsRepository>(AppsRepository);
+
+      const moduleOrgAdmin = await createAdmin(nestApp, 'apps-repo-crossorg-module@tooljet.io');
+      const otherOrgAdmin = await createAdmin(nestApp, 'apps-repo-crossorg-parent@tooljet.io');
+
+      const coRelationId = uuidv4();
+      const moduleApp = await createApplication(nestApp, {
+        name: 'crossorg-module',
+        user: moduleOrgAdmin.user,
+        type: 'module',
+      });
+      await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
+
+      // Foreign-org app embeds a ModuleViewer pointing at the same co_relation_id.
+      const foreignApp = await createApplication(nestApp, {
+        name: 'crossorg-parent',
+        user: otherOrgAdmin.user,
+        type: 'front-end',
+      });
+      const foreignVersion = await createApplicationVersion(nestApp, foreignApp as any);
+      const homePage = await findEntityOrFail(Page, { appVersionId: foreignVersion.id } as any);
+      await saveEntity(Component, {
+        name: 'module1',
+        type: 'ModuleViewer',
+        pageId: homePage.id,
+        properties: { moduleAppId: { value: coRelationId }, moduleVersionId: { value: '' } },
+        general: {},
+        styles: {},
+        generalStyles: {},
+        validation: {},
+      } as any);
+
+      const result = await appsRepository.isModuleEmbeddedInApp(coRelationId, foreignApp.id);
+      // Current behavior: true, with no org check at all in this method. Safety today
+      // depends entirely on editableAppsId already being org-scoped before this is called.
+      expect(result).toBe(true);
+
+      await closeTestApp(nestApp);
+    }, 60_000);
   });
 });

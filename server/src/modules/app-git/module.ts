@@ -1,8 +1,8 @@
 import { DynamicModule } from '@nestjs/common';
-import { GitTagInterface } from '@ee/app-git/interfaces/git-tag.interface';
 import { AppsRepository } from '@modules/apps/repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { GitSyncModule } from '@modules/git-sync/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppsModule } from '@modules/apps/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
@@ -22,10 +22,8 @@ export class AppGitModule extends SubModule {
       AppGitController,
       AppGitService,
       SourceControlProviderService,
-      SSHAppGitService,
       HTTPSAppGitService,
       GitLabAppGitService,
-      SSHAppGitUtilityService,
       HTTPSAppGitUtilityService,
       GitLabAppGitUtilityService,
       AppVersionRenameListener,
@@ -38,11 +36,9 @@ export class AppGitModule extends SubModule {
       'controller',
       'service',
       'source-control-provider',
-      'providers/github-ssh/service',
       'providers/github-https/service',
       'providers/gitlab/service',
       'providers/github-https/util.service',
-      'providers/github-ssh/util.service',
       'providers/gitlab/util.service',
       'listener',
       'shared/app-git-operations.util',
@@ -52,11 +48,9 @@ export class AppGitModule extends SubModule {
       'shared/datasource-branch.util',
     ]);
 
-    const { GitConflictDetectionService } = await this.getProviders(
-      configs,
-      'platform-git-sync',
-      ['git-conflict-detection.service']
-    );
+    const { GitConflictDetectionService } = await this.getProviders(configs, 'platform-git-sync', [
+      'git-conflict-detection.service',
+    ]);
     return this.cacheModule(cacheKey, {
       module: AppGitModule,
       imports: [
@@ -64,6 +58,7 @@ export class AppGitModule extends SubModule {
         await FoldersModule.register(configs),
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
         await TooljetDbModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await VersionModule.register(configs),
@@ -73,12 +68,17 @@ export class AppGitModule extends SubModule {
         OrganizationGitSyncRepository,
         AppsRepository,
         AppGitService,
-        { provide: GitTagInterface, useExisting: AppGitService },
+        // Registry of app-git provider adapters — the SINGLE place a new provider (e.g. Bitbucket) is
+        // added. The dispatcher resolves by gitType from this list, so no dispatcher/base/adapter file
+        // changes are needed to add a provider.
+        {
+          provide: 'APP_GIT_PROVIDER_ADAPTERS',
+          useFactory: (https, gitlab) => [https, gitlab],
+          inject: [HTTPSAppGitService, GitLabAppGitService],
+        },
         SourceControlProviderService,
-        SSHAppGitService,
         HTTPSAppGitService,
         GitLabAppGitService,
-        SSHAppGitUtilityService,
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
         AppGitOperationsUtil,
@@ -92,9 +92,7 @@ export class AppGitModule extends SubModule {
         ...(isMainImport ? [AppVersionRenameListener] : []),
       ],
       exports: [
-        GitTagInterface,
         SourceControlProviderService,
-        SSHAppGitUtilityService,
         HTTPSAppGitUtilityService,
         GitLabAppGitUtilityService,
         BranchingBusinessUtil,

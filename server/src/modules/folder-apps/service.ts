@@ -12,15 +12,15 @@ import { User } from '@entities/user.entity';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UserFolderPermissions } from '@modules/ability/types';
-import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
     protected abilityService: AbilityService,
     protected foldersUtilService: FoldersUtilService,
-    protected folderAppsUtilService: FolderAppsUtilService
+    protected folderAppsUtilService: FolderAppsUtilService,
+    protected gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   async create(folderId: string, appId: string, branchId?: string): Promise<FolderApp> {
@@ -66,21 +66,12 @@ export class FolderAppsService implements IFolderAppsService {
     return skipAppEditingVersionHydration.run(true, async () => {
       // End users without branch switcher fall back to the org default branch so folders
       // reflect only default-branch apps. Applies to both front-end apps and modules.
-      // When no branchId is provided (e.g. end users without branch switcher) and the
-      // workspace has git-sync configured, fall back to the default branch so folders
-      // reflect only default-branch apps. Non-git-sync workspaces have no orgGit and
-      // branchId stays undefined; downstream queries handle that path natively.
+      // getDetails always resolves options.defaultBranch (every org has one), so this
+      // scopes to the default branch on gitsync-off workspaces too — matching the
+      // backfilled branch_id on their version rows.
       if (!branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE)) {
-        const orgGit = await manager.findOne(OrganizationGitSync, {
-          where: { organizationId: user.organizationId },
-        });
-        if (orgGit) {
-          const defaultBranch = await manager.findOne(WorkspaceBranch, {
-            where: { organizationId: user.organizationId, isDefault: true },
-            select: ['id'],
-          });
-          branchId = defaultBranch?.id;
-        }
+        const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        branchId = options.defaultBranch?.id;
       }
       const resourceType = this.getResourceTypefromAppType(type as APP_TYPES);
       const userPermissions = await this.abilityService.resourceActionsPermission(user, {

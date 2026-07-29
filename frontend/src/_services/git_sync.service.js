@@ -1,10 +1,13 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const gitSyncService = {
   create,
+  validatePush,
   getGitConfig,
   updateConfig,
+  updateBranchingEnabled,
   setFinalizeConfig,
   deleteConfig,
   getAppConfig,
@@ -66,6 +69,20 @@ function updateConfig(organizationGitId, updateParam, gitType = '') {
   );
 }
 
+// Toggles only the workspace branching mode. Hits the dedicated endpoint so the config
+// save flow no longer carries the branching flag.
+function updateBranchingEnabled(organizationGitId, isBranchingEnabled) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ isBranchingEnabled }),
+  };
+  return fetch(`${config.apiUrl}/git-sync/${organizationGitId}/is-branching-enabled`, requestOptions).then(
+    handleResponse
+  );
+}
+
 function updateStatus(organizationGitId, isEnabled, gitType) {
   const body = {
     isEnabled,
@@ -119,7 +136,10 @@ function gitPush(body, appId, versionId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-git/gitpush/${appId}/${versionId}`, requestOptions).then(handleResponse);
+  // gitpush is guarded by AppResourceGuard which reads user.branchId from the query.
+  return fetch(appendBranchParam(`${config.apiUrl}/app-git/gitpush/${appId}/${versionId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getAppConfig(organizationId, versionId) {
@@ -391,4 +411,15 @@ function checkTagExists(appId, versionName) {
     requestOptions
   ).then(handleResponse);
 }
+function validatePush(appId, resourceType = 'app') {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/validate-push/${appId}?resourceType=${resourceType}`, requestOptions).then(
+    handleResponse
+  );
+}
+
 // Remove all app-git api's to separate service from here.

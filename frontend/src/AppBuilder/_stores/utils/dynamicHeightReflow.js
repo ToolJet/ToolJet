@@ -103,16 +103,27 @@ export const serializeLayoutContext = (contextIndices = null) => {
 // Key for `temporaryLayouts[...]` lookups. A suffix is used only by the Modal
 // body short-circuit (suffix === '-body') — normal widget entries have no
 // suffix.
-export const getDynamicLayoutKey = (componentId, contextIndices = null, suffix = '') => {
+export const getDynamicLayoutKey = (componentId, contextIndices = null, suffix = '', moduleId = 'canvas') => {
   const normalized = normalizeLayoutContext(contextIndices);
   const baseKey = normalized ? `${componentId}-${normalized.join('.')}` : componentId;
-  return suffix ? `${baseKey}${suffix}` : baseKey;
+  // Scope by moduleId for embedded modules.
+  // The same module reused across multiple ModuleViewer instances shares its internal component ids,
+  // so an unscoped key collides across instances and their reflow temp layouts overwrite each other.
+  // 'canvas' stays unscoped so the top-level app keys and behavior are unchanged.
+  const scopedKey = moduleId && moduleId !== 'canvas' ? `${moduleId}::${baseKey}` : baseKey;
+  return suffix ? `${scopedKey}${suffix}` : scopedKey;
 };
 
-// Scoped DOM selector for a widget's moveable-box wrapper. Relies on
-// `WidgetWrapper` emitting `data-layout-context`.
-export const getDynamicElementSelector = (componentId, contextIndices = null) => {
-  return `.ele-${componentId}[data-layout-context="${serializeLayoutContext(contextIndices)}"]`;
+// Scoped DOM selector for a widget's moveable-box wrapper.
+// Relies on `WidgetWrapper` emitting `data-layout-context` and `data-module-id`.
+// The module scope disambiguates the SAME component id rendered by multiple ModuleViewer instances of one module.
+// 'canvas' is the top-level app scope.
+export const getDynamicElementSelector = (componentId, contextIndices = null, moduleId = 'canvas') => {
+  return (
+    `.ele-${componentId}` +
+    `[data-layout-context="${serializeLayoutContext(contextIndices)}"]` +
+    `[data-module-id="${moduleId || 'canvas'}"]`
+  );
 };
 
 // Canonical layout merged with any temporary override. "Effective" = what the
@@ -123,7 +134,8 @@ export const getEffectiveLayout = (
   currentLayout,
   currentPageComponents,
   temporaryLayouts,
-  contextIndices
+  contextIndices,
+  moduleId = 'canvas'
 ) => {
   const component = currentPageComponents?.[componentId];
   const baseLayout = component?.layouts?.[currentLayout];
@@ -132,7 +144,7 @@ export const getEffectiveLayout = (
     return null;
   }
 
-  const temporaryLayout = temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)] || {};
+  const temporaryLayout = temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)] || {};
   return { ...baseLayout, ...temporaryLayout };
 };
 
@@ -428,6 +440,7 @@ export const resolveListviewHeightFromRows = ({
   currentLayout,
   currentPageComponents,
   temporaryLayouts,
+  moduleId = 'canvas',
 }) => {
   const componentProperties = component?.properties || {};
   const rowCount = getListviewRenderedRowCount(componentProperties);
@@ -438,7 +451,7 @@ export const resolveListviewHeightFromRows = ({
   const positiveColumns = Math.max(Number(componentProperties.columns) || 1, 1);
   const rowHeights = Array.from({ length: rowCount }, (_, rowIndex) => {
     const rowContext = [...(context || []), rowIndex];
-    const rowLayout = temporaryLayouts?.[getDynamicLayoutKey(componentId, rowContext)];
+    const rowLayout = temporaryLayouts?.[getDynamicLayoutKey(componentId, rowContext, '', moduleId)];
     return rowLayout?.height ?? baseRowHeight;
   });
 
@@ -492,11 +505,12 @@ export const resolveContainerHeight = ({
   getContainerChildrenMapping,
   getExposedPropertyForAdditionalActions,
   calculateMoveableBoxHeightWithId,
+  moduleId = 'canvas',
 }) => {
   const canonicalLayout = getCanonicalLayout(componentId, currentLayout, currentPageComponents);
   let containerHeight = canonicalLayout?.height ?? 0;
   const context = normalizeLayoutContext(contextIndices);
-  const scopedWrapperElement = document.querySelector(getDynamicElementSelector(componentId, context));
+  const scopedWrapperElement = document.querySelector(getDynamicElementSelector(componentId, context, moduleId));
   const isScopedContextRenderable = !!scopedWrapperElement;
 
   // A Listview inside a context whose DOM isn't available (e.g., inactive tab)
@@ -552,6 +566,7 @@ export const resolveContainerHeight = ({
       currentLayout,
       currentPageComponents,
       temporaryLayouts,
+      moduleId,
     });
     // Widget level (!context): floor at the listview's authored canonical
     // height so the widget never silently shrinks below what the user
@@ -608,6 +623,7 @@ export const resolveContainerHeight = ({
       getDynamicElementSelector,
       getEffectiveLayout,
       resolveWidgetVisibility,
+      moduleId,
     });
   }
 
@@ -616,7 +632,7 @@ export const resolveContainerHeight = ({
   const dynamicSelector =
     componentType === 'ModalV2'
       ? `.dynamic-${componentId}`
-      : `${getDynamicElementSelector(componentId, context)} .dynamic-${componentId}`;
+      : `${getDynamicElementSelector(componentId, context, moduleId)} .dynamic-${componentId}`;
   const element = document.querySelector(dynamicSelector);
 
   let modifiedComponentId = componentId;
@@ -666,7 +682,8 @@ export const resolveContainerHeight = ({
       currentLayout,
       currentPageComponents,
       temporaryLayouts,
-      childContext
+      childContext,
+      moduleId
     );
 
     return {
@@ -767,18 +784,20 @@ export const resolveWidgetMeasuredHeight = ({
   visibility,
   containerHeight,
   calculateMoveableBoxHeightWithId,
+  moduleId = 'canvas',
 }) => {
   if (isContainer && (componentType !== 'Listview' || normalizeLayoutContext(contextIndices))) {
     return containerHeight;
   }
 
-  const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+  const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId));
   const existingHeight = getEffectiveLayout(
     componentId,
     currentLayout,
     currentPageComponents,
     temporaryLayouts,
-    contextIndices
+    contextIndices,
+    moduleId
   )?.height;
 
   // Fallback when the DOM can't be measured (invisible widget, hidden ancestor
@@ -863,6 +882,7 @@ export const getBlockers = ({
   computedLayouts,
   resolvedHeights,
   changedComponentId,
+  moduleId = 'canvas',
 }) => {
   const result = [];
   if (!targetCanonical) return result;
@@ -885,7 +905,7 @@ export const getBlockers = ({
 
     const candidateLayout =
       computedLayouts[candidateId] ||
-      getEffectiveLayout(candidateId, currentLayout, currentPageComponents, temporaryLayouts, contextIndices);
+      getEffectiveLayout(candidateId, currentLayout, currentPageComponents, temporaryLayouts, contextIndices, moduleId);
     if (!candidateLayout) continue;
 
     const isInFlow = inFlowMap[candidateId] !== false;
@@ -972,6 +992,7 @@ export const buildReflowPatch = ({
   collapseWhenHiddenMap,
   calculateMoveableBoxHeightWithId,
   getComponentDefinition,
+  moduleId = 'canvas',
 }) => {
   // Effective canonical height = `calculateMoveableBoxHeightWithId`, which
   // bumps top-aligned input widgets by TOP_ALIGNMENT_HEIGHT_INCREMENT (20px)
@@ -1011,7 +1032,7 @@ export const buildReflowPatch = ({
 
   // Compute the changed widget's height delta ONCE. Used by the grow/shrink
   // path to push/pull every downstream widget by the same amount.
-  const changedKey = getDynamicLayoutKey(changedComponentId, contextIndices);
+  const changedKey = getDynamicLayoutKey(changedComponentId, contextIndices, '', moduleId);
   const changedCanonical = getCanonicalLayout(changedComponentId, currentLayout, currentPageComponents);
   const changedNewHeight = resolvedHeights[changedComponentId] ?? changedCanonical?.height ?? 0;
   // Old-height baseline is the calc-bumped canonical, NOT the raw canonical.
@@ -1050,7 +1071,7 @@ export const buildReflowPatch = ({
     const targetCanonical = getCanonicalLayout(componentId, currentLayout, currentPageComponents);
     if (!targetCanonical) return;
 
-    const targetKey = getDynamicLayoutKey(componentId, contextIndices);
+    const targetKey = getDynamicLayoutKey(componentId, contextIndices, '', moduleId);
     const existingTemp = temporaryLayouts?.[targetKey];
     const targetTopCanonical = targetCanonical.top ?? 0;
     const currentTop = existingTemp?.top ?? targetTopCanonical;
@@ -1067,6 +1088,7 @@ export const buildReflowPatch = ({
       computedLayouts,
       resolvedHeights,
       changedComponentId,
+      moduleId,
     });
 
     // Out-of-flow slot sizes. Each out-of-flow blocker W's slot =
@@ -1317,7 +1339,8 @@ export const buildReflowPatch = ({
       currentLayout,
       currentPageComponents,
       temporaryLayouts,
-      contextIndices
+      contextIndices,
+      moduleId
     );
     const nextHeight =
       componentId === changedComponentId
@@ -1328,13 +1351,13 @@ export const buildReflowPatch = ({
     // etc.) < new top/height. Anything we don't touch passes through.
     const nextLayout = {
       ...currentPageComponents?.[componentId]?.layouts?.[currentLayout],
-      ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)],
+      ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)],
       top: nextTop,
       height: nextHeight,
     };
 
     computedLayouts[componentId] = nextLayout;
-    temporaryLayoutPatch[getDynamicLayoutKey(componentId, contextIndices)] = nextLayout;
+    temporaryLayoutPatch[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)] = nextLayout;
 
     if (debug) {
       // eslint-disable-next-line no-console

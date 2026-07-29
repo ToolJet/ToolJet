@@ -19,6 +19,7 @@ export enum ResourceType {
   DATA_SOURCE = 'data_source',
   WORKFLOWS = 'workflow',
   FOLDER = 'folder',
+  MODULE = 'module',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -31,6 +32,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     folderDelete: true,
     workflowCreate: true,
     workflowDelete: true,
+    moduleCreate: true,
+    moduleDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -48,6 +51,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     folderDelete: true,
     workflowCreate: true,
     workflowDelete: true,
+    moduleCreate: true,
+    moduleDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -103,6 +108,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEditApps: false,
       canViewApps: false,
     },
+    [ResourceType.MODULE]: {
+      canEdit: true,
+      canView: false,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
@@ -148,6 +157,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEditFolder: true,
       canEditApps: false,
       canViewApps: false,
+    },
+    [ResourceType.MODULE]: {
+      canEdit: true,
+      canView: false,
     },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;
