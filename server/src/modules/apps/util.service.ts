@@ -914,7 +914,7 @@ export class AppsUtilService implements IAppsUtilService {
       userPermission[resourceType],
       manager,
       searchKey,
-      isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
+      isGetAll ? ['id', 'slug', 'name', 'currentVersionId', 'co_relation_id'] : undefined,
       type,
       branchId,
       willInnerJoinOnBranch,
