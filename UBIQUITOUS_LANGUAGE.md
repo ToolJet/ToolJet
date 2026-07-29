@@ -152,7 +152,7 @@ A formal glossary of ToolJet domain terminology. When code, docs, or conversatio
 
 | Term | Definition | Aliases to avoid |
 |------|-----------|-----------------|
-| **Edition** | The product tier determined at build/deploy time: CE (Community), EE (Enterprise), Cloud | Version (ambiguous with app versioning) |
+| **Edition** | The product tier determined at deploy time via `TOOLJET_EDITION`: CE (Community), EE (Enterprise), Cloud. Cloud is not a third code tree — it runs the EE code with `TOOLJET_EDITION=cloud`, differentiated by runtime checks | Version (ambiguous with app versioning) |
 | **License** | A cryptographic key that unlocks features for an edition; has a type and expiry date | Key, activation code |
 | **License Type** | One of: `basic`, `trial`, `business`, `enterprise` | Plan type (plans and license types have different naming) |
 | **Plan** | A pricing tier on ToolJet Cloud determining feature limits and billing | Tier, pricing level |
