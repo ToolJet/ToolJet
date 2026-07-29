@@ -5,7 +5,7 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
@@ -236,7 +236,11 @@ export class VersionRepository extends Repository<AppVersion> {
 
   getVersionsInApp(appId: string, branchId?: string, manager?: EntityManager): Promise<AppVersion[]> {
     const m = manager ?? this.manager;
-    const where = branchId ? { appId, branchId, isStub: false } : { appId, isStub: false };
+    // When branchId is provided, also include versions with null branchId
+    // (created before branching was enabled) so they remain visible on the default branch.
+    const where = branchId
+      ? [{ appId, branchId, isStub: false }, { appId, branchId: IsNull(), isStub: false }]
+      : { appId, isStub: false };
     return m.find(AppVersion, { where, order: { createdAt: 'DESC' }, relations: ['branch'] });
   }
 
