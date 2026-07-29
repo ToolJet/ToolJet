@@ -41,6 +41,7 @@ const AddMenuPopover = React.forwardRef(({ onAddItem, onAddGroup, onClose, darkM
 AddMenuPopover.displayName = 'AddMenuPopover';
 
 const NavItemsList = ({
+  componentId,
   menuItems,
   darkMode,
   onDeleteItem,
@@ -67,6 +68,7 @@ const NavItemsList = ({
       style={{ marginBottom: '12px' }}
     >
       <SortableTree
+        componentId={componentId}
         menuItems={menuItems}
         darkMode={darkMode}
         onDeleteItem={onDeleteItem}

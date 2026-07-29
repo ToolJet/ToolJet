@@ -3,7 +3,18 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { createUser, initTestApp, login, buildTestSession, getEntityRepository, closeTestApp } from 'test-helper';
+import { GroupUsers } from 'src/entities/group_users.entity';
+import {
+  createUser,
+  initTestApp,
+  login,
+  buildTestSession,
+  getEntityRepository,
+  closeTestApp,
+  createGroupPermission,
+  grantModulePermission,
+  findEntities,
+} from 'test-helper';
 
 /** @group platform */
 describe('OrganizationUsersController', () => {
@@ -117,6 +128,91 @@ describe('OrganizationUsersController', () => {
           .set('Cookie', viewerUserData['tokenCookie'])
           .send({ email: 'test3@tooljet.io', role: 'end-user' })
           .expect(403);
+      });
+    });
+
+    describe('POST /api/organization-users | Invite user into a module-permission group', () => {
+      it('should reject inviting an end-user into a group with module Build-with (view-only) permission', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const moduleGroup = await createGroupPermission(app, { name: 'module-viewers', organization });
+        await grantModulePermission(app, moduleGroup.id, { read: true });
+
+        const response = await request(app.getHttpServer())
+          .post('/api/organization-users/')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ email: 'blocked-build-with@tooljet.io', role: 'end-user', groups: [moduleGroup.id] });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message.title).toBe('Conflicting permissions');
+
+        // The invite must never leave the end-user attached to the module-permission group,
+        // regardless of whether the account itself ended up being created.
+        const invitedUser = await userRepository.findOne({ where: { email: 'blocked-build-with@tooljet.io' } });
+        if (invitedUser) {
+          const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: invitedUser.id } });
+          expect(usersInGroup).toHaveLength(0);
+        }
+      });
+
+      it('should reject inviting an end-user into a group with module Edit permission', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const moduleGroup = await createGroupPermission(app, { name: 'module-editors', organization });
+        await grantModulePermission(app, moduleGroup.id, { update: true });
+
+        const response = await request(app.getHttpServer())
+          .post('/api/organization-users/')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ email: 'blocked-module-edit@tooljet.io', role: 'end-user', groups: [moduleGroup.id] });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.message.title).toBe('Conflicting permissions');
+
+        const invitedUser = await userRepository.findOne({ where: { email: 'blocked-module-edit@tooljet.io' } });
+        if (invitedUser) {
+          const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: invitedUser.id } });
+          expect(usersInGroup).toHaveLength(0);
+        }
+      });
+
+      it('should allow inviting a builder into a group with module Build-with permission', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['admin', 'end-user'],
+        });
+        const organization = adminUserData.organization;
+        const adminSession = await buildTestSession(adminUserData.user, organization.id);
+        adminUserData['tokenCookie'] = adminSession.tokenCookie;
+
+        const moduleGroup = await createGroupPermission(app, { name: 'module-viewers-builder', organization });
+        await grantModulePermission(app, moduleGroup.id, { read: true });
+
+        const response = await request(app.getHttpServer())
+          .post('/api/organization-users/')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ email: 'allowed-builder@tooljet.io', role: 'builder', groups: [moduleGroup.id] });
+
+        expect(response.statusCode).toBe(201);
+
+        const invitedUser = await userRepository.findOneOrFail({ where: { email: 'allowed-builder@tooljet.io' } });
+        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: invitedUser.id } });
+        expect(usersInGroup).toHaveLength(1);
       });
     });
 

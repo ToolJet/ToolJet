@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
+import { ToolTip } from '@/_components/ToolTip';
 import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
@@ -41,8 +42,8 @@ const CreateVersionModal = ({
     currentMode,
     currentEnvironment,
     environments,
-    setIsEditorFreezed,
     branchingEnabled,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -58,8 +59,8 @@ const CreateVersionModal = ({
       currentMode: state.currentMode,
       currentEnvironment: state.selectedEnvironment,
       environments: state.environments,
-      setIsEditorFreezed: state.setIsEditorFreezed,
       branchingEnabled: state.branchingEnabled,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
@@ -135,6 +136,10 @@ const CreateVersionModal = ({
   const { t } = useTranslation();
 
   const createVersion = async () => {
+    if (isEditorReadOnly) {
+      toast.error('You do not have permission to save this version');
+      return;
+    }
     if (versionName.trim().length > 25) {
       toast.error('Version name should not be longer than 25 characters');
       return;
@@ -257,11 +262,6 @@ const CreateVersionModal = ({
           selectedVersionForCreation.id,
           currentMode
         );
-
-        // Set editor freeze state based on should_freeze_editor
-        if (newVersionData.should_freeze_editor !== undefined) {
-          setIsEditorFreezed(newVersionData.should_freeze_editor);
-        }
 
         if (newVersionData.editing_version?.id) {
           const newVersionEnvironmentId = newVersionData.editing_version.currentEnvironmentId;
@@ -498,16 +498,28 @@ const CreateVersionModal = ({
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
-              <ButtonSolid
-                size="lg"
-                variant="primary"
-                className=""
-                type="submit"
-                disabled={!selectedVersionForCreation || isCreatingVersion}
-                data-cy="create-version-save-button"
+              <ToolTip
+                message={
+                  isEditorReadOnly
+                    ? "You don't have access to save this version. Contact admin to know more."
+                    : 'Save this version'
+                }
+                placement="top"
+                width="280px"
               >
-                {t('editor.appVersionManager.saveVersion', 'Save version')}
-              </ButtonSolid>
+                <span>
+                  <ButtonSolid
+                    size="lg"
+                    variant="primary"
+                    className=""
+                    type="submit"
+                    disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
+                    data-cy="create-version-save-button"
+                  >
+                    {t('editor.appVersionManager.saveVersion', 'Save version')}
+                  </ButtonSolid>
+                </span>
+              </ToolTip>
             </div>
           </div>
         </form>

@@ -112,7 +112,8 @@ describe('AppController', () => {
           const endUserGroup = groupPermissions.find((x) => x.name == 'end-user');
           expect(endUserGroup.appCreate).toBeFalsy();
           expect(endUserGroup.appDelete).toBeFalsy();
-          expect(endUserGroup.folderCRUD).toBeFalsy();
+          expect(endUserGroup.folderCreate).toBeFalsy();
+          expect(endUserGroup.folderDelete).toBeFalsy();
           expect(endUserGroup.orgConstantCRUD).toBeFalsy();
         });
         it('authenticate if valid credentials', async () => {
