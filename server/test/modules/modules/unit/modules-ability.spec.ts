@@ -313,8 +313,20 @@ describe('FeatureAbilityFactory — modules ability', () => {
   });
 
   describe('CLONE/EXPORT/IMPORT', () => {
-    it('builder (isBuilder=true) → can CLONE/EXPORT/IMPORT', () => {
+    // CLONE/IMPORT create a new module, so they're gated on moduleCreate (like CREATE_MODULE)
+    // rather than plain isBuilder — see the CREATE/UPDATE/DELETE_MODULE describe blocks above.
+    it('builder WITHOUT moduleCreate → can EXPORT only, not CLONE/IMPORT', () => {
       const permissions = makePermissions();
+      const ability = buildAbility(permissions);
+      expect(ability.can(FEATURE_KEY.CLONE_MODULE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.IMPORT_MODULE, App)).toBe(false);
+    });
+
+    it('builder WITH moduleCreate → can CLONE/EXPORT/IMPORT', () => {
+      const permissions = makePermissions({
+        userPermission: { ...baseUserPermission(), moduleCreate: true } as any,
+      });
       const ability = buildAbility(permissions);
       expect(ability.can(FEATURE_KEY.CLONE_MODULE, App)).toBe(true);
       expect(ability.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(true);

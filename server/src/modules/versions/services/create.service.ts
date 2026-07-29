@@ -218,10 +218,8 @@ export class VersionsCreateService implements IVersionsCreateService {
 
       for (const appEnvironment of appEnvironments) {
         for (const dataSource of dataSources) {
-          // Read source options from the default DataSourceVersion
-          const sourceDsv = await manager.findOne(DataSourceVersion, {
-            where: { dataSourceId: dataSource.id, isDefault: true },
-          });
+          // Read source options from the default-branch DataSourceVersion
+          const sourceDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
           const sourceDsvo = sourceDsv
             ? await manager.findOne(DataSourceVersionOptions, {
                 where: { dataSourceVersionId: sourceDsv.id, environmentId: appEnvironment.id },
@@ -235,18 +233,16 @@ export class VersionsCreateService implements IVersionsCreateService {
 
           // Create default DSV + DSVO for the new version's data source
           const newDsId = dataSourceMapping[dataSource.id];
-          let defaultDsv = await manager.findOne(DataSourceVersion, {
-            where: { dataSourceId: newDsId, isDefault: true },
-          });
+          let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, newDsId);
           if (!defaultDsv) {
             const ds = await manager.findOne(DataSource, { where: { id: newDsId }, select: ['id', 'name'] });
+            const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(manager, newDsId);
             defaultDsv = await manager.save(
               manager.create(DataSourceVersion, {
                 dataSourceId: newDsId,
                 name: ds?.name || 'v1',
-                isDefault: true,
                 isActive: true,
-                branchId: null,
+                branchId: defaultBranchId,
               })
             );
           }

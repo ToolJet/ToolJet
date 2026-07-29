@@ -9,7 +9,7 @@ import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { FoldersUtilService } from './util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
-import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
 
@@ -25,7 +25,7 @@ export class FoldersService implements IFoldersService {
   constructor(
     protected foldersUtilService: FoldersUtilService,
     protected abilityService: AbilityService,
-    protected organizationGitSyncRepository: OrganizationGitSyncRepository
+    protected gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   async createFolder(user, createFolderDto: CreateFolderDto) {
@@ -65,7 +65,8 @@ export class FoldersService implements IFoldersService {
       await this.checkFolderManagePermission(user, folder, manager, 'update');
 
       // Workspace-level git sync: any folder in a git-synced org is locked.
-      if (await this.organizationGitSyncRepository.isOrganizationGitSynced(user.organizationId, manager)) {
+      const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      if (isGitSyncEnabled) {
         throw new BadRequestException('Folders with git-synced apps cannot be edited');
       }
 
@@ -137,7 +138,8 @@ export class FoldersService implements IFoldersService {
 
       await this.checkFolderManagePermission(user, folder, manager, 'delete');
 
-      if (await this.organizationGitSyncRepository.isOrganizationGitSynced(user.organizationId, manager)) {
+      const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      if (isGitSyncEnabled) {
         throw new BadRequestException(
           "Folders with apps synced to git can't be deleted. Delete the git apps and try again."
         );

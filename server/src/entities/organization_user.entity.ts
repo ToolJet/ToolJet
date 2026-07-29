@@ -36,6 +36,11 @@ export class OrganizationUser extends BaseEntity {
   @Column({ name: 'invitation_token' })
   invitationToken: string;
 
+  // Last Git branch this user had active in this workspace. Restored on login so the user
+  // returns to the branch they were working on instead of the default branch. Nullable.
+  @Column({ name: 'last_branch_id', type: 'uuid', nullable: true })
+  lastBranchId?: string | null;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

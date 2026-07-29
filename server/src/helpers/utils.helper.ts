@@ -1,6 +1,5 @@
 import { QueryError } from '@modules/data-sources/types';
 import * as sanitizeHtml from 'sanitize-html';
-import { EntityManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 import { USER_TYPE } from '@modules/users/constants/lifecycle';
 import { ConflictException } from '@nestjs/common';
@@ -185,15 +184,6 @@ export const ceAppEnvironments = [{ name: 'production', isDefault: true, priorit
 
 export const isSuperAdmin = (user) => {
   return !!(user?.userType === USER_TYPE.INSTANCE);
-};
-
-export const updateTimestampForAppVersion = async (manager: EntityManager, appVersionId: string) => {
-  const appVersion = await manager.findOne('app_versions', {
-    where: { id: appVersionId },
-  });
-  if (appVersion) {
-    await manager.update('app_versions', appVersionId, { updatedAt: new Date() });
-  }
 };
 
 type DbContraintAndMsg = {

@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const appVersionService = {
   getAll,
@@ -21,12 +22,15 @@ export const appVersionService = {
   createDraftVersion,
 };
 
+// `parentAppId`, threaded through getAll/getModuleVersionData below, lets the backend
+// grant view access to a module when the requester has no direct module permission but
+// is embedding it in an app they can edit (see FeatureAbilityFactory.defineAbilityFor).
 function getAll(appId, parentAppId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  // `parentAppId` lets the backend grant view access to a module's version list when the
-  // requester has no direct module permission but is embedding it in an app they can edit.
   const parentAppParam = parentAppId ? `?parentAppId=${encodeURIComponent(parentAppId)}` : '';
-  return fetch(`${config.apiUrl}/apps/${appId}/versions${parentAppParam}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions${parentAppParam}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getOne(appId, versionId) {
@@ -45,9 +49,10 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
 }
 function getAppVersionData(appId, versionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getModuleVersionData(coRelationId, moduleReferenceId, mode, parentAppId) {
@@ -55,16 +60,24 @@ function getModuleVersionData(coRelationId, moduleReferenceId, mode, parentAppId
   // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
   // server resolver returns the latest non-stub on the consumer's branch.
   const refParam = moduleReferenceId ? `&ref=${encodeURIComponent(moduleReferenceId)}` : '';
-  // `parentAppId` lets the backend grant view access when this module has no direct
-  // permission of its own but is embedded in an app the requester can edit.
   const parentAppParam = parentAppId ? `&parentAppId=${encodeURIComponent(parentAppId)}` : '';
   return fetch(
-    `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}${parentAppParam}`,
+    appendBranchParam(
+      `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}${parentAppParam}`
+    ),
     requestOptions
   ).then(handleResponse);
 }
 
-function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId, versionType = 'version') {
+function create(
+  appId,
+  versionName,
+  versionDescription,
+  versionFromId,
+  currentEnvironmentId,
+  versionType = 'version',
+  replace = false
+) {
   const body = {
     versionName,
     versionDescription,
@@ -72,23 +85,9 @@ function create(appId, versionName, versionDescription, versionFromId, currentEn
     environmentId: currentEnvironmentId,
     versionType,
   };
-
-  const requestOptions = {
-    method: 'POST',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify(body),
-  };
-  return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
-}
-
-function createDraftVersion(appId, versionFromId, environmentId, versionDescription = '') {
-  const body = {
-    versionFromId,
-    environmentId,
-  };
-  if (versionDescription) {
-    body.versionDescription = versionDescription;
+  // Git single-branch: replace the existing single draft with a fresh one cloned from versionFromId.
+  if (replace) {
+    body.replace = true;
   }
 
   const requestOptions = {
@@ -97,7 +96,29 @@ function createDraftVersion(appId, versionFromId, environmentId, versionDescript
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}/draft-versions`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions`), requestOptions).then(handleResponse);
+}
+
+function createDraftVersion(appId, versionFromId, environmentId, versionDescription = '', replace = false) {
+  const body = {
+    versionFromId,
+    environmentId,
+  };
+  if (versionDescription) {
+    body.versionDescription = versionDescription;
+  }
+  // Git single-branch: replace the existing single draft with a fresh one cloned from versionFromId.
+  if (replace) {
+    body.replace = true;
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/draft-versions`), requestOptions).then(handleResponse);
 }
 
 function del(appId, versionId) {

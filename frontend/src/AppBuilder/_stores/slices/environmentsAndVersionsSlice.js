@@ -219,6 +219,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       displayName: newVersion.display_name || newVersion.displayName || newVersion.name,
       current_environment_id: newVersion.current_environment_id,
       status: newVersion.status,
+      isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
     };
     set((state) => ({
       ...state,
@@ -243,7 +244,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     versionDescription = '',
     onSuccess,
     onFailure,
-    versionType = 'version'
+    versionType = 'version',
+    replace = false
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -253,12 +255,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionDescription,
         selectedVersionId,
         editorEnvironment,
-        versionType
+        versionType,
+        replace
       );
       const editorVersion = {
         id: newVersion.id,
         name: newVersion.name,
         current_environment_id: newVersion.current_environment_id,
+        // Use the created version's actual sync state (git-off/normal drafts are unsynced; a
+        // git single-branch replace draft stays synced), not a hardcoded false.
+        isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
       };
       set((state) => ({
         ...state,
@@ -356,6 +362,20 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     moduleId = moduleId || 'canvas';
     try {
       const data = await appVersionService.getAppVersionData(appId, versionId, get().currentMode);
+      // getAppVersionData doesn't include the resolved branchName/branchId (those come from the
+      // environment-versions fetch). Carry them over from the already-enriched entry so the version
+      // selector keeps showing the branch name instead of falling back to the raw UUID version name.
+      const prevVersionEntry = get().versionsPromotedToEnvironment.find((v) => v.id === data?.editing_version?.id);
+      const branchId =
+        data.editing_version.branchId ??
+        data.editing_version.branch_id ??
+        prevVersionEntry?.branchId ??
+        prevVersionEntry?.branch_id;
+      const branchName =
+        data.editing_version.branchName ??
+        data.editing_version.branch_name ??
+        prevVersionEntry?.branchName ??
+        prevVersionEntry?.branch_name;
       const selectedVersion = {
         id: data.editing_version.id,
         name: data.editing_version.name,
@@ -363,6 +383,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         status: data.editing_version.status,
         // Preserve versionType from API response to distinguish between regular versions and branch versions
         versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
+        isSynced: data.editing_version.isSynced ?? data.editing_version.is_synced ?? false,
+        branchId,
+        branchName,
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
@@ -370,16 +393,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let updatedVersionsArray = [...get().versionsPromotedToEnvironment];
       const versionIndex = get().versionsPromotedToEnvironment.findIndex((v) => v.id === data?.editing_version?.id);
       if (versionIndex !== -1 && data?.editing_version) {
-        updatedVersionsArray[versionIndex] = data?.editing_version;
+        updatedVersionsArray[versionIndex] = { ...data.editing_version, branchId, branchName };
       }
       let optionsToUpdate = {
         selectedVersion,
         appVersionEnvironment,
-        // The version being switched to may live in a different environment than the one
-        // currently being viewed (e.g. a freshly created draft always starts on development,
-        // regardless of which environment its source version was on) — keep the header's
-        // environment display in sync with where this version actually lives.
-        selectedEnvironment: appVersionEnvironment,
         versionsPromotedToEnvironment: [...updatedVersionsArray],
         ...calculatePromoteAndReleaseButtonVisibility(
           selectedVersion.id,
@@ -556,13 +574,21 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     };
   },
   createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {
-    // Creation only — callers must follow up with changeEditorVersionAction to actually
-    // switch the editor onto the new version. It applies the full state (selectedVersion,
-    // freeze status, pages/currentPageId) from a fresh getAppVersionData fetch; a provisional
-    // set() here would just be overwritten a moment later, so don't duplicate it.
+    // Callers must follow up with changeEditorVersionAction to actually switch the editor
+    // onto the new version — it applies the full state (selectedVersion, freeze status,
+    // pages/currentPageId) from a fresh getAppVersionData fetch, so only selectedEnvironment
+    // is set provisionally here (changeEditorVersionAction doesn't touch it).
     try {
       const editorEnvironment = get().selectedEnvironment.id;
       const newVersion = await appVersionService.createDraftVersion(appId, selectedVersionId, editorEnvironment);
+      // A new draft always starts on development, regardless of which environment its
+      // source version was on — sync the header's environment display to match.
+      set((state) => ({
+        ...state,
+        selectedEnvironment: get().environments.find(
+          (environment) => environment.id === newVersion.current_environment_id
+        ),
+      }));
       onSuccess(newVersion);
     } catch (error) {
       onFailure(error);

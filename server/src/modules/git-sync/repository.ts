@@ -13,7 +13,7 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
     const repository = manager ? manager.getRepository(this.target) : this;
     return await repository.findOne({
       where: { organizationId: organizationId },
-      relations: ['gitSsh', 'gitHttps', 'gitLab'],
+      relations: ['gitHttps', 'gitLab'],
     });
   }
 
@@ -35,5 +35,14 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
     const repo = manager ? manager.getRepository(WorkspaceBranch) : this.dataSource.getRepository(WorkspaceBranch);
     const count = await repo.count({ where: { organizationId, isDefault: true } });
     return count > 0;
+  }
+
+  async findDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | undefined> {
+    const repo = manager ? manager.getRepository(WorkspaceBranch) : this.dataSource.getRepository(WorkspaceBranch);
+    const defaultBranch = await repo.findOne({
+      where: { organizationId, isDefault: true },
+      select: ['id'],
+    });
+    return defaultBranch?.id;
   }
 }

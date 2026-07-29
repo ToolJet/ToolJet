@@ -72,7 +72,8 @@ export const List = ({ updateSelectedDatasource }) => {
   }, [dataSources, isLoading]);
 
   const deleteDataSource = (selectedSource) => {
-    if (isBranchingEnabled && isOnDefaultBranch) {
+    const isDsUnsynced = selectedSource?.is_synced === false || selectedSource?.isSynced === false;
+    if (isBranchingEnabled && isOnDefaultBranch && !isDsUnsynced) {
       setPendingDeleteSource(selectedSource);
       setShowSwitchBranchModal(true);
       return;

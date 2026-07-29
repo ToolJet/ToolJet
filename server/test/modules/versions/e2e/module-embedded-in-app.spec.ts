@@ -16,6 +16,8 @@ import {
 import { App } from '@entities/app.entity';
 import { Page } from '@entities/page.entity';
 import { Component } from '@entities/component.entity';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { ResourceType } from '@modules/group-permissions/constants';
@@ -213,5 +215,125 @@ describe('Module embedded-in-editable-app view access', () => {
 
     const res = await fetchModuleVersion(coRelationId, builderCookie, org.id, consumerApp.id);
     expect(res.statusCode).toBe(403);
+  });
+
+  // Regression: isModuleEmbeddedInApp used to join app_version with no current-version
+  // filter, so a ModuleViewer from ANY historical version of parentAppId counted — even
+  // one no longer current. Fixed to scope to the current/editing version only.
+  it('403s when the embedding ModuleViewer only exists in a non-current, superseded version', async () => {
+    const adminData = await createUser(nestApp, { email: 'meia-admin6@tooljet.io', groups: ['all_users', 'admin'] });
+    const org = adminData.organization;
+
+    const moduleApp = await createApplication(nestApp, { name: 'M-Stale', user: adminData.user, type: 'module' });
+    const coRelationId = uuidv4();
+    await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
+    await createApplicationVersion(nestApp, moduleApp as any);
+
+    const builderData = await createUser(nestApp, {
+      email: 'meia-builder6@tooljet.io',
+      groups: ['builder'],
+      organization: org,
+    });
+    const builderCookie = (await login(nestApp, 'meia-builder6@tooljet.io')).tokenCookie;
+    const consumerApp = await createApplication(nestApp, {
+      name: 'Consumer Stale',
+      user: builderData.user,
+      type: 'front-end',
+    });
+
+    // v1 embeds the module and is superseded — v2 (current) does not embed it.
+    const v1 = await createApplicationVersion(nestApp, consumerApp as any);
+    await embedModuleInApp(v1.id, coRelationId);
+    const v2 = await createApplicationVersion(nestApp, consumerApp as any);
+    await markVersionAsReleased(consumerApp.id, v2.id);
+
+    const res = await fetchModuleVersion(coRelationId, builderCookie, org.id, consumerApp.id);
+    expect(res.statusCode).toBe(403);
+  });
+
+  // Regression: in a git-sync-enabled workspace, an app's actively-edited version is a
+  // version_type='branch' row (no current_version_id). isModuleEmbeddedInApp's editing-version
+  // fallback used to exclude version_type='branch' rows (copied from fetchModules' unrelated
+  // "editingVersion" tier), so this fell back to NULL and the embed became invisible. Fixed
+  // to only require is_stub=false, not exclude branch rows.
+  it('allows access when the embedding version is a git-sync branch-type row (no current_version_id)', async () => {
+    const adminData = await createUser(nestApp, { email: 'meia-admin8@tooljet.io', groups: ['all_users', 'admin'] });
+    const org = adminData.organization;
+
+    const moduleApp = await createApplication(nestApp, { name: 'M-BranchType', user: adminData.user, type: 'module' });
+    const coRelationId = uuidv4();
+    await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
+    await createApplicationVersion(nestApp, moduleApp as any);
+
+    const builderData = await createUser(nestApp, {
+      email: 'meia-builder8@tooljet.io',
+      groups: ['builder'],
+      organization: org,
+    });
+    const builderCookie = (await login(nestApp, 'meia-builder8@tooljet.io')).tokenCookie;
+    const consumerApp = await createApplication(nestApp, {
+      name: 'Consumer BranchType',
+      user: builderData.user,
+      type: 'front-end',
+    });
+    const branch = await saveEntity(WorkspaceBranch, { organizationId: org.id, name: 'feature/x', isDefault: false });
+    const consumerVersion = await createApplicationVersion(nestApp, consumerApp as any);
+    await updateEntity(AppVersion, consumerVersion.id, {
+      versionType: AppVersionType.BRANCH,
+      branchId: branch.id,
+      appName: 'Consumer BranchType',
+      slug: `consumer-branchtype-${consumerVersion.id}`,
+    } as any);
+    await embedModuleInApp(consumerVersion.id, coRelationId);
+
+    const res = await fetchModuleVersion(coRelationId, builderCookie, org.id, consumerApp.id);
+    expect(res.statusCode).toBe(200);
+  });
+
+  // The embedded-view bypass (isEmbeddedInEditableParentApp) only grants GET/GET_ONE/
+  // GET_EVENTS in defineAppVersionAbility — it must never let a builder edit or promote
+  // the module itself, only the parent app they actually have edit rights on.
+  it('denies edit and promote on the module even though the builder can view it via the bypass', async () => {
+    const adminData = await createUser(nestApp, { email: 'meia-admin7@tooljet.io', groups: ['all_users', 'admin'] });
+    const org = adminData.organization;
+
+    const moduleApp = await createApplication(nestApp, { name: 'M-ViewOnly', user: adminData.user, type: 'module' });
+    const coRelationId = uuidv4();
+    await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
+    const moduleVersion = await createApplicationVersion(nestApp, moduleApp as any);
+
+    const builderData = await createUser(nestApp, {
+      email: 'meia-builder7@tooljet.io',
+      groups: ['builder'],
+      organization: org,
+    });
+    const builderCookie = (await login(nestApp, 'meia-builder7@tooljet.io')).tokenCookie;
+    const consumerApp = await createApplication(nestApp, {
+      name: 'Consumer ViewOnly',
+      user: builderData.user,
+      type: 'front-end',
+    });
+    const consumerVersion = await createApplicationVersion(nestApp, consumerApp as any);
+    await embedModuleInApp(consumerVersion.id, coRelationId);
+
+    // Sanity: the bypass does grant view access.
+    const viewRes = await fetchModuleVersion(coRelationId, builderCookie, org.id, consumerApp.id);
+    expect(viewRes.statusCode).toBe(200);
+
+    // But not edit — pass parentAppId so the exact same bypass grant is in play.
+    const updateRes = await request(nestApp.getHttpServer())
+      .put(`/api/v2/apps/${moduleApp.id}/versions/${moduleVersion.id}?parentAppId=${consumerApp.id}`)
+      .set('tj-workspace-id', org.id)
+      .set('Cookie', builderCookie)
+      .send({ name: 'renamed-by-viewer' });
+    expect(updateRes.statusCode).toBe(403);
+
+    // ...or promote.
+    const promoteRes = await request(nestApp.getHttpServer())
+      .put(`/api/v2/apps/${moduleApp.id}/versions/${moduleVersion.id}/promote?parentAppId=${consumerApp.id}`)
+      .set('tj-workspace-id', org.id)
+      .set('Cookie', builderCookie)
+      .send({ environmentId: uuidv4() });
+    expect(promoteRes.statusCode).toBe(403);
   });
 });

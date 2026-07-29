@@ -27,6 +27,7 @@ import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorURL } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
+import { whenBranchResolved } from '@/_helpers/active-branch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -95,9 +96,9 @@ const useAppData = (
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
   const user = useStore((state) => state.user);
-  // The top-level app containing this module instance — used to let the backend
-  // verify this module read is happening in the context of an app the user can
-  // edit, even when they have no standalone module permission.
+  // The top-level app containing this module instance — used to let the backend verify this
+  // module read is happening in the context of an app the user can edit, even when they have
+  // no standalone module permission. Forwarded to appVersion.service.js getAll/getModuleVersionData.
   const parentAppId = useStore((state) => state.appStore?.modules?.['canvas']?.app?.appId);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
@@ -358,9 +359,12 @@ const useAppData = (
       if (isPublicAccess) {
         appDataPromise = appService.fetchAppBySlug(slug);
       } else {
-        appDataPromise = isPreviewForVersion
-          ? appVersionService.getAppVersionData(appId, versionId, mode)
-          : appService.fetchApp(appId);
+        // Gate on branch resolution so the app-load (and its hydration) carries the right
+        // branch_id. The branch is resolved async (URL name -> id) by AppsRoute; without this
+        // gate the load can race ahead with no branch_id and hydrate on the default branch.
+        appDataPromise = whenBranchResolved().then(() =>
+          isPreviewForVersion ? appVersionService.getAppVersionData(appId, versionId, mode) : appService.fetchApp(appId)
+        );
       }
     }
 
@@ -618,6 +622,9 @@ const useAppData = (
           const moduleOwnerId = appData?.user_id ?? appData?.editing_version?.app?.user_id ?? appData?.app?.user_id;
           const canEdit = canEditModule(authenticationService.currentSessionValue, appId, moduleOwnerId);
           setIsEditorReadOnly(!canEdit);
+          // Backend git/branch-based freeze (e.g. first draft locked on main) was only ever
+          // applied to non-module editors above — modules opened as their own editor need it too.
+          setIsEditorFreezed(appData.should_freeze_editor);
         }
         setAppHomePageId(homePageId, moduleId);
         if (!moduleMode && appData.modules) {
