@@ -1,11 +1,12 @@
 import React from 'react';
 import moment from 'moment';
-import { X } from 'lucide-react';
 import { resolveReferences } from '@/_helpers/utils';
+import { Button } from '@/components/ui/Button/Button';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Checkbox } from '@/components/ui/Rocket';
 
 // Untyped (.jsx) imports — cast to loose component types so they can be used as JSX under strict TS.
+const ButtonComponent = Button as React.ComponentType<any>
 const CodeHinterComponent = CodeHinter as React.ComponentType<any>;
 const CheckboxComponent = Checkbox as React.ComponentType<any>;
 
@@ -47,15 +48,15 @@ export const ConfigureDownload = ({ component, paramUpdated, onClose }: Configur
     <div data-cy="configure-download-popover">
       <div className="tw-flex tw-h-11 tw-items-center tw-justify-between tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-px-4">
         <span className="tw-font-title-default tw-text-text-default">Configure download data</span>
-        <button
-          type="button"
-          aria-label="Close"
-          data-cy="configure-download-close"
+        <ButtonComponent
+          fill="var(--icon-default)"
+          iconOnly
+          isLucid
+          leadingIcon="x"
           onClick={onClose}
-          className="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default tw-cursor-pointer hover:tw-text-icon-strong"
-        >
-          <X size={14} />
-        </button>
+          size="medium"
+          variant="ghost"
+        />
       </div>
 
       <div className="tw-flex tw-flex-col tw-gap-4 tw-p-4">

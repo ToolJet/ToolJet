@@ -3,6 +3,7 @@ import { Bolt } from 'lucide-react';
 import { resolveReferences } from '@/_helpers/utils';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
+import { Button } from '@/components/ui/Button/Button';
 import { Switch, Popover, PopoverContent } from '@/components/ui/Rocket';
 import { PopoverAnchor } from '@/components/ui/Rocket/shadcn/popover';
 import { POPOVER_MENU_Z } from '@/AppBuilder/RightSideBar/Inspector/ActionConfigurationPanels/shared';
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils';
 // Untyped (.jsx) imports — cast to loose component types so they can be used as JSX under strict TS.
 const CodeHinterComponent = CodeHinter as React.ComponentType<any>;
 const FxButtonComponent = FxButton as React.ComponentType<any>;
+const ButtonComponent = Button as React.ComponentType<any>
 const SwitchComponent = Switch as React.ComponentType<any>;
 const PopoverComponent = Popover as React.ComponentType<any>;
 const PopoverContentComponent = PopoverContent as React.ComponentType<any>;
@@ -45,7 +47,7 @@ export const ToolbarTile = ({
   isConfigurable = false,
   configContent = null,
   configOpen = false,
-  onConfigOpenChange = () => {},
+  onConfigOpenChange = () => { },
 }: ToolbarTileProps) => {
   const definitionProp = component?.component?.definition?.properties?.[propertyKey] || {};
   const fxActive: boolean = definitionProp.fxActive ?? false;
@@ -64,31 +66,36 @@ export const ToolbarTile = ({
   const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
   const tile = (
-    <div className="tw-group tw-flex tw-flex-col tw-gap-2 tw-rounded-[6px] tw-bg-interactive-default tw-px-[8px] tw-py-[7px] hover:tw-bg-interactive-hover">
+    <div
+      className={cn(
+        'tw-group tw-flex tw-flex-col tw-gap-2 tw-rounded-[6px] tw-bg-interactive-default tw-px-[8px] tw-py-[7px]',
+        isConfigurable && 'hover:tw-bg-interactive-hover'
+      )}
+    >
       <div className="tw-flex tw-items-center tw-gap-2">
         <span
-          className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
+          className="tw-min-w-0 tw-flex-1 tw-truncate tw-font-body-default tw-text-text-default"
           data-cy={`${dataCy}-label`}
         >
           {label}
         </span>
 
         {isConfigurable && (
-          <button
-            type="button"
-            aria-label={`Configure ${label}`}
-            data-cy={`${dataCy}-configure-button`}
-            onClick={(e) => {
+          <ButtonComponent
+            fill="var(--icon-strong)"
+            iconOnly
+            isLucid
+            leadingIcon="bolt"
+            onClick={(e: React.SyntheticEvent) => {
               e.stopPropagation();
               onConfigOpenChange(!configOpen);
             }}
-            className={cn(
-              'tw-flex tw-h-5 tw-w-5 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-[4px] tw-text-icon-default tw-cursor-pointer hover:tw-text-icon-strong',
-              !configOpen && 'tw-opacity-0 group-hover:tw-opacity-100'
-            )}
-          >
-            <Bolt size={12} />
-          </button>
+            className={!configOpen && 'tw-opacity-0 group-hover:tw-opacity-100'}
+            size="small"
+            variant="ghost"
+            aria-label={`Configure ${label}`}
+            data-cy={`${dataCy}-configure-button`}
+          />
         )}
 
         <span
