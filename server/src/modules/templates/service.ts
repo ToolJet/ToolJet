@@ -65,7 +65,13 @@ export class TemplatesService {
     return this.importTemplate(currentUser, sampleAppDef, name);
   }
 
-  async importTemplate(currentUser: User, templateDefinition: any, appName: string, identifier?: string, branchId?: string) {
+  async importTemplate(
+    currentUser: User,
+    templateDefinition: any,
+    appName: string,
+    identifier?: string,
+    branchId?: string
+  ) {
     const importDto = new ImportResourcesDto();
     importDto.organization_id = currentUser.organizationId;
     importDto.app = templateDefinition.app || templateDefinition.appV2;
@@ -152,9 +158,8 @@ export class TemplatesService {
         dataSourcesUsedInApps.push(dataSource);
       });
     });
-    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } = await this.pluginsService.checkIfPluginsToBeInstalled(
-      dataSourcesUsedInApps
-    );
+    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } =
+      await this.pluginsService.checkIfPluginsToBeInstalled(dataSourcesUsedInApps);
     return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
   }
 }

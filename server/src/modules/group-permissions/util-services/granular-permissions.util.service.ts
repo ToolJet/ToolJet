@@ -536,8 +536,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     manager?: EntityManager
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { granularPermissions, actions, resourcesToDelete, resourcesToAdd, group } =
-        updateResourceGroupPermissionsObject;
+      const { granularPermissions, actions, resourcesToDelete, resourcesToAdd } = updateResourceGroupPermissionsObject;
       // Module folders are never end-user-assignable — reject for view too.
       const isModuleFolder = granularPermissions.type === ResourceType.MODULE_FOLDER;
 

@@ -1,0 +1,97 @@
+// Folder Has Apps (delete-blocked) Modal Styles
+.folder-has-apps-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(2px);
+}
+
+.folder-has-apps-modal {
+  width: 459px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  border-radius: 8px;
+  background-color: var(--slate1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  animation: folderHasAppsModalFadeIn 0.2s ease;
+
+  &.dark-theme {
+    background-color: var(--slate2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes folderHasAppsModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.folder-has-apps-modal-icon {
+  flex-shrink: 0;
+}
+
+.folder-has-apps-modal-body {
+  color: var(--slate11);
+  font-size: 14px;
+  line-height: 1.6;
+
+  p,
+  ol,
+  ul {
+    margin: 0 0 16px;
+    padding-left: 20px;
+  }
+
+  p {
+    padding-left: 0;
+  }
+
+  // A paragraph that introduces the list right below it should hug that list —
+  // the gap belongs after the list, not between the intro text and its own list.
+  p.folder-has-apps-modal-intro-text {
+    margin-bottom: 0;
+  }
+
+  li {
+    margin-bottom: 0px;
+  }
+
+  li:last-child {
+    margin-bottom: 0;
+  }
+
+  p:last-child,
+  ol:last-child,
+  ul:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.folder-has-apps-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--slate12);
+  margin: 0 0 4px;
+  line-height: 1.4;
+}
+
+.folder-has-apps-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}

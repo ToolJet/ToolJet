@@ -52,12 +52,8 @@ module.exports = defineConfig([{
   },
 
   rules: {
-    "prettier/prettier": ["error", {
-      semi: true,
-      trailingComma: "es5",
-      printWidth: 120,
-      singleQuote: true,
-    }],
+    // options come from the root .prettierrc — single source of truth
+    "prettier/prettier": "error",
 
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",

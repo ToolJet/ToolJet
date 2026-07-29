@@ -14,7 +14,10 @@ describe('ValidAppGuard', () => {
   const UUID = '550e8400-e29b-41d4-a716-446655440000';
   const ORG_ID = 'org-550e8400-e29b-41d4-a716-446655440001';
 
-  const makeContext = (params: { id?: string; slug?: string; versionId?: string } = {}, userOverrides: Record<string, any> = {}): ExecutionContext => {
+  const makeContext = (
+    params: { id?: string; slug?: string; versionId?: string } = {},
+    userOverrides: Record<string, any> = {}
+  ): ExecutionContext => {
     const request: Record<string, any> = {
       params,
       headers: {},
@@ -63,9 +66,7 @@ describe('ValidAppGuard', () => {
     it('forwards versionId and branchId to findById', async () => {
       mockAppRepository.findById.mockResolvedValue(makeApp());
 
-      await guard.canActivate(
-        makeContext({ id: UUID, versionId: 'ver-uuid' }, { branchId: 'branch-uuid' })
-      );
+      await guard.canActivate(makeContext({ id: UUID, versionId: 'ver-uuid' }, { branchId: 'branch-uuid' }));
 
       expect(mockAppRepository.findById).toHaveBeenCalledWith(UUID, ORG_ID, 'ver-uuid', 'branch-uuid');
     });
@@ -93,11 +94,15 @@ describe('ValidAppGuard', () => {
     it('forwards branchId resolved from user.branchId', async () => {
       mockAppRepository.findBySlug.mockResolvedValue(makeApp());
 
-      await guard.canActivate(
-        makeContext({ id: 'my-app-slug' }, { branchId: 'branch-uuid' })
-      );
+      await guard.canActivate(makeContext({ id: 'my-app-slug' }, { branchId: 'branch-uuid' }));
 
-      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app-slug', ORG_ID, undefined, undefined, 'branch-uuid');
+      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith(
+        'my-app-slug',
+        ORG_ID,
+        undefined,
+        undefined,
+        'branch-uuid'
+      );
     });
 
     it('throws NotFoundException (not a 500) when slug does not match any app', async () => {

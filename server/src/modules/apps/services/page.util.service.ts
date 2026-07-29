@@ -31,10 +31,7 @@ export class PageHelperService implements IPageHelperService {
     }, manager);
   }
 
-  public async findFirstPagesByVersionIds(
-    versionIds: string[],
-    manager: EntityManager
-  ): Promise<Map<string, Page>> {
+  public async findFirstPagesByVersionIds(versionIds: string[], manager: EntityManager): Promise<Map<string, Page>> {
     if (versionIds.length === 0) return new Map();
 
     const pages = await manager

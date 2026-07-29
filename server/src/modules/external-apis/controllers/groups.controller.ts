@@ -19,7 +19,7 @@ import { ExternalApiSecurityGuard } from '@modules/auth/guards/external-api-secu
 
 @Controller('ext')
 export class ExternalApisGroupsController {
-  constructor() { }
+  constructor() {}
 
   @InitFeature(FEATURE_KEY.CREATE_GROUP)
   @UseGuards(ExternalApiSecurityGuard)

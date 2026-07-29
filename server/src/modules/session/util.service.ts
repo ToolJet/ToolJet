@@ -27,7 +27,7 @@ import {
   UserAppsPermissions,
   UserDataSourcePermissions,
   UserFolderPermissions,
-  UserPermissions
+  UserPermissions,
 } from '@modules/ability/types';
 import { JwtService } from '@nestjs/jwt';
 import { RolesRepository } from '@modules/roles/repository';

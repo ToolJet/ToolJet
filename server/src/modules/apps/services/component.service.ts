@@ -20,7 +20,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
 import { AppsRepository } from '../repository';
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
@@ -221,7 +221,9 @@ export class ComponentsService implements IComponentsService {
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
         .where('component.pageId IN (:...pageIds)', { pageIds })
-        .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
+        .andWhere('layout.type IN (:...types)', {
+          types: ['desktop', 'mobile'],
+        })
         .orderBy('component.pageId', 'ASC')
         .addOrderBy('component.id', 'ASC')
         .addOrderBy('layout.updatedAt', 'DESC')
@@ -447,7 +449,9 @@ export class ComponentsService implements IComponentsService {
     proposedParentById: Record<string, string | null | undefined>,
     appVersionId: string,
     manager: EntityManager,
-    options: { newComponentParents?: Record<string, string | null | undefined> } = {}
+    options: {
+      newComponentParents?: Record<string, string | null | undefined>;
+    } = {}
   ): Promise<void> {
     const affectedIds = Object.keys(proposedParentById);
     if (affectedIds.length === 0) return;
@@ -681,7 +685,9 @@ export class ComponentsService implements IComponentsService {
     if (!coRelationId) return;
 
     const organizationId = user.organizationId || user.defaultOrganizationId;
-    const moduleApp = await this.appsRepository.findOne({ where: { co_relation_id: coRelationId, organizationId } });
+    const moduleApp = await this.appsRepository.findOne({
+      where: { co_relation_id: coRelationId, organizationId },
+    });
     if (!moduleApp) {
       throw new ForbiddenException('You do not have permission to pin this module version');
     }
