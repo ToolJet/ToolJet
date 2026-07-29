@@ -684,13 +684,7 @@ export default class LicenseBase {
     return !!this._workflows?.['enabled'];
   }
   public get canPromote(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.app?.features?.promote;
-    }
-    if (this._app?.features?.promote === undefined) {
-      return true;
-    }
-    return !!this._app?.features?.promote;
+    return this.canRelease;
   }
 
   public get canRelease(): boolean {

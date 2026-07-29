@@ -178,6 +178,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.APP_JS_LIBRARIES:
       return licenseInstance.appJsLibraries;
 
+    case LICENSE_FIELD.RELEASE:
+      return licenseInstance.canRelease;
+
     default:
       return licenseInstance.terms;
   }

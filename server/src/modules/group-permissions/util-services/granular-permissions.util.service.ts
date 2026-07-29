@@ -241,12 +241,12 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       return;
     }
 
-    const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
-      LICENSE_FIELD.MULTI_ENVIRONMENT,
+    const hasReleaseLicense = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.RELEASE,
       organizationId
     );
 
-    if (hasMultiEnvironment) {
+    if (hasReleaseLicense) {
       return;
     }
 
@@ -447,12 +447,12 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     const { organizationId, groupId, isBuilderPermissions, isEnvironmentPermissions } = params;
 
     if (isEnvironmentPermissions && !isBuilderPermissions) {
-      const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
-        LICENSE_FIELD.MULTI_ENVIRONMENT,
+      const hasReleaseLicense = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.RELEASE,
         organizationId
       );
 
-      if (hasMultiEnvironment) {
+      if (hasReleaseLicense) {
         return;
       }
     }
