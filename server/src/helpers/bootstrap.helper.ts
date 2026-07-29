@@ -632,9 +632,3 @@ export function logShutdownInfo(signal: string, logger: any) {
   logger.log('='.repeat(60));
   logger.log('Gracefully closing application...');
 }
-// trigger-restart-verify
-// verify2
-// verify-disable-fix
-// verify-saml-ldap-fix
-// verify-orphan-recheck
-// browser-repro
