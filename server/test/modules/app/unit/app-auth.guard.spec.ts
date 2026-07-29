@@ -10,6 +10,7 @@ describe('AppAuthGuard', () => {
   let mockAppRepository: { findAppBySlug: jest.Mock };
   let mockOrgRepository: { findOne: jest.Mock; touchLastAccessedAt: jest.Mock };
   let mockAppUtilService: { getAppOrganizationDetails: jest.Mock };
+  let mockDataSource: { getRepository: jest.Mock };
 
   const makeContext = (slug: string): ExecutionContext => {
     const request: Record<string, any> = { params: { slug }, headers: {} };
@@ -36,7 +37,13 @@ describe('AppAuthGuard', () => {
     mockAppRepository = { findAppBySlug: jest.fn() };
     mockOrgRepository = { findOne: jest.fn(), touchLastAccessedAt: jest.fn() };
     mockAppUtilService = { getAppOrganizationDetails: jest.fn() };
-    guard = new AppAuthGuard(mockAppUtilService as any, mockOrgRepository as any, mockAppRepository as any);
+    mockDataSource = { getRepository: jest.fn().mockReturnValue({ findOne: jest.fn().mockResolvedValue(null) }) };
+    guard = new AppAuthGuard(
+      mockAppUtilService as any,
+      mockOrgRepository as any,
+      mockAppRepository as any,
+      mockDataSource as any
+    );
   });
 
   afterEach(() => jest.clearAllMocks());

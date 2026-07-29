@@ -4,7 +4,6 @@ import { App } from 'src/entities/app.entity';
 import { FEATURE_KEY, APP_TYPES } from 'src/modules/apps/constants';
 import { MODULES } from 'src/modules/app/constants/modules';
 import { UserAllPermissions } from 'src/modules/app/types';
-import { plainToClass } from 'class-transformer';
 import { ForbiddenException } from '@nestjs/common';
 
 // ---------------------------------------------------------------------------
@@ -59,7 +58,6 @@ function makeModulePermissions(override: Partial<UserAllPermissions> = {}): User
 }
 
 const MODULE_APP_ID = 'module-app-uuid-1';
-const OTHER_MODULE_APP_ID = 'module-app-uuid-2';
 
 // ---------------------------------------------------------------------------
 // Tests — defineAppAbility (module resource type)
@@ -350,7 +348,11 @@ function makeService() {
   const svc = Object.create(AppsService.prototype) as AppsService;
   // Stub versionRepository and appsUtilService to avoid real DB calls
   (svc as any).versionRepository = {};
-  (svc as any).appsUtilService = {};
+  (svc as any).appsUtilService = { overlayAppMetadata: jest.fn().mockResolvedValue(undefined) };
+  // checkFolderEditPermission hits a real DB transaction via dbTransactionWrap — these
+  // cases only exercise app-level ability.can(UPDATE), so stub it out to preserve
+  // "no folder-level edit permission" (its behavior before this method existed).
+  (svc as any).checkFolderEditPermission = jest.fn().mockResolvedValue(false);
   return svc;
 }
 
@@ -414,6 +416,7 @@ describe('AppsService.validatePrivateAppAccess — module canEdit behavior', () 
         findByName: jest.fn().mockResolvedValue(fakeVersion),
       };
       (service as any).appsUtilService = {
+        overlayAppMetadata: jest.fn().mockResolvedValue(undefined),
         validateVersionEnvironment: jest.fn().mockResolvedValue(fakeEnv),
       };
 
