@@ -46,6 +46,7 @@ A formal glossary of ToolJet domain terminology. When code, docs, or conversatio
 | **Right Sidebar** | App-Builder panel for component properties and styles | Properties panel, config panel |
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | Header bar |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | Library component, shared module (be careful — "module" also means NestJS module in backend) |
+| **Module Pin** | A ModuleViewer component pinning a specific module version via `moduleReferenceId` (stable UUID per version row, survives git/zip round-trips); publishing blocks on draft/orphan/unpinned modules | Module reference (that's the id, not the act) |
 | **Template** | A pre-built app sample that users can clone as a starting point (60+ across 10 categories) | Starter, boilerplate |
 | **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | Dynamic styles |
 | **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — styling is the broader concept) |
@@ -78,9 +79,12 @@ A formal glossary of ToolJet domain terminology. When code, docs, or conversatio
 
 | Term | Definition | Aliases to avoid |
 |------|-----------|-----------------|
-| **Version** | A named development snapshot of an app; multiple developers can work on separate versions | Branch (not git-based), revision |
+| **Version** | A named development snapshot of an app (`versionType: VERSION`); statuses DRAFT → PUBLISHED → RELEASED. With Git Sync branching, a `BRANCH`-type version is the working head of a Workspace Branch | Revision; "branch" alone (say Workspace Branch or branch-head version) |
+| **Workspace Branch** | A named Git branch spanning a whole workspace's apps, data sources, and modules (`WorkspaceBranch` entity, table `organization_git_sync_branches`); one is the default branch (EE Git Sync feature) | App branch (branches are workspace-scoped, not per-app) |
+| **Drift** | Local state diverging from the git remote on a Workspace Branch; detected by comparing stored meta-hashes (`app_meta_hash`, `data_source_meta_hash`, `module_meta_hash`) | Out-of-sync (informal) |
+| **App Metadata** | Name, slug, icon, and public flag of a non-workflow app — stored on `app_versions` rows, NOT on `apps`; workflows keep them on `apps` | App settings (broader concept) |
 | **Release** | The act of publishing a version to end users; makes the app accessible via its public URL | Deploy (more accurate for environments), publish |
-| **Environment** | A deployment stage — development, staging, production — with per-environment data source configs | Stage (informal but acceptable) |
+| **Environment** | A deployment stage — development, staging, production — with per-environment data source configs; priority-ordered per workspace | Stage (informal but acceptable) |
 | **Promote** | Moving an app version from one environment to the next (e.g., dev to staging to production) (EE feature) | Deploy, push |
 | **Maintenance Mode** | A flag that takes a released app offline temporarily while preserving the release | Disabled, offline |
 | **App History** | An audit trail of changes to an app version with undo capability (EE feature) | Changelog, revision history |
@@ -92,6 +96,7 @@ A formal glossary of ToolJet domain terminology. When code, docs, or conversatio
 | **Data Source** | A configured connector to an external database, API, or service — NEVER abbreviate to "ds" | Datasource (one word, used in some URL paths but not canonical), connector, integration |
 | **Global Data Source** | A data source configured at workspace level, shared across all apps | Workspace data source |
 | **App-Level Data Source** | A data source scoped to a single app (code: "local" type) | Local data source (code term, not user-facing) |
+| **Data Source Version** | A branch-aware version row of a data source (`DataSourceVersion`; `is_default`, `branch_id`); its per-Environment options/credentials live in `DataSourceVersionOptions` — there is no single "the options", always resolve with an environment | DSV/DSVO (code shorthand) |
 | **Query** | A parameterized operation against a data source; created in the Query Panel | Data Query (formal alias, use when distinguishing from SQL queries) |
 | **Query Panel** | The App-Builder panel for creating and managing queries | Query bar |
 | **Query Manager** | The left section of the Query Panel listing all queries | Query list |
@@ -115,7 +120,8 @@ A formal glossary of ToolJet domain terminology. When code, docs, or conversatio
 | **Comment** | An individual message within a thread | Note, annotation |
 | **Multiplayer Editing** | Real-time collaborative editing of an app by multiple users simultaneously (EE feature) | Co-editing, real-time collaboration |
 | **Audit Log** | A compliance record of user actions (who did what, when); retention varies by plan | Activity log, event log |
-| **Git Sync** | Bidirectional sync between app versions and a Git repository (EE feature) | Version control (broader concept), git integration |
+| **Git Sync** | Bidirectional sync between a workspace and a Git repository — apps, data sources, and modules pushed/pulled per Workspace Branch (EE feature) | Version control (broader concept), git integration |
+| **Correlation ID** | Portable identity (`co_relation_id`) carried by apps, versions, components, and data sources so entities survive git/zip round-trips; unique only per workspace — git clones share it, always scope lookups | Git id (adapter-internal term) |
 | **Import** | Loading an app definition (JSON) into a workspace from another ToolJet instance | Restore |
 | **Export** | Saving an app definition (JSON) for transfer to another ToolJet instance | Backup (different purpose) |
 
@@ -136,7 +142,8 @@ A formal glossary of ToolJet domain terminology. When code, docs, or conversatio
 
 | Term | Definition | Aliases to avoid |
 |------|-----------|-----------------|
-| **AI Builder** | AI-powered app creation assistant that generates apps from natural language prompts | AI Assistant (too generic) |
+| **Build with AI** | AI-powered app creation from natural language prompts (docs-canonical name) | AI Builder (older name), AI Assistant (too generic) |
+| **AI Docs Assistant** | In-product AI assistant answering questions from ToolJet documentation | AI chat |
 | **AI Copilot** | In-editor AI assistant for code suggestions and fixes within the App-Builder | Code assistant |
 | **AI Credits** | Per-builder monthly allocation for AI features; varies by plan | Tokens (ambiguous with auth tokens) |
 | **AI Conversation** | A persistent chat session with the AI assistant within an app context | Chat, AI thread |
@@ -176,6 +183,7 @@ A formal glossary of ToolJet domain terminology. When code, docs, or conversatio
 - A **User** belongs to one or more **Workspaces** via a **Role** (Admin, Builder, or End User) and zero or more **Groups**
 - An **App** contains one or more **Pages**, each containing **Components** with **Layouts**
 - An **App** has one or more **Versions**; one version may be the current **Release**
+- A **Workspace Branch** (Git Sync) spans all **Apps**, **Data Sources**, and **Modules** in a **Workspace**; each branch's working head is a `BRANCH`-type **Version**, and **Drift** vs the remote is detected via meta-hashes
 - A **Component** exposes **Exposed Variables** and fires **Events**
 - An **Event Handler** links an **Event** to one or more **Actions**
 - A **Query** connects an **App** to a **Data Source** and may apply a **Transformation** to results
@@ -197,7 +205,9 @@ A formal glossary of ToolJet domain terminology. When code, docs, or conversatio
 
 - **"Workspace Variable" / "Environment Variable"** appear in legacy docs and some code paths but the current canonical terms are **Workspace Constant** (non-secret) and **Workspace Secret** (encrypted). The variable terminology is deprecated.
 
-- **Plan code IDs vs. user-facing names** diverge: `basic` = **Free**, `flexible` = **Pro**, `business` = **Team**, `enterprise` = **Enterprise**. Always use user-facing plan names in docs and conversation.
+- **Plan code IDs vs. user-facing names** diverge: `basic` = **Basic** (the free tier), `flexible` = **Pro**, `business` = **Team**, `enterprise` = **Enterprise** (per `PLAN_DETAILS` in licensing). Product docs defer plan details to tooljet.ai/pricing — verify names there before writing user-facing copy.
+
+- **"Branch"** is now three things: a **Workspace Branch** (workspace-scoped git branch entity), a **branch-head Version** (`versionType: BRANCH`, UUID name, display name from the Workspace Branch), and the plain git branch on the remote. Say which one; never use bare "branch" for an app Version.
 
 - **"Event" vs. "Trigger"** serve different domains: **Event** is a component/UI-level interaction (button click, query success). **Trigger** starts a **Workflow** (manual, schedule, webhook). Do not use them interchangeably.
 
