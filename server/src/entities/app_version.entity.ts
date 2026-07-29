@@ -121,6 +121,12 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'remote_updated_at', type: 'timestamp', nullable: true, default: null })
   remoteUpdatedAt: Date;
 
+  // Git-sync change token: git tree SHA of apps/<app>/ (or modules/<module>/) that
+  // was last materialized into this version. Pull skips the app when the incoming
+  // tree SHA matches this.
+  @Column({ name: 'git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
+  gitTreeSha: string;
+
   @Column({ name: 'source_tag', type: 'varchar', length: 256, nullable: true })
   sourceTag: string;
 

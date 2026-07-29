@@ -17,10 +17,9 @@ synced (each branch stores its own apps/ modules/ data-sources/ + .meta/).
 
 What it does (all idempotent — safe to re-run):
 
-  1. Adds `updatedAt` to every apps/**/app/app.json and modules/**/app/app.json
-     that lacks it. The value is taken from the legacy .meta/appMeta.json /
-     moduleMeta.json entry (matched by co_relation_id = app.json `id`) so the
-     pull-side change token stays continuous; falls back to "now" if absent.
+  1. Strips the transitional `updatedAt` field from every apps/**/app/app.json and
+     modules/**/app/app.json if present. Change detection now uses git's own tree
+     SHAs (computed at pull time), so no per-resource token lives in the files.
 
   2. Restructures data sources:
         data-sources/<co_relation_id>.json
@@ -42,7 +41,6 @@ import json
 import os
 import shutil
 import sys
-from datetime import datetime, timezone
 
 
 class MigrationError(Exception):
@@ -64,27 +62,7 @@ def load_json(path: str):
         return json.load(fh)
 
 
-# ── 1. app.json updatedAt ────────────────────────────────────────────────────
-
-
-def read_meta_updated_at(repo: str) -> dict:
-    """Map co_relation_id -> updatedAt from the legacy app/module meta files."""
-    out: dict = {}
-    for meta_name in ("appMeta.json", "moduleMeta.json"):
-        meta_path = os.path.join(repo, ".meta", meta_name)
-        if not os.path.isfile(meta_path):
-            continue
-        try:
-            meta = load_json(meta_path)
-        except (json.JSONDecodeError, OSError) as exc:
-            log(f"  ! could not read {meta_name}: {exc}")
-            continue
-        for key, entry in meta.items():
-            if key == "lastUpdatedAt" or not isinstance(entry, dict):
-                continue
-            if entry.get("updatedAt"):
-                out[key] = entry["updatedAt"]
-    return out
+# ── 1. strip app.json updatedAt ──────────────────────────────────────────────
 
 
 def iter_app_jsons(repo: str):
@@ -98,8 +76,7 @@ def iter_app_jsons(repo: str):
                 yield os.path.join(dirpath, "app.json")
 
 
-def migrate_app_jsons(repo: str, meta_updated_at: dict, dry_run: bool) -> int:
-    now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+def migrate_app_jsons(repo: str, dry_run: bool) -> int:
     changed = 0
     for app_json_path in iter_app_jsons(repo):
         try:
@@ -107,16 +84,12 @@ def migrate_app_jsons(repo: str, meta_updated_at: dict, dry_run: bool) -> int:
         except (json.JSONDecodeError, OSError) as exc:
             log(f"  ! skipping unreadable {app_json_path}: {exc}")
             continue
-        if not isinstance(data, dict):
-            continue
-        if data.get("updatedAt"):
-            continue  # already migrated
+        if not isinstance(data, dict) or "updatedAt" not in data:
+            continue  # nothing to strip
 
-        co_rel_id = data.get("id")
-        data["updatedAt"] = meta_updated_at.get(co_rel_id, now_iso)
+        del data["updatedAt"]
         rel = os.path.relpath(app_json_path, repo)
-        src = "meta" if co_rel_id in meta_updated_at else "now"
-        log(f"  + updatedAt ({src}) -> {rel}")
+        log(f"  - updatedAt -> {rel}")
         if not dry_run:
             with open(app_json_path, "w", encoding="utf-8") as fh:
                 fh.write(json.dumps(data, indent=2, ensure_ascii=False))
@@ -229,10 +202,8 @@ def main() -> int:
     log(f"Migrating git-sync repo: {repo}{mode}\n")
 
     try:
-        # Read meta timestamps BEFORE deleting .meta so app.json keeps continuity.
-        log("1. app.json updatedAt")
-        meta_updated_at = read_meta_updated_at(repo)
-        app_changes = migrate_app_jsons(repo, meta_updated_at, args.dry_run)
+        log("1. strip app.json updatedAt")
+        app_changes = migrate_app_jsons(repo, args.dry_run)
         log(f"   {app_changes} app.json file(s) updated\n")
 
         log("2. data-sources restructure")

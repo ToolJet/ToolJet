@@ -36,11 +36,11 @@ export class DataSourceVersion {
   @Column({ name: 'is_synced', default: false })
   isSynced: boolean;
 
-  // Git-sync change token: sha256 of the canonical data-source.json content that
-  // was last applied to this DSV. Pull skips the per-env options re-apply when the
-  // incoming file's hash matches this and is_synced is true.
-  @Column({ name: 'git_content_hash', type: 'varchar', length: 64, nullable: true, default: null })
-  gitContentHash: string;
+  // Git-sync change token: git tree SHA of data-sources/<ds>/ that was last
+  // applied to this DSV. Pull skips the per-env options re-apply when the incoming
+  // tree SHA matches this and is_synced is true.
+  @Column({ name: 'git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
+  gitTreeSha: string;
 
   @Column({ name: 'branch_id', nullable: true })
   branchId: string;
