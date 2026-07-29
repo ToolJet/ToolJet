@@ -163,7 +163,12 @@ const WidgetWrapper = memo(
     // a 1px dashed top border (set below) marks the widget's authored position
     // so designers can still locate it; the floating ConfigHandle stays
     // clickable above the collapsed slot. In view mode display:none is set.
-    const gridFinalHeight = visibility ? temporaryLayouts?.height ?? gridHeight : HIDDEN_COMPONENT_HEIGHT;
+    // Floor a stale/raw temp at gridHeight only when the calc adds a mandatory bump (top-label input), so its box can't collapse below the label row.
+    const flooredTemporaryHeight =
+      temporaryLayouts?.height != null && gridHeight > layoutData?.height
+        ? Math.max(temporaryLayouts.height, gridHeight)
+        : temporaryLayouts?.height;
+    const gridFinalHeight = visibility ? flooredTemporaryHeight ?? gridHeight : HIDDEN_COMPONENT_HEIGHT;
     const layoutContext = indices ?? subContainerIndex;
     const serializedLayoutContext = serializeLayoutContext(layoutContext);
 
