@@ -1,6 +1,8 @@
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { Page } from '@entities/page.entity';
+import { Component } from '@entities/component.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
@@ -13,6 +15,51 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 export class AppsRepository extends Repository<App> {
   constructor(private dataSource: DataSource) {
     super(App, dataSource.createEntityManager());
+  }
+
+  /**
+   * True if `parentAppId`'s CURRENT version contains a ModuleViewer component
+   * that embeds the module identified by `moduleCoRelationId`. "Current" is
+   * `app.current_version_id` if released, else the latest non-stub AppVersion
+   * by updated_at — deliberately NOT excluding version_type='branch' rows:
+   * in a git-sync-enabled workspace the app's only (or actively edited) row
+   * IS a branch-type row, so excluding it here (as fetchModules' unrelated
+   * editingVersion tier does, for a different need — matching a MODULE against
+   * a specific consumer branch) would make a genuinely-current embed invisible.
+   * A since-removed embed in a superseded version still no longer counts. The
+   * requester's right to edit `parentAppId` at all is checked separately by
+   * the caller.
+   */
+  async isModuleEmbeddedInApp(
+    moduleCoRelationId: string,
+    parentAppId: string,
+    manager?: EntityManager
+  ): Promise<boolean> {
+    const m = manager ?? this.manager;
+    const count = await m
+      .createQueryBuilder(App, 'app')
+      .innerJoin(AppVersion, 'app_version', 'app_version.app_id = app.id')
+      .innerJoin(Page, 'page', 'page.app_version_id = app_version.id')
+      .innerJoin(Component, 'component', 'component.page_id = page.id')
+      .where('app.id = :parentAppId', { parentAppId })
+      .andWhere('component.type = :componentType', { componentType: 'ModuleViewer' })
+      .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleCoRelationId", {
+        moduleCoRelationId,
+      })
+      .andWhere(
+        `app_version.id = COALESCE(
+           app.current_version_id,
+           (
+             SELECT av.id FROM app_versions av
+             WHERE av.app_id = app.id
+               AND av.is_stub = false
+             ORDER BY av.updated_at DESC
+             LIMIT 1
+           )
+         )`
+      )
+      .getCount();
+    return count > 0;
   }
 
   async findBySlug(slug: string, organizationId: string, versionId?: string, branchId?: string): Promise<App> {

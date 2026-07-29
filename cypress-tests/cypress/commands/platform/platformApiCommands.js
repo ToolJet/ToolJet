@@ -1266,3 +1266,29 @@ Cypress.Commands.add(
     });
   },
 );
+
+Cypress.Commands.add("apiDeleteAllModules", () => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/apps?page=1&folder=&searchKey=&type=module`,
+      headers,
+      log: false,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      const modules = response.body.apps || [];
+      if (modules.length > 0) {
+        cy.wrap(modules).each((module) => {
+          cy.request({
+            method: "DELETE",
+            url: `${Cypress.env("server_host")}/api/modules/${module.id}`,
+            headers,
+            log: false,
+          }).then((deleteResponse) => {
+            expect(deleteResponse.status).to.equal(200);
+          });
+        });
+      }
+    });
+  });
+});

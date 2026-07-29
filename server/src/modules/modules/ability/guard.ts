@@ -3,7 +3,7 @@ import { FeatureAbilityFactory } from '.';
 import { AbilityGuard } from '@modules/app/guards/ability.guard';
 import { ResourceDetails } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
-import { User } from '@entities/user.entity';
+import { App } from '@entities/app.entity';
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
@@ -12,11 +12,12 @@ export class FeatureAbilityGuard extends AbilityGuard {
       resourceType: MODULES.MODULES,
     };
   }
+
   protected getAbilityFactory() {
     return FeatureAbilityFactory;
   }
 
   protected getSubjectType() {
-    return User;
+    return App;
   }
 }

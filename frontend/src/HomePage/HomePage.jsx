@@ -58,6 +58,7 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -869,9 +870,32 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
-      // Module permissions return true if builder
-      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
+    } else if (this.props.appType === 'module') {
+      // Admins have implicit full access to all modules
+      if (currentSession?.admin || currentSession?.super_admin) {
+        return true;
+      }
+      const modulePerms = currentSession?.module_group_permissions;
+      if (modulePerms) {
+        // Shared with the module editor read-only gate (useAppData) so the two can't drift.
+        const canEdit = canEditModule(currentSession, app?.id, app?.user_id);
+        const canReadModule =
+          canEdit || modulePerms.is_all_viewable || (app?.id && modulePerms.viewable_apps_id?.includes(app.id));
+        switch (action) {
+          case 'create':
+            return user_permissions.module_create;
+          case 'read':
+            return this.isUserOwnerOfApp(user, app) || canReadModule;
+          case 'update':
+            return canEdit;
+          case 'delete':
+            return user_permissions.module_delete || this.isUserOwnerOfApp(user, app);
+          default:
+            return false;
+        }
+      }
+      // CE fallback: any builder can perform all module actions
+      return currentSession?.role?.name === 'builder';
     }
   }
 
@@ -1733,11 +1757,7 @@ class HomePageComponent extends React.Component {
     };
 
     const showCreateAppButtonTooltip = () => {
-      if (this.props.appType === 'module') {
-        return true;
-      } else {
-        return this.canCreateApp();
-      }
+      return this.canCreateApp();
     };
     const modalConfigs = {
       create: {
@@ -2591,7 +2611,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={!moduleEnabled}
+                        disabled={!moduleEnabled || !this.canCreateApp()}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={() => {
@@ -2606,8 +2626,12 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={!moduleEnabled}
-                          message="Modules are not available on your current plan."
+                          show={!moduleEnabled || !this.canCreateApp()}
+                          message={
+                            !moduleEnabled
+                              ? 'Modules are not available on your current plan.'
+                              : "You don't have permission to create a module."
+                          }
                           placement="bottom"
                         >
                           <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
@@ -2623,7 +2647,7 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? 'No Modules found'
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
                         : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>

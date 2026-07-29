@@ -35,8 +35,4 @@ export const RESTRICTED_WIDGET_SLOTS_CONFIG = [
   'PDF',
   'Camera',
   'QrScanner',
-  'Text',
-  'TextArea',
-  'AudioRecorder',
-  'CustomComponent',
 ];

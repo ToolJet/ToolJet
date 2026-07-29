@@ -181,7 +181,8 @@ export async function resolveModuleRef(
       });
       if (branchlessDraft) return branchlessDraft;
     }
-    // Name not found — fall through to orphan guard.
+    // Name not found — fall through to orphan guard. The pinning contract (see
+    // ModuleViewerInspector) never persists a bare branch name here, so this is legacy data.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
