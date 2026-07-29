@@ -62,7 +62,6 @@ export class DataSourceVersion {
   @JoinColumn({ name: 'version_from_id' })
   versionFrom: DataSourceVersion;
 
-
   @ManyToOne(() => WorkspaceBranch, (wb) => wb.id, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'branch_id' })
   branch: WorkspaceBranch;

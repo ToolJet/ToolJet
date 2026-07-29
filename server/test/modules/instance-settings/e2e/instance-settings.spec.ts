@@ -74,12 +74,7 @@ describe('InstanceSettingsController', () => {
 
         let loggedUser = await login(app);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await login(
-          app,
-          superAdminUserData.user.email,
-          'password',
-          superAdminUserData.organization.id
-        );
+        loggedUser = await login(app, superAdminUserData.user.email, 'password', superAdminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         const settingsArray = [];
@@ -126,12 +121,7 @@ describe('InstanceSettingsController', () => {
 
         let loggedUser = await login(app);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await login(
-          app,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         await request(app.getHttpServer())
@@ -171,12 +161,7 @@ describe('InstanceSettingsController', () => {
 
         let loggedUser = await login(app);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await login(
-          app,
-          superAdminUserData.user.email,
-          'password',
-          superAdminUserData.organization.id
-        );
+        loggedUser = await login(app, superAdminUserData.user.email, 'password', superAdminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         // Find or create the ENABLE_COMMENTS setting (may already exist from app startup)
@@ -224,12 +209,7 @@ describe('InstanceSettingsController', () => {
 
         let loggedUser = await login(app);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await login(
-          app,
-          superAdminUserData.user.email,
-          'password',
-          superAdminUserData.organization.id
-        );
+        loggedUser = await login(app, superAdminUserData.user.email, 'password', superAdminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         await createSettings(app, superAdminUserData, {

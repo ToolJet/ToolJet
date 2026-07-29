@@ -273,15 +273,20 @@ describe('OrgConstantsController', () => {
             })
             .expect(200);
 
-          // Values are stored encrypted in the DB; verify the update succeeded
-          // by reading the raw record and confirming it was written (non-null).
-          const updatedVariable = await findEntity(OrgEnvironmentConstantValue, {
-            organizationConstantId: response.body.constant.id,
-            environmentId: appEnvironments[0].id,
-          });
+          // Values are stored encrypted in the DB — read back through the decrypted
+          // listing endpoint (as admin) to confirm the value actually changed, not
+          // just that some (possibly stale) ciphertext is present.
+          const decryptedResponse = await request(app.getHttpServer())
+            .get('/api/organization-constants/decrypted')
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie'])
+            .expect(200);
 
-          expect(updatedVariable.value).toBeDefined();
-          expect(updatedVariable.value).not.toBeNull();
+          const updatedConstant = decryptedResponse.body.constants.find((c: any) => c.id === response.body.constant.id);
+          const updatedValueEntry = updatedConstant.values.find(
+            (v: any) => v.environmentName === appEnvironments[0].name
+          );
+          expect(updatedValueEntry.value).toBe('User');
         }
 
         await request(app.getHttpServer())

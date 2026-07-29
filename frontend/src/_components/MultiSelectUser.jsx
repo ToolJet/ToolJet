@@ -93,10 +93,10 @@ function MultiSelectUser({
           filteredOptions?.length > 0
             ? 'Not Found'
             : searchText
-            ? 'Not found'
-            : searchLabel
-            ? searchLabel
-            : 'Please enter some text'
+              ? 'Not found'
+              : searchLabel
+                ? searchLabel
+                : 'Please enter some text'
         }
         disabled={isLoading}
         fuzzySearch

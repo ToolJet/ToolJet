@@ -3,8 +3,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { isEmpty } from 'lodash';
-const url = require('url');
-const querystring = require('querystring');
+import * as url from 'url';
+import * as querystring from 'querystring';
 
 export function filePathForEnvVars(env: string | undefined): string {
   if (env === 'test') {

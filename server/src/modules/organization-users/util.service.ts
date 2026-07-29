@@ -109,7 +109,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           [user.id],
           manager
         );
-        for (const addGroup of (addGroups ?? [])) {
+        for (const addGroup of addGroups ?? []) {
           await this.groupPermissionsUtilService.addUsersToGroup(
             { allowRoleChange: false, userIds: [user.id], groupId: addGroup, endUsers },
             organizationId,

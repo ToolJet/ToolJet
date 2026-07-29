@@ -13,7 +13,10 @@ import { validatePasswordServer } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class ProfileService implements IProfileService {
-  constructor(protected userRepository: UserRepository, protected serviceUtils: ProfileUtilService) {}
+  constructor(
+    protected userRepository: UserRepository,
+    protected serviceUtils: ProfileUtilService
+  ) {}
 
   getSessionUserDetails(user: User): Partial<User> {
     const { firstName, lastName, avatarId, email, id } = user;

@@ -41,8 +41,8 @@ export const useFlexWidgetLayout = ({
   // it remains in place. In viewer mode, prefer the temporary height so flex
   // layout and dynamic-height reflow agree on the child's actual size.
   const visibleHeightPx = dynamicHeight
-    ? temporaryHeight ?? height ?? flexLayoutData.height ?? 100
-    : height ?? flexLayoutData.height ?? 100;
+    ? (temporaryHeight ?? height ?? flexLayoutData.height ?? 100)
+    : (height ?? flexLayoutData.height ?? 100);
   const effectiveHeightPx = visibility ? visibleHeightPx : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
   const availableWidth = containerWidth ?? effectiveWidthPx;
   let widgetWidth = fillWidth ? availableWidth : effectiveWidthPx;
