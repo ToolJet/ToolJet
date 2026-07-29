@@ -1,0 +1,164 @@
+{
+  "name": "ServiceNow",
+  "kind": "servicenow",
+  "type": "api",
+  "schemaVersion": "v1",
+  "operationsMode": "api-endpoint",
+  "description": "Read and write ServiceNow records through the ServiceNow Table API.",
+  "httpClient": "got",
+  "commonImport": "@tooljet-marketplace/common",
+  "baseUrlTemplate": "{instance_url}/api/now/table",
+  "auth": {
+    "strategy": "dual",
+    "customTesting": true,
+    "manifestPattern": "dropdown-component-flip with commonFields (model after marketplace/plugins/jira manifest.json)",
+    "commonFields": [
+      {
+        "key": "instance_url",
+        "label": "Instance URL",
+        "type": "text",
+        "description": "https://<instance>.service-now.com",
+        "required": true
+      }
+    ],
+    "authTypeKey": "auth_type",
+    "default": "basic",
+    "methods": [
+      {
+        "value": "basic",
+        "name": "Basic auth",
+        "fields": [
+          { "key": "username", "label": "Username", "type": "text" },
+          { "key": "password", "label": "Password", "type": "password", "encrypted": true }
+        ],
+        "headerBehavior": "Authorization: Basic base64(username:password)"
+      },
+      {
+        "value": "oauth2",
+        "name": "OAuth 2.0",
+        "grant": "authorization_code",
+        "fields": [
+          { "key": "client_id", "label": "Client ID", "type": "text" },
+          { "key": "client_secret", "label": "Client secret", "type": "password", "encrypted": true }
+        ],
+        "headerBehavior": "Authorization: Bearer <access_token from token endpoint>",
+        "notes": "ServiceNow supports multiple OAuth flows; prefer authorization_code (inbound client) over password grant for standard integration. The plugin's code will delegate OAuth handling to shared helpers."
+      }
+    ],
+    "testConnection": "Resolve the selected auth, then GET {instance_url}/api/now/table/sys_user?sysparm_limit=1. status:'ok' on 2xx, else status:'failed' with message."
+  },
+  "operations": [
+    {
+      "id": "list_records",
+      "name": "List Records",
+      "method": "GET",
+      "path": "/{table}",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true, "placeholder": "incident" },
+        { "key": "sysparm_query", "label": "Query (encoded)", "type": "codehinter", "placeholder": "active=true^priority=1" },
+        { "key": "sysparm_limit", "label": "Limit", "type": "codehinter", "placeholder": "100" },
+        { "key": "sysparm_offset", "label": "Offset", "type": "codehinter", "placeholder": "0" },
+        { "key": "sysparm_fields", "label": "Fields", "type": "codehinter", "placeholder": "number,short_description,state" },
+        { "key": "sysparm_display_value", "label": "Display value", "type": "dropdown", "list": ["true", "false", "all"] }
+      ]
+    },
+    {
+      "id": "get_record",
+      "name": "Get Record",
+      "method": "GET",
+      "path": "/{table}/{sys_id}",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true, "placeholder": "incident" },
+        { "key": "sys_id", "label": "Sys ID", "type": "codehinter", "required": true },
+        { "key": "sysparm_fields", "label": "Fields", "type": "codehinter" },
+        { "key": "sysparm_display_value", "label": "Display value", "type": "dropdown", "list": ["true", "false", "all"] }
+      ]
+    },
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "method": "GET",
+      "path": "/sys_db_object",
+      "params": [
+        { "key": "name_filter", "label": "Name filter", "type": "text", "placeholder": "inc" },
+        { "key": "sysparm_limit", "label": "Limit", "type": "codehinter", "placeholder": "100" }
+      ]
+    },
+    {
+      "id": "get_table_schema",
+      "name": "Get Table Schema",
+      "method": "GET",
+      "path": "/sys_dictionary",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true },
+        { "key": "sysparm_limit", "label": "Limit", "type": "codehinter" }
+      ]
+    },
+    {
+      "id": "get_field_choices",
+      "name": "Get Field Choices",
+      "method": "GET",
+      "path": "/sys_choice",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true },
+        { "key": "field", "label": "Field", "type": "codehinter", "required": true },
+        { "key": "language", "label": "Language", "type": "text", "placeholder": "en" }
+      ]
+    },
+    {
+      "id": "create_record",
+      "name": "Create Record",
+      "method": "POST",
+      "path": "/{table}",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true, "placeholder": "incident" },
+        { "key": "body", "label": "Body", "type": "codehinter", "height": "150px", "placeholder": "{\"short_description\": \"...\"}" }
+      ]
+    },
+    {
+      "id": "update_record",
+      "name": "Update Record",
+      "method": "PATCH",
+      "path": "/{table}/{sys_id}",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true, "placeholder": "incident" },
+        { "key": "sys_id", "label": "Sys ID", "type": "codehinter", "required": true },
+        { "key": "body", "label": "Body", "type": "codehinter", "height": "150px", "placeholder": "{\"state\": \"2\"}" }
+      ]
+    },
+    {
+      "id": "delete_record",
+      "name": "Delete Record",
+      "method": "DELETE",
+      "path": "/{table}/{sys_id}",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true, "placeholder": "incident" },
+        { "key": "sys_id", "label": "Sys ID", "type": "codehinter", "required": true }
+      ]
+    }
+    ,
+    {
+      "id": "aggregate",
+      "name": "Aggregate / Stats",
+      "method": "GET",
+      "path": "/../stats/{table}",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true },
+        { "key": "sysparm_count", "label": "Count", "type": "dropdown", "list": ["true","false"] },
+        { "key": "sysparm_query", "label": "Query", "type": "codehinter" }
+      ]
+    },
+    {
+      "id": "list_flows",
+      "name": "List Flows",
+      "method": "GET",
+      "path": "/sys_hub_flow",
+      "params": [
+        { "key": "name_filter", "label": "Name filter", "type": "text" },
+        { "key": "sysparm_limit", "label": "Limit", "type": "codehinter" }
+      ]
+    }
+  ],
+  "generateTests": false,
+  "notes": "Phase 1 = Table API only. Optional sysparm_* query params are omitted from the request when blank. Surface ServiceNow error envelope { error: { message, detail }, status } via QueryError on failure."
+}

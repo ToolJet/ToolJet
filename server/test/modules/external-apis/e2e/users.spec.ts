@@ -4,6 +4,7 @@
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -13,13 +14,19 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 
 jest.setTimeout(120_000);
 
-const getExtAuth = () => `Basic ${process.env.EXTERNAL_API_ACCESS_TOKEN}`;
+// Read from the running app's ConfigService (not process.env directly) — the root .env and
+// .env.test can define EXTERNAL_API_ACCESS_TOKEN differently, and whichever one the task
+// runner's dotenv loading exports first wins in process.env, but the guard always checks
+// against ConfigService. Reading through the same service keeps this in sync with the guard.
+let extApiToken: string;
+const getExtAuth = () => `Basic ${extApiToken}`;
 
 describe('ExternalApisUsersController (EE enterprise)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    extApiToken = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
   });
 
   afterEach(() => {
@@ -367,6 +374,50 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
     });
   });
 
+  describe('POST /api/ext/users — payload validation', () => {
+    it('should return 400 when name is missing', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin14@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ email: 'no-name@example.com', workspaces: [{ id: orgId }] })
+        .expect(400);
+    });
+
+    it('should return 400 when email is malformed', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin15@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Bad Email Vendor', email: 'not-an-email', workspaces: [{ id: orgId }] })
+        .expect(400);
+    });
+
+    it('should return 400 when status is not a valid enum value', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin16@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Bad Status Vendor',
+          email: 'bad-status@example.com',
+          status: 'not-a-real-status',
+          workspaces: [{ id: orgId }],
+        })
+        .expect(400);
+    });
+
+    it('should return 400 when the request body is empty', async () => {
+      await request(app.getHttpServer()).post('/api/ext/users').set('Authorization', getExtAuth()).send({}).expect(400);
+    });
+  });
+
   describe('GET /api/ext/user/:id — backward compat', () => {
     it('should return inviteUrl as null for users without invitation tokens', async () => {
       // Users created via test helper (internal path) never get invitationToken set,
@@ -452,6 +503,300 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
       expect(found).toBeDefined();
       expect(found.workspaces).toHaveLength(1);
       expect(found.workspaces[0].inviteUrl).toBeTruthy();
+    });
+
+    it('filters users by a single group name via group_names', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-groupfilter-a@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+      const group = await createGroupPermission(app, { name: 'Filterable Group', organizationId: orgId });
+
+      const createRes = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Filtered Vendor',
+          email: 'filtered-vendor@example.com',
+          workspaces: [{ id: orgId, groups: [{ name: group.name }] }],
+        })
+        .expect(201);
+
+      const { user: otherAdmin } = await createUser(app, { email: 'admin-groupfilter-b@tooljet.io' });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users?group_names=Filterable Group')
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toContain(createRes.body.id);
+      expect(ids).not.toContain(otherAdmin.id);
+    });
+
+    it('filters users across multiple comma-separated group names', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-groupfilter-multi@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users?group_names=admin,end-user')
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toContain(adminUser.id);
+    });
+  });
+
+  describe('GET /api/ext/user/:id — lookup by UUID or email', () => {
+    it('looks up a user by UUID and returns the full response shape', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-lookup-uuid@tooljet.io' });
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/ext/user/${adminUser.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      expect(res.body).toMatchObject({ id: adminUser.id, email: 'admin-lookup-uuid@tooljet.io' });
+      expect(res.body).toHaveProperty('name');
+      expect(res.body).toHaveProperty('status');
+      expect(Array.isArray(res.body.workspaces)).toBe(true);
+      expect(Array.isArray(res.body.userGroups)).toBe(true);
+    });
+
+    it('looks up the same user by email', async () => {
+      const email = 'admin-lookup-email@tooljet.io';
+      const { user: adminUser } = await createUser(app, { email });
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/ext/user/${encodeURIComponent(email)}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      expect(res.body.id).toBe(adminUser.id);
+    });
+
+    it('returns an empty array (200) rather than 404 for an id that does not exist', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/user/00000000-0000-0000-0000-000000000001')
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      expect(res.body).toEqual([]);
+    });
+
+    it('returns 403 when Authorization header is missing', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-lookup-noauth@tooljet.io' });
+      await request(app.getHttpServer()).get(`/api/ext/user/${adminUser.id}`).expect(403);
+    });
+  });
+
+  describe('GET /api/ext/users — status filter', () => {
+    it('should return only users matching a single status', async () => {
+      const { user: activeUser } = await createUser(app, {
+        email: 'status-active@tooljet.io',
+        userStatus: 'active',
+      });
+      const { user: archivedUser } = await createUser(app, {
+        email: 'status-archived@tooljet.io',
+        userStatus: 'archived',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: 'archived' })
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toContain(archivedUser.id);
+      expect(ids).not.toContain(activeUser.id);
+    });
+
+    it('should return the union of users matching a comma-separated status list', async () => {
+      const { user: activeUser } = await createUser(app, {
+        email: 'status-multi-active@tooljet.io',
+        userStatus: 'active',
+      });
+      const { user: invitedUser } = await createUser(app, {
+        email: 'status-multi-invited@tooljet.io',
+        userStatus: 'invited',
+      });
+      const { user: archivedUser } = await createUser(app, {
+        email: 'status-multi-archived@tooljet.io',
+        userStatus: 'archived',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: 'active,invited' })
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toEqual(expect.arrayContaining([activeUser.id, invitedUser.id]));
+      expect(ids).not.toContain(archivedUser.id);
+    });
+
+    it('should return users with verified status when explicitly filtered', async () => {
+      const { user: verifiedUser } = await createUser(app, {
+        email: 'status-verified@tooljet.io',
+        userStatus: 'verified',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: 'verified' })
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toContain(verifiedUser.id);
+    });
+
+    it('should return all users when no status filter is passed', async () => {
+      const { user: activeUser } = await createUser(app, {
+        email: 'status-noop@tooljet.io',
+        userStatus: 'active',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toContain(activeUser.id);
+    });
+
+    it('should return 400 for an invalid status value', async () => {
+      await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: 'bogus' })
+        .set('Authorization', getExtAuth())
+        .expect(400);
+    });
+
+    it('should return 400 when the status list contains any invalid value', async () => {
+      // one good value should not let the whole list slip through
+      await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: 'active,bogus' })
+        .set('Authorization', getExtAuth())
+        .expect(400);
+    });
+
+    it('should return 400 for a status value with incorrect casing', async () => {
+      await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: 'Active' })
+        .set('Authorization', getExtAuth())
+        .expect(400);
+    });
+
+    it('should trim whitespace and drop empty segments from a messy status list', async () => {
+      const { user: activeUser } = await createUser(app, {
+        email: 'status-messy-active@tooljet.io',
+        userStatus: 'active',
+      });
+      const { user: archivedUser } = await createUser(app, {
+        email: 'status-messy-archived@tooljet.io',
+        userStatus: 'archived',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: ' active , ,archived ' })
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toEqual(expect.arrayContaining([activeUser.id, archivedUser.id]));
+    });
+
+    it('should treat an empty status param as no filter', async () => {
+      const { user: activeUser } = await createUser(app, {
+        email: 'status-empty-param@tooljet.io',
+        userStatus: 'active',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: '' })
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toContain(activeUser.id);
+    });
+
+    it('should accept status passed as repeated query keys instead of a comma-separated list', async () => {
+      const { user: activeUser } = await createUser(app, {
+        email: 'status-repeated-active@tooljet.io',
+        userStatus: 'active',
+      });
+      const { user: invitedUser } = await createUser(app, {
+        email: 'status-repeated-invited@tooljet.io',
+        userStatus: 'invited',
+      });
+      const { user: archivedUser } = await createUser(app, {
+        email: 'status-repeated-archived@tooljet.io',
+        userStatus: 'archived',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users?status=active&status=invited')
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toEqual(expect.arrayContaining([activeUser.id, invitedUser.id]));
+      expect(ids).not.toContain(archivedUser.id);
+    });
+
+    it("should filter on the user's account-level status, not their workspace membership status", async () => {
+      // userStatus sets User.status (account-level); status sets OrganizationUser.status (per-workspace)
+      const { user: archivedAccountActiveWorkspace } = await createUser(app, {
+        email: 'status-account-vs-workspace@tooljet.io',
+        userStatus: 'archived',
+        status: 'active',
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: 'archived' })
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toContain(archivedAccountActiveWorkspace.id);
+    });
+
+    it('should apply status and group_names filters together with AND semantics', async () => {
+      const { user: matchesBoth } = await createUser(app, {
+        email: 'status-group-match@tooljet.io',
+        userStatus: 'active',
+        groups: ['admin'],
+      });
+      const { user: wrongStatus } = await createUser(app, {
+        email: 'status-group-wrong-status@tooljet.io',
+        userStatus: 'archived',
+        groups: ['admin'],
+      });
+      const { user: wrongGroup } = await createUser(app, {
+        email: 'status-group-wrong-group@tooljet.io',
+        userStatus: 'active',
+        groups: ['end-user'],
+      });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .query({ status: 'active', group_names: 'admin' })
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const ids = res.body.map((u: { id: string }) => u.id);
+      expect(ids).toContain(matchesBoth.id);
+      expect(ids).not.toContain(wrongStatus.id);
+      expect(ids).not.toContain(wrongGroup.id);
     });
   });
 });

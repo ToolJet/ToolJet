@@ -4,6 +4,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { RolesModule } from '@modules/roles/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
 
@@ -39,7 +40,7 @@ export class GroupPermissionsModule extends SubModule {
 
     return this.cacheModule(cacheKey, {
       module: GroupPermissionsModule,
-      imports: [await RolesModule.register(configs)],
+      imports: [await RolesModule.register(configs), await GitSyncConfigsModule.register(configs)],
       controllers: isMainImport
         ? [GranularPermissionsController, GroupPermissionsControllerV2, GroupAdminController]
         : [],

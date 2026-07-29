@@ -1,10 +1,5 @@
-import { Controller, Get, Post, Put, Param, Body, Delete, Query, NotFoundException, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, NotFoundException, Patch, Put } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
-import {
-  OrganizationGitCreateDto,
-  OrganizationGitStatusUpdateDto,
-  OrganizationGitUpdateDto,
-} from '@dto/organization_git.dto';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { IGitSyncController } from './Interfaces/IController';
 import { ProviderConfigDTO } from './dto/provider-config.dto';
@@ -12,60 +7,34 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { UpdateGitEnvConfigDTO } from '@modules/git-sync/providers/dto/provider-config.dto';
 
+// Strategy-only stubs (CE base). DB-only endpoints moved to
+// src/modules/git-sync-configs/controller.ts.
 @Controller('git-sync')
 @InitModule(MODULES.GIT_SYNC)
 export class GitSyncController implements IGitSyncController {
   constructor() {}
 
-  @Post()
-  async create(
-    @User() user: UserEntity,
-    @Body() orgGitCreateDto: OrganizationGitCreateDto,
-    @Query('gitType') gitType: string
-  ) {
+  @Post('configs')
+  async saveProviderConfigs(@User() _user: UserEntity, @Body() _configData: ProviderConfigDTO) {
     throw new NotFoundException();
   }
 
-  @Put(':id')
-  async update(
-    @User() user: UserEntity,
-    @Param('id') organizationGitId: string,
-    @Body() orgGitUpdateDto: OrganizationGitUpdateDto,
-    @Query('gitType') gitType: string
-  ) {
+  @Patch('env-configs')
+  async toggleEnvConfig(@User() _user: UserEntity, @Body() _configData: UpdateGitEnvConfigDTO) {
+    throw new NotFoundException();
+  }
+
+  @Post('test-connection')
+  async testConnection(@User() _user: UserEntity, @Body() _payload: unknown) {
     throw new NotFoundException();
   }
 
   @Put('finalize/:id')
   async setFinalizeConfig(
-    @User() user: UserEntity,
-    @Param('id') organizationGitId: string,
-    @Body() configDto: ProviderConfigDTO,
-    @Query('gitType') gitType: string
+    @User() _user: UserEntity,
+    @Param('id') _organizationGitId: string,
+    @Body() _configDto: ProviderConfigDTO
   ) {
-    throw new NotFoundException();
-  }
-
-  @Put('status/:id')
-  async changeStatus(
-    @User() user: UserEntity,
-    @Param('id') organizationGitId: string,
-    @Body() organizationGitStatusUpdateDto: OrganizationGitStatusUpdateDto
-  ) {
-    throw new NotFoundException();
-  }
-
-  @Delete(':id')
-  async deleteConfig(
-    @User() user: UserEntity,
-    @Param('id') organizationGitId: string,
-    @Query('gitType') gitType: string
-  ) {
-    throw new NotFoundException();
-  }
-
-  @Patch('env-configs')
-  async toggleEnvConfig(@User() user: UserEntity, @Body() configData: UpdateGitEnvConfigDTO) {
     throw new NotFoundException();
   }
 
@@ -101,21 +70,6 @@ export class GitSyncController implements IGitSyncController {
     @User() user: UserEntity,
     @Query('page') page?: string,
     @Query('limit') limit?: string
-  ): Promise<any> {
-    throw new NotFoundException();
-  }
-
-  // IMPORTANT : Don't modify this caution : Keep parameterized :id routes last to avoid conflict with static routes like auto-sync/*
-  @Get(':id/status')
-  async getOrgGitStatusByOrgId(@User() user: UserEntity, @Param('id') organizationId: string): Promise<any> {
-    throw new NotFoundException();
-  }
-
-  @Get(':id')
-  async getOrgGitByOrgId(
-    @User() user: UserEntity,
-    @Param('id') organizationId: string,
-    @Query('gitType') gitType: string
   ): Promise<any> {
     throw new NotFoundException();
   }

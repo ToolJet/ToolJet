@@ -119,6 +119,7 @@ export enum LICENSE_FIELD {
   META = 'metadata',
   WORKFLOWS = 'workflows',
   GIT_SYNC = 'gitSyncEnabled',
+  GIT_SYNC_MULTI_BRANCH = 'gitSyncMultiBranchEnabled',
   WORKSPACE_ENV = 'workspaceEnvEnabled',
   AI = 'ai',
   AI_FEATURE = 'aiEnabled',

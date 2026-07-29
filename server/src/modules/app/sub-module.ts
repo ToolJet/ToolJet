@@ -1,5 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export abstract class SubModule {
   /**
@@ -10,7 +11,7 @@ export abstract class SubModule {
    * bootstrap (e.g. AppsModule.register and FoldersModule.register both pulling
    * UsersModule.register through the dependency graph).
    */
-  private static cachedModules: Map<Function, Array<{ key: string; module: DynamicModule }>> = new Map();
+  private static cachedModules: Map<typeof SubModule, Array<{ key: string; module: DynamicModule }>> = new Map();
 
   /**
    * Build a stable string key from the register() arguments. Default
@@ -18,7 +19,7 @@ export abstract class SubModule {
    * with extra register args can override.
    */
   protected static buildCacheKey(configs?: { IS_GET_CONTEXT: boolean }, ...rest: any[]): string {
-    return JSON.stringify([configs ?? {}, ...rest]);
+    return JSON.stringify([configs ?? {}, ...rest, getTooljetEdition()]);
   }
 
   /** Look up a cached DynamicModule for this subclass + cache key. */

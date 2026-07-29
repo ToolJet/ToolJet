@@ -1,33 +1,17 @@
 import { User as UserEntity } from '@entities/user.entity';
-import { OrganizationGitCreateDto, OrganizationGitStatusUpdateDto, OrganizationGitUpdateDto } from '../dto';
 import { ProviderConfigDTO } from '../dto/provider-config.dto';
 
+// Strategy-only contract after the DB-only endpoints moved to GitSyncConfigsController.
 export interface IGitSyncController {
-  getOrgGitByOrgId(user: UserEntity, organizationId: string, gitType: string): any;
+  saveProviderConfigs(user: UserEntity, configData: ProviderConfigDTO): Promise<any>;
 
-  getOrgGitStatusByOrgId(user: UserEntity, organizationId: string): Promise<any>;
+  toggleEnvConfig(user: UserEntity, configData: unknown): Promise<any>;
 
-  create(user: UserEntity, orgGitCreateDto: OrganizationGitCreateDto, gitType: string): Promise<any>;
-
-  update(
-    user: UserEntity,
-    organizationGitId: string,
-    orgGitUpdateDto: OrganizationGitUpdateDto,
-    gitType: string
-  ): Promise<void>;
+  testConnection(user: UserEntity, payload: unknown): Promise<any>;
 
   setFinalizeConfig(
     user: UserEntity,
     organizationGitId: string,
-    configDto: ProviderConfigDTO,
-    gitType: string
+    configDto: ProviderConfigDTO
   ): Promise<void>;
-
-  changeStatus(
-    user: UserEntity,
-    organizationGitId: string,
-    organizationGitStatusUpdateDto: OrganizationGitStatusUpdateDto
-  ): Promise<void>;
-
-  deleteConfig(user: UserEntity, organizationGitId: string, gitType: string): Promise<void>;
 }

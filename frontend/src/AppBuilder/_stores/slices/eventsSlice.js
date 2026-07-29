@@ -341,6 +341,19 @@ export const createEventsSlice = (set, get) => ({
         }
       }
 
+      // Precedence -> (item's event > component's event)
+      if (eventName === 'onNavigationItemClicked') {
+        const { itemId } = options;
+        const byIndex = (a, b) => (a?.index ?? 0) - (b?.index ?? 0);
+        const itemEvents = events.filter((e) => e?.event?.ref === itemId).sort(byIndex);
+        const componentEvents = events.filter((e) => !e?.event?.ref).sort(byIndex);
+        for (const event of [...itemEvents, ...componentEvents]) {
+          if (event?.event?.actionId && !event?.event?.disabled) {
+            await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+          }
+        }
+      }
+
       if (eventName === 'onCalendarEventSelect') {
         const { id, calendarEvent } = options;
         setExposedValue(id, 'selectedEvent', calendarEvent);

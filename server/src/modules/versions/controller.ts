@@ -21,20 +21,15 @@ export class VersionController implements IVersionController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions')
-  fetchVersions(@App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
-    return this.versionService.getAllVersions(app, branchId);
+  fetchVersions(@User() user: UserEntity, @App() app: AppEntity) {
+    return this.versionService.getAllVersions(app, user.branchId);
   }
 
   @InitFeature(FEATURE_KEY.APP_VERSION_CREATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/versions')
-  createVersion(
-    @User() user,
-    @App() app: AppEntity,
-    @Body() versionCreateDto: VersionCreateDto,
-    @Headers('x-branch-id') branchId?: string
-  ) {
-    versionCreateDto.branchId = branchId;
+  createVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() versionCreateDto: VersionCreateDto) {
+    versionCreateDto.branchId = user.branchId;
     return this.versionService.createVersion(app, user, versionCreateDto);
   }
 
@@ -48,6 +43,7 @@ export class VersionController implements IVersionController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/draft-versions')
   createDraftVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() draftVersionDto: DraftVersionDto) {
+    draftVersionDto.branchId = user.branchId;
     return this.versionService.createDraftVersion(app, user, draftVersionDto);
   }
 }
