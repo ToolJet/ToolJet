@@ -349,7 +349,7 @@ export class TooljetDbUtilService {
 
     try {
       const result = await tooljetDbManager.query(queryText, allPlaceholders);
-      return Array.isArray(result) ? result.length : 0;
+      return this.resolveAffectedRowCount(result);
     } catch (error) {
       throw new TooljetDatabaseError(
         error.message,
@@ -491,7 +491,7 @@ export class TooljetDbUtilService {
 
     try {
       const result = await tooljetDbManager.query(queryText, allPlaceholders);
-      return Array.isArray(result) ? result.length : 0;
+      return this.resolveAffectedRowCount(result);
     } catch (error) {
       throw new TooljetDatabaseError(
         error.message,
@@ -502,6 +502,17 @@ export class TooljetDbUtilService {
         error
       );
     }
+  }
+
+  // TypeORM's Postgres query runner special-cases UPDATE/DELETE commands: `manager.query()`
+  // returns a `[rows, rowCount]` tuple for them (not a plain rows array like every other
+  // query), so `result.length` is always 2 regardless of how many rows were actually
+  // affected. `rowCount` is Postgres's own affected-row count and is what we want here.
+  private resolveAffectedRowCount(result: unknown): number {
+    if (Array.isArray(result) && result.length === 2 && typeof result[1] === 'number') {
+      return result[1];
+    }
+    return Array.isArray(result) ? result.length : 0;
   }
 
   resolvePrimaryKeyAndDataColumns(
