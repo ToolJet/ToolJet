@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { authenticationService, appsService, sessionService } from '@/_services';
 import { loginConfigsService } from '@/_services/login_configs.service';
@@ -16,6 +16,7 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 const AppLoginPage = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [appConfig, setAppConfig] = useState(null);
   const [ssoConfigs, setSsoConfigs] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -130,6 +131,14 @@ const AppLoginPage = () => {
       },
       (err) => {
         onError();
+        if (err.data?.message === 'PASSWORD_EXPIRED') {
+          navigate(
+            `/password-expired?email=${encodeURIComponent(
+              err.data?.email || email
+            )}&appSlug=${slug}&redirectTo=${encodeURIComponent(appRedirectPath)}`
+          );
+          return;
+        }
         toast.error(err.error || 'Invalid email or password', {
           id: 'toast-login-auth-error',
           position: 'top-center',

@@ -43,12 +43,17 @@ const SignupForm = ({
   const [isDefaultFormName, setisDefaultFormName] = useState(true);
   const [isDefaultFormEmail, setisDefaultFormEmail] = useState(true);
   const [isDefaultFormPassword, setisDefaultFormPassword] = useState(true);
+  // For OIDC, handle both array (multi-tenant) and single object (legacy) formats
+  const hasEnabledOidc = Array.isArray(configs?.openid)
+    ? configs.openid.some((config) => config.enabled)
+    : configs?.openid?.enabled;
+
   const isAnySSOEnabled =
     configs?.google?.enabled ||
     configs?.git?.enabled ||
     configs?.ldap?.enabled ||
     configs?.saml?.enabled ||
-    configs?.openid?.enabled;
+    hasEnabledOidc;
 
   const isFormSignUpEnabled = organizationId ? configs?.form?.enabled : configs?.form?.enable_sign_up;
   const shouldShowSignInCTA = !organizationToken;
