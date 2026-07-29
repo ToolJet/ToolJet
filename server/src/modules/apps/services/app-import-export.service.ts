@@ -51,7 +51,6 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
-import { addLegacyInputSizeToExistingComponent } from './legacy-input-size-compatibility';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -258,6 +257,17 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TimePicker',
   'ToggleSwitchV2',
   'TreeSelect',
+];
+
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
 ];
 
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
@@ -520,7 +530,6 @@ export class AppImportExportService {
 
         return {
           ...component,
-          properties: addLegacyInputSizeToExistingComponent(component.type, component.properties),
           permissions: groupPermission
             ? {
                 permissionGroup: groupPermission.users
@@ -2869,11 +2878,15 @@ function migrateProperties(
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
   tooljetVersion: string | null
 ) {
-  const properties = addLegacyInputSizeToExistingComponent(componentType, component.properties);
+  const properties = { ...component.properties };
   const styles = { ...component.styles };
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };
