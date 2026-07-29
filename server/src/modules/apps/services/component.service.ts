@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -17,11 +17,18 @@ import {
   ComponentLayoutContext,
 } from '../interfaces/services/IComponentService';
 import { RequestContext } from '@modules/request-context/service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
+import { MODULES } from '@modules/app/constants/modules';
+import { AppsRepository } from '../repository';
 const _ = require('lodash');
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) {}
+  constructor(
+    protected eventHandlerService: EventsService,
+    private readonly abilityService: AbilityService,
+    private readonly appsRepository: AppsRepository
+  ) {}
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -594,6 +601,15 @@ export class ComponentsService implements IComponentsService {
         where: { id: componentId },
       });
 
+      const incomingProperties = component.definition?.properties;
+      if (
+        componentData.type === 'ModuleViewer' &&
+        incomingProperties &&
+        ('moduleAppId' in incomingProperties || 'moduleVersionId' in incomingProperties)
+      ) {
+        await this.assertModulePinPermission(componentData, incomingProperties);
+      }
+
       const isComponentDefinitionChanged = component.definition ? true : false;
 
       if (isComponentDefinitionChanged) {
@@ -646,6 +662,46 @@ export class ComponentsService implements IComponentsService {
       } else {
         await manager.update(Component, componentId, component);
       }
+    }
+  }
+
+  // A ModuleViewer's version list is deliberately readable read-only by any builder who
+  // can edit the parent app (see FeatureAbilityFactory's isEmbeddedInEditableParentApp
+  // bypass) so the pinned version can be displayed. Persisting a pin change is a
+  // different action and requires the caller to actually hold Build-with or Edit on the
+  // referenced module — that check never happens upstream of this save path.
+  private async assertModulePinPermission(
+    componentData: Component,
+    incomingProperties: Record<string, any>
+  ): Promise<void> {
+    const user = (RequestContext.currentContext?.req as any)?.user;
+    if (!user) return;
+
+    const coRelationId = incomingProperties.moduleAppId?.value ?? componentData.properties?.moduleAppId?.value;
+    if (!coRelationId) return;
+
+    const organizationId = user.organizationId || user.defaultOrganizationId;
+    const moduleApp = await this.appsRepository.findOne({ where: { co_relation_id: coRelationId, organizationId } });
+    if (!moduleApp) {
+      throw new ForbiddenException('You do not have permission to pin this module version');
+    }
+
+    const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+      organizationId,
+      resources: [{ resource: MODULES.MODULES }],
+    });
+
+    if (userPermissions.isAdmin || userPermissions.isSuperAdmin) return;
+
+    const modulePermissions = userPermissions[MODULES.MODULES];
+    const hasPermission =
+      !!modulePermissions?.isAllEditable ||
+      !!modulePermissions?.isAllViewable ||
+      !!modulePermissions?.editableAppsId?.includes(moduleApp.id) ||
+      !!modulePermissions?.viewableAppsId?.includes(moduleApp.id);
+
+    if (!hasPermission) {
+      throw new ForbiddenException('You do not have permission to pin this module version');
     }
   }
 
