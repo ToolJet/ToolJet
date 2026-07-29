@@ -12,6 +12,8 @@ export interface Features {
   [FEATURE_KEY.SETUP_ADMIN]: FeatureConfig;
   [FEATURE_KEY.FORGOT_PASSWORD]: FeatureConfig;
   [FEATURE_KEY.RESET_PASSWORD]: FeatureConfig;
+  [FEATURE_KEY.VERIFY_RESET_TOKEN]: FeatureConfig;
+  [FEATURE_KEY.PASSWORD_EXPIRED_RESET]: FeatureConfig;
   [FEATURE_KEY.OAUTH_COMMON_SIGN_IN]: FeatureConfig;
   [FEATURE_KEY.OAUTH_OPENID_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.OAUTH_SAML_CONFIGS]: FeatureConfig;

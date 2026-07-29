@@ -34,6 +34,13 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
       auditLogsKey: 'USER_PASSWORD_RESET',
     },
+    [FEATURE_KEY.VERIFY_RESET_TOKEN]: {
+      isPublic: true,
+    },
+    [FEATURE_KEY.PASSWORD_EXPIRED_RESET]: {
+      isPublic: true,
+      auditLogsKey: 'USER_PASSWORD_EXPIRED_RESET',
+    },
     [FEATURE_KEY.OAUTH_SIGN_IN]: {
       isPublic: true,
       auditLogsKey: 'USER_LOGIN',

@@ -29,6 +29,7 @@ import BaseColorSwatches from './BaseColorSwatches';
 import BaseComponentModuleTab from './BaseComponentModuleTab';
 import OtpInput from './OtpInput';
 import TroubleSigningInModal from './TroubleSigningInModal';
+import LinkExpiredCard from './LinkExpiredCard';
 
 export {
   OtpInput,
@@ -62,4 +63,5 @@ export {
   BaseSetupAdminPage,
   UsersTable,
   BaseComponentModuleTab,
+  LinkExpiredCard,
 };

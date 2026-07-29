@@ -59,7 +59,7 @@ import {
 
 import { BaseDateComponent } from './BaseDateComponent';
 import { useDateInput, useTimeInput, useDatetimeInput } from './hooks';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const DatetimePickerV2 = ({
   height,
@@ -404,6 +404,8 @@ export const DatetimePickerV2 = ({
     timeFormat,
     dateFormat,
   ]);
+
+  useFormClear(() => setInputValue(null));
 
   const isTwentyFourHourMode = is24HourFormat(displayFormat);
 

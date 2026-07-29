@@ -14,6 +14,8 @@ export enum FEATURE_KEY {
   // Password Management
   FORGOT_PASSWORD = 'forgotPassword', // POST 'forgot-password'
   RESET_PASSWORD = 'resetPassword', // POST 'reset-password'
+  VERIFY_RESET_TOKEN = 'verifyResetToken', // GET 'reset-password/verify-token'
+  PASSWORD_EXPIRED_RESET = 'passwordExpiredReset', // POST 'password-expired-reset'
 
   // Oauth
   OAUTH_SIGN_IN = '/oauth/sign-in/:configId',
