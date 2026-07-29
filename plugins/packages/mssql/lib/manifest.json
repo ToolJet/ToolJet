@@ -180,10 +180,14 @@
     {
       "if": {
         "properties": {
+          "ssl_enabled": {
+            "const": true
+          },
           "ssl_certificate": {
             "const": "ca_certificate"
           }
-        }
+        },
+        "required": ["ssl_enabled", "ssl_certificate"]
       },
       "then": {
         "required": ["ca_cert"]
@@ -192,10 +196,14 @@
     {
       "if": {
         "properties": {
+          "ssl_enabled": {
+            "const": true
+          },
           "ssl_certificate": {
             "const": "self_signed"
           }
-        }
+        },
+        "required": ["ssl_enabled", "ssl_certificate"]
       },
       "then": {
         "required": ["client_key", "client_cert", "root_cert"]
@@ -207,7 +215,8 @@
           "ssh_enabled": {
             "const": "enabled"
           }
-        }
+        },
+        "required": ["ssh_enabled"]
       },
       "then": {
         "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"]
