@@ -8,6 +8,29 @@ import { PopoverAnchor } from '@/components/ui/Rocket/shadcn/popover';
 import { POPOVER_MENU_Z } from '@/AppBuilder/RightSideBar/Inspector/ActionConfigurationPanels/shared';
 import { cn } from '@/lib/utils';
 
+// Untyped (.jsx) imports — cast to loose component types so they can be used as JSX under strict TS.
+const CodeHinterComponent = CodeHinter as React.ComponentType<any>;
+const FxButtonComponent = FxButton as React.ComponentType<any>;
+const SwitchComponent = Switch as React.ComponentType<any>;
+const PopoverComponent = Popover as React.ComponentType<any>;
+const PopoverContentComponent = PopoverContent as React.ComponentType<any>;
+const PopoverAnchorComponent = PopoverAnchor as React.ComponentType<any>;
+
+type ParamUpdate = (param: Record<string, any>, attr: string, value: unknown, paramType?: string) => void;
+
+interface ToolbarTileProps {
+  label: string;
+  propertyKey: string;
+  component: any;
+  paramUpdated: ParamUpdate;
+  darkMode?: boolean;
+  dataCy: string;
+  isConfigurable?: boolean;
+  configContent?: React.ReactNode;
+  configOpen?: boolean;
+  onConfigOpenChange?: (open: boolean) => void;
+}
+
 /**
  * A single Toolbar list tile: label + (hover) cog + (hover) fx + pill toggle.
  * When fx is active the pill is replaced by a single-line code editor rendered inside the tile.
@@ -23,17 +46,22 @@ export const ToolbarTile = ({
   configContent = null,
   configOpen = false,
   onConfigOpenChange = () => {},
-}) => {
+}: ToolbarTileProps) => {
   const definitionProp = component?.component?.definition?.properties?.[propertyKey] || {};
-  const fxActive = definitionProp.fxActive ?? false;
+  const fxActive: boolean = definitionProp.fxActive ?? false;
   const value = definitionProp.value;
   const resolvedChecked = !!resolveReferences(value);
 
-  const paramRef = { name: propertyKey, ...component?.component?.properties?.[propertyKey] };
+  const paramRef = {
+    name: propertyKey,
+    ...component?.component?.properties?.[propertyKey],
+  };
 
-  const handleToggle = (checked) => paramUpdated(paramRef, 'value', checked ? '{{true}}' : '{{false}}', 'properties');
+  const handleToggle = (checked: boolean) =>
+    paramUpdated(paramRef, 'value', checked ? '{{true}}' : '{{false}}', 'properties');
   const handleFxPress = () => paramUpdated(paramRef, 'fxActive', !fxActive, 'properties');
-  const handleCodeChange = (newValue) => paramUpdated(paramRef, 'value', newValue, 'properties');
+  const handleCodeChange = (newValue: string) => paramUpdated(paramRef, 'value', newValue, 'properties');
+  const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
   const tile = (
     <div className="tw-group tw-flex tw-flex-col tw-gap-2 tw-rounded-[6px] tw-bg-interactive-default tw-px-[8px] tw-py-[7px] hover:tw-bg-interactive-hover">
@@ -65,17 +93,17 @@ export const ToolbarTile = ({
 
         <span
           className={cn('tw-flex tw-items-center', !fxActive && 'tw-opacity-0 group-hover:tw-opacity-100')}
-          onClick={(e) => e.stopPropagation()}
+          onClick={stopPropagation}
         >
-          <FxButton active={fxActive} onPress={handleFxPress} dataCy={dataCy} />
+          <FxButtonComponent active={fxActive} onPress={handleFxPress} dataCy={dataCy} />
         </span>
 
         {!fxActive && (
-          <Switch
+          <SwitchComponent
             checked={resolvedChecked}
             onCheckedChange={handleToggle}
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
+            onPointerDown={stopPropagation}
+            onClick={stopPropagation}
             aria-label={label}
             data-cy={`${dataCy}-toggle`}
           />
@@ -83,8 +111,8 @@ export const ToolbarTile = ({
       </div>
 
       {fxActive && (
-        <div onClick={(e) => e.stopPropagation()}>
-          <CodeHinter
+        <div onClick={stopPropagation}>
+          <CodeHinterComponent
             type="basic"
             initialValue={value}
             onChange={handleCodeChange}
@@ -100,22 +128,22 @@ export const ToolbarTile = ({
   return (
     <div className="tw-mb-1" data-cy={`${dataCy}-toolbar-item`}>
       {isConfigurable ? (
-        <Popover open={configOpen} onOpenChange={onConfigOpenChange}>
-          <PopoverAnchor asChild>{tile}</PopoverAnchor>
-          <PopoverContent
+        <PopoverComponent open={configOpen} onOpenChange={onConfigOpenChange}>
+          <PopoverAnchorComponent asChild>{tile}</PopoverAnchorComponent>
+          <PopoverContentComponent
             side="left"
             align="start"
             sideOffset={8}
             className={cn(POPOVER_MENU_Z, 'tw-w-[300px] tw-max-w-[300px] tw-gap-0 tw-p-0', darkMode && 'dark-theme')}
-            onInteractOutside={(e) => {
+            onInteractOutside={(e: any) => {
               // keep the popover open when interacting with a CodeMirror autocomplete list
               const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
               if (autocomplete && autocomplete.contains(e.target)) e.preventDefault();
             }}
           >
             {configContent}
-          </PopoverContent>
-        </Popover>
+          </PopoverContentComponent>
+        </PopoverComponent>
       ) : (
         tile
       )}

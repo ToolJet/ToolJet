@@ -4,8 +4,32 @@ import { resolveReferences } from '@/_helpers/utils';
 import { Input, Checkbox } from '@/components/ui/Rocket';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
-const getColumnToken = (column) => column.key || column.name;
-const getColumnLabel = (column) => {
+// Untyped (.jsx) imports — cast to loose component types so they can be used as JSX under strict TS.
+const InputComponent = Input as React.ComponentType<any>;
+const CheckboxComponent = Checkbox as React.ComponentType<any>;
+
+type ParamUpdate = (param: Record<string, any>, attr: string, value: unknown, paramType?: string) => void;
+
+interface ColumnConfig {
+  key?: string;
+  name?: string;
+  [key: string]: any;
+}
+
+interface ConfigureAddNewRowProps {
+  component: any;
+  paramUpdated: ParamUpdate;
+  columns?: ColumnConfig[];
+  onClose: () => void;
+}
+
+interface ColumnItem {
+  token: string;
+  label: string;
+}
+
+const getColumnToken = (column: ColumnConfig): string => (column.key || column.name) as string;
+const getColumnLabel = (column: ColumnConfig): string => {
   const resolved = resolveReferences(column.name);
   return typeof resolved === 'string' && resolved.length ? resolved : column.key || '';
 };
@@ -15,41 +39,45 @@ const getColumnLabel = (column) => {
  * Lets the builder pick which columns appear in the Add-new-row popup.
  * An EMPTY stored array is the sentinel for "all columns" (the default)
  */
-export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onClose }) => {
+export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onClose }: ConfigureAddNewRowProps) => {
   const [search, setSearch] = useState('');
 
-  const storedSelection = useMemo(() => {
+  const storedSelection = useMemo<Set<string>>(() => {
     const resolved = resolveReferences(component?.component?.definition?.properties?.addNewRowColumns?.value);
-    return new Set(Array.isArray(resolved) ? resolved : []);
+    return new Set<string>(Array.isArray(resolved) ? resolved : []);
   }, [component?.component?.definition?.properties?.addNewRowColumns?.value]);
 
-  const items = useMemo(
-    () => columns.map((column) => ({ token: getColumnToken(column), label: getColumnLabel(column) })),
+  const items = useMemo<ColumnItem[]>(
+    () =>
+      columns.map((column) => ({
+        token: getColumnToken(column),
+        label: getColumnLabel(column),
+      })),
     [columns]
   );
-  const allTokens = useMemo(() => items.map((item) => item.token), [items]);
+  const allTokens = useMemo<string[]>(() => items.map((item) => item.token), [items]);
 
   // Empty stored set == "all columns". Expand it so the checkboxes reflect the effective selection.
   const isAllMode = storedSelection.size === 0;
-  const effectiveSelected = useMemo(
-    () => (isAllMode ? new Set(allTokens) : storedSelection),
+  const effectiveSelected = useMemo<Set<string>>(
+    () => (isAllMode ? new Set<string>(allTokens) : storedSelection),
     [isAllMode, allTokens, storedSelection]
   );
 
-  const filteredItems = useMemo(() => {
+  const filteredItems = useMemo<ColumnItem[]>(() => {
     const query = search.trim().toLowerCase();
     if (!query) return items;
     return items.filter((item) => item.label.toLowerCase().includes(query));
   }, [items, search]);
 
   // Collapse "everything selected" (or nothing) back to the empty "all" sentinel; otherwise store the subset.
-  const commit = (nextSet) => {
+  const commit = (nextSet: Set<string>) => {
     const isEverything = allTokens.length > 0 && allTokens.every((token) => nextSet.has(token));
     const nextValue = isEverything || nextSet.size === 0 ? [] : Array.from(nextSet);
     paramUpdated({ name: 'addNewRowColumns' }, 'value', nextValue, 'properties');
   };
 
-  const toggleColumn = (token, checked) => {
+  const toggleColumn = (token: string, checked: boolean) => {
     const next = new Set(effectiveSelected);
     if (checked) next.add(token);
     else next.delete(token);
@@ -88,9 +116,9 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
             size={16}
             className="tw-pointer-events-none tw-absolute tw-left-3 tw-top-1/2 tw--translate-y-1/2 tw-text-icon-default"
           />
-          <Input
+          <InputComponent
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             placeholder="Search columns"
             className="tw-pl-9"
             data-cy="configure-add-new-row-search"
@@ -98,7 +126,7 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
         </div>
 
         <label className="tw-flex tw-items-center tw-gap-2 tw-py-1 tw-cursor-pointer">
-          <Checkbox
+          <CheckboxComponent
             checked={allFilteredSelected ? true : someFilteredSelected ? 'indeterminate' : false}
             onCheckedChange={toggleSelectAll}
             disabled={filteredItems.length === 0}
@@ -119,9 +147,9 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
                 className="tw-flex tw-items-center tw-gap-2 tw-py-1 tw-cursor-pointer"
                 data-cy={`configure-add-new-row-option-${generateCypressDataCy(item.label)}`}
               >
-                <Checkbox
+                <CheckboxComponent
                   checked={effectiveSelected.has(item.token)}
-                  onCheckedChange={(checked) => toggleColumn(item.token, checked === true)}
+                  onCheckedChange={(checked: boolean | 'indeterminate') => toggleColumn(item.token, checked === true)}
                 />
                 <span className="tw-min-w-0 tw-truncate tw-font-body-default tw-text-text-default">{item.label}</span>
               </label>

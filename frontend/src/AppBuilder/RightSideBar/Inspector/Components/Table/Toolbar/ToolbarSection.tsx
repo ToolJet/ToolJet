@@ -3,18 +3,49 @@ import ToolbarTile from './ToolbarTile';
 import ConfigureAddNewRow from './ConfigureAddNewRow';
 import ConfigureDownload from './ConfigureDownload';
 
+type ParamUpdate = (param: Record<string, any>, attr: string, value: unknown, paramType?: string) => void;
+
+interface ToolbarItem {
+  key: string;
+  label: string;
+  configurable?: 'addNewRow' | 'download';
+}
+
 // Items that moved here from "Additional actions". `configurable` marks which ones expose further set of properties.
-const TOOLBAR_ITEMS = [
-  { key: 'showAddNewRowButton', label: 'Add new row', configurable: 'addNewRow' },
-  { key: 'showDownloadButton', label: 'Download data', configurable: 'download' },
+const TOOLBAR_ITEMS: ToolbarItem[] = [
+  {
+    key: 'showAddNewRowButton',
+    label: 'Add new row',
+    configurable: 'addNewRow',
+  },
+  {
+    key: 'showDownloadButton',
+    label: 'Download data',
+    configurable: 'download',
+  },
   { key: 'showRefreshButton', label: 'Refresh table' },
   { key: 'showBulkUpdateActions', label: 'Update buttons' },
 ];
 
 // New tables use the `manageColumns` tile (ON = visible);
 // tables that opted into the deprecated toggle keep the legacy inverted `hideColumnSelectorButton` tile.
-const MANAGE_COLUMNS_ITEM = { key: 'manageColumns', label: 'Manage columns' };
-const HIDE_COLUMN_SELECTOR_ITEM = { key: 'hideColumnSelectorButton', label: 'Hide column selector' };
+const MANAGE_COLUMNS_ITEM: ToolbarItem = {
+  key: 'manageColumns',
+  label: 'Manage columns',
+};
+const HIDE_COLUMN_SELECTOR_ITEM: ToolbarItem = {
+  key: 'hideColumnSelectorButton',
+  label: 'Hide column selector',
+};
+
+interface ToolbarSectionProps {
+  component: any;
+  paramUpdated: ParamUpdate;
+  darkMode?: boolean;
+  columns?: any[];
+  useDynamicColumn?: boolean;
+  useHideColumnSelectorButton?: boolean;
+}
 
 /**
  * Renders the Table inspector's "Toolbar" section
@@ -26,12 +57,15 @@ export const ToolbarSection = ({
   columns = [],
   useDynamicColumn = false,
   useHideColumnSelectorButton = false,
-}) => {
-  const [openConfigPopover, setOpenConfigPopover] = useState(null);
+}: ToolbarSectionProps) => {
+  const [openConfigPopover, setOpenConfigPopover] = useState<string | null>(null);
 
-  const items = [...TOOLBAR_ITEMS, useHideColumnSelectorButton ? HIDE_COLUMN_SELECTOR_ITEM : MANAGE_COLUMNS_ITEM];
+  const items: ToolbarItem[] = [
+    ...TOOLBAR_ITEMS,
+    useHideColumnSelectorButton ? HIDE_COLUMN_SELECTOR_ITEM : MANAGE_COLUMNS_ITEM,
+  ];
 
-  const buildConfigContent = (item) => {
+  const buildConfigContent = (item: ToolbarItem): React.ReactNode => {
     if (item.configurable === 'addNewRow') {
       return (
         <ConfigureAddNewRow
@@ -71,7 +105,7 @@ export const ToolbarSection = ({
             isConfigurable={isConfigurable}
             configContent={isConfigurable ? buildConfigContent(item) : null}
             configOpen={openConfigPopover === item.key}
-            onConfigOpenChange={(open) => setOpenConfigPopover(open ? item.key : null)}
+            onConfigOpenChange={(open: boolean) => setOpenConfigPopover(open ? item.key : null)}
           />
         );
       })}
