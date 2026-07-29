@@ -1493,10 +1493,14 @@ export class AppImportExportService {
 
       // Stage metadata for downstream (createAppVersionsForImportedApp,
       // performLegacyAppImport) so they can write it to app_versions.
+      // slug is included here (for every type, not just workflows) so a
+      // re-import can reclaim the source app's original slug when it's free —
+      // see the reuse-unless-taken check in createAppVersionsForImportedApp.
       (importedApp as any).__importMetadata = {
         appName: appParams.name || null,
         icon: appParams.icon || null,
         isPublic: appParams.isPublic ?? false,
+        slug: appParams.slug || null,
       };
 
       return importedApp;
@@ -3438,10 +3442,24 @@ export class AppImportExportService {
         // temp apps, partial exports) — fall back to a random UUID placeholder for the
         // slug so the INSERT doesn't violate the CHECK. Workflows are exempt from the
         // CHECK itself (branch_id is always NULL for them) but still get real metadata
-        // here now. importMeta?.slug carries the git-sync-preserved slug for workflow
-        // re-imports (see EE createImportedAppForUser); everything else falls through to
-        // a fresh random slug, same as before this migration.
-        const resolvedSlug = appVersion.slug ?? importMeta?.slug ?? uuid();
+        // here now. importMeta?.slug carries the exported slug (see createImportedAppForUser)
+        // for every type. If there's a real candidate slug (not the random fallback),
+        // reuse it unless it's already taken by a different (still-existing) app — that
+        // lets a deleted app's slug be reclaimed on re-import instead of always minting
+        // a fresh one.
+        const rawSlug = appVersion.slug ?? importMeta?.slug;
+        let resolvedSlug: string;
+        if (rawSlug) {
+          const conflictingApp = await this.appsRepository.findBySlug(
+            rawSlug,
+            user?.organizationId,
+            undefined,
+            branchId
+          );
+          resolvedSlug = conflictingApp && conflictingApp.id !== importedApp.id ? uuid() : rawSlug;
+        } else {
+          resolvedSlug = uuid();
+        }
         const resolvedAppName = appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id;
 
         version = await manager.create(AppVersion, {
