@@ -2049,8 +2049,8 @@ class HomePageComponent extends React.Component {
                   this.props.appType === 'workflow'
                     ? 'homePage.deleteWorkflowAndData'
                     : this.props.appType === 'front-end'
-                      ? 'homePage.deleteAppAndData'
-                      : deleteModuleText,
+                    ? 'homePage.deleteAppAndData'
+                    : deleteModuleText,
                   { appName: appToBeDeleted?.name }
                 )
               )
@@ -2382,8 +2382,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                          ? 'modules'
-                          : 'apps'
+                        ? 'modules'
+                        : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -2404,8 +2404,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                                ? 'modules'
-                                : 'apps'
+                              ? 'modules'
+                              : 'apps'
                           }-button`}
                         >
                           <>
@@ -2633,7 +2633,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={!moduleEnabled}
+                        disabled={!moduleEnabled || !this.canCreateApp()}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={() => {
@@ -2648,8 +2648,12 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={!moduleEnabled}
-                          message="Modules are not available on your current plan."
+                          show={!moduleEnabled || !this.canCreateApp()}
+                          message={
+                            !moduleEnabled
+                              ? 'Modules are not available on your current plan.'
+                              : "You don't have permission to create a module."
+                          }
                           placement="bottom"
                         >
                           <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">

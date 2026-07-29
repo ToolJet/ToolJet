@@ -2459,11 +2459,11 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setFocusedParentId: (parentId) => {
-    (set((state) => {
+    set((state) => {
       state.focusedParentId = parentId;
     }),
       false,
-      { type: 'setFocusedParentId', payload: { parentId } });
+      { type: 'setFocusedParentId', payload: { parentId } };
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
     set(
@@ -2739,6 +2739,7 @@ export const createComponentsSlice = (set, get) => ({
       if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
         applyOrQueueMutation((state) => {
           let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          if (!entity) return;
           if (Array.isArray(entity)) {
             entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
             state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
@@ -2749,6 +2750,7 @@ export const createComponentsSlice = (set, get) => ({
       } else {
         applyOrQueueMutation((state) => {
           let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+          if (!entity) return;
           if (Array.isArray(entity)) {
             entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
             state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
@@ -2763,7 +2765,10 @@ export const createComponentsSlice = (set, get) => ({
     } else {
       applyOrQueueMutation((state) => {
         let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
-        // Guard: stale array format from previous ListView/Kanban parent
+        // Guard: stale dependency-graph entry referencing a component that no longer
+        // exists in the current resolvedStore (e.g. right after a version/env switch,
+        // before the graph is rebuilt) — nothing to update.
+        if (!entity) return;
         if (Array.isArray(entity)) {
           entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
           state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
