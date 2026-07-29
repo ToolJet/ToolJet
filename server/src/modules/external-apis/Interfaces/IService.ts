@@ -1,4 +1,4 @@
-import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto';
+import { CreateUserDto, GetWorkspaceUsersByGroupsDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto';
 import { EntityManager } from 'typeorm';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
 
@@ -29,4 +29,7 @@ export interface IExternalApisService {
 
   // Retrieves all workspaces
   getAllWorkspaces(): Promise<any>;
+
+  // Gets users in a workspace filtered by group membership
+  getWorkspaceUsersByGroups(workspaceId: string, body: GetWorkspaceUsersByGroupsDto): Promise<any>;
 }
