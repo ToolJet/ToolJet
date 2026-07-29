@@ -406,33 +406,18 @@ export const getFrozenFxValue = ({ resolvedValue, hasError, paramType, fieldMeta
   const isBraced = BRACED_FX_PARAM_TYPES.has(paramType);
   const format = (value) => (isBraced ? `{{${value}}}` : value);
 
-  // Bare paramTypes are stored as text, so a structural value would land as "[object Object]".
-  const isStorable = isBraced || typeof resolvedValue === 'string' || typeof resolvedValue === 'number';
+  // Every paramType stores its literal as text, so a structural value would land as "[object Object]".
+  // Nested item fields declare no validation schema, making this the only guard they get.
+  const isStorable = ['string', 'number', 'boolean'].includes(typeof resolvedValue);
   // Freeze the schema-coerced value, not the raw one — the runtime applies the same coercion.
   const [isValid, , coercedValue] =
     !hasError && isStorable ? validateComponentProperty(resolvedValue, fieldMeta?.validation) : [false];
 
-  // TEMP DEBUG — remove before merge
-  const result = isValid
-    ? format(coercedValue)
-    : !_.isUndefined(fallbackValue)
-    ? fallbackValue
-    : format(fieldMeta?.validation?.defaultValue ?? FX_PARAM_TYPE_FALLBACKS[paramType] ?? '');
-  console.log('[FX-FREEZE] getFrozenFxValue', {
-    resolvedValue,
-    typeofResolved: typeof resolvedValue,
-    hasError,
-    paramType,
-    isBraced,
-    isStorable,
-    isValid,
-    coercedValue,
-    validation: fieldMeta?.validation,
-    fallbackValue,
-    RESULT: result,
-    tookBranch: isValid ? 'frozen-resolved' : !_.isUndefined(fallbackValue) ? 'widget-default' : 'per-type-constant',
-  });
-  return result;
+  if (isValid) return format(coercedValue);
+  // Already formatted by the widget definition; the remaining fallbacks are bare.
+  if (!_.isUndefined(fallbackValue)) return fallbackValue;
+
+  return format(fieldMeta?.validation?.defaultValue ?? FX_PARAM_TYPE_FALLBACKS[paramType] ?? '');
 };
 
 export function computeCoercion(oldValue, newValue) {

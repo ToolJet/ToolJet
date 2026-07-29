@@ -723,18 +723,6 @@ const DynamicEditorBridge = (props) => {
                   fieldMeta,
                   fallbackValue: fxFallbackValue,
                 });
-                // TEMP DEBUG — remove before merge
-                console.log('[FX-FREEZE] fx OFF', {
-                  paramName,
-                  paramType,
-                  initialValue,
-                  resolvedFromEditor: value,
-                  error,
-                  fxStashKey,
-                  fxFallbackValue,
-                  frozenValue,
-                  writePath: onFxToggle ? 'onFxToggle (single write)' : 'onFxPress + onChange (two writes)',
-                });
                 stashFxExpression(fxStashKey, initialValue);
                 setForceCodeBox(false);
                 // One write: call sites rebuilding a list from a render-time snapshot would have the
@@ -754,13 +742,6 @@ const DynamicEditorBridge = (props) => {
               }
             } else {
               const stashedExpression = takeFxExpression(fxStashKey);
-              // TEMP DEBUG — remove before merge
-              console.log('[FX-FREEZE] fx ON', {
-                paramName,
-                fxStashKey,
-                stashedExpression,
-                currentInitialValue: initialValue,
-              });
               setForceCodeBox(true);
               if (onFxToggle) {
                 onFxToggle(true, stashedExpression);
