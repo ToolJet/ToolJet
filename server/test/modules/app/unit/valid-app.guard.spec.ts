@@ -14,11 +14,11 @@ describe('ValidAppGuard', () => {
   const UUID = '550e8400-e29b-41d4-a716-446655440000';
   const ORG_ID = 'org-550e8400-e29b-41d4-a716-446655440001';
 
-  const makeContext = (params: { id?: string; slug?: string; versionId?: string } = {}, headers: Record<string, string> = {}): ExecutionContext => {
+  const makeContext = (params: { id?: string; slug?: string; versionId?: string } = {}, userOverrides: Record<string, any> = {}): ExecutionContext => {
     const request: Record<string, any> = {
       params,
-      headers,
-      user: { organizationId: ORG_ID },
+      headers: {},
+      user: { organizationId: ORG_ID, ...userOverrides },
     };
     return {
       switchToHttp: () => ({ getRequest: () => request }),
@@ -64,7 +64,7 @@ describe('ValidAppGuard', () => {
       mockAppRepository.findById.mockResolvedValue(makeApp());
 
       await guard.canActivate(
-        makeContext({ id: UUID, versionId: 'ver-uuid' }, { 'x-branch-id': 'branch-uuid' })
+        makeContext({ id: UUID, versionId: 'ver-uuid' }, { branchId: 'branch-uuid' })
       );
 
       expect(mockAppRepository.findById).toHaveBeenCalledWith(UUID, ORG_ID, 'ver-uuid', 'branch-uuid');
@@ -86,18 +86,18 @@ describe('ValidAppGuard', () => {
 
       await guard.canActivate(makeContext({ id: 'my-app-slug' }));
 
-      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app-slug', ORG_ID, undefined, undefined);
+      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app-slug', ORG_ID, undefined, undefined, undefined);
       expect(mockAppRepository.findById).not.toHaveBeenCalled();
     });
 
-    it('forwards branchId when x-branch-id header is present', async () => {
+    it('forwards branchId resolved from user.branchId', async () => {
       mockAppRepository.findBySlug.mockResolvedValue(makeApp());
 
       await guard.canActivate(
-        makeContext({ id: 'my-app-slug' }, { 'x-branch-id': 'branch-uuid' })
+        makeContext({ id: 'my-app-slug' }, { branchId: 'branch-uuid' })
       );
 
-      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app-slug', ORG_ID, undefined, 'branch-uuid');
+      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app-slug', ORG_ID, undefined, undefined, 'branch-uuid');
     });
 
     it('throws NotFoundException (not a 500) when slug does not match any app', async () => {
@@ -114,7 +114,7 @@ describe('ValidAppGuard', () => {
 
       await guard.canActivate(makeContext({ slug: 'my-app' }));
 
-      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app', ORG_ID, undefined, undefined);
+      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app', ORG_ID, undefined, undefined, undefined);
       expect(mockAppRepository.findById).not.toHaveBeenCalled();
     });
   });
