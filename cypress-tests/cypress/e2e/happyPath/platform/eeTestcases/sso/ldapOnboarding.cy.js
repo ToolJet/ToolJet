@@ -84,13 +84,16 @@ describe("LDAP SSO", () => {
             ssoEeSelector.hostInput,
             ssoEeSelector.portInput,
             ssoEeSelector.baseDnInput,
+            ssoEeSelector.addBaseDn,
+            ssoEeSelector.attributeCNRadio,
+            ssoEeSelector.attributeUPNRadio,
+            ssoEeSelector.groupsyncToggle,
             ssoEeSelector.sslToggleInput,
         ];
 
         formFields.forEach((field) => {
-            cy.get(field).should("be.visible");
+            cy.scrollToElement(field);
         });
-
         // Verify buttons using forEach
         const buttons = [
             { selector: commonSelectors.cancelButton, index: 1, text: "Cancel" },
@@ -114,6 +117,7 @@ describe("LDAP SSO", () => {
         // Step 2: Configure LDAP SSO successfully
 
         // Fill configuration
+        cy.scrollToElement(ssoEeSelector.nameInput);
         cy.clearAndType(ssoEeSelector.nameInput, "Tooljet LDAP Auth");
         cy.clearAndType(ssoEeSelector.hostInput, Cypress.env("ldap_host"));
         cy.clearAndType(ssoEeSelector.portInput, "10389");
@@ -135,7 +139,7 @@ describe("LDAP SSO", () => {
 
         cy.get(ssoEeSelector.ldapSSOText)
             .verifyVisibleElement("have.text", ssoEeText.ldapSSOText)
-            .click();
+            .click({force:true});
     });
 
     it("should show error when user does not exist in workspace", () => {

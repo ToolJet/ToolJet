@@ -1,5 +1,6 @@
 /* eslint-disable import/no-unresolved */
 import React, { useState, useEffect } from 'react';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -58,6 +59,12 @@ const CodeEditor = ({
     setExposedVariable('value', code);
   }, 500);
 
+  const updateValue = (val) => {
+    setValue(val);
+    setForceDynamicHeightUpdate((prev) => !prev);
+    codeChanged(val);
+  };
+
   const editorStyles = {
     height: isDynamicHeightEnabled ? '100%' : height,
     display: !visibility ? 'none' : 'block',
@@ -94,6 +101,8 @@ const CodeEditor = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useFormClear(() => updateValue(''));
+
   return (
     <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
       <div
@@ -119,11 +128,7 @@ const CodeEditor = ({
           width="100%"
           theme={theme}
           extensions={[langExtention ?? javascript(), lineWrappingExtension]}
-          onChange={(value) => {
-            setValue(value);
-            setForceDynamicHeightUpdate((prev) => !prev);
-            codeChanged(value);
-          }}
+          onChange={updateValue}
           basicSetup={setupConfig}
           className={`codehinter-multi-line-input code-editor-component`}
           indentWithTab={true}

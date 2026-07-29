@@ -64,6 +64,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'FlexContainer',
   'TagsInput',
   'TreeSelect',
+  'Cascader',
   'ModalV2',
   'Container',
 ];

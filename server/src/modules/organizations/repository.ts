@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, FindManyOptions, FindOptionsSelect, ILike, In, LessThan, Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
+import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { catchDbException, isSuperAdmin } from '@helpers/utils.helper';
 import { ConfigScope, SSOType } from '@entities/sso_config.entity';
@@ -99,8 +100,15 @@ export class OrganizationRepository extends Repository<Organization> {
           select,
         });
       }
-      if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+      if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE) {
+        const banned = await manager.findOne(WorkspaceBanList, { where: { organizationId: organization.id } });
+        if (banned) {
+          throw new ForbiddenException({
+            message: JSON.stringify({ errorType: 'WORKSPACE_BANNED', workspaceName: organization.name }),
+          });
+        }
         throw new BadRequestException('Organization is Archived');
+      }
       return organization;
     }, manager || this.manager);
   }

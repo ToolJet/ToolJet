@@ -1572,6 +1572,10 @@
   padding: 0;
 }
 
+.align-items-safe-center {
+  align-items: safe center;
+}
+
 .overlay-cell-table {
   box-shadow: var(--elevation-400-box-shadow) !important;
   background: var(--cc-surface1-surface) !important;

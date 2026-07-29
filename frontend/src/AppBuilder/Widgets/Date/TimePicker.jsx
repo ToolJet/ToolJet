@@ -5,7 +5,7 @@ import moment from 'moment';
 import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat, isDateValid } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import './styles.scss';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const TimePicker = ({
   height,
@@ -135,8 +135,9 @@ export const TimePicker = ({
     setValidationStatus(isDateValid(selectedTimestamp, { minTime, maxTime, customRule, isMandatory, timeFormat }));
   }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat]);
 
+  useFormClear(() => setInputValue(null));
+
   const isTwentyFourHourMode = is24HourFormat(timeFormat);
-  console.log('isTwentyFourHourMode', isTwentyFourHourMode);
 
   const componentProps = {
     popperClassName: cx(
