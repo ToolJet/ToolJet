@@ -372,7 +372,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     // only kicks in for `undefined`).
     moduleId = moduleId || 'canvas';
     try {
-      const data = await appVersionService.getAppVersionData(appId, versionId, get().currentMode);
+      const data = await appVersionService.getAppVersionData(appId, versionId, get().getCurrentMode(moduleId));
       // getAppVersionData doesn't include the resolved branchName/branchId (those come from the
       // environment-versions fetch). Carry them over from the already-enriched entry so the version
       // selector keeps showing the branch name instead of falling back to the raw UUID version name.

@@ -1,5 +1,4 @@
 import { DynamicModule } from '@nestjs/common';
-import { GitTagInterface } from '@modules/app-git/interfaces/git-tag.interface';
 import { AppsRepository } from '@modules/apps/repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { GitSyncModule } from '@modules/git-sync/module';
