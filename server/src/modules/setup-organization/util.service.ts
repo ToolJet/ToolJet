@@ -19,6 +19,7 @@ import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DefaultDataSourceKinds } from '@modules/data-sources/constants';
 import { OrganizationInputs } from './types/organization-inputs';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilService {
@@ -47,6 +48,15 @@ export class SetupOrganizationsUtilService implements ISetupOrganizationsUtilSer
         await this.organizationUserRepository.createOne(user, organization, false, manager);
         await this.rolesUtilService.addUserRole(organization.id, { role: USER_ROLE.ADMIN, userId: user.id }, manager);
       }
+      // Seed the default workspace branch before createSampleDB, which requires
+      // a non-null branch_id when creating DataSourceVersion rows.
+      const defaultBranch = manager.create(WorkspaceBranch, {
+        organizationId: organization.id,
+        name: 'main',
+        isDefault: true,
+      });
+      await manager.save(defaultBranch);
+
       await this.sampleDBService.createSampleDB(organization.id, manager);
       await this.licenseOrganizationService.validateOrganization(manager, organization.id);
       await this.licenseUserService.validateUser(manager, organization.id);

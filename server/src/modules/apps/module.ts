@@ -16,7 +16,6 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from './repository';
 import { FeatureAbilityFactory } from './ability';
 import { DataSourcesModule } from '@modules/data-sources/module';
-import { AppsSubscriber } from './subscribers/apps.subscriber';
 import { AiModule } from '@modules/ai/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { AppHistoryModule } from '@modules/app-history/module';
@@ -27,6 +26,7 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -45,6 +45,7 @@ export class AppsModule extends SubModule {
       WorkflowService,
       AppImportExportService,
       PageHelperService,
+      AppsSubscriber,
     } = await this.getProviders(configs, 'apps', [
       'controller',
       'controllers/workflow.controller',
@@ -56,12 +57,13 @@ export class AppsModule extends SubModule {
       'services/workflow.service',
       'services/app-import-export.service',
       'services/page.util.service',
+      'subscribers/apps.subscriber',
     ]);
 
     return this.cacheModule(cacheKey, {
       module: AppsModule,
       imports: [
-        TypeOrmModule.forFeature([App, Page, EventHandler, Organization, Component, VersionRepository]),
+        TypeOrmModule.forFeature([App, Page, EventHandler, Organization, Component]),
         await FolderAppsModule.register(configs),
         await ThemesModule.register(configs),
         await FoldersModule.register(configs),
@@ -72,6 +74,7 @@ export class AppsModule extends SubModule {
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
         await UsersModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport ? [AppsController, WorkflowController] : [],
       providers: [

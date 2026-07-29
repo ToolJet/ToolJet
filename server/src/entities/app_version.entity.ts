@@ -136,6 +136,11 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'is_public', default: true, nullable: true })
   isPublic: boolean;
 
+  // Static origin marker: the row originated from git sync (branch_id was set before backfill).
+  // Also the canonical-row tiebreaker: synced rows sort first when resolving metadata.
+  @Column({ name: 'is_synced', default: false })
+  isSynced: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

@@ -23,7 +23,7 @@ export abstract class SubModule {
    * run initTestApp for both 'ee' and 'ce' within one file).
    */
   protected static buildCacheKey(configs?: { IS_GET_CONTEXT: boolean }, ...rest: any[]): string {
-    return JSON.stringify([configs ?? {}, getTooljetEdition(), ...rest]);
+    return JSON.stringify([configs ?? {}, ...rest, getTooljetEdition()]);
   }
 
   /** Look up a cached DynamicModule for this subclass + cache key. */

@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { WorkflowExecution } from '../../../../src/entities/workflow_execution.entity';
+import { Component } from '../../../../src/entities/component.entity';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
@@ -14,7 +15,16 @@ import {
   setupOrganizationAndUser,
   initTestApp,
   createCompleteWorkflow,
+  createWorkflowApplicationVersion,
+  releaseWorkflowVersion,
+  buildWorkflowDefinition,
   createBundle,
+  createApplication,
+  createApplicationVersion,
+  createDataSource,
+  createDataQuery,
+  markVersionAsReleased,
+  getDefaultDataSource,
   login,
   WorkflowNode,
   WorkflowEdge,
@@ -1654,6 +1664,82 @@ result = pydash.sum_(sorted_numbers)
           expect(responseNode.executed).toBe(true);
         }, 180000);
       });
+
+      describe('released version resolution', () => {
+        it('should execute the released version, not a newer draft, when appVersionId is omitted', async () => {
+          const { user } = await setupOrganizationAndUser(app, {
+            email: 'admin@tooljet.io',
+            password: 'password',
+            firstName: 'Admin',
+            lastName: 'User'
+          });
+
+          const buildNodes = (message: string): WorkflowNode[] => [
+            {
+              id: 'start-1',
+              type: 'input',
+              data: { nodeType: 'start', label: 'Start trigger' },
+              position: { x: 100, y: 250 },
+              sourcePosition: 'right'
+            },
+            {
+              id: 'response-1',
+              type: 'output',
+              data: {
+                nodeType: 'response',
+                label: 'Response',
+                code: `return { message: "${message}" }`,
+                nodeName: 'response1'
+              },
+              position: { x: 400, y: 250 },
+              targetPosition: 'left'
+            }
+          ];
+
+          const edges: WorkflowEdge[] = [
+            {
+              id: 'edge-1',
+              source: 'start-1',
+              target: 'response-1',
+              type: 'workflow'
+            }
+          ];
+
+          const { app: workflow, appVersion: releasedVersion } = await createCompleteWorkflow(app, user, {
+            name: 'Released Version Workflow',
+            nodes: buildNodes('released'),
+            edges,
+            queries: []
+          });
+
+          const draftVersion = await createWorkflowApplicationVersion(app, workflow, {
+            definition: buildWorkflowDefinition({
+              nodes: buildNodes('draft'),
+              edges,
+              queries: []
+            })
+          });
+
+          await releaseWorkflowVersion(workflow, releasedVersion);
+
+          const execution = await executeWorkflow(app, workflow, user, {
+            environmentId: releasedVersion.currentEnvironmentId
+          });
+
+          expect(execution.appVersionId).toBe(releasedVersion.id);
+          expect(execution.appVersionId).not.toBe(draftVersion.id);
+
+          const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+          expect(workflowExecution.executed).toBe(true);
+
+          const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
+          expect(responseNode).toBeDefined();
+          expect(responseNode.executed).toBe(true);
+
+          const responseResult = JSON.parse(responseNode.result);
+          expect(responseResult).toContain('released');
+        });
+      });
     });
 
     describe('GET /api/workflow_executions/:id/status | poll execution status', () => {
@@ -1905,6 +1991,181 @@ result = pydash.sum_(sorted_numbers)
         expect(nodesResponse.statusCode).toBe(200);
         expect(nodesResponse.body).toHaveProperty('data');
         expect(Array.isArray(nodesResponse.body.data)).toBe(true);
+      });
+    });
+
+    describe('POST /api/workflow_executions/:id/trigger | trigger a workflow from an app or module query', () => {
+      // Regression coverage for WorkflowTriggerAuthGuard: public apps (and modules embedded
+      // in a public parent app) must allow unauthenticated workflow triggers.
+
+      const buildTargetWorkflow = async (user: any, name: string) => {
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { message: "Workflow executed successfully" }',
+              nodeName: 'response1'
+            },
+            position: { x: 400, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          { id: 'edge-1', source: 'start-1', target: 'response-1', type: 'workflow' }
+        ];
+
+        return await createCompleteWorkflow(app, user, { name, nodes, edges, queries: [] });
+      };
+
+      // Embeds a "trigger this workflow" query (kind: 'workflows') on the given host/module
+      // app version, mirroring what the query editor persists for a workflow query.
+      const embedWorkflowQuery = async (hostAppVersion: any, workflow: any, workflowVersion: any) => {
+        const dataSource = await createDataSource(app, {
+          name: 'trigger-workflow',
+          kind: 'workflows',
+          appVersion: hostAppVersion,
+        });
+
+        return await createDataQuery(app, {
+          name: 'workflows1',
+          dataSource,
+          appVersion: hostAppVersion,
+          options: {
+            workflowId: workflow.id,
+            workflowVersionId: workflowVersion.id,
+            params: [],
+          },
+        });
+      };
+
+      const triggerViaQuery = (workflow: any, workflowVersion: any, workflowQuery: any) =>
+        request(app.getHttpServer())
+          .post(`/api/workflow_executions/${workflow.id}/trigger`)
+          .send({
+            appId: workflow.id,
+            appVersionId: workflowVersion.id,
+            executeUsing: 'app',
+            queryId: workflowQuery.id,
+            environmentId: workflowVersion.currentEnvironmentId,
+            syncExecution: true,
+          });
+
+      it('allows an unauthenticated trigger when the embedding front-end app is public', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+        user.organizationId = user.organizationId || user.defaultOrganizationId;
+
+        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(user, 'Public App Target Workflow');
+
+        const hostApp = await createApplication(app, { name: 'Public host app', user, isPublic: true, type: 'front-end' }, false);
+        const hostVersion = await createApplicationVersion(app, hostApp as any);
+        const workflowQuery = await embedWorkflowQuery(hostVersion, workflow, workflowVersion);
+
+        const response = await triggerViaQuery(workflow, workflowVersion, workflowQuery);
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.result?.executionId).toBeDefined();
+
+        const { execution } = await getWorkflowExecutionDetails(app, response.body.result.executionId);
+        expect(execution.executed).toBe(true);
+      });
+
+      it('rejects an unauthenticated trigger when the embedding front-end app is not public', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+        user.organizationId = user.organizationId || user.defaultOrganizationId;
+
+        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(user, 'Private App Target Workflow');
+
+        const hostApp = await createApplication(app, { name: 'Private host app', user, isPublic: false, type: 'front-end' }, false);
+        const hostVersion = await createApplicationVersion(app, hostApp as any);
+        const workflowQuery = await embedWorkflowQuery(hostVersion, workflow, workflowVersion);
+
+        const response = await triggerViaQuery(workflow, workflowVersion, workflowQuery);
+
+        expect(response.statusCode).toBe(401);
+      });
+
+      it('allows an unauthenticated trigger when the query lives in a module embedded in a public parent app', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+        user.organizationId = user.organizationId || user.defaultOrganizationId;
+
+        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(user, 'Module Target Workflow');
+
+        // Module app: never marked public itself -- only the public parent makes it reachable.
+        const moduleApp = await createApplication(app, { name: 'Embedded module', user, isPublic: false, type: 'module' }, false);
+        const moduleVersion = await createApplicationVersion(app, moduleApp as any);
+        const workflowQuery = await embedWorkflowQuery(moduleVersion, workflow, workflowVersion);
+
+        // Parent app: public, embeds the module via a ModuleViewer component.
+        const parentApp = await createApplication(app, { name: 'Public parent app', user, isPublic: true, type: 'front-end' }, false);
+        const parentVersion = await createApplicationVersion(app, parentApp as any);
+        await markVersionAsReleased(parentApp.id, parentVersion.id);
+
+        const ds = getDefaultDataSource();
+        const componentRepository = ds.getRepository(Component);
+        await componentRepository.save(
+          componentRepository.create({
+            name: 'module1',
+            type: 'ModuleViewer',
+            pageId: parentVersion.homePageId,
+            properties: {
+              moduleAppId: { value: moduleApp.id },
+              moduleVersionId: { value: moduleVersion.id },
+            },
+            styles: {},
+            validation: {},
+          })
+        );
+
+        const response = await triggerViaQuery(workflow, workflowVersion, workflowQuery);
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.result?.executionId).toBeDefined();
+      });
+
+      it('rejects an unauthenticated trigger when the module is not embedded in any public app', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+        user.organizationId = user.organizationId || user.defaultOrganizationId;
+
+        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(user, 'Orphan Module Target Workflow');
+
+        const moduleApp = await createApplication(app, { name: 'Standalone module', user, isPublic: false, type: 'module' }, false);
+        const moduleVersion = await createApplicationVersion(app, moduleApp as any);
+        const workflowQuery = await embedWorkflowQuery(moduleVersion, workflow, workflowVersion);
+
+        const response = await triggerViaQuery(workflow, workflowVersion, workflowQuery);
+
+        expect(response.statusCode).toBe(401);
       });
     });
   });

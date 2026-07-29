@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { CreateEventHandlerDto, UpdateEvent, BulkCreateEventHandlerDto } from '../dto/event';
 import { App } from '@entities/app.entity';
 import {
@@ -159,7 +159,7 @@ export class EventsService implements IEventsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = skipHistoryCapture ? null : await this.beforeEventCreate(eventHandler, versionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       if (
         eventHandler.eventType === 'component' ||
         eventHandler.eventType === 'table_column' ||
@@ -210,7 +210,7 @@ export class EventsService implements IEventsService {
 
       const event = await manager.save(EventHandler, newEvent);
       return event;
-    }, versionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterEventCreate(context, result, versionId, skipHistoryCapture, historyUserId, operationTimestamp).catch(
@@ -307,9 +307,9 @@ export class EventsService implements IEventsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeBulkEventCreate(eventHandlers, versionId);
 
-    const results = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const results = await dbTransactionWrap(async (manager: EntityManager) => {
       return this.createEventsInTransaction(eventHandlers, versionId, manager);
-    }, versionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterBulkEventCreate(context, results, versionId, historyUserId, operationTimestamp).catch((err) =>
@@ -323,7 +323,7 @@ export class EventsService implements IEventsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeEventUpdate(events, updateType, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       return await Promise.all(
         events.map(async (event) => {
           const { event_id, diff } = event;
@@ -353,7 +353,7 @@ export class EventsService implements IEventsService {
           return await manager.save(EventHandler, updatedEvent);
         })
       );
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterEventUpdate(
@@ -386,7 +386,7 @@ export class EventsService implements IEventsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeEventDelete(eventId, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
         where: { id: eventId },
       });
@@ -405,7 +405,7 @@ export class EventsService implements IEventsService {
       }
       await this.updateEventsOrderOnDelete(sourceId, deletedIndex);
       return deleteResponse;
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterEventDelete(context, eventId, appVersionId, historyUserId, operationTimestamp).catch((err) =>

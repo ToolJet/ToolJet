@@ -2,7 +2,15 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } fro
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { WorkspaceBranchService } from './service';
-import { CreateBranchDto, WorkspacePushDto, WorkspacePullDto, PullAppDto, EnsureDraftDto, PullModuleDto } from './dto';
+import {
+  CreateBranchDto,
+  WorkspacePushDto,
+  WorkspacePullDto,
+  PullAppDto,
+  EnsureDraftDto,
+  PullModuleDto,
+  ResolveConflictsDto,
+} from './dto';
 import { IWorkspaceBranchController } from './interfaces/IController';
 import { FEATURE_KEY } from './constants';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -19,7 +27,7 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get()
   async list(@User() user) {
-    return this.workspaceBranchService.list(user.organizationId);
+    return this.workspaceBranchService.list(user.organizationId, user.id);
   }
 
   @InitFeature(FEATURE_KEY.CHECK_UPDATES)
@@ -47,7 +55,7 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Put(':id/activate')
   async switchBranch(@User() user, @Param('id') branchId: string, @Body() body?: { appId?: string }) {
-    return this.workspaceBranchService.switchBranch(user.organizationId, branchId, body?.appId);
+    return this.workspaceBranchService.switchBranch(user.organizationId, branchId, body?.appId, user.id);
   }
 
   @InitFeature(FEATURE_KEY.DELETE_BRANCH)
@@ -69,6 +77,13 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @Post('pull')
   async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto) {
     return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch, dto?.branchId);
+  }
+
+  @InitFeature(FEATURE_KEY.RESOLVE_CONFLICTS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Post('resolve-conflicts')
+  async resolveConflicts(@User() user, @Body() dto: ResolveConflictsDto) {
+    return this.workspaceBranchService.resolveConflicts(user.organizationId, dto.resolutions, dto.branchId);
   }
 
   @InitFeature(FEATURE_KEY.PULL_APP)
