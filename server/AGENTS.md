@@ -24,7 +24,7 @@ modules/{feature}/
 
 - `server/src/` = Community Edition core. `server/ee/` = Enterprise overrides (git submodule, mirrors CE module structure).
 - EE services extend CE services and call `super()`. Never import EE code from CE.
-- Cloud shares EE code paths; differentiated by runtime checks (`getTooljetEdition()` in `src/helpers/utils.helper.ts`).
+- Cloud is a config change on EE, not a third code tree: `TOOLJET_EDITION=cloud` loads the same `ee/` code (`getImportPath()` maps both EE and Cloud to `ee/`). Cloud-only behavior via runtime checks (`getTooljetEdition()` in `src/helpers/utils.helper.ts`), `CloudFeatureGuard`, and conditional module registration (e.g. `SessionTransferModule` is Cloud-only).
 
 ## Conventions
 

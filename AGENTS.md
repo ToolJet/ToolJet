@@ -10,7 +10,7 @@ Three editions: `ce` (community), `ee` (enterprise), `cloud`. Controlled by `TOO
 
 - CE code lives in `server/src/modules/` and `frontend/src/`
 - EE/Cloud code lives in git submodules: `server/ee/` and `frontend/ee/`
-- Cloud shares EE code paths — differentiated by runtime checks, not separate modules
+- Cloud is a deployment config of EE, not a third code tree: `TOOLJET_EDITION=cloud` runs the same EE submodule code, with cloud-only behavior gated by runtime checks
 
 ### Backend (NestJS + TypeORM + PostgreSQL)
 
