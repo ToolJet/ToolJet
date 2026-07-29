@@ -67,14 +67,14 @@ export function useAutoSyncNotifications() {
           if (isInAppBuilder) {
             freezeEditor();
             refreshBranches();
-            toast('This branch was deleted on GitHub.', {
+            toast(`Branch "${branch}" was deleted from GitHub.`, {
               id: `auto-sync-deleted-${branch}`,
               duration: 8000,
               icon: infoIcon,
               style: toastStyle,
             });
           } else {
-            toast('This branch was deleted on GitHub.', {
+            toast(`Branch "${branch}" was deleted from GitHub.`, {
               id: `auto-sync-deleted-${branch}`,
               duration: 5000,
               icon: infoIcon,
@@ -88,8 +88,13 @@ export function useAutoSyncNotifications() {
 
       // ─── Branch Updated (push or PR merge) ───
       if (action === 'pulled') {
+        const event = notification.metadata?.event;
+        const toastMsg =
+          event === 'pull_request'
+            ? `${branch} branch was synced after a PR was merged`
+            : `${branch} branch was updated from GitHub`;
         if (isInAppBuilder && (isCurrentBranch || affectsDefaultBranch)) {
-          toast(`${branch} branch has been updated from GitHub. Refresh to see changes`, {
+          toast(`${toastMsg}. Refresh to see changes`, {
             id: `auto-sync-pulled-${branch}`,
             duration: 8000,
             icon: infoIcon,
@@ -101,7 +106,7 @@ export function useAutoSyncNotifications() {
               createElement(
                 'span',
                 { style: { display: 'flex', alignItems: 'center', gap: 12 } },
-                `${branch} branch has been updated from GitHub.`,
+                `${toastMsg}.`,
                 createElement(
                   Button,
                   {
@@ -134,7 +139,12 @@ export function useAutoSyncNotifications() {
           const notifCoRelId = notification.metadata?.appCoRelationId;
           // Both must be present and must match — if either is missing, skip the toast
           if (!notifCoRelId || !currentCoRelId || notifCoRelId !== currentCoRelId) return;
-          toast('New version saved from GitHub. Refresh to see changes', {
+          const versionName = notification.metadata?.versionName;
+          const appName = notification.metadata?.appName;
+          const versionMsg = versionName
+            ? `Version ${versionName}${appName ? ` of ${appName}` : ''} was pulled from GitHub. Refresh to see changes`
+            : 'New version pulled from GitHub. Refresh to see changes';
+          toast(versionMsg, {
             id: 'auto-sync-version-imported',
             duration: 8000,
             icon: infoIcon,

@@ -30,6 +30,7 @@ export const gitSyncService = {
   updateEnvConfigs,
   testProviderConnection,
   // Auto-sync webhook management
+  provisionWebhook,
   enableAutoSync,
   updateAutoSyncEvents,
   disableAutoSync,
@@ -401,6 +402,15 @@ function checkTagExists(appId, versionName) {
 // Remove all app-git api's to separate service from here.
 
 // Auto-sync webhook management
+
+function provisionWebhook() {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/provision`, requestOptions).then(handleResponse);
+}
 
 function enableAutoSync(selectedEvents) {
   const requestOptions = {

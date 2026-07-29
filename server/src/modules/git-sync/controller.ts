@@ -71,6 +71,11 @@ export class GitSyncController implements IGitSyncController {
 
   // ─── Auto-Sync Stubs (EE overrides) ───
 
+  @Post('auto-sync/provision')
+  async provisionWebhook(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
   @Post('auto-sync/enable')
   async enableAutoSync(@User() user: UserEntity): Promise<any> {
     throw new NotFoundException();
