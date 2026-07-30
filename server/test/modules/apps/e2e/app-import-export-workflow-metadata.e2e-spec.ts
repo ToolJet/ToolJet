@@ -60,7 +60,15 @@ describe('App import/export — workflow metadata unification', () => {
     await ensureAppEnvironments(app, admin.workspace.id);
 
     const created = await ds.transaction((manager) =>
-      appsUtilService.create('Round Trip Workflow', orgUser, APP_TYPES.WORKFLOW, false, manager, undefined, 'rt-icon.svg')
+      appsUtilService.create(
+        'Round Trip Workflow',
+        orgUser,
+        APP_TYPES.WORKFLOW,
+        false,
+        manager,
+        undefined,
+        'rt-icon.svg'
+      )
     );
 
     // export() resolves to { appV2: App } (single exported app), not { app: App[] }
@@ -122,7 +130,7 @@ describe('App import/export — workflow metadata unification', () => {
     expect(version.slug).toBe('my-git-tracked-slug');
   });
 
-  it('does NOT preserve appParams.slug for a non-git-sync workflow import (gating check)', async () => {
+  it('preserves appParams.slug for any import (re-import slug reclamation)', async () => {
     const admin = await createAdmin(app, 'import-export-admin-4@tooljet.io');
     const orgUser = { ...admin.user, organizationId: admin.workspace.id } as any;
     const ds = getDefaultDataSource();
@@ -131,15 +139,16 @@ describe('App import/export — workflow metadata unification', () => {
     const appParams = {
       type: APP_TYPES.WORKFLOW,
       name: 'Non Git Workflow',
-      slug: 'should-not-be-preserved',
+      slug: 'should-be-preserved-on-reexport',
     };
 
-    // isGitApp omitted (defaults to false) — proves the `isGitApp &&` gate matters, not
-    // just that a slug value happens to flow through unconditionally.
+    // slug is preserved for every import type so deleted apps can reclaim their original
+    // slug on re-import instead of always minting fresh ones (see reuse-unless-taken check
+    // in createAppVersionsForImportedApp).
     const importedApp = await ds.transaction((manager) =>
       importExportService.createImportedAppForUser(manager, appParams, orgUser)
     );
 
-    expect((importedApp as any).__importMetadata.slug).toBeNull();
+    expect((importedApp as any).__importMetadata.slug).toBe('should-be-preserved-on-reexport');
   });
 });

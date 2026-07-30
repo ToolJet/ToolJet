@@ -107,7 +107,7 @@ export default function generateColumnsData({
 
       const columnSize = useDynamicColumn
         ? column.columnSize || columnSizes[column?.id] || columnSizes[column?.name]
-        : columnSizes[column?.id] ?? columnSizes[column?.name] ?? column.columnSize;
+        : (columnSizes[column?.id] ?? columnSizes[column?.name] ?? column.columnSize);
       const columnType = column?.columnType;
 
       // Process column options for select types

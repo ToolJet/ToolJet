@@ -107,9 +107,10 @@ function makeService(): AppsService {
     null as any, // eventEmitter
     null as any, // abilityService
     null as any, // organizationGitRepository
+    // delete() runs assertGitSyncEditAllowedForOrg against this — git off, unlocked
     {
       isGitEditLocked: jest.fn().mockResolvedValue(false),
-      getDetails: jest.fn().mockResolvedValue({ isEnabled: false, isMultiBranchingEnabled: false }),
+      getDetails: jest.fn().mockResolvedValue({ isEnabled: false, options: {} }),
     } as any // gitSyncConfigsUtilService
   );
 }

@@ -39,8 +39,8 @@ class TestableAppsUtilService extends AppsUtilService {
       searchKey,
       select,
       type,
-      undefined, // branchId
-      undefined, // _skipBranchScope
+      undefined,
+      false,
       context
     );
   }
@@ -136,12 +136,11 @@ describe('AppsUtilService — picker-context module filtering', () => {
 
     service.callViewableAppsQueryUsingPermissions(user, perms, manager, '', undefined, APP_TYPES.MODULE);
 
-    // dashboard path (non-picker, no isAll grant) calls addViewableModulesFilter's
-    // whitelist branch, which uses id IN (:...viewableModules)
+    // dashboard path calls addViewableModulesFilter which uses id IN (:...viewableModules)
     const idFilterCall = calls.find((c) => c.sql.includes('apps.id IN (:...viewableModules)'));
     expect(idFilterCall).toBeDefined();
 
-    // viewableModules for this user = null + editableAppsId ∪ (viewableAppsId minus hiddenAppsId)
+    // viewableModules for this user = null + permitted ids minus hidden (unless owned)
     // = [null] (hidden is excluded from the union)
     const viewableModules = idFilterCall!.params!['viewableModules'] as string[];
     expect(viewableModules).not.toContain(hiddenModuleId);

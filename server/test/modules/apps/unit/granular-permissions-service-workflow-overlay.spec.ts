@@ -48,7 +48,14 @@ describe('GranularPermissionsService.overlayGranularPermissionAppMetadata — wo
   });
 
   it('should overlay real name/slug/icon/isPublic onto a workflow app nested under a granular permission', async () => {
-    const workflowApp: any = { id: 'workflow-1', type: 'workflow', name: null, slug: 'workflow-1', icon: null, isPublic: false };
+    const workflowApp: any = {
+      id: 'workflow-1',
+      type: 'workflow',
+      name: null,
+      slug: 'workflow-1',
+      icon: null,
+      isPublic: false,
+    };
     const permissions: any[] = [{ appsGroupPermissions: { groupApps: [{ app: workflowApp }] } }];
 
     await (service as any).overlayGranularPermissionAppMetadata(mockManager, permissions, 'org-1');

@@ -18,7 +18,6 @@ import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
 import { GroupFolders } from '@entities/group_folders.entity';
 import { Folder } from '@entities/folder.entity';
-import { GroupPermissions } from '@entities/group_permissions.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { ResourceType } from '@modules/group-permissions/constants';
 import { APP_TYPES } from '@modules/apps/constants';
@@ -81,7 +80,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     const group = await createGroupPermission(nestApp, { organization, group: 'a1-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a1-group']);
 
-    const folder = await createFolder(nestApp, { name: 'a1-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a1-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow = await createWorkflowForUser(nestApp, user, 'a1-workflow');
     await addAppToFolder(nestApp, workflow, folder);
 
@@ -101,7 +104,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     const group = await createGroupPermission(nestApp, { organization, group: 'a2-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a2-group']);
 
-    const folder = await createFolder(nestApp, { name: 'a2-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a2-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow = await createWorkflowForUser(nestApp, user, 'a2-workflow');
     await addAppToFolder(nestApp, workflow, folder);
 
@@ -129,7 +136,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     // would make the workflow unconditionally editable via the "owned by user" rule,
     // masking exactly the bug this test is meant to catch.
     const { user: owner } = await createUser(nestApp, { email: 'a3-owner@tooljet.io', organization });
-    const folder = await createFolder(nestApp, { name: 'a3-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a3-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow = await createWorkflowForUser(nestApp, owner, 'a3-workflow');
     await addAppToFolder(nestApp, workflow, folder);
 
@@ -145,15 +156,23 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     expect(perms[MODULES.WORKFLOWS].editableWorkflowsId).not.toContain(workflow.id);
   });
 
-  it('a grant scoped to a different folder does not leak into an unrelated folder\'s workflow', async () => {
+  it("a grant scoped to a different folder does not leak into an unrelated folder's workflow", async () => {
     const { user, organization } = await createUser(nestApp, { email: 'a4@tooljet.io' });
     const group = await createGroupPermission(nestApp, { organization, group: 'a4-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a4-group']);
 
     // Owned by a different user — see a3's comment on why the actor under test can't own it.
     const { user: owner } = await createUser(nestApp, { email: 'a4-owner@tooljet.io', organization });
-    const folder1 = await createFolder(nestApp, { name: 'a4-folder1', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
-    const folder2 = await createFolder(nestApp, { name: 'a4-folder2', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder1 = await createFolder(nestApp, {
+      name: 'a4-folder1',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
+    const folder2 = await createFolder(nestApp, {
+      name: 'a4-folder2',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow2 = await createWorkflowForUser(nestApp, owner, 'a4-workflow2');
     await addAppToFolder(nestApp, workflow2, folder2);
 
@@ -181,7 +200,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     const group = await createGroupPermission(nestApp, { organization, group: 'a5-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a5-group']);
 
-    const folder = await createFolder(nestApp, { name: 'a5-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a5-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow = await createWorkflowForUser(nestApp, owner, 'a5-workflow');
     await addAppToFolder(nestApp, workflow, folder);
 
@@ -203,7 +226,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     const group = await createGroupPermission(nestApp, { organization, group: 'a6-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a6-group']);
 
-    const folder = await createFolder(nestApp, { name: 'a6-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a6-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow = await createWorkflowForUser(nestApp, owner, 'a6-workflow');
     await addAppToFolder(nestApp, workflow, folder);
 
@@ -252,8 +279,16 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     // can't own it (workflowA's ownership doesn't matter: ownership only ever adds to
     // editableWorkflowsId, which is already the expected outcome for workflowA below).
     const { user: owner } = await createUser(nestApp, { email: 'a8-owner@tooljet.io', organization });
-    const folderA = await createFolder(nestApp, { name: 'a8-folderA', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
-    const folderB = await createFolder(nestApp, { name: 'a8-folderB', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folderA = await createFolder(nestApp, {
+      name: 'a8-folderA',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
+    const folderB = await createFolder(nestApp, {
+      name: 'a8-folderB',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflowA = await createWorkflowForUser(nestApp, user, 'a8-workflowA');
     const workflowB = await createWorkflowForUser(nestApp, owner, 'a8-workflowB');
     await addAppToFolder(nestApp, workflowA, folderA);
@@ -286,7 +321,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     const group2 = await createGroupPermission(nestApp, { organization, group: 'a9-group2' } as any);
     await createUserGroupPermissions(nestApp, user, ['a9-group1', 'a9-group2']);
 
-    const folder = await createFolder(nestApp, { name: 'a9-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a9-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow = await createWorkflowForUser(nestApp, owner, 'a9-workflow');
     await addAppToFolder(nestApp, workflow, folder);
 
@@ -313,7 +352,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
 
     const group = await createGroupPermission(nestApp, { organization, group: 'a10-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a10-group']);
-    const folder = await createFolder(nestApp, { name: 'a10-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a10-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     await grantWorkflowFolderPermission(group.id, { folderId: folder.id, canViewApps: true });
 
     const abilityService = nestApp.get(AbilityService);
@@ -335,7 +378,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     const group = await createGroupPermission(nestApp, { organization, group: 'a11-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a11-group']);
 
-    const folder = await createFolder(nestApp, { name: 'a11-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a11-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow = await createWorkflowForUser(nestApp, owner, 'a11-workflow');
     await addAppToFolder(nestApp, workflow, folder);
 
@@ -369,11 +416,15 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
   // by org. So a grant whose folderId happens to belong to a different org's folder resolves
   // against that folder's workflows regardless of org — a known, shared, pre-existing gap (same
   // shape existed already in the Apps+FOLDER code) that this suite documents, not fixes.
-  it('cross-org: a WORKFLOW_FOLDER grant scoped to another org\'s folder id is not organization-isolated (documents pre-existing gap)', async () => {
+  it("cross-org: a WORKFLOW_FOLDER grant scoped to another org's folder id is not organization-isolated (documents pre-existing gap)", async () => {
     const { user: user1, organization: org1 } = await createUser(nestApp, { email: 'a12-org1@tooljet.io' });
     const { user: user2, organization: org2 } = await createUser(nestApp, { email: 'a12-org2@tooljet.io' });
 
-    const folder2 = await createFolder(nestApp, { name: 'a12-folder-org2', type: APP_TYPES.WORKFLOW, organizationId: org2.id });
+    const folder2 = await createFolder(nestApp, {
+      name: 'a12-folder-org2',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: org2.id,
+    });
     const workflow2 = await createWorkflowForUser(nestApp, user2, 'a12-workflow-org2');
     await addAppToFolder(nestApp, workflow2, folder2);
 
@@ -400,7 +451,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     const group = await createGroupPermission(nestApp, { organization, group: 'a13-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a13-group']);
 
-    const emptyFolder = await createFolder(nestApp, { name: 'a13-empty-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const emptyFolder = await createFolder(nestApp, {
+      name: 'a13-empty-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     await grantWorkflowFolderPermission(group.id, { folderId: emptyFolder.id, isAll: false, canEditFolder: true });
 
     const abilityService = nestApp.get(AbilityService);
@@ -474,7 +529,11 @@ describe('Ability resolution — WORKFLOW_FOLDER → editableWorkflowsId/executa
     const group = await createGroupPermission(nestApp, { organization, group: 'a16-group' } as any);
     await createUserGroupPermissions(nestApp, user, ['a16-group']);
 
-    const folder = await createFolder(nestApp, { name: 'a16-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+    const folder = await createFolder(nestApp, {
+      name: 'a16-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
     const workflow = await createWorkflowForUser(nestApp, user, 'a16-workflow');
     await addAppToFolder(nestApp, workflow, folder);
 
@@ -524,8 +583,16 @@ describe('HTTP enforcement — PUT/GET /api/apps/:id for workflow-type apps gate
     const group = await createGroupPermission(nestApp, { organization, group: 'b1-group' } as any);
     await createUserGroupPermissions(nestApp, endUserData.user, ['b1-group']);
 
-    const folder = await createFolder(nestApp, { name: 'b1-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
-    const workflow = await createApplication(nestApp, { user: adminUser, name: 'b1-workflow', type: APP_TYPES.WORKFLOW }, false);
+    const folder = await createFolder(nestApp, {
+      name: 'b1-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
+    const workflow = await createApplication(
+      nestApp,
+      { user: adminUser, name: 'b1-workflow', type: APP_TYPES.WORKFLOW },
+      false
+    );
     await addAppToFolder(nestApp, workflow, folder);
 
     await grantWorkflowFolderPermission(group.id, { folderId: folder.id, canViewApps: true });
@@ -559,8 +626,16 @@ describe('HTTP enforcement — PUT/GET /api/apps/:id for workflow-type apps gate
     const group = await createGroupPermission(nestApp, { organization, group: 'b2-group' } as any);
     await createUserGroupPermissions(nestApp, endUserData.user, ['b2-group']);
 
-    const folder = await createFolder(nestApp, { name: 'b2-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
-    const workflow = await createApplication(nestApp, { user: adminUser, name: 'b2-workflow', type: APP_TYPES.WORKFLOW }, false);
+    const folder = await createFolder(nestApp, {
+      name: 'b2-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
+    const workflow = await createApplication(
+      nestApp,
+      { user: adminUser, name: 'b2-workflow', type: APP_TYPES.WORKFLOW },
+      false
+    );
     await addAppToFolder(nestApp, workflow, folder);
 
     await grantWorkflowFolderPermission(group.id, { folderId: folder.id, canEditFolder: true });
@@ -578,15 +653,23 @@ describe('HTTP enforcement — PUT/GET /api/apps/:id for workflow-type apps gate
     const adminUser = adminUserData.user;
     const organization = adminUserData.organization;
 
-    const endUserData = await createUser(nestApp, {
+    await createUser(nestApp, {
       email: 'b3-enduser@tooljet.io',
       groups: ['all_users'],
       organization,
     });
     const { tokenCookie } = await login(nestApp, 'b3-enduser@tooljet.io', 'password');
 
-    const unrelatedFolder = await createFolder(nestApp, { name: 'b3-unrelated-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
-    const workflow2 = await createApplication(nestApp, { user: adminUser, name: 'b3-workflow2', type: APP_TYPES.WORKFLOW }, false);
+    const unrelatedFolder = await createFolder(nestApp, {
+      name: 'b3-unrelated-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
+    const workflow2 = await createApplication(
+      nestApp,
+      { user: adminUser, name: 'b3-workflow2', type: APP_TYPES.WORKFLOW },
+      false
+    );
     await addAppToFolder(nestApp, workflow2, unrelatedFolder);
 
     await request(nestApp.getHttpServer())
@@ -620,8 +703,16 @@ describe('HTTP enforcement — PUT/GET /api/apps/:id for workflow-type apps gate
     const group = await createGroupPermission(nestApp, { organization, group: 'b4-group' } as any);
     await createUserGroupPermissions(nestApp, builderData.user, ['b4-group']);
 
-    const folder = await createFolder(nestApp, { name: 'b4-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
-    const workflow = await createApplication(nestApp, { user: adminUser, name: 'b4-workflow', type: APP_TYPES.WORKFLOW }, false);
+    const folder = await createFolder(nestApp, {
+      name: 'b4-folder',
+      type: APP_TYPES.WORKFLOW,
+      organizationId: organization.id,
+    });
+    const workflow = await createApplication(
+      nestApp,
+      { user: adminUser, name: 'b4-workflow', type: APP_TYPES.WORKFLOW },
+      false
+    );
     await addAppToFolder(nestApp, workflow, folder);
 
     await grantWorkflowFolderPermission(group.id, { folderId: folder.id, canViewApps: true });
@@ -660,7 +751,11 @@ describe('Licensing gates — plan: basic/starter hardcoded-role fallback', () =
 
       const group = await createGroupPermission(nestApp, { organization, group: 'c1-group' } as any);
       await createUserGroupPermissions(nestApp, user, ['c1-group']);
-      const folder = await createFolder(nestApp, { name: 'c1-folder', type: APP_TYPES.WORKFLOW, organizationId: organization.id });
+      const folder = await createFolder(nestApp, {
+        name: 'c1-folder',
+        type: APP_TYPES.WORKFLOW,
+        organizationId: organization.id,
+      });
       await grantWorkflowFolderPermission(group.id, { folderId: folder.id, canViewApps: true });
 
       const abilityService = nestApp.get(AbilityService);
@@ -689,7 +784,10 @@ describe('Licensing gates — plan: basic/starter hardcoded-role fallback', () =
     }, 60_000);
 
     it('end-user role yields isAllExecutable:true, isAllEditable:false', async () => {
-      const { user, organization } = await createUser(nestApp, { email: 'c2-enduser@tooljet.io', groups: ['end-user'] });
+      const { user, organization } = await createUser(nestApp, {
+        email: 'c2-enduser@tooljet.io',
+        groups: ['end-user'],
+      });
 
       const abilityService = nestApp.get(AbilityService);
       const perms = await abilityService.resourceActionsPermission(user, {

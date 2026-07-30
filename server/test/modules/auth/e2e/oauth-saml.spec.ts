@@ -31,6 +31,8 @@ describe('OAuthController', () => {
       'user_permissions',
       'role',
       'metadata',
+      'module_group_permissions',
+      'module_folder_group_permissions',
       'sso_user_info',
       'no_active_workspaces',
       'is_current_organization_archived',
@@ -38,6 +40,7 @@ describe('OAuthController', () => {
       'organization_id',
       'super_admin',
       'workflow_group_permissions',
+      'workflow_folder_group_permissions',
     ].sort();
 
     const defaultUserEmail = 'szoboszlai@lfc.com';

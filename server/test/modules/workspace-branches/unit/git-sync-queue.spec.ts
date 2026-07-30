@@ -569,8 +569,7 @@ describe('WorkspaceBranchService.executeDeleteRemoteBranch (remote-ref helper)',
   // executeDeleteBranch (remote + DB) delegates the remote half here. Retries on
   // an already-deleted remote branch would loop pointlessly — "gone" must count
   // as success, which is also what lets executeDeleteBranch proceed to the DB
-  // delete. Only sourceControlProviderService (arg 0) and transactionLogger
-  // (arg 2) are touched — gitSyncProviderService (arg 1) is an untouched filler.
+  // delete. Only two constructor deps (sourceControlProvider, transactionLogger) are touched.
   const makeService = (deleteGitBranch?: (orgId: string, name: string) => Promise<void>) => {
     const provider = {
       getSourceControlService: async () => (deleteGitBranch ? { deleteGitBranch } : {}),

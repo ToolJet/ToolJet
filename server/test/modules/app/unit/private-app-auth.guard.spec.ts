@@ -83,7 +83,7 @@ describe('PrivateAppAuthGuard', () => {
       expect(mockAppRepository.findAppBySlug).not.toHaveBeenCalled();
     });
 
-    it('forwards branch_id query param to findBySlug when present', async () => {
+    it('forwards the branch_id query param to findBySlug when present', async () => {
       const app = makeApp();
       mockAppRepository.findBySlug.mockResolvedValue(app);
       mockOrgRepository.findOne.mockResolvedValue(makeOrg());
@@ -122,10 +122,10 @@ describe('PrivateAppAuthGuard', () => {
       mockAppRepository.findByAppId.mockResolvedValue(app);
       mockOrgRepository.findOne.mockResolvedValue(makeOrg());
 
-      const ctx = makeContext('123e4567-e89b-12d3-a456-426614174000', { 'tj-workspace-id': 'org-uuid-1' });
+      const ctx = makeContext('550e8400-e29b-41d4-a716-446655440000', { 'tj-workspace-id': 'org-uuid-1' });
       await guard.canActivate(ctx);
 
-      expect(mockAppRepository.findByAppId).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
+      expect(mockAppRepository.findByAppId).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
     });
   });
 
@@ -148,10 +148,10 @@ describe('PrivateAppAuthGuard', () => {
       mockAppRepository.findByAppId.mockResolvedValue(app);
       mockOrgRepository.findOne.mockResolvedValue(makeOrg());
 
-      const ctx = makeContext('123e4567-e89b-12d3-a456-426614174000');
+      const ctx = makeContext('550e8400-e29b-41d4-a716-446655440000');
       await guard.canActivate(ctx);
 
-      expect(mockAppRepository.findByAppId).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
+      expect(mockAppRepository.findByAppId).toHaveBeenCalledWith('550e8400-e29b-41d4-a716-446655440000');
     });
 
     it('throws NotFoundException when all three lookups miss', async () => {

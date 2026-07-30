@@ -63,7 +63,11 @@ describe('POST /workflows — default branch_id assignment', () => {
       .post('/api/workflows')
       .set('Cookie', admin.cookie)
       .set('tj-workspace-id', admin.workspace.id)
-      .send({ name: 'DTO Branch Ignored Workflow', type: 'workflow', branchId: '00000000-0000-0000-0000-000000000000' });
+      .send({
+        name: 'DTO Branch Ignored Workflow',
+        type: 'workflow',
+        branchId: '00000000-0000-0000-0000-000000000000',
+      });
 
     expect(res.status).toBe(201);
 

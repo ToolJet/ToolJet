@@ -144,8 +144,8 @@ function ConflictRow({
                   {group.conflictField === 'slug'
                     ? item.name
                     : item.coRelationId
-                    ? `#${item.coRelationId.slice(0, 8)}`
-                    : item.name}
+                      ? `#${item.coRelationId.slice(0, 8)}`
+                      : item.name}
                 </span>
 
                 {!hideBadges && (

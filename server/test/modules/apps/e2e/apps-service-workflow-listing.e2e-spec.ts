@@ -1,9 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppVersion } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
-import { initTestApp, closeTestApp } from 'test-helper';
+import { initTestApp, closeTestApp, resolveOrSeedDefaultBranch } from 'test-helper';
 import { createAdmin, ensureAppEnvironments, findEntityOrFail, saveEntity, updateEntity } from 'test-helper';
 
 /** @group platform */
@@ -72,14 +71,8 @@ describe('AppsService — workflow metadata in create response and listing', () 
     const admin = await createAdmin(app, 'service-branch-list-admin@tooljet.io');
     await ensureAppEnvironments(app, admin.workspace.id);
 
-    // createAdmin seeds the org via a raw entity save, bypassing the production
-    // signup flow that auto-creates a default WorkspaceBranch — seed one explicitly,
-    // and enable git-sync so the org has real branch semantics.
-    const defaultBranch = await saveEntity(WorkspaceBranch, {
-      organizationId: admin.workspace.id,
-      name: 'main',
-      isDefault: true,
-    } as any);
+    // reuse the seeded default — (organization_id, branch_name) is unique
+    const defaultBranch = await resolveOrSeedDefaultBranch(admin.workspace.id);
     await saveEntity(OrganizationGitSync, {
       organizationId: admin.workspace.id,
     } as any);

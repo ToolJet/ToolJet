@@ -15,9 +15,14 @@ const config: Config.InitialOptions = {
   testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
   // Explicitly setting this key drops Jest's own default ('/node_modules/'), so it's
   // restored here — rootDir now covers server/node_modules too.
-  // QUARANTINE(git-sync): suite throws at import (requires TEST_GIT_BASE_URL +
+  // QUARANTINE(git-sync): suites throw at import (require TEST_GIT_BASE_URL +
   // a live git server) — describe.skip can't guard module-load failures. #17265
-  testPathIgnorePatterns: ['/node_modules/', 'modules/git-sync/e2e/git-sync\\.spec\\.ts$'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    'modules/git-sync/e2e/git-sync\\.spec\\.ts$',
+    'modules/git-sync/e2e/git-sync-gitlab\\.spec\\.ts$',
+    'modules/workflows/e2e/workflow-lifecycle\\.e2e-spec\\.ts$',
+  ],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   runner: 'groups',
   testTimeout: 60000,

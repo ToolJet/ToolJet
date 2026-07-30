@@ -349,9 +349,7 @@ function makeService() {
   // Stub versionRepository and appsUtilService to avoid real DB calls
   (svc as any).versionRepository = {};
   (svc as any).appsUtilService = { overlayAppMetadata: jest.fn().mockResolvedValue(undefined) };
-  // checkFolderEditPermission hits a real DB transaction via dbTransactionWrap — these
-  // cases only exercise app-level ability.can(UPDATE), so stub it out to preserve
-  // "no folder-level edit permission" (its behavior before this method existed).
+  // folder-edit fallback hits the DB; these tests cover app-level ability only
   (svc as any).checkFolderEditPermission = jest.fn().mockResolvedValue(false);
   return svc;
 }
@@ -416,8 +414,8 @@ describe('AppsService.validatePrivateAppAccess — module canEdit behavior', () 
         findByName: jest.fn().mockResolvedValue(fakeVersion),
       };
       (service as any).appsUtilService = {
-        overlayAppMetadata: jest.fn().mockResolvedValue(undefined),
         validateVersionEnvironment: jest.fn().mockResolvedValue(fakeEnv),
+        overlayAppMetadata: jest.fn().mockResolvedValue(undefined),
       };
 
       const dto = { accessType: 'view', versionName: 'v1', environmentName: 'development' };

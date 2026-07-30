@@ -19,9 +19,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
  * - end_user is never touched either way — there's no default-permission spec for it at all
  *   (modules, and by extension module folders, are never end-user-assignable).
  */
-export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups1784551394230
-  implements MigrationInterface
-{
+export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups1784551394230 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const manager = queryRunner.manager;
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));

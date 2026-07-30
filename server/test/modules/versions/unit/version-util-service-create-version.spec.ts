@@ -8,7 +8,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { App } from '@entities/app.entity';
 
-describe('VersionUtilService.createVersion — workflow metadata forwarding', () => {
+describe('VersionUtilService.createVersion — version metadata forwarding', () => {
   let service: VersionUtilService;
   let mockManager: any;
   let savedAppVersion: any;
@@ -49,7 +49,7 @@ describe('VersionUtilService.createVersion — workflow metadata forwarding', ()
         { provide: AppHistoryUtilService, useValue: {} },
         {
           provide: GitSyncConfigsUtilService,
-          useValue: { getDetails: jest.fn().mockResolvedValue({ isEnabled: false }) },
+          useValue: { getDetails: jest.fn().mockResolvedValue({ isEnabled: false, options: {} }) },
         },
       ],
     }).compile();
@@ -57,12 +57,8 @@ describe('VersionUtilService.createVersion — workflow metadata forwarding', ()
     service = module.get(VersionUtilService);
   });
 
-  // Skipped: the App Metadata Storage Model migration carved workflows out of this
-  // forwarding — buildVersionFromParent only copies slug/appName/icon/isPublic onto
-  // the version row when `!isWorkflow` (util.service.ts ~505-510). Workflows keep
-  // these fields on apps.* instead, so this assertion no longer holds.
-  it.skip('should forward slug/appName/icon/isPublic from versionFrom onto the new workflow version', async () => {
-    const workflowApp = { id: 'app-1', type: 'workflow', co_relation_id: null } as App;
+  it('should forward slug/appName/icon/isPublic from versionFrom onto the new non-workflow version', async () => {
+    const workflowApp = { id: 'app-1', type: 'front-end', co_relation_id: null } as App;
     const user = { id: 'user-1', organizationId: 'org-1' } as any;
 
     // dbTransactionWrap calls the operation with the manager directly when one isn't

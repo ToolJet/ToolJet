@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { INestApplication } from '@nestjs/common';
 import { AppsRepository } from '@modules/apps/repository';
 import { AppVersion } from '@entities/app_version.entity';
@@ -115,7 +116,7 @@ describe('AppsRepository — workflow metadata overlay (post-migration)', () => 
     const ds = getDefaultDataSource();
     const dataSource = await ds.getRepository(DataSourceEntity).save(
       ds.getRepository(DataSourceEntity).create({
-        id: require('crypto').randomUUID(),
+        id: randomUUID(),
         name: 'restapi',
         kind: 'restapi',
         type: 'default',

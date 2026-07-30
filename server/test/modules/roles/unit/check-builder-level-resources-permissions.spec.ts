@@ -79,10 +79,12 @@ describe('RolesUtilService.checkIfBuilderLevelResourcesPermissions', () => {
 
   it('returns truthy for a group with module permission mixed with other view-only permissions', async () => {
     const service = makeService(
-      jest.fn().mockResolvedValue([
-        makePermission(ResourceType.APP, { canEdit: false, canView: true }),
-        makePermission(ResourceType.MODULE, { canEdit: false, canView: true }),
-      ])
+      jest
+        .fn()
+        .mockResolvedValue([
+          makePermission(ResourceType.APP, { canEdit: false, canView: true }),
+          makePermission(ResourceType.MODULE, { canEdit: false, canView: true }),
+        ])
     );
 
     await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();

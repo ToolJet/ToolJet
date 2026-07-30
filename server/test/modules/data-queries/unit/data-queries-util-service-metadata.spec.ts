@@ -38,7 +38,13 @@ describe('DataQueriesUtilService.runQuery — isPublic/appName resolution', () =
   });
 
   it('should use the app_versions row (not the raw App) for isPublic on a workflow', async () => {
-    const appToUse = { id: 'app-1', type: 'workflow', isPublic: true, name: 'Old Name', organizationId: 'org-1' } as any;
+    const appToUse = {
+      id: 'app-1',
+      type: 'workflow',
+      isPublic: true,
+      name: 'Old Name',
+      organizationId: 'org-1',
+    } as any;
     const dataQuery = {
       dataSource: { id: 'ds-1', kind: 'other', pluginId: 'plugin-1', options: {} },
       appVersion: { isPublic: false, appName: 'New Name', branchId: null },

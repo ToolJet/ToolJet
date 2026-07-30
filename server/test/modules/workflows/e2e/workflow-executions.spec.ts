@@ -6,6 +6,7 @@ import { DataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { WorkflowExecution } from '../../../../src/entities/workflow_execution.entity';
 import { Component } from '../../../../src/entities/component.entity';
+import { App } from '../../../../src/entities/app.entity';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
@@ -2151,6 +2152,8 @@ result = pydash.sum_(sorted_numbers)
         await markVersionAsReleased(parentApp.id, parentVersion.id);
 
         const ds = getDefaultDataSource();
+        // ModuleViewer references modules by co_relation_id, not app UUID
+        const moduleRow = await ds.getRepository(App).findOneOrFail({ where: { id: moduleApp.id } });
         const componentRepository = ds.getRepository(Component);
         await componentRepository.save(
           componentRepository.create({
@@ -2158,7 +2161,7 @@ result = pydash.sum_(sorted_numbers)
             type: 'ModuleViewer',
             pageId: parentVersion.homePageId,
             properties: {
-              moduleAppId: { value: moduleApp.id },
+              moduleAppId: { value: (moduleRow as any).co_relation_id },
               moduleVersionId: { value: moduleVersion.id },
             },
             styles: {},

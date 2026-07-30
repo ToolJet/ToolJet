@@ -36,13 +36,7 @@ describe('FolderAppsUtilService.getAppsFor — workflow search (post-migration)'
     const folder = await createFolder(app, { name: 'Workflow Folder', organizationId: admin.workspace.id });
     await addAppToFolder(app, workflow, folder);
 
-    const result = await folderAppsUtilService.getAppsFor(
-      admin.user as any,
-      folder,
-      0,
-      'findable',
-      APP_TYPES.WORKFLOW
-    );
+    const result = await folderAppsUtilService.getAppsFor(admin.user as any, folder, 0, 'findable', APP_TYPES.WORKFLOW);
 
     expect(result.viewableApps.map((a) => a.id)).toContain(workflow.id);
   });
