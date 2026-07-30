@@ -1,14 +1,35 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import { ICustomComponentLibrariesController } from './interface/IController';
 
 // CE stub — the feature is EE/paid; real implementation lives in ee/custom-component-libraries/.
+// Route order matters: literal paths (validate-token, tokens) MUST be declared before ':id'.
 @Controller('custom-component-libraries')
 export class CustomComponentLibrariesController implements ICustomComponentLibrariesController {
   constructor() {}
 
   @Post()
   async create(@User() user, @Body() body: { name: string }): Promise<{ id: string; name: string }> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Get('validate-token')
+  async validateToken(@User() user): Promise<{ email: string }> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Post('tokens')
+  async createToken(@User() user, @Body() body: { name: string }): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Get('tokens')
+  async listTokens(@User() user): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Delete('tokens/:id')
+  async deleteToken(@User() user, @Param('id') id: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ICustomComponentLibrariesService } from './interface/IService';
+import { ICustomComponentLibrariesService, CliTokenView, UploadFiles } from './interface/IService';
 import { CustomComponentLibrary } from '@entities/custom_component_library.entity';
 
 @Injectable()
@@ -9,6 +9,27 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
   }
 
   async getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary> {
+    throw new Error('Method not implemented.');
+  }
+
+  async createCliToken(userId: string, organizationId: string, name: string): Promise<CliTokenView & { token: string }> {
+    throw new Error('Method not implemented.');
+  }
+
+  async listCliTokens(userId: string, organizationId: string): Promise<CliTokenView[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  async deleteCliToken(userId: string, organizationId: string, id: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  async uploadDev(
+    userId: string,
+    organizationId: string,
+    libraryId: string,
+    files: UploadFiles
+  ): Promise<{ devUploadedAt: Date }> {
     throw new Error('Method not implemented.');
   }
 }

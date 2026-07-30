@@ -1,6 +1,27 @@
 import { CustomComponentLibrary } from '@entities/custom_component_library.entity';
 
+export interface CliTokenView {
+  id: string;
+  name: string;
+  createdAt: Date;
+}
+
+export interface UploadFiles {
+  bundle: Buffer;
+  css?: Buffer;
+  manifest: Record<string, any>;
+}
+
 export interface ICustomComponentLibrariesService {
   createLibrary(organizationId: string, name: string): Promise<{ id: string; name: string }>;
   getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary>;
+  createCliToken(userId: string, organizationId: string, name: string): Promise<CliTokenView & { token: string }>;
+  listCliTokens(userId: string, organizationId: string): Promise<CliTokenView[]>;
+  deleteCliToken(userId: string, organizationId: string, id: string): Promise<void>;
+  uploadDev(
+    userId: string,
+    organizationId: string,
+    libraryId: string,
+    files: UploadFiles
+  ): Promise<{ devUploadedAt: Date }>;
 }

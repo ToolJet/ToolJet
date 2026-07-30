@@ -1,5 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
+import { StorageService } from './storage.service';
 import { SubModule } from '@modules/app/sub-module';
 
 export class CustomComponentLibrariesModule extends SubModule {
@@ -13,7 +14,7 @@ export class CustomComponentLibrariesModule extends SubModule {
     return {
       module: CustomComponentLibrariesModule,
       imports: [],
-      providers: [CustomComponentLibrariesService, FeatureAbilityFactory],
+      providers: [CustomComponentLibrariesService, FeatureAbilityFactory, StorageService],
       controllers: isMainImport ? [CustomComponentLibrariesController] : [],
       exports: [],
     };
