@@ -167,6 +167,8 @@ let _suiteDS: TypeOrmDataSource | undefined;
 // Test-level: SAVEPOINT name within the suite transaction
 let _testSavepoint: string | undefined;
 let _testSavepointId = 0;
+// Last savepoint that was actually created — recovery anchor when TX aborts between tests
+let _lastGoodSavepoint: string | undefined;
 
 /** No-op proxy: routes all queries through the suite QR, ignores transaction management. */
 function createQRProxy(realQR: QueryRunner): QueryRunner {
@@ -246,6 +248,7 @@ export async function rollbackSuiteTransaction() {
   _suiteOrigCreateQR_tj = undefined;
   _suiteDS = undefined;
   _testSavepointId = 0;
+  _lastGoodSavepoint = undefined;
 }
 
 /** Creates a SAVEPOINT within the suite transaction. Call in beforeEach. */
@@ -256,9 +259,24 @@ export async function beginTestTransaction() {
   if (!_suiteQR) await beginSuiteTransaction();
   if (!_suiteQR) return;
   _testSavepoint = `test_${++_testSavepointId}`;
-  await _suiteQR.query(`SAVEPOINT ${_testSavepoint}`);
+  try {
+    await createTestSavepoint(_testSavepoint);
+  } catch (err) {
+    // TX aborted between tests (stray async server work): rewind to anchor, retry
+    if (!_lastGoodSavepoint) throw err;
+    await _suiteQR.query(`ROLLBACK TO SAVEPOINT ${_lastGoodSavepoint}`);
+    if (_suiteQR_tj) {
+      await _suiteQR_tj.query(`ROLLBACK TO SAVEPOINT ${_lastGoodSavepoint}`);
+    }
+    await createTestSavepoint(_testSavepoint);
+  }
+  _lastGoodSavepoint = _testSavepoint;
+}
+
+async function createTestSavepoint(name: string) {
+  await _suiteQR.query(`SAVEPOINT ${name}`);
   if (_suiteQR_tj) {
-    await _suiteQR_tj.query(`SAVEPOINT ${_testSavepoint}`);
+    await _suiteQR_tj.query(`SAVEPOINT ${name}`);
   }
 }
 
