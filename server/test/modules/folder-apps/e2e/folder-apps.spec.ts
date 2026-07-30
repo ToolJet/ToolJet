@@ -11,6 +11,7 @@ import {
   saveEntity,
   findEntity,
   updateEntity,
+  resolveOrSeedDefaultBranch,
 } from 'test-helper';
 import * as request from 'supertest';
 import { Folder } from '@entities/folder.entity';
@@ -379,7 +380,7 @@ describe('FolderAppsController', () => {
           .get('/api/apps')
           .query({ folder: moduleFolder.id, type: 'module' })
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('x-branch-id', branchA.id)
+          .query({ branch_id: branchA.id })
           .set('Cookie', loggedUser.tokenCookie);
 
         expect(responseBranchA.statusCode).toBe(200);
@@ -393,7 +394,7 @@ describe('FolderAppsController', () => {
           .get('/api/apps')
           .query({ folder: moduleFolder.id, type: 'module' })
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('x-branch-id', branchB.id)
+          .query({ branch_id: branchB.id })
           .set('Cookie', loggedUser.tokenCookie);
 
         expect(responseBranchB.statusCode).toBe(200);
@@ -458,7 +459,7 @@ describe('FolderAppsController', () => {
           .get('/api/apps')
           .query({ folder: moduleFolder.id, type: 'module' })
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('x-branch-id', branchC.id)
+          .query({ branch_id: branchC.id })
           .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
@@ -751,7 +752,7 @@ describe('FolderAppsController', () => {
           .get('/api/apps')
           .query({ folder: moduleFolder.id, type: 'module', page: 1 })
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('x-branch-id', branchA.id)
+          .query({ branch_id: branchA.id })
           .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
@@ -761,15 +762,12 @@ describe('FolderAppsController', () => {
       });
 
       describe('GET /api/folder-apps | Default-branch fallback in git-sync orgs', () => {
-        it('should show only default-branch apps when no x-branch-id header and git-sync is configured', async () => {
+        it('should show only default-branch apps when no branch_id param and git-sync is configured', async () => {
           const { adminUser } = await setupOrganization(nestApp);
           const loggedUser = await login(nestApp);
 
-          const defaultBranch = await saveEntity(WorkspaceBranch, {
-            name: 'main',
-            organizationId: adminUser.organizationId,
-            isDefault: true,
-          } as any);
+          // reuse the seeded default — (organization_id, branch_name) is unique
+          const defaultBranch = await resolveOrSeedDefaultBranch(adminUser.organizationId);
           const featureBranch = await saveEntity(WorkspaceBranch, {
             name: 'feature',
             organizationId: adminUser.organizationId,
@@ -830,7 +828,7 @@ describe('FolderAppsController', () => {
             branchId: featureBranch.id,
           } as any);
 
-          // No x-branch-id → backend resolves the default branch and filters by it.
+          // no branch_id param → backend resolves the default branch
           const response = await request(nestApp.getHttpServer())
             .get('/api/folder-apps')
             .query({ type: APP_TYPES.MODULE })

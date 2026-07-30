@@ -262,6 +262,16 @@ export async function beginTestTransaction() {
   }
 }
 
+/** Recovers an aborted suite TX (stray async server work between tests). Returns false when not applicable. */
+export async function recoverAbortedSuiteTx(): Promise<boolean> {
+  if (!_suiteQR || !_testSavepoint) return false;
+  await _suiteQR.query(`ROLLBACK TO SAVEPOINT ${_testSavepoint}`);
+  if (_suiteQR_tj) {
+    await _suiteQR_tj.query(`ROLLBACK TO SAVEPOINT ${_testSavepoint}`);
+  }
+  return true;
+}
+
 /** Rolls back to the test SAVEPOINT. Call in afterEach. */
 export async function rollbackTestTransaction() {
   if (!_suiteQR || !_testSavepoint) return;

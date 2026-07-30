@@ -36,7 +36,12 @@ describe('AppAuthGuard', () => {
     mockAppRepository = { findAppBySlug: jest.fn() };
     mockOrgRepository = { findOne: jest.fn(), touchLastAccessedAt: jest.fn() };
     mockAppUtilService = { getAppOrganizationDetails: jest.fn() };
-    guard = new AppAuthGuard(mockAppUtilService as any, mockOrgRepository as any, mockAppRepository as any);
+    guard = new AppAuthGuard(
+      mockAppUtilService as any,
+      mockOrgRepository as any,
+      mockAppRepository as any,
+      { getRepository: () => ({ findOne: jest.fn().mockResolvedValue(null) }) } as any
+    );
   });
 
   afterEach(() => jest.clearAllMocks());

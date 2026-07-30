@@ -4,7 +4,13 @@ import { AppGitFileOperationsUtil } from '@ee/app-git/shared/app-git-file-operat
 import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { initTestApp, closeTestApp } from 'test-helper';
-import { createAdmin, createApplication, createApplicationVersion, updateEntity, getDefaultDataSource } from 'test-helper';
+import {
+  createAdmin,
+  createApplication,
+  createApplicationVersion,
+  updateEntity,
+  getDefaultDataSource,
+} from 'test-helper';
 
 /** @group platform */
 describe('BranchingBusinessUtil.orchestrateBranchingPull — workflow rename handling', () => {
@@ -32,7 +38,9 @@ describe('BranchingBusinessUtil.orchestrateBranchingPull — workflow rename han
 
     // Re-fetch the raw row so co_relation_id (DB-generated on insert) is populated --
     // createApplication's in-memory return value doesn't carry it.
-    const persistedApp = await getDefaultDataSource().getRepository(App).findOne({ where: { id: workflowApp.id } });
+    const persistedApp = await getDefaultDataSource()
+      .getRepository(App)
+      .findOne({ where: { id: workflowApp.id } });
 
     // Short-circuit the file-system-dependent parts of the pull -- this test only
     // asserts on the rename-detection/write-back step, not the full pull pipeline.
@@ -48,17 +56,25 @@ describe('BranchingBusinessUtil.orchestrateBranchingPull — workflow rename han
       branchingBusinessUtil.orchestrateBranchingPull(
         admin.user as any,
         persistedApp as any,
-        { gitAppName: 'New Workflow Name', gitVersionName: 'v1', gitBranchName: 'definitely-nonexistent-branch-xyz' } as any,
+        {
+          gitAppName: 'New Workflow Name',
+          gitVersionName: 'v1',
+          gitBranchName: 'definitely-nonexistent-branch-xyz',
+        } as any,
         workflowApp.id,
         '/tmp/branching-business-util-workflow-rename-test',
         admin.workspace.id
       )
     ).rejects.toThrow(stopSentinel);
 
-    const updatedVersion = await getDefaultDataSource().getRepository(AppVersion).findOne({ where: { id: version.id } });
+    const updatedVersion = await getDefaultDataSource()
+      .getRepository(AppVersion)
+      .findOne({ where: { id: version.id } });
     expect(updatedVersion.appName).toBe('New Workflow Name');
 
-    const rawApp = await getDefaultDataSource().getRepository(App).findOne({ where: { id: workflowApp.id } });
+    const rawApp = await getDefaultDataSource()
+      .getRepository(App)
+      .findOne({ where: { id: workflowApp.id } });
     expect(rawApp.name).toBeNull(); // must NOT have written to apps.name
   });
 });

@@ -1011,6 +1011,7 @@ describe('AppController', () => {
             'group_permissions',
             'is_current_organization_archived',
             'metadata',
+            'module_group_permissions',
             'no_active_workspaces',
             'organization',
             'organization_id',

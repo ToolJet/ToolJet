@@ -104,7 +104,7 @@ describe('ModuleGranularPermissions (H1)', () => {
       await createApplication(nestApp, { name: 'M-None', user: adminData.user, type: 'module' });
 
       // a module OWNED by the viewer, with no group grant
-      const mOwned = await createApplication(nestApp, { name: 'M-Owned', user: viewerData.user, type: 'module' });
+      await createApplication(nestApp, { name: 'M-Owned', user: viewerData.user, type: 'module' });
 
       // --- assign module perms to the custom group --------------------------
       const teamId = await groupId('module-team', org.id);

@@ -16,12 +16,13 @@ describe('ValidAppGuard', () => {
 
   const makeContext = (
     params: { id?: string; slug?: string; versionId?: string } = {},
-    headers: Record<string, string> = {}
+    headers: Record<string, string> = {},
+    user: Record<string, any> = {}
   ): ExecutionContext => {
     const request: Record<string, any> = {
       params,
       headers,
-      user: { organizationId: ORG_ID },
+      user: { organizationId: ORG_ID, ...user },
     };
     return {
       switchToHttp: () => ({ getRequest: () => request }),
@@ -66,7 +67,7 @@ describe('ValidAppGuard', () => {
     it('forwards versionId and branchId to findById', async () => {
       mockAppRepository.findById.mockResolvedValue(makeApp());
 
-      await guard.canActivate(makeContext({ id: UUID, versionId: 'ver-uuid' }, { 'x-branch-id': 'branch-uuid' }));
+      await guard.canActivate(makeContext({ id: UUID, versionId: 'ver-uuid' }, {}, { branchId: 'branch-uuid' }));
 
       expect(mockAppRepository.findById).toHaveBeenCalledWith(UUID, ORG_ID, 'ver-uuid', 'branch-uuid');
     });
@@ -91,10 +92,10 @@ describe('ValidAppGuard', () => {
       expect(mockAppRepository.findById).not.toHaveBeenCalled();
     });
 
-    it('forwards branchId when x-branch-id header is present', async () => {
+    it('forwards branchId when user.branchId is resolved', async () => {
       mockAppRepository.findBySlug.mockResolvedValue(makeApp());
 
-      await guard.canActivate(makeContext({ id: 'my-app-slug' }, { 'x-branch-id': 'branch-uuid' }));
+      await guard.canActivate(makeContext({ id: 'my-app-slug' }, {}, { branchId: 'branch-uuid' }));
 
       expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app-slug', ORG_ID, undefined, 'branch-uuid');
     });

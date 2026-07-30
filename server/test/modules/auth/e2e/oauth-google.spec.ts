@@ -28,6 +28,7 @@ describe('OAuthController', () => {
       'user_permissions',
       'role',
       'metadata',
+      'module_group_permissions',
       'sso_user_info',
       'no_active_workspaces',
       'is_current_organization_archived',

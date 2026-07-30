@@ -60,7 +60,15 @@ describe('App import/export — workflow metadata unification', () => {
     await ensureAppEnvironments(app, admin.workspace.id);
 
     const created = await ds.transaction((manager) =>
-      appsUtilService.create('Round Trip Workflow', orgUser, APP_TYPES.WORKFLOW, false, manager, undefined, 'rt-icon.svg')
+      appsUtilService.create(
+        'Round Trip Workflow',
+        orgUser,
+        APP_TYPES.WORKFLOW,
+        false,
+        manager,
+        undefined,
+        'rt-icon.svg'
+      )
     );
 
     // export() resolves to { appV2: App } (single exported app), not { app: App[] }

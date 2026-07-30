@@ -16,10 +16,11 @@ describe('UsersService', () => {
   let nestApp: INestApplication;
   let service: UsersService;
 
+  // ee boot slow under parallel workers
   beforeAll(async () => {
     ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     service = nestApp.get<UsersService>(UsersService);
-  });
+  }, 120000);
 
   beforeEach(async () => {
     await resetDB();

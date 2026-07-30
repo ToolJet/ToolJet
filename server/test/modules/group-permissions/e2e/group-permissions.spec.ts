@@ -477,7 +477,9 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should reject adding an end-user to a group with module Build-with (view-only) permission', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         const moduleGroup = await createGroupPermission(nestApp, { name: 'module-viewers', organization });
@@ -502,7 +504,9 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should reject adding an end-user to a group with module Edit permission', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         const moduleGroup = await createGroupPermission(nestApp, { name: 'module-editors', organization });
@@ -527,7 +531,9 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow adding a builder-role user to a group with module Build-with permission', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         const moduleGroup = await createGroupPermission(nestApp, { name: 'module-viewers-builder', organization });
@@ -547,7 +553,9 @@ describe('GroupPermissionsControllerV2', () => {
 
         expect(response.statusCode).toBe(201);
 
-        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: builderUser.id } });
+        const usersInGroup = await findEntities(GroupUsers, {
+          where: { groupId: moduleGroup.id, userId: builderUser.id },
+        });
         expect(usersInGroup).toHaveLength(1);
       });
     });

@@ -4170,13 +4170,7 @@ describe('GitSyncController — GitLab', () => {
           .send({
             kind: 'restapi',
             name: 'sb_q1',
-            options: {
-              method: 'get',
-              url: '',
-              headers: [],
-              url_params: [],
-              body: [],
-            },
+            options: { method: 'get', url: '', headers: [], url_params: [], body: [] },
           })
           .expect(201);
 
@@ -4495,14 +4489,8 @@ describe('GitSyncController — GitLab', () => {
 
         step(3, 'git-off: add another data source, edit it, rename app + module, add more component/query');
         await auth(agent().post('/api/data-sources'))
-          .send({
-            name: 'edit-rules-ds-2',
-            kind: 'restapi',
-            options: restapiDsOptions,
-            scope: 'global',
-          })
+          .send({ name: 'edit-rules-ds-2', kind: 'restapi', options: restapiDsOptions, scope: 'global' })
           .expect(201);
-        // const ds2Id: string = ds2Resp.body.id;
 
         // Edit a data source (dev env). Git off → GitSyncDataSourceEditGuard is a no-op.
         const devEnv = (await auth(agent().get('/api/app-environments')).expect(200)).body.environments.sort(
@@ -5563,11 +5551,7 @@ describe('GitSyncController — GitLab', () => {
         await auth(agent().put(`/api/apps/${appRenameId}`))
           .query({ branch_id: mainBranchId })
           .send({
-            app: {
-              name: 'cf-app-rename-local',
-              slug: 'cf-app-rename-local',
-              editingVersionId: renameV.versionId,
-            },
+            app: { name: 'cf-app-rename-local', slug: 'cf-app-rename-local', editingVersionId: renameV.versionId },
           })
           .expect(200);
         const pull2 = await pull(mainBranchId).expect(409);
@@ -5728,12 +5712,7 @@ describe('GitSyncController — GitLab', () => {
         const publishVersion = (appId: string, versionId: string, name: string, branchId?: string) =>
           auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}`))
             .query(branchId ? { branch_id: branchId } : {})
-            .send({
-              is_user_switched_version: false,
-              name,
-              description: `save ${name}`,
-              status: 'PUBLISHED',
-            });
+            .send({ is_user_switched_version: false, name, description: `save ${name}`, status: 'PUBLISHED' });
         const createDraftFrom = (
           appId: string,
           versionFromId: string,
@@ -5829,11 +5808,7 @@ describe('GitSyncController — GitLab', () => {
         step(1, 'git-off: create app + component, publish v1, create a draft');
         const appId: string = (
           await auth(agent().post('/api/apps'))
-            .send({
-              icon: 'home',
-              name: 'branch-from-version-app',
-              type: 'front-end',
-            })
+            .send({ icon: 'home', name: 'branch-from-version-app', type: 'front-end' })
             .expect(201)
         ).body.id;
         appIdRef = appId;

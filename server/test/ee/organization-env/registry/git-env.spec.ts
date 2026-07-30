@@ -82,7 +82,6 @@ describe('GitSyncEnvUtilService', () => {
       });
     });
 
-
     it('sets GitLab provider isEnabled=true when GitLab key is mapped', async () => {
       const orgEnvService = makeOrgEnvService({
         getResolvedOrganizationIds: jest.fn().mockReturnValue([ORG_ID]),
