@@ -29,6 +29,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **End User** | Workspace-level role that can only view and interact with released apps they're given access to | Viewer (legacy license code term) |
 | **Group** | A named collection of users with shared permissions; includes both default role groups and custom groups | Team (overloaded with the Team plan) |
 | **Custom Group** | An admin-defined permission group beyond the three default roles (EE feature) | Custom role (roles ARE the default groups — a custom group is not a role) |
+| **Group Sync** | Login-time mapping of identity-provider groups (OIDC claims, SAML assertions, LDAP groups) to ToolJet groups and roles; configured per SSO config (`SsoConfigOidcGroupSync` mapping rows) (EE feature) | Directory sync (that's SCIM — push provisioning; Group Sync happens at login) |
 | **Permission** | A granular access right on a specific resource (app, data source, folder, constant) | — |
 | **Ability** | Internal CASL-based authorization rule set evaluated at runtime (code concept, not user-facing) | — |
 
