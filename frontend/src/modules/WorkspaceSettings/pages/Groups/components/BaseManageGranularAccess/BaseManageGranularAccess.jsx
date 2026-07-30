@@ -927,10 +927,10 @@ class BaseManageGranularAccess extends React.Component {
                       resourceType === RESOURCE_TYPE.APPS
                         ? 'apps'
                         : resourceType === RESOURCE_TYPE.MODULES
-                        ? 'modules'
-                        : resourceType === RESOURCE_TYPE.WORKFLOWS
-                          ? 'workflows'
-                          : 'datasource'
+                          ? 'modules'
+                          : resourceType === RESOURCE_TYPE.WORKFLOWS
+                            ? 'workflows'
+                            : 'datasource'
                     }
                     fill="var(--slate8)"
                   />
