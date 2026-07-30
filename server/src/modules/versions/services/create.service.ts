@@ -715,6 +715,10 @@ export class VersionsCreateService implements IVersionsCreateService {
         eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
       }
 
+      if (eventDefinition?.actionId === 'scroll-component-into-view') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
       if (eventDefinition?.actionId === 'switch-page') {
         eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
       }

@@ -3,7 +3,7 @@ import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 import './datepicker.scss';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import cx from 'classnames';
 import { IconX } from '@tabler/icons-react';
 
@@ -115,6 +115,8 @@ export const Datepicker = function Datepicker({
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };
+
+  useFormClear(() => setInputValue(null));
 
   const clearButton = shouldShowClearBtn ? (
     <button

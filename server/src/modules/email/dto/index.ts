@@ -7,6 +7,7 @@ export interface SendWelcomeEmailPayload {
   organizationName?: string;
   sender?: string;
   redirectTo?: string;
+  invitationTokenExpiry?: Date | null;
 }
 
 export interface SendOrganizationUserWelcomeEmailPayload {
@@ -17,6 +18,7 @@ export interface SendOrganizationUserWelcomeEmailPayload {
   organizationName: string;
   organizationId: string;
   redirectTo?: string;
+  invitationTokenExpiry?: Date | null;
 }
 
 export interface SendPasswordResetEmailPayload {
@@ -25,6 +27,17 @@ export interface SendPasswordResetEmailPayload {
   firstName?: string;
   organizationId: string;
   redirectTo?: string;
+  orgSlug?: string;
+  forgotPasswordTokenExpiry?: Date | null;
+}
+
+export interface SendPasswordExpiredResetEmailPayload {
+  to: string;
+  token: string;
+  firstName?: string;
+  organizationId: string;
+  redirectTo?: string;
+  orgSlug?: string;
 }
 
 export interface SendEmailOtpPayload {

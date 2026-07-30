@@ -125,8 +125,8 @@ export const verifyResetPasswordModalUI = (userEmail) => {
   cy.get(commonSelectors.cancelButton).click();
 };
 
-export const verifyUserActionMenu = (userName) => {
-  openUserActionMenu(userName);
+export const verifyUserActionMenu = (userEmail) => {
+  openUserActionMenu(userEmail);
   cy.get(instanceAllUsersSelectors.editUserDetailsButton).verifyVisibleElement(
     "have.text",
     instanceAllUsersText.editUserDetails

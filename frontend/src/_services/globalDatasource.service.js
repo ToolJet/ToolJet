@@ -5,6 +5,7 @@ import { getActiveBranchId } from '@/_helpers/active-branch';
 export const globalDatasourceService = {
   create,
   getAll,
+  getAiTaggableDataSources,
   save,
   deleteDataSource,
   convertToGlobal,
@@ -19,6 +20,14 @@ function appendBranchId(url) {
   if (!branchId) return url;
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}branch_id=${branchId}`;
+}
+
+// Datasources the current user may tag in the AI prompt — RBAC-filtered server-side to the AI
+// use/configure gate (organization is derived from the session). Returns [{ id, name, kind }].
+function getAiTaggableDataSources() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+
+  return fetch(`${config.apiUrl}/ai/taggable-datasources`, requestOptions).then(handleResponse);
 }
 
 function getForApp(organizationId, appVersionId, environmentId) {

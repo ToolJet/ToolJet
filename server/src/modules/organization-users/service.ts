@@ -205,12 +205,16 @@ export class OrganizationUsersService implements IOrganizationUsersService {
     }
 
     const invitationToken = uuid.v4();
+    const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+    const invitationTokenExpiry =
+      !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0 ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000) : null;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, id, {
         status: WORKSPACE_USER_STATUS.INVITED,
         source: WORKSPACE_USER_SOURCE.INVITE,
         invitationToken,
+        invitationTokenExpiry,
       });
 
       await this.licenseUserService.validateUser(manager, organizationUser.organizationId);
@@ -252,6 +256,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
           organizationId: organizationUser.organizationId,
           organizationName: organizationUser.organization.name,
           sender: user.firstName,
+          invitationTokenExpiry: invitationTokenExpiry,
         },
       });
 
@@ -267,6 +272,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         invitationtoken: invitationToken,
         organizationName: organizationUser.organization.name,
         organizationId: organizationUser.organizationId,
+        invitationTokenExpiry: invitationTokenExpiry,
       },
     });
 

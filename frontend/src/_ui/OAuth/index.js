@@ -13,6 +13,7 @@ const OAuth = ({
   client_secret,
   audience,
   client_auth,
+  company_id,
   custom_auth_params,
   custom_query_params,
   scopes,
@@ -94,6 +95,7 @@ const OAuth = ({
         audience={audience}
         client_secret={client_secret}
         client_auth={client_auth}
+        company_id={company_id}
         multiple_auth_enabled={multiple_auth_enabled}
         scopes={scopes}
         username={username}

@@ -5,7 +5,7 @@ import _, { isEmpty, throttle } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
-import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppData';
+import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
 import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
 
 const initialState = {
@@ -584,7 +584,7 @@ export const createDataQuerySlice = (set, get) => ({
         return Promise.reject(error);
       }
     },
-    performDeletionUpdationAndCreationOfQuery: (queriesInfo, moduleId = 'canvas') => {
+    performDeletionUpdationAndCreationOfQuery: (queriesInfo, moduleId = 'canvas', runLoadQueriesOnCreate = true) => {
       if (!(queriesInfo?.delete?.length || queriesInfo?.update?.length || queriesInfo?.create?.length)) return;
 
       const queryIdsToDelete = new Set(queriesInfo.delete?.map((query) => query.id) ?? []);
@@ -657,7 +657,7 @@ export const createDataQuerySlice = (set, get) => ({
         'performDeletionUpdationAndCreationOfQuery'
       );
 
-      queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
+      runLoadQueriesOnCreate && queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
 
       get().rebuildQueryHints(moduleId);
     },
