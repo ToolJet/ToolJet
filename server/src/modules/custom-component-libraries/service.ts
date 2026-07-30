@@ -32,4 +32,13 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
   ): Promise<{ devUploadedAt: Date }> {
     throw new Error('Method not implemented.');
   }
+
+  async publishRevision(
+    organizationId: string,
+    libraryId: string,
+    files: UploadFiles,
+    message?: string
+  ): Promise<{ id: string; version: string; bundleUrl: string }> {
+    throw new Error('Method not implemented.');
+  }
 }

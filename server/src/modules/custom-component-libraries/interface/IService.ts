@@ -24,4 +24,10 @@ export interface ICustomComponentLibrariesService {
     libraryId: string,
     files: UploadFiles
   ): Promise<{ devUploadedAt: Date }>;
+  publishRevision(
+    organizationId: string,
+    libraryId: string,
+    files: UploadFiles,
+    message?: string
+  ): Promise<{ id: string; version: string; bundleUrl: string }>;
 }

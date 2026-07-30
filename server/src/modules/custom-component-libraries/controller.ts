@@ -33,6 +33,16 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
     throw new Error('Method not implemented.');
   }
 
+  @Post(':id/dev')
+  async uploadDev(@User() user, @Param('id') id: string, files?: any): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Post(':id/revisions')
+  async publishRevision(@User() user, @Param('id') id: string, files?: any, body?: { message?: string }): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
   @Get(':id')
   async get(@User() user, @Param('id') id: string): Promise<any> {
     throw new Error('Method not implemented.');
