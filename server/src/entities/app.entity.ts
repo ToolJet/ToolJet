@@ -1,6 +1,5 @@
 import {
   Entity,
-  OneToOne,
   Column,
   CreateDateColumn,
   JoinColumn,

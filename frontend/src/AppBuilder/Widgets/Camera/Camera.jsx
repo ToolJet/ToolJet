@@ -325,10 +325,10 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         if (isMounted) {
           setDeviceLists({ cameras, microphones });
           setSelectedCameraId((prev) =>
-            prev && cameras.some((d) => d.value === prev) ? prev : cameras[0]?.value ?? null
+            prev && cameras.some((d) => d.value === prev) ? prev : (cameras[0]?.value ?? null)
           );
           setSelectedMicrophoneId((prev) =>
-            prev && microphones.some((d) => d.value === prev) ? prev : microphones[0]?.value ?? null
+            prev && microphones.some((d) => d.value === prev) ? prev : (microphones[0]?.value ?? null)
           );
         }
       } catch (error) {

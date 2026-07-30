@@ -48,10 +48,7 @@ export const areCascaderValuesEqual = (a: CascaderValue, b: CascaderValue): bool
  *
  * Returns nodes shaped `{ label, value, disabled, children }`.
  */
-export const normalizeTree = (
-  items: unknown,
-  getResolvedValue: (value: unknown) => unknown
-): CascaderNode[] => {
+export const normalizeTree = (items: unknown, getResolvedValue: (value: unknown) => unknown): CascaderNode[] => {
   if (!Array.isArray(items)) return [];
   return items
     .filter((item): item is CascaderOption => item !== null && typeof item === 'object')

@@ -256,10 +256,10 @@ const Filter = ({
                 areFiltersApplied
                   ? '#3E63DD'
                   : show && filterCount === 0
-                  ? '#ACB2B9'
-                  : show && filterCount > 0
-                  ? '#4368E3'
-                  : '#889096'
+                    ? '#ACB2B9'
+                    : show && filterCount > 0
+                      ? '#4368E3'
+                      : '#889096'
               }
             />
             <div className="tw-flex items-center tw-ml-[3px]">

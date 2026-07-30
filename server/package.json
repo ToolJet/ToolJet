@@ -21,7 +21,7 @@
     "test:e2e": "bash scripts/run-e2e.sh",
     "test:e2e:cov": "bash scripts/run-e2e.sh --coverage",
     "test:e2e:record": "POLLY_MODE=record bash scripts/run-e2e.sh",
-    "test:cov:merge": "bash ./scripts/merge-coverage.sh",
+    "test:cov:merge": "node scripts/merge-coverage.mjs --out coverage-combined coverage-unit coverage-e2e",
     "db:create": "ts-node ./scripts/create-database.ts",
     "db:create:prod": "node dist/scripts/create-database.js ",
     "db:drop": "ts-node ./scripts/drop-database.ts",

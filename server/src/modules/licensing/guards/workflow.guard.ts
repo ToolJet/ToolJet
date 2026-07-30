@@ -12,7 +12,7 @@ export class WorkflowGuard implements CanActivate {
     @InjectRepository(AppVersion)
     protected appsVersionRepository: Repository<AppVersion>,
     protected licenseTermsService: LicenseTermsService
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -41,7 +41,7 @@ export class WorkflowGuard implements CanActivate {
     if (!workflowsLimit?.workspace && !workflowsLimit?.instance)
       throw new HttpException('Workflow is not enabled in the license, contact admin', 451);
 
-    // Workspace Level 
+    // Workspace Level
     if (workflowsLimit?.workspace) {
       const needsDailyCheck = workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED;
       const needsMonthlyCheck = workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED;
@@ -66,13 +66,16 @@ export class WorkflowGuard implements CanActivate {
           throw new HttpException('Maximum daily limit for workflow execution has reached for this workspace', 451);
         }
 
-        if (needsMonthlyCheck && parseInt(workspaceCounts.monthly_count, 10) >= workflowsLimit.workspace.monthly_executions) {
+        if (
+          needsMonthlyCheck &&
+          parseInt(workspaceCounts.monthly_count, 10) >= workflowsLimit.workspace.monthly_executions
+        ) {
           throw new HttpException('Maximum monthly limit for workflow execution has reached for this workspace', 451);
         }
       }
     }
 
-    // Instance Level 
+    // Instance Level
     if (workflowsLimit?.instance) {
       const needsDailyCheck = workflowsLimit.instance.daily_executions !== LICENSE_LIMIT.UNLIMITED;
       const needsMonthlyCheck = workflowsLimit.instance.monthly_executions !== LICENSE_LIMIT.UNLIMITED;
@@ -93,7 +96,10 @@ export class WorkflowGuard implements CanActivate {
           throw new HttpException('Maximum daily limit for workflow execution has been reached', 451);
         }
 
-        if (needsMonthlyCheck && parseInt(instanceCounts.monthly_count, 10) >= workflowsLimit.instance.monthly_executions) {
+        if (
+          needsMonthlyCheck &&
+          parseInt(instanceCounts.monthly_count, 10) >= workflowsLimit.instance.monthly_executions
+        ) {
           throw new HttpException('Maximum monthly limit for workflow execution has been reached', 451);
         }
       }

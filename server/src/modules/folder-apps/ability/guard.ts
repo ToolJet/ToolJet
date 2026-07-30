@@ -69,8 +69,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
           where: { id: request.body.app_id, organizationId: request.user.organizationId },
           select: ['id', 'userId', 'type'],
         });
-        request.tj_allow_owner_folder_app_create =
-          folderOwnedByUser && !!app && app.userId === request.user.id;
+        request.tj_allow_owner_folder_app_create = folderOwnedByUser && !!app && app.userId === request.user.id;
         request.tj_allow_owner_folder_app_delete = folderOwnedByUser && !!app;
         request.tj_app_is_module = app?.type === APP_TYPES.MODULE;
         request.tj_folder_app_type_mismatch = !!(folder?.type && app?.type && folder.type !== app.type);

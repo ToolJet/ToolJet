@@ -66,10 +66,7 @@ export class ExternalApisController implements IExternalApisController {
 
   @UseGuards(ExternalApiSecurityGuard)
   @Get('workspace/:workspaceId/user/:userId')
-  async getUserMetadata(
-    @Param('workspaceId') workspaceId: string,
-    @Param('userId') userId: string
-  ) {
+  async getUserMetadata(@Param('workspaceId') workspaceId: string, @Param('userId') userId: string) {
     throw new NotFoundException();
   }
 }

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, In, SelectQueryBuilder } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { Folder } from '@entities/folder.entity';
+import { FolderApp } from '@entities/folder_app.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { IFoldersUtilService } from './interfaces/IUtilService';
 import { CreateFolderDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -16,6 +18,25 @@ export class FoldersUtilService implements IFoldersUtilService {
   }
   async findOne(folderId: string, manager: EntityManager): Promise<Folder> {
     return await manager.findOneOrFail(Folder, { where: { id: folderId } });
+  }
+
+  // Returns the names of every branch that has at least one app in this folder,
+  // so the delete-blocked error can tell the user exactly where to look.
+  async findBranchNamesWithApps(folderId: string, manager: EntityManager): Promise<string[]> {
+    const rows = await manager
+      .createQueryBuilder(FolderApp, 'folder_apps')
+      .select('DISTINCT folder_apps.branchId', 'branchId')
+      .where('folder_apps.folderId = :folderId', { folderId })
+      .andWhere('folder_apps.branchId IS NOT NULL')
+      .getRawMany();
+    const branchIds = rows.map((row) => row.branchId).filter(Boolean);
+    if (branchIds.length === 0) return [];
+
+    const branches = await manager.find(WorkspaceBranch, {
+      where: { id: In(branchIds) },
+      select: ['name'],
+    });
+    return branches.map((branch) => branch.name);
   }
 
   async findByName(folderName: string, organizationId: string): Promise<Folder> {

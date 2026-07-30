@@ -25,13 +25,14 @@ function list() {
   );
 }
 
-function create(name, sourceBranchId, commitSha, appId, versionId) {
+function create(name, sourceBranchId, commitSha, appId, versionId, confirmImport) {
   const body = {
     name,
     ...(sourceBranchId && { sourceBranchId }),
     ...(commitSha && { commitSha }),
     ...(appId && { appId }),
     ...(versionId && { versionId }),
+    ...(confirmImport && { confirmImport }),
   };
   const requestOptions = {
     method: 'POST',

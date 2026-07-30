@@ -1,6 +1,7 @@
 /**
  * Workflow-specific test helpers -- factories for workflow apps, data sources, queries, executions, bundles, and permissions.
  */
+import { randomUUID } from 'crypto';
 import { INestApplication } from '@nestjs/common';
 import { User } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
@@ -169,11 +170,7 @@ export const createUserWorkflowPermissions = async (
 // ---------------------------------------------------------------------------
 
 /** Creates a workflow-type App for a given user. */
-export const createWorkflowForUser = async (
-  nestApp: INestApplication,
-  user: User,
-  appName: string
-): Promise<App> => {
+export const createWorkflowForUser = async (nestApp: INestApplication, user: User, appName: string): Promise<App> => {
   const ds = getDefaultDataSource();
   const appRepository = ds.getRepository(App);
 
@@ -275,7 +272,7 @@ export const createWorkflowDataSource = async (
   const dataSourceRepository = ds.getRepository(DataSource);
 
   const dataSource = dataSourceRepository.create({
-    id: require('crypto').randomUUID(),
+    id: randomUUID(),
     name: options.name || (options.type === 'static' ? `${kind}default` : kind),
     kind: kind,
     type: options.type || 'default',
@@ -337,7 +334,7 @@ export const createWorkflowDataQuery = async (
   const dataQueryRepository = ds.getRepository(DataQuery);
 
   const dataQuery = dataQueryRepository.create({
-    id: require('crypto').randomUUID(),
+    id: randomUUID(),
     name: queryConfig.name,
     options: queryConfig.options,
     dataSourceId: dataSource.id,

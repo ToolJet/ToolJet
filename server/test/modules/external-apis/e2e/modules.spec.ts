@@ -86,9 +86,7 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
   describe('GET /api/ext/workspace/:workspaceId/modules', () => {
     it('returns 403 without Authorization header', async () => {
       const { user } = await createUser(app, { email: 'admin@tooljet.io' });
-      await request(app.getHttpServer())
-        .get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`)
-        .expect(403);
+      await request(app.getHttpServer()).get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`).expect(403);
     });
 
     it('returns 403 with an invalid Authorization token', async () => {

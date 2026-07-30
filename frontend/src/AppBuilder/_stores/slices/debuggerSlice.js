@@ -103,9 +103,11 @@ export const createDebuggerSlice = (set, get) => ({
 
     validateComponent: (id, component, moduleId = 'canvas', logAccumulator = null) => {
       const componentDefinition = get().getComponentDefinition(id, moduleId);
+      if (!componentDefinition?.component) return component;
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
+      if (!componentMeta) return component;
 
       const [coercedProperties, allPropertyErrors] = validateProperties(
         component.properties,
@@ -180,6 +182,7 @@ export const createDebuggerSlice = (set, get) => ({
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
+      if (!componentMeta) return value;
       const validationSchema = componentMeta[type][property]?.validation?.schema;
 
       const defaultValue = validationSchema?.defaultValue

@@ -4,7 +4,7 @@ import { FEATURE_KEY } from './constants';
 
 @Controller('app-history')
 export class AppHistoryController {
-  constructor() { }
+  constructor() {}
 
   @InitFeature(FEATURE_KEY.LIST_HISTORY)
   @Get('apps/versions/:versionId')
@@ -37,9 +37,7 @@ export class AppHistoryController {
 
   @InitFeature(FEATURE_KEY.STREAM_HISTORY)
   @Get('apps/versions/:versionId/stream')
-  async streamHistoryUpdates(
-    @Param('versionId', ParseUUIDPipe) _versionId: string
-  ): Promise<void> {
+  async streamHistoryUpdates(@Param('versionId', ParseUUIDPipe) _versionId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

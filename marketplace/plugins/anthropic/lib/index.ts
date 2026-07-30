@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { Anthropic } from '@anthropic-ai/sdk'; 
-import { getChatCompletion, /*getVisionCompletion */} from './query_operations';
+import { Anthropic } from '@anthropic-ai/sdk';
+import { getChatCompletion /*getVisionCompletion */ } from './query_operations';
 
 export default class AnthropicService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -31,9 +31,11 @@ export default class AnthropicService implements QueryService {
       if (error) {
         try {
           errorMessage = error?.error?.error?.message || 'Unknown error';
-          errorDetails = {requestId: error?.request_id,
+          errorDetails = {
+            requestId: error?.request_id,
             errorType: error?.error?.error?.type,
-            statusCode: error?.status,}
+            statusCode: error?.status,
+          };
         } catch (parseError) {
           console.error('Failed to parse Anthropic error response:', parseError);
         }
@@ -61,16 +63,17 @@ export default class AnthropicService implements QueryService {
         max_tokens: 1,
         messages: [{ role: 'user', content: 'ping' }],
       });
-      
     } catch (error: any) {
       let errorMessage = 'Unknown error occured';
       let errorDetails: any = {};
       if (error) {
         try {
           errorMessage = error?.error?.error?.message || 'Unknown error';
-          errorDetails = {requestId: error?.request_id,
+          errorDetails = {
+            requestId: error?.request_id,
             errorType: error?.error?.error?.type,
-            statusCode: error?.status,}
+            statusCode: error?.status,
+          };
         } catch (parseError) {
           console.error('Failed to parse Anthropic error response:', parseError);
         }

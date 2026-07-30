@@ -21,6 +21,7 @@ import {
 } from '@ee/licensing/constants/PlanTerms';
 import { BASIC_PLAN_TERMS as CE_BASIC_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
 import { Terms } from '@modules/licensing/interfaces/terms';
+import { LicenseDecryptService } from '@ee/licensing/services/decrypt.service';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { InternalTable } from '@entities/internal_table.entity';
@@ -335,9 +336,10 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   permissions: { customGroups: true },
   observability: { enabled: true },
   workflows: {
-    // workflowExecutionTimeout is a literal timeout ceiling, not a sentinel like the
-    // 'UNLIMITED' fields above -- 0 means "time out immediately", not "no limit".
     enabled: true,
+    // execution_timeout is a plain number (unlike the 'UNLIMITED' sentinel fields below) —
+    // the runtime check in workflow-executions.service.ts is `elapsedSeconds > timeout`,
+    // so 0 timed out every execution immediately instead of meaning unlimited.
     execution_timeout: 3600,
     workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
     instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
@@ -428,13 +430,24 @@ function buildTestLicenseInstance(terms: Partial<Terms>, expired = false): Licen
 }
 
 /**
+ * Spy installed on LicenseDecryptService.prototype.decrypt so the real License path
+ * (ee/licensing/configs/License.ts, which does `new LicenseDecryptService().decrypt(key)`)
+ * yields test terms instead of decrypting a signed key. Kept in module scope so
+ * restoreLicensePlan() can tear it down.
+ */
+let _decryptSpy: jest.SpyInstance | undefined;
+
+/**
  * Overrides the license terms on the running app's (mocked) LicenseTermsService at runtime — no
  * restart. Use it to drive license-dependent scenarios mid-test (e.g. gitSync unlicensed,
  * multi-branch unlicensed, or an expired plan). Call restoreLicensePlan() afterwards to revert.
  *
- * The terms are also mirrored into the TEST_LICENSE_TERMS env var so the real License path
- * (ee/licensing/configs/License.ts, which reads it under NODE_ENV=test) stays consistent for any
- * code that resolves through the real License instance instead of the mock.
+ * The same terms are also fed to the real License path by mocking
+ * LicenseDecryptService.prototype.decrypt: License.ts constructs its own decrypt service and calls
+ * `.decrypt(key)`, so the prototype spy intercepts it and returns these terms (with an expiry
+ * consistent with the `expired` flag) instead of decrypting a signed key. This keeps any code that
+ * resolves through the real License instance consistent with the mock — without a test-only escape
+ * hatch living in production code.
  */
 export function setTestLicenseTerms(
   app: INestApplication,
@@ -443,14 +456,19 @@ export function setTestLicenseTerms(
 ): void {
   const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
   if (!lts?._licenseInstance) return; // not our mock — skip
-  // Mirror into the env the real License path reads (kept consistent with the expired flag).
-  process.env.TEST_LICENSE_TERMS = JSON.stringify({ expiry: opts.expired ? '2000-01-01' : '2999-12-31', ...terms });
+
+  // Make the real License path (new LicenseDecryptService().decrypt(key)) return these terms.
+  const decryptedTerms = { expiry: opts.expired ? '2000-01-01' : '2999-12-31', ...terms };
+  _decryptSpy?.mockRestore();
+  _decryptSpy = jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue(decryptedTerms);
+
   lts._licenseInstance = buildTestLicenseInstance(terms, opts.expired);
 }
 
-/** Restores the license mock to a plan (default enterprise) and clears TEST_LICENSE_TERMS. */
+/** Restores the license mock to a plan (default enterprise) and removes the decrypt spy. */
 export function restoreLicensePlan(app: INestApplication, plan = 'enterprise'): void {
-  delete process.env.TEST_LICENSE_TERMS;
+  _decryptSpy?.mockRestore();
+  _decryptSpy = undefined;
   configurePlanMock(app, plan);
 }
 

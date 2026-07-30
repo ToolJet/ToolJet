@@ -184,8 +184,8 @@ export default function Image({
           borderType === 'rounded-circle'
             ? '50%'
             : borderType === 'rounded' || borderType === 'img-thumbnail'
-            ? '4px'
-            : `${borderRadius}px`,
+              ? '4px'
+              : `${borderRadius}px`,
         borderColor: borderColor || (borderType === 'img-thumbnail' ? '#e7eaef' : 'transparent'),
         objectPosition: alignment,
       }}
