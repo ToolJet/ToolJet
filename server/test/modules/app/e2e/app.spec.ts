@@ -1011,6 +1011,7 @@ describe('AppController', () => {
             'group_permissions',
             'is_current_organization_archived',
             'metadata',
+            'module_folder_group_permissions',
             'module_group_permissions',
             'no_active_workspaces',
             'organization',
@@ -1019,6 +1020,7 @@ describe('AppController', () => {
             'sso_user_info',
             'super_admin',
             'user_permissions',
+            'workflow_folder_group_permissions',
             'workflow_group_permissions',
           ].sort()
         );
