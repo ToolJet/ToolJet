@@ -41,7 +41,7 @@ export async function upsertPoints(qdrant: QdrantClient, options: QueryOptions):
 
   const response = await qdrant.upsert(collectionName, {
     points: JSON.parse(points),
-    wait: true
+    wait: true,
   });
   return response.status;
 }
@@ -56,7 +56,7 @@ export async function deletePoints(qdrant: QdrantClient, options: QueryOptions):
   const response = await qdrant.delete(collectionName, {
     filter: filter ? JSON.parse(filter) : undefined,
     points: ids ? JSON.parse(ids) : undefined,
-    wait: true
+    wait: true,
   });
 
   return response.status;

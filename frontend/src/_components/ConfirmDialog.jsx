@@ -59,7 +59,7 @@ export function ConfirmDialog({
   return (
     <Modal
       show={showModal}
-      onHide={staticBackdrop ? () => {} : onCloseIconClick ?? handleClose}
+      onHide={staticBackdrop ? () => {} : (onCloseIconClick ?? handleClose)}
       size="sm"
       animation={false}
       centered={true}

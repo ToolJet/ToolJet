@@ -5,7 +5,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
 import { CreateEventHandlerDto } from '../dto/event';
@@ -21,7 +21,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
 import { AppsRepository } from '../repository';
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
@@ -61,10 +61,10 @@ export class ComponentsService implements IComponentsService {
       ? null
       : await this.beforeComponentCreate(componentIds, pageId, appVersionId, componentDiff);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
       return {};
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
@@ -110,12 +110,12 @@ export class ComponentsService implements IComponentsService {
 
     const context = await this.beforeComponentUpdate(componentIds, appVersionId, componentDiff);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.updateComponents(componentDiff, appVersionId, manager);
       if (result?.error) {
         return result;
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterComponentUpdate(context, componentDiff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -129,12 +129,12 @@ export class ComponentsService implements IComponentsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeComponentDelete(componentIds, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.deleteComponents(componentIds, appVersionId, isComponentCut, manager);
       if (result?.error) {
         return result;
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterComponentDelete(context, componentIds, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -151,7 +151,7 @@ export class ComponentsService implements IComponentsService {
   ) {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const parentWrites = this.collectParentWritesFromDiff(componenstLayoutDiff);
       if (Object.keys(parentWrites).length > 0) {
         await this.assertNoParentCycle(parentWrites, appVersionId, manager);
@@ -201,7 +201,7 @@ export class ComponentsService implements IComponentsService {
           await manager.update(Component, { id: componentId }, { parent: resolvedParent });
         }
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
@@ -233,7 +233,9 @@ export class ComponentsService implements IComponentsService {
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
         .where('component.pageId IN (:...pageIds)', { pageIds })
-        .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
+        .andWhere('layout.type IN (:...types)', {
+          types: ['desktop', 'mobile'],
+        })
         .orderBy('component.pageId', 'ASC')
         .addOrderBy('component.id', 'ASC')
         .addOrderBy('layout.updatedAt', 'DESC')
@@ -416,7 +418,7 @@ export class ComponentsService implements IComponentsService {
     },
     appVersionId: string
   ) {
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const results: {
         created?: number;
         updated?: number;
@@ -465,7 +467,7 @@ export class ComponentsService implements IComponentsService {
       }
 
       return results;
-    }, appVersionId);
+    });
 
     // History capture is handled by EE override
     return result;
@@ -488,7 +490,9 @@ export class ComponentsService implements IComponentsService {
     proposedParentById: Record<string, string | null | undefined>,
     appVersionId: string,
     manager: EntityManager,
-    options: { newComponentParents?: Record<string, string | null | undefined> } = {}
+    options: {
+      newComponentParents?: Record<string, string | null | undefined>;
+    } = {}
   ): Promise<void> {
     const affectedIds = Object.keys(proposedParentById);
     if (affectedIds.length === 0) return;
@@ -742,7 +746,9 @@ export class ComponentsService implements IComponentsService {
     if (!coRelationId) return;
 
     const organizationId = user.organizationId || user.defaultOrganizationId;
-    const moduleApp = await this.appsRepository.findOne({ where: { co_relation_id: coRelationId, organizationId } });
+    const moduleApp = await this.appsRepository.findOne({
+      where: { co_relation_id: coRelationId, organizationId },
+    });
     if (!moduleApp) {
       throw new ForbiddenException('You do not have permission to pin this module version');
     }

@@ -87,9 +87,14 @@ function Layout({
   }, []);
 
   // Initialize workspace branches store after feature access is available
-  // End users should only see default branch data — skip branch store initialization for them
+  // End users should only see default branch data — skip branch store initialization for them.
+  // Also initialize when the license is expired/invalid: git sync may still be CONFIGURED, in which
+  // case the workspace must be frozen (and the user prompted to turn git off). featureAccess.gitSync
+  // is false on an expired plan, so we can't gate solely on it.
   useEffect(() => {
-    if (featureAccess?.gitSync) {
+    const licenseInvalid =
+      featureAccess?.licenseStatus?.isExpired || featureAccess?.licenseStatus?.isLicenseValid === false;
+    if (featureAccess?.gitSync || licenseInvalid) {
       const currentSession = authenticationService?.currentSessionValue;
       const isAdminOrBuilder = currentSession?.admin || currentSession?.user_permissions?.is_builder;
       const workspaceId = currentSession?.current_organization_id;

@@ -52,9 +52,12 @@ describe('FolderAppsService.filterFoldersByPermissions', () => {
     it('isAllViewable — shows only folders with accessible apps', () => {
       const folders = [makeFolder('f1', 1), makeFolder('f2', 0)];
       const perms: UserFolderPermissions = {
-        isAllViewable: true, viewableFoldersId: [],
-        isAllEditable: false, editableFoldersId: [],
-        isAllEditApps: false, editAppsInFoldersId: [],
+        isAllViewable: true,
+        viewableFoldersId: [],
+        isAllEditable: false,
+        editableFoldersId: [],
+        isAllEditApps: false,
+        editAppsInFoldersId: [],
       };
       const result = service.exposeFilterFolders(folders, user, false, perms);
       expect(result.map((f) => f.id)).toEqual(['f1']);
@@ -66,9 +69,12 @@ describe('FolderAppsService.filterFoldersByPermissions', () => {
       // f3 is in the explicit list and has accessible apps → visible
       const folders = [makeFolder('f1', 0), makeFolder('f2', 1), makeFolder('f3', 1)];
       const perms: UserFolderPermissions = {
-        isAllViewable: false, viewableFoldersId: ['f1', 'f3'],
-        isAllEditable: false, editableFoldersId: [],
-        isAllEditApps: false, editAppsInFoldersId: [],
+        isAllViewable: false,
+        viewableFoldersId: ['f1', 'f3'],
+        isAllEditable: false,
+        editableFoldersId: [],
+        isAllEditApps: false,
+        editAppsInFoldersId: [],
       };
       const result = service.exposeFilterFolders(folders, user, false, perms);
       expect(result.map((f) => f.id)).toEqual(['f2', 'f3']);
@@ -77,9 +83,12 @@ describe('FolderAppsService.filterFoldersByPermissions', () => {
     it('explicit viewableFoldersId — never shows empty folders', () => {
       const folders = [makeFolder('f1', 0), makeFolder('f2', 0)];
       const perms: UserFolderPermissions = {
-        isAllViewable: false, viewableFoldersId: ['f1', 'f2'],
-        isAllEditable: false, editableFoldersId: [],
-        isAllEditApps: false, editAppsInFoldersId: [],
+        isAllViewable: false,
+        viewableFoldersId: ['f1', 'f2'],
+        isAllEditable: false,
+        editableFoldersId: [],
+        isAllEditApps: false,
+        editAppsInFoldersId: [],
       };
       const result = service.exposeFilterFolders(folders, user, false, perms);
       expect(result).toHaveLength(0);
@@ -98,9 +107,12 @@ describe('FolderAppsService.filterFoldersByPermissions', () => {
     it('isAllEditable — shows all folders', () => {
       const folders = [makeFolder('f1', 2), makeFolder('f2', 0)];
       const perms: UserFolderPermissions = {
-        isAllEditable: true, editableFoldersId: [],
-        isAllViewable: false, viewableFoldersId: [],
-        isAllEditApps: false, editAppsInFoldersId: [],
+        isAllEditable: true,
+        editableFoldersId: [],
+        isAllViewable: false,
+        viewableFoldersId: [],
+        isAllEditApps: false,
+        editAppsInFoldersId: [],
       };
       const result = service.exposeFilterFolders(folders, user, false, perms);
       expect(result).toHaveLength(2);
@@ -112,9 +124,12 @@ describe('FolderAppsService.filterFoldersByPermissions', () => {
       // f3 is NOT in accessibleFolderIds and has no apps → hidden
       const folders = [makeFolder('f1', 0), makeFolder('f2', 1), makeFolder('f3', 0)];
       const perms: UserFolderPermissions = {
-        isAllEditable: false, editableFoldersId: ['f1'],
-        isAllViewable: false, viewableFoldersId: [],
-        isAllEditApps: false, editAppsInFoldersId: [],
+        isAllEditable: false,
+        editableFoldersId: ['f1'],
+        isAllViewable: false,
+        viewableFoldersId: [],
+        isAllEditApps: false,
+        editAppsInFoldersId: [],
       };
       const result = service.exposeFilterFolders(folders, user, false, perms);
       expect(result.map((f) => f.id)).toEqual(['f1', 'f2']);
@@ -123,9 +138,12 @@ describe('FolderAppsService.filterFoldersByPermissions', () => {
     it('explicit accessibleFolderIds — folder created by user always visible', () => {
       const folders = [makeFolder('f1', 0, user.id)];
       const perms: UserFolderPermissions = {
-        isAllEditable: false, editableFoldersId: [],
-        isAllViewable: false, viewableFoldersId: [],
-        isAllEditApps: false, editAppsInFoldersId: [],
+        isAllEditable: false,
+        editableFoldersId: [],
+        isAllViewable: false,
+        viewableFoldersId: [],
+        isAllEditApps: false,
+        editAppsInFoldersId: [],
       };
       const result = service.exposeFilterFolders(folders, user, false, perms);
       expect(result.map((f) => f.id)).toEqual(['f1']);

@@ -451,8 +451,8 @@ function DataSourceSelect({
           item.type === 'group-item' || item.type === 'sample-item'
             ? item.source.id
             : item.type === 'group-end'
-            ? item.key
-            : `${item.type}-${item.kind ?? 'defaults'}`
+              ? item.key
+              : `${item.type}-${item.kind ?? 'defaults'}`
         }
         itemContent={(_, item) => renderItem(item)}
       />

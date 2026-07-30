@@ -1,4 +1,5 @@
 import { FoldersModule } from '@modules/folders/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { DynamicModule } from '@nestjs/common';
 import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
@@ -18,7 +19,7 @@ export class FolderAppsModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: FolderAppsModule,
       controllers: isMainImport ? [FolderAppsController] : [],
-      imports: [await FoldersModule.register(configs)],
+      imports: [await FoldersModule.register(configs), await GitSyncConfigsModule.register(configs)],
       providers: [FolderAppsService, FolderAppsUtilService, FeatureAbilityFactory],
       exports: [FolderAppsUtilService],
     });

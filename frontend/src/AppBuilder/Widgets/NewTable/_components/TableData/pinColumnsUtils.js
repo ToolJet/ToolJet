@@ -14,7 +14,7 @@ export const getPinnedPosition = (column) => {
 
 const getPinnedLeafColumns = (table, position) => {
   if (!table) return [];
-  return position === 'left' ? table.getLeftLeafColumns?.() ?? [] : table.getRightLeafColumns?.() ?? [];
+  return position === 'left' ? (table.getLeftLeafColumns?.() ?? []) : (table.getRightLeafColumns?.() ?? []);
 };
 
 const getPinnedOffsetFallback = (column, table, position) => {

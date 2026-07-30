@@ -12,6 +12,7 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 
@@ -30,6 +31,7 @@ export class VersionModule extends SubModule {
       VersionsCreateService,
       VersionService,
       VersionUtilService,
+      GitSyncEditGuard,
     } = await this.getProviders(configs, 'versions', [
       'controller',
       'controller.v2',
@@ -39,6 +41,7 @@ export class VersionModule extends SubModule {
       'services/create.service',
       'service',
       'util.service',
+      'guards/git-sync-edit.guard',
     ]);
 
     // Get apps related providers
@@ -57,6 +60,7 @@ export class VersionModule extends SubModule {
         await ThemesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport
         ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]
@@ -79,6 +83,7 @@ export class VersionModule extends SubModule {
         FeatureAbilityFactory,
         GroupPermissionsRepository,
         ValidModuleByCorrelationGuard,
+        GitSyncEditGuard,
       ],
       exports: [VersionUtilService],
     });

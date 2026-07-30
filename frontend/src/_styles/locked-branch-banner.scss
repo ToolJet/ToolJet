@@ -25,6 +25,15 @@
     z-index: 2;
   }
 
+  // Warning variant — git-sync license expired/invalid (plan-expired state).
+  &--warning {
+    background-color: var(--surface-warning, #fdf0e6);
+
+    .locked-branch-banner-message {
+      color: var(--text-warning, #bf4f03);
+    }
+  }
+
   &-content {
     display: flex;
     align-items: center;

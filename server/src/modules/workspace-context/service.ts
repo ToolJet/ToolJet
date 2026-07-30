@@ -16,7 +16,13 @@ type ComponentSummary = { id: string; name: string; type: string; co_relation_id
 type AppSummary = { id: string; name: string; slug: string; co_relation_id: string | null };
 type AppVersionSummary = { id: string; name: string; createdAt: Date; co_relation_id: string | null };
 type AppVersionWithComponents = AppVersionSummary & { components: ComponentSummary[] };
-type AppDetail = { id: string; name: string; slug: string; co_relation_id: string | null; versions: AppVersionWithComponents[] };
+type AppDetail = {
+  id: string;
+  name: string;
+  slug: string;
+  co_relation_id: string | null;
+  versions: AppVersionWithComponents[];
+};
 type QueryGroup = {
   appId: string;
   appName: string;
@@ -92,7 +98,12 @@ export class WorkspaceContextService {
         .orderBy('app.created_at', 'ASC')
         .getRawMany();
 
-    return rows.map((r) => ({ id: r.appId, name: r.appName, slug: r.appSlug, co_relation_id: r.appCoRelationId ?? null }));
+    return rows.map((r) => ({
+      id: r.appId,
+      name: r.appName,
+      slug: r.appSlug,
+      co_relation_id: r.appCoRelationId ?? null,
+    }));
   }
 
   async fetchAppById(appId: string, organizationId: string): Promise<AppDetail> {
@@ -242,10 +253,12 @@ export class WorkspaceContextService {
 
     if (dataSources.length === 0) return [];
 
+    // is_default is gone; the default version is the one on the org default branch.
+    const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(this.dataSourcesRepository.manager, organizationId);
     const versions = await this.dataSourcesRepository.manager.find(DataSourceVersion, {
       where: { dataSourceId: In(dataSources.map((ds) => ds.id)) },
-      select: ['id', 'name', 'isDefault', 'isActive', 'branchId', 'createdAt', 'dataSourceId'],
-      order: { isDefault: 'DESC', createdAt: 'ASC' },
+      select: ['id', 'name', 'isActive', 'branchId', 'createdAt', 'dataSourceId'],
+      order: { createdAt: 'ASC' },
     });
 
     const versionsByDs = new Map<string, DataSourceVersionSummary[]>();
@@ -254,7 +267,7 @@ export class WorkspaceContextService {
       list.push({
         id: v.id,
         name: v.name,
-        isDefault: v.isDefault,
+        isDefault: !!defaultBranchId && v.branchId === defaultBranchId,
         isActive: v.isActive,
         branchId: v.branchId ?? null,
         createdAt: v.createdAt,

@@ -20,7 +20,12 @@ import {
 
 // Capture esbuild ref at load time — require() fails after Jest tears down the module env.
 let esbuildRef: { stop: () => void } | undefined;
-try { esbuildRef = require('esbuild'); } catch {}
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  esbuildRef = require('esbuild');
+} catch {
+  // ignore — esbuild optional at load time
+}
 
 // Deferred shutdown: after the last spec file in the worker, destroy
 // DataSources so the worker can exit. If another spec starts before
@@ -32,7 +37,10 @@ let _shutdownTimer: ReturnType<typeof setTimeout> | undefined;
 // beforeAll runs BEFORE the spec's beforeAll (where initTestApp sets up the
 // DataSource). The lazy start waits until the DataSource is available.
 beforeEach(async () => {
-  if (_shutdownTimer) { clearTimeout(_shutdownTimer); _shutdownTimer = undefined; }
+  if (_shutdownTimer) {
+    clearTimeout(_shutdownTimer);
+    _shutdownTimer = undefined;
+  }
   try {
     await beginTestTransaction();
   } catch (e) {
@@ -54,7 +62,11 @@ afterAll(async () => {
   } catch (e) {
     console.error('[TXN] rollbackSuiteTransaction FAILED:', (e as Error).message);
   }
-  try { esbuildRef?.stop(); } catch {}
+  try {
+    esbuildRef?.stop();
+  } catch {
+    // ignore — cleanup best-effort
+  }
   // Deferred teardown: if no more spec files start, destroy DB pools and
   // close cached apps. destroyAllDataSources() kills pools directly (no
   // NestJS lifecycle hooks). closeAllCachedApps() runs full NestJS shutdown.

@@ -1,6 +1,5 @@
 import { QueryError } from '@modules/data-sources/types';
 import * as sanitizeHtml from 'sanitize-html';
-import { EntityManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 import { USER_TYPE } from '@modules/users/constants/lifecycle';
 import { ConflictException } from '@nestjs/common';
@@ -11,7 +10,7 @@ import * as semver from 'semver';
 import { BadRequestException } from '@nestjs/common';
 import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
 
-const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#$%^&*()_+\-={}[\]:;"',.?/\\|]+$/;
 
 export function validatePasswordServer(password: string | undefined | null) {
   if (!password) {
@@ -185,15 +184,6 @@ export const ceAppEnvironments = [{ name: 'production', isDefault: true, priorit
 
 export const isSuperAdmin = (user) => {
   return !!(user?.userType === USER_TYPE.INSTANCE);
-};
-
-export const updateTimestampForAppVersion = async (manager: EntityManager, appVersionId: string) => {
-  const appVersion = await manager.findOne('app_versions', {
-    where: { id: appVersionId },
-  });
-  if (appVersion) {
-    await manager.update('app_versions', appVersionId, { updatedAt: new Date() });
-  }
 };
 
 type DbContraintAndMsg = {

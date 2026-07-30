@@ -8,10 +8,7 @@ import { WorkspaceContextController } from './controller';
 import { WorkspaceContextService } from './service';
 
 export class WorkspaceContextModule extends SubModule {
-  static async register(
-    _configs?: { IS_GET_CONTEXT: boolean },
-    isMainImport: boolean = false
-  ): Promise<DynamicModule> {
+  static async register(_configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const cacheKey = this.buildCacheKey(_configs, isMainImport);
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;

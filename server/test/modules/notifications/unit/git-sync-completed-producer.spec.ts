@@ -43,14 +43,16 @@ describe('GitSyncQueueProcessor.onCompleted | success notification producer', ()
 
   it('uses per-job copy: pull and delete branch', async () => {
     await processor.onCompleted(
-      makeJob({ name: GIT_SYNC_JOBS.PULL_BRANCH, data: { organizationId: 'o', userId: 'u', branchName: 'main' } }) as Parameters<
-        typeof processor.onCompleted
-      >[0]
+      makeJob({
+        name: GIT_SYNC_JOBS.PULL_BRANCH,
+        data: { organizationId: 'o', userId: 'u', branchName: 'main' },
+      }) as Parameters<typeof processor.onCompleted>[0]
     );
     await processor.onCompleted(
-      makeJob({ name: GIT_SYNC_JOBS.DELETE_BRANCH, data: { organizationId: 'o', userId: 'u', branchName: 'old' } }) as Parameters<
-        typeof processor.onCompleted
-      >[0]
+      makeJob({
+        name: GIT_SYNC_JOBS.DELETE_BRANCH,
+        data: { organizationId: 'o', userId: 'u', branchName: 'old' },
+      }) as Parameters<typeof processor.onCompleted>[0]
     );
     expect(notify.mock.calls[0][0].title).toBe('Pull completed');
     expect(notify.mock.calls[1][0].title).toBe('Branch deleted');
@@ -58,9 +60,10 @@ describe('GitSyncQueueProcessor.onCompleted | success notification producer', ()
 
   it('stays silent for housekeeping jobs (push-app-deletion)', async () => {
     await processor.onCompleted(
-      makeJob({ name: GIT_SYNC_JOBS.PUSH_APP_DELETION, data: { organizationId: 'o', userId: 'u', branchId: 'b' } }) as Parameters<
-        typeof processor.onCompleted
-      >[0]
+      makeJob({
+        name: GIT_SYNC_JOBS.PUSH_APP_DELETION,
+        data: { organizationId: 'o', userId: 'u', branchId: 'b' },
+      }) as Parameters<typeof processor.onCompleted>[0]
     );
     expect(notify).not.toHaveBeenCalled();
   });
@@ -75,6 +78,8 @@ describe('GitSyncQueueProcessor.onCompleted | success notification producer', ()
 
   it('swallows a notify() throw (must not crash the worker)', async () => {
     notify.mockRejectedValue(new Error('db down'));
-    await expect(processor.onCompleted(makeJob() as Parameters<typeof processor.onCompleted>[0])).resolves.not.toThrow();
+    await expect(
+      processor.onCompleted(makeJob() as Parameters<typeof processor.onCompleted>[0])
+    ).resolves.not.toThrow();
   });
 });

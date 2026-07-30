@@ -19,10 +19,11 @@ export class PublicAppEnvironmentGuard extends AuthGuard('jwt') {
     }
 
     // Scope slug resolution to a specific branch. The same slug can appear on multiple
-    // branches, so we must pin to one. Source of branch_id: x-branch-id header (sent by
-    // authHeader() when the caller has an active branch). When absent, fall back to the
-    // default branch (git-sync) or any version row (non-git-sync, where branch_id IS NULL).
-    const branchId: string | null = (request.headers['x-branch-id'] as string) || null;
+    // branches, so we must pin to one. Source of branch_id: the branch_id query param (this
+    // public route bypasses the JWT strategy, so user.branchId isn't populated). When absent,
+    // fall back to the default branch (git-sync) or any version row (non-git-sync, where
+    // branch_id IS NULL).
+    const branchId: string | null = (request.query['branch_id'] as string) || null;
 
     // Resolve app through any version carrying this slug — every branch's metadata row
     // (VERSION-type on default, BRANCH-type on sub-branches) holds the slug. Select the

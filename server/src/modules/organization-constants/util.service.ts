@@ -3,7 +3,6 @@ import { IOrganizationConstantsUtilService } from './interfaces/IUtilService';
 import { OrganizationConstantRepository } from './repository';
 import { EntityManager, DeleteResult } from 'typeorm';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
-import { OrganizationConstant } from '@entities/organization_constants.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { Injectable } from '@nestjs/common';

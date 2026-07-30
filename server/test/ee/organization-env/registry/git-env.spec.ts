@@ -28,23 +28,18 @@ function makeService(orgEnvService: ReturnType<typeof makeOrgEnvService>) {
     save: jest.fn().mockResolvedValue(undefined),
   };
   const logger = {
-    log: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn(),
+    log: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
   };
   const licenseTerms = {
     getLicenseTerms: jest.fn().mockResolvedValue(true),
   };
-  return new GitSyncEnvUtilService(
-    orgEnvService as any,
-    orgGitSyncRepo as any,
-    logger as any,
-    licenseTerms as any,
-  );
+  return new GitSyncEnvUtilService(orgEnvService as any, orgGitSyncRepo as any, logger as any, licenseTerms as any);
 }
 
-function makeServiceWithMocks(
-  orgEnvService: ReturnType<typeof makeOrgEnvService>,
-  licenseResult = true,
-) {
+function makeServiceWithMocks(orgEnvService: ReturnType<typeof makeOrgEnvService>, licenseResult = true) {
   const orgGitSyncRepo = {
     find: jest.fn().mockResolvedValue([]),
     findOrgGitByOrganizationId: jest.fn().mockResolvedValue(null),
@@ -53,7 +48,10 @@ function makeServiceWithMocks(
     save: jest.fn().mockResolvedValue(undefined),
   };
   const logger = {
-    log: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn(),
+    log: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
   };
   const licenseTerms = {
     getLicenseTerms: jest.fn().mockResolvedValue(licenseResult),
@@ -62,7 +60,7 @@ function makeServiceWithMocks(
     orgEnvService as any,
     orgGitSyncRepo as any,
     logger as any,
-    licenseTerms as any,
+    licenseTerms as any
   );
   return { service, orgGitSyncRepo, licenseTerms };
 }
@@ -72,9 +70,7 @@ describe('GitSyncEnvUtilService', () => {
     it('sets HTTPS provider isEnabled=true when at least one HTTPS key is mapped', async () => {
       const orgEnvService = makeOrgEnvService({
         getResolvedOrganizationIds: jest.fn().mockReturnValue([ORG_ID]),
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.HTTPS.URL,
-        ),
+        has: jest.fn().mockImplementation((_id: string, key: string) => key === GIT_ENV_KEYS.HTTPS.URL),
       });
       const service = makeService(orgEnvService);
 
@@ -86,33 +82,11 @@ describe('GitSyncEnvUtilService', () => {
       });
     });
 
-    it('sets SSH provider isEnabled=true independently when SSH key is mapped', async () => {
-      const orgEnvService = makeOrgEnvService({
-        getResolvedOrganizationIds: jest.fn().mockReturnValue([ORG_ID]),
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.SSH.GIT_URL,
-        ),
-      });
-      const service = makeService(orgEnvService);
-
-      await service.initialize();
-
-      expect(service.getProviderState(ORG_ID, GITConnectionType.GITHUB_SSH)).toEqual({
-        isEnabled: true,
-        isFinalized: false,
-      });
-      expect(service.getProviderState(ORG_ID, GITConnectionType.GITHUB_HTTPS)).toEqual({
-        isEnabled: false,
-        isFinalized: false,
-      });
-    });
 
     it('sets GitLab provider isEnabled=true when GitLab key is mapped', async () => {
       const orgEnvService = makeOrgEnvService({
         getResolvedOrganizationIds: jest.fn().mockReturnValue([ORG_ID]),
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.GITLAB.URL,
-        ),
+        has: jest.fn().mockImplementation((_id: string, key: string) => key === GIT_ENV_KEYS.GITLAB.URL),
       });
       const service = makeService(orgEnvService);
 
@@ -154,9 +128,7 @@ describe('GitSyncEnvUtilService', () => {
     it('sets provider isEnabled=false when license is not valid', async () => {
       const orgEnvService = makeOrgEnvService({
         getResolvedOrganizationIds: jest.fn().mockReturnValue([ORG_ID]),
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.HTTPS.URL,
-        ),
+        has: jest.fn().mockImplementation((_id: string, key: string) => key === GIT_ENV_KEYS.HTTPS.URL),
       });
       const { service } = makeServiceWithMocks(orgEnvService, false);
 
@@ -171,9 +143,7 @@ describe('GitSyncEnvUtilService', () => {
     it('does not call hydrateUseEnvConfig when license is not valid', async () => {
       const orgEnvService = makeOrgEnvService({
         getResolvedOrganizationIds: jest.fn().mockReturnValue([ORG_ID]),
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.HTTPS.URL,
-        ),
+        has: jest.fn().mockImplementation((_id: string, key: string) => key === GIT_ENV_KEYS.HTTPS.URL),
       });
       const { service, orgGitSyncRepo } = makeServiceWithMocks(orgEnvService, false);
 
@@ -188,9 +158,7 @@ describe('GitSyncEnvUtilService', () => {
   describe('ensureResolved() — license-aware state + dedup', () => {
     it('sets provider isEnabled=false when license is not valid', async () => {
       const orgEnvService = makeOrgEnvService({
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.HTTPS.URL,
-        ),
+        has: jest.fn().mockImplementation((_id: string, key: string) => key === GIT_ENV_KEYS.HTTPS.URL),
       });
       const { service } = makeServiceWithMocks(orgEnvService, false);
 
@@ -204,9 +172,7 @@ describe('GitSyncEnvUtilService', () => {
 
     it('does not call hydrateUseEnvConfig when license is not valid', async () => {
       const orgEnvService = makeOrgEnvService({
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.HTTPS.URL,
-        ),
+        has: jest.fn().mockImplementation((_id: string, key: string) => key === GIT_ENV_KEYS.HTTPS.URL),
       });
       const { service, orgGitSyncRepo } = makeServiceWithMocks(orgEnvService, false);
 
@@ -218,9 +184,7 @@ describe('GitSyncEnvUtilService', () => {
 
     it('runs license check only once across multiple ensureResolved calls (dedup)', async () => {
       const orgEnvService = makeOrgEnvService({
-        has: jest.fn().mockImplementation((_id: string, key: string) =>
-          key === GIT_ENV_KEYS.HTTPS.URL,
-        ),
+        has: jest.fn().mockImplementation((_id: string, key: string) => key === GIT_ENV_KEYS.HTTPS.URL),
       });
       const { service, licenseTerms } = makeServiceWithMocks(orgEnvService, false);
 

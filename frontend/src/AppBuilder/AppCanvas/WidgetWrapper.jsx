@@ -196,12 +196,12 @@ const WidgetWrapper = memo(
     const renderWidgetHeight = isFlexLayout
       ? flexLayout.widgetHeight
       : !visibility && mode === 'edit'
-      ? HIDDEN_COMPONENT_HEIGHT
-      : newLayoutData.height;
-    const configWidgetTop = isFlexLayout ? flexLayout.configWidgetTop : temporaryLayouts?.top ?? layoutData.top;
+        ? HIDDEN_COMPONENT_HEIGHT
+        : newLayoutData.height;
+    const configWidgetTop = isFlexLayout ? flexLayout.configWidgetTop : (temporaryLayouts?.top ?? layoutData.top);
     const configWidgetHeight = isFlexLayout
       ? flexLayout.configWidgetHeight
-      : temporaryLayouts?.height ?? layoutData.height;
+      : (temporaryLayouts?.height ?? layoutData.height);
 
     const isModuleContainer = componentType === 'ModuleContainer';
     const configHandleClassName = cx({
