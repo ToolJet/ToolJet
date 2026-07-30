@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap, getDBConnection } from 'src/helpers/database.helper';
 import { CreateEventHandlerDto, UpdateEvent, BulkCreateEventHandlerDto } from '../dto/event';
 import { App } from '@entities/app.entity';
 import {
@@ -117,12 +117,8 @@ export class EventsService implements IEventsService {
   }
 
   async findEventsForVersion(appVersionId: string, manager?: EntityManager): Promise<EventHandler[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId },
-      });
-      return allEvents;
-    }, manager);
+    const m = manager ?? getDBConnection();
+    return m.find(EventHandler, { where: { appVersionId } });
   }
 
   async findAllEventsWithSourceId(sourceId: string): Promise<EventHandler[]> {
