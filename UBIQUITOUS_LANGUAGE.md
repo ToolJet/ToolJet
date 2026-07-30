@@ -18,6 +18,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **User Source** | How a user was created: signup, invite, google, git, openid, ldap, saml, workspace_signup | Auth method (that's the protocol, not the creation path) |
 | **Super Admin** | An instance-level administrator with unrestricted access across all workspaces, ToolJet Database, and instance settings | — |
 | **Session** | An authenticated login session tied to a user, device, and expiry | Token (a session contains tokens, but is not one) |
+| **MFA** | Multi-factor authentication via OTP at login, per user (`UserMfaRepository`; EE feature) | 2FA (acceptable informal) |
 | **Onboarding** | The first-run setup flow for new users | — |
 
 ## Roles & Permissions
@@ -173,7 +174,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **White Labelling** | Custom branding (logo, text, favicon) applied to a workspace or the entire platform | — |
 | **Custom Domain** | A user's own domain pointed at their ToolJet instance | — |
 | **SCIM** | System for Cross-domain Identity Management; automated user provisioning (EE feature) | — |
-| **SSO** | Single Sign-On; supported providers: OIDC, SAML, LDAP, Google, GitHub | — |
+| **SSO** | Single Sign-On; supported providers: OIDC, SAML, LDAP, Google, GitHub. Configured per workspace or at instance level (Instance SSO), workspaces can inherit instance config | — |
 | **Personal Access Token (PAT)** | An API token scoped to APP or WORKSPACE for external API access | API key (different — PATs have scoped permissions) |
 | **External API** | ToolJet's outward-facing REST API for programmatic access (import/export apps, trigger workflows) | — |
 
