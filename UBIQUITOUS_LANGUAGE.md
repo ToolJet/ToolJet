@@ -2,177 +2,179 @@
 
 A formal glossary of ToolJet domain terminology. When code, docs, or conversation use different words for the same concept, this document declares the canonical term.
 
+The "Also appears as" column maps only names that genuinely occur in code, docs, or issues (legacy names, overloaded terms) back to the canonical term — it is a translation map, not a synonym list. "—" means the term has no known collision.
+
 ---
 
 ## Instance & Tenancy
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **Instance** | A single ToolJet deployment (self-hosted or cloud) that contains one or more workspaces | Server, installation, cluster |
-| **Workspace** | The top-level tenant containing apps, users, data sources, and settings | Organization (legacy code entity name), tenant, account |
-| **Personal Workspace** | An individual user's private workspace, restrictable by Super Admin | My workspace, user workspace |
+| **Instance** | A single ToolJet deployment (self-hosted or cloud) that contains one or more workspaces | — |
+| **Workspace** | The top-level tenant containing apps, users, data sources, and settings | Organization (legacy code entity name) |
+| **Personal Workspace** | An individual user's private workspace, restrictable by Super Admin | — |
 | **Workspace Slug** | The URL-friendly identifier for a workspace (e.g., `app.corp.com/<slug>`) | Workspace ID (different — slug is user-facing) |
-| **User** | An authentication identity that can belong to multiple workspaces; statuses: invited, verified, active, archived | Account, member, person |
+| **User** | An authentication identity that can belong to multiple workspaces; statuses: invited, verified, active, archived | — |
 | **User Source** | How a user was created: signup, invite, google, git, openid, ldap, saml, workspace_signup | Auth method (that's the protocol, not the creation path) |
-| **Super Admin** | An instance-level administrator with unrestricted access across all workspaces, ToolJet Database, and instance settings | Root user, global admin |
+| **Super Admin** | An instance-level administrator with unrestricted access across all workspaces, ToolJet Database, and instance settings | — |
 | **Session** | An authenticated login session tied to a user, device, and expiry | Token (a session contains tokens, but is not one) |
-| **Onboarding** | The first-run setup flow for new users | Setup wizard |
+| **Onboarding** | The first-run setup flow for new users | — |
 
 ## Roles & Permissions
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
 | **Admin** | Workspace-level role with full access to settings, user management, and all resources | Workspace admin (redundant — Admin is always workspace-level; Super Admin is instance-level) |
-| **Builder** | Workspace-level role that can create/edit apps, data sources, and queries; permissions are configurable | Editor (legacy license code term), developer |
-| **End User** | Workspace-level role that can only view and interact with released apps they're given access to | Viewer (legacy license code term), consumer |
+| **Builder** | Workspace-level role that can create/edit apps, data sources, and queries; permissions are configurable | Editor (legacy license code term) |
+| **End User** | Workspace-level role that can only view and interact with released apps they're given access to | Viewer (legacy license code term) |
 | **Group** | A named collection of users with shared permissions; includes both default role groups and custom groups | Team (overloaded with the Team plan) |
-| **Custom Group** | An admin-defined permission group beyond the three default roles (EE feature) | Custom role |
-| **Permission** | A granular access right on a specific resource (app, data source, folder, constant) | Privilege, access level |
-| **Ability** | Internal CASL-based authorization rule set evaluated at runtime (code concept, not user-facing) | Policy, rule |
+| **Custom Group** | An admin-defined permission group beyond the three default roles (EE feature) | Custom role (roles ARE the default groups — a custom group is not a role) |
+| **Permission** | A granular access right on a specific resource (app, data source, folder, constant) | — |
+| **Ability** | Internal CASL-based authorization rule set evaluated at runtime (code concept, not user-facing) | — |
 
 ## App Building
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **App** | A ToolJet application; types: `FRONT_END` (visual app), `WORKFLOW` (automation), `MODULE` (reusable building block) | Application (only in marketing prose), project |
-| **App-Builder** | The visual IDE/editor where apps are constructed | Editor (ambiguous with Builder role), studio |
-| **Page** | A view/screen within an app; one page is designated the Home Page | Screen, view, route |
-| **Page Handle** | The unique URL slug for a page within an app | Page slug, page path |
-| **Component** | A pre-designed, drag-and-drop building block on the canvas (45+ built-in types) | Widget (informal; docs folder is `widgets/` but content says "Components") |
-| **Custom Component** | A user-created component built with React for functionality beyond built-in components | External component |
-| **Layout** | Positioning metadata (top, left, width, height) for a component on the canvas grid | Position |
-| **Canvas** | The visual workspace area in the App-Builder where components are placed | Stage, board |
-| **Left Sidebar** | App-Builder panel containing Pages, Inspector, and Debugger | Nav panel |
-| **Right Sidebar** | App-Builder panel for component properties and styles | Properties panel, config panel |
-| **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | Header bar |
-| **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | Library component, shared module (be careful — "module" also means NestJS module in backend) |
-| **Module Pin** | A ModuleViewer component pinning a specific module version via `moduleReferenceId` (stable UUID per version row, survives git/zip round-trips); publishing blocks on draft/orphan/unpinned modules | Module reference (that's the id, not the act) |
-| **Template** | A pre-built app sample that users can clone as a starting point (60+ across 10 categories) | Starter, boilerplate |
-| **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | Dynamic styles |
-| **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — styling is the broader concept) |
-| **Theme** | A workspace-wide color and font scheme (EE feature) | Skin, style preset |
+| **App** | A ToolJet application; types: `FRONT_END` (visual app), `WORKFLOW` (automation), `MODULE` (reusable building block) | — |
+| **App-Builder** | The visual IDE/editor where apps are constructed | Editor (frontend code term; ambiguous with the Builder role) |
+| **Page** | A view/screen within an app; one page is designated the Home Page | — |
+| **Page Handle** | The unique URL slug for a page within an app | — |
+| **Component** | A pre-designed, drag-and-drop building block on the canvas (45+ built-in types) | Widget (legacy; docs folder is `widgets/` but content says "Components") |
+| **Custom Component** | A user-created component built with React for functionality beyond built-in components | — |
+| **Layout** | Positioning metadata (top, left, width, height) for a component on the canvas grid | — |
+| **Canvas** | The visual workspace area in the App-Builder where components are placed | — |
+| **Left Sidebar** | App-Builder panel containing Pages, Inspector, and Debugger | — |
+| **Right Sidebar** | App-Builder panel for component properties and styles | — |
+| **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
+| **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
+| **Module Pin** | A ModuleViewer component pinning a specific module version via `moduleReferenceId` (stable UUID per version row, survives git/zip round-trips); publishing blocks on draft/orphan/unpinned modules | — |
+| **Template** | A pre-built app sample that users can clone as a starting point (60+ across 10 categories) | — |
+| **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | — |
+| **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — see Flagged Ambiguities) |
+| **Theme** | A workspace-wide color and font scheme (EE feature) | — |
 
 ## Events & Actions
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **Event** | A trigger fired by user interaction or system state (e.g., button click, query completion) | Trigger (use only for workflows) |
-| **Event Handler** | A configured response linking an event to one or more actions; can be chained | Listener, callback |
-| **Action** | A function executed in response to an event (e.g., Show Alert, Run Query, Switch Page, Set Variable) | Command, operation |
-| **Component-Specific Action** | An action that targets a specific component instance (e.g., scroll into view, set value) | Component method |
+| **Event** | A trigger fired by user interaction or system state (e.g., button click, query completion) | Trigger (reserve for workflows) |
+| **Event Handler** | A configured response linking an event to one or more actions; can be chained | — |
+| **Action** | A function executed in response to an event (e.g., Show Alert, Run Query, Switch Page, Set Variable) | — |
+| **Component-Specific Action** | An action that targets a specific component instance (e.g., scroll into view, set value) | — |
 
 ## Variables & State
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
 | **Variable** | An app-scoped runtime value set via `setVariable(key, value)` | Global variable (ambiguous with Workspace Constant) |
-| **Page Variable** | A page-scoped runtime value set via `setPageVariable(key, value)` | Local variable |
-| **Exposed Variable** | An auto-generated, read-only variable holding component state (e.g., `components.textinput1.value`) | Component state, props |
-| **Workspace Constant** | A reusable, non-secret value available across all apps in a workspace; resolved server-side; syntax: `{{constants.name}}` | Global Constant (acceptable alias), Workspace Variable (deprecated), Environment Variable (deprecated) |
-| **Workspace Secret** | An encrypted workspace constant for sensitive data; masked in frontend; syntax: `{{secrets.name}}` | Secret key, API key (those are values stored in secrets, not the concept itself) |
-| **Environment-Specific Configuration** | Constants and secrets can hold different values per environment (dev/staging/prod) | Per-env config |
-| **Inspector** | The App-Builder panel for viewing all runtime state (sections: Queries, Components, Globals, Variables, Page, Constants) | State viewer, debugger (separate panel) |
-| **Debugger** | The App-Builder panel for debugging code execution errors | Console (different — browser console is separate) |
-| **Transformation** | A JavaScript/Python transform applied to query results before binding to components | Formatter, mapper |
+| **Page Variable** | A page-scoped runtime value set via `setPageVariable(key, value)` | — |
+| **Exposed Variable** | An auto-generated, read-only variable holding component state (e.g., `components.textinput1.value`) | — |
+| **Workspace Constant** | A reusable, non-secret value available across all apps in a workspace; resolved server-side; syntax: `{{constants.name}}` | Global Constant (acceptable), Workspace Variable / Environment Variable (deprecated docs terms) |
+| **Workspace Secret** | An encrypted workspace constant for sensitive data; masked in frontend; syntax: `{{secrets.name}}` | — |
+| **Environment-Specific Configuration** | Constants and secrets can hold different values per environment (dev/staging/prod) | — |
+| **Inspector** | The App-Builder panel for viewing all runtime state (sections: Queries, Components, Globals, Variables, Page, Constants) | Debugger (separate panel) |
+| **Debugger** | The App-Builder panel for debugging code execution errors | Console (the browser console is separate) |
+| **Transformation** | A JavaScript/Python transform applied to query results before binding to components | — |
 
 ## Versioning & Deployment
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **Version** | A named development snapshot of an app (`versionType: VERSION`); statuses DRAFT → PUBLISHED → RELEASED. With Git Sync branching, a `BRANCH`-type version is the working head of a Workspace Branch | Revision; "branch" alone (say Workspace Branch or branch-head version) |
+| **Version** | A named development snapshot of an app (`versionType: VERSION`); statuses DRAFT → PUBLISHED → RELEASED. With Git Sync branching, a `BRANCH`-type version is the working head of a Workspace Branch | "branch" alone (say Workspace Branch or branch-head version) |
 | **Workspace Branch** | A named Git branch spanning a whole workspace's apps, data sources, and modules (`WorkspaceBranch` entity, table `organization_git_sync_branches`); one is the default branch (EE Git Sync feature) | App branch (branches are workspace-scoped, not per-app) |
-| **Drift** | Local state diverging from the git remote on a Workspace Branch; detected by comparing stored meta-hashes (`app_meta_hash`, `data_source_meta_hash`, `module_meta_hash`) | Out-of-sync (informal) |
-| **App Metadata** | Name, slug, icon, and public flag of a non-workflow app — stored on `app_versions` rows, NOT on `apps`; workflows keep them on `apps` | App settings (broader concept) |
-| **Release** | The act of publishing a version to end users; makes the app accessible via its public URL | Deploy (more accurate for environments), publish |
-| **Environment** | A deployment stage — development, staging, production — with per-environment data source configs; priority-ordered per workspace | Stage (informal but acceptable) |
-| **Promote** | Moving an app version from one environment to the next (e.g., dev to staging to production) (EE feature) | Deploy, push |
-| **Maintenance Mode** | A flag that takes a released app offline temporarily while preserving the release | Disabled, offline |
-| **App History** | An audit trail of changes to an app version with undo capability (EE feature) | Changelog, revision history |
+| **Drift** | Local state diverging from the git remote on a Workspace Branch; detected by comparing stored meta-hashes (`app_meta_hash`, `data_source_meta_hash`, `module_meta_hash`) | — |
+| **App Metadata** | Name, slug, icon, and public flag of a non-workflow app — stored on `app_versions` rows, NOT on `apps`; workflows keep them on `apps` | — |
+| **Release** | The act of publishing a version to end users; makes the app accessible via its public URL | Deploy (docs use it for environments, not releasing) |
+| **Environment** | A deployment stage — development, staging, production — with per-environment data source configs; priority-ordered per workspace | — |
+| **Promote** | Moving an app version from one environment to the next (e.g., dev to staging to production) (EE feature) | Deploy (informal in docs) |
+| **Maintenance Mode** | A flag that takes a released app offline temporarily while preserving the release | — |
+| **App History** | An audit trail of changes to an app version with undo capability (EE feature) | — |
 
 ## Data Layer
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **Data Source** | A configured connector to an external database, API, or service — NEVER abbreviate to "ds" | Datasource (one word, used in some URL paths but not canonical), connector, integration |
-| **Global Data Source** | A data source configured at workspace level, shared across all apps | Workspace data source |
-| **App-Level Data Source** | A data source scoped to a single app (code: "local" type) | Local data source (code term, not user-facing) |
+| **Data Source** | A configured connector to an external database, API, or service — NEVER abbreviate to "ds" | Datasource (one word, used in some URL paths but not canonical) |
+| **Global Data Source** | A data source configured at workspace level, shared across all apps | — |
+| **App-Level Data Source** | A data source scoped to a single app | "local" type (code term, not user-facing) |
 | **Data Source Version** | A branch-aware version row of a data source (`DataSourceVersion`; `is_default`, `branch_id`); its per-Environment options/credentials live in `DataSourceVersionOptions` — there is no single "the options", always resolve with an environment | DSV/DSVO (code shorthand) |
 | **Query** | A parameterized operation against a data source; created in the Query Panel | Data Query (formal alias, use when distinguishing from SQL queries) |
-| **Query Panel** | The App-Builder panel for creating and managing queries | Query bar |
-| **Query Manager** | The left section of the Query Panel listing all queries | Query list |
-| **Query Editor** | The right section of the Query Panel for writing/configuring a query | Query builder |
-| **ToolJet Database** | ToolJet's built-in PostgreSQL-backed database offering | TJDB (marketing shorthand, avoid in formal contexts), internal DB |
-| **Internal Table** | A table within ToolJet Database | TJ table |
+| **Query Panel** | The App-Builder panel for creating and managing queries | — |
+| **Query Manager** | The left section of the Query Panel listing all queries | — |
+| **Query Editor** | The right section of the Query Panel for writing/configuring a query | — |
+| **ToolJet Database** | ToolJet's built-in PostgreSQL-backed database offering | TJDB (informal shorthand in docs) |
+| **Internal Table** | A table within ToolJet Database | — |
 | **Run JavaScript** | A special query type that executes JavaScript code instead of querying a data source | RunJS (code shorthand) |
 | **Run Python** | A special query type that executes Python code instead of querying a data source | RunPy (code shorthand) |
-| **REST API** | Built-in data source type for making HTTP requests to external APIs | HTTP connector |
-| **Sample Data Source** | A pre-configured demo data source provided during onboarding | Demo data source |
+| **REST API** | Built-in data source type for making HTTP requests to external APIs | — |
+| **Sample Data Source** | A pre-configured demo data source provided during onboarding | — |
 
 ## Sharing, Collaboration & Compliance
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **Folder** | A container for organizing apps within a workspace | Directory, category |
-| **Public App** | An app accessible without authentication via its shareable URL | Open app, unauthenticated app |
-| **Shareable URL** | The public URL for a released app that can be shared with end users | Share link, public link |
-| **Embeddable Link** | A URL for embedding a ToolJet app in an iframe within another application | Embed URL, iframe link |
-| **Thread** | A spatially-positioned comment thread on an app canvas (x/y coordinates) | Discussion |
-| **Comment** | An individual message within a thread | Note, annotation |
-| **Multiplayer Editing** | Real-time collaborative editing of an app by multiple users simultaneously (EE feature) | Co-editing, real-time collaboration |
-| **Audit Log** | A compliance record of user actions (who did what, when); retention varies by plan | Activity log, event log |
-| **Git Sync** | Bidirectional sync between a workspace and a Git repository — apps, data sources, and modules pushed/pulled per Workspace Branch (EE feature) | Version control (broader concept), git integration |
+| **Folder** | A container for organizing apps within a workspace | — |
+| **Public App** | An app accessible without authentication via its shareable URL | — |
+| **Shareable URL** | The public URL for a released app that can be shared with end users | — |
+| **Embeddable Link** | A URL for embedding a ToolJet app in an iframe within another application | — |
+| **Thread** | A spatially-positioned comment thread on an app canvas (x/y coordinates) | — |
+| **Comment** | An individual message within a thread | — |
+| **Multiplayer Editing** | Real-time collaborative editing of an app by multiple users simultaneously (EE feature) | — |
+| **Audit Log** | A compliance record of user actions (who did what, when); retention varies by plan | — |
+| **Git Sync** | Bidirectional sync between a workspace and a Git repository — apps, data sources, and modules pushed/pulled per Workspace Branch (EE feature) | Version control (docs use that for app Versions, a different feature) |
 | **Correlation ID** | Portable identity (`co_relation_id`) carried by apps, versions, components, and data sources so entities survive git/zip round-trips; unique only per workspace — git clones share it, always scope lookups | Git id (adapter-internal term) |
-| **Import** | Loading an app definition (JSON) into a workspace from another ToolJet instance | Restore |
-| **Export** | Saving an app definition (JSON) for transfer to another ToolJet instance | Backup (different purpose) |
+| **Import** | Loading an app definition (JSON) into a workspace from another ToolJet instance | — |
+| **Export** | Saving an app definition (JSON) for transfer to another ToolJet instance | — |
 
 ## Automation (Workflows)
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **Workflow** | A visual automation composed of nodes and edges, executed on triggers or schedules (EE feature) | Flow, pipeline, automation |
-| **Workflow Trigger** | What starts a workflow: `MANUAL`, `SCHEDULE`, or `WEBHOOK` | Event (use for component-level; Trigger is for workflows) |
-| **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated | Run, job |
-| **Workflow Execution Node** | A single step within a workflow execution | Task, step |
-| **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs | Cron job, scheduled task |
-| **Workflow Bundle** | Compiled workflow code (JS or Python, runtime version, binary); statuses: none, building, ready, failed | Build artifact |
-| **Response Node** | The terminal node in a webhook-triggered workflow that sends data back to the caller | Output node, return node |
-| **Webhook** | An HTTP endpoint that triggers a workflow from external systems | API endpoint (webhooks are a specific pattern) |
+| **Workflow** | A visual automation composed of nodes and edges, executed on triggers or schedules (EE feature) | — |
+| **Workflow Trigger** | What starts a workflow: `MANUAL`, `SCHEDULE`, or `WEBHOOK` | Event (reserve for component-level interactions) |
+| **Workflow Execution** | A single run of a workflow; statuses: triggered, running, completed, error, terminated | — |
+| **Workflow Execution Node** | A single step within a workflow execution | — |
+| **Workflow Schedule** | A cron/trigger configuration for recurring workflow runs | — |
+| **Workflow Bundle** | Compiled workflow code (JS or Python, runtime version, binary); statuses: none, building, ready, failed | — |
+| **Response Node** | The terminal node in a webhook-triggered workflow that sends data back to the caller | — |
+| **Webhook** | An HTTP endpoint that triggers a workflow from external systems | — |
 
 ## AI Features
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **Build with AI** | AI-powered app creation from natural language prompts (docs-canonical name) | AI Builder (older name), AI Assistant (too generic) |
-| **AI Docs Assistant** | In-product AI assistant answering questions from ToolJet documentation | AI chat |
-| **AI Copilot** | In-editor AI assistant for code suggestions and fixes within the App-Builder | Code assistant |
+| **Build with AI** | AI-powered app creation from natural language prompts (docs-canonical name) | AI Builder (older name) |
+| **AI Docs Assistant** | In-product AI assistant answering questions from ToolJet documentation | — |
+| **AI Copilot** | In-editor AI assistant for code suggestions and fixes within the App-Builder | — |
 | **AI Credits** | Per-builder monthly allocation for AI features; varies by plan | Tokens (ambiguous with auth tokens) |
-| **AI Conversation** | A persistent chat session with the AI assistant within an app context | Chat, AI thread |
+| **AI Conversation** | A persistent chat session with the AI assistant within an app context | — |
 
 ## Licensing, Plans & Extensibility
 
-| Term | Definition | Aliases to avoid |
+| Term | Definition | Also appears as |
 |------|-----------|-----------------|
 | **Edition** | The product tier determined at deploy time via `TOOLJET_EDITION`: CE (Community), EE (Enterprise), Cloud. Cloud is not a third code tree — it runs the EE code with `TOOLJET_EDITION=cloud`, differentiated by runtime checks | Version (ambiguous with app versioning) |
-| **License** | A cryptographic key that unlocks features for an edition; has a type and expiry date | Key, activation code |
+| **License** | A cryptographic key that unlocks features for an edition; has a type and expiry date | — |
 | **License Type** | One of: `basic`, `trial`, `business`, `enterprise` | Plan type (plans and license types have different naming) |
-| **Plan** | A pricing tier on ToolJet Cloud determining feature limits and billing | Tier, pricing level |
-| **Free Plan** | Entry cloud plan (code id: `basic`) | Basic plan (code name, not user-facing) |
-| **Pro Plan** | Mid cloud plan (code id: `flexible`) | Flexible plan (code name, not user-facing) |
-| **Team Plan** | Full-featured cloud plan — SSO, custom groups, audit logs, git sync, multi-environment (code id: `business`) | Business plan (code name, not user-facing) |
+| **Plan** | A pricing tier on ToolJet Cloud determining feature limits and billing | — |
+| **Free Plan** | Entry cloud plan (code id: `basic`) | Basic plan (code name) |
+| **Pro Plan** | Mid cloud plan (code id: `flexible`) | Flexible plan (code name) |
+| **Team Plan** | Full-featured cloud plan — SSO, custom groups, audit logs, git sync, multi-environment (code id: `business`) | Business plan (code name) |
 | **Enterprise Plan** | Custom pricing, air-gapped deployment, custom AI, premium SLAs | — |
-| **License Terms** | The feature limits and flags encoded in a license (interface: `Terms`) | License config, license features |
-| **Feature Flag** (license) | A boolean in license terms gating a capability (e.g., `oidc`, `auditLogs`, `gitSync`) | Feature gate, toggle |
-| **Subscription** | A Stripe-managed billing subscription for a workspace | Payment, billing account |
-| **Billing Cycle** | Monthly or yearly subscription period | Payment frequency |
-| **Trial** | A time-limited license granting access to paid features for evaluation | Demo, evaluation |
-| **Plugin** | A data source connector package, either built-in or from the marketplace | Connector, adapter, integration |
-| **Marketplace Plugin** | A third-party contributed plugin installed from the ToolJet marketplace | Community plugin, extension |
-| **White Labelling** | Custom branding (logo, text, favicon) applied to a workspace or the entire platform | Branding, customization |
-| **Custom Domain** | A user's own domain pointed at their ToolJet instance | Vanity domain |
-| **SCIM** | System for Cross-domain Identity Management; automated user provisioning (EE feature) | User sync, directory sync |
-| **SSO** | Single Sign-On; supported providers: OIDC, SAML, LDAP, Google, GitHub | Federated login |
+| **License Terms** | The feature limits and flags encoded in a license (interface: `Terms`) | — |
+| **Feature Flag** (license) | A boolean in license terms gating a capability (e.g., `oidc`, `auditLogs`, `gitSync`) | — |
+| **Subscription** | A Stripe-managed billing subscription for a workspace | — |
+| **Billing Cycle** | Monthly or yearly subscription period | — |
+| **Trial** | A time-limited license granting access to paid features for evaluation | — |
+| **Plugin** | A data source connector package, either built-in or from the marketplace | Connector (informal in docs) |
+| **Marketplace Plugin** | A third-party contributed plugin installed from the ToolJet marketplace | — |
+| **White Labelling** | Custom branding (logo, text, favicon) applied to a workspace or the entire platform | — |
+| **Custom Domain** | A user's own domain pointed at their ToolJet instance | — |
+| **SCIM** | System for Cross-domain Identity Management; automated user provisioning (EE feature) | — |
+| **SSO** | Single Sign-On; supported providers: OIDC, SAML, LDAP, Google, GitHub | — |
 | **Personal Access Token (PAT)** | An API token scoped to APP or WORKSPACE for external API access | API key (different — PATs have scoped permissions) |
-| **External API** | ToolJet's outward-facing REST API for programmatic access (import/export apps, trigger workflows) | Public API |
+| **External API** | ToolJet's outward-facing REST API for programmatic access (import/export apps, trigger workflows) | — |
 
 ---
 
