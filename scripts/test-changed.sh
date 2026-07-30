@@ -94,7 +94,12 @@ fi
 cd "$SERVER_DIR"
 
 unit_args=()
-e2e_args=(--ci)
+# parallel shards need CI hardware — 3 concurrent Nest boots blow the 60s beforeAll on laptops
+if [[ "${CI:-}" == "true" ]]; then
+  e2e_args=(--ci)
+else
+  e2e_args=()
+fi
 if [[ -n "$PATTERN" ]]; then
   unit_args+=(--testPathPatterns="$PATTERN")
   e2e_args+=(--testPathPatterns "$PATTERN")
@@ -110,4 +115,4 @@ echo "--- Unit tests ---"
 npm run test -- ${unit_args[@]+"${unit_args[@]}"}
 
 echo "--- E2e tests ---"
-npm run test:e2e -- "${e2e_args[@]}"
+npm run test:e2e -- ${e2e_args[@]+"${e2e_args[@]}"}
