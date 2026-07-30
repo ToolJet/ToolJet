@@ -327,16 +327,9 @@ export const ModalV2 = function Modal({
         onHide={() => {
           onHideModal();
         }}
-        onEscapeKeyDown={(e) => {
-          // If a nested Radix overlay (PopoverMenu / Select) is open, let it
-          // consume this Escape so one keypress closes only the innermost layer.
-          // preventDefault keeps @restart/ui from calling onHide (see #5308).
-          if (document.querySelector('[data-radix-popper-content-wrapper]')) {
-            e.preventDefault();
-            return;
-          }
-          hideOnEsc && onHideModal();
-        }}
+        // onEscapeKeyDown is handled inside ModalWidget (Components/Modal.jsx),
+        // where it sits directly on BootstrapModal — passing it here is overridden
+        // by that inner handler (see #5308).
         id="modal-container"
         component-id={id}
         backdrop={'static'}

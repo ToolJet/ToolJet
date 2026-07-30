@@ -255,13 +255,13 @@ export const Modal = function Modal({
         onShow={() => onShowModal()}
         onHide={() => onHideModal()}
         onEscapeKeyDown={(e) => {
-          // If a nested Radix overlay (PopoverMenu / Select) is open, let it
-          // consume this Escape so one keypress closes only the innermost layer.
-          // preventDefault keeps @restart/ui from calling onHide (see #5308).
-          if (document.querySelector('[data-radix-popper-content-wrapper]')) {
-            e.preventDefault();
-            return;
-          }
+          // A nested Radix overlay (PopoverMenu / Select) dismisses on Escape in the
+          // capture phase and calls preventDefault() on the same event; this handler
+          // runs later in the bubble phase, so `defaultPrevented` tells us the inner
+          // layer already consumed the keypress — bail so we don't also close the
+          // modal (see #5308).
+          if (e.defaultPrevented) return;
+          e.preventDefault();
           hideOnEsc && onHideModal();
         }}
         id="modal-container"
