@@ -4,16 +4,17 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 const MIGRATION_NAME = 'BackfillMysqlDatasourceConnectionType';
 const BATCH_SIZE = 500;
 
-// Old mysql datasources stored the "hostname"/"socket" choice directly under connection_type
+// Old mysql datasources stored the "hostname"/"socket_path" choice directly under connection_type
 // (or never had connection_type at all). The current schema uses connection_type for
-// "manual" vs "string" (connection string) and a separate protocol field for "hostname"/"socket".
-// Datasources already on the new format ("manual" or "string") must be left untouched.
+// "manual" vs "string" (connection string) and a separate protocol field for "hostname"/"socket"
+// ("socket_path" was renamed to "socket"). Datasources already on the new format
+// ("manual" or "string") must be left untouched.
 const LEGACY_FORMAT_WHERE_CLAUSE = `
   INNER JOIN data_sources ds ON ds.id = dso.data_source_id
   WHERE ds.kind = 'mysql'
     AND (
       NOT (dso.options::jsonb ? 'connection_type')
-      OR (dso.options::jsonb -> 'connection_type' ->> 'value') IN ('hostname', 'socket')
+      OR (dso.options::jsonb -> 'connection_type' ->> 'value') IN ('hostname', 'socket_path')
     )
 `;
 
@@ -55,7 +56,10 @@ export class BackfillMysqlDatasourceConnectionType1785283260000 implements Migra
                  || jsonb_build_object(
                       'connection_type', jsonb_build_object('value', 'manual', 'encrypted', false),
                       'protocol', jsonb_build_object(
-                        'value', COALESCE("options"::jsonb -> 'connection_type' ->> 'value', 'hostname'),
+                        'value', CASE
+                                   WHEN "options"::jsonb -> 'connection_type' ->> 'value' = 'socket_path' THEN 'socket'
+                                   ELSE COALESCE("options"::jsonb -> 'connection_type' ->> 'value', 'hostname')
+                                 END,
                         'encrypted', false
                       )
                     )
