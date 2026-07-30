@@ -387,7 +387,9 @@ Both fixes were verified live against the real test Gitea server before being lo
 
 ## Test-only license control
 
-`ee/licensing/configs/License.ts` reads `TEST_LICENSE_TERMS` (JSON) under `NODE_ENV=test` instead of decrypting a key.
+The real License path (`ee/licensing/configs/License.ts`) always decrypts its key — no test-only branch. In
+tests, the license terms are injected by spying on `LicenseDecryptService.prototype.decrypt` (see `setTestLicenseTerms`),
+so `License.ts` gets test terms without any test hatch in production code.
 In e2e tests (which mock `LicenseTermsService`), use the helpers from `test-helper`:
 
 - `setTestLicenseTerms(app, terms, { expired })` — override the license at runtime (no restart)
