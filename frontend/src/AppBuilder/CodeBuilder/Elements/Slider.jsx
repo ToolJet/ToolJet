@@ -20,8 +20,8 @@ function Slider1(props) {
     skipAutoConditionCheck || styleDefinition?.auto?.value === '{{false}}'
       ? false
       : styleDefinition?.auto?.value === '{{true}}'
-        ? true
-        : false;
+      ? true
+      : false;
   useEffect(() => {
     setSliderValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps

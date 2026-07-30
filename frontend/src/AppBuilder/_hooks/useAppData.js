@@ -96,13 +96,13 @@ const useAppData = (
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
   const user = useStore((state) => state.user);
-  // Forwarded to the backend so a module-embedding parent app can grant view access
-  // (see appVersion.service.js getAll/getModuleVersionData).
+  // The top-level app containing this module instance — used to let the backend verify this
+  // module read is happening in the context of an app the user can edit, even when they have
+  // no standalone module permission. Forwarded to appVersion.service.js getAll/getModuleVersionData.
   const parentAppId = useStore((state) => state.appStore?.modules?.['canvas']?.app?.appId);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
   const setPages = useStore((state) => state.setPages);
-  const setLinkedApps = useStore((state) => state.setLinkedApps);
   const setPageSettings = useStore((state) => state.setPageSettings);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
   const setFolders = useStore((state) => state.queryFolders?.setFolders);
@@ -607,7 +607,6 @@ const useAppData = (
         );
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
-        setLinkedApps(appData.linkedApps ?? {}, moduleId);
         if (!moduleMode) {
           updateFeatureAccess();
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
@@ -962,7 +961,6 @@ const useAppData = (
         setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
-        setLinkedApps(appData.linkedApps ?? {}, moduleId);
 
         // Refresh the module-definition cache so unpinned ModuleViewers pick up
         // post-pull / post-version-switch content without a full page refresh.

@@ -346,8 +346,8 @@ export const TagsRenderer = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-          ? []
-          : {},
+        ? []
+        : {},
     [isMulti, defaultOptionsList]
   );
 

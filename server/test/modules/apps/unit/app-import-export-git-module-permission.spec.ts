@@ -28,6 +28,7 @@ describe('AppImportExportService (EE) — assertModuleCreatePermission', () => {
       entityManager as any, // entityManager
       {} as any, // appsRepository
       {} as any, // transactionLogger
+      {} as any, // gitSyncConfigsUtilService
       abilityService as any // abilityService
     );
   });

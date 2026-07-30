@@ -5,13 +5,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  createUser,
-  initTestApp,
-  closeTestApp,
-  createApplication,
-  createApplicationVersion,
-} from 'test-helper';
+import { createUser, initTestApp, closeTestApp, createApplication, createApplicationVersion } from 'test-helper';
 import { APP_TYPES } from '@modules/apps/constants';
 
 jest.setTimeout(120_000);

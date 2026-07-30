@@ -26,6 +26,10 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
 
   folderCreate: false,
   folderDelete: false,
+  workflowFolderCreate: false,
+  workflowFolderDelete: false,
+  moduleFolderCreate: false,
+  moduleFolderDelete: false,
   orgConstantCRUD: false,
   tjdbCRUD: false,
   orgVariableCRUD: false,

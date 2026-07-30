@@ -447,8 +447,8 @@ const DynamicForm = ({
         return {
           getter: key,
           options: isRenderedAsQueryEditor
-            ? (options?.[key] ?? schema?.defaults?.[key])
-            : (options?.[key]?.value ?? schema?.defaults?.[key]?.value),
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
           optionchanged,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
@@ -485,8 +485,8 @@ const DynamicForm = ({
         return {
           getter: key,
           options: isRenderedAsQueryEditor
-            ? (options?.[key] ?? schema?.defaults?.[key])
-            : (options?.[key]?.value ?? schema?.defaults?.[key]?.value),
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
           optionchanged,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
@@ -591,8 +591,8 @@ const DynamicForm = ({
           cyLabel: label
             ? generateCypressDataCy(label)
             : key
-              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
-              : '',
+            ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+            : '',
           disabled,
           delayOnChange: false,
           renderCopilot,
@@ -816,7 +816,7 @@ const DynamicForm = ({
           ].includes(type);
           // shouldRenderTheProperty - key is used for Dynamic connection parameters
           const enabled = shouldRenderTheProperty
-            ? (selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false)
+            ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
             : true;
 
           // const elementProps = getElementProps({

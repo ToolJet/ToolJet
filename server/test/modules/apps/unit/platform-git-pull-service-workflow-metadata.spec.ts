@@ -12,6 +12,7 @@ import { AppsUtilService } from '@ee/apps/util.service';
 import { GitOperationsUtil } from '@ee/app-git/shared/git-operations.util';
 import { TransactionLogger } from '@modules/logging/service';
 import { GitSyncConfigsUtilService } from '@ee/git-sync-configs/util.service';
+import { SourceControlProviderService as GitSyncProviderService } from '@ee/git-sync/source-control-provider';
 import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 
@@ -47,6 +48,7 @@ describe('PlatformGitPullService.applyGitMetadataToStubApp — workflow support'
         { provide: AppsUtilService, useValue: {} },
         { provide: GitSyncConfigsUtilService, useValue: {} },
         { provide: GitObjectCacheService, useValue: {} },
+        { provide: GitSyncProviderService, useValue: {} },
       ],
     }).compile();
 

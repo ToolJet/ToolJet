@@ -38,8 +38,8 @@ export const Code = ({
 
   let initialValue = getInitialValue();
   const rawParamMeta = accordian
-    ? (customMeta ?? componentMeta[paramType]?.[param.name])
-    : (customMeta ?? componentMeta[paramType][param.name]);
+    ? customMeta ?? componentMeta[paramType]?.[param.name]
+    : customMeta ?? componentMeta[paramType][param.name];
   const isFlexContainer = component?.component?.component === 'FlexContainer';
   const paramMeta = isFlexContainer ? getFlexAxisAwareMeta(rawParamMeta, component, param.name) : rawParamMeta;
   const displayName = paramMeta.displayName || param.name;

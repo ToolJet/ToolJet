@@ -15,8 +15,12 @@ describe('PrivateAppAuthGuard', () => {
   let mockOrgRepository: { findOne: jest.Mock };
   let mockAppUtilService: object;
 
-  const makeContext = (slug: string, headers: Record<string, string> = {}): ExecutionContext => {
-    const request: Record<string, any> = { params: { slug }, headers: { ...headers } };
+  const makeContext = (
+    slug: string,
+    headers: Record<string, string> = {},
+    query: Record<string, string> = {}
+  ): ExecutionContext => {
+    const request: Record<string, any> = { params: { slug }, headers: { ...headers }, query: { ...query } };
     return {
       switchToHttp: () => ({ getRequest: () => request }),
     } as unknown as ExecutionContext;
@@ -69,22 +73,31 @@ describe('PrivateAppAuthGuard', () => {
       const ctx = makeContext('my-app', { 'tj-workspace-id': 'org-uuid-1' });
       await guard.canActivate(ctx);
 
-      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app', 'org-uuid-1', undefined, undefined);
+      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith(
+        'my-app',
+        'org-uuid-1',
+        undefined,
+        undefined,
+        undefined
+      );
       expect(mockAppRepository.findAppBySlug).not.toHaveBeenCalled();
     });
 
-    it('forwards x-branch-id to findBySlug when present', async () => {
+    it('forwards branch_id query param to findBySlug when present', async () => {
       const app = makeApp();
       mockAppRepository.findBySlug.mockResolvedValue(app);
       mockOrgRepository.findOne.mockResolvedValue(makeOrg());
 
-      const ctx = makeContext('my-app', {
-        'tj-workspace-id': 'org-uuid-1',
-        'x-branch-id': 'branch-uuid-1',
-      });
+      const ctx = makeContext('my-app', { 'tj-workspace-id': 'org-uuid-1' }, { branch_id: 'branch-uuid-1' });
       await guard.canActivate(ctx);
 
-      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app', 'org-uuid-1', undefined, 'branch-uuid-1');
+      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith(
+        'my-app',
+        'org-uuid-1',
+        undefined,
+        undefined,
+        'branch-uuid-1'
+      );
       expect(mockAppRepository.findAppBySlug).not.toHaveBeenCalled();
     });
 
@@ -109,10 +122,10 @@ describe('PrivateAppAuthGuard', () => {
       mockAppRepository.findByAppId.mockResolvedValue(app);
       mockOrgRepository.findOne.mockResolvedValue(makeOrg());
 
-      const ctx = makeContext('app-uuid-1', { 'tj-workspace-id': 'org-uuid-1' });
+      const ctx = makeContext('123e4567-e89b-12d3-a456-426614174000', { 'tj-workspace-id': 'org-uuid-1' });
       await guard.canActivate(ctx);
 
-      expect(mockAppRepository.findByAppId).toHaveBeenCalledWith('app-uuid-1');
+      expect(mockAppRepository.findByAppId).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
     });
   });
 
@@ -135,10 +148,10 @@ describe('PrivateAppAuthGuard', () => {
       mockAppRepository.findByAppId.mockResolvedValue(app);
       mockOrgRepository.findOne.mockResolvedValue(makeOrg());
 
-      const ctx = makeContext('app-uuid-1');
+      const ctx = makeContext('123e4567-e89b-12d3-a456-426614174000');
       await guard.canActivate(ctx);
 
-      expect(mockAppRepository.findByAppId).toHaveBeenCalledWith('app-uuid-1');
+      expect(mockAppRepository.findByAppId).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
     });
 
     it('throws NotFoundException when all three lookups miss', async () => {
@@ -156,7 +169,7 @@ describe('PrivateAppAuthGuard', () => {
       mockAppRepository.findAppBySlug.mockResolvedValue(app);
       mockOrgRepository.findOne.mockResolvedValue(makeOrg({ id: 'real-org-uuid' }));
 
-      const req: Record<string, any> = { params: { slug: 'my-app' }, headers: {} };
+      const req: Record<string, any> = { params: { slug: 'my-app' }, headers: {}, query: {} };
       const ctx = {
         switchToHttp: () => ({ getRequest: () => req }),
       } as unknown as ExecutionContext;

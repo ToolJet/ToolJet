@@ -291,10 +291,8 @@ describe('AppsRepository', () => {
   // on the caller (editableAppsId) already being org-scoped upstream.
   describe('isModuleEmbeddedInApp() [gap]', () => {
     it('returns true for a parentAppId belonging to a different organization than the module', async () => {
-      let nestApp: INestApplication;
-      let appsRepository: AppsRepository;
-      ({ app: nestApp } = await initTestApp());
-      appsRepository = nestApp.get<AppsRepository>(AppsRepository);
+      const { app: nestApp } = await initTestApp();
+      const appsRepository = nestApp.get<AppsRepository>(AppsRepository);
 
       const moduleOrgAdmin = await createAdmin(nestApp, 'apps-repo-crossorg-module@tooljet.io');
       const otherOrgAdmin = await createAdmin(nestApp, 'apps-repo-crossorg-parent@tooljet.io');

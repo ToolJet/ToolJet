@@ -166,25 +166,25 @@ export const FileInput = (props) => {
       borderColor: hasError
         ? errTextColor
         : borderColor !== '#CCD1D5'
-          ? borderColor
-          : disabledState
-            ? 'var(--borders-disabled-on-white)'
-            : 'var(--borders-default)',
+        ? borderColor
+        : disabledState
+        ? 'var(--borders-disabled-on-white)'
+        : 'var(--borders-default)',
       '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
       boxShadow,
       backgroundColor:
         backgroundColor !== '#fff'
           ? backgroundColor
           : disabledState || isLoading
-            ? darkMode
-              ? 'var(--surfaces-app-bg-default)'
-              : 'var(--surfaces-surface-03)'
-            : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
       color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
         ? textColor
         : disabledState
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
       display: 'flex',
       alignItems: 'center',
       overflow: 'visible',
@@ -230,8 +230,8 @@ export const FileInput = (props) => {
     selectedFiles.length === 0
       ? placeholder
       : selectedFiles.length === 1
-        ? selectedFiles[0].name
-        : `${selectedFiles.length} files selected`;
+      ? selectedFiles[0].name
+      : `${selectedFiles.length} files selected`;
 
   if (!isVisible) return null;
 

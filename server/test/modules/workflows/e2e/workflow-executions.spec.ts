@@ -1671,7 +1671,7 @@ result = pydash.sum_(sorted_numbers)
             email: 'admin@tooljet.io',
             password: 'password',
             firstName: 'Admin',
-            lastName: 'User'
+            lastName: 'User',
           });
 
           const buildNodes = (message: string): WorkflowNode[] => [
@@ -1680,7 +1680,7 @@ result = pydash.sum_(sorted_numbers)
               type: 'input',
               data: { nodeType: 'start', label: 'Start trigger' },
               position: { x: 100, y: 250 },
-              sourcePosition: 'right'
+              sourcePosition: 'right',
             },
             {
               id: 'response-1',
@@ -1689,11 +1689,11 @@ result = pydash.sum_(sorted_numbers)
                 nodeType: 'response',
                 label: 'Response',
                 code: `return { message: "${message}" }`,
-                nodeName: 'response1'
+                nodeName: 'response1',
               },
               position: { x: 400, y: 250 },
-              targetPosition: 'left'
-            }
+              targetPosition: 'left',
+            },
           ];
 
           const edges: WorkflowEdge[] = [
@@ -1701,35 +1701,38 @@ result = pydash.sum_(sorted_numbers)
               id: 'edge-1',
               source: 'start-1',
               target: 'response-1',
-              type: 'workflow'
-            }
+              type: 'workflow',
+            },
           ];
 
           const { app: workflow, appVersion: releasedVersion } = await createCompleteWorkflow(app, user, {
             name: 'Released Version Workflow',
             nodes: buildNodes('released'),
             edges,
-            queries: []
+            queries: [],
           });
 
           const draftVersion = await createWorkflowApplicationVersion(app, workflow, {
             definition: buildWorkflowDefinition({
               nodes: buildNodes('draft'),
               edges,
-              queries: []
-            })
+              queries: [],
+            }),
           });
 
           await releaseWorkflowVersion(workflow, releasedVersion);
 
           const execution = await executeWorkflow(app, workflow, user, {
-            environmentId: releasedVersion.currentEnvironmentId
+            environmentId: releasedVersion.currentEnvironmentId,
           });
 
           expect(execution.appVersionId).toBe(releasedVersion.id);
           expect(execution.appVersionId).not.toBe(draftVersion.id);
 
-          const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+          const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(
+            app,
+            execution.id
+          );
           expect(workflowExecution.executed).toBe(true);
 
           const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
@@ -2005,7 +2008,7 @@ result = pydash.sum_(sorted_numbers)
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
+            sourcePosition: 'right',
           },
           {
             id: 'response-1',
@@ -2014,16 +2017,14 @@ result = pydash.sum_(sorted_numbers)
               nodeType: 'response',
               label: 'Response',
               code: 'return { message: "Workflow executed successfully" }',
-              nodeName: 'response1'
+              nodeName: 'response1',
             },
             position: { x: 400, y: 250 },
-            targetPosition: 'left'
-          }
+            targetPosition: 'left',
+          },
         ];
 
-        const edges: WorkflowEdge[] = [
-          { id: 'edge-1', source: 'start-1', target: 'response-1', type: 'workflow' }
-        ];
+        const edges: WorkflowEdge[] = [{ id: 'edge-1', source: 'start-1', target: 'response-1', type: 'workflow' }];
 
         return await createCompleteWorkflow(app, user, { name, nodes, edges, queries: [] });
       };
@@ -2050,29 +2051,34 @@ result = pydash.sum_(sorted_numbers)
       };
 
       const triggerViaQuery = (workflow: any, workflowVersion: any, workflowQuery: any) =>
-        request(app.getHttpServer())
-          .post(`/api/workflow_executions/${workflow.id}/trigger`)
-          .send({
-            appId: workflow.id,
-            appVersionId: workflowVersion.id,
-            executeUsing: 'app',
-            queryId: workflowQuery.id,
-            environmentId: workflowVersion.currentEnvironmentId,
-            syncExecution: true,
-          });
+        request(app.getHttpServer()).post(`/api/workflow_executions/${workflow.id}/trigger`).send({
+          appId: workflow.id,
+          appVersionId: workflowVersion.id,
+          executeUsing: 'app',
+          queryId: workflowQuery.id,
+          environmentId: workflowVersion.currentEnvironmentId,
+          syncExecution: true,
+        });
 
       it('allows an unauthenticated trigger when the embedding front-end app is public', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
         user.organizationId = user.organizationId || user.defaultOrganizationId;
 
-        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(user, 'Public App Target Workflow');
+        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(
+          user,
+          'Public App Target Workflow'
+        );
 
-        const hostApp = await createApplication(app, { name: 'Public host app', user, isPublic: true, type: 'front-end' }, false);
+        const hostApp = await createApplication(
+          app,
+          { name: 'Public host app', user, isPublic: true, type: 'front-end' },
+          false
+        );
         const hostVersion = await createApplicationVersion(app, hostApp as any);
         const workflowQuery = await embedWorkflowQuery(hostVersion, workflow, workflowVersion);
 
@@ -2090,13 +2096,20 @@ result = pydash.sum_(sorted_numbers)
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
         user.organizationId = user.organizationId || user.defaultOrganizationId;
 
-        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(user, 'Private App Target Workflow');
+        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(
+          user,
+          'Private App Target Workflow'
+        );
 
-        const hostApp = await createApplication(app, { name: 'Private host app', user, isPublic: false, type: 'front-end' }, false);
+        const hostApp = await createApplication(
+          app,
+          { name: 'Private host app', user, isPublic: false, type: 'front-end' },
+          false
+        );
         const hostVersion = await createApplicationVersion(app, hostApp as any);
         const workflowQuery = await embedWorkflowQuery(hostVersion, workflow, workflowVersion);
 
@@ -2110,19 +2123,30 @@ result = pydash.sum_(sorted_numbers)
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
         user.organizationId = user.organizationId || user.defaultOrganizationId;
 
-        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(user, 'Module Target Workflow');
+        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(
+          user,
+          'Module Target Workflow'
+        );
 
         // Module app: never marked public itself -- only the public parent makes it reachable.
-        const moduleApp = await createApplication(app, { name: 'Embedded module', user, isPublic: false, type: 'module' }, false);
+        const moduleApp = await createApplication(
+          app,
+          { name: 'Embedded module', user, isPublic: false, type: 'module' },
+          false
+        );
         const moduleVersion = await createApplicationVersion(app, moduleApp as any);
         const workflowQuery = await embedWorkflowQuery(moduleVersion, workflow, workflowVersion);
 
         // Parent app: public, embeds the module via a ModuleViewer component.
-        const parentApp = await createApplication(app, { name: 'Public parent app', user, isPublic: true, type: 'front-end' }, false);
+        const parentApp = await createApplication(
+          app,
+          { name: 'Public parent app', user, isPublic: true, type: 'front-end' },
+          false
+        );
         const parentVersion = await createApplicationVersion(app, parentApp as any);
         await markVersionAsReleased(parentApp.id, parentVersion.id);
 
@@ -2153,13 +2177,20 @@ result = pydash.sum_(sorted_numbers)
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
         user.organizationId = user.organizationId || user.defaultOrganizationId;
 
-        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(user, 'Orphan Module Target Workflow');
+        const { app: workflow, appVersion: workflowVersion } = await buildTargetWorkflow(
+          user,
+          'Orphan Module Target Workflow'
+        );
 
-        const moduleApp = await createApplication(app, { name: 'Standalone module', user, isPublic: false, type: 'module' }, false);
+        const moduleApp = await createApplication(
+          app,
+          { name: 'Standalone module', user, isPublic: false, type: 'module' },
+          false
+        );
         const moduleVersion = await createApplicationVersion(app, moduleApp as any);
         const workflowQuery = await embedWorkflowQuery(moduleVersion, workflow, workflowVersion);
 

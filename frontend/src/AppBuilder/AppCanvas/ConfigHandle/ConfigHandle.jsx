@@ -204,8 +204,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-              ? '-26px'
-              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+            ? '-26px'
+            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',

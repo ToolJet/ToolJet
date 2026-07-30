@@ -367,9 +367,9 @@ export class VersionUtilService implements IVersionUtilService {
       }
     }
 
-    return dbTransactionWrap((manager: EntityManager) =>
-      this.buildVersionFromParent(app, user, versionCreateDto, branchId, manager)
-    );
+    const buildVersion = (mgr: EntityManager) =>
+      this.buildVersionFromParent(app, user, versionCreateDto, branchId, mgr);
+    return manager ? buildVersion(manager) : dbTransactionWrap(buildVersion);
   }
 
   /**

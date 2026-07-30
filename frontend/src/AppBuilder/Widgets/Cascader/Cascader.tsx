@@ -104,8 +104,8 @@ export const Cascader = ({
   const rawSource = !advanced
     ? properties.options
     : isExpectedDataType(properties.data, 'array')
-      ? properties.data
-      : [];
+    ? properties.data
+    : [];
   const tree = normalizeTree(rawSource, getResolvedValue);
   const shouldShowOptionsLoading = Boolean(advanced && optionsLoadingState);
 
@@ -174,15 +174,15 @@ export const Cascader = ({
     selectedTextColor !== '#1B1F24'
       ? selectedTextColor
       : interactionBlocked
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)';
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)';
 
   const menuWidthStyle =
     menuWidthMode === 'custom'
       ? `${parseFloat(menuCustomWidth) || 256}px`
       : menuWidthMode === 'matchContent'
-        ? 'auto'
-        : 'var(--radix-popover-trigger-width)';
+      ? 'auto'
+      : 'var(--radix-popover-trigger-width)';
   const shouldOverridePlaceholderTextColor =
     typeof placeholderTextColor === 'string' &&
     placeholderTextColor.length > 0 &&

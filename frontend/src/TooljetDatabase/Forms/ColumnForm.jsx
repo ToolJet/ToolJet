@@ -448,8 +448,8 @@ const ColumnForm = ({
                       dataType === 'serial'
                         ? 'Auto-generated'
                         : foreignKeyDefaultValue?.value === null
-                          ? 'Null'
-                          : 'Enter a value'
+                        ? 'Null'
+                        : 'Enter a value'
                     }
                     onChange={(value) => {
                       setForeignKeyDefaultValue(value);
@@ -481,12 +481,12 @@ const ColumnForm = ({
               dataType?.value === 'serial'
                 ? 'Foreign key relation cannot be created for serial type column'
                 : dataType?.value === 'boolean'
-                  ? 'Foreign key relation cannot be created for boolean type column'
-                  : dataType?.value === 'timestamp with time zone'
-                    ? 'Foreign key relation cannot be created with this data type'
-                    : isJsonbColumnType
-                      ? 'Foreign key relation cannot be created for jsonb type column'
-                      : 'Fill in column details to create a foreign key relation'
+                ? 'Foreign key relation cannot be created for boolean type column'
+                : dataType?.value === 'timestamp with time zone'
+                ? 'Foreign key relation cannot be created with this data type'
+                : isJsonbColumnType
+                ? 'Foreign key relation cannot be created for jsonb type column'
+                : 'Fill in column details to create a foreign key relation'
             }
             placement="top"
             tooltipClassName="tootip-table"
@@ -618,10 +618,10 @@ const ColumnForm = ({
               dataType?.value === 'boolean'
                 ? 'Unique constraint cannot be added for boolean type column'
                 : dataType?.value === 'timestamp with time zone'
-                  ? 'Unique constraint cannot be added for this type column'
-                  : isJsonbColumnType
-                    ? 'Unique constraint cannot be added for JSON type column'
-                    : ''
+                ? 'Unique constraint cannot be added for this type column'
+                : isJsonbColumnType
+                ? 'Unique constraint cannot be added for JSON type column'
+                : ''
             }
             placement="top"
             tooltipClassName="tootip-table"

@@ -10,8 +10,6 @@ import {
   findEntityOrFail,
 } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { AuditLog } from 'src/entities/audit_log.entity';
-import { MODULES } from 'src/modules/app/constants/modules';
 // EE-only import: resolves the real, edition-aware DI token registered by
 // DataQueriesModule under edition 'ee' (SubModule.getProviders dynamically imports this
 // exact class and registers it as its own provider token). Importing the CE base class

@@ -49,8 +49,8 @@ const ValidationBar = ({
           {minSize > 0 && maxSize < Infinity
             ? `${formatFileSize(minSize)} to ${formatFileSize(maxSize)}` // Min and Max
             : maxSize < Infinity && maxSize > 0
-              ? `Up to ${formatFileSize(maxSize)}` // Only Max
-              : `Min ${formatFileSize(minSize)}`}
+            ? `Up to ${formatFileSize(maxSize)}` // Only Max
+            : `Min ${formatFileSize(minSize)}`}
         </span>
       )}
 

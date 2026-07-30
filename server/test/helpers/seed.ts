@@ -310,6 +310,21 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
           });
           await appsGroupRepo.save(appsPerm);
         }
+
+        // Mirrors the APP block above but for workflow-type apps — without this row,
+        // `permission.appsGroupPermissions` is undefined for the default WORKFLOWS-type
+        // GranularPermissions row created below, so canEdit/canView reads as undefined
+        // instead of a real boolean for admin/builder/end-user default groups.
+        if (resourceType === ResourceType.WORKFLOWS) {
+          const workflowsPerm = appsGroupRepo.create({
+            granularPermissionId: savedGranular.id,
+            appType: APP_TYPES.WORKFLOW,
+            canEdit: isAdmin,
+            canView: true,
+            hideFromDashboard: false,
+          });
+          await appsGroupRepo.save(workflowsPerm);
+        }
       }
     }
   }
@@ -458,7 +473,11 @@ export async function grantAppPermission(
  * Grants module-level permissions to a group using the granular permissions system.
  * Creates GranularPermission (type=MODULE) -> AppsGroupPermissions (appType=MODULE), scoped to all modules.
  */
-export async function grantModulePermission(nestApp: INestApplication, groupId: string, permissions: PermissionFlags): Promise<void> {
+export async function grantModulePermission(
+  nestApp: INestApplication,
+  groupId: string,
+  permissions: PermissionFlags
+): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const granularRepo = ds.getRepository(GranularPermissions);
   const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
