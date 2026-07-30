@@ -1,14 +1,17 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  GoneException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User } from '@entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { EntityManager } from 'typeorm';
-import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
-import {
-  isSuperAdmin,
-  generateNextNameAndSlug,
-  validatePasswordDomain,
-} from 'src/helpers/utils.helper';
+import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
+import { isSuperAdmin, generateNextNameAndSlug, validatePasswordDomain } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Response } from 'express';
@@ -66,9 +69,16 @@ export class AuthService implements IAuthService {
       if (!isPasswordMatching) {
         throw new UnauthorizedException('Invalid credentials');
       }
+      if (user.passwordExpiry && new Date() > user.passwordExpiry) {
+        throw new ForbiddenException({ message: 'PASSWORD_EXPIRED', email: user.email });
+      }
       organizationId = undefined;
     } else {
       user = await this.authUtilService.validateLoginUser(email, password, organizationId);
+
+      if (user.passwordExpiry && new Date() > user.passwordExpiry) {
+        throw new ForbiddenException({ message: 'PASSWORD_EXPIRED', email: user.email });
+      }
     }
 
     const allowPersonalWorkspace =
@@ -154,6 +164,7 @@ export class AuthService implements IAuthService {
         ...(shouldUpdateDefaultOrgId && { defaultOrganizationId: organization?.id }),
         passwordRetryCount: 0,
         forgotPasswordToken: null,
+        forgotPasswordTokenExpiry: null,
       };
 
       await this.userRepository.updateOne(user.id, updateData, manager);
@@ -219,42 +230,79 @@ export class AuthService implements IAuthService {
 
   async resetPassword(token: string, password: string) {
     validatePasswordServer(password);
-    const user = await this.userRepository.getUser({ forgotPasswordToken: token });
+
+    // Try forgot password token first
+    let user = await this.userRepository.getUser({ forgotPasswordToken: token });
+    let isExpiredPasswordFlow = false;
+
+    if (!user) {
+      // Try expired password token (no link expiry for this flow)
+      user = await this.userRepository.getUser({ expiredPasswordToken: token });
+      isExpiredPasswordFlow = true;
+    }
+
     if (!user) {
       throw new NotFoundException(
         'Invalid Reset Password URL. Please ensure you have the correct URL for resetting your password.'
       );
-    } else {
-      await this.userRepository.updateOne(user.id, {
-        password,
-        forgotPasswordToken: null,
-        passwordRetryCount: 0,
-      });
-      const auditLogEntry = {
-        userId: user.id,
-        organizationId: user.defaultOrganizationId,
-        resourceId: user.id,
-        resourceName: user.email,
-      };
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     }
+
+    if (!isExpiredPasswordFlow && user.forgotPasswordTokenExpiry && new Date() > user.forgotPasswordTokenExpiry) {
+      throw new GoneException('Reset password link has expired. Please request a new one.');
+    }
+
+    if (isExpiredPasswordFlow) {
+      const isSamePassword = await bcrypt.compare(password, user.password);
+      if (isSamePassword) {
+        throw new BadRequestException('New password must be different from your current password.');
+      }
+    }
+
+    const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+    const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
+      ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+      : null;
+
+    await this.userRepository.updateOne(user.id, {
+      password,
+      forgotPasswordToken: null,
+      forgotPasswordTokenExpiry: null,
+      ...(isExpiredPasswordFlow && { expiredPasswordToken: null }),
+      passwordRetryCount: 0,
+      passwordExpiry,
+    });
+
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.defaultOrganizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+    });
   }
 
-  async forgotPassword(email: string, redirectTo?: string) {
+  async forgotPassword(email: string, redirectTo?: string, orgSlug?: string) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       // No need to throw error - To prevent Username Enumeration vulnerability
       return;
     }
+    if (user.status === USER_STATUS.ARCHIVED) {
+      throw new BadRequestException('You have been archived from this instance. Contact super admin to know more');
+    }
     const forgotPasswordToken = uuid.v4();
-    await this.userRepository.updateOne(user.id, { forgotPasswordToken });
-    const auditLogEntry = {
+    const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+    const forgotPasswordTokenExpiry =
+      !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0 ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000) : null;
+
+    await this.userRepository.updateOne(user.id, { forgotPasswordToken, forgotPasswordTokenExpiry });
+
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.defaultOrganizationId,
       resourceId: user.id,
       resourceName: user.email,
-    };
-    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
+    });
+
     this.eventEmitter.emit('emailEvent', {
       type: EMAIL_EVENTS.SEND_PASSWORD_RESET_EMAIL,
       payload: {
@@ -262,7 +310,54 @@ export class AuthService implements IAuthService {
         token: forgotPasswordToken,
         firstName: user.firstName,
         organizationId: user.defaultOrganizationId,
+        forgotPasswordTokenExpiry,
         ...(redirectTo && { redirectTo }),
+        ...(orgSlug && { orgSlug }),
+      },
+    });
+  }
+
+  async verifyResetToken(token: string): Promise<{ valid: boolean; reason?: string }> {
+    // Check forgot password token (has expiry)
+    const userByForgot = await this.userRepository.getUser({ forgotPasswordToken: token });
+    if (userByForgot) {
+      if (userByForgot.forgotPasswordTokenExpiry && new Date() > userByForgot.forgotPasswordTokenExpiry) {
+        return { valid: false, reason: 'expired' };
+      }
+      return { valid: true };
+    }
+
+    // Check expired password token (no expiry)
+    const userByExpired = await this.userRepository.getUser({ expiredPasswordToken: token });
+    if (userByExpired) return { valid: true };
+
+    // Token not found — already used or never existed
+    return { valid: false, reason: 'invalid' };
+  }
+
+  async passwordExpiredReset(email: string, redirectTo?: string, orgSlug?: string): Promise<void> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      // Prevent username enumeration
+      return;
+    }
+
+    // Re-use existing token if present to support re-send without invalidating the link
+    let token = user.expiredPasswordToken;
+    if (!token) {
+      token = uuid.v4();
+      await this.userRepository.updateOne(user.id, { expiredPasswordToken: token });
+    }
+
+    this.eventEmitter.emit('emailEvent', {
+      type: EMAIL_EVENTS.SEND_PASSWORD_EXPIRED_RESET_EMAIL,
+      payload: {
+        to: email,
+        token,
+        firstName: user.firstName,
+        organizationId: user.defaultOrganizationId,
+        ...(redirectTo && { redirectTo }),
+        ...(orgSlug && { orgSlug }),
       },
     });
   }
