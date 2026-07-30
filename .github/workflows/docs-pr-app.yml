@@ -13,11 +13,11 @@ permissions:
 
 jobs:
   create-render-deploy:
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-preview-render' || github.event.label.name == 'create-prod-render') }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-preview-docs-app' || github.event.label.name == 'create-prod-docs-app') }}
     runs-on: ubuntu-latest
     env:
-      DEPLOY_SUFFIX: ${{ github.event.label.name == 'create-preview-render' && 'preview' || 'prod' }}
-      BUILD_LTS: ${{ github.event.label.name == 'create-preview-render' && 'true' || 'false' }}
+      DEPLOY_SUFFIX: ${{ github.event.label.name == 'create-preview-docs-app' && 'preview' || 'prod' }}
+      BUILD_LTS: ${{ github.event.label.name == 'create-preview-docs-app' && 'true' || 'false' }}
       PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       PR_REPO_URL: ${{ github.event.pull_request.head.repo.git_url }}
       RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
@@ -99,14 +99,14 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-${{ env.DEPLOY_SUFFIX }}-render']
+              labels: ['active-${{ env.DEPLOY_SUFFIX }}-docs-app']
             })
 
   suspend-render-deploy:
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'suspend-preview-render' || github.event.label.name == 'suspend-prod-render') }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'suspend-preview-docs-app' || github.event.label.name == 'suspend-prod-docs-app') }}
     runs-on: ubuntu-latest
     env:
-      DEPLOY_SUFFIX: ${{ github.event.label.name == 'suspend-preview-render' && 'preview' || 'prod' }}
+      DEPLOY_SUFFIX: ${{ github.event.label.name == 'suspend-preview-docs-app' && 'preview' || 'prod' }}
       RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
     steps:
@@ -135,17 +135,17 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-${{ env.DEPLOY_SUFFIX }}-render'
+                name: 'active-${{ env.DEPLOY_SUFFIX }}-docs-app'
               })
             } catch (e) {
               console.log(e)
             }
 
   resume-render-deploy:
-    if: ${{ github.event.action == 'unlabeled' && (github.event.label.name == 'suspend-preview-render' || github.event.label.name == 'suspend-prod-render') }}
+    if: ${{ github.event.action == 'unlabeled' && (github.event.label.name == 'suspend-preview-docs-app' || github.event.label.name == 'suspend-prod-docs-app') }}
     runs-on: ubuntu-latest
     env:
-      DEPLOY_SUFFIX: ${{ github.event.label.name == 'suspend-preview-render' && 'preview' || 'prod' }}
+      DEPLOY_SUFFIX: ${{ github.event.label.name == 'suspend-preview-docs-app' && 'preview' || 'prod' }}
       RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
     steps:
@@ -173,14 +173,14 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-${{ env.DEPLOY_SUFFIX }}-render']
+              labels: ['active-${{ env.DEPLOY_SUFFIX }}-docs-app']
             })
 
   destroy-render-deploy:
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'destroy-preview-render' || github.event.label.name == 'destroy-prod-render') }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'destroy-preview-docs-app' || github.event.label.name == 'destroy-prod-docs-app') }}
     runs-on: ubuntu-latest
     env:
-      DEPLOY_SUFFIX: ${{ github.event.label.name == 'destroy-preview-render' && 'preview' || 'prod' }}
+      DEPLOY_SUFFIX: ${{ github.event.label.name == 'destroy-preview-docs-app' && 'preview' || 'prod' }}
       RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
     steps:
@@ -205,9 +205,9 @@ jobs:
         with:
           script: |
             for (const name of [
-              'destroy-${{ env.DEPLOY_SUFFIX }}-render',
-              'suspend-${{ env.DEPLOY_SUFFIX }}-render',
-              'active-${{ env.DEPLOY_SUFFIX }}-render'
+              'destroy-${{ env.DEPLOY_SUFFIX }}-docs-app',
+              'suspend-${{ env.DEPLOY_SUFFIX }}-docs-app',
+              'active-${{ env.DEPLOY_SUFFIX }}-docs-app'
             ]) {
               try {
                 await github.rest.issues.removeLabel({
@@ -249,8 +249,8 @@ jobs:
         with:
           script: |
             for (const name of [
-              'destroy-preview-render', 'suspend-preview-render', 'active-preview-render',
-              'destroy-prod-render', 'suspend-prod-render', 'active-prod-render'
+              'destroy-preview-docs-app', 'suspend-preview-docs-app', 'active-preview-docs-app',
+              'destroy-prod-docs-app', 'suspend-prod-docs-app', 'active-prod-docs-app'
             ]) {
               try {
                 await github.rest.issues.removeLabel({
