@@ -328,7 +328,8 @@ export default function AppCard({
   }
   const isStub = app?.app_versions?.[0]?.is_stub;
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
-  const isUnsynced = wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced && appType !== 'workflow';
+  const isUnsynced =
+    isGitSyncConfigured && wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced && appType !== 'workflow';
   return (
     <>
       <ToolTip
