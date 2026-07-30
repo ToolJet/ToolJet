@@ -100,4 +100,4 @@ Context is layered — the closest file to the code you're changing wins:
 | `server/ee/AGENTS.md` | EE-extends-CE rules (in EE submodule) |
 | `frontend/CONTEXT.md` | Frontend glossary + decisions log |
 
-**Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Stale context is worse than no context.
+**Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature. Stale context is worse than no context.
