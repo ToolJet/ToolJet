@@ -237,8 +237,8 @@ export default function AppCard({
             app?.current_version_id === null
               ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
               : !canAccessReleased
-                ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
-                : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+              ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
+              : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
           }
         >
           <button
@@ -267,8 +267,8 @@ export default function AppCard({
                 app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
                   ? '#4C5155'
                   : darkMode
-                    ? '#FDFDFE'
-                    : '#11181C'
+                  ? '#FDFDFE'
+                  : '#11181C'
               }
             />
 
@@ -328,7 +328,8 @@ export default function AppCard({
   }
   const isStub = app?.app_versions?.[0]?.is_stub;
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
-  const isUnsynced = wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced && appType !== 'workflow';
+  const isUnsynced =
+    isGitSyncConfigured && wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced && appType !== 'workflow';
   return (
     <>
       <ToolTip
