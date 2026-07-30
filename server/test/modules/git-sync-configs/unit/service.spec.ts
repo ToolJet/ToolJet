@@ -221,6 +221,43 @@ describe('GitSyncConfigsService.getOrgGitByOrgId', () => {
   });
 });
 
+// Regression coverage: getOrgGitStatusById (the only endpoint builders can reach —
+// getOrgGitByOrgId is admin-only) never populates envGitProvider/gitHttps/gitLab for an
+// env-config org, so resolveGitType() used to see nothing and wrongly throw "No Git Provider
+// is enabled for the workspace" for every env-configured workspace, admin or builder.
+describe('GitSyncConfigsService.getOrgGitStatusById — env config', () => {
+  beforeEach(() => {
+    delete process.env.WORKSPACE_GIT_CONFIGS;
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
+    (fs.promises.readdir as jest.Mock).mockResolvedValue([`.tj_env.${WORKSPACE_SLUG}`]);
+    (fs.promises.readFile as jest.Mock).mockResolvedValue(tjEnvFileContents(HTTPS_CONFIG));
+  });
+
+  afterEach(() => {
+    delete process.env.WORKSPACE_GIT_CONFIGS;
+    jest.clearAllMocks();
+  });
+
+  it('resolves gitType from the env registry instead of throwing "No Git Provider is enabled"', async () => {
+    const orgGit = {
+      id: 'org-git-id',
+      organizationId: WORKSPACE_ID,
+      useEnvConfig: true,
+      envGitProvider: null, // never persisted for env-config orgs
+      isBranchingEnabled: true,
+      gitHttps: null, // env-config orgs keep no DB row for the active provider
+      gitLab: null,
+    };
+    const { service, registry } = makeService(orgGit);
+    await registry.initialize();
+
+    const result = await service.getOrgGitStatusById(WORKSPACE_ID, WORKSPACE_ID);
+
+    expect(result.git_type).toBe(GITConnectionType.GITHUB_HTTPS);
+    expect(result.is_git_sync_configured).toBe(true);
+  });
+});
+
 // Regression coverage: the phase-2 split introduced a raw `repository.findOrgGitByOrganizationId`
 // read in every public method here, bypassing GitSyncEnvUtilService.ensureResolved entirely. Since
 // ensureResolved is what flips useEnvConfig=true on first touch for a workspace with a valid
