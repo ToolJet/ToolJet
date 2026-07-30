@@ -10,8 +10,18 @@ to: <%= name %>/package.json
     "dev": "tooljet component dev",
     "build": "tooljet component build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@tooljet/custom-component-sdk": "^1.0.0"
+  },
   "devDependencies": {
-    "typescript": "~6.0.2"
+    "typescript": "^5.9.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }

@@ -23,6 +23,8 @@ export interface Manifest {
   components: Record<string, ManifestComponent>;
 }
 
+const TOOLJET_SDK_MODULE = '@tooljet/custom-component-sdk';
+
 // Hook name → prop type mapping
 const HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
   useStateString: 'string',
@@ -37,7 +39,11 @@ export async function generateManifest(projectRoot: string): Promise<Manifest> {
   const entryFile = path.join(projectRoot, 'src/index.ts');
   const tsConfigPath = path.join(projectRoot, 'tsconfig.json');
 
-  const { config } = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
+  const { config, error } = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
+  if (error) {
+    throw new Error(`Invalid tsconfig.json: ${ts.flattenDiagnosticMessageText(error.messageText, '\n')}`);
+  }
+
   const { options } = ts.convertCompilerOptionsFromJson(config.compilerOptions, projectRoot);
 
   const program = ts.createProgram([entryFile], options);
@@ -46,12 +52,28 @@ export async function generateManifest(projectRoot: string): Promise<Manifest> {
   const components: Record<string, ManifestComponent> = {};
 
   // Walk exports of src/index.ts
-  const sourceFile = program.getSourceFile(entryFile)!;
-  const exports = checker.getExportsOfModule(checker.getSymbolAtLocation(sourceFile)!);
+  const sourceFile = program.getSourceFile(entryFile);
+  if (!sourceFile) {
+    throw new Error(`Could not find ${entryFile}. Make sure src/index.ts exists.`);
+  }
+
+  const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
+  if (!moduleSymbol) {
+    throw new Error(`No exports found in ${entryFile}.`);
+  }
+
+  const exports = checker.getExportsOfModule(moduleSymbol);
 
   for (const exportSymbol of exports) {
     const componentName = exportSymbol.getName();
-    const decl = exportSymbol.declarations?.[0];
+
+    // Follow re-exports (`export { X } from './Y'`) to the real declaration —
+    // an aliased symbol's own declarations point at the ExportSpecifier, not the
+    // function body, so there'd be nothing to walk without this resolution.
+    const resolvedSymbol =
+      exportSymbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exportSymbol) : exportSymbol;
+
+    const decl = resolvedSymbol.declarations?.[0];
     if (!decl) continue;
 
     const component = walkComponentDeclaration(decl, checker, componentName);
@@ -64,14 +86,16 @@ export async function generateManifest(projectRoot: string): Promise<Manifest> {
 function walkComponentDeclaration(
   decl: ts.Declaration,
   checker: ts.TypeChecker,
-  name: string
+  componentName: string
 ): ManifestComponent | null {
   // Find the function body of the exported component
   // Walk call expressions matching ToolJet.useStateXxx / useEventCallback / useComponentSettings
-  // Constraint: only top-level calls in function body (not nested)
+  // Constraint: only top-level calls in function body (not inside nested functions/callbacks)
 
   const props: ManifestProp[] = [];
   const events: ManifestEvent[] = [];
+  const propNames = new Set<string>();
+  const eventNames = new Set<string>();
   let defaultWidth = 6;
   let defaultHeight = 5;
 
@@ -83,70 +107,139 @@ function walkComponentDeclaration(
         const obj = expr.expression.getText();
         const method = expr.name.getText();
 
-        if (obj === 'ToolJet' && HOOK_TYPE_MAP[method]) {
-          // ToolJet.useStateString({ name: 'key', initialValue: '...', inspector: 'text', ... })
-          const [optionsArg] = node.arguments;
-          if (ts.isObjectLiteralExpression(optionsArg)) {
-            const name = getStringProp(optionsArg, 'name');
-            const initialValue = getPropNode(optionsArg, 'initialValue');
-            const enumDef = getPropNode(optionsArg, 'enumDefinition'); // useStateEnumeration only
+        if (obj === 'ToolJet' && isToolJetSdkIdentifier(expr.expression, checker)) {
+          if (HOOK_TYPE_MAP[method]) {
+            // ToolJet.useStateString({ name: 'key', initialValue: '...', inspector: 'text', ... })
+            const [optionsArg] = node.arguments;
+            if (ts.isObjectLiteralExpression(optionsArg)) {
+              const name = getStringProp(optionsArg, 'name');
+              const initialValue = getPropNode(optionsArg, 'initialValue');
+              const enumDef = getPropNode(optionsArg, 'enumDefinition'); // useStateEnumeration only
 
-            if (name) {
-              props.push({
-                name,
-                type: HOOK_TYPE_MAP[method],
-                default: initialValue ? evalLiteralNode(initialValue) : undefined,
-                // For enumerations, also record the allowed values
-                ...(enumDef && ts.isArrayLiteralExpression(enumDef)
-                  ? { enumValues: enumDef.elements.map(e => (e as ts.StringLiteral).text) }
-                  : {}),
-              });
+              if (name) {
+                if (propNames.has(name)) {
+                  throw new Error(`Duplicate prop name "${name}" in component "${componentName}".`);
+                }
+                propNames.add(name);
+
+                let enumValues: string[] | undefined;
+                if (enumDef && ts.isArrayLiteralExpression(enumDef)) {
+                  const invalid = enumDef.elements.find((e) => !ts.isStringLiteral(e));
+                  if (invalid) {
+                    throw new Error(
+                      `Invalid enumDefinition in component "${componentName}", prop "${name}": all values must be string literals.`
+                    );
+                  }
+                  enumValues = enumDef.elements.map((e) => (e as ts.StringLiteral).text);
+                }
+
+                props.push({
+                  name,
+                  type: HOOK_TYPE_MAP[method],
+                  default: initialValue ? evalLiteralNode(initialValue) : undefined,
+                  ...(enumValues ? { enumValues } : {}),
+                });
+              }
             }
           }
-        }
 
-        if (obj === 'ToolJet' && method === 'useEventCallback') {
-          // ToolJet.useEventCallback({ name: 'onClick' })
-          const [optionsArg] = node.arguments;
-          if (ts.isObjectLiteralExpression(optionsArg)) {
-            const name = getStringProp(optionsArg, 'name');
+          if (method === 'useEventCallback') {
+            // ToolJet.useEventCallback({ name: 'onClick' })
+            const [optionsArg] = node.arguments;
+            if (ts.isObjectLiteralExpression(optionsArg)) {
+              const name = getStringProp(optionsArg, 'name');
 
-            if (name) events.push({ name });
+              if (name) {
+                if (eventNames.has(name)) {
+                  throw new Error(`Duplicate event name "${name}" in component "${componentName}".`);
+                }
+                eventNames.add(name);
+                events.push({ name });
+              }
+            }
           }
-        }
 
-        if (obj === 'ToolJet' && method === 'useComponentSettings') {
-          // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4 })
-          const [settingsArg] = node.arguments;
-          if (ts.isObjectLiteralExpression(settingsArg)) {
-            for (const prop of settingsArg.properties) {
-              if (ts.isPropertyAssignment(prop)) {
-                const key = (prop.name as ts.Identifier).text;
-                const val = evalLiteralNode(prop.initializer);
+          if (method === 'useComponentSettings') {
+            // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4 })
+            const [settingsArg] = node.arguments;
+            if (ts.isObjectLiteralExpression(settingsArg)) {
+              for (const prop of settingsArg.properties) {
+                if (ts.isPropertyAssignment(prop)) {
+                  const key = (prop.name as ts.Identifier).text;
+                  const val = evalLiteralNode(prop.initializer);
 
-                if (key === 'defaultWidth') defaultWidth = val as number;
-                if (key === 'defaultHeight') defaultHeight = val as number;
+                  if (key === 'defaultWidth') defaultWidth = val as number;
+                  if (key === 'defaultHeight') defaultHeight = val as number;
+                }
               }
             }
           }
         }
       }
     }
-    // Only descend into the top-level function body
-    ts.forEachChild(node, visitor);
+
+    // Don't descend into nested function scopes (callbacks, helper functions) —
+    // only calls made directly in the component's own body count as top-level.
+    if (!isFunctionLike(node)) {
+      ts.forEachChild(node, visitor);
+    }
   };
 
-  ts.forEachChild(decl, visitor);
+  const fnNode = getFunctionLikeNode(decl);
+  const bodyNode = fnNode?.body ?? decl;
 
-  if (props.length === 0 && events.length === 0) return null;
+  ts.forEachChild(bodyNode, visitor);
 
   return {
-    displayName: toDisplayName(name),
+    displayName: toDisplayName(componentName),
     defaultWidth,
     defaultHeight,
     props,
     events,
   };
+}
+
+function isFunctionLike(node: ts.Node): boolean {
+  return (
+    ts.isFunctionDeclaration(node) ||
+    ts.isFunctionExpression(node) ||
+    ts.isArrowFunction(node) ||
+    ts.isMethodDeclaration(node)
+  );
+}
+
+function getFunctionLikeNode(
+  decl: ts.Declaration
+): ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction | undefined {
+  if (ts.isFunctionDeclaration(decl)) return decl;
+
+  if (ts.isVariableDeclaration(decl) && decl.initializer) {
+    if (ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer)) {
+      return decl.initializer;
+    }
+  }
+
+  return undefined;
+}
+
+// Confirms `expr` resolves to the real `ToolJet` binding imported from the SDK,
+// rather than an unrelated local variable/parameter that happens to be named `ToolJet`.
+// Renamed/namespace imports (`import * as TJ`, `import { ToolJet as TJ }`) are not matched —
+// this only guards against shadowing of the literal `ToolJet` name.
+function isToolJetSdkIdentifier(expr: ts.Expression, checker: ts.TypeChecker): boolean {
+  const symbol = checker.getSymbolAtLocation(expr);
+  const decl = symbol?.declarations?.[0];
+  if (!decl || !(ts.isImportSpecifier(decl) || ts.isNamespaceImport(decl))) return false;
+
+  let node: ts.Node = decl;
+  while (node && !ts.isImportDeclaration(node)) node = node.parent;
+
+  return (
+    !!node &&
+    ts.isImportDeclaration(node) &&
+    ts.isStringLiteral(node.moduleSpecifier) &&
+    node.moduleSpecifier.text === TOOLJET_SDK_MODULE
+  );
 }
 
 function getPropNode(obj: ts.ObjectLiteralExpression, key: string): ts.Expression | undefined {
@@ -182,9 +275,27 @@ function evalLiteralNode(node: ts.Node): unknown {
 
   if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
 
-  if (ts.isObjectLiteralExpression(node)) return {};
+  if (node.kind === ts.SyntaxKind.NullKeyword) return null;
 
-  if (ts.isArrayLiteralExpression(node)) return [];
+  if (ts.isObjectLiteralExpression(node)) {
+    const result: Record<string, unknown> = {};
+    for (const prop of node.properties) {
+      if (!ts.isPropertyAssignment(prop)) continue;
 
-  return null;
+      const propName = prop.name;
+      const key = ts.isIdentifier(propName) || ts.isStringLiteral(propName) ? propName.text : undefined;
+      if (key === undefined) continue;
+
+      result[key] = evalLiteralNode(prop.initializer);
+    }
+    return result;
+  }
+
+  if (ts.isArrayLiteralExpression(node)) {
+    return node.elements.map((e) => evalLiteralNode(e));
+  }
+
+  // Non-literal expression (identifier, call, spread, ...) — value can't be
+  // statically determined.
+  return undefined;
 }

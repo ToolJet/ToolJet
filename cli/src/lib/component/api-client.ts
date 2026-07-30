@@ -46,13 +46,17 @@ export class ApiClient {
   }
 
   // POST /api/custom-component-libraries/:id/revisions (multipart)
-  async publishRevision(libraryId: string, distDir: string, message?: string) {
+  async publishRevision(
+    libraryId: string,
+    distDir: string,
+    message?: string
+  ): Promise<{ id: string; version: string; bundleUrl: string }> {
     return uploadToEndpoint(
       `${this.baseUrl}/api/custom-component-libraries/${libraryId}/revisions`,
       this.apiToken,
       distDir,
       message ? { message } : {},
-    );
+    ) as Promise<{ id: string; version: string; bundleUrl: string }>;
   }
 
   // GET /api/profile — for login verification
