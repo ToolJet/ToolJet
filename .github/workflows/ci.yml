@@ -232,7 +232,7 @@ jobs:
       # the `|| 'skipped'` turns that into a real word for ci-gate's PR comment.
       unit: ${{ steps.unit.outcome }}
       e2e: ${{ steps.e2e.outcome || 'skipped' }}
-    container: node:22.15.1-bullseye
+    container: node:22.15.1-bookworm
     services:
       postgres:
         image: postgres:16
@@ -384,7 +384,7 @@ jobs:
       && needs.build-server.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
-    container: node:22.15.1-bullseye
+    container: node:22.15.1-bookworm
     services:
       postgres:
         image: postgres:16
