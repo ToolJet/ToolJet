@@ -43,6 +43,26 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
     throw new Error('Method not implemented.');
   }
 
+  @Get(':id/revisions/:version/files/:file')
+  async serveRevisionFile(
+    @Param('id') id: string,
+    @Param('version') version: string,
+    @Param('file') file: string,
+    res?: any
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Get(':id/dev/:userId/files/:file')
+  async serveDevFile(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Param('file') file: string,
+    res?: any
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   @Get(':id')
   async get(@User() user, @Param('id') id: string): Promise<any> {
     throw new Error('Method not implemented.');

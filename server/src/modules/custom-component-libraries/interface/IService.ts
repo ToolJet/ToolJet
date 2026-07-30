@@ -30,4 +30,11 @@ export interface ICustomComponentLibrariesService {
     files: UploadFiles,
     message?: string
   ): Promise<{ id: string; version: string; bundleUrl: string }>;
+  serveRevisionFile(libraryId: string, version: string, file: string): Promise<ServedFile>;
+  serveDevFile(libraryId: string, userId: string, file: string): Promise<ServedFile>;
+}
+
+export interface ServedFile {
+  data: Buffer;
+  contentType: string;
 }
