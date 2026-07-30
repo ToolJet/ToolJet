@@ -69,7 +69,7 @@ export const dashboardSelector = {
   },
   widgetCardTitle: '[data-cy="widget-card-title"]',
   widgetCardDescription: '[data-cy="widget-card-description"]',
-  homePagePromptTextArea: '[data-cy="prompt-textarea"]',
+  homePagePromptTextArea: '[data-cy="prompt-textarea"] .cm-content',
   promptEnterButton: '[data-cy="prompt-enter-button"]',
   aiIcon: '[data-cy="ai-icon"]',
   homePageIcon: (iconName) => {

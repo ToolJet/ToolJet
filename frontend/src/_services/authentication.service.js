@@ -50,6 +50,8 @@ export const authenticationService = {
   },
   signInViaOAuth,
   resetPassword,
+  verifyResetToken,
+  passwordExpiredReset,
   saveLoginOrganizationId,
   getLoginOrganizationId,
   deleteLoginOrganizationId,
@@ -176,11 +178,11 @@ function activateAccountWithToken(email, password, organizationToken) {
   return fetch(`${config.apiUrl}/onboarding/activate-account-with-token`, requestOptions).then(handleResponse);
 }
 
-function resendInvite(email, organizationId, redirectTo) {
+function resendInvite(email, organizationId, redirectTo, senderName) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, organizationId, redirectTo }),
+    body: JSON.stringify({ email, organizationId, redirectTo, senderName }),
   };
 
   return fetch(`${config.apiUrl}/onboarding/resend-invite`, requestOptions)
@@ -254,11 +256,11 @@ function verifyToken(token, organizationToken) {
     });
 }
 
-function forgotPassword(email, redirectTo) {
+function forgotPassword(email, redirectTo, orgSlug) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }) }),
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }), ...(orgSlug && { orgSlug }) }),
   };
 
   return fetch(`${config.apiUrl}/forgot-password`, requestOptions).then(handleResponse);
@@ -274,6 +276,25 @@ function resetPassword(params) {
   };
 
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
+}
+
+function verifyResetToken(token) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return fetch(`${config.apiUrl}/reset-password/verify-token?token=${encodeURIComponent(token)}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function passwordExpiredReset(email, redirectTo, orgSlug) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }), ...(orgSlug && { orgSlug }) }),
+  };
+  return fetch(`${config.apiUrl}/password-expired-reset`, requestOptions).then(handleResponse);
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {
