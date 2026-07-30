@@ -8,8 +8,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { App } from '@entities/app.entity';
 
-// skip: createVersion shadows caller manager, mock ignored — src bug, #17333 (5)
-describe.skip('VersionUtilService.createVersion — version metadata forwarding', () => {
+describe('VersionUtilService.createVersion — version metadata forwarding', () => {
   let service: VersionUtilService;
   let mockManager: any;
   let savedAppVersion: any;
