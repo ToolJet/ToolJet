@@ -345,7 +345,9 @@ export const ModalV2 = function Modal({
         onHide={() => {
           onHideModal();
         }}
-        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
+        // onEscapeKeyDown is handled inside ModalWidget (Components/Modal.jsx),
+        // where it sits directly on BootstrapModal — passing it here is overridden
+        // by that inner handler (see #5308).
         id="modal-container"
         component-id={id}
         backdrop={'static'}
