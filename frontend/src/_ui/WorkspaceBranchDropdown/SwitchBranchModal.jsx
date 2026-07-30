@@ -166,8 +166,8 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
       if (onBranchSwitch) {
         onBranchSwitch(branch);
       } else {
-        // dashboard refetches apps/folders via its branch-store subscription
         onClose();
+        window.location.reload();
       }
     } catch (error) {
       console.error('Error switching branch:', error);

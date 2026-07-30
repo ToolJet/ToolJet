@@ -68,7 +68,7 @@ import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/Switch
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { TriangleAlert } from 'lucide-react';
 
-import { appTypeToDisplayNameMapping } from './helper';
+import { appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
 
 const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
 class HomePageComponent extends React.Component {
@@ -926,17 +926,20 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'create');
   };
 
   canDeleteFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_delete;
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'delete');
   };
 
   canUpdateFolder = () => {
     // Update folder (rename) requires either folderCreate permission or granular canEditFolder permission
-    // For now, we use folderCreate as the master permission for folder update
-    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+    // For now, we use folderCreate (or its per-app-type equivalent) as the master permission for folder update
+    const user_permissions = authenticationService.currentSessionValue?.user_permissions;
+    return getFolderPermissionField(user_permissions, this.props.appType, 'create');
   };
 
   isWorkspaceBranchLocked = (app) => {
@@ -1413,6 +1416,26 @@ class HomePageComponent extends React.Component {
           /* allow on network error */
         }
       }
+
+      // OLD: fetch remote branches for branch picker
+      // this.setState({
+      //   showGitRepositoryImportModal: true,
+      //   fetchingRemoteBranches: true,
+      //   selectedImportBranch: null,
+      //   appsFromRepos: {},
+      //   selectedAppRepo: null,
+      //   importingGitAppOperations: {},
+      //   latestCommitData: null,
+      //   selectedVersionOption: null,
+      // });
+      // useWorkspaceBranchesStore
+      //   .getState()
+      //   .actions.fetchRemoteBranches()
+      //   .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
+      //   .catch(() => {
+      //     toast.error('Failed to fetch remote branches');
+      //     this.setState({ fetchingRemoteBranches: false });
+      //   });
 
       // Auto-set branch to current workspace branch and immediately fetch apps
       const branchName = currentBranch?.name || null;

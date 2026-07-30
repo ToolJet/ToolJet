@@ -40,9 +40,7 @@ describe('PlatformGitPushService — app name path resolution', () => {
     (service as unknown as WithResolveAppPath).resolveAppPath(app, REPO, app.name);
 
   beforeEach(() => {
-    // Heavy collaborators are mocked out; these stubs stand in for the real ctor deps.
-    const deps = [{}, {}, { log: jest.fn() }] as unknown as ConstructorParameters<typeof PlatformGitPushService>;
-    service = new PlatformGitPushService(...deps);
+    service = new PlatformGitPushService({} as any, {} as any, { log: jest.fn() } as any);
   });
 
   afterEach(() => {

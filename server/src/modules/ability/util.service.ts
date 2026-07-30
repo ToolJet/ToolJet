@@ -316,7 +316,7 @@ export class AbilityUtilService {
           .andWhere('folder.organizationId = :orgId', {
             orgId: user.organizationId,
           })
-          .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
+          .andWhere('folder.type = :type', { type: appType })
           .select('folderApp.appId', 'appId')
           .distinct(true)
           .getRawMany();
@@ -364,7 +364,7 @@ export class AbilityUtilService {
           .where('folder.organizationId = :orgId', {
             orgId: user.organizationId,
           })
-          .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
+          .andWhere('folder.type = :type', { type: appType })
           .select('folderApp.appId', 'appId')
           .distinct(true)
           .getRawMany();
@@ -448,10 +448,18 @@ export class AbilityUtilService {
    */
   async createUserModulesPermissions(
     moduleGranularPermissions: GranularPermissions[],
+    moduleFolderGranularPermissions: GranularPermissions[],
     user: User,
     manager: EntityManager
   ): Promise<UserAppsPermissions> {
-    return this.createUserAppsPermissions(moduleGranularPermissions, [], user, manager, APP_TYPES.MODULE, true);
+    return this.createUserAppsPermissions(
+      moduleGranularPermissions,
+      moduleFolderGranularPermissions,
+      user,
+      manager,
+      APP_TYPES.MODULE,
+      true
+    );
   }
 
   async isBuilder(user: User): Promise<boolean> {

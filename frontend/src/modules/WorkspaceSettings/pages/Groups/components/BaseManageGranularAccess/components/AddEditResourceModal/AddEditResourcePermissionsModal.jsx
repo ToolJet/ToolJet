@@ -8,6 +8,8 @@ import DsPermissionsActions from './DataSourcPermissionActionContainer';
 import WorkflowPermissionsActions from './WorkflowPermissionActionContainer';
 import FolderPermissionsActions from './FolderPermissionActionContainer';
 import ModulePermissionsActions from './ModulePermissionActionContainer';
+import WorkflowFolderPermissionsActions from './WorkflowFolderPermissionActionContainer';
+import ModuleFolderPermissionsActions from './ModuleFolderPermissionActionContainer';
 import { RESOURCE_TYPE } from '../../../../index';
 
 function AddEditResourcePermissionsModal({
@@ -36,6 +38,8 @@ function AddEditResourcePermissionsModal({
   const initialPermissionState = currentState?.initialPermissionState;
   const initialPermissionStateDs = currentState?.initialPermissionStateDs;
   const initialPermissionStateFolder = currentState?.initialPermissionStateFolder;
+  const initialPermissionStateWorkflowFolder = currentState?.initialPermissionStateWorkflowFolder;
+  const initialPermissionStateModuleFolder = currentState?.initialPermissionStateModuleFolder;
   const errors = currentState?.errors;
   const isAll = currentState?.isAll;
   const getAllResourceText = (resourceType) => {
@@ -50,6 +54,10 @@ function AddEditResourcePermissionsModal({
         return 'This will select all data sources in the workspace including any new connections created';
       case RESOURCE_TYPE.FOLDERS:
         return 'This will select all folders in the workspace including any new folders created';
+      case RESOURCE_TYPE.WORKFLOW_FOLDERS:
+        return 'This will select all workflow folders in the workspace including any new workflow folders created';
+      case RESOURCE_TYPE.MODULE_FOLDERS:
+        return 'This will select all module folders in the workspace including any new module folders created';
     }
   };
 
@@ -59,6 +67,8 @@ function AddEditResourcePermissionsModal({
     [RESOURCE_TYPE.MODULES]: 'modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'data sources',
     [RESOURCE_TYPE.FOLDERS]: 'folders',
+    [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'workflow folders',
+    [RESOURCE_TYPE.MODULE_FOLDERS]: 'module folders',
   };
 
   const getAllResourceLabel = (resourceType) => {
@@ -73,6 +83,10 @@ function AddEditResourcePermissionsModal({
         return 'All data sources';
       case RESOURCE_TYPE.FOLDERS:
         return 'All folders';
+      case RESOURCE_TYPE.WORKFLOW_FOLDERS:
+        return 'All workflow folders';
+      case RESOURCE_TYPE.MODULE_FOLDERS:
+        return 'All module folders';
       default:
         return 'All resources';
     }
@@ -205,6 +219,24 @@ function AddEditResourcePermissionsModal({
             updateParentState={updateParentState}
             disableBuilderLevelUpdate={disableBuilderLevelUpdate}
             initialPermissionStateFolder={initialPermissionStateFolder}
+          />
+        );
+
+      case RESOURCE_TYPE.WORKFLOW_FOLDERS:
+        return (
+          <WorkflowFolderPermissionsActions
+            updateParentState={updateParentState}
+            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            initialPermissionStateWorkflowFolder={initialPermissionStateWorkflowFolder}
+          />
+        );
+
+      case RESOURCE_TYPE.MODULE_FOLDERS:
+        return (
+          <ModuleFolderPermissionsActions
+            updateParentState={updateParentState}
+            disableBuilderLevelUpdate={disableBuilderLevelUpdate}
+            initialPermissionStateModuleFolder={initialPermissionStateModuleFolder}
           />
         );
 

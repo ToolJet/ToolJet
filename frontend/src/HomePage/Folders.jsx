@@ -12,7 +12,7 @@ import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
-import { validateName, handleHttpErrorMessages, getWorkspaceId, hasBuilderRole } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getBranchNameFromUrl, getResolvedBranchName } from '@/_helpers/active-branch';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -20,7 +20,7 @@ import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
-import { appTypeToDisplayNameMapping } from './helper';
+import { appTypeToDisplayNameMapping, getFolderGroupPermissions } from './helper';
 
 export const Folders = function Folders({
   folders,
@@ -29,7 +29,6 @@ export const Folders = function Folders({
   folderChanged,
   foldersChanged,
   canCreateFolder,
-  canUpdateFolder,
   canDeleteFolder,
   canCreateApp,
   darkMode,
@@ -61,12 +60,12 @@ export const Folders = function Folders({
   // below applies on git-synced feature branches but not in plain (non-git) workspaces.
   const isGitSyncEnabled = !!useWorkspaceBranchesStore((state) => state.orgGitConfig);
 
-  // Get folder granular permissions from session
+  // Get folder granular permissions from session — each folder-owning app type
+  // (workflow, module) has its own permission surface, separate from app folders.
   const currentSession = authenticationService.currentSessionValue;
-  const folderGroupPermissions = currentSession?.folder_group_permissions;
+  const folderGroupPermissions = getFolderGroupPermissions(currentSession, appType);
   // Get current user ID for ownership check
   const currentUserId = currentSession?.current_user?.id;
-  const isBuilder = hasBuilderRole(currentSession?.role ?? {});
 
   // Check if user can edit a specific folder (granular permission)
   const canEditSpecificFolder = (folderId) => {
@@ -80,18 +79,13 @@ export const Folders = function Folders({
   };
 
   // Determine if user can update/delete a specific folder
-  // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
+  // Rename: requires granular canEditFolder OR ownership
   // Delete: requires master Delete OR ownership
   // Git gate: folder mutations are blocked ONLY when the workspace branch is locked — i.e. multi-branch
   // is enabled AND we're on the (read-only) default branch. Single-branch (branching off) and
   // multi-branch feature branches are the working branches, so rename/delete stay allowed there.
   const canUpdateSpecificFolder = (folderId, folder) =>
-    !isWorkspaceBranchLocked &&
-    (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
-  // With git sync on, only show delete when the folder has 0 apps on the currently active
-  // branch (folder.count). If it still has apps on some other branch, the backend blocks the
-  // delete and FolderHasAppsModal reports which branch(es) — this is a defense-in-depth
-  // fallback, not the primary gate.
+    !isWorkspaceBranchLocked && (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder));
   const canDeleteSpecificFolder = (folderId, folder) =>
     !isWorkspaceBranchLocked &&
     (!isGitSyncEnabled || folder?.count === 0) &&
