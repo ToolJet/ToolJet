@@ -617,7 +617,10 @@ const DynamicFormV2 = ({
           helpText: helpText,
           disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           onChange: (e) => {
-            const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
+            // Determine boolean-mode from the schema's declared type rather than the current
+            // value, since an old datasource that never stored this field has value === undefined
+            // (neither true nor false), which would otherwise wrongly fall back to string mode.
+            const booleanMode = schema?.properties?.[key]?.type === 'boolean';
             handleOptionChange(
               key,
               e.target.checked ? (booleanMode ? true : 'enabled') : booleanMode ? false : 'disabled',
