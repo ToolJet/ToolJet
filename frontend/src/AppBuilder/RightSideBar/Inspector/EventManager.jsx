@@ -1125,12 +1125,12 @@ export const EventManager = ({
       };
     });
 
-    // Reflect the new order right away, the store merge only catches up once the PUT resolves
-    setEvents(reorderedEvents);
-
     // Save only the events whose index actually moved, comparing against the pre-drag indices
     const previousIndexById = new Map(events.map((event) => [event.id, event.index]));
     const changedEvents = reorderedEvents.filter((event) => previousIndexById.get(event.id) !== event.index);
+
+    // Reflect the new order right away, the store merge only catches up once the PUT resolves
+    setEvents(reorderedEvents);
 
     updateAppVersionEventHandlers(
       changedEvents.map((event) => ({
