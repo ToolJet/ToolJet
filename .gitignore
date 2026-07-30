@@ -40,3 +40,10 @@ ti-*
 .claude/
 .worktrees/
 .serena/
+
+
+.local/
+docs/superpowers/
+taskfile.yml
+
+memory/

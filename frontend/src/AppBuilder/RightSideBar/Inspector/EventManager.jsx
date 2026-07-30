@@ -64,6 +64,7 @@ export const EventManager = ({
   hideEmptyEventsAlert,
   callerQueryId,
   customEventRefs = undefined,
+  excludeRefEvents = false,
   callerQueryName,
   component,
 }) => {
@@ -98,6 +99,10 @@ export const EventManager = ({
       if (event.event.ref !== customEventRefs.ref) {
         return false;
       }
+    } else if (excludeRefEvents && event.event?.ref) {
+      // Hide sub-element (ref-scoped) events from a component-level panel,
+      // e.g. per-menu-item Navigation events should not appear at the component level.
+      return false;
     }
 
     return event.sourceId === sourceId && event.target === eventSourceType;
@@ -120,10 +125,8 @@ export const EventManager = ({
 
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
-
-    const sortedEvents = (currentEvents || []).slice().sort((a, b) => a.index - b.index);
-    onEventHandlersUpdated(sortedEvents, events);
-    setEvents(sortedEvents, moduleId);
+    onEventHandlersUpdated(currentEvents, events);
+    setEvents(currentEvents, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
 
@@ -385,8 +388,15 @@ export const EventManager = ({
     });
   }
 
-  function getDefaultEventName() {
-    return `Event #${events.length + 1}`;
+  function getDefaultEventName(sourceEvents) {
+    const existingNumbers = (sourceEvents ?? events)
+      .map((event) => {
+        const match = /^Event #(\d+)$/.exec(event?.name ?? '');
+        return match ? parseInt(match[1], 10) : null;
+      })
+      .filter((number) => number !== null);
+    const nextNumber = existingNumbers.length ? Math.max(...existingNumbers) + 1 : 1;
+    return `Event #${nextNumber}`;
   }
 
   function removeHandler(index) {
@@ -408,8 +418,14 @@ export const EventManager = ({
   }
 
   async function addHandler(eventId) {
-    let newEvents = events;
-    const eventIndex = newEvents.length;
+    const sourceEvents = useStore
+      .getState()
+      .eventsSlice.getModuleEvents(moduleId)
+      .filter((event) => {
+        if (customEventRefs && event.event?.ref !== customEventRefs.ref) return false;
+        return event.sourceId === sourceId && event.target === eventSourceType;
+      });
+    const eventIndex = sourceEvents.reduce((max, event) => (event.index > max ? event.index : max), -1);
     const selectedEventId = eventId || Object.keys(eventMetaDefinition?.events)[0];
     //----------------- Posthog Analytics for event handlers -----------------//
     let postHogEventType = 'Event Handler';
@@ -435,7 +451,6 @@ export const EventManager = ({
     //----------------- Posthog Analytics -----------------//
     markEventCreationPending();
     const createdEvent = await createAppVersionEventHandlers({
-      name: getDefaultEventName(),
       event: {
         eventId: selectedEventId,
         actionId: 'show-alert',
@@ -444,10 +459,12 @@ export const EventManager = ({
         component: eventMetaDefinition.name,
         ...customEventRefs,
       },
+      name: getDefaultEventName(sourceEvents),
       eventType: eventSourceType,
       attachedTo: sourceId,
-      index: eventIndex,
+      index: eventIndex + 1,
     });
+
     if (!createdEvent) cancelPendingEventCreation();
   }
 
@@ -1328,7 +1345,7 @@ export const EventManager = ({
           <EmptyDescription>
             {t(
               'editor.inspector.eventManager.emptyDescription',
-              'Add events to make your component interactive — like button clicks or form submissions'
+              'Add events to define how this component responds to user actions.'
             )}
           </EmptyDescription>
         </EmptyHeader>

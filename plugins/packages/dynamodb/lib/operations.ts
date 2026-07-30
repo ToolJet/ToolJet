@@ -28,10 +28,16 @@ export async function listTables(client: DynamoDBClient): Promise<object> {
   return data.TableNames || [];
 }
 
-export async function getItem(client: DynamoDBDocumentClient, table: string, key: object): Promise<object> {
+export async function getItem(
+  client: DynamoDBDocumentClient,
+  table: string,
+  key: object,
+  extraParams: Partial<GetCommandInput> = {}
+): Promise<object> {
   const params: GetCommandInput = {
     TableName: table,
     Key: key as Record<string, any>,
+    ...extraParams,
   };
 
   const command = new GetCommand(params);
@@ -39,10 +45,16 @@ export async function getItem(client: DynamoDBDocumentClient, table: string, key
   return data.Item || {};
 }
 
-export async function deleteItem(client: DynamoDBDocumentClient, table: string, key: object): Promise<object> {
+export async function deleteItem(
+  client: DynamoDBDocumentClient,
+  table: string,
+  key: object,
+  extraParams: Partial<DeleteCommandInput> = {}
+): Promise<object> {
   const params: DeleteCommandInput = {
     TableName: table,
     Key: key as Record<string, any>,
+    ...extraParams,
   };
 
   const command = new DeleteCommand(params);

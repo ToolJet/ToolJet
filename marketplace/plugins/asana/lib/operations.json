@@ -1,0 +1,783 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Asana datasource",
+  "description": "A schema defining Asana datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "resource": {
+      "label": "Resource",
+      "key": "resource",
+      "type": "dropdown-component-flip",
+      "description": "Select a resource",
+      "list": [
+        { "value": "task", "name": "Task" },
+        { "value": "project", "name": "Project" },
+        { "value": "workspace", "name": "Workspace" },
+        { "value": "attachment", "name": "Attachment" }
+      ]
+    },
+    "task": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Select an operation",
+        "list": [
+          { "value": "list_tasks", "name": "List tasks" },
+          { "value": "get_task", "name": "Get task" },
+          { "value": "create_task", "name": "Create task" },
+          { "value": "update_task", "name": "Update task" },
+          { "value": "delete_task", "name": "Delete task" },
+          { "value": "add_comment", "name": "Add comment" },
+          { "value": "list_stories", "name": "List stories (comments)" },
+          { "value": "list_subtasks", "name": "List subtasks" },
+          { "value": "create_subtask", "name": "Create subtask" },
+          { "value": "add_to_project", "name": "Add to project" },
+          { "value": "remove_from_project", "name": "Remove from project" },
+          { "value": "add_followers", "name": "Add followers" },
+          { "value": "remove_followers", "name": "Remove followers" },
+          { "value": "duplicate_task", "name": "Duplicate task" },
+          { "value": "list_attachments", "name": "List attachments" }
+        ]
+      },
+      "list_tasks": {
+        "project_gid": {
+          "label": "Project GID",
+          "key": "project_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the project to filter tasks. At least one filter (project, section, tag, or assignee+workspace) is required by Asana.",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response. Default returns only gid, name, resource_type.",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,assignee,due_on,completed,notes"
+        },
+        "limit": {
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Maximum number of results to return (1–100)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "20"
+        },
+        "offset": {
+          "label": "Offset token",
+          "key": "offset",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Pagination offset token from a previous response's next_page.offset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": ""
+        }
+      },
+      "get_task": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task to retrieve",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,assignee,due_on,completed,notes,projects"
+        }
+      },
+      "create_task": {
+        "workspace_gid": {
+          "label": "Workspace GID",
+          "key": "workspace_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the workspace to create the task in. Required if projects is not provided.",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "body": {
+          "label": "Task data",
+          "key": "body",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Task fields. workspace_gid above is merged in automatically.",
+          "placeholder": "{\n  \"name\": \"My new task\",\n  \"notes\": \"Task description\",\n  \"assignee\": \"me\",\n  \"due_on\": \"2024-12-31\",\n  \"projects\": [\"1234567890\"]\n}",
+          "height": "200px"
+        }
+      },
+      "update_task": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task to update",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "body": {
+          "label": "Task data",
+          "key": "body",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Fields to update on the task",
+          "placeholder": "{\n  \"name\": \"Updated task name\",\n  \"completed\": true,\n  \"due_on\": \"2024-12-31\",\n  \"assignee\": \"me\"\n}",
+          "height": "200px"
+        }
+      },
+      "delete_task": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task to delete",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        }
+      },
+      "add_comment": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task to comment on",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "text": {
+          "label": "Comment text",
+          "key": "text",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Plain text body of the comment",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "This is a comment"
+        },
+        "is_pinned": {
+          "label": "Pin comment",
+          "key": "is_pinned",
+          "type": "dropdown",
+          "description": "Pin this comment to the task",
+          "list": [
+            { "value": "false", "name": "No" },
+            { "value": "true", "name": "Yes" }
+          ]
+        }
+      },
+      "list_stories": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task whose stories (comments + activity) to list",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "text,type,created_at,created_by"
+        }
+      },
+      "list_subtasks": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the parent task",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,assignee,completed,due_on"
+        }
+      },
+      "create_subtask": {
+        "task_gid": {
+          "label": "Parent Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the parent task",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "body": {
+          "label": "Subtask data",
+          "key": "body",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Subtask fields",
+          "placeholder": "{\n  \"name\": \"My subtask\",\n  \"assignee\": \"me\",\n  \"due_on\": \"2024-12-31\"\n}",
+          "height": "200px"
+        }
+      },
+      "add_to_project": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task to add to a project",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "project_gid": {
+          "label": "Project GID",
+          "key": "project_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the project to add the task to",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "section_gid": {
+          "label": "Section GID (optional)",
+          "key": "section_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the section within the project to place the task in",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": ""
+        }
+      },
+      "remove_from_project": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task to remove from a project",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "project_gid": {
+          "label": "Project GID",
+          "key": "project_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the project to remove the task from",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        }
+      },
+      "add_followers": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "followers": {
+          "label": "Follower GIDs",
+          "key": "followers",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of user GIDs to add as followers",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "111111,222222"
+        }
+      },
+      "remove_followers": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "followers": {
+          "label": "Follower GIDs",
+          "key": "followers",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of user GIDs to remove as followers",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "111111,222222"
+        }
+      },
+      "duplicate_task": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task to duplicate",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "name": {
+          "label": "New task name",
+          "key": "name",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Name for the duplicated task",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Copy of My Task"
+        },
+        "include": {
+          "label": "Include fields",
+          "key": "include",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to copy: assignee, attachments, dates, dependencies, followers, notes, parent, projects, subtasks, tags",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "notes,assignee,subtasks"
+        }
+      },
+      "list_attachments": {
+        "task_gid": {
+          "label": "Task GID",
+          "key": "task_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the task whose attachments to list",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        }
+      }
+    },
+    "project": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Select an operation",
+        "list": [
+          { "value": "list_projects", "name": "List projects" },
+          { "value": "get_project", "name": "Get project" },
+          { "value": "create_project", "name": "Create project" },
+          { "value": "update_project", "name": "Update project" },
+          { "value": "delete_project", "name": "Delete project" },
+          { "value": "list_sections", "name": "List sections" }
+        ]
+      },
+      "list_projects": {
+        "workspace_gid": {
+          "label": "Workspace GID",
+          "key": "workspace_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the workspace to filter projects",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,color,archived,due_date,owner"
+        },
+        "limit": {
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Maximum number of results to return (1–100)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "20"
+        },
+        "offset": {
+          "label": "Offset token",
+          "key": "offset",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Pagination offset token from a previous response's next_page.offset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": ""
+        }
+      },
+      "get_project": {
+        "project_gid": {
+          "label": "Project GID",
+          "key": "project_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the project to retrieve",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,color,archived,due_date,owner,team"
+        }
+      },
+      "create_project": {
+        "workspace_gid": {
+          "label": "Workspace GID",
+          "key": "workspace_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the workspace to create the project in",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "body": {
+          "label": "Project data",
+          "key": "body",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Project fields. workspace_gid above is merged in automatically.",
+          "placeholder": "{\n  \"name\": \"My Project\",\n  \"color\": \"light-green\",\n  \"public\": false,\n  \"default_view\": \"list\"\n}",
+          "height": "200px"
+        }
+      },
+      "update_project": {
+        "project_gid": {
+          "label": "Project GID",
+          "key": "project_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the project to update",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "body": {
+          "label": "Project data",
+          "key": "body",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Fields to update on the project",
+          "placeholder": "{\n  \"name\": \"Updated Project Name\",\n  \"color\": \"light-blue\",\n  \"archived\": false\n}",
+          "height": "200px"
+        }
+      },
+      "delete_project": {
+        "project_gid": {
+          "label": "Project GID",
+          "key": "project_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the project to delete",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        }
+      },
+      "list_sections": {
+        "project_gid": {
+          "label": "Project GID",
+          "key": "project_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the project whose sections to list",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,created_at"
+        }
+      }
+    },
+    "workspace": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Select an operation",
+        "list": [
+          { "value": "list_workspaces", "name": "List workspaces" },
+          { "value": "list_users", "name": "List users" },
+          { "value": "list_teams", "name": "List teams" },
+          { "value": "list_tags", "name": "List tags" },
+          { "value": "create_tag", "name": "Create tag" }
+        ]
+      },
+      "list_workspaces": {
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,is_organization"
+        }
+      },
+      "list_users": {
+        "workspace_gid": {
+          "label": "Workspace GID",
+          "key": "workspace_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the workspace",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,email"
+        }
+      },
+      "list_teams": {
+        "workspace_gid": {
+          "label": "Workspace GID",
+          "key": "workspace_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the workspace",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,description"
+        }
+      },
+      "list_tags": {
+        "workspace_gid": {
+          "label": "Workspace GID",
+          "key": "workspace_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the workspace",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,color"
+        }
+      },
+      "create_tag": {
+        "workspace_gid": {
+          "label": "Workspace GID",
+          "key": "workspace_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the workspace to create the tag in",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "name": {
+          "label": "Tag name",
+          "key": "name",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Name of the tag",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "my-tag"
+        },
+        "color": {
+          "label": "Tag color (optional)",
+          "key": "color",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Color of the tag. E.g. dark-pink, dark-teal, dark-green, dark-red, dark-orange, dark-purple, dark-warm-gray, light-pink, light-teal, light-green, light-red, light-orange, light-purple, light-warm-gray",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "light-green"
+        }
+      }
+    },
+    "attachment": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Select an operation",
+        "list": [
+          { "value": "get_attachment", "name": "Get attachment" },
+          { "value": "delete_attachment", "name": "Delete attachment" }
+        ]
+      },
+      "get_attachment": {
+        "attachment_gid": {
+          "label": "Attachment GID",
+          "key": "attachment_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the attachment to retrieve",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        },
+        "opt_fields": {
+          "label": "Fields (opt_fields)",
+          "key": "opt_fields",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Comma-separated list of fields to include in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "name,download_url,created_at,size"
+        }
+      },
+      "delete_attachment": {
+        "attachment_gid": {
+          "label": "Attachment GID",
+          "key": "attachment_gid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "GID of the attachment to delete",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1234567890"
+        }
+      }
+    }
+  }
+}

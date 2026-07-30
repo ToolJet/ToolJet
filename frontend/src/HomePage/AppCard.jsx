@@ -285,8 +285,8 @@ export default function AppCard({
                   </div>
                 </div>
               </div>
-              <div visible={focused ? true : undefined}>
-                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+              {(canDeleteApp(app) || canUpdateApp(app) || (canCreateApp(app) && appType !== 'module')) && (
+                <div visible={focused ? true : undefined}>
                   <AppMenu
                     onMenuOpen={onMenuToggle}
                     openAppActionModal={appActionModalCallBack}
@@ -303,8 +303,8 @@ export default function AppCard({
                     appType={appType}
                     appCreationMode={app?.creation_mode || app?.creationMode}
                   />
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
           <div>
@@ -320,7 +320,7 @@ export default function AppCard({
             )}
           </div>
           <div className="appcard-buttons-wrap">
-            {(canUpdate || appType === 'module') && (
+            {canUpdate && (
               <div>
                 <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                   <Link
@@ -346,6 +346,28 @@ export default function AppCard({
                     >
                       <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
                       &nbsp;{t('globals.edit', 'Edit')}
+                    </button>
+                  </Link>
+                </ToolTip>
+              </div>
+            )}
+            {!canUpdate && canView && appType === 'module' && (
+              <div>
+                <ToolTip message="Open in app builder">
+                  <Link
+                    to={getPrivateRoute('editor', {
+                      slug: isValidSlug(app.slug) ? app.slug : app.id,
+                    })}
+                    reloadDocument
+                  >
+                    <button
+                      type="button"
+                      className="tj-primary-btn tj-text-xsm edit-button"
+                      style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+                      data-cy="view-button"
+                    >
+                      <SolidIcon name="eye" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                      &nbsp;{t('globals.view', 'View')}
                     </button>
                   </Link>
                 </ToolTip>

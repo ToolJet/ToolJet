@@ -133,7 +133,7 @@ describe("Editor- Inspector", { testIsolation: false }, () => {
   // anywhere in the current inspector. There is no in-product path to re-enable this without a
   // frontend feature change, so it cannot be fixed by a selector/helper rewrite.
   it.skip("should verify deletion of component from inspector", () => {
-    cy.dragAndDropWidget("button", 500, 500);
+    cy.dragAndDropWidget("button", 500, 100);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     deleteComponentFromInspector("button1");
     cy.verifyToastMessage(`[class=go3958317564]`, "Component deleted! (ctrl + Z to undo)");

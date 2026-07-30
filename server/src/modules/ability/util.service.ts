@@ -165,7 +165,9 @@ export class AbilityUtilService {
   async createUserAppsPermissions(
     appsGranularPermissions: GranularPermissions[],
     user: User,
-    manager: EntityManager
+    manager: EntityManager,
+    appType: APP_TYPES = APP_TYPES.FRONT_END,
+    ownerGetsViewAccess = false
   ): Promise<UserAppsPermissions> {
     const userAppsPermissions: UserAppsPermissions = {
       editableAppsId: [],
@@ -174,6 +176,7 @@ export class AbilityUtilService {
       isAllViewable: false,
       hiddenAppsId: [],
       hideAll: false,
+      ownedAppsId: [],
       environmentAccess: {
         development: false,
         staging: false,
@@ -251,16 +254,36 @@ export class AbilityUtilService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const appsOwnedByUser = await manager.find(AppBase, {
-        where: { userId: user.id, organizationId: user.organizationId, type: APP_TYPES.FRONT_END },
+        where: { userId: user.id, organizationId: user.organizationId, type: appType },
       });
 
       const appsIdOwnedByUser = appsOwnedByUser.map((app) => app.id);
+      userAppsPermissions.ownedAppsId = appsIdOwnedByUser;
       userAppsPermissions.editableAppsId = Array.from(
         new Set([...userAppsPermissions.editableAppsId, ...appsIdOwnedByUser])
       );
+      // Modules: the creator irrevocably gets Build-with (view) in addition to Edit.
+      if (ownerGetsViewAccess) {
+        userAppsPermissions.viewableAppsId = Array.from(
+          new Set([...userAppsPermissions.viewableAppsId, ...appsIdOwnedByUser])
+        );
+      }
     }, manager);
 
     return userAppsPermissions;
+  }
+
+  /**
+   * Resolves a user's MODULE permissions. Reuses the apps resolution path keyed to
+   * app_type='module', and unions modules the user owns into both editable and viewable
+   * sets so the creator always retains Edit + Build-with regardless of group membership.
+   */
+  async createUserModulesPermissions(
+    moduleGranularPermissions: GranularPermissions[],
+    user: User,
+    manager: EntityManager
+  ): Promise<UserAppsPermissions> {
+    return this.createUserAppsPermissions(moduleGranularPermissions, user, manager, APP_TYPES.MODULE, true);
   }
 
   async isBuilder(user: User): Promise<boolean> {

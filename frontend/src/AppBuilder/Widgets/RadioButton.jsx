@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+
 export const RadioButton = function RadioButton({
   id,
   height,
@@ -20,6 +22,11 @@ export const RadioButton = function RadioButton({
   const radioGroupName = useMemo(() => `radio-group-${id}`, [id]);
   const [checkedValue, setValue] = useState(() => value);
   useEffect(() => setValue(value), [value]);
+
+  useFormClear(() => {
+    setValue(null);
+    setExposedVariable('value', null);
+  });
 
   let selectOptions = [];
 
