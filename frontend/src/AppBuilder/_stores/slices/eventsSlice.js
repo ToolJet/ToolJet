@@ -213,7 +213,8 @@ export const createEventsSlice = (set, get) => ({
       get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
       get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
       set((state) => {
-        const eventsInState = state.eventsSlice.getModuleEvents('canvas');
+        // Was hardcoded to 'canvas', overwriting module events with canvas events in the module editor
+        const eventsInState = state.eventsSlice.getModuleEvents(moduleId);
         const newEvents = eventsInState.map((event) => {
           const updatedEvent = response.find((r) => r.id === event.id);
           if (updatedEvent) {

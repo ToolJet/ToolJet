@@ -108,6 +108,9 @@ export const EventManager = ({
     return event.sourceId === sourceId && event.target === eventSourceType;
   });
 
+  // `index` is the source of truth for list position and trigger order, store array order is not
+  currentEvents?.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
@@ -413,7 +416,8 @@ export const EventManager = ({
       event: deepClone(source.event),
       eventType: source.target,
       attachedTo: source.sourceId,
-      index: events.length,
+      // Positions can be sparse after deletes, so length would collide with an existing index
+      index: events.reduce((max, event) => (event.index > max ? event.index : max), -1) + 1,
     });
   }
 
@@ -1121,8 +1125,15 @@ export const EventManager = ({
       };
     });
 
+    // Reflect the new order right away, the store merge only catches up once the PUT resolves
+    setEvents(reorderedEvents);
+
+    // Save only the events whose index actually moved, comparing against the pre-drag indices
+    const previousIndexById = new Map(events.map((event) => [event.id, event.index]));
+    const changedEvents = reorderedEvents.filter((event) => previousIndexById.get(event.id) !== event.index);
+
     updateAppVersionEventHandlers(
-      reorderedEvents.map((event) => ({
+      changedEvents.map((event) => ({
         event_id: event.id,
         diff: event,
       })),
@@ -1154,7 +1165,8 @@ export const EventManager = ({
                   const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
                   // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                   return (
-                    <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
+                    // Keyed by event id, not position, so rows keep their identity across a reorder
+                    <Draggable key={event.id} draggableId={event.id} index={index}>
                       {renderDraggable((provided, snapshot) => {
                         if (snapshot.isDragging && focusedEventIndex !== null) {
                           setFocusedEventIndex(null);
