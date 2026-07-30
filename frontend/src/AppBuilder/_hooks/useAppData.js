@@ -296,7 +296,8 @@ const useAppData = (
       if (isUnauthenticated) {
         const moduleDefinition = getModuleDefinition(appId);
         if (moduleDefinition) {
-          // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
+          // Deep-clone: Zustand/Immer returns frozen objects — clone so downstream normalisation
+          // can never write into the cached module definition.
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
         } else {
           // versionId is a versionName string (cross-workspace stable, git-tag-backed) when the
