@@ -7,14 +7,26 @@ import { EnvProviderState, GitHttpsEnvConfig, GitLabEnvConfig } from '@modules/o
 export class GitSyncEnvUtilService implements IGitSyncEnvUtilService {
   async initialize(): Promise<void> {}
 
-  hasGitHttpsConfig(_workspaceId: string): boolean { return false; }
-  hasGitLabConfig(_workspaceId: string): boolean { return false; }
+  hasGitHttpsConfig(_workspaceId: string): boolean {
+    return false;
+  }
+  hasGitLabConfig(_workspaceId: string): boolean {
+    return false;
+  }
 
-  async getGitHttpsConfig(_workspaceId: string): Promise<GitHttpsEnvConfig | null> { return null; }
-  async getGitLabConfig(_workspaceId: string): Promise<GitLabEnvConfig | null> { return null; }
+  async getGitHttpsConfig(_workspaceId: string): Promise<GitHttpsEnvConfig | null> {
+    return null;
+  }
+  async getGitLabConfig(_workspaceId: string): Promise<GitLabEnvConfig | null> {
+    return null;
+  }
 
-  async getGitHttpsTemplateConfig(_workspaceId: string): Promise<Partial<GitHttpsEnvConfig> | null> { return null; }
-  async getGitLabTemplateConfig(_workspaceId: string): Promise<Partial<GitLabEnvConfig> | null> { return null; }
+  async getGitHttpsTemplateConfig(_workspaceId: string): Promise<Partial<GitHttpsEnvConfig> | null> {
+    return null;
+  }
+  async getGitLabTemplateConfig(_workspaceId: string): Promise<Partial<GitLabEnvConfig> | null> {
+    return null;
+  }
 
   setProviderState(_workspaceId: string, _provider: GITConnectionType, _state: EnvProviderState): void {}
 

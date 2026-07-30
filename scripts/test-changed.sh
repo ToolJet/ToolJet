@@ -94,12 +94,7 @@ fi
 cd "$SERVER_DIR"
 
 unit_args=()
-# parallel shards need CI hardware — 3 concurrent Nest boots blow the 60s beforeAll on laptops
-if [[ "${CI:-}" == "true" ]]; then
-  e2e_args=(--ci)
-else
-  e2e_args=()
-fi
+e2e_args=(--ci)
 if [[ -n "$PATTERN" ]]; then
   unit_args+=(--testPathPatterns="$PATTERN")
   e2e_args+=(--testPathPatterns "$PATTERN")
@@ -111,8 +106,19 @@ if [[ "${CI:-}" == "true" ]]; then
 fi
 
 # ${arr[@]+...} guard: empty-array expansion breaks under set -u on bash 3.2 (macOS)
+echo "--- Lint ---"
+npm run lint
+
+echo "--- Typecheck ---"
+npx tsc --noEmit -p tsconfig.build.json
+
 echo "--- Unit tests ---"
 npm run test -- ${unit_args[@]+"${unit_args[@]}"}
 
-echo "--- E2e tests ---"
-npm run test:e2e -- ${e2e_args[@]+"${e2e_args[@]}"}
+# e2e is CI-only: slow, flake-prone locally, and CI re-runs it regardless.
+if [[ "${CI:-}" == "true" ]]; then
+  echo "--- E2e tests ---"
+  npm run test:e2e -- ${e2e_args[@]+"${e2e_args[@]}"}
+else
+  echo "--- E2e tests: skipped locally (CI runs them) ---"
+fi

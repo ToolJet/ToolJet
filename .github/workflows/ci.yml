@@ -100,7 +100,12 @@ jobs:
     name: 'Lint & Build · server'
     runs-on: ubuntu-latest
     needs: [detect-changes, build-plugins, build-marketplace]
-    if: needs.detect-changes.outputs.server == 'true'
+    # result guards: a path-skipped marketplace build must not auto-skip this job
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
     steps:
       - uses: actions/checkout@v7
       - name: Checkout EE submodules
@@ -132,7 +137,12 @@ jobs:
     name: 'Lint & Build · frontend'
     runs-on: ubuntu-latest
     needs: [detect-changes, build-plugins, build-marketplace]
-    if: needs.detect-changes.outputs.frontend == 'true'
+    # result guards: a path-skipped marketplace build must not auto-skip this job
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.frontend == 'true'
+      && needs.build-plugins.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
     steps:
       - uses: actions/checkout@v7
       - name: Checkout EE submodules
