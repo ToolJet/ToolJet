@@ -211,3 +211,12 @@ export const verifyUserInGroups = (email, groupNames = [], shouldExist = true, w
             });
     });
 };
+
+  export const getWorkspaceUsersByGroups = (workspaceId, payload, headers = {}) => {
+      return apiRequest(
+          "POST",
+          `${Cypress.env("API_URL")}/ext/workspace/${workspaceId}/users`,
+          payload,
+          headers
+      );
+  };
