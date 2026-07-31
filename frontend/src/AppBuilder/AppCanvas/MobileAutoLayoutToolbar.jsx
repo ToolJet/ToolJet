@@ -49,7 +49,7 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(moduleId), shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
   const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
-  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
   const turnOnAutoComputeLayout = useStore((state) => state.turnOnAutoComputeLayout, shallow);
   const turnOffAutoComputeLayout = useStore((state) => state.turnOffAutoComputeLayout, shallow);
   const lastComputedRef = useRef();
@@ -69,12 +69,10 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, currentPageComponents, isAutoMobileLayout, moduleId]);
 
+  // Cached read: getResolvedValue would compile a Function per component, on every store write.
   const hiddenCount = useMemo(
-    () =>
-      Object.values(currentPageComponents).filter(
-        (comp) => !getResolvedValue(comp?.component?.definition?.others?.showOnMobile?.value)
-      ).length,
-    [currentPageComponents, getResolvedValue]
+    () => Object.keys(currentPageComponents).filter((id) => !getResolvedComponent(id)?.others?.showOnMobile).length,
+    [currentPageComponents, getResolvedComponent]
   );
 
   if (currentLayout !== 'mobile') return null;
@@ -141,15 +139,21 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
         <div className="tw-h-[17.5px] tw-w-px tw-bg-border-weak" />
 
         <div className="tw-flex tw-items-center tw-gap-2">
-          <span className="tw-text-xs tw-text-text-default">{hiddenCount} hidden components</span>
-          <Button
-            variant="outline"
-            size="medium"
-            onClick={() => setManageOpen(true)}
-            data-cy="manage-hidden-components-button"
-          >
-            manage
-          </Button>
+          {hiddenCount === 0 ? (
+            <span className="tw-text-xs tw-text-text-placeholder">No hidden components</span>
+          ) : (
+            <>
+              <span className="tw-text-xs tw-text-text-default">{hiddenCount} hidden components</span>
+              <Button
+                variant="outline"
+                size="medium"
+                onClick={() => setManageOpen(true)}
+                data-cy="manage-hidden-components-button"
+              >
+                manage
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
