@@ -1,3 +1,9 @@
+// Rendered height of .panel-header (confirmed in browser). Single source of
+// truth for anything that needs to sit flush beneath the sticky header.
+:root {
+  --panel-header-height: 52px;
+}
+
 // Panel Header - shared across all right sidebar panels
 .panel-header {
   display: flex;
@@ -52,7 +58,7 @@
   // Keep tab bar pinned below the sticky panel-header while the component list scrolls
   .nav-tabs {
     position: sticky;
-    top: 52px; // panel-header height
+    top: var(--panel-header-height);
     z-index: 10;
     background: var(--background-surface-layer-01);
   }
