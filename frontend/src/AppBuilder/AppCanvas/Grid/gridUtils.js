@@ -8,6 +8,9 @@ export const MOBILE_GRID_COLUMNS = NO_OF_GRIDS;
 // Vertical breathing room between stacked mobile items (top/height are in px).
 const MOBILE_STACK_GAP_PX = 10;
 
+// Backstop for compactItem's move-down loop, which has no structural exit if a top goes NaN.
+const MAX_COMPACTION_STEPS = 10000;
+
 // Stack each parent's children into a full-width mobile column, bottom-up. Returns { [id]: box }.
 export function computeAutoMobileLayout(currentPageComponents) {
   const ids = Object.keys(currentPageComponents);
@@ -24,9 +27,9 @@ export function computeAutoMobileLayout(currentPageComponents) {
   const visited = new Set(); // guard against cyclic parent refs (corrupt data)
 
   // Components hidden on mobile must not reserve a slot, so visible siblings fill the gap.
-  const getResolvedValue = useStore.getState().getResolvedValue;
-  const isVisibleOnMobile = (id) =>
-    getResolvedValue(currentPageComponents[id]?.component?.definition?.others?.showOnMobile?.value);
+  // Cached read: getResolvedValue would compile a Function per component.
+  const getResolvedComponent = useStore.getState().getResolvedComponent;
+  const isVisibleOnMobile = (id) => getResolvedComponent(id)?.others?.showOnMobile;
 
   // Stack a parent's direct children into one full-width column (children recursed first).
   const stackGroup = (parentKey) => {
@@ -209,8 +212,14 @@ function compactItem(compareWith, l, compactType, cols, fullLayout, allowOverlap
 
   // Move it down, and keep moving it down if it's colliding.
   let collides;
+  let steps = 0;
   // Checking the compactType null value to avoid breaking the layout when overlapping is allowed.
   while ((collides = getFirstCollision(compareWith, l)) && !(compactType === null && allowOverlap)) {
+    if (++steps > MAX_COMPACTION_STEPS) {
+      // eslint-disable-next-line no-console
+      console.error('compactItem: compaction did not converge, bailing out', { item: l.i, top: l.top });
+      break;
+    }
     if (compactH) {
       resolveCompactionCollision(fullLayout, l, collides.left + collides.width, 'x');
     } else {
@@ -271,7 +280,8 @@ function resolveCompactionCollision(layout, item, moveToCoord, axis) {
   item[axis] = moveToCoord;
 }
 
-const heightWidth = { x: 'width', y: 'height' };
+// Keyed by the axis names callers pass ('x' | 'top'), not react-grid-layout's ('x' | 'y').
+const heightWidth = { x: 'width', top: 'height' };
 
 function sortLayoutItems(layout, compactType) {
   if (compactType === 'horizontal') return sortLayoutItemsByColRow(layout);

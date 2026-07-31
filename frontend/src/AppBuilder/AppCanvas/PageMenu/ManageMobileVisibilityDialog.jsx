@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -26,11 +26,33 @@ import {
   InputGroupInput,
 } from '@/components/ui/Rocket';
 
+// Memoised: without it, one checkbox re-renders every row and visibly lags the footer button.
+const VisibilityRow = React.memo(({ component: c, checked, onToggle, cellClass, rowClass }) => (
+  <TableRow className={rowClass} data-cy={`manage-mobile-row-${c.id}`}>
+    <TableCell className={`${cellClass} tw-pl-4 tw-pr-0 tw-truncate`}>{c.name}</TableCell>
+    <TableCell className={`${cellClass} tw-px-2 tw-text-text-placeholder`}>
+      <span className="tw-flex tw-items-center tw-gap-2 tw-truncate [&_svg]:tw-w-5 [&_svg]:tw-h-5">
+        <WidgetIcon
+          name={componentTypeDefinitionMap[c.type]?.name?.toLowerCase()}
+          version={componentTypeDefinitionMap[c.type]?.version}
+        />
+        {componentTypeDefinitionMap[c.type]?.displayName ?? c.type}
+      </span>
+    </TableCell>
+    <TableCell className={`${cellClass} tw-pl-0 !tw-pr-4`}>
+      <div className="tw-flex tw-justify-end">
+        <Checkbox checked={checked} onCheckedChange={() => onToggle(c.id)} aria-label={`Show ${c.name} on mobile`} />
+      </div>
+    </TableCell>
+  </TableRow>
+));
+VisibilityRow.displayName = 'VisibilityRow';
+
 // Lists components hidden on mobile and lets the user re-enable the selected ones in one action.
 export default function ManageMobileVisibilityDialog({ open, onClose, moduleId = 'canvas', darkMode }) {
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
-  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const setComponentPropertyByComponentIds = useStore((state) => state.setComponentPropertyByComponentIds, shallow);
+  const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
   const clearTemporaryLayouts = useStore((state) => state.clearTemporaryLayouts, shallow);
 
   const [search, setSearch] = useState('');
@@ -40,9 +62,9 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
   const hiddenComponents = useMemo(
     () =>
       Object.entries(currentPageComponents)
-        .filter(([, comp]) => !getResolvedValue(comp?.component?.definition?.others?.showOnMobile?.value))
+        .filter(([id]) => !getResolvedComponent(id)?.others?.showOnMobile)
         .map(([id, comp]) => ({ id, name: comp?.component?.name ?? id, type: comp?.component?.component ?? '' })),
-    [currentPageComponents, getResolvedValue]
+    [currentPageComponents, getResolvedComponent]
   );
 
   const filtered = useMemo(() => {
@@ -52,12 +74,15 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
 
   const allFilteredSelected = filtered.length > 0 && filtered.every((c) => selected.has(c.id));
 
-  const toggleOne = (id) =>
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const toggleOne = useCallback(
+    (id) =>
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        return next;
+      }),
+    []
+  );
 
   const toggleAll = () =>
     setSelected((prev) => {
@@ -75,9 +100,20 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
   };
 
   const handleUpdate = () => {
-    selected.forEach((id) =>
-      setComponentProperty(id, 'showOnMobile', true, 'others', 'value', false, moduleId, { saveAfterAction: true })
-    );
+    // Batched: setComponentProperty per component fires one autosave request each.
+    const componentDiffs = {};
+    selected.forEach((id) => {
+      const comp = currentPageComponents[id]?.component;
+      if (!comp) return;
+      // Spread `others`: the batch helper replaces the whole param group in the saved diff.
+      componentDiffs[id] = {
+        component: {
+          component: comp.component,
+          definition: { others: { ...comp.definition?.others, showOnMobile: { value: true } } },
+        },
+      };
+    });
+    if (Object.keys(componentDiffs).length) setComponentPropertyByComponentIds(componentDiffs, moduleId);
     // Force a fresh mobile re-measure (as a layout switch does) so dynamic-height components size the
     // canvas correctly; without it the canvas keeps its stale desktop-derived height.
     clearTemporaryLayouts();
@@ -155,27 +191,14 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
               </TableHeader>
               <TableBody>
                 {filtered.map((c) => (
-                  <TableRow key={c.id} className={rowClass} data-cy={`manage-mobile-row-${c.id}`}>
-                    <TableCell className={`${cellClass} tw-pl-4 tw-pr-0 tw-truncate`}>{c.name}</TableCell>
-                    <TableCell className={`${cellClass} tw-px-2 tw-text-text-placeholder`}>
-                      <span className="tw-flex tw-items-center tw-gap-2 tw-truncate [&_svg]:tw-w-5 [&_svg]:tw-h-5">
-                        <WidgetIcon
-                          name={componentTypeDefinitionMap[c.type]?.name?.toLowerCase()}
-                          version={componentTypeDefinitionMap[c.type]?.version}
-                        />
-                        {componentTypeDefinitionMap[c.type]?.displayName ?? c.type}
-                      </span>
-                    </TableCell>
-                    <TableCell className={`${cellClass} tw-pl-0 !tw-pr-4`}>
-                      <div className="tw-flex tw-justify-end">
-                        <Checkbox
-                          checked={selected.has(c.id)}
-                          onCheckedChange={() => toggleOne(c.id)}
-                          aria-label={`Show ${c.name} on mobile`}
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <VisibilityRow
+                    key={c.id}
+                    component={c}
+                    checked={selected.has(c.id)}
+                    onToggle={toggleOne}
+                    cellClass={cellClass}
+                    rowClass={rowClass}
+                  />
                 ))}
               </TableBody>
             </Table>
@@ -197,8 +220,7 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
             disabled={selected.size === 0}
             data-cy="manage-mobile-visibility-update"
           >
-            <TablerIcon iconName="IconEye" size={16} />
-            Update visibility
+            Make visible on mobile
           </Button>
         </DialogFooter>
       </DialogContent>

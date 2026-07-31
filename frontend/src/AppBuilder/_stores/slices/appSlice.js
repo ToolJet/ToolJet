@@ -219,6 +219,7 @@ export const createAppSlice = (set, get) => ({
       currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
     // Mobile editor: size canvas from the real DOM bottom (stored layout lags dynamic-height widgets by a
     // reflow cycle), + bottomPadding so the 16px gap sits inside the box below the lowest widget.
+    // The 100% floor keeps the page background filling the frame when every component is hidden.
     if (currentLayout === 'mobile' && currentMode === 'edit') {
       const realCanvasEl =
         typeof document !== 'undefined'
@@ -232,12 +233,12 @@ export const createAppSlice = (set, get) => ({
           if (bottom > contentBottom) contentBottom = bottom;
         });
         if (contentBottom > 0) {
-          setCanvasHeight(`${Math.round(contentBottom) + bottomPadding}px`, moduleId);
+          setCanvasHeight(`max(100%, ${Math.round(contentBottom) + bottomPadding}px)`, moduleId);
           return;
         }
       }
       // Fallback before widgets mount; a later reflow re-runs this.
-      setCanvasHeight(`${maxHeight + bottomPadding}px`, moduleId);
+      setCanvasHeight(`max(100%, ${maxHeight + bottomPadding}px)`, moduleId);
       return;
     }
 

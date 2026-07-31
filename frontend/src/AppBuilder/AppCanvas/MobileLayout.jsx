@@ -103,7 +103,8 @@ export const MobileLayout = ({
             {mainCanvasContainer}
           </div>
         ) : (
-          mainCanvasContainer
+          // Match the editor's mobile gutter so preview and the published app frame the canvas identically.
+          <div style={{ padding: '16px 16px 0', boxSizing: 'border-box' }}>{mainCanvasContainer}</div>
         )}
       </CanvasContentTail>
       <Suspense fallback={null}>
