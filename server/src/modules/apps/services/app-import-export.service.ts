@@ -3348,9 +3348,11 @@ export class AppImportExportService {
     let currentEnvironmentId: string;
 
     // Check if git sync is fully enabled for the workspace (license + provider + branch).
-    const { isEnabled: isGitSyncConfigured, options: gitSyncOptions } = await this.gitSyncConfigsUtilService.getDetails(
-      user?.organizationId
-    );
+    const {
+      isEnabled: isGitSyncConfigured,
+      isMultiBranchingEnabled,
+      options: gitSyncOptions,
+    } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
     const importDefaultBranchId = gitSyncOptions.defaultBranch?.id ?? null;
     // Workflows are branch-agnostic — they are not synced to git and must not be
     // scoped to a branch or use the BRANCH version type, otherwise the versions
@@ -3481,6 +3483,10 @@ export class AppImportExportService {
             isWorkflow || versionStatus !== AppVersionStatus.DRAFT
               ? importDefaultBranchId
               : (branchId ?? importDefaultBranchId),
+          // Single-branching: git sync is enabled but multi-branching is off. Imported apps
+          // must be marked synced so they participate in the default-branch git flow
+          // (unsynced rows are treated as new/uncommitted content and can't be pushed).
+          isSynced: isGitSyncConfigured && !isMultiBranchingEnabled ? true : undefined,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {

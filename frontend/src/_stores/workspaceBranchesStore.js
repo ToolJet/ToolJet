@@ -160,13 +160,17 @@ export const useWorkspaceBranchesStore = create(
             const data = await workspaceBranchesService.list();
             const branches = data?.branches || [];
             const serverActiveBranchId = data?.active_branch_id || data?.activeBranchId || null;
+            // Mirror initialize: only resolve/stamp a branch when git sync is actually configured.
+            // Without this guard, fetching on a non-git workspace picks up the default branch
+            // and stamps ?branch=main on the URL even though git is off.
+            const isGitSyncEnabled = get().isGitSyncConfigured;
             // URL is the source of truth; fall back to server active/default.
-            const currentBranch = resolveActiveBranch(branches, serverActiveBranchId);
-            setActiveBranch(currentBranch);
+            const currentBranch = isGitSyncEnabled ? resolveActiveBranch(branches, serverActiveBranchId) : null;
+            setActiveBranch(isGitSyncEnabled ? currentBranch : null);
             set({
               branches,
-              activeBranchId: currentBranch?.id || null,
-              currentBranch,
+              activeBranchId: isGitSyncEnabled ? currentBranch?.id || null : null,
+              currentBranch: isGitSyncEnabled ? currentBranch : null,
               isMultiBranchingEnabled: readMultiBranchingEnabled(data),
             });
           } catch (error) {
