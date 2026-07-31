@@ -12,10 +12,13 @@ The **Libraries** section on the left sidebar lets you register external librari
 
 ### Add a Library
 
-1. Open **Libraries** from the left sidebar.
-2. Click on **Add new library** button.
+1. Open **Libraries** from the left sidebar. <br/>
+    <img className="screenshot-full img-s" src="/img/app-builder/import-lib/left-nav.png" alt="Libraries Tab on the Left Navigation Bar" />
+2. Click on **Add new library** button. <br/>
+    <img className="screenshot-full img-s" src="/img/app-builder/import-lib/add-lib.png" alt="Click on Add Library Button" />
 3. Enter a **Variable name** — the name you will use to call the library in your code (e.g., `Papa`).
-4. Enter the **CDN URL** of a UMD or IIFE build of the library (e.g., from [jsDelivr](https://www.jsdelivr.com/) or [cdnjs](https://cdnjs.com/)).
+4. Enter the **CDN URL** of a UMD or IIFE build of the library (e.g., from [jsDelivr](https://www.jsdelivr.com/) or [cdnjs](https://cdnjs.com/)). <br/>
+    <img className="screenshot-full img-s" src="/img/app-builder/import-lib/add-var-name.png" alt="Add Variable Details" />
 5. Click **+ Add library**.
 
 ToolJet fetches and validates the library. If successful, the library is saved to the app definition and is immediately available in your queries.
@@ -71,7 +74,7 @@ Open the query panel and create a new **RunJS** query.
 
 ### How to Import Libraries
 
-Let’s walk through how to import libraries using RunJS. For example, we’ll use:
+This guide walks you through the process of importing libraries using RunJS. We'll use the below libraries for demonstration:
 
 - [Compromise](https://github.com/spencermountain/compromise): for natural language processing
 - [PapaParse](https://www.papaparse.com/): for parsing CSV data
