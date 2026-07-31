@@ -20,7 +20,7 @@ const UPDATE_STATUS = {
   NONE: 'NONE',
 };
 
-export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, onClose }) {
+export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, pushOnly = false, onClose }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [commitMessage, setCommitMessage] = useState('');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -570,6 +570,11 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
 
   // --- Modal body ---
   const renderModalBody = () => {
+    // Push-only (Commit button): no tabs, show push section directly
+    if (pushOnly) {
+      return <div className="pushpull-container">{renderPushSection()}</div>;
+    }
+
     // Push not allowed: pull-only
     if (!allowPush) {
       if (actionChoiceMode) {
@@ -589,6 +594,26 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
   };
 
   const renderModalFooter = () => {
+    // Push-only mode: always show commit footer
+    if (pushOnly) {
+      return (
+        <Modal.Footer>
+          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPushing} data-cy="cancel-button">
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid
+            variant="primary"
+            onClick={handlePush}
+            disabled={isPushing || !commitMessage.trim()}
+            isLoading={isPushing}
+            data-cy="commit-button"
+          >
+            Commit changes
+          </ButtonSolid>
+        </Modal.Footer>
+      );
+    }
+
     // Pull tab active, or push not allowed (pull-only)
     if (activeTab === 'pull' || !allowPush) {
       if (actionChoiceMode) {
@@ -662,6 +687,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       return branchExistsLocally ? `Update ${selectedBranch} from git` : `Import ${selectedBranch} from git`;
     }
 
+    if (pushOnly) return 'Push Commit';
     if (!allowPush) return 'Pull Commit';
     return activeTab === 'pull' ? 'Pull Commit' : 'Push Commit';
   })();
@@ -676,7 +702,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
         centered={true}
         contentClassName={cx('git-sync-modal', {
           'theme-dark dark-theme': darkMode,
-          'pull-commit-expanded': activeTab === 'pull' || !allowPush,
+          'pull-commit-expanded': !pushOnly && (activeTab === 'pull' || !allowPush),
         })}
       >
         <Modal.Header>
@@ -707,7 +733,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
                 </div>
               )}
             </div>
-            {allowPush && !actionChoiceMode && renderPushPullTabs()}
+            {allowPush && !pushOnly && !actionChoiceMode && renderPushPullTabs()}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>{renderModalBody()}</Modal.Body>

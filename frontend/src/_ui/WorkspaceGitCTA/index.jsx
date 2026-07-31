@@ -9,12 +9,12 @@ import { toast } from 'react-hot-toast';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 
-// Single dashboard git control: one "Pull commit" button that opens the workspace git modal.
-// Push (commit) is offered only on the data-sources page, and only when the current branch is
-// actually pushable — i.e. single-branch mode OR a multi-branch feature branch. The multi-branch
-// default branch (and every apps/modules page) is pull-only.
+// Pull and Commit are separate buttons on the data-sources page (single-branch OR feature branch).
+// All other pages show only Pull. The multi-branch default branch datasource page is pull-only.
 export function WorkspaceGitCTA({ isDataSourcesPage = false }) {
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
+  const [showPullModal, setShowPullModal] = useState(false);
+  const [showCommitModal, setShowCommitModal] = useState(false);
   const [showPushModal, setShowPushModal] = useState(false);
   const { currentBranch, orgGitConfig, actions, isMultiBranchingEnabled, isGitSyncConfigured, hasUnsyncedDatasources } =
     useWorkspaceBranchesStore((state) => ({
@@ -55,23 +55,43 @@ export function WorkspaceGitCTA({ isDataSourcesPage = false }) {
     return true;
   };
 
-  const handleOpen = async () => {
-    if (await checkRemoteBranch()) setShowModal(true);
+  // const handleOpen = async () => {
+  //   if (await checkRemoteBranch()) setShowModal(true);
+  // };
+
+  const handleOpenCommit = async () => {
+    if (await checkRemoteBranch()) setShowCommitModal(true);
   };
 
   return (
     <>
+      {/* Pull button — always visible */}
       <div className="lifecycle-cta-button">
         <Button
           variant="secondary"
-          onClick={handleOpen}
+          onClick={() => setShowPullModal(true)}
           disabled={gitLicenseLocked}
-          data-cy="workspace-git-pull-commit-button"
+          data-cy="workspace-git-pull-button"
         >
           <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="pull-changes" width="16" />
           <span>Pull</span>
         </Button>
       </div>
+
+      {/* Commit button — datasource page on single-branch or feature branch */}
+      {allowPush && (
+        <div className="lifecycle-cta-button">
+          <Button
+            variant="secondary"
+            onClick={handleOpenCommit}
+            disabled={gitLicenseLocked}
+            data-cy="workspace-git-commit-button"
+          >
+            <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="commit" width="16" />
+            <span>Commit</span>
+          </Button>
+        </div>
+      )}
 
       {showSyncButton && (
         <div className="lifecycle-cta-button">
@@ -90,12 +110,12 @@ export function WorkspaceGitCTA({ isDataSourcesPage = false }) {
         </div>
       )}
 
-      {!gitLicenseLocked && showModal && (
-        <WorkspaceGitSyncModal
-          initialTab={allowPush ? 'push' : 'pull'}
-          allowPush={allowPush}
-          onClose={() => setShowModal(false)}
-        />
+      {!gitLicenseLocked && showPullModal && (
+        <WorkspaceGitSyncModal initialTab="pull" allowPush={false} onClose={() => setShowPullModal(false)} />
+      )}
+
+      {!gitLicenseLocked && showCommitModal && (
+        <WorkspaceGitSyncModal initialTab="push" pushOnly={true} onClose={() => setShowCommitModal(false)} />
       )}
 
       {!gitLicenseLocked && showPushModal && (
