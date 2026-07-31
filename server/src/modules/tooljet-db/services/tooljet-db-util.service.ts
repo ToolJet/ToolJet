@@ -141,9 +141,15 @@ export class TooljetDbUtilService {
       .filter((colDetails) => colDetails.keytype === 'PRIMARY KEY')
       .map((colDetails) => colDetails.column_name);
 
-    const serialTypeColumns = internalTableDatabaseColumn
-      .filter((colDetails) => colDetails.data_type === 'integer' && /^nextval\(/.test(colDetails.column_default))
-      .map((colDetails) => colDetails.column_name);
+    // Columns with a real DB-level default (serial PKs, gen_random_uuid(), a plain boolean/
+    // number default, etc.) - an empty CSV cell for one of these should fall back to that
+    // default instead of an explicit NULL. Only columns with no default at all should ever
+    // receive NULL (and, correctly, error out if they're also NOT NULL).
+    const columnsWithDefault = new Set(
+      internalTableDatabaseColumn
+        .filter((colDetails) => !isEmpty(colDetails.column_default))
+        .map((colDetails) => colDetails.column_name)
+    );
 
     const allValueSets = [];
     let allPlaceholders = [];
@@ -154,7 +160,7 @@ export class TooljetDbUtilService {
       const currentPlaceholders = [];
 
       for (const col of Object.keys(row)) {
-        if (serialTypeColumns.includes(col) || (row[col] === null && primaryKeyColumns.includes(col))) {
+        if (row[col] === null && (columnsWithDefault.has(col) || primaryKeyColumns.includes(col))) {
           valueSet.push('DEFAULT');
         } else {
           valueSet.push(`$${parameterIndex++}`);
@@ -613,11 +619,13 @@ export class TooljetDbUtilService {
   }
 
   convertToDataType(columnValue: string, supportedDataType: TooljetDatabaseDataTypes) {
-    if (!columnValue && supportedDataType !== TJDB.boolean) return null;
+    if (typeof columnValue === 'boolean') return columnValue;
+    // An empty CSV cell means "no value" for every column type - let the column's
+    // own default/NULL apply rather than trying (and failing) to parse "" as a boolean/number/json.
+    if (!columnValue) return null;
 
     switch (supportedDataType) {
       case TJDB.boolean:
-        if (typeof columnValue === 'boolean') return columnValue;
         return this.convertBoolean(columnValue);
       case TJDB.integer:
       case TJDB.double_precision:

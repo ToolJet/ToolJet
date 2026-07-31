@@ -125,5 +125,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UNBAN_WORKSPACE]: {
       isPublic: true,
     },
+    [FEATURE_KEY.EXPORT_APP_ADMIN]: {
+      isPublic: true,
+    },
   },
 };
