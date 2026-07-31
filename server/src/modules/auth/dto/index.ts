@@ -23,6 +23,7 @@ export class AppSignupDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
+  @MaxLength(99, { message: 'Invalid name' })
   name: string;
 
   @IsEmail()
@@ -88,6 +89,7 @@ export class ChangePasswordDto {
 export class CreateAiUserDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(99, { message: 'Invalid name' })
   name: string;
 
   @IsEmail()
