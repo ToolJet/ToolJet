@@ -25,6 +25,25 @@
   }
 }
 
+.remove-disabled-bg {
+  &.tj-base-btn:disabled {
+    background: transparent !important;
+    color: var(--text-disabled) !important;
+
+    svg {
+      opacity: 0.6;
+
+      path {
+        fill: var(--icons-disabled-on-white) !important;
+      }
+    }
+
+    &:hover {
+      background: var(--slate4) !important;
+    }
+  }
+}
+
 .group-title {
   font-weight: 500;
   color: var(--slate11);

@@ -164,6 +164,14 @@ export async function getAllEnvironments(_nestApp: INestApplication, organizatio
 export async function ensureAppEnvironments(_nestApp: INestApplication, organizationId: string): Promise<AppEnvironment[]> {
   const appEnvironmentRepository: Repository<AppEnvironment> = getDefaultDataSource().getRepository(AppEnvironment);
 
+  // Idempotent: a workspace's envs are seeded once. Re-running (e.g. multiple
+  // createApplication calls in the same org) must not violate the
+  // unique_organization_id_priority constraint.
+  const existing = await appEnvironmentRepository.find({ where: { organizationId } });
+  if (existing.length) {
+    return existing;
+  }
+
   return await Promise.all(
     defaultAppEnvironments.map(async (env) => {
       return await appEnvironmentRepository.save(
@@ -437,6 +445,50 @@ export async function grantAppPermission(nestApp: INestApplication, application:
       appsGroupPermissionsId: appsPerm.id,
     });
     await groupAppsRepo.save(groupApp);
+  }
+}
+
+/**
+ * Grants module-level permissions to a group using the granular permissions system.
+ * Creates GranularPermission (type=MODULE) -> AppsGroupPermissions (appType=MODULE), scoped to all modules.
+ */
+export async function grantModulePermission(nestApp: INestApplication, groupId: string, permissions: PermissionFlags): Promise<void> {
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+  const granularRepo = ds.getRepository(GranularPermissions);
+  const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
+
+  let granular = await granularRepo.findOne({
+    where: { groupId, type: ResourceType.MODULE },
+  });
+
+  if (!granular) {
+    granular = granularRepo.create({
+      groupId,
+      name: 'Modules',
+      type: ResourceType.MODULE,
+      isAll: true,
+    });
+    granular = await granularRepo.save(granular);
+  }
+
+  let appsPerm = await appsGroupRepo.findOne({
+    where: { granularPermissionId: granular.id },
+  });
+
+  if (!appsPerm) {
+    appsPerm = appsGroupRepo.create({
+      granularPermissionId: granular.id,
+      appType: APP_TYPES.MODULE,
+      canEdit: permissions.update || false,
+      canView: permissions.read || false,
+      hideFromDashboard: false,
+    });
+    await appsGroupRepo.save(appsPerm);
+  } else {
+    await appsGroupRepo.update(appsPerm.id, {
+      canEdit: permissions.update || appsPerm.canEdit,
+      canView: permissions.read || appsPerm.canView,
+    });
   }
 }
 

@@ -34,6 +34,14 @@ export class DataQueryStatus {
     };
   }
 
+  getResponseMetadata() {
+    return {
+      queryRunTimeMs: this._duration,
+      finished: this._startTime + (this._duration ?? 0),
+      requestSentTimestamp: this._startTime,
+    };
+  }
+
   private setDuration() {
     this._duration = new Date().getTime() - this._startTime;
   }

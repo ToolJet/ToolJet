@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Portkey datasource",
   "description": "A schema defining Portkey datasource",
-  "type": "api",
+  "type": "ai",
   "source": {
     "name": "Portkey",
     "kind": "portkey",
