@@ -273,6 +273,16 @@ jobs:
       ENABLE_TOOLJET_DB: 'true'
       ENABLE_EXTERNAL_API: 'true'
       EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
+      # git-sync e2e: real Gitea/GitHub-Enterprise-shaped simulator. Repo path is
+      # namespaced per run (must start with "run-ci/" per simulator owner) so
+      # concurrent CI runs don't collide on the same shared repo.
+      TEST_GIT_BASE_URL: ${{ secrets.GIT_SYNC_SIMULATOR_BASE_URL }}
+      TEST_GIT_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}
+      TOOLJET_GIT_ADMIN_USER: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_USER }}
+      TOOLJET_GIT_ADMIN_PASSWORD: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_PASSWORD }}
+      TOOLJET_GITHUB_APP_ID: ${{ secrets.GIT_SYNC_GITHUB_APP_ID }}
+      TOOLJET_GITHUB_INSTALLATION_ID: ${{ secrets.GIT_SYNC_GITHUB_INSTALLATION_ID }}
+      TOOLJET_GITHUB_APP_PRIVATE_KEY: ${{ secrets.GIT_SYNC_GITHUB_APP_PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@v7
       - name: Checkout EE submodules
@@ -426,6 +436,16 @@ jobs:
       ENABLE_TOOLJET_DB: 'true'
       ENABLE_EXTERNAL_API: 'true'
       EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
+      # git-sync e2e: real Gitea/GitHub-Enterprise-shaped simulator. Repo path is
+      # namespaced per run (must start with "run-ci/" per simulator owner) so
+      # concurrent CI runs don't collide on the same shared repo.
+      TEST_GIT_BASE_URL: ${{ secrets.GIT_SYNC_SIMULATOR_BASE_URL }}
+      TEST_GIT_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}
+      TOOLJET_GIT_ADMIN_USER: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_USER }}
+      TOOLJET_GIT_ADMIN_PASSWORD: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_PASSWORD }}
+      TOOLJET_GITHUB_APP_ID: ${{ secrets.GIT_SYNC_GITHUB_APP_ID }}
+      TOOLJET_GITHUB_INSTALLATION_ID: ${{ secrets.GIT_SYNC_GITHUB_INSTALLATION_ID }}
+      TOOLJET_GITHUB_APP_PRIVATE_KEY: ${{ secrets.GIT_SYNC_GITHUB_APP_PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@v7
         with:
