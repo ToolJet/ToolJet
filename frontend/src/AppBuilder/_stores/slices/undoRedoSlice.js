@@ -212,7 +212,7 @@ export const createUndoRedoSlice = (set, get) => {
           undoStack.shift();
         }
 
-        updateCanUndoRedo();
+        queueMicrotask(updateCanUndoRedo);
         return newState;
       };
     },
