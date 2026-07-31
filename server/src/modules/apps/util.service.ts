@@ -721,7 +721,7 @@ export class AppsUtilService implements IAppsUtilService {
           const defaultBranchId = details.options.defaultBranch?.id;
           if (defaultBranchId) {
             await catchDbException(async () => {
-              await manager.update(
+              const draftUpdate = await manager.update(
                 AppVersion,
                 {
                   appId,
@@ -732,6 +732,29 @@ export class AppsUtilService implements IAppsUtilService {
                 },
                 versionParams
               );
+
+              // A git-off app can have NO draft row: create → save/publish flips the draft
+              // to PUBLISHED and (unlike git-enabled apps) no continuity draft is seeded for
+              // unsynced apps, so an app that was only ever saved/released has just
+              // PUBLISHED version_type='version' rows. The draft-scoped update above then
+              // matches nothing and the metadata edit is silently lost. When that happens,
+              // fall back to writing every non-stub default-branch version row directly.
+              // The propagate_app_version_metadata trigger only fans out from a DRAFT source,
+              // so with no draft present we must update the saved rows ourselves to keep the
+              // app's version rows consistent (mirrors resolveMetadataVersion, which reads
+              // any non-stub default-branch row regardless of status).
+              if (!draftUpdate.affected) {
+                await manager.update(
+                  AppVersion,
+                  {
+                    appId,
+                    branchId: defaultBranchId,
+                    versionType: AppVersionType.VERSION,
+                    isStub: false,
+                  },
+                  versionParams
+                );
+              }
             }, [
               {
                 dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
