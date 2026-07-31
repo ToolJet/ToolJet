@@ -302,7 +302,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           },
           (error) => {
             toast.error(error?.message || 'Failed to switch to pulled version');
-          }
+          },
+          moduleId
         );
       }
       setGitVersionStatus((prev) => {
@@ -334,24 +335,26 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     closeDropdown();
 
     if (isDifferentEnvironment) {
-      // First switch environment, then switch version
-      // This updates the global selectedEnvironment
-      environmentChangedAction(selectedEnvironmentFilter, () => {
-        // After environment switch, change the version
-        changeEditorVersionAction(
-          appId,
-          version.id,
-          () => {
-            setCurrentVersionId(version.id);
-            setSelectedVersion(version);
-          },
-          (error) => {
-            toast.error(error.message || 'Failed to switch version');
-          }
-        );
-      });
+      environmentChangedAction(
+        selectedEnvironmentFilter,
+        () => {
+          changeEditorVersionAction(
+            appId,
+            version.id,
+            () => {
+              setCurrentVersionId(version.id);
+              setSelectedVersion(version);
+            },
+            (error) => {
+              toast.error(error.message || 'Failed to switch version');
+            },
+            moduleId
+          );
+        },
+        undefined,
+        moduleId
+      );
     } else {
-      // Same environment, just switch version
       changeEditorVersionAction(
         appId,
         version.id,
@@ -361,7 +364,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         },
         (error) => {
           toast.error(error.message || 'Failed to switch version');
-        }
+        },
+        moduleId
       );
     }
   };
