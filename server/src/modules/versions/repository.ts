@@ -4,7 +4,7 @@ import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
@@ -239,7 +239,10 @@ export class VersionRepository extends Repository<AppVersion> {
     // When branchId is provided, also include versions with null branchId
     // (created before branching was enabled) so they remain visible on the default branch.
     const where = branchId
-      ? [{ appId, branchId, isStub: false }, { appId, branchId: IsNull(), isStub: false }]
+      ? [
+          { appId, branchId, isStub: false },
+          { appId, branchId: IsNull(), isStub: false },
+        ]
       : { appId, isStub: false };
     return m.find(AppVersion, { where, order: { createdAt: 'DESC' }, relations: ['branch'] });
   }
@@ -389,7 +392,7 @@ export class VersionRepository extends Repository<AppVersion> {
         where: { name: versionId, appId },
         relations: ['app', 'branch'],
       });
-    } catch (error) {
+    } catch {
       version = await this.manager.findOneOrFail(AppVersion, {
         where: { id: versionId },
         relations: ['app', 'branch'],

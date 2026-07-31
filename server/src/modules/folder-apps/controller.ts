@@ -19,11 +19,7 @@ export class FolderAppsController {
 
   @InitFeature(FEATURE_KEY.GET_FOLDERS)
   @Get()
-  async index(
-    @User() user: UserEntity,
-    @Query() query,
-    @UserPermissionsDecorator() userPermissions: UserPermissions
-  ) {
+  async index(@User() user: UserEntity, @Query() query, @UserPermissionsDecorator() userPermissions: UserPermissions) {
     user.roleGroup = userPermissions.isEndUser ? USER_ROLE.END_USER : undefined;
     // NULL-convention consumer: read the raw branch_id query param (NOT the default-filled
     // user.branchId). Absent for non-git orgs and workflows, whose folder_apps rows are

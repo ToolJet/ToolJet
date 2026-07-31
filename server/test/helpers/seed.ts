@@ -33,7 +33,7 @@ import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { getDefaultDataSource } from './setup';
+import { getDefaultDataSource, recoverAbortedSuiteTx } from './setup';
 import { login } from './api';
 
 export interface CreateUserOptions {
@@ -74,7 +74,9 @@ export interface CreateAppVersionOptions {
 }
 
 export interface CreateDataSourceOptions {
-  appVersion: AppVersion;
+  appVersion?: AppVersion;
+  /** Legacy callers pass the app, not a version — resolves the org default branch. */
+  application?: App;
   name: string;
   kind: string;
   type?: string;
@@ -310,6 +312,21 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
           });
           await appsGroupRepo.save(appsPerm);
         }
+
+        // Mirrors the APP block above but for workflow-type apps — without this row,
+        // `permission.appsGroupPermissions` is undefined for the default WORKFLOWS-type
+        // GranularPermissions row created below, so canEdit/canView reads as undefined
+        // instead of a real boolean for admin/builder/end-user default groups.
+        if (resourceType === ResourceType.WORKFLOWS) {
+          const workflowsPerm = appsGroupRepo.create({
+            granularPermissionId: savedGranular.id,
+            appType: APP_TYPES.WORKFLOW,
+            canEdit: isAdmin,
+            canView: true,
+            hideFromDashboard: false,
+          });
+          await appsGroupRepo.save(workflowsPerm);
+        }
       }
     }
   }
@@ -458,7 +475,11 @@ export async function grantAppPermission(
  * Grants module-level permissions to a group using the granular permissions system.
  * Creates GranularPermission (type=MODULE) -> AppsGroupPermissions (appType=MODULE), scoped to all modules.
  */
-export async function grantModulePermission(nestApp: INestApplication, groupId: string, permissions: PermissionFlags): Promise<void> {
+export async function grantModulePermission(
+  nestApp: INestApplication,
+  groupId: string,
+  permissions: PermissionFlags
+): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
   const granularRepo = ds.getRepository(GranularPermissions);
   const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
@@ -567,24 +588,34 @@ export async function createUser(
   const organizationUsersRepository: Repository<OrganizationUser> =
     getDefaultDataSource().getRepository(OrganizationUser);
 
-  organization =
-    organization ||
-    (await organizationRepository.save(
-      organizationRepository.create({
-        name: organizationName,
-        enableSignUp,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        ssoConfigs: [
-          {
-            sso: 'form',
-            enabled: formLoginStatus,
-            configScope: 'organization',
-          },
-          ...ssoConfigs,
-        ],
-      })
-    ));
+  const buildOrg = () =>
+    organizationRepository.create({
+      name: organizationName,
+      enableSignUp,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ssoConfigs: [
+        {
+          sso: 'form',
+          enabled: formLoginStatus,
+          configScope: 'organization',
+        },
+        ...ssoConfigs,
+      ],
+    });
+  if (!organization) {
+    try {
+      organization = await organizationRepository.save(buildOrg());
+    } catch (e: unknown) {
+      // stray async server work can abort the suite TX between tests (#17333 3+4)
+      if (!(e as Error).message?.includes('current transaction is aborted') || !(await recoverAbortedSuiteTx()))
+        throw e;
+      organization = await organizationRepository.save(buildOrg());
+    }
+  }
+
+  // mirror prod: setup-organization seeds a default branch at org creation
+  await resolveOrSeedDefaultBranch(organization.id);
 
   let user: User;
 
@@ -657,6 +688,16 @@ export async function createApplication(
   return newApp;
 }
 
+/** Resolves (or seeds) the org default branch — branch_id is NOT NULL on app_versions. */
+export async function resolveOrSeedDefaultBranch(organizationId: string): Promise<WorkspaceBranch> {
+  const workspaceBranchRepository: Repository<WorkspaceBranch> = getDefaultDataSource().getRepository(WorkspaceBranch);
+  const existing = await workspaceBranchRepository.findOne({ where: { organizationId, isDefault: true } });
+  if (existing) return existing;
+  return workspaceBranchRepository.save(
+    workspaceBranchRepository.create({ organizationId, name: 'main', isDefault: true })
+  );
+}
+
 /** Creates an app version with a default page, globalSettings, and environment binding. */
 export async function createApplicationVersion(
   _nestApp: INestApplication,
@@ -667,7 +708,6 @@ export async function createApplicationVersion(
   const appVersionsRepository: Repository<AppVersion> = ds.getRepository(AppVersion);
   const appEnvironmentsRepository: Repository<AppEnvironment> = ds.getRepository(AppEnvironment);
   const pageRepository: Repository<Page> = ds.getRepository(Page);
-  const workspaceBranchRepository: Repository<WorkspaceBranch> = ds.getRepository(WorkspaceBranch);
 
   const environments = await appEnvironmentsRepository.find({
     where: {
@@ -689,20 +729,13 @@ export async function createApplicationVersion(
   // chk_app_versions_branch_metadata requires app_name + slug whenever branch_id is set,
   // so every type's default also needs placeholder metadata -- mirrors the placeholder
   // AppsUtilService.create writes in production (random-uuid slug, app name as app_name).
-  let defaultBranch = await workspaceBranchRepository.findOne({
-    where: { organizationId: application.organizationId, isDefault: true },
-  });
-  if (!defaultBranch) {
-    defaultBranch = await workspaceBranchRepository.save(
-      workspaceBranchRepository.create({
-        organizationId: application.organizationId,
-        name: 'main',
-        isDefault: true,
-      })
-    );
-  }
-  const branchId: string = defaultBranch.id;
-  const placeholderMeta: { appName: string; slug: string } = { appName: application.name ?? name, slug: uuidv4() };
+  const branchId: string = (await resolveOrSeedDefaultBranch(application.organizationId)).id;
+  // appName/slug/isPublic live on app_versions — mirror the app's flags for metadata reads
+  const placeholderMeta: { appName: string; slug: string; isPublic: boolean } = {
+    appName: application.name ?? name,
+    slug: application.slug ?? uuidv4(),
+    isPublic: application.isPublic ?? false,
+  };
 
   const version = await appVersionsRepository.save(
     appVersionsRepository.create({
@@ -748,11 +781,19 @@ export async function createApplicationVersion(
 /** Creates a data source attached to an app version, optionally with environment-specific options. */
 export async function createDataSource(
   nestApp: INestApplication,
-  { appVersion, name, kind, type = 'default', options, environmentId = null }: CreateDataSourceOptions
+  { appVersion, application, name, kind, type = 'default', options, environmentId = null }: CreateDataSourceOptions
 ): Promise<DataSource> {
   const dataSourceRepository: Repository<DataSource> = getDefaultDataSource().getRepository(DataSource);
 
   const ds = getDefaultDataSource();
+
+  // data_sources.organization_id required (branch resolution joins on it); DSV.branch_id NOT NULL
+  let organizationId = application?.organizationId;
+  if (!organizationId && appVersion?.appId) {
+    const owningApp = await ds.getRepository(App).findOne({ where: { id: appVersion.appId } });
+    organizationId = owningApp?.organizationId;
+  }
+
   const dataSource = await dataSourceRepository.save(
     dataSourceRepository.create({
       name,
@@ -760,22 +801,22 @@ export async function createDataSource(
       appVersion,
       type,
       scope: type === 'static' ? 'global' : 'local',
+      organizationId,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
   );
 
-  // Create default DataSourceVersion required by DataSourceVersionOptions.
-  // data_source_versions.branch_id is column-level NOT NULL (no workflow carve-out,
-  // unlike app_versions) — mirror the app version's already-resolved branchId rather
-  // than hardcoding null, which trips the NOT NULL constraint for every non-workflow app.
+  let dataSourceVersionBranchId = appVersion?.branchId;
+  if (!dataSourceVersionBranchId && organizationId) {
+    dataSourceVersionBranchId = (await resolveOrSeedDefaultBranch(organizationId)).id;
+  }
   await ds.manager.save(
     ds.manager.create(DataSourceVersion, {
       dataSourceId: dataSource.id,
       name: dataSource.name,
-      isDefault: true,
       isActive: true,
-      branchId: appVersion?.branchId ?? null,
+      branchId: dataSourceVersionBranchId ?? null,
     })
   );
 
@@ -869,10 +910,11 @@ export async function createFolder(
   return await folderRepository.save(folderRepository.create({ name, ...(type != null && { type }), organizationId }));
 }
 
-/** Links an application to a folder. */
+/** Links an app to a folder. Row needs branch_id — folder listings are branch-scoped. */
 export async function addAppToFolder(_nestApp: INestApplication, application: App, folder: Folder): Promise<FolderApp> {
   const folderAppRepository: Repository<FolderApp> = getDefaultDataSource().getRepository(FolderApp);
-  return await folderAppRepository.save(folderAppRepository.create({ app: application, folder }));
+  const branchId = (await resolveOrSeedDefaultBranch(folder.organizationId)).id;
+  return await folderAppRepository.save(folderAppRepository.create({ app: application, folder, branchId }));
 }
 
 /** Creates an app with version, environments, data source, and query in one call. */

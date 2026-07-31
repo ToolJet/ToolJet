@@ -29,6 +29,14 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
     return orgGit;
   }
 
+  // Whether the org has git sync configured (and therefore every app in the org is considered git-synced).
+  // Source of truth: presence of a default workspace branch row.
+  async isOrganizationGitSynced(organizationId: string, manager?: EntityManager): Promise<boolean> {
+    const repo = manager ? manager.getRepository(WorkspaceBranch) : this.dataSource.getRepository(WorkspaceBranch);
+    const count = await repo.count({ where: { organizationId, isDefault: true } });
+    return count > 0;
+  }
+
   async findDefaultBranchId(organizationId: string, manager?: EntityManager): Promise<string | undefined> {
     const repo = manager ? manager.getRepository(WorkspaceBranch) : this.dataSource.getRepository(WorkspaceBranch);
     const defaultBranch = await repo.findOne({

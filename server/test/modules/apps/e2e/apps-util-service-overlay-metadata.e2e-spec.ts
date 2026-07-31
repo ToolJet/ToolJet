@@ -6,7 +6,13 @@ import { INestApplication } from '@nestjs/common';
 import { AppsUtilService } from '@ee/apps/util.service';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { initTestApp, closeTestApp } from 'test-helper';
-import { createAdmin, createApplication, createApplicationVersion, updateEntity, getDefaultDataSource } from 'test-helper';
+import {
+  createAdmin,
+  createApplication,
+  createApplicationVersion,
+  updateEntity,
+  getDefaultDataSource,
+} from 'test-helper';
 import { App } from '@entities/app.entity';
 
 /** @group platform */
@@ -44,7 +50,9 @@ describe('AppsUtilService.overlayAppMetadata — workflow support', () => {
 
     // Raw row as read straight off `apps` — placeholder/null metadata, matching what
     // every non-overlaid read path sees post-migration (Task 1's backfill zeroes these).
-    const rawApp = await getDefaultDataSource().getRepository(App).findOne({ where: { id: workflowApp.id } });
+    const rawApp = await getDefaultDataSource()
+      .getRepository(App)
+      .findOne({ where: { id: workflowApp.id } });
     expect(rawApp.name).toBeNull();
 
     await appsUtilService.overlayAppMetadata(rawApp);

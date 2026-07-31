@@ -157,7 +157,9 @@ describe('OrganizationUsersController', () => {
         // regardless of whether the account itself ended up being created.
         const invitedUser = await userRepository.findOne({ where: { email: 'blocked-build-with@tooljet.io' } });
         if (invitedUser) {
-          const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: invitedUser.id } });
+          const usersInGroup = await findEntities(GroupUsers, {
+            where: { groupId: moduleGroup.id, userId: invitedUser.id },
+          });
           expect(usersInGroup).toHaveLength(0);
         }
       });
@@ -185,7 +187,9 @@ describe('OrganizationUsersController', () => {
 
         const invitedUser = await userRepository.findOne({ where: { email: 'blocked-module-edit@tooljet.io' } });
         if (invitedUser) {
-          const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: invitedUser.id } });
+          const usersInGroup = await findEntities(GroupUsers, {
+            where: { groupId: moduleGroup.id, userId: invitedUser.id },
+          });
           expect(usersInGroup).toHaveLength(0);
         }
       });
@@ -211,7 +215,9 @@ describe('OrganizationUsersController', () => {
         expect(response.statusCode).toBe(201);
 
         const invitedUser = await userRepository.findOneOrFail({ where: { email: 'allowed-builder@tooljet.io' } });
-        const usersInGroup = await findEntities(GroupUsers, { where: { groupId: moduleGroup.id, userId: invitedUser.id } });
+        const usersInGroup = await findEntities(GroupUsers, {
+          where: { groupId: moduleGroup.id, userId: invitedUser.id },
+        });
         expect(usersInGroup).toHaveLength(1);
       });
     });

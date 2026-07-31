@@ -85,14 +85,11 @@ describe('ExternalApisAppsController - git pull', () => {
       });
 
       it('should return 403 when the authorization header is missing', async () => {
-        const res = await request
-          .agent(app.getHttpServer())
-          .post('/api/ext/apps?createMode=git')
-          .send({
-            organizationId,
-            gitAppName: 'ext-pull-guard-app',
-            gitBranchName: 'feature-branch-that-does-not-exist',
-          });
+        const res = await request.agent(app.getHttpServer()).post('/api/ext/apps?createMode=git').send({
+          organizationId,
+          gitAppName: 'ext-pull-guard-app',
+          gitBranchName: 'feature-branch-that-does-not-exist',
+        });
 
         expect(res.status).toBe(403);
       });
@@ -108,7 +105,7 @@ describe('ExternalApisAppsController - git pull', () => {
       // path (isBranchingEnabled && gitBranchName) never triggered — every pull fell
       // to the legacy path, which clones the org's *default* branch regardless of
       // which branch the app actually lives on.
-      it('should resolve gitBranchName/currentVersionId from the app\'s own branch, not the org default', async () => {
+      it("should resolve gitBranchName/currentVersionId from the app's own branch, not the org default", async () => {
         const featureBranch = await saveEntity(WorkspaceBranch, {
           organizationId,
           name: 'feature-y',

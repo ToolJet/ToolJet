@@ -106,8 +106,19 @@ if [[ "${CI:-}" == "true" ]]; then
 fi
 
 # ${arr[@]+...} guard: empty-array expansion breaks under set -u on bash 3.2 (macOS)
+echo "--- Lint ---"
+npm run lint
+
+echo "--- Typecheck ---"
+npx tsc --noEmit -p tsconfig.build.json
+
 echo "--- Unit tests ---"
 npm run test -- ${unit_args[@]+"${unit_args[@]}"}
 
-echo "--- E2e tests ---"
-npm run test:e2e -- "${e2e_args[@]}"
+# e2e is CI-only: slow, flake-prone locally, and CI re-runs it regardless.
+if [[ "${CI:-}" == "true" ]]; then
+  echo "--- E2e tests ---"
+  npm run test:e2e -- ${e2e_args[@]+"${e2e_args[@]}"}
+else
+  echo "--- E2e tests: skipped locally (CI runs them) ---"
+fi

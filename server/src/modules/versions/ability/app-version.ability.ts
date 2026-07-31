@@ -66,10 +66,18 @@ export function defineAppVersionAbility(
     // Build-with is complete view-only.
     const isEditable =
       !!userAppPermissions?.isAllEditable ||
-      !!(userAppPermissions?.editableAppsId?.length && resourceId && userAppPermissions.editableAppsId.includes(resourceId));
+      !!(
+        userAppPermissions?.editableAppsId?.length &&
+        resourceId &&
+        userAppPermissions.editableAppsId.includes(resourceId)
+      );
     const isViewable =
       !!userAppPermissions?.isAllViewable ||
-      !!(userAppPermissions?.viewableAppsId?.length && resourceId && userAppPermissions.viewableAppsId.includes(resourceId));
+      !!(
+        userAppPermissions?.viewableAppsId?.length &&
+        resourceId &&
+        userAppPermissions.viewableAppsId.includes(resourceId)
+      );
 
     if (isEditable) {
       can(

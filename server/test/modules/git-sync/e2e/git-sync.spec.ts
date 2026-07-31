@@ -4480,14 +4480,8 @@ describe('GitSyncController', () => {
 
         step(3, 'git-off: add another data source, edit it, rename app + module, add more component/query');
         await auth(agent().post('/api/data-sources'))
-          .send({
-            name: 'edit-rules-ds-2',
-            kind: 'restapi',
-            options: restapiDsOptions,
-            scope: 'global',
-          })
+          .send({ name: 'edit-rules-ds-2', kind: 'restapi', options: restapiDsOptions, scope: 'global' })
           .expect(201);
-        // const ds2Id: string = ds2Resp.body.id;
 
         // Edit a data source (dev env). Git off → GitSyncDataSourceEditGuard is a no-op.
         const devEnv = (await auth(agent().get('/api/app-environments')).expect(200)).body.environments.sort(

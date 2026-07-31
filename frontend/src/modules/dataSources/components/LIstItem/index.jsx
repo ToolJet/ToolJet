@@ -53,7 +53,10 @@ export const ListItem = ({
   const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
   const isUnsynced =
-    wsCurrentBranch && isOnDefaultBranch && (dataSource?.is_synced === false || dataSource?.isSynced === false);
+    isGitSyncConfigured &&
+    wsCurrentBranch &&
+    isOnDefaultBranch &&
+    (dataSource?.is_synced === false || dataSource?.isSynced === false);
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
