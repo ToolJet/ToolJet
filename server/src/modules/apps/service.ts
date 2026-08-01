@@ -683,9 +683,14 @@ export class AppsService implements IAppsService {
     type: string,
     providedBranchId?: string
   ): Promise<string | undefined> {
-    if (providedBranchId || type !== APP_TYPES.FRONT_END) return providedBranchId;
-    const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-    return options.defaultBranch?.id;
+    if (providedBranchId) return providedBranchId;
+    // Resolve default branch for git-synced app types (FRONT_END and MODULE).
+    // Workflows are never branch-scoped — their folder_apps rows always use branch_id=NULL.
+    if (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE) {
+      const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      return options.defaultBranch?.id;
+    }
+    return providedBranchId;
   }
 
   private async fetchDashboardApps(
@@ -707,6 +712,9 @@ export class AppsService implements IAppsService {
         this.folderAppsUtilService.getAppsFor(user, folder, pageArg, searchKey, type as APP_TYPES, branchId),
         this.appsUtilService.count(user, searchKey, type as APP_TYPES, branchId),
       ]);
+      // getAppsFor doesn't stamp isAppSynced (unlike allWithCount/all). Stamp here so
+      // app cards inside a folder show the same sync state as the top-level listing.
+      await this.appsUtilService.stampIsAppSynced(viewableApps, branchId, type);
       return { apps: viewableApps, totalCount, folderCount };
     }
     if (isGetAll) {
