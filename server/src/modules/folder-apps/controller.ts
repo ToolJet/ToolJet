@@ -31,15 +31,18 @@ export class FolderAppsController {
   @Post()
   async create(
     @Body() createBody: { folder_id: string; app_id?: string; app_ids?: string[] },
-    // NULL-convention consumer: raw branch_id query param, absent (NULL) for non-git orgs / workflows.
-    @Query('branch_id') branchId?: string
+    // NULL-convention consumer: raw branch_id query param, absent (NULL) for workflows.
+    // Non-git-workspace FRONT_END/MODULE apps also arrive without branch_id; service resolves
+    // to the org's default branch so they never land on the NULL key.
+    @Query('branch_id') branchId?: string,
+    @User() user?: UserEntity
   ) {
     const { folder_id: folderId, app_id: appId, app_ids: appIds } = createBody;
 
     if (appIds?.length) {
-      return this.folderAppsService.bulkCreate(folderId, appIds, branchId);
+      return this.folderAppsService.bulkCreate(folderId, appIds, branchId, user?.organizationId);
     }
-    const folder = await this.folderAppsService.create(folderId, appId, branchId);
+    const folder = await this.folderAppsService.create(folderId, appId, branchId, user?.organizationId);
     return decamelizeKeys(folder);
   }
 
@@ -48,9 +51,10 @@ export class FolderAppsController {
   async remove(
     @Body('app_id') appId: string,
     @Param('folderId') folderId: string,
-    // NULL-convention consumer: raw branch_id query param, absent (NULL) for non-git orgs / workflows.
-    @Query('branch_id') branchId?: string
+    // NULL-convention consumer: raw branch_id query param, absent (NULL) for workflows.
+    @Query('branch_id') branchId?: string,
+    @User() user?: UserEntity
   ) {
-    await this.folderAppsService.remove(folderId, appId, branchId);
+    await this.folderAppsService.remove(folderId, appId, branchId, user?.organizationId);
   }
 }

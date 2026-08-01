@@ -5,7 +5,7 @@ import { UserFolderPermissions } from '../../../../src/modules/ability/types';
 
 class TestableFolderAppsService extends FolderAppsService {
   constructor() {
-    super(null as any, null as any, null as any);
+    super(null as any, null as any, null as any, null as any);
   }
   public exposeFilterFolders(
     folders: any[],

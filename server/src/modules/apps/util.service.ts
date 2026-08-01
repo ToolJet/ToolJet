@@ -881,7 +881,7 @@ export class AppsUtilService implements IAppsUtilService {
   // Mirrors the app builder's developmentVersions.some(v => v.isSynced && v.status=DRAFT && v.versionType=version) check.
   // Only runs for FRONT_END apps in the git-sync flow (branchId present) — no-op for
   // all other app types and all non-git flows.
-  private async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
+  async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
     if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
     const rows: { app_id: string }[] = await this.appRepository.manager.query(
       `SELECT DISTINCT app_id FROM app_versions
