@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Res, Sse } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Res, Sse, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { IWorkflowExecutionController } from '../interfaces/IWorkflowExecutionController';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
@@ -10,6 +10,8 @@ import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '@modules/workflows/constants';
 import { Observable } from 'rxjs';
+import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { FeatureAbilityGuard } from '../ability/app/guard';
 
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow_executions')
@@ -17,6 +19,7 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   constructor() {}
 
   @InitFeature(FEATURE_KEY.EXECUTE_WORKFLOW)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post()
   async create(
     @User() user,
