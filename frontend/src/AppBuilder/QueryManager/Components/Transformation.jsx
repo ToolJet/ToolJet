@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tab, ListGroup, Row, Col, Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { shallow } from 'zustand/shallow';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { authenticationService } from '@/_services';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import useStore from '@/AppBuilder/_stores/store';
 import { v4 as uuidv4 } from 'uuid';
+import { ToolTip } from '@/_components';
+import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
+import { AI_QUERY_SUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
 
 const defaultValue = {
   javascript: `// write your code here
@@ -38,6 +44,38 @@ const labelPopoverContent = (darkMode, t) => (
   </Popover>
 );
 
+// "✨" beside the toggle: opens the AI chat pre-scoped to this query's transformation layer.
+const WriteTransformationButton = () => {
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const { openChat, isPressed, queryName, selectedDataSource } = useWriteQueryEntry('transformation');
+
+  if (!featureAccess?.ai || !queryName) return null;
+  // The transformation tab renders for kinds the AI can't write for (restapi, tooljetdb, marketplace
+  // plugins) — only runjs/runpy/workflows opt out of it. Without this gate the button would always
+  // fail with "unsupported datasource".
+  if (!AI_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
+
+  return (
+    <ToolTip message="Write transformations" placement="top" trigger={['hover']} show={true} tooltipClassName="">
+      <span>
+        <ButtonComponent
+          size="small"
+          variant="ghost"
+          iconOnly
+          aria-selected={isPressed}
+          className={isPressed ? '!tw-bg-button-outline-hover' : ''}
+          onClick={openChat}
+          disabled={shouldFreeze}
+          data-cy="write-transformation-button"
+        >
+          <AITripleSparkles width="14" height="14" />
+        </ButtonComponent>
+      </span>
+    </ToolTip>
+  );
+};
+
 const getNonActiveTransformations = (activeLang) => {
   switch (activeLang) {
     case 'javascript':
@@ -53,6 +91,8 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
   const [lang, setLang] = useState(options?.transformationLanguage ?? 'javascript');
   const [enableTransformation, setEnableTransformation] = useState(options.enableTransformation);
   const prevQueryId = useRef(queryId);
+  // Last value this editor itself emitted — see the external-change remount effect below.
+  const lastLocalValueRef = useRef(options?.transformations?.[options?.transformationLanguage ?? 'javascript']);
   const selectedQueryId = useStore((state) => state.selectedQuery?.id);
   const [codeEditorKey, setCodeEditorKey] = useState(uuidv4());
   const [state, setState] = useState({
@@ -115,6 +155,22 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
     setCodeEditorKey(uuidv4());
   }, [lang, queryId]);
 
+  // CodeHinter reads `initialValue` at mount only, so a transformation written from outside the
+  // editor (AI "Write transformations") would land in the store but stay invisible here. Remount on
+  // an external change — `lastLocalValueRef` holds what this editor last emitted, so the user's own
+  // keystrokes never trigger a remount (which would drop their cursor).
+  useEffect(() => {
+    const activeLang = options?.transformationLanguage ?? 'javascript';
+    const incoming = options?.transformations?.[lang] ?? (lang === activeLang ? options?.transformation : undefined);
+
+    if (incoming === undefined || incoming === lastLocalValueRef.current) return;
+
+    lastLocalValueRef.current = incoming;
+    setState((prevState) => (prevState[lang] === incoming ? prevState : { ...prevState, [lang]: incoming }));
+    setCodeEditorKey(uuidv4());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options?.transformations?.[lang], options?.transformation, options?.transformationLanguage, lang]);
+
   return (
     <div className="field transformation-editor">
       <div className="tw-flex tw-items-start">
@@ -128,21 +184,24 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
         />
 
         <div>
-          <OverlayTrigger
-            trigger="click"
-            placement="bottom"
-            rootClose
-            overlay={labelPopoverContent(darkMode, t)}
-            container={document.getElementsByClassName('query-details')[0]}
-          >
-            <span
-              style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
-              className="text-default"
-              data-cy="transformation-label"
+          <div className="tw-flex tw-items-center tw-gap-1">
+            <OverlayTrigger
+              trigger="click"
+              placement="bottom"
+              rootClose
+              overlay={labelPopoverContent(darkMode, t)}
+              container={document.getElementsByClassName('query-details')[0]}
             >
-              {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
-            </span>
-          </OverlayTrigger>
+              <span
+                style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
+                className="text-default"
+                data-cy="transformation-label"
+              >
+                {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
+              </span>
+            </OverlayTrigger>
+            <WriteTransformationButton />
+          </div>
 
           <p className="tw-text-text-placeholder tw-mb-0" data-cy="transformation-info">
             Run JavaScript or Python on the query result to reshape, filter, or reformat data.
@@ -202,6 +261,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
               height={400}
               className="query-hinter"
               onChange={(value) => {
+                lastLocalValueRef.current = value;
                 changeOption('transformations', { ...state, [lang]: value });
               }}
               renderCopilot={renderCopilot}
