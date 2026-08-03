@@ -286,6 +286,7 @@ export class UserRepository extends Repository<User> {
           role: null,
           invitationToken: null,
           invitationTokenExpiry: null,
+          llmProvider: null,
           createdAt: null,
           updatedAt: null,
           user,
