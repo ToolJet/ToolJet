@@ -16,7 +16,7 @@ function getEnvironment(id, queryParams) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const query = queryString.stringify(queryParams);
   return fetch(
-    `${config.apiUrl}/app-environments/${id ? id : 'default'}${query && !id ? `?${query}` : ''}`,
+    `${config.apiUrl}/app-environments/${id ? id : 'default'}${query ? `?${query}` : ''}`,
     requestOptions
   ).then(handleResponse);
 }
