@@ -30,7 +30,6 @@
     "@tooljet-plugins/common": "file:packages/common",
     "@tooljet-plugins/cosmosdb": "file:packages/cosmosdb",
     "@tooljet-plugins/couchdb": "file:packages/couchdb",
-    "@tooljet-plugins/ibmdb": "file:packages/ibmdb",
     "@tooljet-plugins/databricks": "file:packages/databricks",
     "@tooljet-plugins/dynamodb": "file:packages/dynamodb",
     "@tooljet-plugins/elasticsearch": "file:packages/elasticsearch",
@@ -40,6 +39,7 @@
     "@tooljet-plugins/graphql": "file:packages/graphql",
     "@tooljet-plugins/grpc": "file:packages/grpc",
     "@tooljet-plugins/grpcv2": "file:packages/grpcv2",
+    "@tooljet-plugins/ibmdb": "file:packages/ibmdb",
     "@tooljet-plugins/influxdb": "file:packages/influxdb",
     "@tooljet-plugins/mailgun": "file:packages/mailgun",
     "@tooljet-plugins/mariadb": "file:packages/mariadb",
@@ -86,7 +86,7 @@
     "@types/node": "<=25.9.5"
   },
   "devDependencies": {
-    "@types/jest": "^27.5.2",
+    "@types/jest": "^29.5.14",
     "@types/node-int64": "^0.4.32",
     "@types/nodemailer": "^6.4.7",
     "@types/oracledb": "^5.2.2",
@@ -96,10 +96,10 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-jest": "^24.7.0",
     "eslint-plugin-prettier": "^3.4.1",
-    "jest": "^27.5.1",
+    "jest": "^29.7.0",
     "lerna": "^9.0.3",
     "prettier": "^2.8.3",
     "rimraf": "^3.0.2",
-    "ts-jest": "^27.1.5"
+    "ts-jest": "^29.4.12"
   }
 }
