@@ -37,33 +37,25 @@ export default class ComponentInit extends Command {
         validate: (input: string) => (input && input.trim().length > 0) || 'Display name is required',
       },
       {
-        name: 'instance_url',
-        message: 'ToolJet instance URL',
+        name: 'workspace_id',
+        message: 'ToolJet workspace ID',
         type: 'input',
-        default: this.getDefaultInstanceUrl(),
-        validate: (input: string) => {
-          try {
-            new URL(input);
-            return true;
-          } catch {
-            return 'Enter a valid URL';
-          }
-        },
+        validate: (input: string) => (input && input.trim().length > 0) || 'Workspace ID is required',
       },
     ]);
 
-    const { display_name: displayName, instance_url: instanceUrl } = answers;
+    const { display_name: displayName, workspace_id: workspaceId } = answers;
 
     const { apiToken } = Auth.resolve();
 
-    const client = new ApiClient(instanceUrl, apiToken);
+    const client = new ApiClient(apiToken);
 
     const library = await client.createLibrary(displayName);
 
     // Scaffold project via hygen templates
-    await scaffoldProject(libraryDirectoryName, { instanceUrl, libraryId: library.id, libraryName: library.name });
+    await scaffoldProject(libraryDirectoryName, { workspaceId, libraryId: library.id, libraryName: library.name });
 
-    this.log(`✓ Registered library "${displayName}" on ${instanceUrl} (ID: ${library.id})`);
+    this.log(`✓ Registered library "${displayName}" on ${workspaceId} workspace (ID: ${library.id})`);
     this.log(`✓ Created project directory: ./${libraryDirectoryName}/`);
     this.log(`✓ Run: cd ${libraryDirectoryName} && npm install`);
   }

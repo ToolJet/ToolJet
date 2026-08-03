@@ -5,22 +5,21 @@ import { Auth } from '../lib/component/auth';
 import { ApiClient } from '../lib/component/api-client';
 
 export default class Login extends Command {
-  static description = 'Authenticate the CLI against a ToolJet instance';
+  static description = 'Authenticate the CLI against a ToolJet workspace';
 
   static examples = [`$ tooljet login`];
 
   async run(): Promise<void> {
     const answers: any = await inquirer.prompt([
       {
-        name: 'instance_url',
-        message: 'ToolJet instance URL',
+        name: 'workspace_id',
+        message: 'ToolJet workspace ID',
         type: 'input',
         validate: (input: string) => {
           try {
-            new URL(input);
-            return true;
+            return input && input.trim().length > 0;
           } catch {
-            return 'Enter a valid URL';
+            return 'Workspace ID is required';
           }
         },
       },
@@ -33,14 +32,14 @@ export default class Login extends Command {
       },
     ]);
 
-    const { instance_url: instanceUrl, api_access_token: apiToken } = answers;
+    const { workspace_id: workspaceId, api_access_token: apiToken } = answers;
 
-    const client = new ApiClient(instanceUrl, apiToken);
+    const client = new ApiClient(apiToken);
     const me = await client.fetchProfile();
 
-    Auth.save(instanceUrl, apiToken, me.email);
+    Auth.save(workspaceId, apiToken, me.email);
 
     this.log(`✓ Authenticated as ${me.email}`);
-    this.log(`✓ Saved credentials for ${instanceUrl}`);
+    this.log(`✓ Saved credentials for ${workspaceId} workspace`);
   }
 }

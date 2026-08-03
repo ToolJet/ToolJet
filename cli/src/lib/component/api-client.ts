@@ -2,14 +2,13 @@ import fetch = require('node-fetch');
 
 import { uploadToEndpoint } from './uploader';
 
+const BASE_URL = 'http://localhost:3000';
+
 export class ApiClient {
-  constructor(
-    private readonly baseUrl: string,
-    private readonly apiToken: string,
-  ) {}
+  constructor(private readonly apiToken: string) {}
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const res = await fetch(`${this.baseUrl}/api${path}`, {
+    const res = await fetch(`${BASE_URL}/api${path}`, {
       method,
       headers: {
         Authorization:  `Bearer ${this.apiToken}`,
@@ -39,7 +38,7 @@ export class ApiClient {
   // POST /api/custom-component-libraries/:id/dev (multipart — handled by uploader.ts)
   async uploadDev(libraryId: string, distDir: string): Promise<{ devUploadedAt: string }> {
     return uploadToEndpoint(
-      `${this.baseUrl}/api/custom-component-libraries/${libraryId}/dev`,
+      `${BASE_URL}/api/custom-component-libraries/${libraryId}/dev`,
       this.apiToken,
       distDir,
     ) as Promise<{ devUploadedAt: string }>;
@@ -52,7 +51,7 @@ export class ApiClient {
     message?: string
   ): Promise<{ id: string; version: string; bundleUrl: string }> {
     return uploadToEndpoint(
-      `${this.baseUrl}/api/custom-component-libraries/${libraryId}/revisions`,
+      `${BASE_URL}/api/custom-component-libraries/${libraryId}/revisions`,
       this.apiToken,
       distDir,
       message ? { message } : {},
@@ -61,6 +60,6 @@ export class ApiClient {
 
   // GET /api/profile — for login verification
   async fetchProfile(): Promise<{ email: string }> {
-    return this.request('GET', '/profile');
+    return this.request('GET', '/custom-component-libraries/validate-token');
   }
 }

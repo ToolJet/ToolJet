@@ -9,33 +9,43 @@ export interface UploadResult {
   devUploadedAt: string;
 }
 
-// Creates a ZIP of dist/ and POSTs as multipart
 export async function uploadToEndpoint(
-  endpoint: string,     // full URL
+  endpoint: string,
   apiToken: string,
-  distDir:  string,
+  distDir: string,
   extraFields: Record<string, string> = {}
 ): Promise<unknown> {
+  const bundlePath = path.join(distDir, 'index.js');
+  const manifestPath = path.join(distDir, 'manifest.json');
+  const cssPath = path.join(distDir, 'index.css');
+
+  if (!fs.existsSync(bundlePath)) {
+    throw new Error(`Unable to find JS bundle at ${bundlePath}`);
+  }
+
+  if (!fs.existsSync(manifestPath)) {
+    throw new Error(`Unable to find manifest at ${manifestPath}`);
+  }
+
   const form = new FormData();
 
   // Append index.js as 'bundle'
-  form.append('bundle', fs.createReadStream(path.join(distDir, 'index.js')), {
-    filename:    'index.js',
+  form.append('bundle', fs.createReadStream(bundlePath), {
+    filename: 'index.js',
     contentType: 'application/javascript',
   });
 
   // Append index.css as 'css' if present
-  const cssPath = path.join(distDir, 'index.css');
   if (fs.existsSync(cssPath)) {
     form.append('css', fs.createReadStream(cssPath), {
-      filename:    'index.css',
+      filename: 'index.css',
       contentType: 'text/css',
     });
   }
 
   // Append manifest.json
-  form.append('manifest', fs.createReadStream(path.join(distDir, 'manifest.json')), {
-    filename:    'manifest.json',
+  form.append('manifest', fs.createReadStream(manifestPath), {
+    filename: 'manifest.json',
     contentType: 'application/json',
   });
 
@@ -45,9 +55,9 @@ export async function uploadToEndpoint(
   }
 
   const response = await fetch(endpoint, {
-    method:  'POST',
+    method: 'POST',
     headers: { Authorization: `Bearer ${apiToken}`, ...form.getHeaders() },
-    body:    form,
+    body: form,
   });
 
   if (!response.ok) {
