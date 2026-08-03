@@ -15,6 +15,7 @@ export const routes = {
   launch: '/applications/:slug/:pageHandle',
   workspace_settings: '/workspace-settings/users',
   workspace_settings_builder: '/workspace-settings/themes',
+  workspace_settings_groups: '/workspace-settings/groups',
   settings: '/settings',
   database: '/database',
   integrations: '/integrations/marketplace',
@@ -31,7 +32,14 @@ export const routes = {
 
 export const getPrivateRoute = (page, params = {}) => {
   let url = routes[page];
-  const urlParams = url?.split('/').map((path) => {
+  // Fail safe on an unknown page key: returning early beats throwing here — a throw
+  // during render (e.g. from a header/menu) bubbles to the app-level error boundary and
+  // can trigger an infinite remount loop instead of a graceful fallback.
+  if (url == null) {
+    console.error(`[getPrivateRoute] Unknown route key "${page}" — falling back to dashboard`);
+    url = routes.dashboard;
+  }
+  const urlParams = url.split('/').map((path) => {
     if (path.startsWith(':')) {
       return params[path.substring(1)];
     }

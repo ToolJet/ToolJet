@@ -418,6 +418,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       }
       let optionsToUpdate = {
         selectedVersion,
+        currentVersionId: selectedVersion.id,
         appVersionEnvironment,
         versionsPromotedToEnvironment: [...updatedVersionsArray],
         ...calculatePromoteAndReleaseButtonVisibility(
@@ -607,8 +608,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           // Event handlers are cloned with new ids per version too — without this, click/
           // onPageLoad actions stay wired to the previous version's event definitions.
           get().eventsSlice.updateEventsField('events', data.events || [], moduleId);
-          // "Go to app" link targets — stale otherwise.
-          get().setLinkedApps(data.linkedApps ?? {}, moduleId);
 
           // Queries are cloned with new ids per version too (mirrors pages above), but
           // getAppVersionData doesn't return them — without this refetch, queryNameIdMapping/
@@ -727,7 +726,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }
   },
 
-  promoteAppVersionAction: async (versionId, onSuccess, onFailure) => {
+  promoteAppVersionAction: async (versionId, onSuccess, onFailure, moduleId = 'canvas') => {
     try {
       const modules = useStore.getState().appStore.modules;
       const appId = modules.canvas?.app?.appId || modules.workflow?.app?.appId;
@@ -751,6 +750,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       }));
+      get().setResolvedGlobals(
+        'environment',
+        { id: response.editorEnvironment?.id, name: response.editorEnvironment?.name },
+        moduleId
+      );
       onSuccess({
         selectedEnvironment: response.editorEnvironment,
         hasAccessToPromotedEnvironment: hasAccessToPromotedEnv,
