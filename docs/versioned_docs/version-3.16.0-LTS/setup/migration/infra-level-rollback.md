@@ -25,17 +25,10 @@ If your database is deployed as a container alongside ToolJet rather than as an 
 1. Navigate to **RDS Console** → **Databases**
 2. Select your database instance
 3. Click **Actions** → **Take snapshot**
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/setup/infra-level-rollback/take-snapshot-dropdown.png" alt="RDS Actions menu with Take snapshot option" />
-</div>
-
+   <img className="screenshot-full img-full" src="/img/setup/infra-level-rollback/take-snapshot-dropdown.png" alt="RDS Actions menu with Take snapshot option" />
 4. Enter a snapshot name, for example: `pre-upgrade-snapshot-YYYYMMDD`
 5. Click **Take snapshot**
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/setup/infra-level-rollback/snapshot-created.png" alt="RDS snapshot successfully created" />
-</div>
+   <img className="screenshot-full img-full" src="/img/setup/infra-level-rollback/snapshot-created.png" alt="RDS snapshot successfully created" />
 
 If PG_DB and TOOLJET_DB are hosted on separate instances, repeat this for each instance.
 
@@ -48,11 +41,7 @@ If PG_DB and TOOLJET_DB are hosted on separate instances, repeat this for each i
    ```yaml
    image: tooljet/tooljet:v3.20.200-lts
    ```
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/setup/infra-level-rollback/rollback-compose-tag.png" alt="docker-compose.yaml with the image tag updated to a previous version" />
-</div>
-
+   <img className="screenshot-full img-full" src="/img/setup/infra-level-rollback/rollback-compose-tag.png" alt="docker-compose.yaml with the image tag updated to a previous version" />
 2. Pull the older image:
    ```bash
    docker-compose pull
