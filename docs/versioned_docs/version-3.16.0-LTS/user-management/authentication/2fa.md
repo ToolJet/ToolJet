@@ -23,6 +23,10 @@ Before users can set up 2FA on their accounts, a super admin needs to turn the f
    (Example URL - `https://app.corp.com/settings/security`)
 3. Enable the **Two-factor authentication** toggle.
 
+:::note
+By enabling this toggle 2FA isn't enforced for everyone. It only makes 2FA available - it applies to a user only after that user manually configures 2FA from their own profile.
+:::
+
 ## Configure Two-Factor Authentication From Profile
 
 Once the Super Admin enables the two-factor authentication, the users can configure it from their profile.
@@ -87,7 +91,8 @@ If you've enabled 2FA on your account, after entering your email and password yo
 Can't access your authenticator app? Click **Trouble signing in?** on the screen for recovery guidance.
 
 :::note
-Codes refresh every 30 seconds. If your code keeps getting rejected, check that your device's clock is in sync - authenticator apps rely on accurate time to generate valid codes.
+1. Codes refresh every 30 seconds. If your code keeps getting rejected, check that your device's clock is in sync - authenticator apps rely on accurate time to generate valid codes.
+2. If you close the tab while entering the OTP, you'll have to restart the login flow from the beginning, that is, enter your email and password again.
 :::
 
 ## Checking Which Users Have Enabled 2FA
