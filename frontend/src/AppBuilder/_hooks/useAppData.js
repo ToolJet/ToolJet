@@ -21,6 +21,8 @@ import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
@@ -258,6 +260,16 @@ const useAppData = (
     }
   }, [pageSwitchInProgress, moduleMode]);
 
+  // Sync editor freeze state from global store to app builder store (for cross-bundle triggers like auto-sync)
+  useEffect(() => {
+    const unsubscribe = useAppVersionStore.subscribe((state) => {
+      if (state.isEditorFreezed) {
+        setIsEditorFreezed(true);
+      }
+    });
+    return unsubscribe;
+  }, [setIsEditorFreezed]);
+
   useEffect(() => {
     const subscription = authenticationService.currentSession
       .pipe(
@@ -482,8 +494,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -498,6 +510,9 @@ const useAppData = (
           },
           moduleId
         );
+
+        // Also populate the global app data store so route-level hooks can access co_relation_id
+        useAppDataStore.getState().actions.updateState({ coRelationId: appData.co_relation_id });
 
         const liveMessages = useStore.getState().ai?.conversation?.aiConversationMessages;
         if (
@@ -934,8 +949,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,

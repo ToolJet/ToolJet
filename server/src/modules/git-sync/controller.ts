@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Param, Body, NotFoundException, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, NotFoundException, Patch, Put } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { IGitSyncController } from './Interfaces/IController';
@@ -35,6 +35,42 @@ export class GitSyncController implements IGitSyncController {
     @Param('id') _organizationGitId: string,
     @Body() _configDto: ProviderConfigDTO
   ) {
+    throw new NotFoundException();
+  }
+
+  // ─── Auto-Sync Stubs (EE overrides) ───
+
+  @Post('auto-sync/provision')
+  async provisionWebhook(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Post('auto-sync/enable')
+  async enableAutoSync(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Post('auto-sync/disable')
+  async disableAutoSync(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Post('auto-sync/rotate-secret')
+  async rotateAutoSyncSecret(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Get('auto-sync/status')
+  async getAutoSyncStatus(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Get('auto-sync/events')
+  async getAutoSyncEvents(
+    @User() user: UserEntity,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
+  ): Promise<any> {
     throw new NotFoundException();
   }
 }

@@ -32,6 +32,14 @@ export const gitSyncService = {
   checkTagExists,
   updateEnvConfigs,
   testProviderConnection,
+  // Auto-sync webhook management
+  provisionWebhook,
+  enableAutoSync,
+  updateAutoSyncEvents,
+  disableAutoSync,
+  rotateAutoSyncSecret,
+  getAutoSyncStatus,
+  getAutoSyncEvents,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -423,3 +431,72 @@ function validatePush(appId, resourceType = 'app') {
 }
 
 // Remove all app-git api's to separate service from here.
+
+// Auto-sync webhook management
+
+function provisionWebhook() {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/provision`, requestOptions).then(handleResponse);
+}
+
+function enableAutoSync(selectedEvents) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ events: selectedEvents }),
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/enable`, requestOptions).then(handleResponse);
+}
+
+function updateAutoSyncEvents(selectedEvents) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ events: selectedEvents }),
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/events`, requestOptions).then(handleResponse);
+}
+
+function disableAutoSync() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/disable`, requestOptions).then(handleResponse);
+}
+
+function rotateAutoSyncSecret() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/rotate-secret`, requestOptions).then(handleResponse);
+}
+
+function getAutoSyncStatus() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/status`, requestOptions).then(handleResponse);
+}
+
+function getAutoSyncEvents(page = 1, limit = 20) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/events?page=${page}&limit=${limit}`, requestOptions).then(
+    handleResponse
+  );
+}

@@ -447,8 +447,8 @@ export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}
     const entityId = componentNameIdMapping[entityName]
       ? componentNameIdMapping[entityName]
       : queryNameIdMapping[entityName]
-        ? queryNameIdMapping[entityName]
-        : entityName;
+      ? queryNameIdMapping[entityName]
+      : entityName;
     diffObj = dfs(diffObj, entityName, entityId);
   });
   return diffObj;

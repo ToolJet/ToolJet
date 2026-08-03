@@ -4,6 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
+import { useAutoSyncNotifications } from '@/_hooks/useAutoSyncNotifications';
+import { useNotificationsStore } from '@/_stores/notificationsStore';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { handleAppAccess, handleError } from '@/_helpers/handleAppAccess';
 import { getQueryParams, getSubpath } from '@/_helpers/routes';
@@ -26,6 +28,17 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     /* Only for preiview / released apps */
     disableInValidSessionCallback: componentType !== 'editor',
   });
+  useAutoSyncNotifications();
+
+  // Connect the notifications WebSocket once session is valid — must not fire before
+  // authentication completes or the org_id will be "null" (string), causing 401 loops.
+  // Only connect in editor mode to avoid unnecessary server load from end-user viewers.
+  useEffect(() => {
+    if (isValidSession && componentType === 'editor') {
+      useNotificationsStore.getState().actions.connect();
+    }
+  }, [isValidSession, componentType]);
+
   const clonedElement = React.cloneElement(children, extraProps);
   const navigate = useNavigate();
   const switchPage = useStore((state) => state.switchPage);
