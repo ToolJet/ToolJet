@@ -726,7 +726,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }
   },
 
-  promoteAppVersionAction: async (versionId, onSuccess, onFailure) => {
+  promoteAppVersionAction: async (versionId, onSuccess, onFailure, moduleId = 'canvas') => {
     try {
       const modules = useStore.getState().appStore.modules;
       const appId = modules.canvas?.app?.appId || modules.workflow?.app?.appId;
@@ -750,6 +750,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       }));
+      get().setResolvedGlobals(
+        'environment',
+        { id: response.editorEnvironment?.id, name: response.editorEnvironment?.name },
+        moduleId
+      );
       onSuccess({
         selectedEnvironment: response.editorEnvironment,
         hasAccessToPromotedEnvironment: hasAccessToPromotedEnv,

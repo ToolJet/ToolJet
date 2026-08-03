@@ -119,7 +119,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           timestamp: new Date().toISOString(),
         });
         setPromotingEnvironment(false);
-      }
+      },
+      moduleId
     );
   };
 

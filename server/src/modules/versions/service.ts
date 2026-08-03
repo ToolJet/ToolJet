@@ -353,14 +353,14 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module not found');
     }
 
-    const defaultBranchId =
-      (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch?.id ?? null;
+    const gitDetails = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
     const version = await resolveModuleRef(
       this.versionRepository.manager,
       moduleApp,
       moduleReferenceId,
       branchId,
-      defaultBranchId
+      user.organizationId,
+      gitDetails.isEnabled
     );
     if (!version) {
       // NotFoundException (not findOneOrFail) so drift surfaces as 404, not 500.
