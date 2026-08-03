@@ -83,7 +83,9 @@
     "nodemailer": ">=9.0.3",
     "@grpc/grpc-js": ">=1.14.4",
     "protobufjs": ">=7.6.3",
-    "@types/node": "<=25.9.5"
+    "@types/node": "<=25.9.5",
+    "uuid": ">=11.1.1",
+    "adm-zip": ">=0.6.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
