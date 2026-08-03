@@ -52,6 +52,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import toast from 'react-hot-toast';
 import './EventManager.scss';
 
 export const EventManager = ({
@@ -1113,7 +1114,7 @@ export const EventManager = ({
     );
   }
 
-  const reorderEvents = (startIndex, endIndex) => {
+  const reorderEvents = async (startIndex, endIndex) => {
     const result = deepClone(events);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
@@ -1130,15 +1131,22 @@ export const EventManager = ({
     const changedEvents = reorderedEvents.filter((event) => previousIndexById.get(event.id) !== event.index);
 
     // Reflect the new order right away, the store merge only catches up once the PUT resolves
+    const previousEvents = events;
     setEvents(reorderedEvents);
 
-    updateAppVersionEventHandlers(
-      changedEvents.map((event) => ({
-        event_id: event.id,
-        diff: event,
-      })),
-      'reorder'
-    );
+    try {
+      await updateAppVersionEventHandlers(
+        changedEvents.map((event) => ({
+          event_id: event.id,
+          diff: event,
+        })),
+        'reorder'
+      );
+    } catch (err) {
+      // Roll the optimistic update back, otherwise the list keeps showing an order the DB never accepted
+      setEvents(previousEvents);
+      toast.error(err?.error || 'An error occurred while reordering the event handlers');
+    }
   };
 
   const onDragEnd = ({ source, destination }) => {

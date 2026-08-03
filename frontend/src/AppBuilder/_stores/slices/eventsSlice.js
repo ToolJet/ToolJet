@@ -209,23 +209,26 @@ export const createEventsSlice = (set, get) => ({
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
       const newEvents = replaceQueryOptionsEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
-      const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
-      get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
-      get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
-      set((state) => {
-        // Was hardcoded to 'canvas', overwriting module events with canvas events in the module editor
-        const eventsInState = state.eventsSlice.getModuleEvents(moduleId);
-        const newEvents = eventsInState.map((event) => {
-          const updatedEvent = response.find((r) => r.id === event.id);
-          if (updatedEvent) {
-            return updatedEvent;
-          }
-          return event;
-        });
+      try {
+        const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
+        set((state) => {
+          const eventsInState = state.eventsSlice.getModuleEvents(moduleId);
+          const newEvents = eventsInState.map((event) => {
+            const updatedEvent = response.find((r) => r.id === event.id);
+            if (updatedEvent) {
+              return updatedEvent;
+            }
+            return event;
+          });
 
-        // state.eventsSlice.setEvents(newEvents);
-        state.eventsSlice.module[moduleId].events = newEvents;
-      });
+          // state.eventsSlice.setEvents(newEvents);
+          state.eventsSlice.module[moduleId].events = newEvents;
+        });
+      } finally {
+        // In `finally` so a failed save cannot leave the loaders spinning forever
+        get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
+        get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
+      }
     },
     setTablePageIndex: (tableId, index, eventObj, moduleId = 'canvas') => {
       try {
