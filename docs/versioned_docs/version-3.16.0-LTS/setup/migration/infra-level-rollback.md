@@ -22,9 +22,6 @@ Before starting the upgrade, take a snapshot of your database instance so that i
 If your database is deployed as a container alongside ToolJet rather than as an external database, the snapshot and restore process will look different. Reach out to your infrastructure team for help with this.
 :::
 
-<Tabs>
-  <TabItem value="console" label="Using AWS Console" default>
-
 1. Navigate to **RDS Console** → **Databases**
 2. Select your database instance
 3. Click **Actions** → **Take snapshot**
@@ -39,18 +36,6 @@ If your database is deployed as a container alongside ToolJet rather than as an 
 <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/setup/infra-level-rollback/snapshot-created.png" alt="RDS snapshot successfully created" />
 </div>
-
-  </TabItem>
-  <TabItem value="cli" label="Using AWS CLI">
-
-```bash
-aws rds create-db-snapshot \
-  --db-instance-identifier your-db-instance \
-  --db-snapshot-identifier pre-upgrade-snapshot-$(date +%Y%m%d)
-```
-
-  </TabItem>
-</Tabs>
 
 If PG_DB and TOOLJET_DB are hosted on separate instances, repeat this for each instance.
 
@@ -77,10 +62,6 @@ If PG_DB and TOOLJET_DB are hosted on separate instances, repeat this for each i
    docker-compose up -d
    ```
 
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/setup/infra-level-rollback/docker-compose-up.png" alt="docker-compose up -d starting containers on the previous version" />
-</div>
-
   </TabItem>
   <TabItem value="kubernetes" label="Kubernetes">
 
@@ -91,42 +72,15 @@ If PG_DB and TOOLJET_DB are hosted on separate instances, repeat this for each i
    ```
 
   </TabItem>
-  <TabItem value="helm" label="Helm">
-
-1. Check the release history to find the previous revision:
-   ```bash
-   helm history <release-name>
-   ```
-2. Roll back to that revision:
-   ```bash
-   helm rollback <release-name> <revision-number>
-   ```
-
-  </TabItem>
 </Tabs>
 
 #### Step 3: Restore the Database from the Snapshot
-
-<Tabs>
-  <TabItem value="console" label="Using AWS Console" default>
 
 1. Navigate to **RDS Console** → **Snapshots**
 2. Select the pre-upgrade snapshot
 3. Click **Actions** → **Restore snapshot**
 4. Configure the new instance settings and click **Restore DB instance**
 5. Once available, point your ToolJet deployment's database configuration to the restored instance
-
-  </TabItem>
-  <TabItem value="cli" label="Using AWS CLI">
-
-```bash
-aws rds restore-db-instance-from-db-snapshot \
-  --db-instance-identifier your-db-instance-restored \
-  --db-snapshot-identifier pre-upgrade-snapshot-YYYYMMDD
-```
-
-  </TabItem>
-</Tabs>
 
 
 ## Need Help?
