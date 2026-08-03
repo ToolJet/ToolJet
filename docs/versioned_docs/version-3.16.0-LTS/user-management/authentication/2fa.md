@@ -4,6 +4,7 @@ title: Two Factor Authentication
 ---
 
 <PlanBadge type="enterprise" />
+<PlanBadge type="self-hosted" />
 
 Two-factor authentication (2FA) adds an extra layer of security to your ToolJet login by requiring a time-based one-time password (TOTP) from an authenticator app, in addition to your email and password. ToolJet works with any TOTP authenticator app, such as 1Password, Google Authenticator, or Microsoft Authenticator.
 
@@ -13,25 +14,18 @@ Two-factor authentication applies only to accounts that sign in with a password.
 
 ## Enable Two-Factor Authentication
 
-Role Required:
-    - For Self Hosted Deployment: **Super Admin**
-    - For ToolJet Cloud Deployment: **Admin**
+Role Required: **Super Admin**
 
 Before users can set up 2FA on their accounts, a super admin needs to turn the feature on for the instance.
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
-2. Go to security page.
-    - For Self Hosted Deployment: <br/>
-      Go to **Settings > Security**. <br/>
-      (Example URL - `https://app.corp.com/settings/security`) <br/>
-    - For ToolJet Cloud Deployment: <br/>
-      Go to **Workspace Settings > Security**. <br/>
-      (Example URL - `https://app.corp.com/nexus-workspace/workspace-settings/security`)
+2. Go to **Settings > Security**. <br/>
+   (Example URL - `https://app.corp.com/settings/security`)
 3. Enable the **Two-factor authentication** toggle.
 
 ## Configure Two-Factor Authentication From Profile
 
-Once the Super Admin/Admin enables the two-factor authentication, the users can configure it from their profile.
+Once the Super Admin enables the two-factor authentication, the users can configure it from their profile.
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 2. Go to **Profile Settings**. <br/>
@@ -46,20 +40,13 @@ Once confirmed, the card's status switches to **Active**, and you'll be asked fo
 
 ### Admin Level
 
-Role Required:
-    - For Self Hosted Deployment: **Super Admin**
-    - For ToolJet Cloud Deployment: **Admin**
+Role Required: **Super Admin**
 
 If a user loses access to their authenticator app, a super admin can reset 2FA for that user:
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
-2. Go to User Management page.
-    - For Self Hosted Deployment: <br/>
-      Go to **Settings > All Users**. <br/>
-        (Example URL - `https://app.corp.com/settings/all-users`) <br/>
-    - For ToolJet Cloud Deployment: <br/>
-      Go to **Workspace Settings > Users**. <br/>
-        (Example URL - `https://app.corp.com/nexus-workspace/workspace-settings/users`)
+2. Go to **Settings > All Users**. <br/>
+   (Example URL - `https://app.corp.com/settings/all-users`)
 3. Find the user in the list. Users with 2FA turned on show **Enabled** under the **2FA** column.
 4. Click on the kebab icon (three dots) on the right side of the user's row and select **Reset 2FA**. <br/>
     This option only appears for users who currently have 2FA enabled.
@@ -78,18 +65,11 @@ The user's 2FA is turned off, and they can set it up again from **Profile Settin
 
 ### Admin Level
 
-Role Required:
-    - For Self Hosted Deployment: **Super Admin**
-    - For ToolJet Cloud Deployment: **Admin**
+Role Required: **Super Admin**
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
-2. Go to security page.
-    - For Self Hosted Deployment: <br/>
-      Go to **Settings > Security**. <br/>
-      (Example URL - `https://app.corp.com/settings/security`) <br/>
-    - For ToolJet Cloud Deployment: <br/>
-      Go to **Workspace Settings > Security**. <br/>
-      (Example URL - `https://app.corp.com/nexus-workspace/workspace-settings/security`)
+2. Go to **Settings > Security**. <br/>
+   (Example URL - `https://app.corp.com/settings/security`)
 3. Disable the **Two-factor authentication** toggle.
 
 ### User Level
@@ -112,16 +92,9 @@ Codes refresh every 30 seconds. If your code keeps getting rejected, check that 
 
 ## Checking Which Users Have Enabled 2FA
 
-Role Required:
-    - For Self Hosted Deployment: **Super Admin**
-    - For ToolJet Cloud Deployment: **Admin**
+Role Required: **Super Admin**
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
-2. Go to User Management page.
-    - For Self Hosted Deployment: <br/>
-      Go to **Settings > All Users**. <br/>
-        (Example URL - `https://app.corp.com/settings/all-users`) <br/>
-    - For ToolJet Cloud Deployment: <br/>
-      Go to **Workspace Settings > Users**. <br/>
-        (Example URL - `https://app.corp.com/nexus-workspace/workspace-settings/users`)
+2. Go to **Settings > All Users**. <br/>
+   (Example URL - `https://app.corp.com/settings/all-users`) <br/>
 3. Check the **2FA** column for each user - it shows **Enabled** or **Disabled** based on whether that user has 2FA turned on.
