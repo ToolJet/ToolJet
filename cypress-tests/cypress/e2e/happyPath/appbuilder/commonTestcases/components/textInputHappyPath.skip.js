@@ -41,7 +41,7 @@ describe("Text Input", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-Textinput-App`);
     cy.openApp();
-    cy.dragAndDropWidget("Text Input", 500, 500);
+    cy.dragAndDropWidget("Text Input", 500, 100);
   });
   afterEach(() => {
     cy.apiDeleteApp();

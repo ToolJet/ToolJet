@@ -1,6 +1,6 @@
 # pull official base image
 FROM node:22.15.1-bullseye
-RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget
+RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle

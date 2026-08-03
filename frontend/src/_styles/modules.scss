@@ -109,6 +109,18 @@
     }
 }
 
+// Dynamic-height modules size their inner canvas to content, so the viewer's
+// canvas containers must never scroll — the widget grows instead. Without this,
+// the real-canvas (calc(100% + 1px)) always overflows by a hair and shows a
+// permanent scrollbar on always-visible-scrollbar platforms.
+.module-viewer-wrapper.dynamic-height {
+    // !important: ties with `.viewer .main .canvas-container { overflow-y: auto }`
+    // on specificity and loses on source order otherwise.
+    .canvas-container {
+        overflow-y: hidden !important;
+    }
+}
+
 .empty-module-container{
     display: flex;
     align-items: center;

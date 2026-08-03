@@ -84,7 +84,7 @@ ENV NODE_ENV=production
 ENV TOOLJET_EDITION=cloud
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
-    apt-get install -y postgresql-client freetds-dev libaio1 wget && \
+    apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget && \
     apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
     apt-get -y autoremove && \
     apt-get -y autoclean

@@ -33,6 +33,7 @@ const sectionConfig = {
       'RadioButtonV2',
       'Checkbox',
       'TreeSelect',
+      'Cascader',
     ]),
   },
   dateTimeInputs: {

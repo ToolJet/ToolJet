@@ -13,6 +13,7 @@ import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/A
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './table.scss';
 
@@ -28,7 +29,6 @@ const Table = memo(
     fireEvent,
     setExposedVariable,
     setExposedVariables,
-    adjustComponentPositions,
     currentLayout,
     currentMode,
     subContainerIndex,
@@ -126,7 +126,7 @@ const Table = memo(
     const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
     // Get all app events. Needed for certain events like onBulkUpdate
-    const allAppEvents = useEvents();
+    const allAppEvents = useEvents(moduleId);
 
     const shouldAutogenerateColumns = useRef(false);
     const hasDataChanged = useRef(false);
@@ -203,6 +203,10 @@ const Table = memo(
     // Create ref for height observation
     const tableRef = useRef(null);
     const heightChangeValue = useHeightObserver(tableBodyRef, isDynamicHeightEnabled);
+
+    // Disabled table blocks the mouse via `data-disabled`; `inert` also removes the search, filters,
+    // pagination and cell editors from the tab order (runtime only — keeps the builder editable).
+    useDisableInert(tableRef, exposedVariablesTemporaryState.isDisabled);
 
     // Initialize component on the table store
     useEffect(() => {
@@ -326,7 +330,6 @@ const Table = memo(
       height,
       value: JSON.stringify({ heightChangeValue, tableData, expandedRows }),
       skipAdjustment: exposedVariablesTemporaryState.isLoading || (tableData.length === 0 && !hasVisibilityChanged),
-      adjustComponentPositions,
       currentLayout,
       width,
       visibility: exposedVariablesTemporaryState.isVisible,

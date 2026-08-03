@@ -7,14 +7,12 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { DataSource } from 'typeorm';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
+import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD, LICENSE_TYPE } from '@modules/licensing/constants';
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
   // This guard will allow access for unauthenticated user if the app is public
@@ -22,7 +20,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     protected readonly appUtilService: AppsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly appRepository: AppsRepository,
-    protected readonly licenseTermsService: LicenseTermsService
+    protected readonly dataSource: DataSource
   ) {
     super();
   }
@@ -47,25 +45,23 @@ export class AppAuthGuard extends AuthGuard('jwt') {
         id: app.organizationId,
       },
     });
-    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE) {
+      const banned = await this.dataSource
+        .getRepository(WorkspaceBanList)
+        .findOne({ where: { organizationId: app.organizationId } });
+      if (banned) {
+        throw new ForbiddenException({
+          message: JSON.stringify({ errorType: 'WORKSPACE_BANNED', workspaceName: organization.name }),
+        });
+      }
       throw new BadRequestException('Organization is Archived');
+    }
 
     request.tj_app = app;
     request.tj_resource_id = app.id;
     request.headers['tj-workspace-id'] = app.organizationId;
 
     if (app.isPublic === true) {
-      if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
-        const licenseTerms = await this.licenseTermsService.getLicenseTerms(
-          [LICENSE_FIELD.STATUS, LICENSE_FIELD.PLAN],
-          app.organizationId
-        );
-        const { licenseType } = licenseTerms[LICENSE_FIELD.STATUS] ?? {};
-        const planType: string | undefined = licenseTerms[LICENSE_FIELD.PLAN];
-        if (licenseType === LICENSE_TYPE.BASIC || licenseType === LICENSE_TYPE.TRIAL || planType === 'starter') {
-          throw new ForbiddenException('public-app-plan-restricted');
-        }
-      }
       // No need to do user validation
       this.organizationRepository.touchLastAccessedAt(app.organizationId);
       return true;

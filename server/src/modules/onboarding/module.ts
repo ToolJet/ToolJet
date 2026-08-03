@@ -5,6 +5,7 @@ import { SessionModule } from '@modules/session/module';
 import { OrganizationUsersModule } from '@modules/organization-users/module';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { RolesModule } from '@modules/roles/module';
 import { FeatureAbilityFactory } from './ability';
@@ -34,6 +35,7 @@ export class OnboardingModule extends SubModule {
         OnboardingUtilService,
         OrganizationUsersRepository,
         UserRepository,
+        UserBanListRepository,
         OrganizationRepository,
         FeatureAbilityFactory,
       ],

@@ -11,7 +11,7 @@ describe("Globals - Inspector", () => {
   after(() => {
     cy.apiUpdateProfile({
       firstName: "The",
-      lastName: "developer",
+      lastName: "Developer",
     });
   });
 
@@ -20,7 +20,7 @@ describe("Globals - Inspector", () => {
       ["email", `"dev@tooljet.io"`],
       ["firstName", `"The"`],
       ["lastName", `"Developer"`],
-      ["id", `"${Cypress.env("user_id").slice(0, 31)}...`],
+      ["id", `${Cypress.env("user_id")}`],
       ["avatarId", `null`],
       ["groups", `[2]`],
       ["role", `"admin"`],
@@ -39,7 +39,7 @@ describe("Globals - Inspector", () => {
         ["email", `"dev@tooljet.io"`],
         ["firstName", `"UpdatedThe"`],
         ["lastName", `"UpdatedDeveloper"`],
-        ["id", `"${Cypress.env("user_id").slice(0, 31)}...`],
+        ["id", `${Cypress.env("user_id")}`],
         ["avatarId", `null`],
         ["groups", `[2]`],
         ["role", `"admin"`],
@@ -60,7 +60,7 @@ describe("Globals - Inspector", () => {
   it("should verify the values of environment inside globals inspector", () => {
     const developmentEnvId = Cypress.env("environmentId");
     const dataList = [
-      ["id", `"${developmentEnvId.slice(0, 31)}...`],
+      ["id", `${developmentEnvId}`],
       ["name", `development`],
     ];
 
@@ -75,7 +75,7 @@ describe("Globals - Inspector", () => {
       navigateAndVerifyInspector(
         ["globals", "environment"],
         [
-          ["id", `"${stagingId.slice(0, 31)}...`],
+          ["id", `${stagingId}`],
           ["name", `staging`],
         ]
       );
@@ -88,7 +88,7 @@ describe("Globals - Inspector", () => {
         navigateAndVerifyInspector(
           ["globals", "environment"],
           [
-            ["id", `"${productionId.slice(0, 31)}...`],
+            ["id", `${productionId}`],
             ["name", `production`],
           ]
         );

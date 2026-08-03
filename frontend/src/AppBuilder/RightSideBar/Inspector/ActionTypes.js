@@ -12,6 +12,12 @@ export const ActionTypes = [
     group: 'run-action',
   },
   {
+    name: 'Abort query',
+    id: 'abort-query',
+    options: [{ queryId: '' }],
+    group: 'run-action',
+  },
+  {
     name: 'Show Alert',
     id: 'show-alert',
     options: [{ name: 'message', type: 'text', default: 'Message !' }],

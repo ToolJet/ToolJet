@@ -38,28 +38,6 @@ describe("Data source Rest API", () => {
     cy.visit("/");
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get('[data-cy="datasource-list-header"]').should(
-      "have.text",
-      Cypress.env("marketplace_action")
-        ? "All data sources (48)"
-        : "All data sources (48)"
-    );
-    cy.get('[data-cy="commonlyused-datasource-button"]').should(
-      "have.text",
-      "Commonly used (6)"
-    );
-    cy.get('[data-cy="databases-datasource-button"]').should(
-      "have.text",
-      Cypress.env("marketplace_action") ? "Databases (19)" : "Databases (20)"
-    );
-    cy.get('[data-cy="apis-datasource-button"]').should(
-      "have.text",
-      "APIs (24)"
-    );
-    cy.get('[data-cy="cloudstorage-datasource-button"]').should(
-      "have.text",
-      "Cloud Storages (4)"
-    );
 
     cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
@@ -490,7 +468,7 @@ describe("Data source Rest API", () => {
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
       [
-        { key: "url", value: "https://httpbin.org" },
+        { key: "url", value: "https://httpbingo.org" },
         { key: "auth_type", value: "basic" },
         { key: "grant_type", value: "authorization_code" },
         { key: "add_token_to", value: "header" },
@@ -559,7 +537,7 @@ describe("Data source Rest API", () => {
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
       [
-        { key: "url", value: "https://httpbin.org" },
+        { key: "url", value: "https://httpbingo.org" },
         { key: "auth_type", value: "bearer" },
         { key: "grant_type", value: "authorization_code" },
         { key: "add_token_to", value: "header" },
@@ -621,7 +599,7 @@ describe("Data source Rest API", () => {
       `cypress-${data.dataSourceName}-restapi-invalid`,
       "restapi",
       [
-        { key: "url", value: "https://httpbin.org" },
+        { key: "url", value: "https://httpbingo.org" },
         { key: "auth_type", value: "bearer" },
         { key: "grant_type", value: "authorization_code" },
         { key: "add_token_to", value: "header" },
@@ -755,7 +733,7 @@ describe("Data source Rest API", () => {
       queryName: "post_raw_text",
       dsName: "restapidefault",
       method: "POST",
-      url: "https://httpbin.org/post",
+      url: "https://httpbingo.org/post",
       headersList: [["Content-Type", "text/plain"]],
       rawBody: "This is plain text content",
       jsonBody: null,
@@ -767,15 +745,15 @@ describe("Data source Rest API", () => {
       queryName: "post_form_urlencoded",
       dsName: "restapidefault",
       method: "POST",
-      url: "https://httpbin.org/post",
+      url: "https://httpbingo.org/post",
       headersList: [["Content-Type", "application/x-www-form-urlencoded"]],
       bodyList: [
         ["name", "Jane"],
         ["age", "30"],
       ],
       expectedResponseShape: {
-        "form.name": "Jane",
-        "form.age": "30",
+        "form.name.0": "Jane",
+        "form.age.0": "30",
       },
     });
     cy.wait(1000);

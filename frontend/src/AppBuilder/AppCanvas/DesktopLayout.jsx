@@ -31,6 +31,7 @@ export const DesktopLayout = ({
   mainCanvasContainer,
   gridContent,
   canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
+  pageLoader = false,
 }) => (
   <div
     key={pageKey}
@@ -58,7 +59,7 @@ export const DesktopLayout = ({
               position: 'sticky',
               top: showCanvasHeader && appType !== 'module' ? canvasHeaderHeight : 0,
               flexShrink: 0,
-              zIndex: 5,
+              zIndex: 15,
               height: sideBarVisibleHeight,
             }}
           >
@@ -75,7 +76,12 @@ export const DesktopLayout = ({
           </div>
         </>
       )}
-      <CanvasContentTail currentMode={currentMode} appType={appType} isAppDarkMode={isAppDarkMode}>
+      <CanvasContentTail
+        currentMode={currentMode}
+        appType={appType}
+        isAppDarkMode={isAppDarkMode}
+        pageLoader={pageLoader}
+      >
         {mainCanvasContainer}
       </CanvasContentTail>
     </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderElement } from '../../Utils';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { EventManager } from '../../EventManager';
 import { NavItemsList } from './components';
 import { useMenuItemsManager } from './hooks';
@@ -51,6 +52,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   const _renderMenuItems = () => {
     return (
       <NavItemsList
+        componentId={component?.id}
         menuItems={menuItems}
         darkMode={darkMode}
         hoveredItemIndex={hoveredItemIndex}
@@ -87,7 +89,8 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   };
 
   // Helper function to create accordion items
-  const createAccordionItem = (title, children, isOpen = true) => ({
+  const createAccordionItem = (title, children, isOpen = true, id) => ({
+    id,
     title,
     isOpen,
     children,
@@ -97,16 +100,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   const sections = [
     {
       title: 'Content',
-      custom: () => (
-        <>
-          {_renderMenuItems()}
-          {createRenderElement('orientation')}
-          {createRenderElement('displayStyle')}
-          {createRenderElement('navItemSize')}
-          {createRenderElement('horizontalAlignment')}
-          {createRenderElement('verticalAlignment')}
-        </>
-      ),
+      custom: () => <>{_renderMenuItems()}</>,
     },
     {
       title: 'Events',
@@ -115,6 +109,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
           sourceId={component?.id}
           eventSourceType="component"
           eventMetaDefinition={componentMeta}
+          excludeRefEvents
           dataQueries={dataQueries}
           components={allComponents}
           eventsChanged={eventsChanged}
@@ -125,6 +120,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
       ),
     },
     {
+      id: ADDITIONAL_ACTIONS_ACCORDION_ID,
       title: 'Additional Actions',
       type: 'properties',
       properties: additionalActions,
@@ -143,7 +139,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   // Build accordion items
   const items = sections.map((section) => {
     if (section.custom) {
-      return createAccordionItem(section.title, section.custom());
+      return createAccordionItem(section.title, section.custom(), section.isOpen, section.id);
     }
 
     const children = section.properties.map((property) => {
@@ -151,7 +147,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
       return createRenderElement(property, section.type, extraProps);
     });
 
-    return createAccordionItem(section.title, children);
+    return createAccordionItem(section.title, children, section.isOpen, section.id);
   });
 
   return <Accordion items={items} />;

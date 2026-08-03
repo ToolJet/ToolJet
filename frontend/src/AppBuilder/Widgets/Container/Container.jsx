@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
@@ -22,7 +23,6 @@ export const Container = ({
   width,
   setExposedVariables,
   setExposedVariable,
-  adjustComponentPositions,
   currentLayout,
   componentCount = 0,
   currentMode,
@@ -38,12 +38,15 @@ export const Container = ({
     setExposedVariable
   );
   const { headerHeight = 80, showHeader } = properties;
+  const containerRef = useRef(null);
+  // Disabled container blocks the mouse via `data-disabled`; `inert` also removes the child
+  // components from the tab order (runtime only — keeps the builder editable).
+  useDisableInert(containerRef, isDisabled);
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
@@ -52,11 +55,6 @@ export const Container = ({
     subContainerIndex,
     componentType,
   });
-
-  const isWidgetInContainerDragging = useStore(
-    (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
-    shallow
-  );
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
@@ -117,6 +115,7 @@ export const Container = ({
 
   return (
     <div
+      ref={containerRef}
       className={`jet-container ${isLoading ? 'jet-container-loading' : ''}`}
       id={id}
       data-disabled={isDisabled}

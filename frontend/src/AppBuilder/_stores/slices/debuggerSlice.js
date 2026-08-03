@@ -86,17 +86,22 @@ export const createDebuggerSlice = (set, get) => ({
 
     validateComponents: (components, moduleId = 'canvas') => {
       const validateComponent = get().debugger.validateComponent;
+      const allLogs = [];
       const entries = Object.entries(components).map(([id, component]) => {
         // If component is an array, validate each component in the array and return the array
         if (Array.isArray(component)) {
-          return [id, component.map((c) => validateComponent(id, c, moduleId))];
+          return [id, component.map((c) => validateComponent(id, c, moduleId, allLogs))];
         }
-        return [id, validateComponent(id, component, moduleId)];
+        return [id, validateComponent(id, component, moduleId, allLogs)];
       });
+      // Single logMultiple call instead of one per component (avoids N Zustand set() calls)
+      if (allLogs.length > 0) {
+        get().debugger.logMultiple(allLogs);
+      }
       return Object.fromEntries(entries);
     },
 
-    validateComponent: (id, component, moduleId = 'canvas') => {
+    validateComponent: (id, component, moduleId = 'canvas', logAccumulator = null) => {
       const componentDefinition = get().getComponentDefinition(id, moduleId);
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
@@ -153,7 +158,11 @@ export const createDebuggerSlice = (set, get) => ({
         timestamp: moment().toISOString(),
       }));
 
-      get().debugger.logMultiple(logs);
+      if (logAccumulator !== null) {
+        logAccumulator.push(...logs);
+      } else if (logs.length > 0) {
+        get().debugger.logMultiple(logs);
+      }
 
       return newComponent;
     },

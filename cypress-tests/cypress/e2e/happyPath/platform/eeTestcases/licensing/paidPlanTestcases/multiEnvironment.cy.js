@@ -49,9 +49,6 @@ describe("License - Multi-Environment Flow", () => {
     navigateToAppEditor(appName);
     cy.wait(3000);
 
-    cy.apiReleaseApp(appName);
-    cy.apiAddAppSlug(appName, data.slug);
-
     // Verify app shows development environment data
     cy.get(commonWidgetSelector.draggableWidget("text1")).verifyVisibleElement(
       "have.text",

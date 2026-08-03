@@ -2,6 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/AppBuilder/CodeEditor';
+import { getFlexAxisAwareMeta } from '../Components/FlexContainer/flexChildInspectorUtils';
 import { getDefinitionInitialValue } from './utils';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
@@ -36,16 +37,18 @@ export const Code = ({
   }
 
   let initialValue = getInitialValue();
-  const paramMeta = accordian
+  const rawParamMeta = accordian
     ? customMeta ?? componentMeta[paramType]?.[param.name]
     : customMeta ?? componentMeta[paramType][param.name];
+  const isFlexContainer = component?.component?.component === 'FlexContainer';
+  const paramMeta = isFlexContainer ? getFlexAxisAwareMeta(rawParamMeta, component, param.name) : rawParamMeta;
   const displayName = paramMeta.displayName || param.name;
 
   function handleCodeChanged(value) {
     onChange(param, 'value', value, paramType);
   }
 
-  const options = paramMeta.options || {};
+  const options = paramMeta?.options || {};
 
   const getfieldName = React.useMemo(() => {
     return param.name;
@@ -63,7 +66,7 @@ export const Code = ({
         initialValue={initialValue}
         paramName={param.name}
         paramLabel={paramMeta?.showLabel !== false ? displayName : ' '}
-        paramType={paramMeta.type}
+        paramType={paramMeta?.type}
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
@@ -76,7 +79,7 @@ export const Code = ({
         onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
         validationFn={validationFn}
-        cyLabel=""
+        cyLabel={paramMeta?.showLabel === false ? param.name?.toLowerCase() : ''}
         setCodeEditorView={setCodeEditorView}
         canRefresh={canRefresh}
       />
