@@ -109,6 +109,40 @@ paths:
         "200":
           description: Version pushed to GitHub.
 
+  /apps/{appIdOrSlug}/versions/save:
+    post:
+      operationId: saveAppVersion
+      summary: Save App Version
+      description: >
+        Turns an app's current draft into a saved version and tags it in the
+        connected git repository.
+      tags: [GitSync]
+      parameters:
+        - name: appIdOrSlug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The app's UUID or slug.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: >
+                    Name for the saved version. Up to 25 characters; spaces and
+                    the characters ~ ^ : ? * [ ] \ @ { are not allowed. If
+                    omitted, ToolJet keeps the draft's existing name.
+            example:
+              name: "v1.2.0"
+      responses:
+        "201":
+          description: Draft version saved and tagged.
+
   /apps:
     post:
       operationId: createAppFromGit

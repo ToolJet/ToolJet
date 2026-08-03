@@ -89,6 +89,7 @@ const sidebars = {
         'gitsync-api/index',
         'gitsync-api/add-git-config',
         'gitsync-api/push-app-version',
+        'gitsync-api/save-app-version',
         'gitsync-api/create-app-from-git',
         'gitsync-api/sync-pull-app',
         'gitsync-api/release-app-version',
