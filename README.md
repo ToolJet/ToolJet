@@ -86,6 +86,10 @@ Documentation is available at https://docs.tooljet.com.
 ## Self-hosted
 You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, and more.
 
+[![Deploy with Zenith](https://cdn.zenith.hosting/buttons/deploy-with-zenith.svg)](https://zenith.hosting/host/tooljet)
+
+One-click managed ToolJet, with no infrastructure to run: storage, backups, email and a free subdomain included. A share of every subscription goes back to ToolJet.
+
 | Provider  | Documentation |
 | :------------- | :------------- |
 | Digital Ocean | [Link](https://docs.tooljet.com/docs/setup/digitalocean)  |
