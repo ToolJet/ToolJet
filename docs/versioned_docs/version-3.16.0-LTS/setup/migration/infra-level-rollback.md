@@ -8,25 +8,23 @@ import TabItem from '@theme/TabItem';
 
 Infra level rollback allows you to revert your ToolJet deployment to a previous version at the infrastructure level. This is **not recommended for general use** and should only be considered when the current version has breaking changes or bugs that block usage.
 
-:::warning CONSULT TOOLJET TEAM FIRST
-Infra level rollback should only be used as a **last resort**, after consulting with the ToolJet team. Before beginning, ensure you have taken a **complete backup** of your PostgreSQL instance (both PG_DB and TOOLJET_DB) and any relevant configuration.
+:::warning Consult ToolJet Team First
+Infra level rollback should only be used as a **last resort**, after consulting with the ToolJet team.
 :::
-
-### Prerequisites
-
-Before beginning an upgrade, make sure of the following, so that a rollback stays possible if something goes wrong:
-
-- **If you are using an external database**, take a full snapshot of the database instance before starting the upgrade.
-- **If your database is deployed as a container alongside ToolJet**, the snapshot and restore process will look different — reach out to your infrastructure team for help with this.
-- **Note down the version you are upgrading from**, so you know exactly which version to roll back to if needed.
 
 ### Rollback Steps
 
 #### Step 1: Take a Snapshot of Your Database Instance
 
-Before starting the upgrade, take a snapshot of your database instance so that it can be restored if a rollback is needed later.
+Before starting the upgrade, take a snapshot of your database instance so that it can be restored if a rollback is needed later. Also note down the version you are upgrading from, so you know exactly which version to roll back to if needed.
 
-##### Using AWS Console
+:::info
+If your database is deployed as a container alongside ToolJet rather than as an external database, the snapshot and restore process will look different. Reach out to your infrastructure team for help with this.
+:::
+
+<Tabs>
+  <TabItem value="console" label="Using AWS Console" default>
+
 1. Navigate to **RDS Console** → **Databases**
 2. Select your database instance
 3. Click **Actions** → **Take snapshot**
@@ -42,12 +40,17 @@ Before starting the upgrade, take a snapshot of your database instance so that i
   <img className="screenshot-full" src="/img/setup/infra-level-rollback/snapshot-created.png" alt="RDS snapshot successfully created" />
 </div>
 
-##### Using AWS CLI
+  </TabItem>
+  <TabItem value="cli" label="Using AWS CLI">
+
 ```bash
 aws rds create-db-snapshot \
   --db-instance-identifier your-db-instance \
   --db-snapshot-identifier pre-upgrade-snapshot-$(date +%Y%m%d)
 ```
+
+  </TabItem>
+</Tabs>
 
 If PG_DB and TOOLJET_DB are hosted on separate instances, repeat this for each instance.
 
@@ -104,19 +107,26 @@ If PG_DB and TOOLJET_DB are hosted on separate instances, repeat this for each i
 
 #### Step 3: Restore the Database from the Snapshot
 
-##### Using AWS Console
+<Tabs>
+  <TabItem value="console" label="Using AWS Console" default>
+
 1. Navigate to **RDS Console** → **Snapshots**
 2. Select the pre-upgrade snapshot
 3. Click **Actions** → **Restore snapshot**
 4. Configure the new instance settings and click **Restore DB instance**
 5. Once available, point your ToolJet deployment's database configuration to the restored instance
 
-##### Using AWS CLI
+  </TabItem>
+  <TabItem value="cli" label="Using AWS CLI">
+
 ```bash
 aws rds restore-db-instance-from-db-snapshot \
   --db-instance-identifier your-db-instance-restored \
   --db-snapshot-identifier pre-upgrade-snapshot-YYYYMMDD
 ```
+
+  </TabItem>
+</Tabs>
 
 
 ## Need Help?
