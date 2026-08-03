@@ -1,9 +1,12 @@
 import { ConnectionTestResult, QueryService, QueryResult, QueryError, isEmpty } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 
-// ibm_db is a native C++ addon; CommonJS require avoids ESM interop issues.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const ibmdb = require('ibm_db');
+// ibm_db is a native C++ addon that requires IBM CLI/ODBC drivers.
+// Lazy-load to avoid crashing the server when bindings are unavailable.
+function getIbmDb() {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return require('ibm_db');
+}
 
 export default class Db2QueryService implements QueryService {
   async run(
@@ -65,6 +68,7 @@ export default class Db2QueryService implements QueryService {
 
   private openConnection(sourceOptions: SourceOptions): Promise<any> {
     const connStr = this.buildConnectionString(sourceOptions);
+    const ibmdb = getIbmDb();
     return new Promise((resolve, reject) => {
       ibmdb.open(connStr, (err: any, conn: any) => {
         if (err) reject(err);
