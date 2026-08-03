@@ -48,10 +48,24 @@ export interface ILicenseCountsService {
   fetchTotalWorkflowsCount(workspaceId: string, manager: EntityManager): Promise<number>;
   organizationsCount(manager?: EntityManager): Promise<number>;
   fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchTotalPagesCount(appVersionId: string, manager: EntityManager): Promise<number>;
+  fetchTotalPageGroupsCount(appVersionId: string, manager: EntityManager): Promise<number>;
+  fetchOrganizationPagesCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchOrganizationPageGroupsCount(organizationId: string, manager: EntityManager): Promise<number>;
 }
 
 export interface ILicenseAppsService {
   getAppsLimit(organizationId: string): Promise<any>;
+}
+
+export abstract class LicensePageService {
+  abstract validatePages(
+    manager: EntityManager,
+    appVersionId: string,
+    organizationId: string,
+    isPageGroup: boolean
+  ): Promise<void>;
+  abstract getPagesLimit(organizationId: string): Promise<any>;
 }
 
 export interface ILicenseService {

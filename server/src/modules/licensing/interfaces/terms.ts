@@ -50,6 +50,7 @@ export interface Terms {
     pages: {
       enabled: boolean;
       count: number | string;
+      groupCount?: number | string;
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;

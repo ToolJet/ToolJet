@@ -25,6 +25,7 @@ import {
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
 import { TransactionLogger } from '@modules/logging/service';
+import { LicensePageService } from '@modules/licensing/interfaces/IService';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -32,8 +33,9 @@ export class PageService implements IPageService {
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
-    protected readonly transactionLogger: TransactionLogger
-  ) { }
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly licensePageService: LicensePageService
+  ) {}
 
   /**
    * Hook called before page creation - override in EE to capture state for history
@@ -171,7 +173,9 @@ export class PageService implements IPageService {
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
-      return await manager.save(Page, newPage);
+      const savedPage = await manager.save(Page, newPage);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, !!page.isPageGroup);
+      return savedPage;
     }, appVersionId);
 
     const operationTimestamp = Date.now();

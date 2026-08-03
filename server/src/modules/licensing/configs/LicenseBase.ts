@@ -239,6 +239,16 @@ export default class LicenseBase {
     return this._app['pages']?.count;
   }
 
+  public get appPageGroupsLimit(): number | string {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.app?.pages?.groupCount || 5;
+    }
+    if (!this._app || this._app['pages']?.groupCount === undefined) {
+      return ''; //Not passed set to infinite for older licenses and trial
+    }
+    return this._app['pages']?.groupCount;
+  }
+
   public get appPagesHeaderAndLogoEnabled(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.appHeaderAndLogo;
@@ -581,6 +591,7 @@ export default class LicenseBase {
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
       appPagesLimit: this.appPagesLimit,
+      appPageGroupsLimit: this.appPageGroupsLimit,
       workflowsEnabled: this.getWorkflowsEnabled(),
       customDomain: this.customDomains,
       promote: this.canPromote,

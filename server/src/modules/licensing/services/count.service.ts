@@ -4,6 +4,8 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Injectable } from '@nestjs/common';
 import { Brackets, EntityManager, In, Not } from 'typeorm';
 import { App } from 'src/entities/app.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { Page } from 'src/entities/page.entity';
 import { Organization } from '@entities/organization.entity';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { USER_ROLE } from '@modules/group-permissions/constants';
@@ -295,5 +297,39 @@ export class LicenseCountsService implements ILicenseCountsService {
     } else {
       return manager.count(App, { where: { type: APP_TYPES.FRONT_END, organizationId } });
     }
+  }
+
+  async fetchTotalPagesCount(appVersionId: string, manager: EntityManager): Promise<number> {
+    return manager.count(Page, { where: { appVersionId, isPageGroup: false } });
+  }
+
+  async fetchTotalPageGroupsCount(appVersionId: string, manager: EntityManager): Promise<number> {
+    return manager.count(Page, { where: { appVersionId, isPageGroup: true } });
+  }
+
+  private fetchOrganizationPagesQuery(organizationId: string, manager: EntityManager, isPageGroup: boolean) {
+    // Pages belong to a specific AppVersion, and an app is only "released" (App.currentVersionId set)
+    // once explicitly published - most apps being actively edited never have that set. So this counts
+    // pages across every version of every app, rather than restricting to the released version.
+    const query = manager
+      .createQueryBuilder(Page, 'page')
+      .innerJoin(AppVersion, 'appVersion', 'appVersion.id = page.appVersionId')
+      .innerJoin(App, 'app', 'app.id = appVersion.appId')
+      .where('page.isPageGroup = :isPageGroup', { isPageGroup })
+      .andWhere('app.type = :type', { type: APP_TYPES.FRONT_END });
+
+    if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
+      query.andWhere('app.organizationId = :organizationId', { organizationId });
+    }
+
+    return query;
+  }
+
+  async fetchOrganizationPagesCount(organizationId: string, manager: EntityManager): Promise<number> {
+    return this.fetchOrganizationPagesQuery(organizationId, manager, false).getCount();
+  }
+
+  async fetchOrganizationPageGroupsCount(organizationId: string, manager: EntityManager): Promise<number> {
+    return this.fetchOrganizationPagesQuery(organizationId, manager, true).getCount();
   }
 }
