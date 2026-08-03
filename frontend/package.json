@@ -42,7 +42,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-google-maps/api": "^2.18.1",
     "@sentry/react": "^7.100.1",
-    "@sentry/webpack-plugin": "^2.14.0",
+    "@sentry/webpack-plugin": "^5.4.0",
     "@tabler/icons-react": "^2.4.0",
     "@tanstack/react-table": "^8.20.5",
     "@tanstack/react-virtual": "^3.10.8",
@@ -83,7 +83,7 @@
     "html-webpack-plugin": "^5.5.0",
     "humps": "^2.0.1",
     "i18next": "^22.4.9",
-    "i18next-http-backend": "^2.1.1",
+    "i18next-http-backend": "^4.0.1",
     "immer": "^9.0.19",
     "immutability-helper": "^3.1.1",
     "jspdf": "^4.2.0",
@@ -168,7 +168,7 @@
     "url-join": "^5.0.0",
     "use-react-router-breadcrumbs": "^4.0.1",
     "util": "^0.12.5",
-    "uuid": "9.0.0",
+    "uuid": "^14.0.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "y-websocket": "^1.4.5",
     "yjs": "^13.5.46",
@@ -201,9 +201,9 @@
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.6",
     "babel-plugin-istanbul": "^6.1.1",
-    "compression-webpack-plugin": "^10.0.0",
+    "compression-webpack-plugin": "^12.0.0",
     "css-loader": "^6.7.3",
-    "css-minimizer-webpack-plugin": "^7.0.2",
+    "css-minimizer-webpack-plugin": "^8.0.0",
     "esbuild": "0.25.9",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^8.10.2",
@@ -282,7 +282,7 @@
     "on-headers": "1.1.0",
     "tar-fs": "^3.1.0",
     "minimatch@3": {
-      "brace-expansion": "^1.1.11"
+      "brace-expansion": "^1.1.13"
     }
   },
   "scripts": {
