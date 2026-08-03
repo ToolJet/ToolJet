@@ -91,7 +91,6 @@ const sidebars = {
         'gitsync-api/push-app-version',
         'gitsync-api/create-app-from-git',
         'gitsync-api/sync-pull-app',
-        'gitsync-api/auto-promote-app',
         'gitsync-api/release-app-version',
       ],
     },

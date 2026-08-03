@@ -56,6 +56,12 @@ paths:
                 githubAppPrivateKey:
                   type: string
                   description: GitHub App private key in PEM format.
+                githubEnterpriseUrl:
+                  type: string
+                  description: Base URL of your GitHub Enterprise Server instance. Omit for github.com.
+                githubEnterpriseApiUrl:
+                  type: string
+                  description: API URL of your GitHub Enterprise Server instance. Omit for github.com.
             example:
               organizationId: "45892c81-c1f0-48c6-8875-c2e4fca516f8"
               gitUrl: "https://github.com/username/repository.git"
@@ -122,22 +128,25 @@ paths:
           application/json:
             schema:
               type: object
-              required: [gitAppId, gitVersionId, organizationId]
+              required: [organizationId]
               properties:
-                gitAppId:
-                  type: string
-                  description: Git App ID.
-                gitVersionId:
-                  type: string
-                  description: Git version ID (branch or tag).
                 organizationId:
                   type: string
                   format: uuid
                   description: UUID of the organization.
+                gitAppId:
+                  type: string
+                  description: The app's own ID as recorded in the repo, if you already know it. Used to check the app isn't already imported.
+                gitAppName:
+                  type: string
+                  description: Name of the app folder to import from the repo.
+                gitBranchName:
+                  type: string
+                  description: Git branch to clone from. Defaults to the organization's configured default branch.
             example:
-              gitAppId: "app-123456"
-              gitVersionId: "main"
               organizationId: "45892c81-c1f0-48c6-8875-c2e4fca516f8"
+              gitAppName: "My Git App"
+              gitBranchName: "main"
       responses:
         "201":
           description: App created from GitHub.
@@ -161,25 +170,12 @@ paths:
           schema:
             type: string
             enum: [git]
+        - name: branchName
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Name of the branch to pull, for apps that span more than one branch. If omitted, ToolJet makes a best effort to resolve the right version on its own.
       responses:
         "200":
           description: App synced with latest changes from GitHub.
-
-  /apps/{appId}/promote:
-    post:
-      operationId: autoPromoteApp
-      summary: Auto Promote App
-      description: >
-        Deploys an app by pulling the latest changes from Git and promoting the
-        latest version to the production environment.
-      tags: [GitSync]
-      parameters:
-        - name: appId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: ID of the app to promote.
-      responses:
-        "200":
-          description: App promoted to production.
