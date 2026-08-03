@@ -30,7 +30,7 @@ describe('AppsUtilService.update — versionParams/appParams construction', () =
         limit: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue(null),
       }),
-      update: jest.fn().mockResolvedValue(undefined),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
     const module = await Test.createTestingModule({

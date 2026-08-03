@@ -3400,6 +3400,8 @@ export class AppImportExportService {
       }
     }
 
+    const assignedSlugsThisImport = new Set<string>();
+
     for (const appVersion of appVersions) {
       const appEnvIds: string[] = [...organization.appEnvironments.map((env) => env.id)];
 
@@ -3446,19 +3448,31 @@ export class AppImportExportService {
         // CHECK itself (branch_id is always NULL for them) but still get real metadata
         // here now. importMeta?.slug carries the exported slug (see createImportedAppForUser)
         // for every type. If there's a real candidate slug (not the random fallback),
-        // reuse it unless it's already taken by a different (still-existing) app — that
-        // lets a deleted app's slug be reclaimed on re-import instead of always minting
-        // a fresh one.
+        // reuse it unless it's already taken — that lets a deleted app's slug be reclaimed
+        // on re-import instead of always minting a fresh one.
+        //
+        // Slug uniqueness is enforced by enforce_app_versions_default_branch_slug_unique which
+        // is GLOBAL (no org scope). Use the transaction manager so we also see slugs already
+        // inserted earlier in this same loop (findBySlug only reads committed data and would miss
+        // those pending rows). assignedSlugsThisImport guards the fast-path to avoid redundant DB
+        // hits for slugs already claimed in this session.
         const rawSlug = appVersion.slug ?? importMeta?.slug;
         let resolvedSlug: string;
-        if (rawSlug) {
-          const conflictingApp = await this.appsRepository.findBySlug(
-            rawSlug,
-            user?.organizationId,
-            undefined,
-            branchId
-          );
-          resolvedSlug = conflictingApp && conflictingApp.id !== importedApp.id ? uuid() : rawSlug;
+        if (rawSlug && !assignedSlugsThisImport.has(rawSlug)) {
+          const slugTakenByOther = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'a', 'a.id = av.app_id')
+            .innerJoin('organization_git_sync_branches', 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+            .where('LOWER(av.slug) = LOWER(:slug)', { slug: rawSlug })
+            .andWhere('a.type = :type', { type: importedApp.type || APP_TYPES.FRONT_END })
+            .andWhere('av.app_id != :appId', { appId: importedApp.id })
+            .getCount();
+          if (slugTakenByOther > 0) {
+            resolvedSlug = uuid();
+          } else {
+            resolvedSlug = rawSlug;
+            assignedSlugsThisImport.add(rawSlug);
+          }
         } else {
           resolvedSlug = uuid();
         }
