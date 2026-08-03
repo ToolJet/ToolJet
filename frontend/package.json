@@ -283,7 +283,13 @@
     "tar-fs": "^3.1.0",
     "minimatch@3": {
       "brace-expansion": "^1.1.13"
-    }
+    },
+    "uuid": "$uuid",
+    "tar": ">=7.5.22",
+    "js-yaml": ">=4.3.0 <5.0.0",
+    "fast-xml-parser": ">=5.7.0",
+    "@tootallnate/once": ">=2.0.1",
+    "nodemailer": ">=9.0.1"
   },
   "scripts": {
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
