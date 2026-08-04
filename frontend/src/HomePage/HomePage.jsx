@@ -970,6 +970,21 @@ class HomePageComponent extends React.Component {
     return !!(isBranchingEnabled && !isDefault);
   };
 
+  // Git sync ON but in single-branch mode (branching disabled / unlicensed for multi-branch):
+  // the delete lands on the default branch and is auto-committed + pushed to git — so it needs
+  // the same "committed to git, cannot be retrieved" warning as a feature-branch delete, just
+  // without the merge step. Only front-end apps and modules are branch-scoped and auto-commit
+  // deletions to git (workflows are not). Multi-branch feature-branch deletes are handled by
+  // isOnFeatureBranch(); multi-branch default-branch deletes are blocked upstream (switch-branch
+  // modal), so the only case reaching here with git on is single-branch mode.
+  isGitSyncSingleBranchDelete = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    if (this.props.appType !== 'front-end' && this.props.appType !== 'module') return false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    return !isBranchingEnabled;
+  };
+
   cancelDeleteAppDialog = () => {
     this.setState({
       appToBeDeleted: null,
@@ -2067,6 +2082,20 @@ class HomePageComponent extends React.Component {
                   <br />
                   {'Are you sure you want to continue?'}
                 </span>
+              ) : this.isGitSyncSingleBranchDelete() ? (
+                <span>
+                  {`The ${appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} ${
+                    appToBeDeleted?.name
+                  } and the associated data will be deleted and `}
+                  <strong>
+                    {appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} and all its associated
+                    versions
+                  </strong>
+                  {' will be deleted from git and cannot be retrieved.'}
+                  <br />
+                  <br />
+                  {'Are you sure you want to continue?'}
+                </span>
               ) : (
                 this.props.t(
                   this.props.appType === 'workflow'
@@ -2078,7 +2107,9 @@ class HomePageComponent extends React.Component {
                 )
               )
             }
-            confirmButtonText={this.isOnFeatureBranch() ? 'Delete and commit' : undefined}
+            confirmButtonText={
+              this.isOnFeatureBranch() || this.isGitSyncSingleBranchDelete() ? 'Delete and commit' : undefined
+            }
             confirmButtonLoading={isDeletingApp}
             cancelButtonDisabled={isDeletingApp}
             staticBackdrop={true}
