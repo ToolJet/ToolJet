@@ -270,6 +270,7 @@ export const tableConfig = {
     skipRowClickOnSelect: {
       type: 'toggle',
       displayName: 'Skip row click on select',
+      tip: 'Disable row click event on checkbox select',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
