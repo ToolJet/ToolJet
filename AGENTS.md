@@ -87,6 +87,16 @@ cd plugins && npm install && npm run build
 - Never import `@ee/` or `@cloud/` from CE code — webpack enforces this at compile time
 - Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
 
+## Skills
+
+Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load the one matching the task instead of improvising — ToolJet is a superproject with two submodules, and every git operation has to fan out across all three in a fixed order.
+
+| Task | Skill |
+|---|---|
+| Merge a branch across root + submodules | `merge` |
+| Commit across root + submodules | `commit` |
+| Push and open PRs across root + submodules | `create-pr` |
+
 ## Context file layout
 
 Context is layered — the closest file to the code you're changing wins:
