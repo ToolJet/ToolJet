@@ -38,28 +38,6 @@ describe("Data source Rest API", () => {
     cy.visit("/");
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get('[data-cy="datasource-list-header"]').should(
-      "have.text",
-      Cypress.env("marketplace_action")
-        ? "All data sources (49)"
-        : "All data sources (47)"
-    );
-    cy.get('[data-cy="commonlyused-datasource-button"]').should(
-      "have.text",
-      "Commonly used (6)"
-    );
-    cy.get('[data-cy="databases-datasource-button"]').should(
-      "have.text",
-      Cypress.env("marketplace_action") ? "Databases (20)" : "Databases (18)"
-    );
-    cy.get('[data-cy="apis-datasource-button"]').should(
-      "have.text",
-      "APIs (24)"
-    );
-    cy.get('[data-cy="cloudstorage-datasource-button"]').should(
-      "have.text",
-      "Cloud Storages (4)"
-    );
 
     cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,

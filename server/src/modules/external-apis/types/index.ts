@@ -35,6 +35,7 @@ interface Features {
   [FEATURE_KEY.BAN_WORKSPACE]: FeatureConfig;
   [FEATURE_KEY.UNBAN_WORKSPACE]: FeatureConfig;
   [FEATURE_KEY.EXPORT_APP_ADMIN]: FeatureConfig;
+  [FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

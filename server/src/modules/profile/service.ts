@@ -16,13 +16,14 @@ export class ProfileService implements IProfileService {
   constructor(protected userRepository: UserRepository, protected serviceUtils: ProfileUtilService) {}
 
   getSessionUserDetails(user: User): Partial<User> {
-    const { firstName, lastName, avatarId, email, id } = user;
+    const { firstName, lastName, avatarId, email, id, mfaEnabled } = user;
     return {
       firstName,
       lastName,
       avatarId,
       email,
       id,
+      mfaEnabled,
     };
   }
 
@@ -57,11 +58,16 @@ export class ProfileService implements IProfileService {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
       });
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
+        ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+        : null;
       await this.userRepository.updateOne(
         userId,
         {
           password,
           passwordRetryCount: 0,
+          passwordExpiry,
         },
         manager
       );
