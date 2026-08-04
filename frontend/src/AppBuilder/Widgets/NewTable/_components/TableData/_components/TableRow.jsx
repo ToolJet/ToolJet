@@ -47,8 +47,10 @@ export const TableRow = ({
         'table-row-condensed': cellHeight === 'condensed',
       })}
       onClick={(e) => {
-        const isCheckbox = !!e?.target?.closest?.('.table-selector-checkbox');
-        handleRowClick(row, isCheckbox);
+        // Treat a click anywhere inside the selector cell (not just the checkbox) as a selection-column click,
+        // so skipRowClickOnSelect / disableRowDeselection apply across the whole cell.
+        const isSelectorCellClick = !!e?.target?.closest?.('.selector-column');
+        handleRowClick(row, isSelectorCellClick);
       }}
       onMouseEnter={() => {
         if (hasHoveredEvent) {

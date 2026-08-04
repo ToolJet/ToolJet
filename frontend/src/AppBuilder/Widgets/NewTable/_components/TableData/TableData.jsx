@@ -130,9 +130,9 @@ export const TableData = ({
   });
 
   // Handles row click for row selection
-  const handleRowClick = (row, isCheckbox) => {
-    // When skipRowClickOnSelect is enabled, clicking the selection-column checkbox still toggles selection but must NOT fire the onRowClicked event.
-    const skipRowClickEvent = isCheckbox && skipRowClickOnSelect;
+  const handleRowClick = (row, isSelectorCell) => {
+    // When skipRowClickOnSelect is enabled, clicking the selector cell still toggles selection but must NOT fire the onRowClicked event.
+    const skipRowClickEvent = isSelectorCell && skipRowClickOnSelect;
     lastClickedRowRef.current = { row: row?.original, index: row.index, skipRowClickEvent };
     if (!allowSelection) {
       setExposedVariables({
@@ -142,7 +142,7 @@ export const TableData = ({
       fireEvent('onRowClicked');
       return;
     }
-    if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
+    if (disableRowDeselection && row.getIsSelected() && !isSelectorCell) {
       return;
     }
     row.toggleSelected();
