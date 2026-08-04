@@ -191,13 +191,16 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         (ou) => ou.organizationId === targetOrg?.id
       );
 
+      if (existingUser.status === USER_STATUS.ARCHIVED) {
+        throw new NotAcceptableException('This account has been banned. Contact your administrator.');
+      } 
+
       if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.INVITED) {
         throw new NotAcceptableException(
           'The user is already registered. Please check your inbox for the activation link'
         );
       }
 
-      // 2. If already active here, block as "already exists"
       if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.ACTIVE) {
         throw new NotAcceptableException('Email already exists in this workspace');
       }
