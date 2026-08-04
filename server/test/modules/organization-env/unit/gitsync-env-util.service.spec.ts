@@ -119,12 +119,7 @@ describe('Git-sync env config mapping + read flow (.tj_env.<slug> file + WORKSPA
     expect(registry.getResolvedOrganizationIds().sort()).toEqual([FILE_WORKSPACE_ID, ENV_VAR_WORKSPACE_ID].sort());
   });
 
-  // Skipped: #17393 — GIT_ENV_KEYS.SSH was deleted from constants/index.ts but
-  // gitsync.util.service.ts still references it in ensureResolved() (and every
-  // method that calls it, incl. getGitHttpsConfig/hasGitHttpsConfig below), so this
-  // throws unconditionally for every org right now. Not a rebase/test regression —
-  // confirmed against upstream's own unmodified copy of this file in isolation.
-  describe.skip.each([
+  describe.each([
     ['.tj_env.<slug> file', FILE_WORKSPACE_ID, FILE_CONFIG],
     ['WORKSPACE_GIT_CONFIGS env var', ENV_VAR_WORKSPACE_ID, ENV_VAR_CONFIG],
   ])('read flow via %s', (_label, orgId, config) => {
@@ -184,7 +179,7 @@ describe('Git-sync env config mapping + read flow (.tj_env.<slug> file + WORKSPA
   });
 
   // Skipped: #17393 — getGitHttpsConfig() calls ensureResolved(), which throws (see above).
-  it.skip('keeps the two workspaces fully isolated — one config never leaks into the other', async () => {
+  it('keeps the two workspaces fully isolated — one config never leaks into the other', async () => {
     const { registry, gitSyncEnvUtilService } = makeServices();
     await registry.initialize();
 
@@ -197,7 +192,7 @@ describe('Git-sync env config mapping + read flow (.tj_env.<slug> file + WORKSPA
   });
 
   // Skipped: #17393 — getGitHttpsConfig() calls ensureResolved(), which throws (see above).
-  it.skip('does not mark a workspace as configured when its required keys are incomplete', async () => {
+  it('does not mark a workspace as configured when its required keys are incomplete', async () => {
     // A workspace with only a partial config (this is the actual bug scenario: the raw
     // key-presence check must not be mistaken for "fully configured").
     (fs.promises.readdir as jest.Mock).mockResolvedValue([`.tj_env.${FILE_WORKSPACE_SLUG}`]);
@@ -318,8 +313,7 @@ describe('GitSyncEnvUtilService', () => {
     });
   });
 
-  // Skipped: #17393 — ensureResolved() itself is what throws (GIT_ENV_KEYS.SSH is undefined).
-  describe.skip('ensureResolved() — license-aware state + dedup', () => {
+  describe('ensureResolved() — license-aware state + dedup', () => {
     it('sets provider isEnabled=false when license is not valid', async () => {
       const orgEnvService = makeOrgEnvService({
         has: jest.fn().mockImplementation((_id: string, key: string) => key === GIT_ENV_KEYS.HTTPS.URL),
