@@ -176,21 +176,9 @@ describe('Module version resolution by pinned ref (git-sync-enabled workspace)',
     expect(res.body.editing_version.id).toBe(version.id);
   });
 
-  /**
-   * Regression coverage: a module app/pin created before branching was enabled on the
-   * workspace stores the pin as a plain version name (legacy format), not a
-   * module_reference_id UUID. If that version has never been published/released, it sits
-   * as a DRAFT on the default branch. Tier 0's any-status fallback used to be gated on
-   * `!isGitSyncEnabled`, so once the workspace turned git-sync/branching on, this legacy
-   * DRAFT pin 404'd even though nothing about the underlying data changed.
-   */
-  it('resolves a legacy name pin to a DRAFT-only version on the default branch', async () => {
-    const adminData = await createUser(nestApp, { email: 'mrr-gs-admin2@tooljet.io', groups: ['all_users', 'admin'] });
-    const org = adminData.organization;
-    const adminCookie = (await login(nestApp, 'mrr-gs-admin2@tooljet.io')).tokenCookie;
-
+  async function enableGitSync(orgId: string) {
     const orgGitSync = await saveEntity(OrganizationGitSync, {
-      organizationId: org.id,
+      organizationId: orgId,
       autoCommit: false,
       isBranchingEnabled: true,
     });
@@ -204,6 +192,24 @@ describe('Module version resolution by pinned ref (git-sync-enabled workspace)',
       isEnabled: true,
       isFinalized: true,
     } as any);
+  }
+
+  /**
+   * Regression coverage: a module app/pin created before branching was enabled on the
+   * workspace stores the pin as a plain version name (legacy format), not a
+   * module_reference_id UUID. If that version has never been published/released, it sits
+   * as a DRAFT on the default branch, with isSynced: false (stamped false by the
+   * NOT-NULL backfill migration — it predates git-sync on this workspace). Tier 0's
+   * any-status fallback used to be gated on `!isGitSyncEnabled`, so once the workspace
+   * turned git-sync/branching on, this legacy DRAFT pin 404'd even though nothing about
+   * the underlying data changed.
+   */
+  it('resolves a legacy (isSynced: false) name pin to a DRAFT-only version on the default branch', async () => {
+    const adminData = await createUser(nestApp, { email: 'mrr-gs-admin2@tooljet.io', groups: ['all_users', 'admin'] });
+    const org = adminData.organization;
+    const adminCookie = (await login(nestApp, 'mrr-gs-admin2@tooljet.io')).tokenCookie;
+
+    await enableGitSync(org.id);
 
     const moduleApp = await createApplication(nestApp, {
       name: 'M-GitSyncDraftName',
@@ -213,15 +219,47 @@ describe('Module version resolution by pinned ref (git-sync-enabled workspace)',
     const coRelationId = uuidv4();
     await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
     const version = await createApplicationVersion(nestApp, moduleApp as any);
-    // Left at DRAFT, pinned by name — never published/released, same as a module pinned
-    // before this workspace had branching/git-sync enabled.
+    // Left at DRAFT, pinned by name, isSynced forced false — never published/released,
+    // same as a module pinned before this workspace had branching/git-sync enabled.
     await updateEntity(AppVersion, version.id, {
       name: 'v3',
       status: AppVersionStatus.DRAFT,
+      isSynced: false,
     } as any);
 
     const res = await fetchModuleVersion(coRelationId, adminCookie, org.id, 'v3');
     expect(res.statusCode).toBe(200);
     expect(res.body.editing_version.id).toBe(version.id);
+  });
+
+  /**
+   * Guardrail: a genuinely git-native draft (isSynced: true — created through this
+   * workspace's own git-sync flow, not a legacy backfilled row) must NOT be resolvable
+   * by name unless it's PUBLISHED. The Tier 0 fallback added above must not relax this —
+   * it's scoped to isSynced: false rows only.
+   */
+  it('does NOT resolve a synced (isSynced: true) name-pinned DRAFT — still 404s', async () => {
+    const adminData = await createUser(nestApp, { email: 'mrr-gs-admin3@tooljet.io', groups: ['all_users', 'admin'] });
+    const org = adminData.organization;
+    const adminCookie = (await login(nestApp, 'mrr-gs-admin3@tooljet.io')).tokenCookie;
+
+    await enableGitSync(org.id);
+
+    const moduleApp = await createApplication(nestApp, {
+      name: 'M-GitSyncSyncedDraftName',
+      user: adminData.user,
+      type: 'module',
+    });
+    const coRelationId = uuidv4();
+    await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
+    const version = await createApplicationVersion(nestApp, moduleApp as any);
+    await updateEntity(AppVersion, version.id, {
+      name: 'v3',
+      status: AppVersionStatus.DRAFT,
+      isSynced: true,
+    } as any);
+
+    const res = await fetchModuleVersion(coRelationId, adminCookie, org.id, 'v3');
+    expect(res.statusCode).toBe(404);
   });
 });

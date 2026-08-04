@@ -144,12 +144,13 @@ export async function resolveModuleRef(
 
   // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).
   // Check PUBLISHED first regardless of git-sync: a released version by that name should
-  // always win over a same-named unreleased draft. Then fall back to any status (DRAFT
-  // included) on the default branch — this can never be a "branch DRAFT shadowing the
-  // release" (chk_app_versions_branched_implies_draft is about *feature*-branch rows, which
-  // this query excludes via branchId: defaultBranch.id) — it's just a legacy name-pinned
-  // reference to a module version that's never been released, e.g. an app/module pinned
-  // before git-sync/branching was enabled on the workspace.
+  // always win over a same-named unreleased draft. Then fall back to an any-status match on
+  // the default branch, but under git-sync only for isSynced: false rows — legacy versions
+  // stamped before this workspace had git-sync/branching enabled (is_synced defaults false on
+  // backfill; new versions get isSynced: gitDetails.isEnabled at creation, see
+  // VersionUtilService.buildVersionFromParent). A genuinely git-native draft (isSynced: true)
+  // still requires PUBLISHED — that's the case chk_app_versions_branched_implies_draft actually
+  // guards against, and this fallback must not relax it.
   if (moduleReferenceId && !UUID_RE.test(moduleReferenceId) && defaultBranch) {
     const versionName = moduleReferenceId;
     const defaultBranchForName = await manager.findOne(AppVersion, {
@@ -170,20 +171,22 @@ export async function resolveModuleRef(
         branchId: defaultBranch.id,
         versionType: AppVersionType.VERSION,
         isStub: false,
+        ...(isGitSyncEnabled ? { isSynced: false } : {}),
       },
     });
     if (defaultBranchDraft) return defaultBranchDraft;
-    // Name not found — fall through to orphan guard. The pinning contract (see
+    // Name isn't found — fall through to orphan guard. The pinning contract (see
     // ModuleViewerInspector) never persists a bare branch name here, so this is legacy data.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
   // git-sync: branched rows are always DRAFTs (chk_app_versions_branched_implies_draft) —
-  // a pin must only resolve to a default-branch PUBLISHED row.
+  // a pin must only resolve to a default-branch PUBLISHED row, unless the row predates
+  // git-sync on this workspace (isSynced: false) — same legacy-draft-pin case as Tier 0.
   // non-git-sync: default-branch lookup with no status filter is correct.
   if (moduleReferenceId && UUID_RE.test(moduleReferenceId) && defaultBranch) {
     if (isGitSyncEnabled) {
-      // git-sync: only default-branch PUBLISHED.
+      // git-sync: default-branch PUBLISHED first.
       const published = await manager.findOne(AppVersion, {
         where: {
           appId: moduleApp.id,
@@ -194,6 +197,17 @@ export async function resolveModuleRef(
         },
       });
       if (published) return published;
+      // Not published — only a legacy (isSynced: false) draft is allowed to match here.
+      const unsyncedDraft = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          moduleReferenceId,
+          branchId: defaultBranch.id,
+          isSynced: false,
+          isStub: false,
+        },
+      });
+      if (unsyncedDraft) return unsyncedDraft;
     } else {
       // Non-git-sync: default-branch (all rows land there, no status filter needed).
       const byMref = await manager.findOne(AppVersion, {
