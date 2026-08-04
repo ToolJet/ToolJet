@@ -109,7 +109,6 @@ Context is layered — the closest file to the code you're changing wins:
 | `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants |
 | `server/ee/AGENTS.md` | EE-extends-CE rules (in EE submodule) |
 | `frontend/AGENTS.md` | Frontend conventions, App Builder architecture, glossary |
-| `server/docs/testing-philosophy.md` | What to test, unit vs e2e, when to delete a test |
-| `server/docs/testing-conventions.md` | How to write it — commands, templates, helpers, `@group` |
+| `server/docs/testing.md` | Backend testing — what to test, then how to write it |
 
 **Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature. Stale context is worse than no context.

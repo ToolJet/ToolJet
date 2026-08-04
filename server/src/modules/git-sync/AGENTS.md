@@ -61,7 +61,7 @@ logic is in `server/ee/git-sync/`.
 - Version rename/match on pull: `findMatchingVersion(appId, gitVersionName)` +
   `deleteMatchingVersionIfExists` in EE `base-git-util.service.ts` — pulls replace the matching version.
 - SSH keys are written to temp files per operation and cleaned up (`writeSSHKeyToFile`/`cleanupSSHKeys`).
-- Testing: don't extend the monolithic git-sync lifecycle `it()` block in the e2e suite — write standalone specs instead (see `server/docs/testing-philosophy.md`, Determinism).
+- Testing: don't extend the monolithic git-sync lifecycle `it()` block in the e2e suite — write standalone specs instead (see `server/docs/testing.md`, Determinism).
 
 ## Related modules
 

@@ -82,10 +82,7 @@ Server widget config (`src/modules/apps/services/widget-config/`) and frontend c
 
 > Tests are documentation first. Describe blocks = table of contents; `it()` = plain English; assertions = response shape. Write failing tests before implementation.
 
-Two reference docs sit alongside this file, and this section is a summary of both — read them when the summary runs out:
-
-- `docs/testing-philosophy.md` — judgment layer: what to test (behavior matrix: edition × plan × role × feature gate × tenant scope × resource state, with pruning rules), unit vs e2e placement, what to skip, when to delete a test. The checklist below is that doc's summary, canonical here.
-- `docs/testing-conventions.md` — mechanics: full run commands, directory layout, the isolation model, e2e/unit describe templates, edition and plan patterns, the stratified helper table, `@group` values.
+Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across edition × plan × role × feature gate × tenant scope × resource state, pruning rules, unit vs e2e placement, what to skip, when to delete a test), part 2 is mechanics (run commands, directory layout, isolation model, describe templates, helper layers, `@group`). This section summarises both; read the doc when the summary runs out.
 
 1. What could actually break here?
 2. Needs real DB/HTTP round trip to be meaningful? → e2e. Else → unit.
