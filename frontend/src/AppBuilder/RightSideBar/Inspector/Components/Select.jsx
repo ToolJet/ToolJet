@@ -11,12 +11,12 @@ import useStore from '@/AppBuilder/_stores/store';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import ListGroup from 'react-bootstrap/ListGroup';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Button } from '@/components/ui/Button/Button';
 import SortableList from '@/_components/SortableList';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import './Select.scss';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -38,6 +38,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const isRadioButton = component?.component?.component === 'RadioButtonV2';
   const isDropdownV2 = component?.component?.component === 'DropdownV2';
   const isCaptionEnabled = isDropdownV2 || isMultiSelect;
+  const isIconImageEnabled = isDropdownV2 || isMultiSelect;
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
   const sort = component?.component?.definition?.properties?.sort?.value;
@@ -74,7 +75,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const [options, setOptions] = useState([]);
   const [markedAsDefault, setMarkedAsDefault] = useState(_markedAsDefault);
-  const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
@@ -128,6 +128,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       value,
       label,
       ...(isCaptionEnabled ? { caption: null } : {}),
+      ...(isIconImageEnabled ? { icon: { value: '' }, iconVisibility: false } : {}),
       visible: { value: '{{true}}' },
       disable: { value: '{{false}}' },
       default: { value: '{{false}}' },
@@ -145,6 +146,31 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     const _items = options.filter((option, i) => i !== index);
     setOptions(_items);
     updateAllOptionsParams(_items, { isParamFromDropdownOptions: true });
+  };
+
+  const handleDuplicateOption = (index) => {
+    const source = options[index];
+    if (!source) return;
+
+    // `value` is the option's identity (Draggable key + selection value), so it must stay unique.
+    const base = `${source?.value}_copy`;
+    let newValue = base;
+    let counter = 2;
+    while (options.find((option) => option.value === newValue)) {
+      newValue = `${base}_${counter}`;
+      counter += 1;
+    }
+
+    const duplicated = {
+      ...source, // copies icon, image, caption, iconVisibility, visible, disable — everything
+      label: `${source?.label} copy`,
+      value: newValue,
+      default: { ...source.default, value: '{{false}}' }, // don't carry over the default selection
+    };
+
+    const _items = [...options];
+    _items.splice(index + 1, 0, duplicated); // place right after the original
+    updateOptions(sortArray(_items, sort));
   };
 
   const handleLabelChange = (label, index) => {
@@ -183,6 +209,26 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
+    updateOptions(_options);
+  };
+
+  const handleIconChange = (value, index) => {
+    const _options = options.map((option, i) =>
+      i === index ? { ...option, icon: { ...option.icon, value } } : option
+    );
+    updateOptions(_options);
+  };
+
+  const handleIconVisibilityChange = (value, index) => {
+    const isVisible = getResolvedValue(value);
+    const _options = options.map((option, i) => (i === index ? { ...option, iconVisibility: isVisible } : option));
+    updateOptions(_options);
+  };
+
+  const handleImageChange = (value, index) => {
+    const _options = options.map((option, i) =>
+      i === index ? { ...option, image: value === '' ? undefined : value } : option
+    );
     updateOptions(_options);
   };
 
@@ -308,9 +354,34 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         className={`${darkMode && 'dark-theme theme-dark'} inspector-select-options-popover`}
         style={{ minWidth: '248px' }}
       >
+        <Popover.Header className="">
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="font-weight-500 font-size-12">Edit Option</div>
+            <div className="d-flex align-items-center justify-content-end custom-gap-6">
+              <Button
+                iconOnly
+                isLucid
+                size="medium"
+                variant="ghost"
+                leadingIcon="copy"
+                onClick={() => handleDuplicateOption(index)}
+                data-cy={`option-duplicate-button`}
+              />
+              <Button
+                iconOnly
+                isLucid
+                size="medium"
+                variant="ghost"
+                leadingIcon="trash"
+                onClick={() => handleDeleteOption(index)}
+                data-cy={`option-delete-button`}
+              />
+            </div>
+          </div>
+        </Popover.Header>
         <Popover.Body>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
+            <label data-cy={`label-column-name`} className="mb-1 font-size-12">
               {'Option label'}
             </label>
             <CodeHinter
@@ -324,7 +395,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
+            <label data-cy={`label-column-name`} className="mb-1 font-size-12">
               {'Option value'}
             </label>
             <CodeHinter
@@ -339,7 +410,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           {isCaptionEnabled && (
             <div className="field mb-3" data-cy={`input-and-label-option-caption`}>
-              <label className="font-weight-500 mb-1 font-size-12">{'Option caption'}</label>
+              <label className="mb-1 font-size-12">{'Option Caption'}</label>
               <CodeHinter
                 type={'basic'}
                 initialValue={item?.caption ?? ''}
@@ -348,6 +419,41 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                 lineNumbers={false}
                 placeholder={'Optional description'}
                 onChange={(value) => handleCaptionChange(value, index)}
+              />
+            </div>
+          )}
+          {isIconImageEnabled && (
+            <div className="field mb-3">
+              <CodeHinter
+                initialValue={item?.icon?.value || ''}
+                theme={darkMode ? 'monokai' : 'default'}
+                mode="javascript"
+                lineNumbers={false}
+                component={component}
+                type={'fxEditor'}
+                paramName={'leadingIcon'}
+                paramLabel={'Leading Icon'}
+                onChange={(value) => handleIconChange(value, index)}
+                onVisibilityChange={(value) => handleIconVisibilityChange(value, index)}
+                onFxPress={(active) => handleOnFxPress(active, index, 'icon')}
+                fxActive={item?.icon?.fxActive}
+                fieldMeta={{ type: 'icon', displayName: 'Leading icon', isFxNotRequired: true }}
+                paramType={'icon'}
+                iconVisibility={item?.iconVisibility}
+              />
+            </div>
+          )}
+          {isIconImageEnabled && (
+            <div className="field mb-3">
+              <label className="mb-1 font-size-12">{'Leading image'}</label>
+              <CodeHinter
+                type={'basic'}
+                initialValue={item?.image ?? ''}
+                theme={darkMode ? 'monokai' : 'default'}
+                mode="javascript"
+                lineNumbers={false}
+                placeholder={'Image URL'}
+                onChange={(value) => handleImageChange(value, index)}
               />
             </div>
           )}
@@ -461,8 +567,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             <div key={item?.value}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
-                                onMouseEnter={() => setHoveredOptionIndex(index)}
-                                onMouseLeave={() => setHoveredOptionIndex(null)}
                                 {...restProps}
                               >
                                 <div className="row">
@@ -471,23 +575,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
                                     {getSafeRenderableValue(getResolvedValue(item?.label))}
-                                  </div>
-                                  <div className="col-auto">
-                                    {index === hoveredOptionIndex && (
-                                      <ButtonSolid
-                                        variant="danger"
-                                        size="xs"
-                                        className={'delete-icon-btn'}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDeleteOption(index);
-                                        }}
-                                      >
-                                        <span className="d-flex">
-                                          <Trash fill={'var(--tomato9)'} width={12} />
-                                        </span>
-                                      </ButtonSolid>
-                                    )}
                                   </div>
                                 </div>
                               </ListGroup.Item>

@@ -594,6 +594,7 @@
         "commonProperties": {
             "visibility": "Visibility",
             "disable": "Disable",
+            "leadingIcon": "Leading icon",
             "borderRadius": "Border radius",
             "transformation": "Transformation",
             "boxShadow": "Box shadow",
