@@ -88,7 +88,7 @@ describe('Checkbox Component Tests', { testIsolation: false }, () => {
         cy.apiLogin();
         cy.apiCreateApp(`${fake.companyName}-Checkbox-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Checkbox", 500, 500);
+        cy.dragAndDropWidget("Checkbox", 500, 100);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 

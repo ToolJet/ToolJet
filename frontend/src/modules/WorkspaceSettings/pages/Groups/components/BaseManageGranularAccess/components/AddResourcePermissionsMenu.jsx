@@ -17,6 +17,8 @@ function AddResourcePermissionsMenu({
         return 'apps';
       case RESOURCE_TYPE.WORKFLOWS:
         return 'workflows';
+      case RESOURCE_TYPE.MODULES:
+        return 'apps';
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'datasource';
       default:
@@ -27,8 +29,18 @@ function AddResourcePermissionsMenu({
   const resourceNameMapping = {
     [RESOURCE_TYPE.APPS]: 'Apps',
     [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
+    [RESOURCE_TYPE.MODULES]: 'Modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
   };
+
+  const order = [RESOURCE_TYPE.APPS, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.WORKFLOWS];
+
+  const rank = (type) => {
+    const i = order.indexOf(type);
+    return i === -1 ? order.length : i; // unknown types go last
+  };
+
+  resourcesOptions.sort((a, b) => rank(a) - rank(b));
 
   return resourcesOptions.length > 1 ? (
     <OverlayTrigger
@@ -49,16 +61,22 @@ function AddResourcePermissionsMenu({
                 onClick={() => {
                   openAddPermissionModal(resource);
                 }}
-                disabled={currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES}
+                disabled={
+                  currentGroupPermission.name === 'end-user' &&
+                  [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES].includes(resource)
+                }
                 data-cy={`add-${resource.toLowerCase()}-button`}
               >
                 <OverlayTrigger
                   key={index}
                   placement="right"
                   overlay={
-                    currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES ? (
+                    currentGroupPermission.name === 'end-user' &&
+                    [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES].includes(resource) ? (
                       <Tooltip id={`tooltip-${index}`} style={{ maxWidth: '120px' }}>
-                        End-user cannot access data sources
+                        {resource === RESOURCE_TYPE.MODULES
+                          ? 'End-user implicitly gets access'
+                          : `End-user cannot access ${resourceNameMapping[resource].toLowerCase()}`}
                       </Tooltip>
                     ) : (
                       <></>
@@ -78,7 +96,7 @@ function AddResourcePermissionsMenu({
           variant="tertiary"
           iconWidth="17"
           fill="var(--slate9)"
-          className="add-icon tj-text-xsm font-weight-600"
+          className="add-icon tj-text-xsm font-weight-600 remove-disabled-bg"
           leftIcon="plus"
           disabled={currentGroupPermission.name === 'admin' || !isEditable}
           data-cy="add-permission-button"
@@ -93,13 +111,13 @@ function AddResourcePermissionsMenu({
         variant="tertiary"
         iconWidth="17"
         fill="var(--slate9)"
-        className="add-icon tj-text-xsm font-weight-600"
+        className="add-icon tj-text-xsm font-weight-600 remove-disabled-bg"
         leftIcon="plus"
         disabled={currentGroupPermission.name === 'admin' || !isEditable}
         onClick={() => {
           openAddPermissionModal(RESOURCE_TYPE.APPS);
         }}
-        data-cy="add-apps-buton"
+        data-cy="add-apps-button"
       >
         Add apps
       </ButtonSolid>

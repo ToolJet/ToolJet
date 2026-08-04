@@ -1,6 +1,6 @@
 import { AbilityBuilder } from '@casl/ability';
 import { UserAllPermissions } from '@modules/app/types';
-import { FEATURE_KEY } from '../constants';
+import { APP_TYPES, FEATURE_KEY } from '../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeatureAbility } from './index';
@@ -16,18 +16,23 @@ export function defineAppAbility(
   const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
   const isAllAppsCreatable = !!userPermission?.appCreate;
   const isAllAppsDeletable = !!userPermission?.appDelete;
+  const isAllModulesCreatable = !!userPermission?.moduleCreate;
+  const isAllModulesDeletable = !!userPermission?.moduleDelete;
   const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
-
-  if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin && !isBuilder) {
-    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
-    return;
-  }
+  const isCreatingModule = request?.body?.type === APP_TYPES.MODULE;
 
   // Check if user is the owner of the app
   const app = request?.tj_app;
   const currentUserId = UserAllPermissions?.user?.id;
   const isAppOwner = app && currentUserId && app.userId === currentUserId;
+
+  const isModuleApp = app?.type === APP_TYPES.MODULE;
+
+  if ((resourceType === MODULES.MODULES || isModuleApp) && !isAdmin && !superAdmin && !isBuilder) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
+    return;
+  }
 
   // Helper function to check if user can access released environment for an app
   const canAccessReleasedEnv = (appId: string): boolean => {
@@ -45,8 +50,53 @@ export function defineAppAbility(
   // App listing is available to all
   can(FEATURE_KEY.GET, App);
 
-  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
-    // Admin or super admin and do all operations
+  if ((resourceType === MODULES.MODULES || isModuleApp) && !isAdmin && !superAdmin) {
+    // Per-module edit/view grants for non-admin builders (Edit vs Build-with)
+    const userModulePermissions = userPermission?.[MODULES.MODULES];
+    const isAllModulesEditable = !!userModulePermissions?.isAllEditable;
+    const isAllModulesViewable = !!userModulePermissions?.isAllViewable;
+    const isEditable =
+      isAllModulesEditable ||
+      !!(
+        userModulePermissions?.editableAppsId?.length &&
+        appId &&
+        userModulePermissions.editableAppsId.includes(appId)
+      );
+    const isViewable =
+      isAllModulesViewable ||
+      !!(
+        userModulePermissions?.viewableAppsId?.length &&
+        appId &&
+        userModulePermissions.viewableAppsId.includes(appId)
+      );
+
+    if (isEditable) {
+      can(
+        [
+          FEATURE_KEY.UPDATE,
+          FEATURE_KEY.GET_ONE,
+          FEATURE_KEY.GET_BY_SLUG,
+          FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
+          FEATURE_KEY.UPDATE_ICON,
+        ],
+        App
+      );
+      if (isAllModulesDeletable || isAppOwner) {
+        can(FEATURE_KEY.DELETE, App);
+      }
+      return;
+    }
+    if (isViewable) {
+      // Build-with: can open module builder read-only; UPDATE intentionally excluded
+      can([FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS], App);
+      return;
+    }
+    // No permissions: only basic listing (GET already granted above)
+    return;
+  }
+
+  if (isAdmin || superAdmin) {
+    // Admin or super admin: full permissions
     can(
       [
         FEATURE_KEY.CREATE,
@@ -66,7 +116,7 @@ export function defineAppAbility(
     return;
   }
 
-  if (isAllAppsCreatable) {
+  if (isAllAppsCreatable || (isCreatingModule && isAllModulesCreatable)) {
     can(FEATURE_KEY.CREATE, App);
   }
   if (userPermission.appRelease) {

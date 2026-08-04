@@ -24,6 +24,8 @@ const ICON_ONLY_BUTTON_BREAKPOINT = 700;
 const GENERATE_QUERY_SUPPORTED_KINDS = [
   'postgresql',
   'openapi',
+  'gmail',
+  'googlecalendar',
   'mongodb',
   'bigquery',
   'mysql',
@@ -32,6 +34,9 @@ const GENERATE_QUERY_SUPPORTED_KINDS = [
   'openai',
   'runjs',
   'databricks',
+  'servicenow',
+  'quickbooks',
+  'hubspot',
 ];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {

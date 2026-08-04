@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const Switch = ({
@@ -76,6 +76,7 @@ const Switch = ({
             marginLeft: alignment === 'left' && '-2rem',
             border: `1 px solid ${borderColor}`,
           }}
+          disabled={disabledState}
           aria-disabled={disabledState}
           aria-hidden={!visibility}
           aria-required={isMandatory}
@@ -243,6 +244,8 @@ export const ToggleSwitchV2 = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on]);
+
+  useFormClear(() => setInputValue(false));
 
   const renderInput = () => (
     <div
