@@ -22,6 +22,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import ModulePermissionsUI from '../ModulePermissionsUI';
 import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import VirtualizedUserList from './VirtualizedUserList';
@@ -764,7 +765,7 @@ class BaseManageGroupPermissionResources extends React.Component {
     const isCE = fetchEdition() === 'ce';
     const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
     const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
-    const { customGroups: isFeatureEnabled } = featureAccess || {};
+    const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
     // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs
     // and cannot change user roles (but can still add/remove users).
@@ -1270,6 +1271,15 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   </div>
                                   {/* //App till here */}
                                 </div>
+
+                                {/* Module Permission */}
+                                <ModulePermissionsUI
+                                  groupPermission={groupPermission}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
+                                  updateGroupPermission={this.updateGroupPermission}
+                                  updateState={this.updateParamState}
+                                />
+
                                 {/* Workflow Permission */}
                                 <WorkflowPermissionsUI
                                   groupPermission={groupPermission}
@@ -1405,6 +1415,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                       darkMode={this.props.darkMode}
                       isBasicPlan={isBasicPlan}
                       isFeatureEnabled={isFeatureEnabled}
+                      isModulesEnabled={isModulesEnabled}
                       hasEndUsers={hasEndUsers}
                       isAdmin={isAdmin}
                     />

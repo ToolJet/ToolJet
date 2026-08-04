@@ -38,6 +38,7 @@ export const Viewer = ({
     'view',
     { environmentId, versionId, componentName },
     moduleMode,
+    false,
     appSlug
   );
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
