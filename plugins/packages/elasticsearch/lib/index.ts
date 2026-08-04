@@ -1,4 +1,4 @@
-import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
+import { ConnectionTestResult, QueryService, QueryResult, QueryError, validateUrlForSSRF } from '@tooljet-plugins/common';
 import {
   getDocument,
   updateDocument,
@@ -120,6 +120,8 @@ export default class ElasticsearchService implements QueryService {
     } else {
       url = `${protocol}://${host}:${port}`;
     }
+
+    await validateUrlForSSRF(`${protocol}://${host}:${port}`);
 
     const options: ClientOptions = { 
       node: url,

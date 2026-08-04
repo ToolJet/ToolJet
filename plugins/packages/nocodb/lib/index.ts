@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, validateUrlForSSRF, getSSRFProtectionOptions } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got, { Headers } from 'got';
 const JSON5 = require('json5');
@@ -26,12 +26,17 @@ export default class Nocodb implements QueryService {
     if (query_string[0] === '?') {
       query_string = query_string.slice(1);
     }
+
+    await validateUrlForSSRF(baseURL);
+    const ssrfBaseOptions = getSSRFProtectionOptions();
+
     try {
       switch (operation) {
         case 'list_records': {
           response = await got(`${baseURL}/api/v2/tables/${tableId}/records?${query_string}`, {
             method: 'get',
             headers: this.authHeader(apiToken),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -42,6 +47,7 @@ export default class Nocodb implements QueryService {
           response = await got(`${baseURL}/api/v2/tables/${tableId}/records/count?${query_string}`, {
             method: 'get',
             headers: this.authHeader(apiToken),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -53,6 +59,7 @@ export default class Nocodb implements QueryService {
           response = await got(`${baseURL}/api/v2/tables/${tableId}/records/${record_id}?${query_string}`, {
             method: 'get',
             headers: this.authHeader(apiToken),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -64,6 +71,7 @@ export default class Nocodb implements QueryService {
             method: 'post',
             headers: this.authHeader(apiToken),
             json: this.parseJSON(queryOptions.body),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -79,6 +87,7 @@ export default class Nocodb implements QueryService {
               ...this.parseJSON(queryOptions.body),
               Id: record_id,
             },
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -93,6 +102,7 @@ export default class Nocodb implements QueryService {
             json: {
               Id: record_id,
             },
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
