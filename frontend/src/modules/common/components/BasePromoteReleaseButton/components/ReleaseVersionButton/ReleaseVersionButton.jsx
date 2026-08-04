@@ -140,7 +140,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
               'released-button': isVersionReleased,
             })}
             isLoading={isReleasing}
-            disabled={isVersionReleased}
+            disabled={isVersionReleased || !isReleaseVersionEnabled}
             onClick={onReleaseButtonClick}
           >
             <Globe width="16" height="16" className="tw-text-icon-accent" />

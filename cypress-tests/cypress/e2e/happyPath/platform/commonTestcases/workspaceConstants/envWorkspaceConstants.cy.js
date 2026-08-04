@@ -66,10 +66,6 @@ describe("Workspace constants", () => {
         );
 
         switchToConstantTab("Secrets");
-        cy.get('[data-cy="headervalue-constant-visibility"]').click();
-        cy.get('[data-cy="headervalue-workspace-constant-value"]')
-            .should("be.visible")
-            .and("have.text", "Values fetched at runtime, not stored in ToolJet");
 
         cy.get('[data-cy="headervalue-edit-button"]').should("be.disabled");
         cy.get('[data-cy="headervalue-delete-button"]').should("be.disabled");

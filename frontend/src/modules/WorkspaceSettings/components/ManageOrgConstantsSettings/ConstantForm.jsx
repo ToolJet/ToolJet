@@ -18,16 +18,38 @@ const ConstantForm = ({
   currentEnvironment,
   mode,
 }) => {
+  // Secrets are never sent back from the backend in plaintext (matches how encrypted
+  // data source fields work) - editing one always means typing a brand new value, not
+  // revealing the old one, so the field starts empty instead of pre-filled with the
+  // masked placeholder. Global constants are unaffected and keep the old reveal flow.
+  const isSecretEditMode = mode === 'edit' && selectedConstant?.type === Constants.Secret;
+
   const [fields, setFields] = useState(() => ({
     ...selectedConstant,
     type: selectedConstant?.type,
+    value: isSecretEditMode ? '' : selectedConstant?.value,
     environments: [{ label: currentEnvironment?.name, value: currentEnvironment?.id }],
   }));
 
   const [showValue, setShowValue] = useState(false);
 
+  // Mirrors DynamicForm's handleEncryptedFieldsToggle for encrypted data source fields:
+  // locked+masked by default, Edit unlocks an empty field to type a new value, Cancel re-locks it.
+  const [isEditingSecretValue, setIsEditingSecretValue] = useState(!isSecretEditMode);
+  const isSecretValueLocked = isSecretEditMode && !isEditingSecretValue;
+
   const toggleShowValue = () => {
     setShowValue(!showValue);
+  };
+
+  const handleEditSecretValueToggle = () => {
+    if (isEditingSecretValue) {
+      setFields((prev) => ({ ...prev, value: '' }));
+      setShowValue(false);
+      setIsEditingSecretValue(false);
+    } else {
+      setIsEditingSecretValue(true);
+    }
   };
 
   const getDisplayedValue = () => {
@@ -246,9 +268,22 @@ const ConstantForm = ({
             </div>
             <div className="col tj-app-input">
               <div className="d-flex justify-content-between align-items-center w-100">
-                <label className="form-label" data-cy="value-label">
-                  Value
-                </label>
+                <div className="d-flex align-items-center">
+                  <label className="form-label mb-0 me-2" data-cy="value-label">
+                    Value
+                  </label>
+                  {isSecretEditMode && (
+                    <ButtonSolid
+                      className="datasource-edit-btn mb-2"
+                      type="button"
+                      variant="tertiary"
+                      onClick={handleEditSecretValueToggle}
+                      data-cy={isSecretValueLocked ? 'edit-secret-value-button' : 'cancel-secret-edit-button'}
+                    >
+                      {isSecretValueLocked ? 'Edit' : 'Cancel'}
+                    </ButtonSolid>
+                  )}
+                </div>
                 <small className="text-green d-flex align-items-center" data-cy="encrypted-label">
                   <img
                     className="encrypted-icon me-1"
@@ -269,11 +304,13 @@ const ConstantForm = ({
                   onChange={handleFieldChange}
                   name="value"
                   value={getDisplayedValue()}
-                  placeholder={'Enter value'}
+                  placeholder={isSecretEditMode ? '**************' : 'Enter value'}
                   onKeyDown={(e) => textAreaEnterOnSave(e, handlecreateOrUpdate)}
-                  readOnly={!showValue}
+                  readOnly={!showValue || isSecretValueLocked}
+                  disabled={isSecretValueLocked}
                   onInput={handleInput}
                   onFocus={() => {
+                    if (isSecretValueLocked) return;
                     setShowValue(true);
                     !!selectedConstant && handleInput();
                   }}
@@ -289,44 +326,46 @@ const ConstantForm = ({
                   }}
                   data-cy="value-input-field"
                 />
-                <div
-                  onClick={() => toggleShowValue()}
-                  data-cy="show-password-icon"
-                  style={{
-                    position: 'absolute',
-                    top: 5,
-                    right: '10px',
-                    cursor: 'pointer',
-                    zIndex: 2,
-                  }}
-                >
-                  {!showValue ? (
-                    <EyeHide
-                      fill={
-                        darkMode
-                          ? String(fields['value'])?.length
-                            ? '#D1D5DB'
-                            : '#656565'
-                          : String(fields['value'])?.length
-                          ? '#384151'
-                          : '#D1D5DB'
-                      }
-                    />
-                  ) : (
-                    <EyeShow
-                      fill={
-                        darkMode
-                          ? String(fields['value'])?.length
-                            ? '#D1D5DB'
-                            : '#656565'
-                          : String(fields['value'])?.length
-                          ? '#384151'
-                          : '#D1D5DB'
-                      }
-                      data-cy="test"
-                    />
-                  )}
-                </div>
+                {!isSecretValueLocked && (
+                  <div
+                    onClick={() => toggleShowValue()}
+                    data-cy="show-password-icon"
+                    style={{
+                      position: 'absolute',
+                      top: 5,
+                      right: '10px',
+                      cursor: 'pointer',
+                      zIndex: 2,
+                    }}
+                  >
+                    {!showValue ? (
+                      <EyeHide
+                        fill={
+                          darkMode
+                            ? String(fields['value'])?.length
+                              ? '#D1D5DB'
+                              : '#656565'
+                            : String(fields['value'])?.length
+                            ? '#384151'
+                            : '#D1D5DB'
+                        }
+                      />
+                    ) : (
+                      <EyeShow
+                        fill={
+                          darkMode
+                            ? String(fields['value'])?.length
+                              ? '#D1D5DB'
+                              : '#656565'
+                            : String(fields['value'])?.length
+                            ? '#384151'
+                            : '#D1D5DB'
+                        }
+                        data-cy="test"
+                      />
+                    )}
+                  </div>
+                )}
               </div>
 
               <span className="text-danger" data-cy="value-error-text">

@@ -691,7 +691,11 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options?.workflowId,
             query.options?.syncExecution,
             query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            // Live env first: per-module currentAppEnvironmentId is set once at mount (useAppData)
+            // and never updated on later env switches, so embedded modules would stay pinned to
+            // whatever env was active when they first mounted. Only fall back to it for released/
+            // public views, where selectedEnvironment is never populated.
+            selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId),
             query.options?.workflowVersionId
           );
         } else {
@@ -713,7 +717,10 @@ export const createQueryPanelSlice = (set, get) => ({
               if (isPublicAccess || (isReleasedApp && !isPublicAccess)) {
                 return undefined;
               }
-              return (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id; //TODO: currentAppEnvironmentId may no longer required. Need to check
+              // See comment above the workflows branch: prefer the live selectedEnvironment over
+              // the per-module currentAppEnvironmentId, which is frozen at initial mount for
+              // embedded modules and never follows subsequent environment switches.
+              return selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId);
             })(),
             modeStore.modules.canvas.currentMode,
             abortController?.signal
@@ -973,7 +980,9 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options.workflowId,
             query.options.syncExecution,
             query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            // currentAppEnvironmentId here is already selectedEnvironment?.id (see above) — kept for
+            // consistency with the runQuery precedence.
+            selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId),
             query.options?.workflowVersionId
           );
         } else {

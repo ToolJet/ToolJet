@@ -58,9 +58,11 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { TriangleAlert } from 'lucide-react';
 
@@ -256,6 +258,12 @@ class HomePageComponent extends React.Component {
       }
     });
 
+    // Store is a singleton — refetch on dashboard return; active branch may have been deleted while away.
+    if (useWorkspaceBranchesStore.getState().isInitialized) {
+      useWorkspaceBranchesStore.getState().actions.fetchBranches();
+    }
+    this._liveNotificationsUnsubscribe = subscribeLiveNotifications(this.handleGitSyncNotification);
+
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
@@ -268,7 +276,35 @@ class HomePageComponent extends React.Component {
     if (this._branchStoreUnsubscribe) {
       this._branchStoreUnsubscribe();
     }
+    if (this._liveNotificationsUnsubscribe) {
+      this._liveNotificationsUnsubscribe();
+    }
   }
+
+  // Aftermath for git-sync background jobs — live WS arrivals only, REST backfill never reaches here.
+  handleGitSyncNotification = (n) => {
+    const meta = n?.metadata;
+    if (meta?.source !== 'git-sync' || n?.type !== 'success') return;
+    const branchActions = useWorkspaceBranchesStore.getState().actions;
+    switch (meta.action) {
+      case 'git-delete-branch':
+        // fetchBranches self-heals a deleted active branch to default; the
+        // activeBranchId change triggers the apps refetch above. Silent — the
+        // notification toast already announces the deletion.
+        branchActions.fetchBranches();
+        break;
+      case 'git-pull-branch':
+        // same branch id — subscription won't fire, refetch directly
+        this.fetchApps(1, this.state.currentFolder.id);
+        this.fetchFolders();
+        break;
+      case 'git-create-branch':
+        branchActions.fetchBranches();
+        break;
+      default:
+        break;
+    }
+  };
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.appType != this.props.appType) {
@@ -834,9 +870,32 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
-      // Module permissions return true if builder
-      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
+    } else if (this.props.appType === 'module') {
+      // Admins have implicit full access to all modules
+      if (currentSession?.admin || currentSession?.super_admin) {
+        return true;
+      }
+      const modulePerms = currentSession?.module_group_permissions;
+      if (modulePerms) {
+        // Shared with the module editor read-only gate (useAppData) so the two can't drift.
+        const canEdit = canEditModule(currentSession, app?.id, app?.user_id);
+        const canReadModule =
+          canEdit || modulePerms.is_all_viewable || (app?.id && modulePerms.viewable_apps_id?.includes(app.id));
+        switch (action) {
+          case 'create':
+            return user_permissions.module_create;
+          case 'read':
+            return this.isUserOwnerOfApp(user, app) || canReadModule;
+          case 'update':
+            return canEdit;
+          case 'delete':
+            return user_permissions.module_delete || this.isUserOwnerOfApp(user, app);
+          default:
+            return false;
+        }
+      }
+      // CE fallback: any builder can perform all module actions
+      return currentSession?.role?.name === 'builder';
     }
   }
 
@@ -1318,26 +1377,6 @@ class HomePageComponent extends React.Component {
         }
       }
 
-      // OLD: fetch remote branches for branch picker
-      // this.setState({
-      //   showGitRepositoryImportModal: true,
-      //   fetchingRemoteBranches: true,
-      //   selectedImportBranch: null,
-      //   appsFromRepos: {},
-      //   selectedAppRepo: null,
-      //   importingGitAppOperations: {},
-      //   latestCommitData: null,
-      //   selectedVersionOption: null,
-      // });
-      // useWorkspaceBranchesStore
-      //   .getState()
-      //   .actions.fetchRemoteBranches()
-      //   .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
-      //   .catch(() => {
-      //     toast.error('Failed to fetch remote branches');
-      //     this.setState({ fetchingRemoteBranches: false });
-      //   });
-
       // Auto-set branch to current workspace branch and immediately fetch apps
       const branchName = currentBranch?.name || null;
       this.setState({
@@ -1718,11 +1757,7 @@ class HomePageComponent extends React.Component {
     };
 
     const showCreateAppButtonTooltip = () => {
-      if (this.props.appType === 'module') {
-        return true;
-      } else {
-        return this.canCreateApp();
-      }
+      return this.canCreateApp();
     };
     const modalConfigs = {
       create: {
@@ -1956,9 +1991,11 @@ class HomePageComponent extends React.Component {
                 <span>
                   {`The ${appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} ${
                     appToBeDeleted?.name
-                  } and the associated data will be deleted from this branch. On merge to main, `}
+                  } and the associated data will be deleted from this branch. On merge to ${
+                    useWorkspaceBranchesStore.getState().branches?.find((b) => b.is_default || b.isDefault)?.name ??
+                    'the default branch'
+                  }, `}
                   <strong>
-                    {' '}
                     {appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} and all its associated
                     versions
                   </strong>
@@ -2574,7 +2611,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={!moduleEnabled}
+                        disabled={!moduleEnabled || !this.canCreateApp()}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={() => {
@@ -2589,8 +2626,12 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={!moduleEnabled}
-                          message="Modules are not available on your current plan."
+                          show={!moduleEnabled || !this.canCreateApp()}
+                          message={
+                            !moduleEnabled
+                              ? 'Modules are not available on your current plan.'
+                              : "You don't have permission to create a module."
+                          }
                           placement="bottom"
                         >
                           <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
@@ -2606,7 +2647,7 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? 'No Modules found'
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
                         : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
