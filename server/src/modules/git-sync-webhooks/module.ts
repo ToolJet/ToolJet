@@ -10,19 +10,15 @@ import { WebhookSkipFlagModule } from '@modules/git-sync-webhooks/webhook-skip-f
 import { NotificationsModule } from '@modules/notifications/module';
 
 export class GitSyncWebhookModule extends SubModule {
-  static async register(
-    configs?: { IS_GET_CONTEXT: boolean },
-    isMainImport?: boolean,
-  ): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const cacheKey = this.buildCacheKey(configs, isMainImport);
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { GitSyncWebhooksController, GitSyncWebhookService } = await this.getProviders(
-      configs,
-      'git-sync-webhooks',
-      ['controller', 'service'],
-    );
+    const { GitSyncWebhooksController, GitSyncWebhookService } = await this.getProviders(configs, 'git-sync-webhooks', [
+      'controller',
+      'service',
+    ]);
 
     const edition = getTooljetEdition();
     const isEEOrCloud = edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud;
@@ -57,29 +53,23 @@ export class GitSyncWebhookModule extends SubModule {
         }),
         await WorkspaceBranchesModule.register(configs),
         await WebhookSkipFlagModule.register(configs),
-        await NotificationsModule.register(configs),
+        await NotificationsModule.register(configs)
       );
 
       // EE-only services — no CE stubs needed since the entire block is edition-gated
-      const { WebhookSignatureService } = await this.getProviders(
-        configs,
-        'git-sync-webhooks',
-        ['services/webhook-signature.service'],
-      );
-      const { WebhookDeduplicationService } = await this.getProviders(
-        configs,
-        'git-sync-webhooks',
-        ['services/webhook-deduplication.service'],
-      );
+      const { WebhookSignatureService } = await this.getProviders(configs, 'git-sync-webhooks', [
+        'services/webhook-signature.service',
+      ]);
+      const { WebhookDeduplicationService } = await this.getProviders(configs, 'git-sync-webhooks', [
+        'services/webhook-deduplication.service',
+      ]);
 
       providers.push(WebhookSignatureService, WebhookDeduplicationService);
 
       if (isMainImport && !configs?.IS_GET_CONTEXT) {
-        const { GitSyncWebhookWorker } = await this.getProviders(
-          configs,
-          'git-sync-webhooks',
-          ['processors/git-sync-webhook.worker'],
-        );
+        const { GitSyncWebhookWorker } = await this.getProviders(configs, 'git-sync-webhooks', [
+          'processors/git-sync-webhook.worker',
+        ]);
         providers.push(GitSyncWebhookWorker);
       }
     }
