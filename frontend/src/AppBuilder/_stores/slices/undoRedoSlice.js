@@ -54,10 +54,8 @@ export const createUndoRedoSlice = (set, get) => {
 
       let newParentId = null;
       let updateParent = false;
-      let componenetPropertiesToUpdate = {};
+      const componentPropertiesToUpdate = [];
       let componentEventsToUpdate = null;
-
-      const hasMoreThanOnePatchWithPropertyUpdate = patches.filter((patch) => patch.op === 'propertyUpdate').length > 1;
 
       patches?.map((patch) => {
         const { op, componentId, value } = patch;
@@ -80,27 +78,13 @@ export const createUndoRedoSlice = (set, get) => {
         }
 
         if (op === 'propertyUpdate') {
-          if (hasMoreThanOnePatchWithPropertyUpdate)
-            get().setComponentProperty(
-              componentId,
-              value.property,
-              value.value,
-              value.paramType,
-              value.attr,
-              undefined,
-              undefined,
-              {
-                skipUndoRedo: true,
-              }
-            );
-          else
-            componenetPropertiesToUpdate = {
-              componentId,
-              property: value.property,
-              value: value.value,
-              paramType: value.paramType,
-              attr: value.attr,
-            };
+          componentPropertiesToUpdate.push({
+            componentId,
+            property: value.property,
+            value: value.value,
+            paramType: value.paramType,
+            attr: value.attr,
+          });
         }
 
         if (op === 'restoreEvents') {
@@ -112,8 +96,11 @@ export const createUndoRedoSlice = (set, get) => {
         get().deleteComponents(componentIdsToDelete, undefined, { skipUndoRedo: true });
       }
 
+      // Put the components back in local state first, so the layout/property restores below always target components that exist.
+      // Nothing is persisted yet.
+      let addedComponents = null;
       if (componentsToAdd && componentsToAdd.length > 0) {
-        const addedComponents = await get().addComponentToCurrentPage(componentsToAdd, 'canvas', {
+        addedComponents = await get().addComponentToCurrentPage(componentsToAdd, 'canvas', {
           saveAfterAction: false,
           skipFormUpdate: true,
           skipUndoRedo: true,
@@ -122,7 +109,34 @@ export const createUndoRedoSlice = (set, get) => {
         if (!addedComponents || Object.keys(addedComponents).length === 0) {
           throw new Error('Undo/redo restore failed: no components were added');
         }
+      }
 
+      // Layout/property restores belong to the same user-visible step as the component itself, so they are persisted before the components:
+      // doing them after the save below would leave the canvas showing the pre-restore state for the whole round trip
+      // Eg. a restored flex child sitting at the end of its container until its parent's `childOrder` is put back.
+      if (!isEmpty(componentLayoutsToUpdate)) {
+        get().setComponentLayout(componentLayoutsToUpdate, newParentId, 'canvas', {
+          skipUndoRedo: true,
+          updateParent,
+        });
+      }
+
+      componentPropertiesToUpdate.forEach((propertyUpdate) => {
+        get().setComponentProperty(
+          propertyUpdate.componentId,
+          propertyUpdate.property,
+          propertyUpdate.value,
+          propertyUpdate.paramType,
+          propertyUpdate.attr,
+          undefined,
+          undefined,
+          { skipUndoRedo: true }
+        );
+      });
+
+      // Persistence step: Components and their event handlers are sent as one batch request
+      // deliberately last: everything above touched local state only, so the canvas already shows the restored result before this round trip begins.
+      if (addedComponents) {
         const addedComponentIds = new Set(Object.keys(addedComponents));
         const eventHandlersToCreate = (componentEventsToUpdate || [])
           .filter((event) => addedComponentIds.has(event.sourceId))
@@ -146,29 +160,14 @@ export const createUndoRedoSlice = (set, get) => {
         try {
           const response = await get().saveComponentChanges(batchDiff, 'components/batch', 'update', 'canvas');
           if (response) {
+            // the response copies with server-assigned ids go into the store (not the ones sent above),
+            // so editing or deleting the event later hits a real row.
             response.events?.forEach((event) => get().eventsSlice.addEvent(event, 'canvas'));
             get().multiplayer.broadcastUpdates(componentsToAdd, 'components', 'create');
           }
         } catch (error) {
           console.error('Error restoring components and event handlers on undo:', error);
         }
-      }
-
-      if (!isEmpty(componentLayoutsToUpdate)) {
-        get().setComponentLayout(componentLayoutsToUpdate, newParentId, 'canvas', { skipUndoRedo: true, updateParent });
-      }
-
-      if (!isEmpty(componenetPropertiesToUpdate)) {
-        get().setComponentProperty(
-          componenetPropertiesToUpdate.componentId,
-          componenetPropertiesToUpdate.property,
-          componenetPropertiesToUpdate.value,
-          componenetPropertiesToUpdate.paramType,
-          componenetPropertiesToUpdate.attr,
-          undefined,
-          undefined,
-          { skipUndoRedo: true }
-        );
       }
     },
 
