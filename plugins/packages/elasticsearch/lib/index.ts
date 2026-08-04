@@ -14,7 +14,7 @@ import {
   getCatIndices,
   getClusterHealth,
 } from './operations';
-import { Client, ClientOptions } from '@opensearch-project/opensearch';
+import { Client, ClientOptions } from '@elastic/elasticsearch';
 import { SourceOptions, QueryOptions } from './types';
 
 export default class ElasticsearchService implements QueryService {
