@@ -64,9 +64,12 @@ export class FoldersService implements IFoldersService {
 
       await this.checkFolderManagePermission(user, folder, manager, 'update');
 
-      // Workspace-level git sync: any folder in a git-synced org is locked.
-      const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-      if (isGitSyncEnabled) {
+      // Multi-branch mode: folders are locked because the same folder spans multiple branches.
+      // Single-branch mode: editing is safe — only one branch exists.
+      const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
+        user.organizationId
+      );
+      if (isGitSyncEnabled && isMultiBranchingEnabled) {
         throw new BadRequestException('Folders with git-synced apps cannot be edited');
       }
 
@@ -140,8 +143,12 @@ export class FoldersService implements IFoldersService {
 
       await this.checkFolderManagePermission(user, folder, manager, 'delete');
 
-      const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-      if (isGitSyncEnabled) {
+      const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
+        user.organizationId
+      );
+      // Multi-branch: block deletion of any folder that has apps on any branch.
+      // Single-branch: allow deletion only if the folder is empty (same check, same guard).
+      if (isGitSyncEnabled && isMultiBranchingEnabled) {
         const branchNames = await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
         if (branchNames.length > 0) {
           // AllExceptionsFilter collapses every error response down to { message, ... } and
