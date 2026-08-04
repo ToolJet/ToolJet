@@ -1329,7 +1329,8 @@ export class AppsUtilService implements IAppsUtilService {
           componentMeta.definition.properties,
           currentComponentData?.component?.definition?.properties,
           (objValue, srcValue) => {
-            if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
+            if (['Table', 'KeyValuePair'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
+              // Stored array wins: merging it with the widget defaults leaks default entries back in
               return srcValue;
             } else if (
               [

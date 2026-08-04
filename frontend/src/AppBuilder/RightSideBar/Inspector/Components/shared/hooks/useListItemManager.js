@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { generateUniqueName, reorderArray, duplicateWithNewId, checkAllEditable, getPopoverSource } from '../utils';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * Generic hook for managing list items (columns, fields, etc.)
@@ -17,6 +18,7 @@ import { generateUniqueName, reorderArray, duplicateWithNewId, checkAllEditable,
  * @param {Object} params.config.defaultItemProps - Additional default properties for new items
  * @param {Function} params.config.onPropertyChange - Callback before property change (item, property, value) => modifiedItem
  * @param {Function} params.config.onRemove - Callback after item removal (removedItems, index) => Promise
+ * @param {Function} params.config.onRemoveUpdates - Properties to save with the removal (removedItems, index) => [{ name, value }]
  */
 export const useListItemManager = ({ component, paramUpdated, currentState, config }) => {
   const {
@@ -27,8 +29,10 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
     defaultItemProps = {},
     onPropertyChange,
     onRemove,
+    onRemoveUpdates,
   } = config;
 
+  const setComponentProperty = useStore((state) => state.setComponentProperty);
   const [isAllEditable, setIsAllEditable] = useState(false);
 
   // Get items from component definition - wrapped in useMemo to avoid dependency issues
@@ -77,7 +81,19 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
       try {
         const newValue = [...items];
         const removedItems = newValue.splice(index, 1);
-        await paramUpdated({ name: propertyName }, 'value', newValue, 'properties', true);
+        const bookkeepingUpdates = onRemoveUpdates?.(removedItems, index) ?? [];
+
+        if (bookkeepingUpdates.length > 0) {
+          // Save skipped here so both properties go in one request - separate saves can be applied out of order
+          setComponentProperty(component.id, propertyName, newValue, 'properties', 'value', false, 'canvas', {
+            saveAfterAction: false,
+          });
+          for (const { name, value } of bookkeepingUpdates) {
+            await paramUpdated({ name }, 'value', value, 'properties', true);
+          }
+        } else {
+          await paramUpdated({ name: propertyName }, 'value', newValue, 'properties', true);
+        }
 
         // Call custom onRemove callback if provided
         if (onRemove) {
@@ -87,7 +103,7 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
         console.error(`Error removing ${propertyName}:`, error);
       }
     },
-    [items, paramUpdated, propertyName, onRemove]
+    [items, paramUpdated, propertyName, onRemove, onRemoveUpdates, setComponentProperty, component.id]
   );
 
   // Duplicate item by index
