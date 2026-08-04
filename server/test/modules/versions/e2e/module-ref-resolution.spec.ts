@@ -175,4 +175,53 @@ describe('Module version resolution by pinned ref (git-sync-enabled workspace)',
     expect(res.statusCode).toBe(200);
     expect(res.body.editing_version.id).toBe(version.id);
   });
+
+  /**
+   * Regression coverage: a module app/pin created before branching was enabled on the
+   * workspace stores the pin as a plain version name (legacy format), not a
+   * module_reference_id UUID. If that version has never been published/released, it sits
+   * as a DRAFT on the default branch. Tier 0's any-status fallback used to be gated on
+   * `!isGitSyncEnabled`, so once the workspace turned git-sync/branching on, this legacy
+   * DRAFT pin 404'd even though nothing about the underlying data changed.
+   */
+  it('resolves a legacy name pin to a DRAFT-only version on the default branch', async () => {
+    const adminData = await createUser(nestApp, { email: 'mrr-gs-admin2@tooljet.io', groups: ['all_users', 'admin'] });
+    const org = adminData.organization;
+    const adminCookie = (await login(nestApp, 'mrr-gs-admin2@tooljet.io')).tokenCookie;
+
+    const orgGitSync = await saveEntity(OrganizationGitSync, {
+      organizationId: org.id,
+      autoCommit: false,
+      isBranchingEnabled: true,
+    });
+    await saveEntity(OrganizationGitHttps, {
+      configId: orgGitSync.id,
+      httpsUrl: 'https://github.com/tooljet-test/e2e-fixture',
+      githubBranch: 'main',
+      githubAppId: 'test-app-id',
+      githubInstallationId: 'test-installation-id',
+      githubPrivateKey: 'dummy-key-not-dereferenced-in-this-test',
+      isEnabled: true,
+      isFinalized: true,
+    } as any);
+
+    const moduleApp = await createApplication(nestApp, {
+      name: 'M-GitSyncDraftName',
+      user: adminData.user,
+      type: 'module',
+    });
+    const coRelationId = uuidv4();
+    await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
+    const version = await createApplicationVersion(nestApp, moduleApp as any);
+    // Left at DRAFT, pinned by name — never published/released, same as a module pinned
+    // before this workspace had branching/git-sync enabled.
+    await updateEntity(AppVersion, version.id, {
+      name: 'v3',
+      status: AppVersionStatus.DRAFT,
+    } as any);
+
+    const res = await fetchModuleVersion(coRelationId, adminCookie, org.id, 'v3');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.editing_version.id).toBe(version.id);
+  });
 });

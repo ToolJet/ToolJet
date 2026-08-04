@@ -143,11 +143,13 @@ export async function resolveModuleRef(
   }
 
   // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).
-  // git-sync: default-branch PUBLISHED only — branched rows are always DRAFTs by constraint
-  //   chk_app_versions_branched_implies_draft, so checking PUBLISHED first prevents a
-  //   same-named branch DRAFT shadowing the real release.
-  // non-git-sync: also check default-branch any-status — DRAFTs are valid specific pins,
-  //   and a plain workspace's only version may still be an unpublished DRAFT.
+  // Check PUBLISHED first regardless of git-sync: a released version by that name should
+  // always win over a same-named unreleased draft. Then fall back to any status (DRAFT
+  // included) on the default branch — this can never be a "branch DRAFT shadowing the
+  // release" (chk_app_versions_branched_implies_draft is about *feature*-branch rows, which
+  // this query excludes via branchId: defaultBranch.id) — it's just a legacy name-pinned
+  // reference to a module version that's never been released, e.g. an app/module pinned
+  // before git-sync/branching was enabled on the workspace.
   if (moduleReferenceId && !UUID_RE.test(moduleReferenceId) && defaultBranch) {
     const versionName = moduleReferenceId;
     const defaultBranchForName = await manager.findOne(AppVersion, {
@@ -161,18 +163,16 @@ export async function resolveModuleRef(
       },
     });
     if (defaultBranchForName) return defaultBranchForName;
-    if (!isGitSyncEnabled) {
-      const defaultBranchDraft = await manager.findOne(AppVersion, {
-        where: {
-          appId: moduleApp.id,
-          name: versionName,
-          branchId: defaultBranch.id,
-          versionType: AppVersionType.VERSION,
-          isStub: false,
-        },
-      });
-      if (defaultBranchDraft) return defaultBranchDraft;
-    }
+    const defaultBranchDraft = await manager.findOne(AppVersion, {
+      where: {
+        appId: moduleApp.id,
+        name: versionName,
+        branchId: defaultBranch.id,
+        versionType: AppVersionType.VERSION,
+        isStub: false,
+      },
+    });
+    if (defaultBranchDraft) return defaultBranchDraft;
     // Name not found — fall through to orphan guard. The pinning contract (see
     // ModuleViewerInspector) never persists a bare branch name here, so this is legacy data.
   }
