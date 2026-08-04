@@ -210,5 +210,38 @@ describe('DataQueriesController', () => {
         }
       });
     });
+
+    describe('GET /api/data-queries/:versionId | List queries', () => {
+      // Skipped: DEV-77 — VersionRepository.findAppFromVersion() uses findOneOrFail, which
+      // throws EntityNotFoundError instead of returning null. ValidateAppVersionGuard's own
+      // `if (!app) throw new NotFoundException(...)` is therefore dead code: a cross-org (or
+      // just nonexistent) versionId surfaces as an unhandled 500, not the intended 404.
+      // Confirmed via a live request. The isolation boundary itself holds (another org's user
+      // can never resolve the version), only the status code/error shape is wrong.
+      it.skip("does not expose another organization app version's queries — 404, not the query list", async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const anotherOrgAdminUserData = await createUser(app, {
+          email: 'another@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        const loggedUser = await login(app, anotherOrgAdminUserData.user.email);
+        anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const { appVersion } = await createAppWithDependencies(app, adminUserData.user, {});
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/data-queries/${appVersion.id}`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
+
+        // ValidateAppVersionGuard resolves the app via findAppFromVersion(versionId, user.organizationId)
+        // — another org's user can never resolve this version, so it 404s before the list is built.
+        expect(response.statusCode).toBe(404);
+      });
+    });
   });
 });

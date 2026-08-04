@@ -1,7 +1,7 @@
 // server/test/modules/app/unit/valid-app.guard.spec.ts
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ExecutionContext } from '@nestjs/common';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
+import { makeExecutionContext } from 'test-helper';
 
 /** @group platform */
 describe('ValidAppGuard', () => {
@@ -18,16 +18,10 @@ describe('ValidAppGuard', () => {
     params: { id?: string; slug?: string; versionId?: string } = {},
     headers: Record<string, string> = {},
     user: Record<string, any> = {}
-  ): ExecutionContext => {
-    const request: Record<string, any> = {
-      params,
-      headers,
-      user: { organizationId: ORG_ID, ...user },
-    };
-    return {
-      switchToHttp: () => ({ getRequest: () => request }),
-    } as unknown as ExecutionContext;
-  };
+  ) =>
+    makeExecutionContext({
+      request: { params, headers, user: { organizationId: ORG_ID, ...user } },
+    });
 
   const makeApp = (overrides = {}) => ({
     id: UUID,
@@ -49,7 +43,7 @@ describe('ValidAppGuard', () => {
   describe('missing id, slug, and user', () => {
     it('throws BadRequestException', async () => {
       const request: Record<string, any> = { params: {}, headers: {}, user: null };
-      const ctx = { switchToHttp: () => ({ getRequest: () => request }) } as unknown as ExecutionContext;
+      const ctx = makeExecutionContext({ request });
       await expect(guard.canActivate(ctx)).rejects.toThrow(BadRequestException);
     });
   });
@@ -134,7 +128,7 @@ describe('ValidAppGuard', () => {
         user: { organizationId: ORG_ID },
         tj_app: app,
       };
-      const ctx = { switchToHttp: () => ({ getRequest: () => request }) } as unknown as ExecutionContext;
+      const ctx = makeExecutionContext({ request });
 
       const result = await guard.canActivate(ctx);
 
@@ -154,7 +148,7 @@ describe('ValidAppGuard', () => {
         headers: {},
         user: { organizationId: ORG_ID },
       };
-      const ctx = { switchToHttp: () => ({ getRequest: () => request }) } as unknown as ExecutionContext;
+      const ctx = makeExecutionContext({ request });
 
       const result = await guard.canActivate(ctx);
 

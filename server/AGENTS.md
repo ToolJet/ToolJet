@@ -97,7 +97,7 @@ Judgment layer: `docs/testing-philosophy.md` — what to test (behavior matrix: 
 - Edition/plan blocks only when behavior differs: EE-only features add a `CE` block asserting the 403/gating error; plan-variant features get one describe per plan.
 - Assert shape with `toMatchObject()` + `expect.any()`, not per-field assertions. Test failure paths (401/403/404) too.
 - Helpers are stratified (import from `'test-helper'` barrel, never direct files): setup (bootstrap) / seed (factories) / api (HTTP) / utils (TypeORM) / domain files. New domain helpers → new file, added to barrel. Use seed helpers, not inline entity construction.
-- Tag suites with `/** @group platform|workflows|database|marketplace */` before the outermost describe.
+- Tag suites with `/** @group platform|workflows|database|marketplace|security|events|notifications */` before the outermost describe.
 - Run: `npm test`, `npm run test:e2e` (`--testPathPatterns`, `-t`, `--group=` filters). `DEBUG_TESTS=true` restores console output.
 
 ## Module context files
