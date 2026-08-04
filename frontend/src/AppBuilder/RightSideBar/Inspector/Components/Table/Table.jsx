@@ -428,7 +428,7 @@ export const Table = (props) => {
         ? [
             'highlightSelectedRow',
             'disableRowDeselection',
-            ...(!highlightSelectedRow ? ['skipRowClickOnSelect'] : []),
+            ...(!highlightSelectedRow ? ['enableRowClickOnCheckbox'] : []),
             'showBulkSelector',
             'defaultSelectedRow',
             'selectRowOnCellEdit',

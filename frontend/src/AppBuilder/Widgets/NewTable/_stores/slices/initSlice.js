@@ -82,7 +82,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.enableExpandableRows = properties?.enableExpandableRows ?? false;
         state.components[id].properties.expansionHeight = properties?.expansionHeight ?? DEFAULT_EXPANSION_HEIGHT;
         state.components[id].properties.disableRowDeselection = properties?.disableRowDeselection ?? false;
-        state.components[id].properties.skipRowClickOnSelect = properties?.skipRowClickOnSelect ?? false;
+        state.components[id].properties.enableRowClickOnCheckbox = properties?.enableRowClickOnCheckbox ?? true;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
         if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;

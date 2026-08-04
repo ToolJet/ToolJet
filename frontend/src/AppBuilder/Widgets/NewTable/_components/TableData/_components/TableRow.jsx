@@ -48,7 +48,7 @@ export const TableRow = ({
       })}
       onClick={(e) => {
         // Treat a click anywhere inside the selector cell (not just the checkbox) as a selection-column click,
-        // so skipRowClickOnSelect / disableRowDeselection apply across the whole cell.
+        // so enableRowClickOnCheckbox / disableRowDeselection apply across the whole cell.
         const isSelectorCellClick = !!e?.target?.closest?.('.selector-column');
         handleRowClick(row, isSelectorCellClick);
       }}

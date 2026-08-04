@@ -47,7 +47,10 @@ export const TableData = ({
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
   const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
   const disableRowDeselection = useTableStore((state) => state.getTableProperties(id)?.disableRowDeselection, shallow);
-  const skipRowClickOnSelect = useTableStore((state) => state.getTableProperties(id)?.skipRowClickOnSelect, shallow);
+  const enableRowClickOnCheckbox = useTableStore(
+    (state) => state.getTableProperties(id)?.enableRowClickOnCheckbox,
+    shallow
+  );
 
   useEffect(() => {
     if (allowSelection) {
@@ -131,8 +134,8 @@ export const TableData = ({
 
   // Handles row click for row selection
   const handleRowClick = (row, isSelectorCell) => {
-    // When skipRowClickOnSelect is enabled, clicking the selector cell still toggles selection but must NOT fire the onRowClicked event.
-    const skipRowClickEvent = isSelectorCell && skipRowClickOnSelect;
+    // When enableRowClickOnCheckbox is OFF, clicking the selector cell still toggles selection but must NOT fire the onRowClicked event.
+    const skipRowClickEvent = isSelectorCell && !enableRowClickOnCheckbox;
     lastClickedRowRef.current = { row: row?.original, index: row.index, skipRowClickEvent };
     if (!allowSelection) {
       setExposedVariables({

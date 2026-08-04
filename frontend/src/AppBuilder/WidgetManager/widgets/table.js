@@ -267,13 +267,13 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
-    skipRowClickOnSelect: {
+    enableRowClickOnCheckbox: {
       type: 'toggle',
-      displayName: 'Skip row click on select',
-      tip: 'Disable row click event on checkbox select',
+      displayName: 'Enable row click event on checkbox',
+      tip: 'Enable row click event when row is selected using checkbox',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
+        defaultValue: true,
       },
     },
     defaultSelectedRow: {
@@ -891,7 +891,7 @@ export const tableConfig = {
       enableExpandableRows: { value: '{{false}}' },
       expansionHeight: { value: '{{229}}' },
       disableRowDeselection: { value: '{{false}}' },
-      skipRowClickOnSelect: { value: '{{false}}' },
+      enableRowClickOnCheckbox: { value: '{{true}}' },
     },
     events: [],
     styles: {
