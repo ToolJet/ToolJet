@@ -1,44 +1,50 @@
-import { IsString, IsNotEmpty, ValidateIf, IsObject, IsOptional, IsBoolean } from 'class-validator';
-import { isUndefined } from 'lodash';
+import {
+  IsString,
+  IsNotEmpty,
+  ValidateIf,
+  IsObject,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 
 export class CreateWorkflowExecutionDto {
   @IsString()
   @IsNotEmpty()
   executeUsing: string;
 
-  @ValidateIf((requestData) => isUndefined(requestData.executeUsing === 'version'))
+  @ValidateIf((o) => o.executeUsing === 'version')
   @IsString()
   @IsNotEmpty()
-  appVersionId: string;
+  appVersionId?: string;
 
-  @ValidateIf((requestData) => isUndefined(requestData.executeUsing === 'app'))
+  @ValidateIf((o) => o.executeUsing === 'app')
   @IsString()
   @IsNotEmpty()
-  appId: string;
+  appId?: string;
 
   @IsOptional()
   @IsObject()
-  params: object;
+  params?: Record<string, any>;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   userId?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   app?: string;
 
   @IsString()
   @IsNotEmpty()
   environmentId: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   startNodeId?: string;
 
   @IsOptional()
   @IsObject()
-  injectedState?: object;
+  injectedState?: Record<string, any>;
 
   @IsOptional()
   @IsBoolean()
