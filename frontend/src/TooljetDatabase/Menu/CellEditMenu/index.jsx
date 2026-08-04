@@ -347,11 +347,8 @@ export const CellEditMenu = ({
   return (
     <OverlayTrigger
       show={dataType === 'jsonb' ? false : show}
-      trigger="click"
       placement="bottom-start"
-      rootclose
       overlay={popover}
-      defaultShow
     >
       {isForeignKey ? (
         <DropDownSelect
