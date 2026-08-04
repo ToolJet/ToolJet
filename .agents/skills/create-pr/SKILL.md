@@ -108,6 +108,7 @@ Analyze the commits and diff to determine:
 - No file paths, function names, or class names unless they ARE the change
 - No per-line prefixes (fix:/feat: etc.) — the PR title already has the category
 - Keep change bullets short, one line each, past tense, max 5. Combine related items if needed
+- **Break up anything verbose.** A paragraph running past 2-3 lines, or a bullet carrying more than one idea, gets split into separate lines or sub-bullets — one idea per line. Reviewers skim; a wall of text hides the change instead of explaining it. If a section still reads long after splitting, it is saying too much — cut it, don't reformat it
 - Test steps: action-first, short. "Configure filesystem data source" not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
 - Only add a Screenshots section if actual screenshots are being included — never add an empty Screenshots heading
 
