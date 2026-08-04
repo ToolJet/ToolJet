@@ -53,6 +53,7 @@ import { stepsConfig } from './steps';
 import { kanbanConfig } from './kanban';
 import { colorPickerConfig } from './colorPicker';
 import { treeSelectConfig } from './treeSelect';
+import { cascaderConfig } from './cascader';
 import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
@@ -146,6 +147,7 @@ const widgets = {
   kanbanBoardConfig, //!Depreciated
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
@@ -177,7 +179,9 @@ const universalProps = {
   },
   others: {},
   events: {},
-  styles: {},
+  styles: {
+    cssClass: { type: "code", displayName: "CSS class", accordian: "Advanced" },
+  },
   validate: true,
   generalStyles: {
     boxShadow: { type: "boxShadow", displayName: "Box Shadow" },
@@ -185,7 +189,9 @@ const universalProps = {
   definition: {
     others: {},
     events: [],
-    styles: {},
+    styles: {
+      cssClass: { value: "" },
+    },
     generalStyles: {
       boxShadow: { value: "0px 0px 0px 0px #00000040" },
     },

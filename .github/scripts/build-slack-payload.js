@@ -78,6 +78,9 @@ const passed = env.OVERALL === "success";
 const color = passed ? "#2eb67d" : "#e01e5a";
 const statusIcon = passed ? "✅" : "❌";
 const statusWord = passed ? "Passed" : "Failed";
+// Which suite ran (Platform / App Builder / Marketplace). Set per-workflow via
+// the SUITE env var; falls back to a bare "Cypress …" headline when unset.
+const suite = env.SUITE ? ` ${env.SUITE}` : "";
 const breakdown = rows.length
   ? "```\n" + rows.join("\n") + "\n```"
   : "_No cell summaries found._";
@@ -138,7 +141,7 @@ const subjectText = isPR
 // whole message. The header block gives a big, scannable status line.
 const payload = {
   channel: env.CHANNEL,
-  text: `${statusIcon} Cypress ${statusWord} — ${subjectText} (${totals.passes}/${totals.tests} passed)`,
+  text: `${statusIcon} Cypress${suite} ${statusWord} — ${subjectText} (${totals.passes}/${totals.tests} passed)`,
   attachments: [
     {
       color,
@@ -148,7 +151,7 @@ const payload = {
           text: {
             type: "plain_text",
             emoji: true,
-            text: `${statusIcon} Cypress ${statusWord}`,
+            text: `${statusIcon} Cypress${suite} ${statusWord}`,
           },
         },
         subjectBlock,

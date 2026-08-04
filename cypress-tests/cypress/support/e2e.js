@@ -28,6 +28,10 @@ import '../commands/platform/platformApiCommands';
 import '../commands/marketplace/marketplaceAPICommands';
 import '../commands/marketplace/marketplaceCommands';
 
+// Browser-side cy.realDragAndDrop / cy.realDrag commands. Real HTML5 drag
+// via CDP — the only reliable way to trigger react-dnd's html5 backend from
+// Cypress.
+import 'cypress-real-dnd/commands';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

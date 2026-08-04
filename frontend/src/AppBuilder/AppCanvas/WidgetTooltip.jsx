@@ -68,6 +68,7 @@ const WidgetTooltip = ({
             align="start"
             sideOffset={2}
             showArrow={false}
+            data-cy="widget-tooltip"
             className={cx(isHtml ? UNSTYLED_CLASSES : THEMED_CLASSES, themeClass)}
           >
             <TooltipBody content={trimmed} format={resolvedFormat} />

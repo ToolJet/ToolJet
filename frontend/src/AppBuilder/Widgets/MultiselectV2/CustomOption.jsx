@@ -11,6 +11,9 @@ const CustomOption = (props) => {
   const hasCaption = caption !== null && caption !== undefined && caption !== '';
   const captionText = hasCaption ? String(caption) : '';
   const isSelectAll = labelText.includes('Select all');
+  // Server-side search: results come pre-filtered from the backend, so skip client-side highlighting.
+  const serverSideSearch = props.selectProps.serverSideSearch === true;
+  const renderWithHighlight = (text) => (serverSideSearch ? text : highlightText(text, props.selectProps.inputValue));
 
   return (
     <Option
@@ -23,7 +26,7 @@ const CustomOption = (props) => {
         <FormCheck checked={props.isSelected} disabled={props?.isDisabled} />
         <div className="tw-min-w-0 tw-flex-1 tw-flex tw-flex-col" style={{ marginLeft: '5px' }}>
           <span className="tw-truncate" title={labelText}>
-            {isSelectAll ? 'Select all' : highlightText(labelText, props.selectProps.inputValue)}
+            {isSelectAll ? 'Select all' : renderWithHighlight(labelText)}
           </span>
           {!isSelectAll && hasCaption && (
             <span className="multiselectV2-option-caption tw-truncate" title={captionText}>

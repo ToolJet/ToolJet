@@ -10,6 +10,7 @@ const PROPERTY_NAMES = {
 };
 
 export function SortableTree({
+  componentId,
   menuItems,
   onReorder,
   onDeleteItem,
@@ -24,6 +25,7 @@ export function SortableTree({
     if (!item?.isGroup) {
       return (
         <MenuItem
+          componentId={componentId}
           darkMode={darkMode}
           item={item}
           onDeleteItem={onDeleteItem}

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IBM DB2 datasource",
+  "description": "A schema defining IBM DB2 datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "IBM DB2",
+    "kind": "ibmdb",
+    "type": "database"
+  },
+  "properties": {
+    "host": {
+      "type": "string",
+      "title": "Host",
+      "description": "Enter host",
+      "default": "localhost"
+    },
+    "port": {
+      "type": "number",
+      "title": "Port",
+      "description": "Enter port",
+      "default": 50000
+    },
+    "database": {
+      "type": "string",
+      "title": "Database name",
+      "description": "Name of the database"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Enter username"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Enter password"
+    }
+  },
+  "tj:encrypted": ["password"],
+  "required": ["host", "port", "username"],
+  "tj:ui:properties": {
+    "host": {
+      "order": 10,
+      "$ref": "#/properties/host",
+      "key": "host",
+      "label": "Host",
+      "description": "Enter host",
+      "widget": "text-v3",
+      "required": true
+    },
+    "port": {
+      "order": 20,
+      "$ref": "#/properties/port",
+      "key": "port",
+      "label": "Port",
+      "description": "Enter port",
+      "widget": "text-v3",
+      "required": true,
+      "help_text": "Default IBM DB2 port is 50000"
+    },
+    "database": {
+      "order": 30,
+      "$ref": "#/properties/database",
+      "key": "database",
+      "label": "Database",
+      "description": "Enter name of the database",
+      "widget": "text-v3"
+    },
+    "username": {
+      "order": 40,
+      "$ref": "#/properties/username",
+      "key": "username",
+      "label": "Username",
+      "description": "Enter username",
+      "widget": "text-v3",
+      "required": true
+    },
+    "password": {
+      "order": 50,
+      "$ref": "#/properties/password",
+      "key": "password",
+      "label": "Password",
+      "description": "Enter password",
+      "widget": "password-v3"
+    }
+  }
+}

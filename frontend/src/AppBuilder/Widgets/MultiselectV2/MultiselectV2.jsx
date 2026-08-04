@@ -18,7 +18,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const MultiselectV2 = ({
   id,
@@ -47,6 +47,7 @@ export const MultiselectV2 = ({
     showAllSelectedLabel,
     showClearBtn,
     showSearchInput,
+    serverSideSearch,
     maxLimit,
   } = properties;
   const {
@@ -400,6 +401,8 @@ export const MultiselectV2 = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
+  useFormClear(() => setInputValue([]));
+
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutsideSelect, { capture: true });
     return () => {
@@ -573,6 +576,7 @@ export const MultiselectV2 = ({
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
             filterOption={(option, input) => {
+              if (serverSideSearch === true) return true; // server mode: render all options, no client-side filtering
               if (!input) return true;
               const needle = input.toLowerCase();
               const label = String(option?.label ?? '').toLowerCase();
@@ -591,6 +595,7 @@ export const MultiselectV2 = ({
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
             showSearchInput={showSearchInput}
+            serverSideSearch={serverSideSearch}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             menuIsOpen={isMultiselectOpen}

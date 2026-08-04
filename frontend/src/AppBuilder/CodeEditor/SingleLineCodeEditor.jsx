@@ -556,7 +556,7 @@ const EditorInput = ({
     };
   }, [isInsideQueryPane, isFocused]);
 
-  cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+  cyLabel = paramLabel?.trim() ? paramLabel.trim().toLowerCase().replace(/\s+/g, '-') : cyLabel;
 
   return (
     <div
@@ -679,7 +679,10 @@ const DynamicEditorBridge = (props) => {
   }
   const [_, error, value] =
     type === 'fxEditor' ? (shouldResolve ? resolveReferences(newInitialValue) : [false, '', newInitialValue]) : [];
-  let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
+  // See note at the data-cy derivation below: trim before the truthiness check
+  // so a whitespace-only paramLabel (showLabel:false fields) falls back to the
+  // explicit props.cyLabel instead of yielding "-input-field".
+  let cyLabel = paramLabel && paramLabel.trim() ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   useEffect(() => {
     setForceCodeBox(fxActive);

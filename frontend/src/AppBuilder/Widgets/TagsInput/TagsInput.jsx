@@ -18,7 +18,7 @@ import TagsInputMenuList from './TagsInputMenuList';
 import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 const TagsInput = ({
   id,
@@ -50,6 +50,7 @@ const TagsInput = ({
     dynamicHeight,
     sort,
     enableSearch = true,
+    serverSideSearch,
   } = properties;
 
   const {
@@ -599,6 +600,8 @@ const TagsInput = ({
     });
   }, [allOptions, selected]);
 
+  useFormClear(() => setInputValues([]));
+
   // Handle click outside
   const handleClickOutside = (event) => {
     let menu = document.getElementById(`tags-input-menu-${id}`);
@@ -774,12 +777,14 @@ const TagsInput = ({
   const _width = getLabelWidthOfInput(widthType, labelWidth);
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
-  // Filter options to exclude already selected and match input text
+  // Filter options to exclude already selected and match input text.
+  // In server-side search mode the backend owns filtering, so skip the
+  // client-side input match and render all non-selected options as-is.
   const filteredOptions = useMemo(() => {
     return allOptions
       .filter((opt) => !selected.some((s) => s.value === opt.value))
-      .filter((opt) => !inputValue || opt.label?.includes(inputValue));
-  }, [allOptions, selected, inputValue]);
+      .filter((opt) => serverSideSearch === true || !inputValue || String(opt.label ?? '').includes(inputValue));
+  }, [allOptions, selected, inputValue, serverSideSearch]);
 
   return (
     <>
@@ -888,7 +893,9 @@ const TagsInput = ({
             isClearable={false}
             isMulti
             hideSelectedOptions={true}
-            filterOption={(option, inputValue) => option.label?.includes(inputValue)}
+            filterOption={(option, inputValue) =>
+              serverSideSearch === true ? true : String(option.label ?? '').includes(inputValue)
+            }
             closeMenuOnSelect={false}
             tabSelectsValue={false}
             onKeyDown={handleKeyDown}

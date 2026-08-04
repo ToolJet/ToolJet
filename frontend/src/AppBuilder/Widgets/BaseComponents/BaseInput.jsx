@@ -280,6 +280,7 @@ export const BaseInput = ({
             style={finalStyles}
             {...additionalInputProps}
             id={`component-${id}`}
+            disabled={disable || loading}
             aria-disabled={disable || loading}
             aria-busy={loading}
             aria-required={isMandatory}
