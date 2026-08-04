@@ -152,8 +152,8 @@ End-to-end single test; each step depends on the previous. Steps:
 | **79** | **active-branch: no valid active branch** (removed/cleared → `last_branch_id` NULL via FK `ON DELETE SET NULL`) → list falls back to the **default** branch |
 | **80** | **active-branch: branching OFF** → list exposes only the default branch (`isMultiBranchingEnabled=false`, all `isDefault`, active = default); then branching restored |
 | **81** | **single-branch: create on default** — disable branching; create app + module + data source directly on the **default** branch (rejected under multi-branch, allowed here); link the DS to the app via a query |
-| **82** | **single-branch: unsynced app is push-eligible on default** — `GET /app-git/validate-push/:id` → `{ valid: true }` |
-| **83** | **single-branch: default-branch resource state** — app + module versions are on the default branch, `DRAFT`, `is_synced=false`; the DS has an unsynced DSV on the default branch and is linked to the app via a query; then branching restored |
+| **82** | **single-branch: synced app is push-eligible on default** — `GET /app-git/validate-push/:id` → `{ valid: true }` |
+| **83** | **single-branch: default-branch resource state** — app + module versions are on the default branch, `DRAFT`, **`is_synced=true`** (single-branch marks newly created resources synced-on-create — the default branch is the working branch); the DS has a **synced** DSV on the default branch and is linked to the app via a query; then branching restored |
 
 Steps 78–80 are the active-branch resolution cases (last created/switched loads next time;
 invalid/removed or branching-off falls back to the default). Steps 81–83 are the single-branch
@@ -213,8 +213,8 @@ create/publish/replace — so it runs against the protected-`main` repo.
 | Step | Action | Assert |
 |---|---|---|
 | Setup | Configure git, toggle branching OFF; create app + module + data source on the default branch; add `comp_A` + `query_A` to the app, `mod_query_A` to the module | creates succeed |
-| Save v1 | Publish the app version (`PUT status=PUBLISHED`, name `v1`) | v1 has `[comp_A]` / `[query_A]` |
-| New draft | Create draft from `v1` (`replace:false`) → `d2` | `d2` is a clean copy of v1 (`[comp_A]` / `[query_A]`); it's the editing version |
+| Save v1 | Publish the app version (`PUT status=PUBLISHED`, name `v1`) | v1 has `[comp_A]` / `[query_A]`; publishing seeds a **synced** continuity draft (single-branch apps are synced-on-create) |
+| New draft | Create draft from `v1` (`replace:true`) → `d2` | `d2` is a clean copy of v1 (`[comp_A]` / `[query_A]`); it's the editing version. **`replace:true` is required** — the synced continuity draft means `replace:false` would hit the single-draft rule (400 "Only one draft version is allowed when branching is enabled") |
 | Edit draft | Add `comp_B` + `query_B` to `d2` | `d2` = `[comp_A, comp_B]` / `[query_A, query_B]` |
 | Stamp staleness | Set `remote_updated_at` + `pulled_at` to `now()` on both `d2` (draft being replaced) and `v1` (source version) | — |
 | **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version; `d3.remote_updated_at` and `d3.pulled_at` are **NULL** (never-pulled) so a later `pull latest` refreshes it instead of skipping |
@@ -382,6 +382,41 @@ a genuine content change (mirroring how a real "locally edited but not yet pushe
   for `scope === 'datasource'`, only `mkdir` (no wipe) so untouched files survive.
 
 Both fixes were verified live against the real test Gitea server before being locked in as this test.
+
+---
+
+## 9. Git-off metadata update with no draft version (`it: persists name/slug/icon/is_public and keeps the app resolvable by its new slug`)
+
+Dedicated isolated org, **git never configured (git-off)**. Regression for a silent data-loss bug:
+`PUT /api/apps/:id` updating app metadata (`name` / `slug` / `icon` / `is_public`) only ever wrote to
+the app's **DRAFT** default-branch version row. But a git-off app can have **no DRAFT** — create →
+publish flips the draft to `PUBLISHED` and, because the app is unsynced, no continuity draft is seeded
+(`handleDefaultBranchPublish` returns early for `is_synced=false`). The draft-scoped `UPDATE` then
+matched zero rows and the edit was dropped — leaving the app reachable only under its old slug, so
+`GET /api/apps/validate-released-app-access/<new-slug>` 404'd (`findAppBySlug` can't resolve a slug
+that was never written). No git transport — pure create/publish/update — so it runs against the
+protected-`main` repo. **Mirrored in `git-sync-gitlab.spec.ts`** (provider-agnostic — the write path
+is git-off).
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | git-off: create app → one DRAFT version on the default branch | 201 |
+| 2 | Publish the version (`PUT status=PUBLISHED`) | 200; **0 DRAFT rows remain** (no continuity draft when unsynced) |
+| 3 | `PUT /api/apps/:id` with `{ name, slug, icon, is_public }` | 200 — previously a silent no-op |
+| 4a | DB: every non-stub default-branch `version_type='version'` row | carries the new `app_name` / `slug` / `icon` / `is_public` (edit not dropped) |
+| 4b | `GET /api/v2/apps/:id/versions/:versionId` | API reads the new `name` / `slug` / `icon` / `isPublic` back off the saved version |
+| 5 | Promote dev → staging → production, release, then `GET /api/apps/validate-released-app-access/:newSlug` | 200 → `{ id, slug: newSlug }` (the app's exact failing call now resolves by its new slug) |
+
+**Backend fix** (`src/modules/apps/util.service.ts` → `AppsUtilService.update`, git-off branch): the
+draft-scoped `manager.update` now checks its `affected` count; when it's `0` (no draft), it falls back
+to updating every non-stub default-branch `version_type='version'` row directly. With no draft present
+the reverse `sync_published_app_version_metadata_from_draft` trigger has nothing to pull from, so the
+write sticks; and updating all saved rows keeps them consistent — the same invariant the
+`propagate_app_version_metadata` trigger maintains when a draft *does* exist. When a draft exists the
+original path (write the draft, let the trigger fan out) is unchanged.
+
+Draft count and the persisted metadata are read from the DB (`app_versions`), so the core assertions
+are deterministic; the released-slug lookup exercises `findAppBySlug` end-to-end.
 
 ---
 
