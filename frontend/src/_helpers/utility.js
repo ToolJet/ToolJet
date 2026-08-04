@@ -2,6 +2,17 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import _ from 'lodash';
 
 export function validateMultilineCode(code, isMultiLine = false) {
+  // Check for whitespace immediately after a dot (e.g., constants. null_value)
+  // This is invalid JavaScript syntax and should be flagged as an error
+  if (/\.[\s]/.test(code)) {
+    return {
+      status: 'failed',
+      data: {
+        message: 'Invalid expression',
+        description: 'Whitespace is not allowed immediately after a dot (.)',
+      },
+    };
+  }
   return {
     status: 'success',
     data: {
