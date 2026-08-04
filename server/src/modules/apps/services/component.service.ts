@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { Page } from 'src/entities/page.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -625,7 +626,34 @@ export class ComponentsService implements IComponentsService {
       }
     });
 
-    await manager.save(Layout, componentLayouts);
+    // Upsert: check for existing layouts with the same (componentId, type) and update instead of insert
+    const layoutsToInsert: Layout[] = [];
+    for (const layout of componentLayouts) {
+      const componentId = layout.component?.id ?? layout.componentId;
+      if (componentId) {
+        const existing = await manager.findOne(Layout, {
+          where: { componentId, type: layout.type },
+        });
+        if (existing) {
+          await manager.update(Layout, { id: existing.id }, {
+            top: layout.top,
+            left: layout.left,
+            width: layout.width,
+            height: layout.height,
+            widthPx: layout.widthPx,
+            fillWidth: layout.fillWidth,
+            dimensionUnit: layout.dimensionUnit,
+          });
+        } else {
+          layoutsToInsert.push(layout);
+        }
+      } else {
+        layoutsToInsert.push(layout);
+      }
+    }
+    if (layoutsToInsert.length > 0) {
+      await manager.save(Layout, layoutsToInsert);
+    }
   }
 
   protected async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {
