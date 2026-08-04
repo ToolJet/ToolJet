@@ -57,6 +57,7 @@
     "plugins:reload:prod": "npm --prefix server run plugins:reload:prod",
     "rotate:keys": "npm --prefix server run rotate:keys --",
     "rotate:keys:prod": "npm --prefix server run rotate:keys:prod --",
+    "reset-superadmin": "npm --prefix server run reset-superadmin --",
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
     "update-version": "node update-version.js"
