@@ -23,11 +23,14 @@ export class AppSignupDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
+  @MaxLength(99, { message: 'Invalid name' })
   name: string;
 
   @IsEmail()
   @Transform(({ value }) => lowercaseString(value))
   @IsNotEmpty()
+  /* NOTE: this change was for attackers not to use random email addresses. Should remove this or find a better way later */
+  @MaxLength(99, { message: 'Invalid email' })
   email: string;
 
   @IsString()
@@ -86,6 +89,7 @@ export class ChangePasswordDto {
 export class CreateAiUserDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(99, { message: 'Invalid name' })
   name: string;
 
   @IsEmail()
@@ -93,6 +97,7 @@ export class CreateAiUserDto {
     const newValue = sanitizeInput(value);
     return lowercaseString(newValue);
   })
+  @MaxLength(99, { message: 'Invalid email' })
   email: string;
 
   @IsString()
