@@ -212,7 +212,7 @@ describe('DataQueriesController', () => {
     });
 
     describe('GET /api/data-queries/:versionId | List queries', () => {
-      // Skipped: DEV-77 — VersionRepository.findAppFromVersion() uses findOneOrFail, which
+      // Skipped: #17395 — VersionRepository.findAppFromVersion() uses findOneOrFail, which
       // throws EntityNotFoundError instead of returning null. ValidateAppVersionGuard's own
       // `if (!app) throw new NotFoundException(...)` is therefore dead code: a cross-org (or
       // just nonexistent) versionId surfaces as an unhandled 500, not the intended 404.

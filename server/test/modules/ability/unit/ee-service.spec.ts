@@ -338,11 +338,11 @@ describe('AbilityService.resourceActionsPermission — builder environment-acces
     expect(result[MODULES.MODULES]).toEqual({ editableAppsId: ['mod-1'] });
   });
 
-  // Discovered while scoping this file: every other field in this reduce merges
-  // via `acc.X || group.X`, but orgVariableCRUD only ever reads `acc.orgVariableCRUD`
-  // — it never ORs in the group's value, so it is permanently false regardless of
-  // what any group actually grants. This documents the CURRENT (likely buggy)
-  // behavior; flagged separately rather than treated as intended.
+  // #17392 — every other field in this reduce merges via `acc.X || group.X`, but
+  // orgVariableCRUD only ever reads `acc.orgVariableCRUD` — it never ORs in the
+  // group's value, so it is permanently false regardless of what any group actually
+  // grants. This documents the CURRENT (buggy) behavior; flagged separately rather
+  // than treated as intended.
   it('BUG: orgVariableCRUD never merges from the group and is always false', async () => {
     jest
       .spyOn(service, 'getResourcePermission')

@@ -119,7 +119,7 @@ describe('Git-sync env config mapping + read flow (.tj_env.<slug> file + WORKSPA
     expect(registry.getResolvedOrganizationIds().sort()).toEqual([FILE_WORKSPACE_ID, ENV_VAR_WORKSPACE_ID].sort());
   });
 
-  // Skipped: DEV-75 — GIT_ENV_KEYS.SSH was deleted from constants/index.ts but
+  // Skipped: #17393 — GIT_ENV_KEYS.SSH was deleted from constants/index.ts but
   // gitsync.util.service.ts still references it in ensureResolved() (and every
   // method that calls it, incl. getGitHttpsConfig/hasGitHttpsConfig below), so this
   // throws unconditionally for every org right now. Not a rebase/test regression —
@@ -183,7 +183,7 @@ describe('Git-sync env config mapping + read flow (.tj_env.<slug> file + WORKSPA
     });
   });
 
-  // Skipped: DEV-75 — getGitHttpsConfig() calls ensureResolved(), which throws (see above).
+  // Skipped: #17393 — getGitHttpsConfig() calls ensureResolved(), which throws (see above).
   it.skip('keeps the two workspaces fully isolated — one config never leaks into the other', async () => {
     const { registry, gitSyncEnvUtilService } = makeServices();
     await registry.initialize();
@@ -196,7 +196,7 @@ describe('Git-sync env config mapping + read flow (.tj_env.<slug> file + WORKSPA
     expect(fileConfig?.httpsUrl).not.toBe(envVarConfig?.httpsUrl);
   });
 
-  // Skipped: DEV-75 — getGitHttpsConfig() calls ensureResolved(), which throws (see above).
+  // Skipped: #17393 — getGitHttpsConfig() calls ensureResolved(), which throws (see above).
   it.skip('does not mark a workspace as configured when its required keys are incomplete', async () => {
     // A workspace with only a partial config (this is the actual bug scenario: the raw
     // key-presence check must not be mistaken for "fully configured").
@@ -318,7 +318,7 @@ describe('GitSyncEnvUtilService', () => {
     });
   });
 
-  // Skipped: DEV-75 — ensureResolved() itself is what throws (GIT_ENV_KEYS.SSH is undefined).
+  // Skipped: #17393 — ensureResolved() itself is what throws (GIT_ENV_KEYS.SSH is undefined).
   describe.skip('ensureResolved() — license-aware state + dedup', () => {
     it('sets provider isEnabled=false when license is not valid', async () => {
       const orgEnvService = makeOrgEnvService({

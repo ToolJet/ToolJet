@@ -151,7 +151,7 @@ describe('TooljetDbController', () => {
         expect(res.statusCode).toBe(200);
       });
 
-      // Skipped: DEV-76 — GET /organizations/:organizationId/tables (and its sibling
+      // Skipped: #17394 — GET /organizations/:organizationId/tables (and its sibling
       // tooljet-db routes) trust the :organizationId path param as-is; FeatureAbilityGuard
       // only checks the caller's own role/feature permission, never that :organizationId
       // matches the caller's own org. An authenticated admin from a completely different
