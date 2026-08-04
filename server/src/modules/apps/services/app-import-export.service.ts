@@ -2716,7 +2716,10 @@ export class AppImportExportService {
     for (const event of allEvents) {
       const eventDefinition = updateEntityReferences(event.event, mappings);
 
-      if (eventDefinition?.actionId === 'run-query' && oldDataQueryToNewMapping[eventDefinition.queryId]) {
+      if (
+        ['run-query', 'reset-query', 'abort-query'].includes(eventDefinition?.actionId) &&
+        oldDataQueryToNewMapping[eventDefinition.queryId]
+      ) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 
