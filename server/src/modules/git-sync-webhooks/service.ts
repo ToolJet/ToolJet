@@ -6,7 +6,13 @@ export class GitSyncWebhookService {
     throw new NotFoundException();
   }
 
-  async verifySignature(provider: string, secret: string, rawBody: string | Buffer, signature: string, organizationId: string): Promise<boolean> {
+  async verifySignature(
+    provider: string,
+    secret: string,
+    rawBody: string | Buffer,
+    signature: string,
+    organizationId: string
+  ): Promise<boolean> {
     throw new NotFoundException();
   }
 
@@ -19,7 +25,7 @@ export class GitSyncWebhookService {
     provider: string,
     event: string,
     payload: any,
-    deliveryId: string,
+    deliveryId: string
   ): Promise<{ jobId: string }> {
     throw new NotFoundException();
   }
