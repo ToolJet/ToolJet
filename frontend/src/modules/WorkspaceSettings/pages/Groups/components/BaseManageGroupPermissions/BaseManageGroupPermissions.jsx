@@ -456,6 +456,7 @@ class BaseManageGroupPermissions extends React.Component {
       addDataSource = null,
       addWorkflows = null,
       addFolders = null,
+      addModules = null,
     } = groupDuplicateOption;
     const allFalse = Object.values(groupDuplicateOption).every((value) => !value);
     const isSaveBtnDisabled = creatingGroup || this.state.isSaveBtnDisabled || this.state.newGroupName?.trim() === '';
@@ -650,6 +651,31 @@ class BaseManageGroupPermissions extends React.Component {
                     <div className="col-11">
                       <div className="tj-text " data-cy="folders-label">
                         Folders
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {addModules !== null && (
+                  <div className="row check-row">
+                    <div className="col-1 ">
+                      <input
+                        class="form-check-input"
+                        checked={addModules}
+                        type="checkbox"
+                        onChange={() => {
+                          this.setState((prevState) => ({
+                            groupDuplicateOption: {
+                              ...prevState.groupDuplicateOption,
+                              addModules: !prevState.groupDuplicateOption.addModules,
+                            },
+                          }));
+                        }}
+                        data-cy="modules-check-input"
+                      />
+                    </div>
+                    <div className="col-11">
+                      <div className="tj-text " data-cy="modules-label">
+                        Modules
                       </div>
                     </div>
                   </div>

@@ -1,0 +1,48 @@
+<table align="center" class="content-body">
+    <tr>
+        <td class="content-body_wrap padding-x-40">
+            <table>
+                <!-- Greeting -->
+                <tr>
+                    <td>
+                        <p>Hi {{name}},</p>
+                    </td>
+                </tr>
+
+                <!-- Message -->
+                <tr>
+                    <td class="padding-y-20">
+                        <p>Your {{whiteLabelText}} account has been suspended by the platform administrator.</p>
+
+                        <p class="padding-t-20">
+                            You will no longer be able to sign in or access any workspaces on {{whiteLabelText}}.
+                            If you believe this is a mistake or need further assistance, please contact support.
+                        </p>
+
+                        {{#if (and (eq whiteLabelText "ToolJet") (eq tooljetEdition "cloud"))}}
+                        <p class="padding-t-20">
+                            Contact support:
+                            <a class="url" href="mailto:support@tooljet.com" target="_blank">
+                                support@tooljet.com
+                            </a>
+                        </p>
+                        {{/if}}
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td class="padding-y-10 footer-note">
+                        {{#if (eq whiteLabelText "ToolJet")}}
+                        <span>Thank you,</span>
+                        <br />
+                        <span>ToolJet Team</span>
+                        {{else}}
+                        <span>Thanks!</span>
+                        {{/if}}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>

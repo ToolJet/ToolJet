@@ -44,3 +44,14 @@ export interface SendCommentMentionEmailPayload {
   fromAvatar: string;
   organizationId: string;
 }
+
+export interface SendUserBannedEmailPayload {
+  to: string;
+  name: string;
+}
+
+export interface SendWorkspaceBannedEmailPayload {
+  to: string;
+  adminName: string;
+  workspaceName: string;
+}
