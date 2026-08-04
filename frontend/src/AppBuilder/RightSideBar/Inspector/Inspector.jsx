@@ -58,6 +58,8 @@ import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { Cascader } from './Components/Cascader/Cascader';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
+import docLinks from './docLinks.json';
+
 const INSPECTOR_HEADER_OPTIONS = [
   {
     label: 'Inspect',
@@ -728,25 +730,13 @@ export const Inspector = ({
   );
 };
 
+const DOCS_BASE_URL = 'https://docs.tooljet.io/docs/widgets';
+
 const getDocsLink = (componentMeta) => {
   const component = componentMeta?.component ?? '';
-  switch (component) {
-    case 'ToggleSwitchV2':
-      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
-    case 'DropdownV2':
-      return 'https://docs.tooljet.com/docs/widgets/dropdown';
-    case 'DropDown':
-      return 'https://docs.tooljet.com/docs/widgets/dropdown';
-    case 'MultiselectV2':
-      return 'https://docs.tooljet.com/docs/widgets/multiselect';
-    case 'DaterangePicker':
-      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
-    case 'RangeSliderV2':
-      return 'https://docs.tooljet.com/docs/widgets/range-slider';
-    default:
-      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
-  }
+  return docLinks[component] ?? `${DOCS_BASE_URL}/${convertToKebabCase(component)}`;
 };
+
 const widgetsWithStyleConditions = {
   Modal: {
     conditions: [
