@@ -207,4 +207,40 @@ export const groupsSelector = {
   configureDatasourceradio: '[data-cy="configure-permission-radio"]',
   buildWithDatasourceRadio: '[data-cy="build-with-datasource-radio"]',
 
+  // Module Permissions - group level (Permissions tab)
+  resourceModules: '[data-cy="resource-modules"]',
+  moduleCreateCheck: '[data-cy="module-create-checkbox"]',
+  moduleCreateLabel: '[data-cy="module-create-label"]',
+  moduleCreateHelperText: '[data-cy="module-create-helper-text"]',
+  moduleDeleteCheck: '[data-cy="module-delete-checkbox"]',
+  moduleDeleteLabel: '[data-cy="module-delete-label"]',
+  moduleDeleteHelperText: '[data-cy="module-delete-helper-text"]',
+
+  // Module Permissions - granular access list row (ModuleResourcePermissions.jsx)
+  addModuleButton: '[data-cy="add-module-button"]',
+  moduleGranularAccess: '[data-cy="module-granular-access"]',
+  editModuleGranularAccess: '[data-cy="edit-module-granular-access"]',
+  // Fixed "Modules" row header, auto-seeded (isAll: true) for Admin/Builder default groups
+  modulesText: '[data-cy="modules-text"]',
+  moduleEditRadio: '[data-cy="module-edit-radio"]',
+  moduleEditLabel: '[data-cy="module-edit-label"]',
+  moduleEditHelperText: '[data-cy="module-edit-helper-text"]',
+  moduleBuildWithRadio: '[data-cy="module-build-with-radio"]',
+  moduleBuildWithLabel: '[data-cy="module-build-with-label"]',
+  moduleBuildWithHelperText: '[data-cy="module-build-with-helper-text"]',
+  moduleHideFromDashboardCheckbox: '[data-cy="module-hide-from-dashboard-checkbox"]',
+  moduleHideFromDashboardLabel: '[data-cy="module-hide-from-dashboard-label"]',
+  moduleHideFromDashboardHelperText: '[data-cy="module-hide-from-dashboard-helper-text"]',
+  allModulesLabel: '[data-cy="all-modules-label"]',
+
+  // Module Permissions - Add/Edit permission modal (ModulePermissionActionContainer.jsx)
+  // Note: Edit and Hide-from-dashboard reuse the same data-cy as the Apps modal
+  // (editPermissionRadio, editPermissionLabel, hidePermissionInput, appHidePermissionModalLabel above).
+  // Only "Build with" has module-specific data-cy values.
+  buildWithPermissionRadio: '[data-cy="build-with-permission-radio"]',
+  buildWithPermissionLabel: '[data-cy="build-with-permission-label"]',
+
+  // Duplicate group
+  modulesCheckInput: '[data-cy="modules-check-input"]',
+  modulesLabel: '[data-cy="modules-label"]',
 };
