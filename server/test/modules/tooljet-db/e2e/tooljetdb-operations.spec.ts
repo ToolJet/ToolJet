@@ -151,14 +151,7 @@ describe('TooljetDbController', () => {
         expect(res.statusCode).toBe(200);
       });
 
-      // Skipped: #17394 — GET /organizations/:organizationId/tables (and its sibling
-      // tooljet-db routes) trust the :organizationId path param as-is; FeatureAbilityGuard
-      // only checks the caller's own role/feature permission, never that :organizationId
-      // matches the caller's own org. An authenticated admin from a completely different
-      // organization can list (confirmed) — and likely read/write, same missing check —
-      // another org's TJDB tables by swapping the id in the URL. Confirmed via a live
-      // request: response is 200 with the victim org's table in `result`, not 403/404.
-      it.skip("does not let a user from another organization list this organization's tables", async function () {
+      it("does not let a user from another organization list this organization's tables", async function () {
         if (!tooljetDbAvailable) return;
 
         await request
