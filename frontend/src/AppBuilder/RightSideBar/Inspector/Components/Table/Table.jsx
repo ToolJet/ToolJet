@@ -410,6 +410,11 @@ export const Table = (props) => {
     );
   }, [component.component.definition.properties]);
 
+  const highlightSelectedRow = useMemo(
+    () => resolveReferences(component.component.definition.properties.highlightSelectedRow?.value) ?? false,
+    [component.component.definition.properties.highlightSelectedRow?.value]
+  );
+
   // Ensure displaySearchBox is set
   if (!component.component.definition.properties.displaySearchBox) {
     paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
@@ -423,7 +428,7 @@ export const Table = (props) => {
         ? [
             'highlightSelectedRow',
             'disableRowDeselection',
-            'skipRowClickOnSelect',
+            ...(!highlightSelectedRow ? ['skipRowClickOnSelect'] : []),
             'showBulkSelector',
             'defaultSelectedRow',
             'selectRowOnCellEdit',
@@ -432,7 +437,7 @@ export const Table = (props) => {
       'enableExpandableRows',
       'expansionHeight',
     ],
-    [allowSelection]
+    [allowSelection, highlightSelectedRow]
   );
 
   const searchSortFilterOptions = useMemo(
@@ -462,6 +467,7 @@ export const Table = (props) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const additionalActions = ['loadingState', 'visibility', 'collapseWhenHidden', 'disabledState', 'dynamicHeight'];
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const deprecatedProperties = ['useHideColumnSelectorButton'];
 
   // Accordion items
