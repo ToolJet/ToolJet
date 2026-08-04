@@ -4245,6 +4245,72 @@ describe('GitSyncController — GitLab', () => {
         );
         expect(sbQueryLink?.linked).toBe(1);
 
+        // ────────────────────────────────────────────────────────────────────
+        // Single-branch deletion auto-push: deleting a git-synced app on the
+        // DEFAULT branch must enqueue a git deletion push, giving single-branch
+        // parity with the feature-branch deletes that auto-commit in multi-branch
+        // mode. The shared Gitea blocks direct pushes to the default branch (see the
+        // transport note above), so the real push (executePushAppDeletion →
+        // pushWorkspace(main)) can't be exercised here — we assert at the enqueue
+        // layer instead: swap the inline-exec spy for a recorder and verify the
+        // enqueued payload targets the default branch.
+        // ────────────────────────────────────────────────────────────────────
+        step(84, 'single-branch: deleting a synced app on the DEFAULT branch enqueues a git deletion push');
+        const sbDeletionPushSpy = jest
+          .spyOn(GitSyncQueueService.prototype, 'enqueuePushAppDeletion')
+          .mockImplementation(async () => undefined);
+        // Zero out any deletion pushes from earlier steps in this long-running test.
+        sbDeletionPushSpy.mockClear();
+
+        await request
+          .agent(app.getHttpServer())
+          .delete(`/api/apps/${sbAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+
+        // The app's default-branch versions are gone from the DB …
+        const sbAppVersionsAfter = await dataSource.query(`SELECT id FROM app_versions WHERE app_id = $1`, [sbAppId]);
+        expect(sbAppVersionsAfter).toHaveLength(0);
+
+        // … and a deletion push was enqueued for the DEFAULT branch (the single-branch fix).
+        // The @OnEvent('app.deletion.push-to-git') listener runs async, so poll briefly
+        // for the enqueue to land before asserting.
+        const waitForCall = async (spy: jest.SpyInstance, timeoutMs = 8000) => {
+          const start = Date.now();
+          while (spy.mock.calls.length === 0 && Date.now() - start < timeoutMs) {
+            await new Promise((r) => setTimeout(r, 50));
+          }
+        };
+        await waitForCall(sbDeletionPushSpy);
+        expect(sbDeletionPushSpy).toHaveBeenCalledTimes(1);
+        expect(sbDeletionPushSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ organizationId: orgId, branchId: mainBranchId })
+        );
+
+        step(85, 'single-branch: deleting a synced module on the DEFAULT branch also enqueues a git deletion push');
+        sbDeletionPushSpy.mockClear();
+
+        await request
+          .agent(app.getHttpServer())
+          .delete(`/api/apps/${sbModuleId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+
+        const sbModuleVersionsAfter = await dataSource.query(`SELECT id FROM app_versions WHERE app_id = $1`, [
+          sbModuleId,
+        ]);
+        expect(sbModuleVersionsAfter).toHaveLength(0);
+
+        await waitForCall(sbDeletionPushSpy);
+        expect(sbDeletionPushSpy).toHaveBeenCalledTimes(1);
+        expect(sbDeletionPushSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ organizationId: orgId, branchId: mainBranchId })
+        );
+
         // Restore multi-branch so the shared org is left in its default (branching-on) state.
         await request
           .agent(app.getHttpServer())
