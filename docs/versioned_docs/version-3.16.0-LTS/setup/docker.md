@@ -10,6 +10,10 @@ import TabItem from '@theme/TabItem';
 
 Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJet requires a PostgreSQL database to store applications definitions, (encrypted) credentials for datasources and user authentication data.
 
+:::info
+**Looking for automated SSL/HTTPS setup?** ToolJet now includes built-in SSL certificate management with Let's Encrypt. Learn more in the [Built-in SSL documentation](/docs/setup/builtin-ssl/overview).
+:::
+
 ::::info
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/setup/try-tooljet/).
 
@@ -102,7 +106,7 @@ docker-compose up -d
 
 Examples:
 `TOOLJET_HOST=http://12.34.56.78` or
-`TOOLJET_HOST=https://tooljet.yourdomain.com`
+`TOOLJET_HOST=https://tooljet.example.com`
 
 If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 

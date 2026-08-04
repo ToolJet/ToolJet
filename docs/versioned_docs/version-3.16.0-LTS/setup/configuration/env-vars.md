@@ -134,6 +134,16 @@ For detailed workflow configuration and deployment examples, refer to the [Workf
 
 ### Optional Configurations
 
+#### Built-in SSL
+
+- `SSL_PORT`: HTTPS port the NestJS application server listens on when SSL is active. Defaults to `PORT + 443` (e.g., `3443` when `PORT=3000`).
+
+SSL is configured via the dashboard (**Instance Settings → SSL/TLS Configuration**), not via environment variables. For detailed setup instructions, see the [Built-in SSL guide](../builtin-ssl/overview).
+
+:::info
+Built-in SSL is available on EE paid plans. When SSL is active, expose both port 80 (HTTP, mapped to `PORT`) and port 443 (HTTPS, mapped to `SSL_PORT`) on your container or firewall.
+:::
+
 #### Comments Feature
 
 - `COMMENT_FEATURE_ENABLE=true/false`: Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. To configure this environment variable, ensure that multiplayer editing is enabled in the Settings.
