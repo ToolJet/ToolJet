@@ -212,13 +212,7 @@ describe('DataQueriesController', () => {
     });
 
     describe('GET /api/data-queries/:versionId | List queries', () => {
-      // Skipped: #17395 — VersionRepository.findAppFromVersion() uses findOneOrFail, which
-      // throws EntityNotFoundError instead of returning null. ValidateAppVersionGuard's own
-      // `if (!app) throw new NotFoundException(...)` is therefore dead code: a cross-org (or
-      // just nonexistent) versionId surfaces as an unhandled 500, not the intended 404.
-      // Confirmed via a live request. The isolation boundary itself holds (another org's user
-      // can never resolve the version), only the status code/error shape is wrong.
-      it.skip("does not expose another organization app version's queries — 404, not the query list", async () => {
+      it("does not expose another organization app version's queries — 404, not the query list", async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['all_users', 'admin'],
