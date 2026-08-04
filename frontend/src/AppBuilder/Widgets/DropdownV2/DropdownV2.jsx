@@ -14,7 +14,7 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray, flattenSelectOptions } from './utils';
 import { useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
@@ -135,31 +135,56 @@ export const DropdownV2 = ({
     if (!Array.isArray(schema)) {
       _schema = [];
     }
-    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
+    // Flatten grouped options so a `default` option nested inside a group is honoured.
+    const defaultItem = flattenSelectOptions(_schema)?.find(
+      (item) => item?.visible === true && item?.default === true
+    );
     return defaultItem?.value;
   }
 
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
-    if (Array.isArray(_options)) {
-      let _selectOptions = _options
-        .filter((data) => data?.visible ?? true)
-        .map((data) => ({
-          ...data,
-          label: getSafeRenderableValue(data?.label),
-          value: data?.value,
-          caption: data?.caption ?? null,
-          isDisabled: data?.disable ?? false,
-        }));
-
-      return sortArray(_selectOptions, sort);
-    } else {
+    if (!Array.isArray(_options)) {
       return [];
     }
+
+    const mapOption = (data) => ({
+      ...data,
+      label: getSafeRenderableValue(data?.label),
+      value: data?.value,
+      caption: data?.caption ?? null,
+      isDisabled: data?.disable ?? false,
+    });
+
+    // Grouped options: [{ label, options: [...] }]. Keep the group structure
+    // (react-select renders groups from the nested `options` key) while mapping
+    // each leaf option exactly like a flat option.
+    const isGrouped = _options.some((option) => Array.isArray(option?.options));
+    if (isGrouped) {
+      return _options
+        .filter((group) => group?.visible ?? true)
+        .map((group) => ({
+          ...group,
+          label: getSafeRenderableValue(group?.label),
+          options: sortArray(
+            (Array.isArray(group?.options) ? group.options : [])
+              .filter((data) => data?.visible ?? true)
+              .map(mapOption),
+            sort
+          ),
+        }));
+    }
+
+    const _selectOptions = _options.filter((data) => data?.visible ?? true).map(mapOption);
+    return sortArray(_selectOptions, sort);
   }, [advanced, schema, options, sort]);
 
+  // Flat list of leaf options used for value lookups so a selected value can be
+  // resolved even when the options are grouped.
+  const flattenedSelectOptions = useMemo(() => flattenSelectOptions(selectOptions), [selectOptions]);
+
   function selectOption(value) {
-    const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
+    const val = flattenedSelectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
     if (val) {
       setInputValue(value);
       fireEvent('onSelect');
@@ -176,7 +201,7 @@ export const DropdownV2 = ({
 
   const setInputValue = (value) => {
     setCurrentValue(value);
-    const _selectedOption = selectOptions.find((option) => option.value === value);
+    const _selectedOption = flattenedSelectOptions.find((option) => option.value === value);
     setExposedVariables({
       value,
       selectedOption: _selectedOption
@@ -242,7 +267,7 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
+    const _options = flattenedSelectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     setExposedVariable('options', _options);
 
     setExposedVariable('selectOption', async function (value) {
@@ -296,7 +321,7 @@ export const DropdownV2 = ({
   }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
-    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
+    const _options = flattenedSelectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     const exposedVariables = {
       clear: async function () {
         setInputValue(null);
@@ -336,7 +361,7 @@ export const DropdownV2 = ({
 
   const menuContentWidth = useMemo(() => {
     if (menuWidthMode !== 'matchContent') return null;
-    if (!Array.isArray(selectOptions) || selectOptions.length === 0) return null;
+    if (!Array.isArray(flattenedSelectOptions) || flattenedSelectOptions.length === 0) return null;
 
     try {
       const canvas = document.createElement('canvas');
@@ -346,7 +371,7 @@ export const DropdownV2 = ({
       const baseFont = window?.getComputedStyle?.(ref?.current || document.body)?.font || '14px Inter, sans-serif';
       context.font = baseFont;
 
-      const maxLabelWidth = selectOptions.reduce((acc, option) => {
+      const maxLabelWidth = flattenedSelectOptions.reduce((acc, option) => {
         const labelText = `${option?.label ?? ''}`;
         return Math.max(acc, context.measureText(labelText).width || 0);
       }, 0);
@@ -359,7 +384,7 @@ export const DropdownV2 = ({
     } catch (_e) {
       return null;
     }
-  }, [menuWidthMode, selectOptions, ref]);
+  }, [menuWidthMode, flattenedSelectOptions, ref]);
 
   const menuWidthStyle = useMenuWidth(menuWidthMode, menuCustomWidth, triggerWidth, menuContentWidth);
 
@@ -552,7 +577,7 @@ export const DropdownV2 = ({
             ref={selectRef}
             menuIsOpen={isMenuOpen}
             isDisabled={isDropdownDisabled}
-            value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
+            value={flattenedSelectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
                 setInputValue(null);
