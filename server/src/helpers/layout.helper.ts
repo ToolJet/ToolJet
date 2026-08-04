@@ -10,7 +10,7 @@ import { Layout } from '@entities/layout.entity';
  * This prevents duplicate layout rows from being propagated during
  * version fork, page clone, and import operations.
  */
-export function deduplicateLayoutsByType<T extends Pick<Layout, 'type'> & { id?: string; updatedAt?: Date }>(
+export function deduplicateLayoutsByType<T extends Pick<Layout, 'type'> & { id?: string; updatedAt?: Date | string }>(
   layouts: T[]
 ): T[] {
   const byType = new Map<string, T>();
@@ -19,8 +19,8 @@ export function deduplicateLayoutsByType<T extends Pick<Layout, 'type'> & { id?:
     if (!existing) {
       byType.set(layout.type, layout);
     } else {
-      const currTime = layout.updatedAt?.getTime() ?? 0;
-      const existTime = existing.updatedAt?.getTime() ?? 0;
+      const currTime = layout.updatedAt ? new Date(layout.updatedAt).getTime() : 0;
+      const existTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
       if (currTime > existTime || (currTime === existTime && (layout.id ?? '') > (existing.id ?? ''))) {
         byType.set(layout.type, layout);
       }
