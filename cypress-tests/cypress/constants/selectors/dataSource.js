@@ -14,6 +14,17 @@ export const dataSourceSelector = {
   dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
+  restApiDataSource: "[data-cy='data-source-rest api']",
+  mongodbDataSource: "[data-cy='data-source-mongodb']",
+  snowflakeDataSource: "[data-cy='data-source-snowflake']",
+  airtableDataSource: "[data-cy='data-source-airtable']",
+
+  dataSourceCardIcon: (title) => {
+    return `[data-cy="${cyParamName(title)}-icon"]`;
+  },
+  dataSourceCardTitle: (title) => {
+    return `[data-cy="${cyParamName(title)}-title"]`;
+  },
   dataSourceNameInputField: '[data-cy="added-ds-search-bar"]',
   labelHost: '[data-cy="label-host"]',
   labelPort: '[data-cy="label-port"]',
