@@ -264,7 +264,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
 };
 
 const EditorInput = ({
-  currentValue,
+  currentValue: currentValueProp,
   setCurrentValue,
   setFocus,
   validationType,
@@ -311,7 +311,21 @@ const EditorInput = ({
     shallow
   );
 
-  const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
+  const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValueProp, 'singleline');
+
+  // Track the latest editor value for safe retrieval on unmount (e.g., popover rootClose)
+  const latestValueRef = useRef(currentValueProp);
+  useEffect(() => {
+    latestValueRef.current = currentValueProp;
+  }, [currentValueProp]);
+
+  // Save the editor value when the component unmounts, ensuring pending edits
+  // are not lost when the popover closes via rootClose (e.g., clicking the next option).
+  useEffect(() => {
+    return () => {
+      onBlurUpdate(latestValueRef.current);
+    };
+  }, []);
 
   const { workflowSuggestions } = useWorkflowStore((state) => ({ workflowSuggestions: state.suggestions }), shallow);
 
@@ -449,11 +463,11 @@ const EditorInput = ({
 
     if (!delayOnChange) {
       setFirstTimeFocus(false);
-      return onBlurUpdate(currentValue);
+      return onBlurUpdate(currentValueProp);
     }
     setTimeout(() => {
       setFirstTimeFocus(false);
-      onBlurUpdate(currentValue);
+      onBlurUpdate(currentValueProp);
     }, 0);
   };
 
@@ -609,7 +623,7 @@ const EditorInput = ({
                   setCodeEditorView(view);
                 }
               }}
-              value={currentValue}
+              value={currentValueProp}
               placeholder={placeholder}
               height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
               width="100%"
