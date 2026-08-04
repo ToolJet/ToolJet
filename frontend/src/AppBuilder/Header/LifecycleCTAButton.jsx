@@ -31,6 +31,7 @@ const LifecycleCTAButton = () => {
     appId,
     appName,
     appType,
+    selectedEnvironment,
   } = useStore(
     (state) => ({
       selectedVersion: state.selectedVersion,
@@ -41,6 +42,7 @@ const LifecycleCTAButton = () => {
       appId: state.appStore.modules[moduleId]?.app?.appId,
       appName: state.appStore.modules[moduleId]?.app?.appName,
       appType: state.appStore.modules[moduleId]?.app?.appType,
+      selectedEnvironment: state.selectedEnvironment,
     }),
     shallow
   );
@@ -52,6 +54,7 @@ const LifecycleCTAButton = () => {
   const [pushValidationError, setPushValidationError] = useState(null);
 
   const isGitSyncEnabled = featureAccess?.gitSync;
+  const isDevelopmentEnvironment = selectedEnvironment?.name === 'development';
 
   if (!isGitSyncEnabled) {
     return null;
@@ -84,6 +87,11 @@ const LifecycleCTAButton = () => {
     (v) => v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
   );
   const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
+
+  // Only show the button on the development environment — not on staging/production.
+  if (!isDevelopmentEnvironment) {
+    return null;
+  }
 
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {
