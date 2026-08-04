@@ -6,7 +6,7 @@ import { ILoginConfigsService } from './interfaces/IService';
 import { SSOConfigsRepository } from './repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationRepository } from '@modules/organizations/repository';
-import { ConfigScope, SSOType } from '@entities/sso_config.entity';
+import { ConfigScope, SSOConfigs, SSOType } from '@entities/sso_config.entity';
 import { cleanObject } from '@helpers/utils.helper';
 import { OrganizationConfigsUpdateDto } from './dto';
 import { User } from '@entities/user.entity';
@@ -108,7 +108,7 @@ export class LoginConfigsService implements ILoginConfigsService {
           const newConfig = this.ssoConfigsRepository.create({
             organizationId,
             sso: type,
-            configs, // Use name from frontend
+            configs: configs ?? ({} as SSOConfigs['configs']), // Use name from frontend
             enabled,
             configScope: ConfigScope.ORGANIZATION,
           });
@@ -119,7 +119,7 @@ export class LoginConfigsService implements ILoginConfigsService {
         const newConfig = this.ssoConfigsRepository.create({
           organizationId,
           sso: type,
-          configs, // Use name from frontend
+          configs: configs ?? ({} as SSOConfigs['configs']), // Use name from frontend
           enabled,
           configScope: ConfigScope.ORGANIZATION,
         });

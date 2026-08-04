@@ -1,3 +1,5 @@
+export type ResolveOutcome = 'resolved' | 'absent' | 'unknown';
+
 export interface GitHttpsEnvConfig {
   httpsUrl: string;
   githubBranch: string;

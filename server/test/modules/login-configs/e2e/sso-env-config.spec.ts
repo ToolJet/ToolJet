@@ -17,7 +17,14 @@ function requireEnv(name: string): string {
   return value;
 }
 
-
+/**
+ * Covers the "map SSO credentials to environment variables" feature end-to-end: boot-time
+ * auto-enable, self-healing (system-managed rows get deleted and retried, not stuck disabled),
+ * human decisions being permanent, and the PRD's plain-object-only .env shape for workspace
+ * configs (an array-wrapped value is rejected). Runs against a real app + real Postgres; the
+ * only thing mocked is OIDC's external discovery call, same style as
+ * test/modules/auth/e2e/oauth-saml.spec.ts. Fixture values live in .env.test, not inline here.
+ */
 /** @group platform */
 describe('SSO env-config (e2e)', () => {
   let app: INestApplication;
@@ -140,19 +147,17 @@ describe('SSO env-config (e2e)', () => {
 
     it('auto-enables a single provider (bare keys)', async () => {
       jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
-      process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify([
-        {
-          [TEST_ORG_SLUG]: [
-            {
-              OIDC_CLIENT_ID: 'id-1',
-              OIDC_CLIENT_SECRET: 'secret-1',
-              OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
-              OIDC_NAME: 'first',
-              OIDC_GRANT_TYPE: 'authorization_code',
-            },
-          ],
-        },
-      ]);
+      process.env.WORKSPACE_OIDC_CONFIG = JSON.stringify({
+        [TEST_ORG_SLUG]: [
+          {
+            OIDC_CLIENT_ID: 'id-1',
+            OIDC_CLIENT_SECRET: 'secret-1',
+            OIDC_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+            OIDC_NAME: 'first',
+            OIDC_GRANT_TYPE: 'authorization_code',
+          },
+        ],
+      });
 
       await runBootSequence();
 
@@ -199,9 +204,9 @@ describe('SSO env-config (e2e)', () => {
       expect((await getOrgRow(SSOType.SAML))?.useEnvConfig).toBe(true);
 
       // Break it — metadata missing the required cert/SSO-endpoint structure.
-      process.env.WORKSPACE_SAML_CONFIG = JSON.stringify([
-        { [TEST_ORG_SLUG]: { SAML_IDP_METADATA: '<EntityDescriptor></EntityDescriptor>', SAML_NAME: 'Test SAML' } },
-      ]);
+      process.env.WORKSPACE_SAML_CONFIG = JSON.stringify({
+        [TEST_ORG_SLUG]: { SAML_IDP_METADATA: '<EntityDescriptor></EntityDescriptor>', SAML_NAME: 'Test SAML' },
+      });
       await runBootSequence();
       expect(await getOrgRow(SSOType.SAML)).toBeNull();
 
@@ -233,18 +238,18 @@ describe('SSO env-config (e2e)', () => {
     });
   });
 
-  // ─── Array-only .env shape enforcement ──────────────────────────────────
+  // ─── Plain-object-only .env shape enforcement (matches the PRD) ────────
 
-  describe('Array-only workspace config shape', () => {
+  describe('Plain-object-only workspace config shape', () => {
     afterEach(async () => {
       process.env.WORKSPACE_LDAP_CONFIG = baselineWorkspaceLdapConfig;
       await clearOrgRows(SSOType.LDAP);
     });
 
-    it('ignores a bare (non-array) WORKSPACE_LDAP_CONFIG object — no row gets created', async () => {
-      // Same fixture values as the baseline, just without the required outer array wrapper.
-      const baselineParsed = JSON.parse(baselineWorkspaceLdapConfig);
-      process.env.WORKSPACE_LDAP_CONFIG = JSON.stringify(Object.assign({}, ...baselineParsed));
+    it('ignores an array-wrapped WORKSPACE_LDAP_CONFIG — no row gets created', async () => {
+      // Same fixture values as the baseline, just wrapped in an outer array the PRD doesn't
+      // document — must be rejected, not silently accepted.
+      process.env.WORKSPACE_LDAP_CONFIG = JSON.stringify([JSON.parse(baselineWorkspaceLdapConfig)]);
 
       await runBootSequence();
 

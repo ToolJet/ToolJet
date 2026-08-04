@@ -71,11 +71,7 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
     return this.findOrgSsoConfig(organizationId, SSOType.LDAP);
   }
 
-  async setUseEnvConfig(
-    organizationId: string,
-    useEnvConfig: boolean,
-    sso: SSOType = SSOType.SAML
-  ): Promise<SSOConfigs | null> {
+  async setUseEnvConfig(organizationId: string, useEnvConfig: boolean, sso: SSOType): Promise<SSOConfigs | null> {
     const existing = await this.findOrgSsoConfig(organizationId, sso);
     if (!existing) {
       // Nothing to disable if the row doesn't exist yet — creating one just to immediately mark
@@ -86,7 +82,7 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
           organizationId,
           sso,
           configScope: ConfigScope.ORGANIZATION,
-          configs: {} as any,
+          configs: {} as SSOConfigs['configs'],
           enabled: false,
           useEnvConfig,
         })

@@ -1,13 +1,7 @@
 import { Controller, Get, Delete, UseGuards, Body, Patch, Param } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
-import {
-  OrganizationConfigsUpdateDto,
-  UpdateOidcEnvConfigDTO,
-  UpdateInstanceOidcEnvConfigDTO,
-  UpdateSamlEnvConfigDTO,
-  UpdateLdapEnvConfigDTO,
-} from './dto';
+import { OrganizationConfigsUpdateDto, UpdateEnvConfigDTO } from './dto';
 import { User } from '@modules/app/decorators/user.decorator';
 import { ILoginConfigsController } from './interfaces/IController';
 import { LoginConfigsService } from './service';
@@ -108,28 +102,28 @@ export class LoginConfigsController implements ILoginConfigsController {
   @InitFeature(FEATURE_KEY.SAVE_OIDC_ENV_CONFIGS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch('/oidc/env-configs')
-  async toggleOidcEnvConfig(@Body() configData: UpdateOidcEnvConfigDTO, @User() user: UserEntity): Promise<{ id: string }> {
+  async toggleOidcEnvConfig(@Body() configData: UpdateEnvConfigDTO, @User() user: UserEntity): Promise<{ id: string }> {
     throw new NotFoundException();
   }
 
   @InitFeature(FEATURE_KEY.SAVE_INSTANCE_OIDC_ENV_CONFIGS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch('/oidc/instance-env-configs')
-  async toggleInstanceOidcEnvConfig(@Body() configData: UpdateInstanceOidcEnvConfigDTO, @User() user: UserEntity) {
+  async toggleInstanceOidcEnvConfig(@Body() configData: UpdateEnvConfigDTO, @User() user: UserEntity) {
     throw new NotFoundException();
   }
 
   @InitFeature(FEATURE_KEY.SAVE_SAML_ENV_CONFIGS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch('/saml/env-configs')
-  async toggleSamlEnvConfig(@Body() configData: UpdateSamlEnvConfigDTO, @User() user: UserEntity) {
+  async toggleSamlEnvConfig(@Body() configData: UpdateEnvConfigDTO, @User() user: UserEntity) {
     throw new NotFoundException();
   }
 
   @InitFeature(FEATURE_KEY.SAVE_LDAP_ENV_CONFIGS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch('/ldap/env-configs')
-  async toggleLdapEnvConfig(@Body() configData: UpdateLdapEnvConfigDTO, @User() user: UserEntity) {
+  async toggleLdapEnvConfig(@Body() configData: UpdateEnvConfigDTO, @User() user: UserEntity) {
     throw new NotFoundException();
   }
 }

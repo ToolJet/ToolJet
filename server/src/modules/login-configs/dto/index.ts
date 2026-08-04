@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString, MaxLength, IsBoolean } from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsBoolean, IsUUID } from 'class-validator';
 import { sanitizeInput } from '@helpers/utils.helper';
 
 export class OrganizationConfigsUpdateDto {
@@ -70,28 +70,11 @@ export class InstanceConfigsUpdateDto {
   customLogoutUrl?: string;
 }
 
-export class UpdateOidcEnvConfigDTO {
+export class UpdateEnvConfigDTO {
   @IsBoolean()
   useEnvConfig: boolean;
 
-  // Optional — absent when toggling env-config on a brand-new, never-saved provider draft;
-  // the toggle creates the row itself in that case (see toggleOidcEnvConfig).
   @IsOptional()
-  @IsString()
+  @IsUUID()
   configId?: string;
-}
-
-export class UpdateInstanceOidcEnvConfigDTO {
-  @IsBoolean()
-  useEnvConfig: boolean;
-}
-
-export class UpdateSamlEnvConfigDTO {
-  @IsBoolean()
-  useEnvConfig: boolean;
-}
-
-export class UpdateLdapEnvConfigDTO {
-  @IsBoolean()
-  useEnvConfig: boolean;
 }
