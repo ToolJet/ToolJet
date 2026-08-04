@@ -30,7 +30,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
-import { cloneDeep, isArray, merge, mergeWith } from 'lodash';
+import { cloneDeep, isArray, isPlainObject, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
@@ -1331,7 +1331,10 @@ export class AppsUtilService implements IAppsUtilService {
           (objValue, srcValue) => {
             if (['Table', 'KeyValuePair'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               // Stored array wins: merging it with the widget defaults leaks default entries back in
-              return srcValue;
+              if (isArray(srcValue)) return srcValue;
+              // Older apps can persist the array as an object keyed by index
+              if (isPlainObject(srcValue)) return Object.values(srcValue);
+              // Anything else (an fx expression, for instance) is left to lodash, which replaces it wholesale
             } else if (
               [
                 'DropdownV2',
