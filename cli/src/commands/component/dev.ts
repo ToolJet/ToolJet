@@ -17,8 +17,8 @@ export default class Dev extends Command {
   async run(): Promise<void> {
     const { flags } = await this.parse(Dev);
 
+    const { workspaceId, apiToken } = Auth.resolveOrExit();
     const config = this.readConfigOrExit();
-    const { workspaceId, apiToken } = Auth.resolve();
     const client = new ApiClient(apiToken);
 
     try {

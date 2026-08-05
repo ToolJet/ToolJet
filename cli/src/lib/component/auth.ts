@@ -26,6 +26,17 @@ export class Auth {
     return { workspaceId: creds.workspaceId, apiToken: creds.apiToken };
   }
 
+  // Same as resolve(), but prints the standard CLI error message and exits
+  // instead of throwing, so callers don't need to repeat that handling.
+  static resolveOrExit(flags: { url?: string; token?: string } = {}): ResolvedAuth {
+    try {
+      return Auth.resolve(flags);
+    } catch (err) {
+      console.log('\x1b[41m%s\x1b[0m', `Error : ${(err as Error).message}`);
+      process.exit(1);
+    }
+  }
+
   private static readOrEmpty() {
     try {
       return JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf8'));

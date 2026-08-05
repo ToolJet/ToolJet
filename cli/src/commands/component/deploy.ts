@@ -23,7 +23,7 @@ export default class ComponentDeploy extends Command {
     const { flags } = await this.parse(ComponentDeploy);
     const { message } = flags;
 
-    const { workspaceId, apiToken } = Auth.resolve();
+    const { workspaceId, apiToken } = Auth.resolveOrExit();
     const client = new ApiClient(apiToken);
 
     const configPath = path.join(process.cwd(), '.tooljet', 'config.json');
