@@ -238,6 +238,47 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
 
+  /**
+   * Re-resolves already-existing components from their CURRENT definition:
+   *  - rebuilds their `{{}}` dependency-graph edges
+   *  - layers the freshly resolved values over whatever is in the resolved store.
+   *
+   * Use it when a definition was mutated in place and the resolved store is now stale.
+   * typically a definition write made directly inside an immer draft instead of via `setComponentProperty` which updates both definiton and resolved store.
+   *
+   * Reads live state, so call it AFTER the definition write has been committed, never from inside the producer that performs the write.
+   * `events` / `exposedVariables` are stripped before resolving since neither participates in the dependency graph.
+   */
+  refreshResolvedValuesForComponents: (componentIds = [], moduleId = 'canvas') => {
+    const { addToDependencyGraph, setResolvedComponent, getResolvedComponent, getComponentDefinition } = get();
+
+    componentIds.forEach((componentId) => {
+      const currentComponent = getComponentDefinition(componentId, moduleId);
+      if (!currentComponent) return;
+
+      const existingResolvedValues = getResolvedComponent(componentId, null, moduleId) || {};
+
+      const { events, exposedVariables, ...filteredDefinition } = currentComponent.component.definition || {};
+      const resolvedDiffValues = addToDependencyGraph(moduleId, componentId, {
+        ...currentComponent.component,
+        definition: filteredDefinition,
+      });
+
+      const mergedResolvedValues = deepClone(existingResolvedValues);
+
+      ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'].forEach((propType) => {
+        if (resolvedDiffValues[propType]) {
+          mergedResolvedValues[propType] = {
+            ...(mergedResolvedValues[propType] || {}),
+            ...resolvedDiffValues[propType],
+          };
+        }
+      });
+
+      setResolvedComponent(componentId, mergedResolvedValues, moduleId);
+    });
+  },
+
   addNewComponentNameIdMapping: (componentId, componentName, moduleId = 'canvas') => {
     set(
       (state) => {
@@ -1509,14 +1550,14 @@ export const createComponentsSlice = (set, get) => ({
       selectedComponents,
       deleteComponentNameIdMapping,
       removeNode,
-      checkIfParentIsFormAndDeleteField,
+      getParentFormId,
       getCurrentPageId,
       checkIfComponentIsModule,
       clearModuleFromStore,
       getShouldFreeze,
-      performBatchComponentOperations,
       getComponentDefinition,
       getCurrentPageIndex,
+      refreshResolvedValuesForComponents,
     } = get();
     const isAppBeingEditedByAI = get().ai?.isLoading ?? false;
     const shouldFreeze = getShouldFreeze(isAppBeingEditedByAI);
@@ -1548,14 +1589,18 @@ export const createComponentsSlice = (set, get) => ({
       }
     };
 
+    // Stores components that need to be deleted from Form fields: { [formId]: componentId[] }
+    // applied inside the set() below to create a single undo/redo entry with the component deletion.
+    const fieldDeletionMap = {};
+
     _selectedComponents.forEach((componentId) => {
-      // Update form fields locally but skip the API call - we'll batch it
       if (!skipFormUpdate) {
-        const formId = checkIfParentIsFormAndDeleteField(componentId, moduleId, false, {
-          skipSave: saveAfterAction,
-        });
+        const formId = getParentFormId(componentId, moduleId);
         if (formId) {
-          affectedFormIds.add(formId);
+          if (!fieldDeletionMap[formId]) fieldDeletionMap[formId] = [];
+          fieldDeletionMap[formId].push(componentId);
+          // Only the saving caller needs to persist the Form update
+          if (saveAfterAction) affectedFormIds.add(formId);
         }
       }
       findAllChildComponents(componentId);
@@ -1610,6 +1655,10 @@ export const createComponentsSlice = (set, get) => ({
           state.showWidgetDeleteConfirmation = false; // Set it to false always
         });
 
+        if (!skipFormUpdate) {
+          get().removeDeletedComponentsFromFormFieldsInDraft({ page, fieldDeletionMap });
+        }
+
         const filteredEvents = appEvents.filter((event) => !toDeleteEvents.includes(event.id));
         state.eventsSlice.module[moduleId].events = filteredEvents;
       }, skipUndoRedo),
@@ -1657,13 +1706,17 @@ export const createComponentsSlice = (set, get) => ({
           }
         });
 
-        performBatchComponentOperations(
-          {
-            updated: Object.keys(formUpdateDiff).length > 0 ? formUpdateDiff : undefined,
-            deleted: toDeleteComponents,
-          },
-          moduleId
-        )
+        // The affected parents' definitions were mutated in the producer above,
+        // so their resolved values and dependency-graph edges need recomputing.
+        refreshResolvedValuesForComponents(Object.keys(formUpdateDiff), moduleId);
+
+        // Persist flex parent/form updates and child deletes atomically via the batch endpoint.
+        const batchDiff = {
+          ...(Object.keys(formUpdateDiff).length > 0 ? { update: { diff: formUpdateDiff } } : {}),
+          delete: { diff: toDeleteComponents },
+        };
+
+        saveComponentChanges(batchDiff, 'components/batch', 'update', moduleId)
           .then(() => {
             get().multiplayer.broadcastUpdates({ selectedComponents: _selectedComponents }, 'components', 'delete');
             showToast();
