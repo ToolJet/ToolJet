@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { INestApplication } from '@nestjs/common';
 import { IsNull } from 'typeorm';
 import { Issuer } from 'openid-client';
@@ -9,21 +10,14 @@ import { Organization } from 'src/entities/organization.entity';
 
 const TEST_ORG_SLUG = 'sso-env-config-test-org';
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name} (see .env.test)`);
-  }
-  return value;
-}
-
 /**
  * Covers the "map SSO credentials to environment variables" feature end-to-end: boot-time
  * auto-enable, self-healing (system-managed rows get deleted and retried, not stuck disabled),
  * human decisions being permanent, and the PRD's plain-object-only .env shape for workspace
  * configs (an array-wrapped value is rejected). Runs against a real app + real Postgres; the
  * only thing mocked is OIDC's external discovery call, same style as
- * test/modules/auth/e2e/oauth-saml.spec.ts. Fixture values live in .env.test, not inline here.
+ * test/modules/auth/e2e/oauth-saml.spec.ts. All fixtures are set directly on process.env in
+ * beforeAll — nothing depends on .env.test, which is gitignored and never present in CI.
  */
 /** @group platform */
 describe('SSO env-config (e2e)', () => {
@@ -31,7 +25,8 @@ describe('SSO env-config (e2e)', () => {
   let ssoConfigsRepository: ReturnType<typeof getEntityRepository<SSOConfigs>>;
   let orgId: string;
 
-  // Baselines from .env.test, captured once the app (and its ConfigModule-loaded env) exists.
+  // Baseline fixtures, set in beforeAll — the per-describe-block tests below temporarily
+  // override these and restore them in afterEach.
   let baselineWorkspaceOidcConfig: string;
   let baselineWorkspaceSamlConfig: string;
   let baselineWorkspaceLdapConfig: string;
@@ -51,18 +46,51 @@ describe('SSO env-config (e2e)', () => {
   };
 
   beforeAll(async () => {
+    // Instance-level OIDC fixture — constant for every test in "Instance OIDC" below;
+    // Issuer.discover is mocked, so the well-known URL is never actually hit.
+    process.env.OIDC_CLIENT_ID = 'instance-client-id';
+    process.env.OIDC_CLIENT_SECRET = 'instance-client-secret';
+    process.env.OIDC_WELL_KNOWN_URL = 'https://instance-idp.example.com/.well-known/openid-configuration';
+    process.env.OIDC_NAME = 'Instance OIDC';
+    process.env.OIDC_GRANT_TYPE = 'authorization_code';
+
+    const samlIdpMetadata = fs.readFileSync('./test/__mocks__/test_idp_metadata.xml').toString('utf8');
+    baselineWorkspaceOidcConfig = JSON.stringify({
+      [TEST_ORG_SLUG]: [
+        {
+          OIDC_1_CLIENT_ID: 'ws-client-1',
+          OIDC_1_CLIENT_SECRET: 'ws-secret-1',
+          OIDC_1_WELL_KNOWN_URL: 'https://idp1.example.com/.well-known/openid-configuration',
+          OIDC_1_NAME: 'first',
+          OIDC_1_GRANT_TYPE: 'authorization_code',
+        },
+        {
+          OIDC_2_CLIENT_ID: 'ws-client-2',
+          OIDC_2_CLIENT_SECRET: 'ws-secret-2',
+          OIDC_2_WELL_KNOWN_URL: 'https://idp2.example.com/.well-known/openid-configuration',
+          OIDC_2_NAME: 'second',
+          OIDC_2_GRANT_TYPE: 'authorization_code',
+        },
+      ],
+    });
+    baselineWorkspaceSamlConfig = JSON.stringify({
+      [TEST_ORG_SLUG]: { SAML_IDP_METADATA: samlIdpMetadata, SAML_NAME: 'Test SAML' },
+    });
+    baselineWorkspaceLdapConfig = JSON.stringify({
+      [TEST_ORG_SLUG]: { LDAP_HOST_NAME: 'localhost', LDAP_PORT: '389', LDAP_BASE_DN: 'dc=example,dc=com', LDAP_NAME: 'Test LDAP' },
+    });
+    process.env.WORKSPACE_OIDC_CONFIG = baselineWorkspaceOidcConfig;
+    process.env.WORKSPACE_SAML_CONFIG = baselineWorkspaceSamlConfig;
+    process.env.WORKSPACE_LDAP_CONFIG = baselineWorkspaceLdapConfig;
+
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise', freshApp: true }));
     ssoConfigsRepository = getEntityRepository(SSOConfigs);
-
-    baselineWorkspaceOidcConfig = requireEnv('WORKSPACE_OIDC_CONFIG');
-    baselineWorkspaceSamlConfig = requireEnv('WORKSPACE_SAML_CONFIG');
-    baselineWorkspaceLdapConfig = requireEnv('WORKSPACE_LDAP_CONFIG');
 
     const { organization } = await createUser(app, { organizationName: 'SSO Env Config Test Org' });
     orgId = organization.id;
     // createUser()'s org-creation path doesn't set a slug (unlike the real app's org creation
     // service) — set one explicitly so workspace-key resolution has something to match on.
-    // Must match the workspace key baked into .env.test's WORKSPACE_*_CONFIG fixtures.
+    // Must match the workspace key baked into the WORKSPACE_*_CONFIG fixtures set above.
     await getEntityRepository(Organization).update(orgId, { slug: TEST_ORG_SLUG });
 
     await ensureInstanceSSOConfigs();
@@ -81,9 +109,9 @@ describe('SSO env-config (e2e)', () => {
   });
 
   // ─── Instance-level OIDC ────────────────────────────────────────────────
-  // OIDC_CLIENT_ID / OIDC_CLIENT_SECRET / OIDC_WELL_KNOWN_URL / OIDC_NAME / OIDC_GRANT_TYPE
-  // come straight from .env.test — never overridden by these tests, only the DB row state and
-  // the Issuer.discover mock change between cases.
+  // OIDC_CLIENT_ID / OIDC_CLIENT_SECRET / OIDC_WELL_KNOWN_URL / OIDC_NAME / OIDC_GRANT_TYPE are
+  // set once in beforeAll — never overridden by these tests, only the DB row state and the
+  // Issuer.discover mock change between cases.
 
   describe('Instance OIDC', () => {
     beforeEach(async () => {
@@ -136,8 +164,8 @@ describe('SSO env-config (e2e)', () => {
   });
 
   // ─── Workspace-level OIDC ───────────────────────────────────────────────
-  // .env.test's WORKSPACE_OIDC_CONFIG baseline is the 2-provider case. The single-provider
-  // (bare-key) case temporarily overrides it, then restores the baseline.
+  // The baseline WORKSPACE_OIDC_CONFIG (set in beforeAll) is the 2-provider case. The
+  // single-provider (bare-key) case temporarily overrides it, then restores the baseline.
 
   describe('Workspace OIDC', () => {
     afterEach(async () => {
@@ -169,7 +197,7 @@ describe('SSO env-config (e2e)', () => {
 
     it('auto-enables multiple providers independently, each claiming its own slot', async () => {
       jest.spyOn(Issuer, 'discover').mockResolvedValue({} as any);
-      // Uses the .env.test baseline directly (already a 2-provider config).
+      // Uses the baseline fixture directly (already a 2-provider config).
 
       await runBootSequence();
 
@@ -190,7 +218,7 @@ describe('SSO env-config (e2e)', () => {
     });
 
     it('auto-enables when the IdP metadata is structurally valid', async () => {
-      // Uses the .env.test baseline directly.
+      // Uses the baseline fixture directly.
       await runBootSequence();
 
       const row = await getOrgRow(SSOType.SAML);
@@ -210,7 +238,7 @@ describe('SSO env-config (e2e)', () => {
       await runBootSequence();
       expect(await getOrgRow(SSOType.SAML)).toBeNull();
 
-      // Restore the .env.test baseline — should get a fresh row, not stay permanently gone.
+      // Restore the baseline fixture — should get a fresh row, not stay permanently gone.
       process.env.WORKSPACE_SAML_CONFIG = baselineWorkspaceSamlConfig;
       await runBootSequence();
 
@@ -229,7 +257,7 @@ describe('SSO env-config (e2e)', () => {
     });
 
     it('auto-enables with no live connectivity check', async () => {
-      // Uses the .env.test baseline directly.
+      // Uses the baseline fixture directly.
       await runBootSequence();
 
       const row = await getOrgRow(SSOType.LDAP);
