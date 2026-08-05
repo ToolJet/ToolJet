@@ -193,7 +193,8 @@ const useAppData = (
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  let slug = pathParams?.slug;
+  // A module instance has its own app slug, distinct from the parent app's route slug.
+  let slug = appSlug ?? pathParams?.slug;
 
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
@@ -419,24 +420,31 @@ const useAppData = (
 
         let constantsResp;
         if (mode !== 'edit') {
-          try {
-            const queryParams = { slug: slug };
+          if (moduleMode) {
+            // A module's own is_public is always false, so PublicAppEnvironmentGuard 401s
+            // on the module's slug. ModuleViewer already resolved the parent's environment
+            // into environmentId — reuse it instead of re-resolving.
+            editorEnvironment = { id: environmentId };
+          } else {
+            try {
+              const queryParams = { slug: slug };
 
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+              const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
 
-            editorEnvironment = {
-              id: viewerEnvironment?.environment?.id,
-              name: viewerEnvironment?.environment?.name,
-            };
-            constantsResp =
-              isPublicAccess && appData.is_public
-                ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
-                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
-          } catch (error) {
-            console.error('Error fetching viewer environment:', error);
+              editorEnvironment = {
+                id: viewerEnvironment?.environment?.id,
+                name: viewerEnvironment?.environment?.name,
+              };
+              constantsResp =
+                isPublicAccess && appData.is_public
+                  ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
+                      slug,
+                      viewerEnvironment?.environment?.id
+                    )
+                  : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
+            } catch (error) {
+              console.error('Error fetching viewer environment:', error);
+            }
           }
         }
 

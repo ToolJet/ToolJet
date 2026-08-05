@@ -66,7 +66,13 @@ export class AppEnvironmentService implements IAppEnvironmentService {
             if (isUserDeletedTheCurrentVersion) {
               const newVersionQuery = manager
                 .createQueryBuilder(AppVersion, 'appVersion')
-                .select(['appVersion.name', 'appVersion.id', 'appVersion.currentEnvironmentId'])
+                .select([
+                  'appVersion.name',
+                  'appVersion.id',
+                  'appVersion.currentEnvironmentId',
+                  'appVersion.status',
+                  'appVersion.isSynced',
+                ])
                 .where('appVersion.appId = :appId', { appId: 'your_app_id' })
                 .orderBy('appVersion.updatedAt', 'DESC')
                 .limit(1)
