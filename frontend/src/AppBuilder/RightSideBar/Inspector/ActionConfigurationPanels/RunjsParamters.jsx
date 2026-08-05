@@ -20,14 +20,14 @@ function RunjsParameters({ event, darkMode, index, handlerChanged }) {
   };
 
   return (
-    <div className="row mt-3">
-      <label className="form-label mt-2" data-cy="label-run-js-parameters">
+    <div className="tw-mt-3">
+      <label className="tw-text-xs tw-leading-[18px] tw-mb-3 form-label" data-cy="label-run-js-parameters">
         Parameters
       </label>
-      {dataQuery?.options?.parameters.map((param) => (
-        <React.Fragment key={param.name}>
-          <div className="col-3 p-2">{param.name}</div>
-          <div className="col-9">
+      <div className="tw-flex tw-flex-col tw-gap-3">
+        {dataQuery?.options?.parameters.map((param) => (
+          <div key={param.name} className="tw-flex tw-flex-col tw-gap-[2px]">
+            <label className="tw-text-xs tw-leading-[18px] tw-text-text-default tw-mb-0">{param.name}</label>
             <CodeHinter
               type="basic"
               initialValue={event.parameters?.[param.name]}
@@ -36,8 +36,8 @@ function RunjsParameters({ event, darkMode, index, handlerChanged }) {
               componentName="RunJS Params"
             />
           </div>
-        </React.Fragment>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
