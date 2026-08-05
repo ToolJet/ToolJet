@@ -11,7 +11,24 @@ export const libraryComponentConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: {},
+  properties: {
+    // Mirror of the frontend config — keep in sync (see frontend widgets/libraryComponent.js).
+    libraryId: {
+      type: 'code',
+      displayName: 'Library ID',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+    },
+    componentName: {
+      type: 'code',
+      displayName: 'Component name',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+    },
+    revisionId: {
+      type: 'code',
+      displayName: 'Revision',
+      validation: { schema: { type: 'string' }, defaultValue: 'v1' },
+    },
+  },
   events: {},
   styles: {},
   exposedVariables: {},
@@ -20,7 +37,11 @@ export const libraryComponentConfig = {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
-    properties: {},
+    properties: {
+      libraryId: { value: '' },
+      componentName: { value: '' },
+      revisionId: { value: 'v1' },
+    },
     events: [],
     styles: {},
   },

@@ -44,8 +44,7 @@
       import * as ReactDOMClient from 'react-dom/client';
       import * as ReactJSXRuntime from 'react/jsx-runtime';
 
-      // LLD §6 documented globals. The SDK bridge object (__tj_ToolJet, which the
-      // CLI rewrites @tooljet/custom-component-sdk imports to) is wired in F3.
+      // LLD §6 documented globals.
       window.__tj_React = React;
       window.__tj_ReactDOM = ReactDOMClient;
       window.__tj_ReactJSXRuntime = ReactJSXRuntime;
@@ -55,6 +54,46 @@
       let currentProps = {};
 
       const post = (msg) => window.parent.postMessage(msg, '*');
+
+      // ── SDK bridge (F3) ─────────────────────────────────────────────────
+      // The CLI rewrites `import { ToolJet } from '@tooljet/custom-component-sdk'`
+      // to `window.__tj_ToolJet` (builder.ts tooljetSdkPlugin), so this object IS
+      // the SDK at runtime. Hooks run inside the component's render using the
+      // same vendor React instance — that's why this lives here, after imports.
+      //
+      // useStateX({ name, initialValue }): two-way bound state.
+      //   in : parent-sent props win — when currentProps[name] changes, adopt it
+      //        (setState-during-render, React's documented derived-state pattern).
+      //   out: every value change posts stateChange → parent setExposedVariable.
+      const makeStateHook = () =>
+        function useTjState({ name, initialValue } = {}) {
+          const external = currentProps[name];
+          const [value, setValue] = React.useState(external !== undefined ? external : initialValue);
+          const lastExternal = React.useRef(external);
+          if (lastExternal.current !== external) {
+            lastExternal.current = external;
+            if (external !== undefined && external !== value) setValue(external);
+          }
+          React.useEffect(() => {
+            post({ type: 'stateChange', key: name, value });
+          }, [name, value]);
+          return [value, setValue];
+        };
+
+      window.__tj_ToolJet = {
+        useStateString: makeStateHook(),
+        useStateNumber: makeStateHook(),
+        useStateBoolean: makeStateHook(),
+        useStateObject: makeStateHook(),
+        useStateArray: makeStateHook(),
+        useStateEnumeration: makeStateHook(),
+        // useEventCallback({ name: 'onSave' }) → stable fn that fires the ToolJet event
+        useEventCallback: function useTjEvent({ name } = {}) {
+          return React.useCallback(() => post({ type: 'event', name }), [name]);
+        },
+        // Build-time only (manifest-generator reads defaultWidth/Height); no runtime effect.
+        useComponentSettings: () => {},
+      };
 
       const render = () => {
         if (!Component) return;
