@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import { Auth } from '../../lib/component/auth';
 import { ApiClient } from '../../lib/component/api-client';
 import { scaffoldProject } from '../../lib/component/scaffolder';
+import { formatError } from '../../lib/log';
 
 export default class ComponentInit extends Command {
   static description = 'Initialize a new custom component library';
@@ -20,12 +21,12 @@ export default class ComponentInit extends Command {
     const libraryDirectoryName = args.library_directory_name;
 
     if (Number(libraryDirectoryName)) {
-      this.log('\x1b[41m%s\x1b[0m', 'Error : Library directory name can not be a number');
+      this.log(formatError('Library directory name can not be a number'));
       process.exit(1);
     }
 
     if (fs.existsSync(libraryDirectoryName)) {
-      this.log('\x1b[41m%s\x1b[0m', `Error : Directory "${libraryDirectoryName}" already exists`);
+      this.log(formatError(`Directory "${libraryDirectoryName}" already exists`));
       process.exit(1);
     }
 
@@ -56,7 +57,7 @@ export default class ComponentInit extends Command {
     try {
       library = await client.createLibrary(displayName);
     } catch (err) {
-      this.log('\x1b[41m%s\x1b[0m', `Error : ${(err as Error).message}`);
+      this.log(formatError((err as Error).message));
       process.exit(1);
     }
 

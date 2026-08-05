@@ -1,6 +1,7 @@
 import { Command } from '@oclif/core';
 
 import { build } from '../../lib/component/builder';
+import { formatError } from '../../lib/log';
 
 export default class Build extends Command {
   static description = 'Build the component library locally to dist/ (no upload, no auth required)';
@@ -17,7 +18,7 @@ export default class Build extends Command {
 
       if (result.hasCss) this.log(`✓ CSS output: dist/index.css (${result.cssSizeKb} KB)`);
     } catch (err) {
-      this.log('\x1b[41m%s\x1b[0m', `Error : ${(err as Error).message}`);
+      this.log(formatError((err as Error).message));
       process.exit(1);
     }
   }
