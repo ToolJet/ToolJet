@@ -632,6 +632,7 @@ export class AppImportExportService {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
 
           let versionDbId: string | undefined;
+          let isPinnedToVersion = false;
           if (moduleAppId.versionIdentifier && isUUID(moduleAppId.versionIdentifier) && resolvedId) {
             // PINNED: moduleVersionId.value stores the version's co_relation_id
             // (portable git identity) after the git-sync adapter rewrites ids.
@@ -647,6 +648,9 @@ export class AppImportExportService {
               });
               versionDbId = byRefId?.id;
             }
+            // Only a resolved pin counts — an unresolvable pin (e.g. cross-workspace import)
+            // falls through to branch-local resolution below and must be treated as unpinned.
+            isPinnedToVersion = Boolean(versionDbId);
           }
 
           // Fall through to branch-local resolution when:
@@ -676,7 +680,10 @@ export class AppImportExportService {
             }
           }
 
-          moduleApps.push(await this.export(user, resolvedId, { version_id: versionDbId }, parentBranchId));
+          const moduleExport = await this.export(user, resolvedId, { version_id: versionDbId }, parentBranchId);
+          // Travels with appV2 so writeReferencedModules can check the actual pin outcome
+          // instead of inferring it from versionType (see comment there).
+          moduleApps.push({ ...moduleExport, isPinnedToVersion });
         })
       );
 
