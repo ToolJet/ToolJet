@@ -7,6 +7,8 @@ const fs = require('fs');
 const { runner } = require('hygen');
 const Logger = require('hygen/dist/logger').default;
 
+import { formatError } from '../../lib/log';
+
 export default class Create extends Command {
   static flags = {
     type: Flags.string({ options: ['database', 'api', 'cloud-storage'] }),
@@ -22,7 +24,7 @@ export default class Create extends Command {
     const { args, flags } = await this.parse(Create);
 
     if (Number(args.plugin_name)) {
-      this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin name can not be a number');
+      this.log(formatError('Plugin name can not be a number'));
       process.exit(1);
     }
 
@@ -31,7 +33,7 @@ export default class Create extends Command {
     const name = await CliUx.ux.prompt('Enter plugin display name');
 
     if (Number(name)) {
-      this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin Display name can not be a number');
+      this.log(formatError('Plugin Display name can not be a number'));
       process.exit(1);
     }
 
@@ -53,8 +55,9 @@ export default class Create extends Command {
 
     if (!(fs.existsSync(pluginsPath) && fs.existsSync(docsPath) && fs.existsSync(defaultTemplates))) {
       this.log(
-        '\x1b[41m%s\x1b[0m',
-        `Error : ${pluginsPath}, docs or ${pluginsPath}/_templates directory missing, make sure that you are running this command in Tooljet directory`
+        formatError(
+          `${pluginsPath}, docs or ${pluginsPath}/_templates directory missing, make sure that you are running this command in Tooljet directory`
+        )
       );
       process.exit(1);
     }
@@ -76,7 +79,7 @@ export default class Create extends Command {
     const pluginsJson = JSON.parse(buffer);
     pluginsJson.map((plugin: any) => {
       if (plugin.id === args.plugin_name.toLowerCase()) {
-        this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin id already exists');
+        this.log(formatError('Plugin id already exists'));
         process.exit(1);
       }
     });
