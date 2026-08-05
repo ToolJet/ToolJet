@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
@@ -18,6 +17,9 @@ export const RadioButton = function RadioButton({
 
   const { visibility, disabledState, activeColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
+  // Stable, per-instance group name so all options share one native radio group
+  // (id is already unique per widget instance — no UUID needed).
+  const radioGroupName = useMemo(() => `radio-group-${id}`, [id]);
   const [checkedValue, setValue] = useState(() => value);
   useEffect(() => setValue(value), [value]);
 
@@ -81,12 +83,17 @@ export const RadioButton = function RadioButton({
                 marginTop: '1px',
                 backgroundColor: checkedValue === option.value ? `${activeColor}` : 'var(--cc-surface1-surface)',
               }}
-              className="form-check-input"
+              className="form-check-input focus:!tw-shadow-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1"
               checked={checkedValue === option.value}
               type="radio"
               value={option.value}
-              name={`${id}-${uuidv4()}`}
-              onChange={() => onSelect(option.value)}
+              name={radioGroupName}
+              onChange={() => {
+                if (disabledState) return;
+                onSelect(option.value);
+              }}
+              // native disabled: removes each option from the tab order + blocks
+              // Space/arrow selection (onChange guard is belt-and-suspenders)
               disabled={disabledState}
               aria-disabled={disabledState}
               aria-hidden={!visibility}

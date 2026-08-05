@@ -264,7 +264,7 @@ export const ModalV2 = function Modal({
       {useDefaultButton && isVisible && (
         <button
           disabled={isDisabledTrigger}
-          className="jet-btn btn btn-primary overflow-hidden"
+          className="jet-btn btn btn-primary overflow-hidden focus-visible:!tw-outline focus-visible:!tw-outline-2 focus-visible:!tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -314,6 +314,10 @@ export const ModalV2 = function Modal({
         }
         size={size}
         keyboard={true}
+        // Keep react-bootstrap's focus trap OFF: it continuously yanks focus back
+        // into the modal, which breaks Radix overlays (PopoverMenu/Select) that
+        // portal outside the modal DOM. A WAI-ARIA focus trap needs a Radix-safe
+        // boundary-Tab approach instead — deferred, tracked in #5307.
         enforceFocus={false}
         animation={false}
         onShow={() => {
@@ -323,7 +327,9 @@ export const ModalV2 = function Modal({
         onHide={() => {
           onHideModal();
         }}
-        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
+        // onEscapeKeyDown is handled inside ModalWidget (Components/Modal.jsx),
+        // where it sits directly on BootstrapModal — passing it here is overridden
+        // by that inner handler (see #5308).
         id="modal-container"
         component-id={id}
         backdrop={'static'}

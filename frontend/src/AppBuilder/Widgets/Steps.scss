@@ -63,6 +63,18 @@
 		}
 	}
 
+	// Step nodes render as <button>; strip UA button styling so they look
+	// identical to before (theme rules still win on specificity).
+	button.milestone {
+		-webkit-appearance: none;
+		appearance: none;
+		background: transparent;
+		border: none;
+		padding: 0;
+		font: inherit;
+		color: inherit;
+	}
+
 	.dot {
 		width: 0.5rem;
 		height: 0.5rem;
