@@ -602,6 +602,7 @@ export const Table = (props) => {
                       {t('widget.Table.addNewColumn', ' Add new column')}
                     </AddNewButton>
                   </div>
+                  {!useDynamicColumn && <div className="py-2">{renderCustomElement('lockColumnSchema')}</div>}
                   <ProgramaticallyHandleProperties
                     label="Make all columns editable"
                     currentState={currentState}

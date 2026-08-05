@@ -86,6 +86,7 @@ const Table = memo(
       columnData,
       columnDeletionHistory,
       autogenerateColumns,
+      lockColumnSchema,
       actions,
       shouldRender,
       ...restOfProperties
@@ -243,6 +244,7 @@ const Table = memo(
         autogenerateColumns,
         columnDeletionHistory,
         shouldAutogenerateColumns.current,
+        lockColumnSchema,
         moduleId
       );
       shouldAutogenerateColumns.current = false;
@@ -256,6 +258,7 @@ const Table = memo(
       autogenerateColumns,
       moduleId,
       columnDeletionHistory,
+      lockColumnSchema,
     ]);
 
     // Set styles to the table store
