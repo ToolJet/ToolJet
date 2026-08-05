@@ -62,6 +62,9 @@ const hasDynamicValue = (value) => {
   return false;
 };
 
+// Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
+const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
+
 // Debounce delay for dependency-triggered query re-runs.
 // RunJS/RunPy are blocked at registerQueryDependencies and never reach here.
 function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
@@ -991,12 +994,7 @@ export const createComponentsSlice = (set, get) => ({
           Object.entries(val).forEach(([key, keyValue]) => {
             const propertyWithArrayValue = `${property}[${index}].${key}`;
             // Nested arrays of objects (eg. Navigation group children) carry their own dynamic values
-            if (
-              Array.isArray(keyValue) &&
-              keyValue[0] &&
-              typeof keyValue[0] === 'object' &&
-              hasDynamicValue(keyValue)
-            ) {
+            if (Array.isArray(keyValue) && hasObjectEntry(keyValue) && hasDynamicValue(keyValue)) {
               const { updatedValue } = checkValueAndResolve(
                 componentId,
                 paramType,
