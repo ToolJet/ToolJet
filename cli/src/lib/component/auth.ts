@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+import { formatError } from '../log';
+
 const CREDENTIALS_PATH = path.join(os.homedir(), '.tooljet', 'credentials.json');
 
 export interface ResolvedAuth {
@@ -32,7 +34,7 @@ export class Auth {
     try {
       return Auth.resolve(flags);
     } catch (err) {
-      console.log('\x1b[41m%s\x1b[0m', `Error : ${(err as Error).message}`);
+      console.log(formatError((err as Error).message));
       process.exit(1);
     }
   }

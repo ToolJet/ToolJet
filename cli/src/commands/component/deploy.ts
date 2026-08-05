@@ -5,6 +5,7 @@ import * as path from 'path';
 import { Auth } from '../../lib/component/auth';
 import { build } from '../../lib/component/builder';
 import { ApiClient } from '../../lib/component/api-client';
+import { formatError } from '../../lib/log';
 
 export default class ComponentDeploy extends Command {
   static description =
@@ -29,8 +30,9 @@ export default class ComponentDeploy extends Command {
     const configPath = path.join(process.cwd(), '.tooljet', 'config.json');
     if (!fs.existsSync(configPath)) {
       this.log(
-        '\x1b[41m%s\x1b[0m',
-        'Error : .tooljet/config.json not found. Run this command from a component library directory created with `tooljet component init`.'
+        formatError(
+          '.tooljet/config.json not found. Run this command from a component library directory created with `tooljet component init`.'
+        )
       );
       process.exit(1);
     }
@@ -48,7 +50,7 @@ export default class ComponentDeploy extends Command {
       this.log(`  Bundle URL: ${revision.bundleUrl}`);
       this.log(`  Revision ID: ${revision.id}`);
     } catch (err) {
-      this.log('\x1b[41m%s\x1b[0m', `Error : ${(err as Error).message}`);
+      this.log(formatError((err as Error).message));
       process.exit(1);
     }
   }

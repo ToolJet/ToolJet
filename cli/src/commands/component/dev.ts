@@ -4,6 +4,7 @@ import { Auth } from '../../lib/component/auth';
 import { ApiClient } from '../../lib/component/api-client';
 import { ProjectConfig, ProjectConfigData } from '../../lib/component/project-config';
 import { DevWatcher } from '../../lib/component/dev-watcher';
+import { formatError } from '../../lib/log';
 
 export default class Dev extends Command {
   static description = 'Watch src/ and upload to the dev track on every save';
@@ -24,7 +25,7 @@ export default class Dev extends Command {
     try {
       await client.verifyLibrary(config.libraryId);
     } catch (err) {
-      this.log('\x1b[41m%s\x1b[0m', `Error : Could not reach library on ${workspaceId}: ${(err as Error).message}`);
+      this.log(formatError(`Could not reach library on ${workspaceId}: ${(err as Error).message}`));
       process.exit(1);
     }
 
@@ -60,7 +61,7 @@ export default class Dev extends Command {
     try {
       return ProjectConfig.read();
     } catch (err) {
-      this.log('\x1b[41m%s\x1b[0m', `Error : ${(err as Error).message}`);
+      this.log(formatError((err as Error).message));
       process.exit(1);
     }
   }
