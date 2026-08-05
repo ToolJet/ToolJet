@@ -48,6 +48,20 @@ const queryRerunTimers = new Map();
 // Dependency-triggered query re-runs for those modules are suppressed.
 const suppressedQueryRerunModules = new Set();
 
+// Gate for resolving nested arrays, which can be user data of any size (eg. TreeSelect option trees)
+const hasDynamicValue = (value) => {
+  const pending = [value];
+  while (pending.length) {
+    const current = pending.pop();
+    if (typeof current === 'string') {
+      if (current.includes('{{') && current.includes('}}')) return true;
+    } else if (current && typeof current === 'object') {
+      for (const entry of Object.values(current)) pending.push(entry);
+    }
+  }
+  return false;
+};
+
 // Debounce delay for dependency-triggered query re-runs.
 // RunJS/RunPy are blocked at registerQueryDependencies and never reach here.
 function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
@@ -968,7 +982,7 @@ export const createComponentsSlice = (set, get) => ({
     updatePassedValue = true,
     moduleId
   ) => {
-    const { updateResolvedValues, generateDependencyGraphForRefs } = get();
+    const { updateResolvedValues, generateDependencyGraphForRefs, checkValueAndResolve } = get();
     if (Array.isArray(value)) {
       const updatedPropertyValue = cloneDeep(value);
       value.forEach((val, index) => {
@@ -976,6 +990,26 @@ export const createComponentsSlice = (set, get) => ({
         if (val && typeof val === 'object') {
           Object.entries(val).forEach(([key, keyValue]) => {
             const propertyWithArrayValue = `${property}[${index}].${key}`;
+            // Nested arrays of objects (eg. Navigation group children) carry their own dynamic values
+            if (
+              Array.isArray(keyValue) &&
+              keyValue[0] &&
+              typeof keyValue[0] === 'object' &&
+              hasDynamicValue(keyValue)
+            ) {
+              const { updatedValue } = checkValueAndResolve(
+                componentId,
+                paramType,
+                propertyWithArrayValue,
+                keyValue,
+                component,
+                resolvedComponentValues,
+                updatePassedValue,
+                moduleId
+              );
+              lodashSet(updatedPropertyValue, [index, key], updatedValue);
+              return;
+            }
             const keys = [key];
             if (keyValue?.value) {
               keys.push('value');
