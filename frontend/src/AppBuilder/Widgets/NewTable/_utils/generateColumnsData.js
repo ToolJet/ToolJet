@@ -475,6 +475,7 @@ export default function generateColumnsData({
                   column={column}
                   containerWidth={columnSize}
                   id={id}
+                  cell={cell}
                 />
               );
 
