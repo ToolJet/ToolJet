@@ -35,6 +35,7 @@ import { Statistics } from '@/AppBuilder/Widgets/Statistics';
 import { Pagination } from '@/AppBuilder/Widgets/Pagination';
 import { Tags } from '@/AppBuilder/Widgets/Tags/Tags';
 import { Spinner } from '@/AppBuilder/Widgets/Spinner';
+import { LibraryComponent } from '@/AppBuilder/Widgets/LibraryComponent';
 import { CircularProgressBar } from '@/AppBuilder/Widgets/CirularProgressbar';
 import { RangeSlider } from '@/AppBuilder/Widgets/RangeSlider';
 import { RangeSliderV2 } from '@/AppBuilder/Widgets/RangeSliderV2';
@@ -153,6 +154,7 @@ export const AllComponents = {
   Pagination,
   Tags,
   Spinner,
+  LibraryComponent,
   CircularProgressBar,
   RangeSlider,
   RangeSliderV2,

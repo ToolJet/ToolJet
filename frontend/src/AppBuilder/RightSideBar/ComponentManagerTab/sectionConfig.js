@@ -66,7 +66,7 @@ const sectionConfig = {
   },
   custom: {
     title: 'Custom',
-    valueSet: new Set(['CustomComponent', 'Html', 'IFrame']),
+    valueSet: new Set(['CustomComponent', 'LibraryComponent', 'Html', 'IFrame']),
   },
   miscellaneous: {
     title: 'Miscellaneous',
