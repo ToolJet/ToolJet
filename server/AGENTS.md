@@ -86,11 +86,12 @@ Server widget config (`src/modules/apps/services/widget-config/`) and frontend c
 - Never abbreviate `data_source` as `ds`.
 - Use glossary terms (`../UBIQUITOUS_LANGUAGE.md`): Workspace not Organization, Component not Widget, Builder/End User not Editor/Viewer.
 
-### Linting
+### Linting & hooks
 
-- Always lint before committing: `cd server && npm run lint`.
-- Pre-commit hooks live in the repo (husky + lint-staged, root `package.json`; activated by root `npm install`). lint-staged currently covers frontend files only — backend lint is NOT run by the hook, run it yourself.
+- Always lint before committing: `cd server && npm run lint`. CI runs the same per folder (`lint-for-server`/`-frontend`/`-plugins` jobs in `.github/workflows/ci.yml`) and a lint failure blocks the PR — catching it locally is strictly cheaper.
+- Git hooks live in the repo (husky, root `package.json`; activated by root `npm install`). Pre-commit lint-staged covers frontend files only — backend lint is NOT run by the hook, run it yourself. Some branch lines also ship a pre-push hook running affected server tests.
 - Hook not installed (fresh clone, `.git/hooks` missing husky)? Run root `npm install` to set it up, or flag it to the user.
+- **Never commit or push with `--no-verify` unless the user explicitly asks.** Hooks failing means fix the failure, not bypass it — a bypass only defers the same failure to CI.
 
 ## Testing (Jest)
 
