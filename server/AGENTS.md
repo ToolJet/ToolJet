@@ -28,6 +28,13 @@ modules/{feature}/
 
 ## Conventions
 
+### Design principles
+
+- Strong typing always. Never `any` — use precise types, or cast through `unknown` where unavoidable (test private access, caught errors).
+- *A Philosophy of Software Design*, pragmatically: deep modules (simple interface hiding a rich implementation), define errors out of existence where possible, no shallow pass-through layers.
+- *Grokking Simplicity*, pragmatically: separate calculations (pure functions) from actions (effects); stratified design — module-level pure helpers above the class, domain-named types; push effects to the edges.
+- Prefer simplicity and readability over cleverness. Optimize for the next reader.
+
 ### Entities (TypeORM)
 
 - `@Entity({ name: 'table_name' })` with `@PrimaryGeneratedColumn('uuid')`.
@@ -61,8 +68,9 @@ modules/{feature}/
 
 ### Migrations
 
-- **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs.
-- **Data migrations** (`data-migrations/`): MUST log progress — `[START] {Action} | Total: {N}`, `[PROGRESS] {i}/{N} ({%})`, `[SUCCESS] {Action} finished.` No silent bulk updates.
+- **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
+- **Data migrations** (`data-migrations/`): any data manipulation that must run on deployment goes here, never in schema migrations.
+- Data migrations MUST log progress — `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` No silent bulk updates. Exemplar: `data-migrations/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.
 - Prefer runtime interpretation of existing values over new sentinel columns + migrations; repurpose existing columns/tables over adding parallel structures.
 
 ### Widget config sync (CRITICAL)
@@ -77,6 +85,12 @@ Server widget config (`src/modules/apps/services/widget-config/`) and frontend c
 
 - Never abbreviate `data_source` as `ds`.
 - Use glossary terms (`../UBIQUITOUS_LANGUAGE.md`): Workspace not Organization, Component not Widget, Builder/End User not Editor/Viewer.
+
+### Linting
+
+- Always lint before committing: `cd server && npm run lint`.
+- Pre-commit hooks live in the repo (husky + lint-staged, root `package.json`; activated by root `npm install`). lint-staged currently covers frontend files only — backend lint is NOT run by the hook, run it yourself.
+- Hook not installed (fresh clone, `.git/hooks` missing husky)? Run root `npm install` to set it up, or flag it to the user.
 
 ## Testing (Jest)
 

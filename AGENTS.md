@@ -86,6 +86,7 @@ cd plugins && npm install && npm run build
 - TypeORM schema migrations in `server/src/migrations/` (and `server/ee/migrations/` for EE); data migrations in `server/data-migrations/`
 - Never import `@ee/` or `@cloud/` from CE code — webpack enforces this at compile time
 - Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
+- Lint before committing. Pre-commit hooks are in the repo (husky + lint-staged, activated by root `npm install`); the hook only lint-fixes frontend files — backend needs `cd server && npm run lint` manually
 
 ## Skills
 
