@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
 import { App } from '../../entities/app.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
-import { EntityManager, In, IsNull } from 'typeorm';
+import { EntityManager, Equal, In, IsNull, Or } from 'typeorm';
 import { decamelizeKeys } from 'humps';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from './util.service';
@@ -25,8 +25,12 @@ export class FolderAppsService implements IFolderAppsService {
   ) {}
 
   async create(folderId: string, appId: string, branchId?: string, organizationId?: string): Promise<FolderApp> {
-    const resolvedBranchId = await this.resolveEffectiveBranchId(appId, branchId, organizationId);
-    return this.folderAppsUtilService.create(folderId, appId, resolvedBranchId);
+    const { branchId: resolvedBranchId, isDefaultFallback } = await this.resolveEffectiveBranchId(
+      appId,
+      branchId,
+      organizationId
+    );
+    return this.folderAppsUtilService.create(folderId, appId, resolvedBranchId, isDefaultFallback);
   }
 
   async bulkCreate(
@@ -35,51 +39,61 @@ export class FolderAppsService implements IFolderAppsService {
     branchId?: string,
     organizationId?: string
   ): Promise<FolderApp[]> {
-    const resolvedBranchId = await this.resolveEffectiveBranchIdForBulk(appIds, branchId, organizationId);
-    return this.folderAppsUtilService.bulkCreate(folderId, appIds, resolvedBranchId);
+    const { branchId: resolvedBranchId, isDefaultFallback } = await this.resolveEffectiveBranchIdForBulk(
+      appIds,
+      branchId,
+      organizationId
+    );
+    return this.folderAppsUtilService.bulkCreate(folderId, appIds, resolvedBranchId, isDefaultFallback);
   }
 
   async remove(folderId: string, appId: string, branchId?: string, organizationId?: string): Promise<void> {
-    const resolvedBranchId = await this.resolveEffectiveBranchId(appId, branchId, organizationId);
+    const { branchId: resolvedBranchId, isDefaultFallback } = await this.resolveEffectiveBranchId(
+      appId,
+      branchId,
+      organizationId
+    );
     return dbTransactionWrap(async (manager: EntityManager) => {
       const where = resolvedBranchId
-        ? { folderId, appId, branchId: resolvedBranchId }
+        ? { folderId, appId, branchId: isDefaultFallback ? Or(Equal(resolvedBranchId), IsNull()) : resolvedBranchId }
         : { folderId, appId, branchId: IsNull() };
       return await manager.delete(FolderApp, where);
     });
   }
 
   // Resolves the effective branch_id for a write operation. When branchId is already provided it
-  // is returned as-is. When absent and the app is not a workflow (which always uses branch_id=NULL
-  // by convention), we resolve the org's default branch so that non-git-workspace writes land on
-  // the same branch_id as the read path — preventing duplicate rows keyed on (app_id, NULL) vs
-  // (app_id, defaultBranchId) that would stale-lock folder-based permissions.
+  // is returned as-is (isDefaultFallback=false — an explicit git-sync branch must stay isolated
+  // from NULL/pre-branch rows). When absent and the app is not a workflow (which always uses
+  // branch_id=NULL by convention), we resolve the org's default branch so that non-git-workspace
+  // writes land on the same branch_id as the read path, and flag isDefaultFallback=true so the
+  // caller also treats pre-existing branch_id=NULL rows for this app as the same row — otherwise
+  // those legacy rows are invisible to the (app_id, defaultBranchId) lookup and get orphaned.
   private async resolveEffectiveBranchId(
     appId: string,
     branchId?: string,
     organizationId?: string
-  ): Promise<string | undefined> {
-    if (branchId || !organizationId || !appId) return branchId;
+  ): Promise<{ branchId?: string; isDefaultFallback: boolean }> {
+    if (branchId || !organizationId || !appId) return { branchId, isDefaultFallback: false };
     const manager = getConnectionInstance().manager;
     const app = await manager.findOne(App, { where: { id: appId }, select: ['type'] });
-    if (!app || app.type === APP_TYPES.WORKFLOW) return undefined;
+    if (!app || app.type === APP_TYPES.WORKFLOW) return { branchId: undefined, isDefaultFallback: false };
     const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
-    return options.defaultBranch?.id;
+    return { branchId: options.defaultBranch?.id, isDefaultFallback: !!options.defaultBranch?.id };
   }
 
   private async resolveEffectiveBranchIdForBulk(
     appIds: string[],
     branchId?: string,
     organizationId?: string
-  ): Promise<string | undefined> {
-    if (branchId || !organizationId || !appIds.length) return branchId;
+  ): Promise<{ branchId?: string; isDefaultFallback: boolean }> {
+    if (branchId || !organizationId || !appIds.length) return { branchId, isDefaultFallback: false };
     const manager = getConnectionInstance().manager;
     // Check first app's type — bulk operations come from a single-type list in practice (the
     // frontend always sends either all FRONT_END/MODULE apps or all workflows in one call).
     const app = await manager.findOne(App, { where: { id: In(appIds) }, select: ['type'] });
-    if (!app || app.type === APP_TYPES.WORKFLOW) return undefined;
+    if (!app || app.type === APP_TYPES.WORKFLOW) return { branchId: undefined, isDefaultFallback: false };
     const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
-    return options.defaultBranch?.id;
+    return { branchId: options.defaultBranch?.id, isDefaultFallback: !!options.defaultBranch?.id };
   }
 
   private getResourceTypefromAppType(type: APP_TYPES) {
