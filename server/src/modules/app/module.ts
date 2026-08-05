@@ -52,6 +52,7 @@ import { AppGitModule } from '@modules/app-git/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
 import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
+import { ClearStaleAiRunsScheduler } from '@modules/ai/schedulers/clear-stale-ai-runs.scheduler';
 import { SampleDBScheduler } from '@modules/data-sources/schedulers/sample-db.scheduler';
 import { SessionScheduler } from '@modules/session/scheduler';
 import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
@@ -186,6 +187,7 @@ export class AppModule implements OnModuleInit, NestModule {
         ShutdownHook,
         GetConnection,
         ClearSSOResponseScheduler,
+        ClearStaleAiRunsScheduler,
         SampleDBScheduler,
         SessionScheduler,
         AuditLogsClearScheduler,
