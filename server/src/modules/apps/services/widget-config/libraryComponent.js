@@ -30,7 +30,13 @@ export const libraryComponentConfig = {
     },
   },
   events: {},
-  styles: {},
+  styles: {
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
+  },
   exposedVariables: {},
   definition: {
     others: {
@@ -43,6 +49,8 @@ export const libraryComponentConfig = {
       revisionId: { value: 'v1' },
     },
     events: [],
-    styles: {},
+    styles: {
+      visibility: { value: '{{true}}' },
+    },
   },
 };

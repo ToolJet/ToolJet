@@ -28,13 +28,37 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
 
   const postToShell = (msg) => iframeRef.current?.contentWindow?.postMessage(msg, '*');
 
+  // Latest render values, readable from the stable message listener below.
+  const latest = useRef({});
+  latest.current = {
+    configured,
+    componentName,
+    componentProps,
+    bundleUrl: configured ? fileUrl('index.js') : null,
+    cssUrl: configured ? fileUrl('index.css') : null,
+  };
+
   // iframe → parent. One listener per instance; e.source check keeps instances
   // (and unrelated windows) from crossing wires.
+  //
+  // `ready` is THE load trigger — not an effect. Browsers RELOAD an iframe
+  // whenever its DOM node moves (canvas drag/overlap re-parents nodes); React
+  // state survives that, the shell's content doesn't. A fresh shell always
+  // posts `ready`, so answering every `ready` with load+props makes the widget
+  // self-heal from any reload. Config changes remount the iframe via key=,
+  // which also ends in a fresh `ready` — one trigger covers every path.
   useEffect(() => {
     const onMessage = (e) => {
       if (e.source !== iframeRef.current?.contentWindow) return;
       const { type, key, value, name, message } = e.data ?? {};
-      if (type === 'ready') setShellReady(true);
+      if (type === 'ready') {
+        setShellReady(true);
+        const { configured, componentName, componentProps, bundleUrl, cssUrl } = latest.current;
+        if (configured) {
+          postToShell({ type: 'load', bundleUrl, cssUrl, componentName });
+          postToShell({ type: 'props', data: componentProps });
+        }
+      }
       if (type === 'stateChange') setExposedVariable(key, value);
       if (type === 'event') fireEvent(name);
       if (type === 'error') {
@@ -52,20 +76,6 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
   useEffect(() => {
     setShellReady(false);
   }, [libraryId, revisionId, componentName]);
-
-  // Shell said ready → tell it what to load. The iframe is keyed on
-  // library/revision/component, so any change remounts a fresh shell and this
-  // whole handshake naturally re-runs — no unload protocol needed.
-  useEffect(() => {
-    if (!shellReady || !configured) return;
-    postToShell({
-      type: 'load',
-      bundleUrl: fileUrl('index.js'),
-      cssUrl: fileUrl('index.css'),
-      componentName,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shellReady, configured]);
 
   // Forward resolved props on every change (shell holds them until load completes).
   useEffect(() => {

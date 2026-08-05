@@ -30,7 +30,15 @@ export const libraryComponentConfig = {
     },
   },
   events: {},
-  styles: {},
+  styles: {
+    // REQUIRED by the canvas: WidgetWrapper resolves properties.visibility ?? styles.visibility
+    // with NO true-fallback — an undeclared visibility is falsy → display:none in view mode.
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
+  },
   exposedVariables: {},
   definition: {
     others: {
@@ -43,6 +51,8 @@ export const libraryComponentConfig = {
       revisionId: { value: 'v1' },
     },
     events: [],
-    styles: {},
+    styles: {
+      visibility: { value: '{{true}}' },
+    },
   },
 };
