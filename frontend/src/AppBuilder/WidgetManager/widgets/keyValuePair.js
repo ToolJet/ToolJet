@@ -49,7 +49,7 @@ export const keyValuePairConfig = {
       type: 'code',
       displayName: 'Field data',
       validation: {
-        schema: { type: 'object' },
+        schema: { type: 'array' },
         defaultValue:
           "[{name: 'First name', key: 'firstName', fieldType: 'string'}, {name: 'Last name', key: 'lastName', fieldType: 'string'}]",
       },
