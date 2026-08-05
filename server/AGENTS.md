@@ -31,7 +31,7 @@ modules/{feature}/
 ### Design principles
 
 - Strong typing always. Never `any` — use precise types, or cast through `unknown` where unavoidable (test private access, caught errors).
-- *A Philosophy of Software Design*, pragmatically: deep modules (simple interface hiding a rich implementation), define errors out of existence where possible, no shallow pass-through layers.
+- *A Philosophy of Software Design*, pragmatically: deep modules (simple interface hiding a rich implementation, no shallow pass-through layers); design it twice (sketch a second approach before committing to the first); define errors out of existence (make edge cases structurally impossible over exception plumbing); pull complexity downward (absorb it in the module, don't push it onto callers); separate general-purpose from special-purpose code; comment only the non-obvious — design decisions and invariants code can't express.
 - *Grokking Simplicity*, pragmatically: separate calculations (pure functions) from actions (effects); stratified design — module-level pure helpers above the class, domain-named types; push effects to the edges.
 - Prefer simplicity and readability over cleverness. Optimize for the next reader.
 
