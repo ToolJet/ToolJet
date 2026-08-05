@@ -23,8 +23,8 @@ export default class ComponentDeploy extends Command {
     const { flags } = await this.parse(ComponentDeploy);
     const { message } = flags;
 
-    const { instanceUrl, apiToken } = Auth.resolve();
-    const client = new ApiClient(instanceUrl, apiToken);
+    const { workspaceId, apiToken } = Auth.resolveOrExit();
+    const client = new ApiClient(apiToken);
 
     const configPath = path.join(process.cwd(), '.tooljet', 'config.json');
     if (!fs.existsSync(configPath)) {
@@ -36,15 +36,20 @@ export default class ComponentDeploy extends Command {
     }
     const { libraryId } = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
-    this.log('Building...');
-    const result = await build(process.cwd());
+    try {
+      this.log('Building...');
+      const result = await build(process.cwd());
 
-    this.log('Uploading...');
-    const revision = await client.publishRevision(libraryId, result.distDir, message);
+      this.log('Uploading...');
+      const revision = await client.publishRevision(libraryId, result.distDir, message);
 
-    this.log(`✓ Built in ${result.buildMs}ms`);
-    this.log(`✓ Published as ${revision.version} on ${instanceUrl}`);
-    this.log(`  Bundle URL: ${revision.bundleUrl}`);
-    this.log(`  Revision ID: ${revision.id}`);
+      this.log(`✓ Built in ${result.buildMs}ms`);
+      this.log(`✓ Published as ${revision.version} on ${workspaceId} workspace`);
+      this.log(`  Bundle URL: ${revision.bundleUrl}`);
+      this.log(`  Revision ID: ${revision.id}`);
+    } catch (err) {
+      this.log('\x1b[41m%s\x1b[0m', `Error : ${(err as Error).message}`);
+      process.exit(1);
+    }
   }
 }

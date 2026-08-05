@@ -35,7 +35,9 @@ const HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
   useStateEnumeration: 'enumeration',
 };
 
-export async function generateManifest(projectRoot: string): Promise<Manifest> {
+export async function generateManifest(
+  projectRoot: string
+): Promise<{ manifest: Manifest; tsErrorCount: number }> {
   const entryFile = path.join(projectRoot, 'src/index.ts');
   const tsConfigPath = path.join(projectRoot, 'tsconfig.json');
 
@@ -80,7 +82,11 @@ export async function generateManifest(projectRoot: string): Promise<Manifest> {
     if (component) components[componentName] = component;
   }
 
-  return { schemaVersion: '1', components };
+  const tsErrorCount = ts
+    .getPreEmitDiagnostics(program)
+    .filter((d) => d.category === ts.DiagnosticCategory.Error).length;
+
+  return { manifest: { schemaVersion: '1', components }, tsErrorCount };
 }
 
 function walkComponentDeclaration(

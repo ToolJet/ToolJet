@@ -17,18 +17,18 @@ export default class Dev extends Command {
   async run(): Promise<void> {
     const { flags } = await this.parse(Dev);
 
+    const { workspaceId, apiToken } = Auth.resolveOrExit();
     const config = this.readConfigOrExit();
-    const { instanceUrl, apiToken } = Auth.resolve();
-    const client = new ApiClient(instanceUrl, apiToken);
+    const client = new ApiClient(apiToken);
 
     try {
       await client.verifyLibrary(config.libraryId);
     } catch (err) {
-      this.log('\x1b[41m%s\x1b[0m', `Error : Could not reach library on ${instanceUrl}: ${(err as Error).message}`);
+      this.log('\x1b[41m%s\x1b[0m', `Error : Could not reach library on ${workspaceId}: ${(err as Error).message}`);
       process.exit(1);
     }
 
-    this.log(`✓ Connected to ${instanceUrl}`);
+    this.log(`✓ Connected to ${workspaceId} workspace`);
     this.log(`✓ Library: ${config.libraryName} (dev track)\n`);
     this.log('Watching src/ for changes...\n');
 

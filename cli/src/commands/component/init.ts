@@ -34,41 +34,37 @@ export default class ComponentInit extends Command {
         name: 'display_name',
         message: 'Component library display name',
         type: 'input',
-        validate: (input: string) => (input && input.trim().length > 0) || 'Display name is required',
-      },
-      {
-        name: 'instance_url',
-        message: 'ToolJet instance URL',
-        type: 'input',
-        default: this.getDefaultInstanceUrl(),
         validate: (input: string) => {
-          try {
-            new URL(input);
-            return true;
-          } catch {
-            return 'Enter a valid URL';
+          if (!input || input.trim().length === 0) return 'Display name is required';
+
+          if (!/^[A-Za-z][A-Za-z0-9 ]*$/.test(input.trim())) {
+            return 'The display name must only contain letters and numbers, and must start with a letter. Spaces are allowed';
           }
+
+          return true;
         },
-      },
+      }
     ]);
 
-    const { display_name: displayName, instance_url: instanceUrl } = answers;
+    const { display_name: displayName } = answers;
 
-    const { apiToken } = Auth.resolve();
+    const { workspaceId, apiToken } = Auth.resolveOrExit();
 
-    const client = new ApiClient(instanceUrl, apiToken);
+    const client = new ApiClient(apiToken);
 
-    const library = await client.createLibrary(displayName);
+    let library: { id: string; name: string };
+    try {
+      library = await client.createLibrary(displayName);
+    } catch (err) {
+      this.log('\x1b[41m%s\x1b[0m', `Error : ${(err as Error).message}`);
+      process.exit(1);
+    }
 
     // Scaffold project via hygen templates
-    await scaffoldProject(libraryDirectoryName, { instanceUrl, libraryId: library.id, libraryName: library.name });
+    await scaffoldProject(libraryDirectoryName, { workspaceId, libraryId: library.id, libraryName: library.name });
 
-    this.log(`✓ Registered library "${displayName}" on ${instanceUrl} (ID: ${library.id})`);
+    this.log(`✓ Registered library "${displayName}" on ${workspaceId} workspace (ID: ${library.id})`);
     this.log(`✓ Created project directory: ./${libraryDirectoryName}/`);
     this.log(`✓ Run: cd ${libraryDirectoryName} && npm install`);
-  }
-
-  private getDefaultInstanceUrl(): string {
-    return 'https://app.tooljet.ai';
   }
 }

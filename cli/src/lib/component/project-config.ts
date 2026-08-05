@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export interface ProjectConfigData {
-  instanceUrl: string;
+  workspaceId: string;
   libraryId: string;
   libraryName: string;
 }

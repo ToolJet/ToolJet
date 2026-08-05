@@ -34,14 +34,9 @@ export async function build(projectRoot: string): Promise<BuildResult> {
   const start = Date.now();
   const distDir = path.join(projectRoot, 'dist');
 
-  // TODO: distDir is never cleared before building. esbuild only writes the
-  // files it currently produces — it won't delete stale output from a
-  // previous build (e.g. a leftover dist/index.css after a CSS import is
-  // removed from src/), so hasCss/cssSizeKb below can report incorrect
-  // values. Needs fs.rmSync(distDir, { recursive: true, force: true })
-  // before the build.
+  fs.rmSync(distDir, { recursive: true, force: true });
 
-  const result = await esbuild.build({
+  await esbuild.build({
     entryPoints: [path.join(projectRoot, 'src/index.ts')],
     bundle: true,
     format: 'esm',
@@ -55,7 +50,7 @@ export async function build(projectRoot: string): Promise<BuildResult> {
   });
 
   // Manifest generation via TS Compiler API
-  const manifest = await generateManifest(projectRoot);
+  const { manifest, tsErrorCount } = await generateManifest(projectRoot);
   fs.writeFileSync(path.join(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
   const bundleSize = fs.statSync(path.join(distDir, 'index.js')).size;
@@ -67,7 +62,7 @@ export async function build(projectRoot: string): Promise<BuildResult> {
     bundleSizeKb: Math.round(bundleSize / 1024),
     cssSizeKb: hasCss ? Math.round(fs.statSync(path.join(distDir, 'index.css')).size / 1024) : 0,
     hasCss,
-    tsErrors: result.errors.length,
+    tsErrors: tsErrorCount,
     componentCount: Object.keys(manifest.components).length,
   };
 }

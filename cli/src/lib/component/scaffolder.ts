@@ -5,7 +5,7 @@ const { runner } = require('hygen');
 const Logger = require('hygen/dist/logger').default;
 
 export interface ScaffoldOptions {
-  instanceUrl: string;
+  workspaceId: string;
   libraryId: string;
   libraryName: string;
 }
@@ -13,7 +13,7 @@ export interface ScaffoldOptions {
 // Scaffolds a new component library directory via hygen templates and
 // writes its .tooljet/config.json.
 export async function scaffoldProject(name: string, options: ScaffoldOptions): Promise<void> {
-  const { instanceUrl, libraryId, libraryName } = options;
+  const { workspaceId, libraryId, libraryName } = options;
 
   const hygenArgs = ['component', 'new', '--name', name, '--display_name', libraryName];
 
@@ -36,7 +36,7 @@ export async function scaffoldProject(name: string, options: ScaffoldOptions): P
     existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   }
 
-  const config = { ...existingConfig, instanceUrl, libraryId, libraryName };
+  const config = { ...existingConfig, workspaceId, libraryId, libraryName };
   fs.mkdirSync(path.join(name, '.tooljet'), { recursive: true });
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
