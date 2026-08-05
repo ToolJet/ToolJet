@@ -18,6 +18,11 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
     throw new Error('Method not implemented.');
   }
 
+  @Get()
+  async list(@User() user): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
   @Post('tokens')
   async createToken(@User() user, @Body() body: { name: string }): Promise<any> {
     throw new Error('Method not implemented.');

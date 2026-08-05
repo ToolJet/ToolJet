@@ -11,24 +11,11 @@ export const libraryComponentConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: {
-    // F3: typed by hand in the Inspector; F4's picker fills them on drop.
-    libraryId: {
-      type: 'code',
-      displayName: 'Library ID',
-      validation: { schema: { type: 'string' }, defaultValue: '' },
-    },
-    componentName: {
-      type: 'code',
-      displayName: 'Component name',
-      validation: { schema: { type: 'string' }, defaultValue: '' },
-    },
-    revisionId: {
-      type: 'code',
-      displayName: 'Revision',
-      validation: { schema: { type: 'string' }, defaultValue: 'v1' },
-    },
-  },
+  // Identity (libraryId/componentName/revisionId) is deliberately NOT in the schema —
+  // it lives only in definition.properties (stamped on drop, moduleViewer precedent:
+  // moduleAppId is likewise definition-only). The custom Inspector (F4b) renders
+  // manifest-driven fields instead; raw id inputs must never appear.
+  properties: {},
   events: {},
   styles: {
     // REQUIRED by the canvas: WidgetWrapper resolves properties.visibility ?? styles.visibility

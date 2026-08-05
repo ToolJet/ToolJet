@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ICustomComponentLibrariesService, CliTokenView, UploadFiles, ServedFile } from './interface/IService';
+import { ICustomComponentLibrariesService, CliTokenView, UploadFiles, ServedFile, LibraryListItem } from './interface/IService';
 import { CustomComponentLibrary } from '@entities/custom_component_library.entity';
 
 @Injectable()
@@ -9,6 +9,10 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
   }
 
   async getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary> {
+    throw new Error('Method not implemented.');
+  }
+
+  async listLibraries(organizationId: string): Promise<LibraryListItem[]> {
     throw new Error('Method not implemented.');
   }
 

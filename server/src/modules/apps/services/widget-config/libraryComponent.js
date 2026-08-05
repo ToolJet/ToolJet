@@ -11,24 +11,10 @@ export const libraryComponentConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: {
-    // Mirror of the frontend config — keep in sync (see frontend widgets/libraryComponent.js).
-    libraryId: {
-      type: 'code',
-      displayName: 'Library ID',
-      validation: { schema: { type: 'string' }, defaultValue: '' },
-    },
-    componentName: {
-      type: 'code',
-      displayName: 'Component name',
-      validation: { schema: { type: 'string' }, defaultValue: '' },
-    },
-    revisionId: {
-      type: 'code',
-      displayName: 'Revision',
-      validation: { schema: { type: 'string' }, defaultValue: 'v1' },
-    },
-  },
+  // Mirror of the frontend config — keep in sync (see frontend widgets/libraryComponent.js).
+  // Identity is definition-only (stamped on drop); schema stays empty so no generic
+  // path ever renders raw id inputs.
+  properties: {},
   events: {},
   styles: {
     visibility: {
