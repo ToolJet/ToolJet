@@ -200,6 +200,10 @@ export class User extends BaseEntity {
   componentUsers: ComponentUser[];
 
   organizationId: string;
+  // Active Git branch for the request, resolved once in the JWT strategy from the
+  // `branch_id` query param (falls back to the org's default branch). Mirrors how
+  // organizationId is resolved per-request from the tj-workspace-id header.
+  branchId?: string;
   invitedOrganizationId: string;
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;

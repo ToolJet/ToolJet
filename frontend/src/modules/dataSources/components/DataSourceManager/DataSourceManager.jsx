@@ -521,7 +521,10 @@ class DataSourceManagerComponent extends React.Component {
         showValidationErrors={showValidationErrors}
         clearValidationErrorBanner={() => this.setState({ validationError: [] })}
         elementsProps={this.props.formProps?.[kind]}
-        isWorkspaceBranchLocked={this.props.isWorkspaceBranchLocked}
+        isWorkspaceBranchLocked={
+          this.props.isWorkspaceBranchLocked &&
+          (this.state.selectedDataSource?.is_synced === true || this.state.selectedDataSource?.isSynced === true)
+        }
       />
     );
   };
@@ -1064,8 +1067,8 @@ class DataSourceManagerComponent extends React.Component {
       const activeKey = Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, key)
         ? key
         : Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, camelize(key))
-        ? camelize(key)
-        : key;
+          ? camelize(key)
+          : key;
       if (normalizedSavedOptions[activeKey] === undefined) normalizedSavedOptions[activeKey] = { value: '' };
       if (normalizedCurrentOptions[activeKey] === undefined) normalizedCurrentOptions[activeKey] = { value: '' };
     });
@@ -1082,8 +1085,8 @@ class DataSourceManagerComponent extends React.Component {
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
@@ -1156,7 +1159,8 @@ class DataSourceManagerComponent extends React.Component {
                               autoFocus
                               autoComplete="off"
                               disabled={
-                                this.props.isWorkspaceBranchLocked ||
+                                (this.props.isWorkspaceBranchLocked &&
+                                  (selectedDataSource?.is_synced === true || selectedDataSource?.isSynced === true)) ||
                                 !canUpdateDataSource(selectedDataSource.id) ||
                                 selectedDataSource.is_dummy
                               }

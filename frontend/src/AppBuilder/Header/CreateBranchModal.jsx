@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { gitSyncService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -16,19 +17,24 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const [conflictGroups, setConflictGroups] = useState(null);
   const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
-  const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null };
+  const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null, isDefault: true };
   const [selectedOption, setSelectedOption] = useState(LATEST_MAIN_OPTION);
   const [isCreating, setIsCreating] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [tags, setTags] = useState([]);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
+  const [isLoadingVersions, setIsLoadingVersions] = useState(true);
   const dropdownRef = useRef(null);
 
-  const { allBranches, isDraftVersionActive } = useStore((state) => ({
-    allBranches: state.allBranches || [],
-    isDraftVersionActive: state.isDraftVersionActive,
-  }));
+  const { allBranches, isDraftVersionActive, developmentVersions, fetchDevelopmentVersions, releasedVersionId } =
+    useStore((state) => ({
+      allBranches: state.allBranches || [],
+      isDraftVersionActive: state.isDraftVersionActive,
+      developmentVersions: state.developmentVersions || [],
+      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
+      releasedVersionId: state.releasedVersionId,
+    }));
 
   const workspaceActions = useWorkspaceBranchesStore((state) => state.actions);
   const workspaceBranches = useWorkspaceBranchesStore((state) => state.branches);
@@ -61,6 +67,18 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       .finally(() => setIsLoadingTags(false));
   }, [appId]);
 
+  // Fetch local (non-branch) app versions to list alongside main and git tags
+  useEffect(() => {
+    if (!appId || !fetchDevelopmentVersions) {
+      setIsLoadingVersions(false);
+      return;
+    }
+    setIsLoadingVersions(true);
+    fetchDevelopmentVersions(appId)
+      .catch((err) => console.error('Failed to fetch versions:', err))
+      .finally(() => setIsLoadingVersions(false));
+  }, [appId, fetchDevelopmentVersions]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -72,7 +90,33 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const dropdownOptions = [LATEST_MAIN_OPTION, ...tags];
+  // A version "saved" from a feature branch (see createPublishedVersionFromBranchDraft
+  // in versions/util.service.ts) is versionType: 'version', but its parent is the
+  // BRANCH-type draft it was cloned from. Exclude those here — branching off a
+  // branch-sourced snapshot isn't a supported starting point yet.
+  const isSourcedFromBranch = (version) => {
+    const parentId = version.parentVersionId || version.parent_version_id;
+    if (!parentId) return false;
+    const parent = developmentVersions.find((v) => v.id === parentId);
+    return (parent?.versionType || parent?.version_type) === 'branch';
+  };
+
+  const localVersionOptions = developmentVersions
+    .filter((version) => (version.versionType || version.version_type) === 'version')
+    .filter((version) => !isSourcedFromBranch(version))
+    .map((version) => ({
+      label: version.name,
+      commitSha: null,
+      versionId: version.id,
+      isLocalVersion: true,
+      status: version.status,
+      // AppVersion.status never actually holds 'RELEASED' — the released version is
+      // tracked separately via apps.current_version_id (releasedVersionId in the store),
+      // same signal VersionDropdownItem.jsx uses.
+      isReleased: version.id === releasedVersionId,
+    }));
+  const dropdownOptions = [LATEST_MAIN_OPTION, ...localVersionOptions, ...tags];
+  const isLoadingOptions = isLoadingTags || isLoadingVersions;
 
   const validateBranchName = (name) => {
     if (!name || name.trim().length === 0) return 'Branch name is required';
@@ -107,20 +151,31 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       const defaultBranch = workspaceBranches.find((b) => b.is_default || b.isDefault);
       const sourceBranchId = defaultBranch?.id || null;
 
-      // Branch creation runs as a background job — no branch to switch/navigate to yet
-      const ack = await workspaceActions.createBranch(
+      const newBranch = await workspaceActions.createBranch(
         branchName.trim(),
         sourceBranchId,
-        selectedOption.commitSha || undefined
+        selectedOption.commitSha || undefined,
+        selectedOption.isLocalVersion ? appId : undefined,
+        selectedOption.isLocalVersion ? selectedOption.versionId : undefined
       );
 
-      toast.success(
-        ack?.isImport
-          ? 'Importing branch. It will show up in the branch list once ready.'
-          : 'Creating branch. It will show up in the branch list once ready.'
-      );
+      toast.success('Branch was created successfully');
+
+      // Switch to the new branch using the backend API to get resolvedAppId
+      const switchResult = await workspaceBranchesService.switchBranch(newBranch.id, appId);
+      workspaceActions.switchBranch(newBranch.id);
 
       onClose();
+
+      // Navigate based on whether app exists on the new branch
+      const pathParts = window.location.pathname.split('/');
+      const resolvedAppId = switchResult?.resolvedAppId;
+      if (resolvedAppId) {
+        window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
+      } else {
+        sessionStorage.setItem('git_sync_toast', 'This app does not exist for this branch on ToolJet');
+        window.location.href = `/${pathParts[1]}`;
+      }
     } catch (error) {
       console.error('Error creating branch:', error);
       if (error?.statusCode === 409) {
@@ -168,7 +223,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
             </div>
           )}
 
-          {/* Create from dropdown — shows "Latest (main)" + app-specific git tags */}
+          {/* Create from dropdown — shows "Latest (main)" + local app versions + app-specific git tags */}
           <div className="form-group">
             <label htmlFor="create-from-select" className="form-label">
               Create from
@@ -178,12 +233,15 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                 type="button"
                 className={cx('custom-dropdown-trigger', { 'is-open': isDropdownOpen })}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                disabled={isCreating || isLoadingTags}
+                disabled={isCreating || isLoadingOptions}
               >
                 <div className="custom-dropdown-value">
-                  <span className="version-name">{isLoadingTags ? 'Loading...' : selectedOption.label}</span>
-                  {!selectedOption.commitSha && !isLoadingTags && (
-                    <span className={cx('status-badge', 'status-badge-released')}>Default</span>
+                  <span className="version-name">{isLoadingOptions ? 'Loading...' : selectedOption.label}</span>
+                  {!isLoadingOptions && selectedOption.isDefault && (
+                    <span className={cx('status-badge', 'status-badge-draft')}>Default</span>
+                  )}
+                  {!isLoadingOptions && selectedOption.isLocalVersion && selectedOption.isReleased && (
+                    <span className={cx('status-badge', 'status-badge-released')}>Released</span>
                   )}
                 </div>
                 <SolidIcon name="cheverondown" width="16" />
@@ -210,8 +268,11 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
                         <div className="item-content">
                           <div className="item-header">
                             <span className="item-name">{option.label}</span>
-                            {!option.commitSha && (
-                              <span className={cx('status-badge', 'status-badge-released')}>Default</span>
+                            {option.isDefault && (
+                              <span className={cx('status-badge', 'status-badge-draft')}>Default</span>
+                            )}
+                            {option.isLocalVersion && option.isReleased && (
+                              <span className={cx('status-badge', 'status-badge-released')}>Released</span>
                             )}
                           </div>
                         </div>
@@ -270,7 +331,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
             <ButtonSolid
               variant="primary"
               onClick={handleCreateBranch}
-              disabled={isCreating || isDraftVersionActive || !branchName.trim() || isLoadingTags}
+              disabled={isCreating || isDraftVersionActive || !branchName.trim() || isLoadingOptions}
               isLoading={isCreating}
               size="md"
               data-cy="create-branch-button"

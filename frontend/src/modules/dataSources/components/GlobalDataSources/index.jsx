@@ -21,7 +21,9 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
@@ -180,8 +182,8 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         }
       });
       datasourceGroup.list = [...arr];
-      (datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
-        (arr = []);
+      ((datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
+        (arr = []));
       return datasourceGroup;
     });
     const filteredDsList = filtered.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []);
@@ -379,12 +381,18 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     );
   };
 
-  const isWorkspaceBranchLocked = useWorkspaceBranchesStore((state) => {
+  const isGitSyncConfigured = useWorkspaceBranchesStore((state) => state.isGitSyncConfigured);
+  const isBranchLockedOnDefault = useWorkspaceBranchesStore((state) => {
     if (!state.isInitialized || !state.orgGitConfig) return false;
     const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && isDefault);
   });
+  // Read the license from the authoritative license store (the context's featureAccess can be
+  // stale/empty here). Git configured + expired/invalid license → the whole workspace is read-only.
+  const licenseFeatureAccess = useLicenseStore((state) => state.featureAccess);
+  const isGitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(licenseFeatureAccess);
+  const isWorkspaceBranchLocked = isBranchLockedOnDefault || isGitLicenseLocked;
 
   const renderCardGroup = (source, type) => {
     const hasCreatePermission = canCreateDataSource();
@@ -397,10 +405,12 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
       >
         <div>
           <ButtonSolid
-            disabled={addingDataSource || !hasCreatePermission}
+            // Hard-disable when the git-sync license is expired/invalid — the workspace is read-only.
+            disabled={addingDataSource || !hasCreatePermission || isGitLicenseLocked}
             isLoading={addingDataSource}
             variant="secondary"
             onClick={() => {
+              if (isGitLicenseLocked) return;
               if (isWorkspaceBranchLocked) {
                 setPendingAddDataSource(item);
                 setShowSwitchBranchModal(true);

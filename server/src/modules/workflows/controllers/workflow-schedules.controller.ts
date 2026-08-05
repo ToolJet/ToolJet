@@ -10,7 +10,7 @@ import { FEATURE_KEY } from '@modules/workflows/constants';
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow-schedules')
 export class WorkflowSchedulesController implements IWorkflowSchedulesController {
-  constructor() { }
+  constructor() {}
 
   @InitFeature(FEATURE_KEY.CREATE_WORKFLOW_SCHEDULE)
   @Post()
@@ -36,10 +36,7 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
 
   @InitFeature(FEATURE_KEY.LIST_WORKFLOW_SCHEDULES)
   @Get()
-  async findAll(
-    @User() user,
-    @Query('app_id') appId: string
-  ): Promise<WorkflowSchedule[]> {
+  async findAll(@User() user, @Query('app_id') appId: string): Promise<WorkflowSchedule[]> {
     throw new Error('Method not implemented.');
   }
 

@@ -20,7 +20,7 @@ const UPDATE_STATUS = {
   NONE: 'NONE',
 };
 
-export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', onClose }) {
+export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, pushOnly = false, onClose }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [commitMessage, setCommitMessage] = useState('');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -38,6 +38,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const [selectedBranch, setSelectedBranch] = useState('');
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
+  const [multiDraftResources, setMultiDraftResources] = useState([]);
 
   const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
     (state) => ({
@@ -55,13 +56,13 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const gitType = orgGitConfig?.git_type || orgGitConfig?.gitType || 'github_https';
   const currentBranchName = currentBranch?.name || defaultGitBranch;
+  // Push (commit) is offered only when the caller allows it — i.e. single-branch mode on the
+  // data-sources dashboard, where data sources are pushed from the workspace. Everywhere else
+  // the modal is pull-only: multi-branch mode (all pages) and the apps/modules dashboard in
+  // single-branch mode. When push isn't allowed we hide the push/pull tabs and show pull only.
 
   const gitSyncUrl = (() => {
     if (gitType === 'gitlab') return repoUrl;
-    if (gitType === 'github_ssh') {
-      const match = repoUrl.match(/github\.com[:/](.+?)(?:\.git)?$/);
-      return match ? `https://github.com/${match[1]}` : repoUrl;
-    }
     return repoUrl;
   })();
 
@@ -95,8 +96,6 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key !== 'Enter' || isPushing || isPulling) return;
-      // Stop native form submission — it reloads the page mid-push.
-      e.preventDefault();
       if (activeTab === 'push' && commitMessage.trim()) {
         handlePush();
       } else if (activeTab === 'pull' && checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && !actionChoiceMode) {
@@ -157,38 +156,31 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     try {
       // Check if branch already exists locally — if so, update it; if not, create it
       const existingBranch = branches.find((b) => b.name === selectedBranch);
+      let branchId;
 
-      if (!existingBranch) {
-        // Creation (incl. hydrate) runs as a background job — no branch to
-        // switch to yet, so the import ends here with a toast
-        await actions.createBranch(selectedBranch);
-        toast.success(`Importing ${selectedBranch}. It will show up in the branch list once ready.`, {
-          style: { maxWidth: '640px' },
-        });
-        onClose();
-        return;
+      if (existingBranch) {
+        branchId = existingBranch.id;
+      } else {
+        const newBranch = await actions.createBranch(selectedBranch);
+        branchId = newBranch.id;
       }
-
-      const branchId = existingBranch.id;
 
       // Switch to the target branch — pass appId for co_relation_id resolution
       const appId = getAppIdFromUrl();
       const switchResult = await workspaceBranchesService.switchBranch(branchId, appId);
 
       // Also update localStorage + workspace store
-      const branchObj = existingBranch;
+      const branchObj = existingBranch || { id: branchId, name: selectedBranch };
       setActiveBranch(branchObj);
       useWorkspaceBranchesStore.setState({
         activeBranchId: branchId,
         currentBranch: branchObj,
       });
 
-      // Pull from that branch (now active) — hydrate runs in the background
+      // Pull from that branch (now active) — creates stubs for all apps
       await actions.pullWorkspace();
 
-      toast.success(`Importing ${selectedBranch}. Your changes will load in a moment.`, {
-        style: { maxWidth: '640px' },
-      });
+      toast.success(`Imported ${selectedBranch} successfully`);
       onClose();
 
       // Navigate based on whether the current app exists in the target branch
@@ -200,15 +192,16 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         // Current app doesn't exist in that branch — go to homepage
         window.location.href = `/${pathParts[1]}`;
       } else {
-        // homepage refetches apps via its branch-store subscription; pulled content lands via the success notification
-        actions.fetchBranches();
+        // Already on homepage — just reload
+        window.location.reload();
       }
     } catch (error) {
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
-          if (parsed?.conflictGroups?.length) {
-            setPullConflictGroups(parsed.conflictGroups);
+          if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
+            setPullConflictGroups(parsed.conflictGroups || []);
+            setMultiDraftResources(parsed.multiDraftResources || []);
             return;
           }
         } catch {
@@ -256,8 +249,9 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
-          if (parsed?.conflictGroups?.length) {
-            setPullConflictGroups(parsed.conflictGroups);
+          if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
+            setPullConflictGroups(parsed.conflictGroups || []);
+            setMultiDraftResources(parsed.multiDraftResources || []);
             return;
           }
         } catch {
@@ -270,16 +264,17 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
   const handlePull = async () => {
     try {
-      // Pull hydrates in the background — reloading now would only show stale data
       await actions.pullWorkspace();
-      toast.success('Pulling latest changes.');
+      toast.success('Commit pulled successfully!');
       onClose();
+      window.location.reload();
     } catch (error) {
       if (error?.statusCode === 409) {
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
-          if (parsed?.conflictGroups?.length) {
-            setPullConflictGroups(parsed.conflictGroups);
+          if (parsed?.conflictGroups?.length || parsed?.multiDraftResources?.length) {
+            setPullConflictGroups(parsed.conflictGroups || []);
+            setMultiDraftResources(parsed.multiDraftResources || []);
             return;
           }
         } catch {
@@ -287,6 +282,24 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         }
       }
       toast.error(error?.error || error?.message || 'Pull failed');
+    }
+  };
+
+  const handleResolveConflicts = async (resolutions) => {
+    try {
+      await actions.resolveConflicts(resolutions);
+      setPullConflictGroups(null);
+      setMultiDraftResources([]);
+      onClose();
+      // resolveConflicts hydrates the affected apps server-side (isSynced, content),
+      // but the app builder/homepage's in-memory state doesn't know that happened —
+      // reload so the UI reflects it immediately instead of on next manual refresh.
+      // A toast fired now would be destroyed by the reload before it's visible, so
+      // persist it and let App.jsx's componentDidMount show it once the fresh page mounts.
+      sessionStorage.setItem('sync_success_toast', 'Resource(s) synced successfully!');
+      window.location.reload();
+    } catch (error) {
+      toast.error(error?.error || error?.message || 'Failed to resolve conflicts');
     }
   };
 
@@ -340,11 +353,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   // ---- Pull section content ----
   const renderPullSection = () => (
     <div className="pull-section">
-      <form
-        noValidate
-        onSubmit={(e) => e.preventDefault()}
-        className="d-flex w-100 align-items-start justify-content-start"
-      >
+      <form noValidate className="d-flex w-100 align-items-start justify-content-start">
         <div className="d-flex flex-column w-100" style={{ gap: '12px' }}>
           {/* PULL INTO */}
           <div className="import-in-row">
@@ -443,7 +452,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
   // ---- Push section content ----
   const renderPushSection = () => (
-    <form noValidate onSubmit={(e) => e.preventDefault()}>
+    <form noValidate>
       <div className="push-section mb-2">
         <div className="d-flex flex-column w-100 align-items-start">
           <div className="form-group mb-2 w-100">
@@ -561,8 +570,13 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
   // --- Modal body ---
   const renderModalBody = () => {
-    // Default branch: pull-only
-    if (isOnDefaultBranch) {
+    // Push-only (Commit button): no tabs, show push section directly
+    if (pushOnly) {
+      return <div className="pushpull-container">{renderPushSection()}</div>;
+    }
+
+    // Push not allowed: pull-only
+    if (!allowPush) {
       if (actionChoiceMode) {
         return <div className="pull-container">{renderImportConfirmation()}</div>;
       }
@@ -580,8 +594,28 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   };
 
   const renderModalFooter = () => {
-    // Pull tab active (default branch or feature branch pull tab)
-    if (activeTab === 'pull' || isOnDefaultBranch) {
+    // Push-only mode: always show commit footer
+    if (pushOnly) {
+      return (
+        <Modal.Footer>
+          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPushing} data-cy="cancel-button">
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid
+            variant="primary"
+            onClick={handlePush}
+            disabled={isPushing || !commitMessage.trim()}
+            isLoading={isPushing}
+            data-cy="commit-button"
+          >
+            Commit changes
+          </ButtonSolid>
+        </Modal.Footer>
+      );
+    }
+
+    // Pull tab active, or push not allowed (pull-only)
+    if (activeTab === 'pull' || !allowPush) {
       if (actionChoiceMode) {
         return (
           <Modal.Footer>
@@ -653,7 +687,8 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       return branchExistsLocally ? `Update ${selectedBranch} from git` : `Import ${selectedBranch} from git`;
     }
 
-    if (isOnDefaultBranch) return 'Pull Commit';
+    if (pushOnly) return 'Push Commit';
+    if (!allowPush) return 'Pull Commit';
     return activeTab === 'pull' ? 'Pull Commit' : 'Push Commit';
   })();
 
@@ -667,12 +702,12 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         centered={true}
         contentClassName={cx('git-sync-modal', {
           'theme-dark dark-theme': darkMode,
-          'pull-commit-expanded': activeTab === 'pull' || isOnDefaultBranch,
+          'pull-commit-expanded': !pushOnly && (activeTab === 'pull' || !allowPush),
         })}
       >
         <Modal.Header>
           <Modal.Title
-            className={cx('font-weight-500', { 'mt-3': !isOnDefaultBranch && !actionChoiceMode })}
+            className={cx('font-weight-500', { 'mt-3': allowPush && !actionChoiceMode })}
             data-cy="modal-title"
           >
             <div className="git-sync-title row align-items-center" style={{ width: '350px' }}>
@@ -698,7 +733,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
                 </div>
               )}
             </div>
-            {/* {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()} */}
+            {allowPush && !pushOnly && !actionChoiceMode && renderPushPullTabs()}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>{renderModalBody()}</Modal.Body>
@@ -706,9 +741,14 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       </Modal>
 
       <PullConflictModal
-        show={!!pullConflictGroups}
+        show={!!(pullConflictGroups?.length || multiDraftResources?.length)}
         conflictGroups={pullConflictGroups || []}
-        onClose={() => setPullConflictGroups(null)}
+        multiDraftResources={multiDraftResources}
+        onClose={() => {
+          setPullConflictGroups(null);
+          setMultiDraftResources([]);
+        }}
+        onResolve={handleResolveConflicts}
       />
     </>
   );

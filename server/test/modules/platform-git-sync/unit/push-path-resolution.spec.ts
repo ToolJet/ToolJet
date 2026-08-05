@@ -30,15 +30,17 @@ describe('PlatformGitPushService — app name path resolution', () => {
   // resolveAppPath is private; a typed cast reaches it without exposing test-only surface.
   // Impl takes displayName explicitly (branch-specific app_versions.app_name); here it's just the app name.
   type WithResolveAppPath = {
-    resolveAppPath(app: AppLike, repoPath: string, displayName: string): Promise<{ appPath: string; parentDir: string }>;
+    resolveAppPath(
+      app: AppLike,
+      repoPath: string,
+      displayName: string
+    ): Promise<{ appPath: string; parentDir: string }>;
   };
   const resolveAppPath = (app: AppLike) =>
     (service as unknown as WithResolveAppPath).resolveAppPath(app, REPO, app.name);
 
   beforeEach(() => {
-    // Heavy collaborators are mocked out; these stubs stand in for the real ctor deps.
-    const deps = [{}, {}, { log: jest.fn() }] as unknown as ConstructorParameters<typeof PlatformGitPushService>;
-    service = new PlatformGitPushService(...deps);
+    service = new PlatformGitPushService({} as any, {} as any, { log: jest.fn() } as any);
   });
 
   afterEach(() => {

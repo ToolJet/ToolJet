@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { isUUID } from 'class-validator';
 import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
@@ -37,16 +38,21 @@ export class PrivateAppAuthGuard extends AuthGuard('jwt') {
     //   2. workspaceId absent → cross-org findAppBySlug (default/branchless rows only).
     //   3. Either path → findByAppId as UUID fallback.
     const workspaceId = request.headers['tj-workspace-id'] as string;
-    const branchId = request.headers['x-branch-id'] as string;
+    // Public/private-share path — bypasses the JWT strategy, so user.branchId isn't populated;
+    // read the branch_id query param directly.
+    const branchId = request.query['branch_id'] as string;
 
     let app = workspaceId
-      ? await this.appRepository.findBySlug(slug, workspaceId, undefined, branchId)
+      ? await this.appRepository.findBySlug(slug, workspaceId, undefined, undefined, branchId)
       : null;
 
     if (!app && !workspaceId) {
       app = await this.appRepository.findAppBySlug(slug);
     }
-    if (!app) {
+    // UUID fallback only when `slug` is actually an app id — findByAppId queries the uuid `id`
+    // column, so passing a real (non-uuid) slug would throw a Postgres uuid-syntax error (→ 422)
+    // instead of a clean not-found.
+    if (!app && isUUID(slug)) {
       app = await this.appRepository.findByAppId(slug);
     }
 

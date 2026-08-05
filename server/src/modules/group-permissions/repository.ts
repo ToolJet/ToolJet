@@ -216,67 +216,67 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   ): Promise<GroupUsers[]> {
     const m = manager ?? this.manager;
     const baseWhere = {
-        groupId: id,
-        group: {
-          organizationId,
+      groupId: id,
+      group: {
+        organizationId,
+      },
+      user: {
+        status: Not(USER_STATUS.ARCHIVED),
+        organizationUsers: {
+          organizationId: organizationId,
+          status: Not(WORKSPACE_USER_STATUS.ARCHIVED),
         },
-        user: {
-          status: Not(USER_STATUS.ARCHIVED),
-          organizationUsers: {
-            organizationId: organizationId,
-            status: Not(WORKSPACE_USER_STATUS.ARCHIVED),
-          },
-        },
-      };
+      },
+    };
 
-      // If there's a search input, use multiple find operations and merge results
-      if (searchInput) {
-        const searchLower = searchInput.toLowerCase();
-        const [firstName, lastName] = searchLower.split(' ');
-        return m.find(GroupUsers, {
-          where: [
-            {
-              ...baseWhere,
-              user: {
-                ...baseWhere.user,
-                email: ILike(`%${searchLower}%`),
-              },
-            },
-            {
-              ...baseWhere,
-              user: {
-                ...baseWhere.user,
-                firstName: ILike(`%${searchLower}%`),
-              },
-            },
-            {
-              ...baseWhere,
-              user: {
-                ...baseWhere.user,
-                lastName: ILike(`%${searchLower}%`),
-              },
-            },
-            ...(lastName
-              ? [
-                  {
-                    ...baseWhere,
-                    user: {
-                      ...baseWhere.user,
-                      firstName: ILike(`%${firstName}%`),
-                      lastName: ILike(`%${lastName}%`),
-                    },
-                  },
-                ]
-              : []),
-          ],
-          relations: {
-            group: true,
+    // If there's a search input, use multiple find operations and merge results
+    if (searchInput) {
+      const searchLower = searchInput.toLowerCase();
+      const [firstName, lastName] = searchLower.split(' ');
+      return m.find(GroupUsers, {
+        where: [
+          {
+            ...baseWhere,
             user: {
-              organizationUsers: true,
+              ...baseWhere.user,
+              email: ILike(`%${searchLower}%`),
             },
           },
-        });
-      }
+          {
+            ...baseWhere,
+            user: {
+              ...baseWhere.user,
+              firstName: ILike(`%${searchLower}%`),
+            },
+          },
+          {
+            ...baseWhere,
+            user: {
+              ...baseWhere.user,
+              lastName: ILike(`%${searchLower}%`),
+            },
+          },
+          ...(lastName
+            ? [
+                {
+                  ...baseWhere,
+                  user: {
+                    ...baseWhere.user,
+                    firstName: ILike(`%${firstName}%`),
+                    lastName: ILike(`%${lastName}%`),
+                  },
+                },
+              ]
+            : []),
+        ],
+        relations: {
+          group: true,
+          user: {
+            organizationUsers: true,
+          },
+        },
+      });
+    }
 
     // If no search input, use simple find
     return m.find(GroupUsers, {
@@ -318,46 +318,46 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
       const searchLower = searchInput.toLowerCase().trim();
       const [firstName, lastName] = searchLower.split(/\s+/);
       return m.find(User, {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+        relations: {
+          organizationUsers: true,
+          userGroups: {
+            group: true,
           },
-          relations: {
-            organizationUsers: true,
-            userGroups: {
-              group: true,
-            },
+        },
+        where: [
+          {
+            ...baseWhere,
+            email: ILike(`%${searchLower}%`),
           },
-          where: [
-            {
-              ...baseWhere,
-              email: ILike(`%${searchLower}%`),
-            },
-            {
-              ...baseWhere,
-              firstName: ILike(`%${searchLower}%`),
-            },
-            {
-              ...baseWhere,
-              lastName: ILike(`%${searchLower}%`),
-            },
-            ...(lastName
-              ? [
-                  {
-                    ...baseWhere,
-                    firstName: ILike(`%${firstName}%`),
-                    lastName: ILike(`%${lastName}%`),
-                  },
-                ]
-              : []),
-          ],
-          order: {
-            createdAt: 'DESC',
+          {
+            ...baseWhere,
+            firstName: ILike(`%${searchLower}%`),
           },
-        });
-      }
+          {
+            ...baseWhere,
+            lastName: ILike(`%${searchLower}%`),
+          },
+          ...(lastName
+            ? [
+                {
+                  ...baseWhere,
+                  firstName: ILike(`%${firstName}%`),
+                  lastName: ILike(`%${lastName}%`),
+                },
+              ]
+            : []),
+        ],
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    }
 
     // If no search input, use simple find
     return m.find(User, {
@@ -368,7 +368,12 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     });
   }
 
-  async removeUserFromGroup(groupUserId?: string, userId?: string, groupId?: string, manager?: EntityManager): Promise<void> {
+  async removeUserFromGroup(
+    groupUserId?: string,
+    userId?: string,
+    groupId?: string,
+    manager?: EntityManager
+  ): Promise<void> {
     const m = manager ?? this.manager;
     await m.delete(GroupUsers, {
       ...(groupUserId ? { id: groupUserId } : {}),

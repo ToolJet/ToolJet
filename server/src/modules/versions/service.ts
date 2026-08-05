@@ -3,7 +3,6 @@ import { BadRequestException, Injectable, NotAcceptableException, NotFoundExcept
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -20,6 +19,7 @@ import { OrganizationThemesUtilService } from '@modules/organization-themes/util
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
 import { listModuleVersions, resolveModuleRef } from './module-ref.util';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -33,6 +33,7 @@ import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -48,7 +49,8 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
-    protected readonly organizationGitRepository: OrganizationGitSyncRepository
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   /**
@@ -125,9 +127,16 @@ export class VersionService implements IVersionService {
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
+    let gitEnabled = false;
+    let defaultBranchId: string | null = null;
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+      gitEnabled = details.isEnabled;
+      defaultBranchId = details.options.defaultBranch?.id ?? null;
+    }
     let result =
       app.type === APP_TYPES.MODULE
-        ? await listModuleVersions(this.versionRepository.manager, app, branchId, app.organizationId)
+        ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
     // On non-default branches, only show the branch's own version(s).
@@ -154,6 +163,16 @@ export class VersionService implements IVersionService {
       }
     }
 
+    // Git-sync on: once a synced (gitsync-origin) DRAFT exists, hide the non-synced
+    // DRAFT versions — those are locally-created drafts not yet pushed to git. Synced
+    // drafts and all non-DRAFT (published) versions are kept. Git-off: unchanged.
+    if (gitEnabled && result?.length) {
+      const hasSyncedDraft = result.some((v) => v.status === AppVersionStatus.DRAFT && v.isSynced);
+      if (hasSyncedDraft) {
+        result = result.filter((v) => v.status !== AppVersionStatus.DRAFT || v.isSynced);
+      }
+    }
+
     if (result?.length) {
       result[0].isCurrentEditingVersion = true;
     }
@@ -162,7 +181,20 @@ export class VersionService implements IVersionService {
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
     const context = await this.beforeVersionCreate(app, user, versionCreateDto);
-    const result = await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    let result;
+    // Git single-branch keeps exactly one draft on the default branch. When the caller opts to
+    // replace (the "Replace with new draft" action), atomically swap the existing draft for a fresh
+    // one cloned from versionFromId instead of tripping the single-draft guard. Only applies to git
+    // single-branch (git-off allows many drafts; multi-branch patches via feature branches).
+    if (versionCreateDto.replace) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      if (details.isEnabled && !details.isMultiBranchingEnabled) {
+        result = await this.versionsUtilService.replaceDraftVersion(app, user, versionCreateDto);
+      }
+    }
+    if (!result) {
+      result = await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    }
     await this.afterVersionCreate(context, result, app, user);
     return result;
   }
@@ -321,12 +353,14 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module not found');
     }
 
+    const gitDetails = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
     const version = await resolveModuleRef(
       this.versionRepository.manager,
       moduleApp,
       moduleReferenceId,
       branchId,
-      user.organizationId
+      user.organizationId,
+      gitDetails.isEnabled
     );
     if (!version) {
       // NotFoundException (not findOneOrFail) so drift surfaces as 404, not 500.
@@ -341,6 +375,30 @@ export class VersionService implements IVersionService {
 
     const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
+
+      // Saving a version from a feature-branch draft: the branch row must stay a
+      // DRAFT (chk_app_versions_branch_type_implies_draft_branched), so "publish"
+      // here clones its content into a new VERSION-type row instead of flipping
+      // the branch row itself. The branch's own draft is left untouched.
+      if (
+        appVersion.versionType === AppVersionType.BRANCH &&
+        appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED
+      ) {
+        if (app.type !== 'module') {
+          await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+        }
+        return this.versionsUtilService.createPublishedVersionFromBranchDraft(
+          app,
+          user,
+          {
+            versionName: appVersionUpdateDto.name,
+            versionFromId: appVersion.id,
+            versionDescription: appVersionUpdateDto.description,
+            environmentId: undefined,
+          },
+          manager
+        );
+      }
 
       if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
@@ -499,6 +557,22 @@ export class VersionService implements IVersionService {
       versionDescription: '',
       versionType: versionType,
     };
+
+    // Git single-branch keeps exactly one draft on the default branch. When the caller opts to
+    // replace (the "Replace with new draft" action from the version selector), atomically swap the
+    // existing draft for a fresh one cloned from the chosen saved version instead of tripping the
+    // single-draft guard. Only applies to git single-branch (git-off allows many drafts; multi-branch
+    // patches via feature branches). Runs through the same before/after hooks so history is captured.
+    if (draftVersionDto.replace) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      if (details.isEnabled && !details.isMultiBranchingEnabled) {
+        const context = await this.beforeVersionCreate(app, user, createVersionDto);
+        const replaced = await this.versionsUtilService.replaceDraftVersion(app, user, createVersionDto);
+        await this.afterVersionCreate(context, replaced, app, user);
+        return replaced;
+      }
+    }
+
     const draftVersion = await this.createVersion(app, user, createVersionDto);
     return draftVersion;
   }

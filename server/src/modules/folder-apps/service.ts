@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
+import { App } from '../../entities/app.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
-import { EntityManager, IsNull } from 'typeorm';
+import { EntityManager, In, IsNull } from 'typeorm';
 import { decamelizeKeys } from 'humps';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from './util.service';
@@ -12,31 +13,73 @@ import { User } from '@entities/user.entity';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UserFolderPermissions } from '@modules/ability/types';
-import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
     protected abilityService: AbilityService,
     protected foldersUtilService: FoldersUtilService,
-    protected folderAppsUtilService: FolderAppsUtilService
+    protected folderAppsUtilService: FolderAppsUtilService,
+    protected gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
-  async create(folderId: string, appId: string, branchId?: string): Promise<FolderApp> {
-    return this.folderAppsUtilService.create(folderId, appId, branchId);
+  async create(folderId: string, appId: string, branchId?: string, organizationId?: string): Promise<FolderApp> {
+    const resolvedBranchId = await this.resolveEffectiveBranchId(appId, branchId, organizationId);
+    return this.folderAppsUtilService.create(folderId, appId, resolvedBranchId);
   }
 
-  async bulkCreate(folderId: string, appIds: string[], branchId?: string): Promise<FolderApp[]> {
-    return this.folderAppsUtilService.bulkCreate(folderId, appIds, branchId);
+  async bulkCreate(
+    folderId: string,
+    appIds: string[],
+    branchId?: string,
+    organizationId?: string
+  ): Promise<FolderApp[]> {
+    const resolvedBranchId = await this.resolveEffectiveBranchIdForBulk(appIds, branchId, organizationId);
+    return this.folderAppsUtilService.bulkCreate(folderId, appIds, resolvedBranchId);
   }
 
-  async remove(folderId: string, appId: string, branchId?: string): Promise<void> {
+  async remove(folderId: string, appId: string, branchId?: string, organizationId?: string): Promise<void> {
+    const resolvedBranchId = await this.resolveEffectiveBranchId(appId, branchId, organizationId);
     return dbTransactionWrap(async (manager: EntityManager) => {
-      // TODO: folder under user.organizationId
-      const where = branchId ? { folderId, appId, branchId } : { folderId, appId, branchId: IsNull() };
+      const where = resolvedBranchId
+        ? { folderId, appId, branchId: resolvedBranchId }
+        : { folderId, appId, branchId: IsNull() };
       return await manager.delete(FolderApp, where);
     });
+  }
+
+  // Resolves the effective branch_id for a write operation. When branchId is already provided it
+  // is returned as-is. When absent and the app is not a workflow (which always uses branch_id=NULL
+  // by convention), we resolve the org's default branch so that non-git-workspace writes land on
+  // the same branch_id as the read path — preventing duplicate rows keyed on (app_id, NULL) vs
+  // (app_id, defaultBranchId) that would stale-lock folder-based permissions.
+  private async resolveEffectiveBranchId(
+    appId: string,
+    branchId?: string,
+    organizationId?: string
+  ): Promise<string | undefined> {
+    if (branchId || !organizationId || !appId) return branchId;
+    const manager = getConnectionInstance().manager;
+    const app = await manager.findOne(App, { where: { id: appId }, select: ['type'] });
+    if (!app || app.type === APP_TYPES.WORKFLOW) return undefined;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+    return options.defaultBranch?.id;
+  }
+
+  private async resolveEffectiveBranchIdForBulk(
+    appIds: string[],
+    branchId?: string,
+    organizationId?: string
+  ): Promise<string | undefined> {
+    if (branchId || !organizationId || !appIds.length) return branchId;
+    const manager = getConnectionInstance().manager;
+    // Check first app's type — bulk operations come from a single-type list in practice (the
+    // frontend always sends either all FRONT_END/MODULE apps or all workflows in one call).
+    const app = await manager.findOne(App, { where: { id: In(appIds) }, select: ['type'] });
+    if (!app || app.type === APP_TYPES.WORKFLOW) return undefined;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+    return options.defaultBranch?.id;
   }
 
   private getResourceTypefromAppType(type: APP_TYPES) {
@@ -66,21 +109,12 @@ export class FolderAppsService implements IFolderAppsService {
     return skipAppEditingVersionHydration.run(true, async () => {
       // End users without branch switcher fall back to the org default branch so folders
       // reflect only default-branch apps. Applies to both front-end apps and modules.
-      // When no branchId is provided (e.g. end users without branch switcher) and the
-      // workspace has git-sync configured, fall back to the default branch so folders
-      // reflect only default-branch apps. Non-git-sync workspaces have no orgGit and
-      // branchId stays undefined; downstream queries handle that path natively.
+      // getDetails always resolves options.defaultBranch (every org has one), so this
+      // scopes to the default branch on gitsync-off workspaces too — matching the
+      // backfilled branch_id on their version rows.
       if (!branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE)) {
-        const orgGit = await manager.findOne(OrganizationGitSync, {
-          where: { organizationId: user.organizationId },
-        });
-        if (orgGit) {
-          const defaultBranch = await manager.findOne(WorkspaceBranch, {
-            where: { organizationId: user.organizationId, isDefault: true },
-            select: ['id'],
-          });
-          branchId = defaultBranch?.id;
-        }
+        const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        branchId = options.defaultBranch?.id;
       }
       const resourceType = this.getResourceTypefromAppType(type as APP_TYPES);
       const userPermissions = await this.abilityService.resourceActionsPermission(user, {
@@ -165,9 +199,7 @@ export class FolderAppsService implements IFolderAppsService {
         ...(folderPermissions.viewableFoldersId || []),
       ]);
 
-      return folders.filter(
-        (f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id || f.folderApps.length > 0
-      );
+      return folders.filter((f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id || f.folderApps.length > 0);
     }
 
     // No folder permissions object at all (CE / unconfigured EE) → show all folders

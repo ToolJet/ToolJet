@@ -646,7 +646,7 @@ export const resolveContainerHeight = ({
     const activeTabFromExposedState = getExposedPropertyForAdditionalActions(componentId, context, 'currentTab');
     const configuredTabs = component?.properties?.tabItems || component?.properties?.tabs;
     const firstVisibleTabId = Array.isArray(configuredTabs)
-      ? configuredTabs.find((tabItem) => tabItem?.visible !== false)?.id ?? configuredTabs[0]?.id
+      ? (configuredTabs.find((tabItem) => tabItem?.visible !== false)?.id ?? configuredTabs[0]?.id)
       : null;
     const activeTab =
       activeTabFromElement ?? activeTabFromExposedState ?? component?.properties?.defaultTab ?? firstVisibleTabId;
@@ -1345,7 +1345,7 @@ export const buildReflowPatch = ({
     const nextHeight =
       componentId === changedComponentId
         ? changedNewHeight
-        : resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0;
+        : (resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0);
 
     // Merge order: canonical (base) < existing temp (carry over left/width
     // etc.) < new top/height. Anything we don't touch passes through.

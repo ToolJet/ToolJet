@@ -337,13 +337,11 @@ function parseExpression(expression, componentIdNameMapping, queryIdNameMapping,
       MemberExpression: handleMemberExpression,
     });
 
-    // eslint-disable-next-line no-inner-declarations
     function handleMemberExpression(node) {
       const reference = extractPath(node);
       if (reference) references.push(reference);
     }
 
-    // eslint-disable-next-line no-inner-declarations
     function extractPath(node) {
       const path = [];
       let current = node;

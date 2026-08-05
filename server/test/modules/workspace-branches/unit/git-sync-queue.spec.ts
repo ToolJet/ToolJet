@@ -415,7 +415,11 @@ describe('GitSyncQueueProcessor failed-event hook', () => {
   // removeOnFail erases dead jobs from Bull Board — the onFailed log line is the
   // only durable trail. It must never itself throw, even with a missing job.
   it('should survive a failed event with an undefined job', () => {
-    const processor = new GitSyncQueueProcessor(new FakeWorkspaceBranchService() as any, new FakeRedisService() as any, new FakeNotificationService() as any);
+    const processor = new GitSyncQueueProcessor(
+      new FakeWorkspaceBranchService() as any,
+      new FakeRedisService() as any,
+      new FakeNotificationService() as any
+    );
     expect(() => processor.onFailed(undefined, new Error('worker died'))).not.toThrow();
   });
 
@@ -565,14 +569,14 @@ describe('WorkspaceBranchService.executeDeleteRemoteBranch (remote-ref helper)',
   // executeDeleteBranch (remote + DB) delegates the remote half here. Retries on
   // an already-deleted remote branch would loop pointlessly — "gone" must count
   // as success, which is also what lets executeDeleteBranch proceed to the DB
-  // delete. Only the first two constructor deps (provider, logger) are touched.
+  // delete. Only two constructor deps (sourceControlProvider, transactionLogger) are touched.
   const makeService = (deleteGitBranch?: (orgId: string, name: string) => Promise<void>) => {
     const provider = {
       getSourceControlService: async () => (deleteGitBranch ? { deleteGitBranch } : {}),
     };
     const logger = { log: jest.fn() };
-    const rest = Array(12).fill({});
-    return new (WorkspaceBranchService as any)(provider, logger, ...rest) as InstanceType<
+    const rest = Array(14).fill({});
+    return new (WorkspaceBranchService as any)(provider, {}, logger, ...rest) as InstanceType<
       typeof WorkspaceBranchService
     >;
   };

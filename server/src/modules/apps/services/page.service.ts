@@ -3,7 +3,7 @@ import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
-import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { EventsService } from './event.service';
 import { Component } from 'src/entities/component.entity';
@@ -33,7 +33,7 @@ export class PageService implements IPageService {
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
     protected readonly transactionLogger: TransactionLogger
-  ) { }
+  ) {}
 
   /**
    * Hook called before page creation - override in EE to capture state for history
@@ -149,14 +149,12 @@ export class PageService implements IPageService {
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
-    const pagesWithComponents = await Promise.all(
-      allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id, manager);
-        delete page.appVersionId;
-        return { ...page, components, restricted: false };
-      })
-    );
-    return pagesWithComponents as unknown as Page[];
+    const pageIds = allPages.map((p) => p.id);
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
+    return allPages.map((page) => {
+      delete page.appVersionId;
+      return { ...page, components: componentsByPage.get(page.id) ?? {}, restricted: false };
+    }) as unknown as Page[];
   }
 
   async findOne(id: string): Promise<Page> {
@@ -169,10 +167,10 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageCreate(page, appVersionId, organizationId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    const result = await dbTransactionWrap(async (manager) => {
       const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
       return await manager.save(Page, newPage);
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterPageCreate(context, result, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -188,7 +186,7 @@ export class PageService implements IPageService {
 
     let clonedPage: Page | null = null;
 
-    await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
+    await dbTransactionWrap(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
         where: { id: pageId, appVersionId },
       });
@@ -236,7 +234,7 @@ export class PageService implements IPageService {
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
 
       return { pages, events };
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (clonedPage) {
@@ -524,7 +522,7 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageDelete(pageId, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const pageExists = await manager.findOne(Page, {
         where: { id: pageId },
       });
@@ -561,7 +559,7 @@ export class PageService implements IPageService {
       }
 
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterPageDelete(context, pageId, appVersionId, historyUserId, operationTimestamp).catch((err) =>

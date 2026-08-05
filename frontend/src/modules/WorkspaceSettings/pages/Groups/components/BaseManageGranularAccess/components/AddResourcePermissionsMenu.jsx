@@ -23,6 +23,10 @@ function AddResourcePermissionsMenu({
         return 'datasource';
       case RESOURCE_TYPE.FOLDERS:
         return 'folder';
+      case RESOURCE_TYPE.WORKFLOW_FOLDERS:
+        return 'folder';
+      case RESOURCE_TYPE.MODULE_FOLDERS:
+        return 'folder';
       default:
         return '';
     }
@@ -34,6 +38,8 @@ function AddResourcePermissionsMenu({
     [RESOURCE_TYPE.MODULES]: 'Modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
     [RESOURCE_TYPE.FOLDERS]: 'Folders',
+    [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'Workflow folders',
+    [RESOURCE_TYPE.MODULE_FOLDERS]: 'Module folders',
   };
 
   const order = [RESOURCE_TYPE.APPS, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.WORKFLOWS];
@@ -66,7 +72,7 @@ function AddResourcePermissionsMenu({
                 }}
                 disabled={
                   currentGroupPermission.name === 'end-user' &&
-                  [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES].includes(resource)
+                  [RESOURCE_TYPE.MODULES, RESOURCE_TYPE.MODULE_FOLDERS].includes(resource)
                 }
                 data-cy={`add-${resource.toLowerCase()}-button`}
               >
@@ -75,7 +81,7 @@ function AddResourcePermissionsMenu({
                   placement="right"
                   overlay={
                     currentGroupPermission.name === 'end-user' &&
-                    [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES].includes(resource) ? (
+                    [RESOURCE_TYPE.MODULES, RESOURCE_TYPE.MODULE_FOLDERS].includes(resource) ? (
                       <Tooltip id={`tooltip-${index}`} style={{ maxWidth: '120px' }}>
                         {resource === RESOURCE_TYPE.MODULES
                           ? 'End-user implicitly gets access'

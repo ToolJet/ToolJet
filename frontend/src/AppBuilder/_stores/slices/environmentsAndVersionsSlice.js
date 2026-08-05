@@ -230,6 +230,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       displayName: newVersion.display_name || newVersion.displayName || newVersion.name,
       current_environment_id: newVersion.current_environment_id,
       status: newVersion.status,
+      isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
     };
     set((state) => ({
       ...state,
@@ -254,7 +255,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     versionDescription = '',
     onSuccess,
     onFailure,
-    versionType = 'version'
+    versionType = 'version',
+    replace = false
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -264,12 +266,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionDescription,
         selectedVersionId,
         editorEnvironment,
-        versionType
+        versionType,
+        replace
       );
       const editorVersion = {
         id: newVersion.id,
         name: newVersion.name,
         current_environment_id: newVersion.current_environment_id,
+        // Use the created version's actual sync state (git-off/normal drafts are unsynced; a
+        // git single-branch replace draft stays synced), not a hardcoded false.
+        isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
       };
       set((state) => ({
         ...state,
@@ -367,6 +373,20 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     moduleId = moduleId || 'canvas';
     try {
       const data = await appVersionService.getAppVersionData(appId, versionId, get().getCurrentMode(moduleId));
+      // getAppVersionData doesn't include the resolved branchName/branchId (those come from the
+      // environment-versions fetch). Carry them over from the already-enriched entry so the version
+      // selector keeps showing the branch name instead of falling back to the raw UUID version name.
+      const prevVersionEntry = get().versionsPromotedToEnvironment.find((v) => v.id === data?.editing_version?.id);
+      const branchId =
+        data.editing_version.branchId ??
+        data.editing_version.branch_id ??
+        prevVersionEntry?.branchId ??
+        prevVersionEntry?.branch_id;
+      const branchName =
+        data.editing_version.branchName ??
+        data.editing_version.branch_name ??
+        prevVersionEntry?.branchName ??
+        prevVersionEntry?.branch_name;
       const selectedVersion = {
         id: data.editing_version.id,
         name: data.editing_version.name,
@@ -374,6 +394,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         status: data.editing_version.status,
         // Preserve versionType from API response to distinguish between regular versions and branch versions
         versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
+        isSynced: data.editing_version.isSynced ?? data.editing_version.is_synced ?? false,
+        branchId,
+        branchName,
       };
       // A version's own current_environment_id is how far it's been promoted (e.g. production),
       // not necessarily the environment the user is currently viewing it under (e.g. browsing
@@ -391,10 +414,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let updatedVersionsArray = [...get().versionsPromotedToEnvironment];
       const versionIndex = get().versionsPromotedToEnvironment.findIndex((v) => v.id === data?.editing_version?.id);
       if (versionIndex !== -1 && data?.editing_version) {
-        updatedVersionsArray[versionIndex] = data?.editing_version;
+        updatedVersionsArray[versionIndex] = { ...data.editing_version, branchId, branchName };
       }
       let optionsToUpdate = {
         selectedVersion,
+        currentVersionId: selectedVersion.id,
         appVersionEnvironment,
         versionsPromotedToEnvironment: [...updatedVersionsArray],
         ...calculatePromoteAndReleaseButtonVisibility(
@@ -584,8 +608,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           // Event handlers are cloned with new ids per version too — without this, click/
           // onPageLoad actions stay wired to the previous version's event definitions.
           get().eventsSlice.updateEventsField('events', data.events || [], moduleId);
-          // "Go to app" link targets — stale otherwise.
-          get().setLinkedApps(data.linkedApps ?? {}, moduleId);
 
           // Queries are cloned with new ids per version too (mirrors pages above), but
           // getAppVersionData doesn't return them — without this refetch, queryNameIdMapping/
@@ -704,7 +726,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }
   },
 
-  promoteAppVersionAction: async (versionId, onSuccess, onFailure) => {
+  promoteAppVersionAction: async (versionId, onSuccess, onFailure, moduleId = 'canvas') => {
     try {
       const modules = useStore.getState().appStore.modules;
       const appId = modules.canvas?.app?.appId || modules.workflow?.app?.appId;
@@ -728,6 +750,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       }));
+      get().setResolvedGlobals(
+        'environment',
+        { id: response.editorEnvironment?.id, name: response.editorEnvironment?.name },
+        moduleId
+      );
       onSuccess({
         selectedEnvironment: response.editorEnvironment,
         hasAccessToPromotedEnvironment: hasAccessToPromotedEnv,

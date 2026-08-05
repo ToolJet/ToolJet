@@ -45,9 +45,6 @@ export const existingNameValidation = (
 ) => {
   cy.clearAndType(commonSelectors.workspaceConstantNameInput, constName);
   cy.get(workspaceConstantsSelectors.constantsType(type)).check();
-  if (type != 'Global') {
-    cy.get('[data-cy="edit-secret-value-button"]').click()
-  }
   cy.get(commonSelectors.workspaceConstantValueInput).click();
   cy.clearAndType(commonSelectors.workspaceConstantValueInput, constValue);
   cy.get(workspaceConstantsSelectors.addConstantButton).click();
@@ -275,21 +272,13 @@ export const constantsCRUDAndValidations = (data) => {
   cy.get('input[type="radio"]').should("be.disabled");
 
   //update same value and add const should be disabled
-  if (type != 'Global') {
-    cy.get('[data-cy="edit-secret-value-button"]').click()
-  }
   cy.get(commonSelectors.workspaceConstantValueInput)
     .click()
     .clear()
     .type(data.constName);
-  if (type != 'Global') {
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
-  }
-  else {
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-  }
-  //update different value
+  cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 
+  //update different value
   cy.clearAndType(
     commonSelectors.workspaceConstantValueInput,
     data.newConstvalue
@@ -299,15 +288,13 @@ export const constantsCRUDAndValidations = (data) => {
     commonSelectors.toastMessage,
     "Constant updated successfully"
   );
-  if (type === 'Global') {
-    cy.get(
-      `[data-cy="${data.constName.toLowerCase()}-constant-visibility"]`
-    ).click();
-    cy.wait(500);
-    cy.get(workspaceConstantsSelectors.constantValue(data.constName))
-      .should("be.visible")
-      .and("have.text", data.newConstvalue);
-  }
+  cy.get(
+    `[data-cy="${data.constName.toLowerCase()}-constant-visibility"]`
+  ).click();
+  cy.wait(500);
+  cy.get(workspaceConstantsSelectors.constantValue(data.constName))
+    .should("be.visible")
+    .and("have.text", data.newConstvalue);
 
   // Delete and verify the constant
   cy.get(workspaceConstantsSelectors.constDeleteButton(data.constName)).click();

@@ -1,6 +1,6 @@
 {
-  "[javascript, typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  "[javascript][javascriptreact][typescript][typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "eslint.validate": [
     "javascript",
@@ -9,6 +9,7 @@
     "typescriptreact"
   ],
   "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [{ "mode": "auto" }],
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
@@ -22,6 +23,5 @@
       "fileMatch": ["/*.manifest.json"],
       "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
     }
-  ],
-  "CodeGPT.apiKey": "CodeGPT Plus Beta"
+  ]
 }

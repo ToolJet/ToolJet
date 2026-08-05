@@ -21,12 +21,15 @@ import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorURL } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
+import { whenBranchResolved } from '@/_helpers/active-branch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -95,13 +98,13 @@ const useAppData = (
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
   const user = useStore((state) => state.user);
-  // Forwarded to the backend so a module-embedding parent app can grant view access
-  // (see appVersion.service.js getAll/getModuleVersionData).
+  // The top-level app containing this module instance — used to let the backend verify this
+  // module read is happening in the context of an app the user can edit, even when they have
+  // no standalone module permission. Forwarded to appVersion.service.js getAll/getModuleVersionData.
   const parentAppId = useStore((state) => state.appStore?.modules?.['canvas']?.app?.appId);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
   const setPages = useStore((state) => state.setPages);
-  const setLinkedApps = useStore((state) => state.setLinkedApps);
   const setPageSettings = useStore((state) => state.setPageSettings);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
   const setFolders = useStore((state) => state.queryFolders?.setFolders);
@@ -190,7 +193,8 @@ const useAppData = (
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  let slug = pathParams?.slug;
+  // A module instance has its own app slug, distinct from the parent app's route slug.
+  let slug = appSlug ?? pathParams?.slug;
 
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
@@ -256,6 +260,16 @@ const useAppData = (
       setPageSwitchInProgress(false);
     }
   }, [pageSwitchInProgress, moduleMode]);
+
+  // Sync editor freeze state from global store to app builder store (for cross-bundle triggers like auto-sync)
+  useEffect(() => {
+    const unsubscribe = useAppVersionStore.subscribe((state) => {
+      if (state.isEditorFreezed) {
+        setIsEditorFreezed(true);
+      }
+    });
+    return unsubscribe;
+  }, [setIsEditorFreezed]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -358,9 +372,12 @@ const useAppData = (
       if (isPublicAccess) {
         appDataPromise = appService.fetchAppBySlug(slug);
       } else {
-        appDataPromise = isPreviewForVersion
-          ? appVersionService.getAppVersionData(appId, versionId, mode)
-          : appService.fetchApp(appId);
+        // Gate on branch resolution so the app-load (and its hydration) carries the right
+        // branch_id. The branch is resolved async (URL name -> id) by AppsRoute; without this
+        // gate the load can race ahead with no branch_id and hydrate on the default branch.
+        appDataPromise = whenBranchResolved().then(() =>
+          isPreviewForVersion ? appVersionService.getAppVersionData(appId, versionId, mode) : appService.fetchApp(appId)
+        );
       }
     }
 
@@ -403,24 +420,31 @@ const useAppData = (
 
         let constantsResp;
         if (mode !== 'edit') {
-          try {
-            const queryParams = { slug: slug };
+          if (moduleMode) {
+            // A module's own is_public is always false, so PublicAppEnvironmentGuard 401s
+            // on the module's slug. ModuleViewer already resolved the parent's environment
+            // into environmentId — reuse it instead of re-resolving.
+            editorEnvironment = { id: environmentId };
+          } else {
+            try {
+              const queryParams = { slug: slug };
 
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+              const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
 
-            editorEnvironment = {
-              id: viewerEnvironment?.environment?.id,
-              name: viewerEnvironment?.environment?.name,
-            };
-            constantsResp =
-              isPublicAccess && appData.is_public
-                ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
-                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
-          } catch (error) {
-            console.error('Error fetching viewer environment:', error);
+              editorEnvironment = {
+                id: viewerEnvironment?.environment?.id,
+                name: viewerEnvironment?.environment?.name,
+              };
+              constantsResp =
+                isPublicAccess && appData.is_public
+                  ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
+                      slug,
+                      viewerEnvironment?.environment?.id
+                    )
+                  : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
+            } catch (error) {
+              console.error('Error fetching viewer environment:', error);
+            }
           }
         }
 
@@ -494,6 +518,9 @@ const useAppData = (
           },
           moduleId
         );
+
+        // Also populate the global app data store so route-level hooks can access co_relation_id
+        useAppDataStore.getState().actions.updateState({ coRelationId: appData.co_relation_id });
 
         const liveMessages = useStore.getState().ai?.conversation?.aiConversationMessages;
         if (
@@ -603,7 +630,6 @@ const useAppData = (
         );
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
-        setLinkedApps(appData.linkedApps ?? {}, moduleId);
         if (!moduleMode) {
           updateFeatureAccess();
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
@@ -958,7 +984,6 @@ const useAppData = (
         setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
-        setLinkedApps(appData.linkedApps ?? {}, moduleId);
 
         // Refresh the module-definition cache so unpinned ModuleViewers pick up
         // post-pull / post-version-switch content without a full page refresh.

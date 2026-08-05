@@ -79,7 +79,7 @@ export const commonText = {
   allApplicationLink: "All apps",
   notificationsCardTitle: "Notifications",
   emptyNotificationTitle: "You're all caught up!",
-  emptyNotificationSubtitle: "Status of background operations will appear here",
+  emptyNotificationSubtitle: "You don't have any unread notifications!",
   viewReadNotifications: "View read notifications",
   logoutLink: "Logout",
 

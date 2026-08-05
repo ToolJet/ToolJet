@@ -5,8 +5,16 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { FolderApp } from '@entities/folder_app.entity';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 type Subjects = InferSubjects<typeof FolderApp> | 'all';
 export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
+
+// Folder-flavor → the UserPermissions bucket holding its resolved folder access.
+// Add an entry here (not another ternary arm) when a new folder-owning resource type is introduced.
+const FOLDER_RESOURCE_TYPE_BY_APP_TYPE: Partial<Record<APP_TYPES, MODULES>> = {
+  [APP_TYPES.WORKFLOW]: MODULES.WORKFLOW_FOLDER,
+  [APP_TYPES.MODULE]: MODULES.MODULE_FOLDER,
+};
 
 @Injectable()
 export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
@@ -26,7 +34,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     const { superAdmin, userPermission, isAdmin } = UserAllPermissions;
     const folderCreate = userPermission.folderCreate;
-    const folderPermissions = userPermission[MODULES.FOLDER];
+    const folderResourceType = FOLDER_RESOURCE_TYPE_BY_APP_TYPE[request?.tj_folder_type as APP_TYPES] ?? MODULES.FOLDER;
+    const folderPermissions = userPermission[folderResourceType];
     const ownerCanCreateFolderApp =
       request?.tj_allow_owner_folder_app_create && extractedMetadata.features?.includes(FEATURE_KEY.CREATE_FOLDER_APP);
     const ownerCanDeleteFolderApp =

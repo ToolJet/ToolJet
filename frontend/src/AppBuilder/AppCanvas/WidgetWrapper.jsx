@@ -163,7 +163,7 @@ const WidgetWrapper = memo(
     // a 1px dashed top border (set below) marks the widget's authored position
     // so designers can still locate it; the floating ConfigHandle stays
     // clickable above the collapsed slot. In view mode display:none is set.
-    const gridFinalHeight = visibility ? temporaryLayouts?.height ?? gridHeight : HIDDEN_COMPONENT_HEIGHT;
+    const gridFinalHeight = visibility ? (temporaryLayouts?.height ?? gridHeight) : HIDDEN_COMPONENT_HEIGHT;
     const layoutContext = indices ?? subContainerIndex;
     const serializedLayoutContext = serializeLayoutContext(layoutContext);
 
@@ -191,12 +191,12 @@ const WidgetWrapper = memo(
     const renderWidgetHeight = isFlexLayout
       ? flexLayout.widgetHeight
       : !visibility && mode === 'edit'
-      ? HIDDEN_COMPONENT_HEIGHT
-      : newLayoutData.height;
-    const configWidgetTop = isFlexLayout ? flexLayout.configWidgetTop : temporaryLayouts?.top ?? layoutData.top;
+        ? HIDDEN_COMPONENT_HEIGHT
+        : newLayoutData.height;
+    const configWidgetTop = isFlexLayout ? flexLayout.configWidgetTop : (temporaryLayouts?.top ?? layoutData.top);
     const configWidgetHeight = isFlexLayout
       ? flexLayout.configWidgetHeight
-      : temporaryLayouts?.height ?? layoutData.height;
+      : (temporaryLayouts?.height ?? layoutData.height);
 
     const isModuleContainer = componentType === 'ModuleContainer';
     const configHandleClassName = cx({

@@ -6,7 +6,10 @@ import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class WorkflowCountGuard implements CanActivate {
-  constructor(protected appsRepository: AppsRepository, protected licenseTermsService: LicenseTermsService) {}
+  constructor(
+    protected appsRepository: AppsRepository,
+    protected licenseTermsService: LicenseTermsService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -14,7 +17,10 @@ export class WorkflowCountGuard implements CanActivate {
     if (!request?.headers['tj-workspace-id']) {
       return false;
     }
-    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS, request?.headers['tj-workspace-id']);
+    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.WORKFLOWS,
+      request?.headers['tj-workspace-id']
+    );
     if (!workflowsLimit?.workspace && !workflowsLimit?.instance)
       throw new HttpException('Workflow is not enabled in the license, contact admin', 404);
 

@@ -3,6 +3,12 @@ name:
   # Cache invalidation - 2025-12-09
 
 on:
+  workflow_call:
+    inputs:
+      edition:
+        type: string
+        required: false
+        default: 'ee'
   pull_request_target:
     types: [labeled]
   # workflow_dispatch:
@@ -21,7 +27,8 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+    if: inputs.edition ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
@@ -32,6 +39,7 @@ jobs:
       matrix:
         edition:
           - ${{
+            inputs.edition ||
             (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
             (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
@@ -73,7 +81,7 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -413,14 +421,14 @@ jobs:
 
       - name: Upload run summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-summary-platform-${{ matrix.edition }}
           path: cypress-tests/summary.json
           retention-days: 7
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.edition }}
@@ -469,7 +477,7 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -825,14 +833,14 @@ jobs:
 
       - name: Upload run summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-summary-platform-subpath-${{ matrix.edition }}
           path: cypress-tests/summary.json
           retention-days: 7
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.edition }}-subpath-${{ env.TIMESTAMP }}
@@ -884,7 +892,7 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -1253,14 +1261,14 @@ jobs:
 
       - name: Upload run summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-summary-platform-proxy-${{ matrix.edition }}
           path: cypress-tests/summary.json
           retention-days: 7
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.edition }}-proxy-${{ env.TIMESTAMP }}
@@ -1312,7 +1320,7 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -1682,14 +1690,14 @@ jobs:
 
       - name: Upload run summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-summary-platform-proxy-subpath-${{ matrix.edition }}
           path: cypress-tests/summary.json
           retention-days: 7
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.edition }}-proxy-subpath-${{ env.TIMESTAMP }}
@@ -1713,13 +1721,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # This job runs separately from the matrix, so check out just the script.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: .github/scripts
           sparse-checkout-cone-mode: false
 
       - name: Download run summaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: cypress-summary-*
           path: summaries
