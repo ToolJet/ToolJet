@@ -25,6 +25,11 @@ const initialState = {
           variables: {},
           constants: {},
           globals: {},
+          /* Module input namespace.
+           * - Seeded as {} so the first resolve pass of a module's components sees an object rather than undefined
+           * - `{{input.x}}` then reads as undefined instead of throwing, keeping dependency-edge registration intact on initial load.
+           */
+          input: {},
           page: {
             variables: {},
           },
