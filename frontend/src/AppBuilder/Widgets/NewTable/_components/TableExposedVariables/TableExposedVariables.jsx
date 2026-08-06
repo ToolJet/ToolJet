@@ -253,6 +253,10 @@ export const TableExposedVariables = ({
 
   useEffect(() => {
     if (!hasDataChanged) return;
+    // Drop the previous selection BEFORE resetRowSelection, not after.
+    // resetRowSelection can flush a synchronous re-render,
+    // and the effect that mirrors lastClickedRow into selectedRow reads the ref during that render
+    lastClickedRowRef.current = {};
     resetRowSelection();
 
     function selectRow(key, value) {
@@ -272,15 +276,12 @@ export const TableExposedVariables = ({
     }
 
     if (defaultSelectedRow) {
-      lastClickedRowRef.current = {};
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
       const value = defaultSelectedRow?.[key] ?? undefined;
       if (key && (value !== undefined || value !== null)) {
         selectRow(key, value);
       }
     } else {
-      // drop the previous click so the mirror effect cannot expose the stale row
-      lastClickedRowRef.current = {};
       setExposedVariables({
         selectedRow: {},
         selectedRowId: null,
