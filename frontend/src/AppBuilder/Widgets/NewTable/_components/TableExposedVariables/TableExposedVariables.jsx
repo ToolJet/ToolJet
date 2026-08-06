@@ -254,9 +254,14 @@ export const TableExposedVariables = ({
   useEffect(() => {
     if (!hasDataChanged) return;
     resetRowSelection();
+
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
       const item = index !== -1 ? data[index] : null;
+
+      // Keep the ref in sync before selecting, so the mirror effect cannot expose the stale row
+      lastClickedRowRef.current = item === null ? {} : { source: 'default', row: item, index };
+
       if (item) {
         setRowSelection({ [index]: true });
       }
@@ -265,6 +270,7 @@ export const TableExposedVariables = ({
         selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
       });
     }
+
     if (defaultSelectedRow) {
       lastClickedRowRef.current = {};
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
@@ -273,6 +279,8 @@ export const TableExposedVariables = ({
         selectRow(key, value);
       }
     } else {
+      // drop the previous click so the mirror effect cannot expose the stale row
+      lastClickedRowRef.current = {};
       setExposedVariables({
         selectedRow: {},
         selectedRowId: null,
@@ -291,7 +299,8 @@ export const TableExposedVariables = ({
   useEffect(() => {
     // onRowClicked event will be fired when a row is clicked
     // it should be triggered even when allowSelection is false which is handled in the handleRowClick()
-    if (allowSelection && Object.keys(lastClickedRow).length > 0) {
+    // Only actual user clicks fire the event
+    if (allowSelection && lastClickedRow?.source === 'user') {
       fireEvent('onRowClicked');
     }
   }, [lastClickedRow, fireEvent, allowSelection]);
@@ -300,10 +309,15 @@ export const TableExposedVariables = ({
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
       const item = index !== -1 ? data[index] : null;
+
+      // Point lastClickedRowRef at the new row BEFORE changing the selection.
+      // setRowSelection can flush a synchronous re-render, and the effect that mirrors lastClickedRow into selectedRow/selectedRowId reads the ref during that render.
+      // Updating it first keeps both writers in agreement, so whichever lands last exposes the same row.
+      lastClickedRowRef.current = item === null ? {} : { source: 'csa', row: item, index };
+
       if (item) {
         setRowSelection({ [index]: true });
       }
-      lastClickedRowRef.current = {};
       setExposedVariables({
         selectedRow: item === null ? {} : item,
         selectedRowId: item === null ? item : isNaN(index) ? String(index) : index,
@@ -313,6 +327,10 @@ export const TableExposedVariables = ({
     function deselectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
       const item = index !== -1 ? data[index] : null;
+
+      // Clear the ref first for the same reason as selectRow
+      lastClickedRowRef.current = {};
+
       if (item) {
         setRowSelection({ [index]: false });
       }

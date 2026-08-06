@@ -130,7 +130,8 @@ export const TableData = ({
 
   // Handles row click for row selection
   const handleRowClick = (row, isCheckbox) => {
-    lastClickedRowRef.current = { row: row?.original, index: row.index };
+    lastClickedRowRef.current = { source: 'user', row: row?.original, index: row.index };
+
     if (!allowSelection) {
       setExposedVariables({
         selectedRow: row?.original ?? {},
@@ -139,9 +140,11 @@ export const TableData = ({
       fireEvent('onRowClicked');
       return;
     }
+
     if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
       return;
     }
+
     row.toggleSelected();
   };
 
