@@ -975,7 +975,8 @@ export class AppImportExportService {
       tooljetVersion,
       moduleResourceMappings,
       importingDataQueryFolders,
-      importingDataQueryFolderMappings
+      importingDataQueryFolderMappings,
+      importedApp.type
     );
 
     const importedAppVersionIds = Object.values(appResourceMappings.appVersionMapping);
@@ -1212,7 +1213,8 @@ export class AppImportExportService {
     tooljetVersion: string | null,
     moduleResourceMappings?: any,
     importingDataQueryFolders: DataQueryFolder[] = [],
-    importingDataQueryFolderMappings: DataQueryFolderMapping[] = []
+    importingDataQueryFolderMappings: DataQueryFolderMapping[] = [],
+    appType?: string
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
@@ -1417,6 +1419,14 @@ export class AppImportExportService {
           newComponentIdsMap[component.id] = uuid();
         }
 
+        // Modules require every non-container component to be parented under the
+        // ModuleContainer; the builder/incremental APIs enforce this (component.service.ts),
+        // but imported bundles can carry components with no parent at all. Fall back to the
+        // page's ModuleContainer so imported modules get the same guarantee.
+        const moduleContainerComponent =
+          appType === APP_TYPES.MODULE ? pageComponents.find((c) => c.type === 'ModuleContainer') : null;
+        const moduleContainerId = moduleContainerComponent ? newComponentIdsMap[moduleContainerComponent.id] : null;
+
         for (const component of pageComponents) {
           let skipComponent = false;
           const newComponent = new Component();
@@ -1466,6 +1476,15 @@ export class AppImportExportService {
               NewRevampedComponents,
               tooljetVersion
             );
+            // ModuleContainer's visibility isn't a schema-declared property (no UI control for
+            // it), so there's no resolve-time fallback if it's missing - unlike the builder/API
+            // create paths (util.service.ts, appCanvasUtils.js) which hardcode it at creation
+            // time. Imported bundles can carry a ModuleContainer with this stripped, which
+            // renders it at 0 height. Mirror the same hardcoded default here.
+            if (component.type === 'ModuleContainer' && !properties.visibility) {
+              properties.visibility = { value: '{{true}}' };
+            }
+
             newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
             newComponent.type = component.type;
@@ -1475,7 +1494,11 @@ export class AppImportExportService {
             newComponent.general = general;
             newComponent.displayPreferences = component.displayPreferences;
             newComponent.validation = validation;
-            newComponent.parent = component.parent ? parentId : null;
+            newComponent.parent = component.parent
+              ? parentId
+              : moduleContainerId && component.type !== 'ModuleContainer'
+                ? moduleContainerId
+                : null;
 
             if (component.type === 'ModuleViewer' && moduleResourceMappings) {
               // Replace module app ID
