@@ -3,6 +3,7 @@ import * as inquirer from 'inquirer';
 
 import { Auth } from '../lib/component/auth';
 import { ApiClient } from '../lib/component/api-client';
+import { formatError } from '../lib/log';
 
 export default class Login extends Command {
   static description = 'Authenticate the CLI against a ToolJet workspace';
@@ -35,7 +36,14 @@ export default class Login extends Command {
     const { workspace_id: workspaceId, api_access_token: apiToken } = answers;
 
     const client = new ApiClient(apiToken);
-    const me = await client.fetchProfile();
+
+    let me: { email: string };
+    try {
+      me = await client.login();
+    } catch (err) {
+      this.log(formatError((err as Error).message));
+      process.exit(1);
+    }
 
     Auth.save(workspaceId, apiToken, me.email);
 
