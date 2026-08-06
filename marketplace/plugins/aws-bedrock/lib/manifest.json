@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "AWS Bedrock datasource",
   "description": "Plugin to use AI foundation models available on AWS",
-  "type": "api",
+  "type": "ai",
   "source": {
     "name": "AWS Bedrock",
     "kind": "aws-bedrock",

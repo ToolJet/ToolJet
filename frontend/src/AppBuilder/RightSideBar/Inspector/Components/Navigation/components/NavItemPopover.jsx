@@ -2,10 +2,22 @@ import React, { forwardRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
+const NAV_ITEM_EVENT_META = { name: 'Navigation', events: { onClick: { displayName: 'On click' } } };
 
 const NavItemPopover = forwardRef(
   (
-    { item, darkMode, onItemChange, onDeleteItem, onDuplicateItem, getResolvedValue, parentId = null, ...restProps },
+    {
+      componentId,
+      item,
+      darkMode,
+      onItemChange,
+      onDeleteItem,
+      onDuplicateItem,
+      getResolvedValue,
+      parentId = null,
+      ...restProps
+    },
     ref
   ) => {
     const iconVisibility = item?.iconVisibility;
@@ -99,6 +111,21 @@ const NavItemPopover = forwardRef(
                 />
               </div>
 
+              {!item.isGroup && (
+                <div data-cy="inspector-nav-item-details-caption-field" className="nav-item-popover-field">
+                  <label data-cy="inspector-nav-item-details-caption-label" className="nav-item-popover-field-label">
+                    Caption
+                  </label>
+                  <CodeHinter
+                    {...basicCodeHinterProps}
+                    data-cy="inspector-nav-item-details-caption-input"
+                    initialValue={item?.caption ?? ''}
+                    placeholder={'Optional description'}
+                    onChange={(value) => handleChange('caption', value)}
+                  />
+                </div>
+              )}
+
               {/* Icon field */}
               <div data-cy="inspector-nav-item-details-icon-field" className="nav-item-popover-field">
                 <CodeHinter
@@ -153,6 +180,20 @@ const NavItemPopover = forwardRef(
                 />
               </div>
             </div>
+
+            {/* Per-item events (On Click only). Groups have no events. Events are
+                stored on the Navigation component and scoped to this item via ref. */}
+            {!item.isGroup && componentId && (
+              <div data-cy="inspector-nav-item-details-events-section" className="nav-item-popover-events-section">
+                <EventManager
+                  sourceId={componentId}
+                  eventSourceType="component"
+                  eventMetaDefinition={NAV_ITEM_EVENT_META}
+                  customEventRefs={{ ref: item.id }}
+                  darkMode={darkMode}
+                />
+              </div>
+            )}
           </div>
         </div>
       </Popover>

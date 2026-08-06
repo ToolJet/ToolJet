@@ -207,7 +207,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 const result = await this.dataSourceUtilService.getAuthUrl({
                   provider: dataSource.kind,
                   source_options: sourceOptions,
-                  plugin_id: undefined,
+                  plugin_id: dataSource.pluginId,
                 });
                 return {
                   status: 'needs_oauth',
@@ -287,14 +287,15 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'graphql' ||
             dataSource.kind === 'googlesheets' ||
             dataSource.kind === 'slack' ||
-            dataSource.kind === 'zendesk'||
-            dataSource.kind === 'googlesheetsv2'
+            dataSource.kind === 'zendesk' ||
+            dataSource.kind === 'googlesheetsv2' ||
+            dataSource.kind === 'servicenow'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
               provider: dataSource.kind,
               source_options: sourceOptions,
-              plugin_id: undefined,
+              plugin_id: dataSource.pluginId,
             });
             return {
               status: 'needs_oauth',
