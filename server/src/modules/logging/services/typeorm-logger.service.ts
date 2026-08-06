@@ -9,34 +9,9 @@ export class TypeormLoggerService implements Logger {
     private readonly logger: TransactionLogger,
     private readonly configService: ConfigService
   ) {}
-
-  private isDev() {
-    return this.configService.get<string>('NODE_ENV') === 'development';
-  }
-
   private getLogLevel() {
-    const explicit = this.configService.get<string>('CUSTOM_QUERY_LOGGING_LEVEL');
-    if (explicit) return explicit;
-    if (this.isDev()) return 'query';
-    const ormLogging = this.configService.get<string>('ORM_LOGGING');
-    if (ormLogging === 'all') return 'query';
-    if (ormLogging === 'error') return 'error';
-    return 'warn';
+    return this.configService.get<string>('CUSTOM_QUERY_LOGGING_LEVEL') || 'query';
   }
-
-  private sanitizeQuery(query: string): string {
-    if (this.isDev()) return query;
-    const max = parseInt(this.configService.get<string>('QUERY_LOG_MAX_LENGTH') || '300', 10);
-    return query.length > max ? `${query.slice(0, max)}...` : query;
-  }
-
-  private sanitizeParams(params?: any[]): string {
-    if (!params || params.length === 0) return '';
-    // ponytail: never log actual param values in non-dev — tokens leak through here
-    if (this.isDev()) return ` -- PARAMETERS: ${JSON.stringify(params)}`;
-    return ` -- PARAMETERS: [${params.length} value(s)]`;
-  }
-
   logSchemaBuild(message: string, queryRunner?: QueryRunner) {
     this.logger.log(`SCHEMA BUILD: ${message}`);
   }
@@ -54,7 +29,7 @@ export class TypeormLoggerService implements Logger {
     }
   }
   logQueryError(error: string | Error, query: string, parameters?: any[], queryRunner?: QueryRunner) {
-    this.logger.error(`QUERY ERROR: ${error} ${this.sanitizeQuery(query)}${this.sanitizeParams(parameters)}`);
+    this.logger.error(`QUERY ERROR: ${error}`, query, '-- PARAMETERS:', parameters);
   }
   logQuery(query: string, parameters?: any[], queryRunner?: QueryRunner) {}
 
@@ -63,12 +38,11 @@ export class TypeormLoggerService implements Logger {
       return;
     }
     if (this.getLogLevel() === 'query' || this.getLogLevel() === 'warn') {
-      const q = `${this.sanitizeQuery(query)}${this.sanitizeParams(parameters)}`;
       if (time > 30) {
-        this.logger.warn(`SLOW QUERY (${time} ms): ${q}`);
+        this.logger.warn(`SLOW QUERY (${time} ms):`, query, '-- PARAMETERS:', parameters);
         return;
       }
-      this.logger.log(`QUERY (${time} ms): ${q}`);
+      this.logger.log(`QUERY (${time} ms):`, query, '-- PARAMETERS:', parameters);
     }
   }
 }

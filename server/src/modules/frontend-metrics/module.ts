@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { initializeFrontendMetrics } from '@otel/frontend-metrics';
 import { FrontendMetricsController } from './controller';
 import { FrontendMetricsService } from './service';
 import { FeatureAbilityFactory } from './ability';
@@ -30,4 +31,9 @@ function parsePositiveInt(raw: unknown, fallback: number): number {
   providers: [FrontendMetricsService, FeatureAbilityFactory, UserScopedThrottlerGuard],
   controllers: [FrontendMetricsController],
 })
-export class FrontendMetricsModule {}
+export class FrontendMetricsModule implements OnModuleInit {
+  onModuleInit() {
+    // Module is only imported when ENABLE_OTEL=true (see app/module.ts)
+    initializeFrontendMetrics();
+  }
+}

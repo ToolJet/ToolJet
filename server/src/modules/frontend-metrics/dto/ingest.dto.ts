@@ -8,11 +8,12 @@ import {
   IsObject,
   MaxLength,
   Min,
+  Max,
   ArrayMaxSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-const VALID_EVENT_TYPES = ['query_error', 'widget_error', 'js_error'] as const;
+const VALID_EVENT_TYPES = ['js_error', 'widget_error', 'web_vital'] as const;
 
 export type ValidEventType = typeof VALID_EVENT_TYPES[number];
 
@@ -26,8 +27,15 @@ export class FrontendMetricEventDto {
 
   @IsNumber()
   @Min(1)
+  @Max(10_000)
   @IsOptional()
   count?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(3_600_000)
+  @IsOptional()
+  value?: number;
 
   @IsObject()
   attrs: Record<string, string | number | boolean>;

@@ -1,4 +1,5 @@
 import config from 'config';
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 import { authHeader } from '@/_helpers/auth-header';
 import { authenticationService } from '@/_services';
 
@@ -42,12 +43,6 @@ function getAppContext() {
   return 'platform';
 }
 
-function getAppIdFromUrl() {
-  const path = window.location.pathname;
-  const match = path.match(/^\/(?:apps|applications|embed-apps)\/([^/]+)/);
-  return match ? match[1] : null;
-}
-
 // Called by AppBuilder/Viewer on mount so errors carry the human-readable name.
 let _currentAppName = '';
 export function setCurrentAppName(name) {
@@ -60,11 +55,33 @@ function recordMetricEvent(fingerprint, type, attrs = {}) {
   const existing = eventMap.get(fingerprint);
   if (existing) {
     existing.count += 1;
-  } else {
-    eventMap.set(fingerprint, { type, attrs, count: 1, firstSeen: Date.now() });
+    return;
   }
+  if (eventMap.size >= MAX_UNIQUE_ERRORS) {
+    flush();
+    // flush defers when session isn't ready — drop rather than grow unbounded
+    if (eventMap.size >= MAX_UNIQUE_ERRORS) return;
+  }
+  eventMap.set(fingerprint, { type, attrs, count: 1, firstSeen: Date.now() });
+}
 
-  if (eventMap.size >= MAX_UNIQUE_ERRORS) flush();
+// Vitals are cumulative values, not occurrences — latest report supersedes, no count increment.
+function recordWebVital(metric) {
+  if (!isEnabled()) return;
+
+  const fingerprint = `web_vital:${metric.name}:${metric.id}`;
+  const existing = eventMap.get(fingerprint);
+  if (existing) {
+    existing.value = metric.value;
+  } else {
+    eventMap.set(fingerprint, {
+      type: 'web_vital',
+      attrs: { 'vital.name': metric.name.toLowerCase(), 'app.context': getAppContext() },
+      value: metric.value,
+      count: 1,
+      firstSeen: Date.now(),
+    });
+  }
 }
 
 export function flush() {
@@ -96,6 +113,14 @@ export function initFrontendMetrics() {
   flushTimer = setInterval(flush, FLUSH_INTERVAL_MS);
   window.__tjMetricsTimer = flushTimer;
 
+  // Register vitals before our own visibilitychange listener — the lib reports
+  // final CLS/INP on hidden, and listener order ensures they land in this flush.
+  onLCP(recordWebVital);
+  onFCP(recordWebVital);
+  onCLS(recordWebVital);
+  onINP(recordWebVital);
+  onTTFB(recordWebVital);
+
   window.addEventListener('pagehide', _onUnload);
   document.addEventListener('visibilitychange', _onVisibility);
   window.addEventListener('error', _onGlobalError);
@@ -115,32 +140,21 @@ export function teardownFrontendMetrics() {
   initialized = false;
 }
 
-export function recordJsError(errorMessage, componentStack = '') {
+// Message/source stay in the fingerprint for dedup but are never sent as metric
+// attrs — unbounded strings would explode Prometheus label cardinality.
+export function recordJsError(errorMessage, source = '') {
   const msg = String(errorMessage).slice(0, 200);
-  recordMetricEvent(`js_error:${msg}`, 'js_error', {
-    app_name: _currentAppName,
-    app_context: getAppContext(),
-    error_message: msg,
-    component_stack: componentStack.slice(0, 500),
+  recordMetricEvent(`js_error:${msg}:${String(source).slice(0, 100)}`, 'js_error', {
+    'app.name': _currentAppName,
+    'app.context': getAppContext(),
   });
 }
 
 export function recordWidgetError(widgetType, errorMessage = '') {
   const msg = String(errorMessage).slice(0, 200);
   recordMetricEvent(`widget_error:${widgetType}:${msg}`, 'widget_error', {
-    app_name: _currentAppName,
-    app_context: getAppContext(),
-    widget_type: widgetType,
-    error_message: msg,
-  });
-}
-
-export function recordQueryError(queryId, appId, errorType = 'unknown') {
-  recordMetricEvent(`query_error:${queryId}:${errorType}`, 'query_error', {
-    app_name: _currentAppName,
-    app_context: getAppContext(),
-    query_id: queryId,
-    app_id: appId ?? getAppIdFromUrl(),
-    error_type: errorType,
+    'app.name': _currentAppName,
+    'app.context': getAppContext(),
+    'widget.type': widgetType,
   });
 }

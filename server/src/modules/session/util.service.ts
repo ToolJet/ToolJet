@@ -34,8 +34,7 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
-import { incrementConcurrentUsers, recordSessionEventDirect } from '@otel/tracing';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { incrementActiveSessions, incrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionUtilService {
@@ -105,17 +104,6 @@ export class SessionUtilService {
           manager
         );
         sessionId = session.id;
-
-        // Direct OTEL emit — read auth_method set by the calling auth path in RequestContext
-        const orgIdForMetric = organization?.id || user.organizationId;
-        if (orgIdForMetric) {
-          try {
-            const auditCtx = RequestContext?.currentContext?.res?.locals?.[AUDIT_LOGS_REQUEST_CONTEXT_KEY];
-            const authMethod = auditCtx?.resourceData?.auth_method
-              || (isPasswordLogin ? 'password' : isInstanceSSO ? 'sso' : 'unknown');
-            recordSessionEventDirect(orgIdForMetric, 'login', authMethod);
-          } catch { /* never break login */ }
-        }
       }
 
       const JWTPayload: JWTPayload = {
@@ -316,6 +304,16 @@ export class SessionUtilService {
           lastLoggedIn: new Date(),
         })
       );
+
+      // Increment active sessions counter
+      try {
+        incrementActiveSessions({
+          userId,
+          sessionType: 'user',
+        });
+      } catch (error) {
+        console.error('Error incrementing active sessions metric:', error);
+      }
 
       return session;
     }, manager);
