@@ -130,12 +130,25 @@ export const DropdownV2 = ({
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
+
+  /** Recursively extracts all options from both flat and grouped option structures */
+  function getAllOptions(options) {
+    if (!Array.isArray(options)) return [];
+    return options.reduce((acc, opt) => {
+      if (opt.options && Array.isArray(opt.options)) {
+        return acc.concat(getAllOptions(opt.options));
+      }
+      return acc.concat(opt);
+    }, []);
+  }
+
   function findDefaultItem(schema) {
     let _schema = schema;
     if (!Array.isArray(schema)) {
       _schema = [];
     }
-    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
+    const flatSchema = getAllOptions(_schema);
+    const defaultItem = flatSchema?.find((item) => item?.visible === true && item?.default === true);
     return defaultItem?.value;
   }
 
@@ -159,7 +172,8 @@ export const DropdownV2 = ({
   }, [advanced, schema, options, sort]);
 
   function selectOption(value) {
-    const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
+    const flatOptions = getAllOptions(selectOptions);
+    const val = flatOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
     if (val) {
       setInputValue(value);
       fireEvent('onSelect');
@@ -176,7 +190,8 @@ export const DropdownV2 = ({
 
   const setInputValue = (value) => {
     setCurrentValue(value);
-    const _selectedOption = selectOptions.find((option) => option.value === value);
+    const flatOptions = getAllOptions(selectOptions);
+    const _selectedOption = flatOptions.find((option) => option.value === value);
     setExposedVariables({
       value,
       selectedOption: _selectedOption
@@ -242,7 +257,7 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
+    const _options = getAllOptions(selectOptions)?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     setExposedVariable('options', _options);
 
     setExposedVariable('selectOption', async function (value) {
@@ -296,7 +311,7 @@ export const DropdownV2 = ({
   }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
-    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
+    const _options = getAllOptions(selectOptions)?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     const exposedVariables = {
       clear: async function () {
         setInputValue(null);
@@ -554,7 +569,7 @@ export const DropdownV2 = ({
             ref={selectRef}
             menuIsOpen={isMenuOpen}
             isDisabled={isDropdownDisabled}
-            value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
+            value={getAllOptions(selectOptions).filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
                 setInputValue(null);
