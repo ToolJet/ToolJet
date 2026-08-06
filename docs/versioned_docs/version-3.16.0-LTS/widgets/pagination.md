@@ -24,7 +24,14 @@ You can club the Pagination component with the List View component.
 
 ## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+The following actions of the Pagination component can be controlled using the component-specific actions (CSA). You can trigger them using an event or a RunJS query.
+
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"200px"}}> How To Access </div> |
+|:------------------|:---------------------|:---------------------|
+| setPage() | Programmatically navigates to a page. If the given index is 0 or less, it navigates to the first page; if it's greater than the total number of pages, it navigates to the last page. | `components.pagination1.setPage(3)` |
+| setVisibility() | Sets the visibility of the component. | `components.pagination1.setVisibility(false)` |
+| setDisable() | Enables or disables the component. | `components.pagination1.setDisable(true)` |
+| setLoading() | Sets the loading state of the component. While loading, page navigation is blocked and a spinner is shown in place of the current page number. | `components.pagination1.setLoading(true)` |
 
 ## Exposed Variables
 
@@ -32,13 +39,22 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 |:----------- |:----------- |:--------- |
 | totalPages | Holds the value of the `Number of Pages` set from the Pagination component properties.| Accessible dynamically with JS(for e.g., `{{components.pagination1.totalPages}}`).|
 | currentPageIndex | Holds the index of the currently selected option on the Pagination component. | Accessible dynamically with JS(for e.g., `{{components.pagination1.currentPageIndex}}`). |
+| isVisible | Indicates if the component is visible. | Accessible dynamically with JS(for e.g., `{{components.pagination1.isVisible}}`). |
+| isDisabled | Indicates if the component is disabled. | Accessible dynamically with JS(for e.g., `{{components.pagination1.isDisabled}}`). |
+| isLoading | Indicates if the component is in a loading state. | Accessible dynamically with JS(for e.g., `{{components.pagination1.isLoading}}`). |
 
-## General
-### Tooltip
+## Additional Actions
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+|:------------ |:-------------|:--------- |
+| Loading state | Shows a loading indicator on the current page and blocks page navigation while enabled. Often used together with `isLoading`. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Toggle on or off to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | This is `off` by default. Toggle `on` to lock the component and make it non-functional. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Displays an informational tooltip when the user hovers over the component. | String (e.g., `Go to next page`). |
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::
 
 ## Devices
 
@@ -49,16 +65,13 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
-|:------------ |:-------------|:--------- |
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. | By default, it's set to `{{true}}`. |
-| Disable  | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
-
 ### Advanced
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
 | CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+| Alignment | Sets the horizontal alignment of the pagination controls. | By default, it's set to `Left`. |
+| Box shadow | Sets the box shadow of the component. You can also set it programmatically using **fx**. | By default, no box shadow is applied. |
 
 :::info
 The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
@@ -67,3 +80,4 @@ The **Advanced** section is available only if your plan has the **[Custom Styles
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
 :::
+

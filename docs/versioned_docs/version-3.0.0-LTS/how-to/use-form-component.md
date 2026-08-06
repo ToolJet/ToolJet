@@ -40,7 +40,7 @@ In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form
 
 ## 3. Load the Table Component With Data
 
-- Click on the Add button in the **[Query Panel](/docs/app-builder/query-panel/)**, select ToolJet Database
+- Click on the Add button in the **[Query Panel](/docs/3.0.0-LTS/app-builder/query-panel)**, select ToolJet Database
 - Rename the query to *getProducts*
 - Choose *products* as Table name, List rows as Operations
 - Enable `Run this query on application load?` to automatically run the query when the app starts

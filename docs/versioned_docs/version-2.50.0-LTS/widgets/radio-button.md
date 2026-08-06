@@ -31,7 +31,7 @@ For more than six options, consider using **[Dropdown](/docs/widgets/dropdown)**
 | On select                                   | Triggers whenever the user clicks an option.      |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)

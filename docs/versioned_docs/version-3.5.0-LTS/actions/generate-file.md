@@ -17,7 +17,7 @@ This action allows you to construct files on the fly and let users download it.
 | Debounce  | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300` |
 
 :::tip
-Check how to run **[generate file action using RunJS](/docs/actions/run-actions-from-runjs//#generate-file)**.
+Check how to run **[generate file action using RunJS](/docs/3.5.0-LTS/how-to/run-actions-from-runjs#generate-file)**.
 :::
 
 ### CSV Data Format

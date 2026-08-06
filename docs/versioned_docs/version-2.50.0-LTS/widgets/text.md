@@ -22,7 +22,7 @@ The **Text** component can be used to create headers, sub-headers, add labels ne
 | On hover  | Triggers whenever the user hovers over the component.               |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)

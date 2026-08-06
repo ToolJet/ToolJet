@@ -67,7 +67,7 @@ To perform queries on **DynamoDB**, click on the **+ Add** button in the query m
 </div>
 
 :::tip
-You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
+You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/3.0.0-LTS/tutorial/transformations)
 :::
 
 #### Supported Operations

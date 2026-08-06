@@ -18,7 +18,7 @@ You might have to stick to the Safari browser in IOS as camera access is restric
 | On detect | Triggers whenever the component successfully scans a QR code. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 :::caution Debugging tip

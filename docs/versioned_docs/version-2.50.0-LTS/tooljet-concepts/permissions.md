@@ -23,4 +23,4 @@ To secure your applications in ToolJet, you can leverage Groups and Permissions.
 
 </div>
 
-Read more about managing users and groups **[here](/docs/tutorial/manage-users-groups/)**.
+Read more about managing users and groups **[here](/docs/2.50.0-LTS/tutorial/manage-users-groups)**.

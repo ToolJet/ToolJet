@@ -35,7 +35,7 @@ title: OpenID Setup
 
 ### Exposed ssoUserInfo
 
-Once the OpenID is configured (on ToolJet version **`v2.6.2-ee2.1.0`** or above), ToolJet will expose the user info returned by the OpenID provider. The user info will be available under the `ssoUserInfo` property of the `currentUser` variable. Check the **[Inspector](/docs/how-to/use-inspector)** doc to learn more.
+Once the OpenID is configured (on ToolJet version **`v2.6.2-ee2.1.0`** or above), ToolJet will expose the user info returned by the OpenID provider. The user info will be available under the `ssoUserInfo` property of the `currentUser` variable. Check the **[Inspector](/docs/3.0.0-LTS/how-to/use-inspector)** doc to learn more.
 
 The exposed user info can be dynamically accessed throughout the apps using JS **`{{globals.currentUser.ssoUserInfo.<key>}}`**
 

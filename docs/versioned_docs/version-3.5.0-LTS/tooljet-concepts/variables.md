@@ -56,6 +56,6 @@ Together, these variable management functions and types provide a robust framewo
 To learn more about different types of variables and their usage, go through the below links:
 
 **[Setting and unsetting variables and page variables](/docs/actions/run-actions-from-runjs/)** <br/>
-**[Exposed variables](/docs/tooljet-concepts/exposed-variables)** <br/>
+**[Exposed variables](/docs/3.5.0-LTS/tooljet-concepts/exposed-variables)** <br/>
 **[Environment variables](/docs/setup/env-vars/)** <br/>
-**[Workspace variables](/docs/security/constants/variables)**
+**[Workspace variables](/docs/3.5.0-LTS/security/constants/variables)**

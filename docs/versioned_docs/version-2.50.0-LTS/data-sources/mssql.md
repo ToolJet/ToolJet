@@ -37,7 +37,7 @@ ToolJet requires the following to connect to your PostgreSQL database.
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the database added in the previous step as the data source. 
 
-Once the SQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
+Once the SQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/2.50.0-LTS/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
 
 ### SQL Mode
 
@@ -72,7 +72,7 @@ GUI mode can be used to query MS SQL Server / Azure SQL Databases without writin
 <img className="screenshot-full" src="/img/datasource-reference/mssql/gui mode.png" alt="ToolJet mssql gui mode"/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/2.50.0-LTS/tutorial/transformations)
 :::
 
 </div>

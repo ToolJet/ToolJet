@@ -25,11 +25,11 @@ The table data can be filtered using the Filter data option on its top-left. You
 - **less than**
 - **less than or equal to**
 
-You also have the option to **[hide the filter button](/docs/widgets/table/table-properties#enable-filtering)** in the table properties.
+You also have the option to **[hide the filter button](/docs/2.50.0-LTS/widgets/table#enable-filtering)** in the table properties.
 
 ### Search
 
-At the top-right corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/widgets/table/table-properties#show-search)** from the table from the table properties.
+At the top-right corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/2.50.0-LTS/widgets/table#show-search)** from the table from the table properties.
 
 :::tip
 You can use the `Tab` key to navigate through cells on the table.
@@ -37,11 +37,11 @@ You can use the `Tab` key to navigate through cells on the table.
 
 ### Pagination
 
-The table component supports both **[client-side pagination](/docs/widgets/table/table-properties#pagination)** and **[server-side pagination](/docs/widgets/table/serverside-operations/pagination)**. The `<<` and `>>` button skips to the first and last page respectively. The `<` and `>` button takes the user to the previous and next page respectively. You can also **[hide the pagination buttons](/docs/widgets/table/table-properties#pagination)** in the table properties.
+The table component supports both **[client-side pagination](/docs/2.50.0-LTS/widgets/table#pagination)** and **[server-side pagination](/docs/widgets/table/serverside-operations/pagination)**. The `<<` and `>>` button skips to the first and last page respectively. The `<` and `>` button takes the user to the previous and next page respectively. You can also **[hide the pagination buttons](/docs/2.50.0-LTS/widgets/table#pagination)** in the table properties.
 
 ### Add New Rows
 
-Upon clicking this button, a popup modal will show, providing users with the ability to insert new rows. Initially, the modal will contain a single row, with columns mirroring those found in the table. If users input data into this row, it will be stored within the **[`newRows` variable](/docs/widgets/table/table-csa-and-variables#exposed-variables)** associated with the table. Clicking on the **Discard** button will clear the data within this variable. However, if the users close the popup without any action (neither saving nor discarding), the data will persist, accompanied by a green indicator on the **Add new row** button. The table incorporates an **[Add new rows event handler](/docs/widgets/table/table-properties#add-new-rows)**, which can be employed to execute queries that store the data into the data source upon clicking the **Save** button.
+Upon clicking this button, a popup modal will show, providing users with the ability to insert new rows. Initially, the modal will contain a single row, with columns mirroring those found in the table. If users input data into this row, it will be stored within the **[`newRows` variable](/docs/widgets/table/table-csa-and-variables#exposed-variables)** associated with the table. Clicking on the **Discard** button will clear the data within this variable. However, if the users close the popup without any action (neither saving nor discarding), the data will persist, accompanied by a green indicator on the **Add new row** button. The table incorporates an **[Add new rows event handler](/docs/2.50.0-LTS/widgets/table#add-new-rows)**, which can be employed to execute queries that store the data into the data source upon clicking the **Save** button.
 
 :::info
 At present, it is not possible to include columns of type Image when adding a new row to the table.
@@ -60,7 +60,7 @@ The name of the downloaded file will be in the following format: <br/>
 `Tablename_DD-MM-YYYY_HH-mm.filetype` <br/><br/>
 Example: <i>Customers_25-03-2022_16-10.csv</i>
 
-You have the option to **[hide the download button](/docs/widgets/table/table-properties#show-download-button)** in the table properties.
+You have the option to **[hide the download button](/docs/2.50.0-LTS/widgets/table#show-download-button)** in the table properties.
 
 :::tip
 You can utilize **[Component Specific Actions](/docs/widgets/table/table-csa-and-variables#component-specific-actions-csa)** to retrieve the table data in the mentioned formats from the event handlers across the application.
@@ -72,7 +72,7 @@ You can choose which columns to show or hide in the table using this option. You
 
 ### Sorting
 
-You can sort the table data in ascending or descending order by clicking on the column header. You can also **[disable the sorting](/docs/widgets/table/table-properties#enable-column-sorting)** from the table properties.
+You can sort the table data in ascending or descending order by clicking on the column header. You can also **[disable the sorting](/docs/2.50.0-LTS/widgets/table#enable-column-sorting)** from the table properties.
 
 ## Table Data
 
@@ -177,7 +177,7 @@ This column type is automatically selected by default when a column is added or 
 | Overflow | Manage the handling of content that exceeds the cell dimensions. `Wrap` wraps the content onto the next line within the cell, `Scroll` enables scrolling for content that exceeds the cell, and `Hide` conceals content that goes beyond the cell boundary. |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
 | Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. You can use JavaScript code to dynamically generate a value. For instance, to round off a value, you can use <br/>`{{cellValue > 4.5 ? 5 : 4}}`. || Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
-| Text color | Modify the color of the text in the column. You can use a hex color code or color name. The value can be dynamically assigned using JS. Refer to the [how-to guide](/docs/how-to/access-cellvalue-rowdata). |
+| Text color | Modify the color of the text in the column. You can use a hex color code or color name. The value can be dynamically assigned using JS. Refer to the [how-to guide](/docs/2.50.0-LTS/how-to/access-cellvalue-rowdata). |
 | Cell background color | Adjust the background color of the cell in the column. You can utilize a hex color code or color name. The value can be dynamically assigned using JS. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
@@ -335,7 +335,7 @@ The **Link** column type enables cells to become clickable links that can be loa
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
 
 :::info
-For more information on using cellValue and rowData, refer to the **[how-to guide](/docs/how-to/access-cellvalue-rowdata)**.
+For more information on using cellValue and rowData, refer to the **[how-to guide](/docs/2.50.0-LTS/how-to/access-cellvalue-rowdata)**.
 :::
 
 ### Add Column
@@ -405,16 +405,19 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 
 ## Events
 
-- **[Row hovered](/docs/widgets/table/table-properties#row-hovered)**
-- **[Row clicked](/docs/widgets/table/table-properties#row-clicked)**
-- **[Save changes](/docs/widgets/table/table-properties#save-changes)**
-- **[Cancel changes](/docs/widgets/table/table-properties#cancel-changes)**
-- **[Page changed](/docs/widgets/table/table-properties#page-changed)**
-- **[Search](/docs/widgets/table/table-properties#search)**
-- **[Sort applied](/docs/widgets/table/table-properties#sort-applied)**
-- **[Cell value changed](/docs/widgets/table/table-properties#cell-value-changed)**
-- **[Filter changed](/docs/widgets/table/table-properties#filter-changed)**
-- **[Add new rows](/docs/widgets/table/table-properties#add-new-rows)**
+<a id="row-hovered"></a>
+<a id="row-clicked"></a>
+
+- **[Row hovered](/docs/2.50.0-LTS/widgets/table#row-hovered)**
+- **[Row clicked](/docs/2.50.0-LTS/widgets/table#row-clicked)**
+- **[Save changes](/docs/2.50.0-LTS/widgets/table#save-changes)**
+- **[Cancel changes](/docs/2.50.0-LTS/widgets/table#cancel-changes)**
+- **[Page changed](/docs/2.50.0-LTS/widgets/table#page-changed)**
+- **[Search](/docs/2.50.0-LTS/widgets/table#search)**
+- **[Sort applied](/docs/2.50.0-LTS/widgets/table#sort-applied)**
+- **[Cell value changed](/docs/2.50.0-LTS/widgets/table#cell-value-changed)**
+- **[Filter changed](/docs/2.50.0-LTS/widgets/table#filter-changed)**
+- **[Add new rows](/docs/2.50.0-LTS/widgets/table#add-new-rows)**
 
 ### Allow Selection
 
@@ -546,7 +549,7 @@ When Server-side pagination is enabled, you'll be able to set three other table 
 - **Total records server side**: Set a numerical value to display particular number of records.
 
 :::tip
-Check this how-to guide to learn more about [server-side pagination](/docs/how-to/use-server-side-pagination).
+Check this how-to guide to learn more about [server-side pagination](/docs/2.50.0-LTS/how-to/use-server-side-pagination).
 :::
 
 ## Additional Actions

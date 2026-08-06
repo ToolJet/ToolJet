@@ -28,7 +28,7 @@ ToolJet requires the following to connect to your Azure Blob.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 :::tip
-Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/tutorial/transformations)**.
+Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/2.50.0-LTS/tutorial/transformations)**.
 :::
 
 <div style={{textAlign: 'center'}}>

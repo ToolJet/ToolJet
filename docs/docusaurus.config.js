@@ -24,6 +24,7 @@ module.exports = {
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
+  trailingSlash: true,
   themeConfig: {
     image: 'img/tooljet-ai-og-image.png',
     announcementBar: {
@@ -305,7 +306,7 @@ module.exports = {
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
           lastVersion: '3.16.0-LTS',
-          onlyIncludeVersions: process.env.linkCheck ? ['3.16.0-LTS'] : undefined,
+          onlyIncludeVersions: process.env.build_lts ? ['3.16.0-LTS'] : undefined,
           versions: {
             // Uncomment the following line to include the beta version in the sidebar
             // current: {

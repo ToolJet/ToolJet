@@ -8,7 +8,7 @@ The **Toggle Switch** component can be used for binary choices, such as turning 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 :::info
-To get the configuration of legacy Toggle Switch component, please refer to **[this](/docs/widgets/toggle-switch)** document.
+To get the configuration of legacy Toggle Switch component, please refer to **[this](/docs/3.0.0-LTS/widgets/toggle-switch)** document.
 :::
 
 ## Properties
@@ -33,7 +33,7 @@ To get the configuration of legacy Toggle Switch component, please refer to **[t
 | On uncheck (deprecated)| On uncheck event is triggered when toggle switch input is unchecked. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

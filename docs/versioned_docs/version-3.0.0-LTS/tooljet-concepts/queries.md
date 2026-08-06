@@ -37,4 +37,4 @@ Queries run when triggered by app events, such as clicking a button. They can fe
 
 </div>
 
-Learn more about queries in this **[detailed guide](/docs/app-builder/query-panel/)** for Query Panel. 
+Learn more about queries in this **[detailed guide](/docs/3.0.0-LTS/app-builder/query-panel)** for Query Panel. 

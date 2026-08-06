@@ -108,6 +108,22 @@ Before connecting a query to your app’s UI, use the Preview button to check wh
 
 Once things look good, use the Run button to execute the query and verify how it interacts with your components and other queries.
 
+### Aborting a Query
+
+If a query is taking too long, for example a SQL query without a `LIMIT` clause that ends up fetching millions of rows, you don't need to wait for it to finish, or refresh the app to stop it.
+
+- If a query triggered via **Run** or **Preview** is still active after 3 seconds, an **Abort** button appears next to Run and Preview.
+- Click **Abort**, or use the shortcut **⌘ + .** (Mac) / **Ctrl + .** (Windows/Linux), to stop waiting for the response.
+- While a query is running, the **Run**, **Preview**, and AI query generation controls are disabled until you abort it or it completes on its own.
+
+:::note
+Abort cancels the pending request on the client only. This stops the app builder from waiting for a response, but the underlying data source may continue processing the query on its end until it completes.
+:::
+
+Abort is not available for **RunJS**, **RunPy**, and **Workflow** queries, since they don't run as cancellable network requests.
+
+Queries can also be aborted programmatically using `queries.<queryName>.abort()`, or as an event action. Learn more in **[Run Actions from RunJS](/docs/actions/run-actions-from-runjs#abort-query)** and the **[Abort Query action reference](/docs/actions/abort-query)**.
+
 ## Query Level Permission
 
 You can configure query-level permissions to allow only selected end users or user groups to run the query.

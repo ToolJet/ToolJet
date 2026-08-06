@@ -8,12 +8,12 @@ title: "Get All Users"
 <ApiColumns>
 <ApiLeft>
 
-Retrieves a list of all users along with their workspace permissions and group memberships. Optionally filter by group names.
+Retrieves a list of all users along with their workspace permissions and group memberships. Optionally filter by group names and/or status.
 
 
 
 
-<ParamsTable title="Query Parameters" params={[{"name":"group_names","type":"string","required":false,"description":"Comma-separated list of group names to filter by (e.g. `admin,end-user`).","in":"query"}]} />
+<ParamsTable title="Query Parameters" params={[{"name":"group_names","type":"string","required":false,"description":"Comma-separated list of group names to filter by (e.g. `admin,end-user`), including custom groups.","in":"query"},{"name":"status","type":"string","required":false,"description":"Filter users by status. Accepted values are `active`, `invited`, `archived`, and `verified`.","in":"query"}]} />
 
 
 <ErrorsTable errors={[
@@ -25,7 +25,7 @@ Retrieves a list of all users along with their workspace permissions and group m
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/users?group_names=<group_names>" \\
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/users?group_names=<group_names>&status=<status>" \\
     -H "Authorization: Basic <access_token>"`} />
 
 <ResponseExample statusCode="200" body={`[

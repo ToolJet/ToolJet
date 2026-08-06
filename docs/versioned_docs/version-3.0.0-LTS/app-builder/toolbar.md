@@ -52,7 +52,7 @@ The Developer Details icon will show a profile picture of the currently active d
 You can use the Env dropdown menu to select an environment for your app: Development, Staging, or Production. This feature facilitates seamless transition through the app development cycle.
 
 :::tip
-Learn more about multi-environment configuration **[here](/docs/release-management/multi-environment/)**.
+Learn more about multi-environment configuration **[here](/docs/3.0.0-LTS/release-management/multi-environment)**.
 :::
 
 <div style={{textAlign: 'center'}}>
@@ -64,7 +64,7 @@ Learn more about multi-environment configuration **[here](/docs/release-manageme
 You can manage application versions through the Version Manager. You can use this dropdown to edit a version name or adding/removing versions.
 
 :::tip
-Versioning is also helpful when working with **[multiple environments](/docs/release-management/multi-environment/)** like development, staging and production.
+Versioning is also helpful when working with **[multiple environments](/docs/3.0.0-LTS/release-management/multi-environment)** like development, staging and production.
 :::
 
 <div style={{textAlign: 'center'}}>
@@ -75,7 +75,7 @@ Versioning is also helpful when working with **[multiple environments](/docs/rel
 ### Gitsync
 The `Gitsync` icon next to the versions dropdown allows you to sync your application with your GitHub repository.
 
-Read more about Gitsync **[here](/docs/gitsync)**. 
+Read more about Gitsync **[here](/docs/3.0.0-LTS/gitsync)**. 
 ### Undo or Redo
 
 You can Undo or Redo any action performed on the canvas using the Undo and Redo buttons. 
@@ -91,7 +91,7 @@ You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to 
 The Share button allows you to share your applications with a unique URL generated automatically or edit the URL slug to personalize it. The share button will only be active when your application is released. 
 
 :::tip
-Learn more about **[Sharing](/docs/app-builder/share)** your ToolJet applications.
+Learn more about **[Sharing](/docs/3.0.0-LTS/app-builder/share)** your ToolJet applications.
 :::
 
 <div style={{textAlign: 'center'}}>
