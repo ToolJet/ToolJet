@@ -68,7 +68,6 @@ export class AppsRepository extends Repository<App> {
     slug: string,
     organizationId: string,
     defaultBranchId: string | null,
-    versionId?: string,
     branchId?: string
   ): Promise<App> {
     // Callers (e.g. createGitApp, findAppWithIdOrSlug, valid-app.guard) expect this

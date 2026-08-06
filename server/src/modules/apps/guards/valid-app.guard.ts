@@ -36,8 +36,8 @@ export class ValidAppGuard implements CanActivate {
       (id
         ? isUUID(id)
           ? await this.appRepository.findById(id, user.organizationId, versionId, branchId)
-          : await this.appRepository.findBySlug(id, user.organizationId, undefined, versionId, branchId)
-        : await this.appRepository.findBySlug(slug, user.organizationId, undefined, versionId, branchId));
+          : await this.appRepository.findBySlug(id, user.organizationId, undefined, branchId)
+        : await this.appRepository.findBySlug(slug, user.organizationId, undefined, branchId));
 
     // If app is not found, throw NotFoundException
     if (!app) {

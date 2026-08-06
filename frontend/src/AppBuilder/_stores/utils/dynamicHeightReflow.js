@@ -646,7 +646,7 @@ export const resolveContainerHeight = ({
     const activeTabFromExposedState = getExposedPropertyForAdditionalActions(componentId, context, 'currentTab');
     const configuredTabs = component?.properties?.tabItems || component?.properties?.tabs;
     const firstVisibleTabId = Array.isArray(configuredTabs)
-      ? (configuredTabs.find((tabItem) => tabItem?.visible !== false)?.id ?? configuredTabs[0]?.id)
+      ? configuredTabs.find((tabItem) => tabItem?.visible !== false)?.id ?? configuredTabs[0]?.id
       : null;
     const activeTab =
       activeTabFromElement ?? activeTabFromExposedState ?? component?.properties?.defaultTab ?? firstVisibleTabId;
@@ -1342,10 +1342,16 @@ export const buildReflowPatch = ({
       contextIndices,
       moduleId
     );
-    const nextHeight =
+    let nextHeight =
       componentId === changedComponentId
         ? changedNewHeight
-        : (resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0);
+        : resolvedHeights[componentId] ?? currentEffectiveLayout?.height ?? 0;
+
+    // Floor a non-changed sibling at its calc-bumped canonical so a stale/raw temp can't pin a top-label input below its rendered label row.
+    if (componentId !== changedComponentId) {
+      const bumpedHeight = getEffectiveCanonicalHeight(componentId);
+      nextHeight = Math.max(nextHeight, bumpedHeight);
+    }
 
     // Merge order: canonical (base) < existing temp (carry over left/width
     // etc.) < new top/height. Anything we don't touch passes through.
