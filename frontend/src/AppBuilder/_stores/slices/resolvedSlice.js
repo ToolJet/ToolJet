@@ -66,6 +66,10 @@ export const createResolvedSlice = (set, get) => {
   // Store writes are synchronous (reads work immediately in the same runJS context);
   // only the dep resolution is deferred.
   let _implicitBatchScheduled = false;
+  // Tracked separately from the batch manager depth so the implicit batch can be flushed without disturbing an explicit bracket's ref count.
+  let _explicitBatchDepth = 0;
+  // Bumped whenever an implicit batch is closed, so a microtask never flushes a batch it no longer owns.
+  let _implicitBatchGeneration = 0;
   const scheduleDependencyUpdate = (depPath, moduleId) => {
     if (_exposedValueBatch.isBatching()) {
       // Explicit batch already open — add the dep path to it
@@ -74,9 +78,12 @@ export const createResolvedSlice = (set, get) => {
     }
     if (!_implicitBatchScheduled) {
       _implicitBatchScheduled = true;
+      const generation = _implicitBatchGeneration;
       _exposedValueBatch.startBatch();
       queueMicrotask(() => {
+        if (!_implicitBatchScheduled || generation !== _implicitBatchGeneration) return;
         _implicitBatchScheduled = false;
+        _implicitBatchGeneration++;
         _exposedValueBatch.flush('implicitMicrotaskBatch');
       });
     }
@@ -98,14 +105,24 @@ export const createResolvedSlice = (set, get) => {
     },
 
     startExposedValueBatch: () => {
+      _explicitBatchDepth++;
       _exposedValueBatch.startBatch();
     },
 
     flushExposedValueBatch: () => {
+      if (_explicitBatchDepth > 0) _explicitBatchDepth--;
       _exposedValueBatch.flush('flushExposedValueBatch');
     },
 
     isExposedValueBatching: () => _exposedValueBatch.isBatching(),
+
+    // Applies writes buffered by the implicit batch so event handlers resolve against them instead of the previous values.
+    flushImplicitExposedValueBatch: () => {
+      if (!_implicitBatchScheduled || _explicitBatchDepth > 0) return;
+      _implicitBatchScheduled = false;
+      _implicitBatchGeneration++;
+      _exposedValueBatch.flush('flushImplicitExposedValueBatch');
+    },
 
     bufferExposedValueMutation: (mutation, depPaths) => {
       _exposedValueBatch.bufferMutation(mutation, depPaths);

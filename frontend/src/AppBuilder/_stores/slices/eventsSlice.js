@@ -457,6 +457,9 @@ export const createEventsSlice = (set, get) => ({
       const filteredEvents = events
         ?.filter((event) => event?.event.eventId === eventId && !event?.event?.disabled)
         ?.sort((a, b) => a.index - b.index);
+      if (filteredEvents.length === 0) return;
+      // Exposed values written in the same tick as the trigger are still buffered at this point.
+      get().flushImplicitExposedValueBatch();
 
       for (const event of filteredEvents) {
         await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);

@@ -131,18 +131,25 @@ export const TableData = ({
   // Handles row click for row selection
   const handleRowClick = (row, isCheckbox) => {
     lastClickedRowRef.current = { row: row?.original, index: row.index };
-    if (!allowSelection) {
+    // Write selectedRow before firing, in the same tick, so handlers don't read the previous row.
+    const emitRowClicked = () => {
       setExposedVariables({
         selectedRow: row?.original ?? {},
         selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
       });
       fireEvent('onRowClicked');
+    };
+    if (!allowSelection) {
+      emitRowClicked();
       return;
     }
+    // Selection stays as-is, but the click event must still fire.
     if (disableRowDeselection && row.getIsSelected() && !isCheckbox) {
+      emitRowClicked();
       return;
     }
     row.toggleSelected();
+    emitRowClicked();
   };
 
   const renderTableHeader = () => {
