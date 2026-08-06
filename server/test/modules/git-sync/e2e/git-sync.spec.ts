@@ -35,7 +35,7 @@ function requireEnv(name: string): string {
 // enterprise URL, API URL, reset/merge admin endpoints, the {owner, repo}
 // pair used in admin merges) is derived from these two values.
 const GIT_BASE_URL = requireEnv('TEST_GIT_BASE_URL').replace(/\/$/, '');
-const GIT_REPO_PATH = (process.env.TEST_GIT_REPO_PATH || 'gsmithun4/e2e').replace(/^\/|\/$/g, '');
+const GIT_REPO_PATH = (process.env.TEST_GIT_REPO_PATH || 'gsmithun4/e2e1').replace(/^\/|\/$/g, '');
 const [GIT_REPO_OWNER, GIT_REPO_NAME] = GIT_REPO_PATH.split('/');
 
 // GitHub App credentials — read from env, no fallbacks.
@@ -87,11 +87,25 @@ describe('GitSyncController', () => {
     // wipes the spies, hence beforeEach.
     beforeEach(() => {
       const branchSvc = app.get(WorkspaceBranchService, { strict: false });
-      const queueSvc = app.get(GitSyncQueueService, { strict: false });
-      jest.spyOn(queueSvc, 'enqueueCreateBranch').mockImplementation((p) => branchSvc.executeCreateBranch(p));
-      jest.spyOn(queueSvc, 'enqueuePullBranch').mockImplementation((p) => branchSvc.executePullBranch(p));
-      jest.spyOn(queueSvc, 'enqueueDeleteBranch').mockImplementation((p) => branchSvc.executeDeleteBranch(p));
-      jest.spyOn(queueSvc, 'enqueuePushAppDeletion').mockImplementation((p) => branchSvc.executePushAppDeletion(p));
+      // Spy the class PROTOTYPE, not an app.get() instance. WorkspaceBranchesModule is a
+      // cached SubModule registered several times (per configs / isMainImport), so there are
+      // multiple GitSyncQueueService instances; app.get() may hand back a different one than
+      // the WorkspaceBranchService actually injects, leaving the real queue.add un-mocked.
+      // With WORKER=true the live GitSyncQueueProcessor then drains those jobs asynchronously
+      // and the specs race the worker (create/pull land after the assertions). Prototyping the
+      // spy intercepts enqueue on every instance, so jobs always run inline at enqueue time.
+      jest
+        .spyOn(GitSyncQueueService.prototype, 'enqueueCreateBranch')
+        .mockImplementation((p) => branchSvc.executeCreateBranch(p));
+      jest
+        .spyOn(GitSyncQueueService.prototype, 'enqueuePullBranch')
+        .mockImplementation((p) => branchSvc.executePullBranch(p));
+      jest
+        .spyOn(GitSyncQueueService.prototype, 'enqueueDeleteBranch')
+        .mockImplementation((p) => branchSvc.executeDeleteBranch(p));
+      jest
+        .spyOn(GitSyncQueueService.prototype, 'enqueuePushAppDeletion')
+        .mockImplementation((p) => branchSvc.executePushAppDeletion(p));
     });
 
     // Create returns an enqueue ack, not the branch row — resolve ids from the list endpoint.
@@ -4062,10 +4076,11 @@ describe('GitSyncController', () => {
           .expect(200);
 
         // ────────────────────────────────────────────────────────────────────
-        // Single-branch (branching disabled) unsynced-resource flow:
+        // Single-branch (branching disabled) default-branch resource flow:
         //   - app / module / data source can be created directly on the DEFAULT branch
         //     (multi-branch rejects create-on-default; single-branch allows it),
-        //   - the unsynced app/module/data-source sit on the default branch and are
+        //   - in single-branch mode the default branch IS the working branch, so those
+        //     freshly created resources are marked synced-on-create and are still
         //     push-eligible (the DS is linked to the app via a query, so it would ride along
         //     in the app's push commit).
         // The actual git transport (direct push to the default branch) can't be exercised here:
@@ -4184,7 +4199,7 @@ describe('GitSyncController', () => {
         // single-branch behaviour at the app/authorization layer instead: create-on-default is
         // allowed (step 81), and the unsynced app/module/data-source sit on the default branch,
         // unsynced, and are push-eligible.
-        step(82, 'single-branch: unsynced app on the default branch is push-eligible (validate-push)');
+        step(82, 'single-branch: synced app on the default branch is push-eligible (validate-push)');
         const sbValidatePush = await request
           .agent(app.getHttpServer())
           .get(`/api/app-git/validate-push/${sbAppId}`)
@@ -4194,8 +4209,11 @@ describe('GitSyncController', () => {
           .expect(200);
         expect(sbValidatePush.body).toEqual({ valid: true });
 
-        step(83, 'single-branch: app/module/data-source live on the DEFAULT branch, unsynced, with the DS linked');
-        // App + module versions: default branch, DRAFT, unsynced (never pushed).
+        step(83, 'single-branch: app/module/data-source live on the DEFAULT branch, synced, with the DS linked');
+        // App + module versions: default branch, DRAFT, SYNCED. In single-branch mode the default
+        // branch IS the working branch, so newly created apps/modules/data-sources are marked
+        // is_synced=true on create (AppsService.create + DataSourcesUtilService.create flip the
+        // default-branch DRAFT/VERSION row to synced when git is on and branching is off).
         const sbVersionRows = await dataSource.query(
           `SELECT id, branch_id, status, is_synced FROM app_versions WHERE id = ANY($1)`,
           [[sbAppVersionId, sbModuleVersionId]]
@@ -4203,20 +4221,86 @@ describe('GitSyncController', () => {
         expect(sbVersionRows).toHaveLength(2);
         expect(sbVersionRows.every((r: any) => r.branch_id === mainBranchId)).toBe(true);
         expect(sbVersionRows.every((r: any) => r.status === 'DRAFT')).toBe(true);
-        expect(sbVersionRows.every((r: any) => r.is_synced === false)).toBe(true);
+        expect(sbVersionRows.every((r: any) => r.is_synced === true)).toBe(true);
 
-        // Data source: an unsynced DSV on the default branch, linked to the app via a query
+        // Data source: a synced DSV on the default branch, linked to the app via a query
         // (this is what serializeLinkedDataSourcesForApp would carry into the app's push commit).
         const [sbDsvRow] = await dataSource.query(
           `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
           [sbDsId, mainBranchId]
         );
-        expect(sbDsvRow?.is_synced).toBe(false);
+        expect(sbDsvRow?.is_synced).toBe(true);
         const [sbQueryLink] = await dataSource.query(
           `SELECT 1 AS linked FROM data_queries WHERE data_source_id = $1 AND app_version_id = $2`,
           [sbDsId, sbAppVersionId]
         );
         expect(sbQueryLink?.linked).toBe(1);
+
+        // ────────────────────────────────────────────────────────────────────
+        // Single-branch deletion auto-push: deleting a git-synced app on the
+        // DEFAULT branch must enqueue a git deletion push, giving single-branch
+        // parity with the feature-branch deletes that auto-commit in multi-branch
+        // mode. The shared Gitea blocks direct pushes to the default branch (see the
+        // transport note above), so the real push (executePushAppDeletion →
+        // pushWorkspace(main)) can't be exercised here — we assert at the enqueue
+        // layer instead: swap the inline-exec spy for a recorder and verify the
+        // enqueued payload targets the default branch.
+        // ────────────────────────────────────────────────────────────────────
+        step(84, 'single-branch: deleting a synced app on the DEFAULT branch enqueues a git deletion push');
+        const sbDeletionPushSpy = jest
+          .spyOn(GitSyncQueueService.prototype, 'enqueuePushAppDeletion')
+          .mockImplementation(async () => undefined);
+        // Zero out any deletion pushes from earlier steps in this long-running test.
+        sbDeletionPushSpy.mockClear();
+
+        await request
+          .agent(app.getHttpServer())
+          .delete(`/api/apps/${sbAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+
+        // The app's default-branch versions are gone from the DB …
+        const sbAppVersionsAfter = await dataSource.query(`SELECT id FROM app_versions WHERE app_id = $1`, [sbAppId]);
+        expect(sbAppVersionsAfter).toHaveLength(0);
+
+        // … and a deletion push was enqueued for the DEFAULT branch (the single-branch fix).
+        // The @OnEvent('app.deletion.push-to-git') listener runs async, so poll briefly
+        // for the enqueue to land before asserting.
+        const waitForCall = async (spy: jest.SpyInstance, timeoutMs = 8000) => {
+          const start = Date.now();
+          while (spy.mock.calls.length === 0 && Date.now() - start < timeoutMs) {
+            await new Promise((r) => setTimeout(r, 50));
+          }
+        };
+        await waitForCall(sbDeletionPushSpy);
+        expect(sbDeletionPushSpy).toHaveBeenCalledTimes(1);
+        expect(sbDeletionPushSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ organizationId: orgId, branchId: mainBranchId })
+        );
+
+        step(85, 'single-branch: deleting a synced module on the DEFAULT branch also enqueues a git deletion push');
+        sbDeletionPushSpy.mockClear();
+
+        await request
+          .agent(app.getHttpServer())
+          .delete(`/api/apps/${sbModuleId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+
+        const sbModuleVersionsAfter = await dataSource.query(`SELECT id FROM app_versions WHERE app_id = $1`, [
+          sbModuleId,
+        ]);
+        expect(sbModuleVersionsAfter).toHaveLength(0);
+
+        await waitForCall(sbDeletionPushSpy);
+        expect(sbDeletionPushSpy).toHaveBeenCalledTimes(1);
+        expect(sbDeletionPushSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ organizationId: orgId, branchId: mainBranchId })
+        );
 
         // Restore multi-branch so the shared org is left in its default (branching-on) state.
         await request
@@ -4767,6 +4851,125 @@ describe('GitSyncController', () => {
     });
 
     // ────────────────────────────────────────────────────────────────────────────
+    // Git-OFF metadata update when the app has NO draft version (regression).
+    //
+    // A git-off app can end up with only saved (PUBLISHED) version rows and no DRAFT —
+    // create → publish flips the draft to PUBLISHED and, because the app is unsynced,
+    // no continuity draft is seeded. The metadata write (PUT /api/apps/:id for
+    // name/slug/icon/is_public) used to be scoped to the DRAFT row only, so with no draft
+    // it silently matched zero rows and dropped the edit — leaving the app reachable
+    // only under its old slug (validate-released-app-access/<new-slug> then 404s).
+    // The write now falls back to the saved version rows when no draft exists.
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('git-off metadata update with no draft version (regression)', () => {
+      let regOrgId: string;
+      let regCookie: string[];
+      let regDataSource: DataSource;
+
+      beforeAll(async () => {
+        // Fresh org, git never configured → stays git-off for the whole test.
+        const { organization } = await createUser(app, {
+          email: 'git-off-nodraft@tooljet.io',
+          firstName: 'git',
+          lastName: 'nodraft',
+        });
+        regOrgId = organization.id;
+        const { tokenCookie: cookie } = await login(app, 'git-off-nodraft@tooljet.io');
+        regCookie = cookie;
+        await ensureAppEnvironments(app, regOrgId);
+        regDataSource = app.get<DataSource>(getDataSourceToken('default'));
+        // Seed the default WorkspaceBranch (createUser skips the onboarding that creates it),
+        // otherwise getDetails() self-heals with a noisy "No default branch found" log.
+        await regDataSource.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true)
+           ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [regOrgId]
+        );
+      });
+
+      it('persists name/slug/icon/is_public and keeps the app resolvable by its new slug', async () => {
+        const { randomUUID } = await import('crypto');
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', regCookie).set('tj-workspace-id', regOrgId);
+
+        // 1. Create app (git off) → one DRAFT version on the default branch.
+        const appResp = await auth(agent().post('/api/apps'))
+          .send({ icon: 'home', name: 'nodraft-app', type: 'front-end' })
+          .expect(201);
+        const appId: string = appResp.body.id;
+
+        const detail = await auth(agent().get(`/api/apps/${appId}`)).expect(200);
+        const ev = detail.body?.editing_version || detail.body?.editingVersion;
+        expect(ev).toBeDefined();
+        const versionId: string = ev.id;
+
+        // 2. Publish the version. Git off + unsynced → no continuity draft is seeded, so the
+        //    app is left with only the PUBLISHED version_type='version' row (no DRAFT).
+        await auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}`))
+          .send({ is_user_switched_version: false, name: 'v1', description: 'saved', status: 'PUBLISHED' })
+          .expect(200);
+        const draftCount = await regDataSource.query(
+          `SELECT COUNT(*)::int AS c FROM app_versions WHERE app_id = $1 AND status = 'DRAFT'`,
+          [appId]
+        );
+        expect(draftCount[0].c).toBe(0);
+
+        // 3. Update metadata via PUT /api/apps/:id. With no draft this used to be a silent
+        //    no-op; it must now land on the saved (PUBLISHED) version row.
+        const newSlug = `nodraft-slug-${randomUUID().slice(0, 8)}`;
+        await auth(agent().put(`/api/apps/${appId}`))
+          .send({ app: { name: 'nodraft-app-renamed', slug: newSlug, icon: 'settings', is_public: true } })
+          .expect(200);
+
+        // 4a. The change persisted to every non-stub default-branch version row (only the
+        //     PUBLISHED one here) — proving the edit was not dropped.
+        const rows = await regDataSource.query(
+          `SELECT app_name, slug, icon, is_public FROM app_versions
+             WHERE app_id = $1 AND version_type = 'version' AND is_stub = false`,
+          [appId]
+        );
+        expect(rows.length).toBeGreaterThan(0);
+        for (const row of rows) {
+          expect(row).toMatchObject({
+            app_name: 'nodraft-app-renamed',
+            slug: newSlug,
+            icon: 'settings',
+            is_public: true,
+          });
+        }
+
+        // 4b. And the API reads the new metadata back off the saved version.
+        const savedDetail = await auth(agent().get(`/api/v2/apps/${appId}/versions/${versionId}`))
+          .query({ mode: 'edit' })
+          .expect(200);
+        expect(savedDetail.body.name).toBe('nodraft-app-renamed');
+        expect(savedDetail.body.slug).toBe(newSlug);
+        expect(savedDetail.body.icon).toBe('settings');
+        expect(savedDetail.body.isPublic).toBe(true);
+
+        // 5. Promote dev → staging → production and release, then the released app must
+        //    resolve by its NEW slug (the user's exact failing call).
+        const envs = (await auth(agent().get('/api/app-environments')).expect(200)).body.environments.sort(
+          (a: any, b: any) => a.priority - b.priority
+        );
+        expect(envs.length).toBeGreaterThanOrEqual(3);
+        await auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}/promote`))
+          .send({ currentEnvironmentId: envs[0].id })
+          .expect(200);
+        await auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}/promote`))
+          .send({ currentEnvironmentId: envs[1].id })
+          .expect(200);
+        await auth(agent().put(`/api/apps/${appId}/release`))
+          .send({ versionToBeReleased: versionId })
+          .expect(200);
+
+        const validate = await auth(agent().get(`/api/apps/validate-released-app-access/${newSlug}`)).expect(200);
+        expect(validate.body).toMatchObject({ id: appId, slug: newSlug });
+      });
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
     // Create-draft & patch flow (git enabled, branching OFF / single-branch).
     //
     // Git single-branch keeps one draft on the default branch. Creating a draft from a SAVED
@@ -4976,8 +5179,12 @@ describe('GitSyncController', () => {
             )
           )[0]?.page_id;
 
-        // ── New draft from v1, then add 1 more component + query ─────────────
-        const d2Resp = await createDraftFrom(appId, v1Id, v1Ctx.envId, false);
+        // ── Draft from v1 (replace), then add 1 more component + query ───────
+        // In single-branch git-sync mode the app is synced-on-create, so publishing v1 seeds a
+        // SYNCED continuity draft on the default branch. The single-draft rule then forbids a second
+        // draft (POST versions with replace:false → 400 "Only one draft version is allowed when
+        // branching is enabled"), so this draft-from-saved-version must REPLACE the continuity draft.
+        const d2Resp = await createDraftFrom(appId, v1Id, v1Ctx.envId, true);
         const d2Id: string = d2Resp.body.id;
         expect(await componentNames(d2Id)).toEqual(['comp_A']); // clean copy of v1
         expect(await queryNames(d2Id)).toEqual(['query_A']);
