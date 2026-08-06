@@ -61,10 +61,13 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const addRowTableRef = useRef();
 
   // Builders choose which columns appear in the add-new-row form via the Toolbar "Add new row" config.
-  // The stored set (`addNewRowColumns`, tokens = `key || name`) lists the columns to SHOW;
-  // an empty set is the default and means "show all columns".
-  const selectedColumns = useMemo(() => new Set(addNewRowColumns ?? []), [addNewRowColumns]);
-  const showAllColumns = selectedColumns.size === 0;
+  // `addNewRowColumns` (tokens = `key || name`) lists the columns to SHOW.
+  // `null` (non-array) is the default and means "show all columns"; an empty array means the builder deselected everything.
+  const selectedColumns = useMemo(
+    () => new Set(Array.isArray(addNewRowColumns) ? addNewRowColumns : []),
+    [addNewRowColumns]
+  );
+  const showAllColumns = !Array.isArray(addNewRowColumns);
 
   const columns = useMemo(
     () =>

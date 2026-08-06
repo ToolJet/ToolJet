@@ -878,7 +878,7 @@ export const tableConfig = {
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
       showRefreshButton: { value: '{{false}}' },
-      addNewRowColumns: { value: '{{[]}}' },
+      addNewRowColumns: { value: '{{null}}' },
       downloadFileName: { value: '' },
       downloadFilteredData: { value: '{{false}}' },
       allowSelection: { value: '{{true}}' },

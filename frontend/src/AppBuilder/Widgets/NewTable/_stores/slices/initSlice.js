@@ -53,8 +53,8 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
         state.components[id].properties.addNewRowColumns = Array.isArray(properties?.addNewRowColumns)
-          ? properties.addNewRowColumns
-          : [];
+          ? properties.addNewRowColumns // an array is an explicit selection (empty array == none).
+          : null; // null (non-array) == "all columns" (default);
         state.components[id].properties.downloadFileName =
           typeof properties?.downloadFileName === 'string' ? properties.downloadFileName : '';
         state.components[id].properties.downloadFilteredData = properties?.downloadFilteredData ?? false;

@@ -6,7 +6,7 @@ import InputComponent from '@/components/ui/Input/Index';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 // Untyped (.jsx) imports — cast to loose component types so they can be used as JSX under strict TS.
-const ButtonComponent = Button as React.ComponentType<any>
+const ButtonComponent = Button as React.ComponentType<any>;
 const Input = InputComponent as React.ComponentType<any>;
 const CheckboxComponent = Checkbox as React.ComponentType<any>;
 
@@ -39,14 +39,16 @@ const getColumnLabel = (column: ColumnConfig): string => {
 /**
  * Config popover for the "Add new row" toolbar item.
  * Lets the builder pick which columns appear in the Add-new-row popup.
- * An EMPTY stored array is the sentinel for "all columns" (the default)
+ * `null` is the sentinel for "all columns" (the default); an empty array means none are selected.
  */
 export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onClose }: ConfigureAddNewRowProps) => {
   const [search, setSearch] = useState('');
 
-  const storedSelection = useMemo<Set<string>>(() => {
+  // `null` (non-array) is the "all columns" sentinel; an array is an explicit selection (empty array == none).
+  const { isAllMode, storedSelection } = useMemo(() => {
     const resolved = resolveReferences(component?.component?.definition?.properties?.addNewRowColumns?.value);
-    return new Set<string>(Array.isArray(resolved) ? resolved : []);
+    const asArray = Array.isArray(resolved);
+    return { isAllMode: !asArray, storedSelection: new Set<string>(asArray ? resolved : []) };
   }, [component?.component?.definition?.properties?.addNewRowColumns?.value]);
 
   const items = useMemo<ColumnItem[]>(
@@ -59,8 +61,7 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
   );
   const allTokens = useMemo<string[]>(() => items.map((item) => item.token), [items]);
 
-  // Empty stored set == "all columns". Expand it so the checkboxes reflect the effective selection.
-  const isAllMode = storedSelection.size === 0;
+  // In "all" mode the checkboxes reflect every column; otherwise they reflect the explicit selection.
   const effectiveSelected = useMemo<Set<string>>(
     () => (isAllMode ? new Set<string>(allTokens) : storedSelection),
     [isAllMode, allTokens, storedSelection]
@@ -72,10 +73,11 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
     return items.filter((item) => item.label.toLowerCase().includes(query));
   }, [items, search]);
 
-  // Collapse "everything selected" (or nothing) back to the empty "all" sentinel; otherwise store the subset.
+  // Selecting everything collapses to the `null` "all" sentinel (so future columns stay visible);
+  // an empty selection is stored as [] (none); anything in between is stored as the explicit subset.
   const commit = (nextSet: Set<string>) => {
     const isEverything = allTokens.length > 0 && allTokens.every((token) => nextSet.has(token));
-    const nextValue = isEverything || nextSet.size === 0 ? [] : Array.from(nextSet);
+    const nextValue = isEverything ? '{{null}}' : Array.from(nextSet);
     paramUpdated({ name: 'addNewRowColumns' }, 'value', nextValue, 'properties');
   };
 
@@ -113,7 +115,12 @@ export const ConfigureAddNewRow = ({ component, paramUpdated, columns = [], onCl
       </div>
 
       <div className="tw-flex tw-flex-col tw-gap-2 tw-p-4">
-        <Input value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} placeholder="Search columns" leadingIcon="search01" />
+        <Input
+          value={search}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+          placeholder="Search columns"
+          leadingIcon="search01"
+        />
 
         <label className="tw-flex tw-items-center tw-gap-2 tw-py-1 tw-cursor-pointer">
           <CheckboxComponent
