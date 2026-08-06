@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import config from 'config';
+import { useEffectiveLibraryRevision, libraryFileUrl } from './libraryComponentRevision';
 
 // Keys in `properties` that configure WHICH component renders — everything else
 // is forwarded into the iframe as the component's own props.
@@ -12,13 +12,16 @@ const META_KEYS = new Set(['libraryId', 'componentName', 'revisionId']);
 //   shell → stateChange/event → setExposedVariable / fireEvent
 export const LibraryComponent = ({ properties = {}, height, setExposedVariable, fireEvent, dataCy }) => {
   const { libraryId, componentName, revisionId } = properties;
-  const configured = Boolean(libraryId && componentName && revisionId);
+
+  // F5: dev preview > app-level pin > instance property (shared rule with the Inspector).
+  // Changing the pin/preview changes this value → iframe remounts via key → clean reload.
+  const effectiveRevision = useEffectiveLibraryRevision(libraryId, revisionId);
+  const configured = Boolean(libraryId && componentName && effectiveRevision);
 
   const iframeRef = useRef(null);
   const [shellReady, setShellReady] = useState(false);
 
-  const fileUrl = (file) =>
-    `${config.apiUrl}/custom-component-libraries/${libraryId}/revisions/${revisionId}/files/${file}`;
+  const fileUrl = (file) => libraryFileUrl(libraryId, effectiveRevision, file);
 
   // The component's own props = everything the Inspector sets minus our meta keys.
   const componentProps = useMemo(
@@ -60,7 +63,7 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
         }
       }
       if (type === 'stateChange') setExposedVariable(key, value);
-      if (type === 'event') fireEvent(name);
+      if (type === 'event') fireEvent(name, { isCustomComponentEvent: true });
       if (type === 'error') {
         // Locked decision #18: never crash the app — degrade to blank + console.
         // eslint-disable-next-line no-console
@@ -75,7 +78,7 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
   // handshake from scratch, so ready-state resets with it.
   useEffect(() => {
     setShellReady(false);
-  }, [libraryId, revisionId, componentName]);
+  }, [libraryId, effectiveRevision, componentName]);
 
   // Forward resolved props on every change (shell holds them until load completes).
   useEffect(() => {
@@ -107,7 +110,7 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
 
   return (
     <iframe
-      key={`${libraryId}|${revisionId}|${componentName}`}
+      key={`${libraryId}|${effectiveRevision}|${componentName}`}
       ref={iframeRef}
       src="/assets/custom-components/shell.html"
       title={componentName}

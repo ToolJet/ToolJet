@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import config from 'config';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import { renderElement } from '@/AppBuilder/RightSideBar/Inspector/Utils';
+import { useEffectiveLibraryRevision, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
 
 // F4b: manifest-driven Inspector for LibraryComponent (LLD §5.6, ModuleViewerInspector
 // pattern). Identity (libraryId/componentName/revisionId) lives ONLY in
@@ -50,16 +50,20 @@ export const LibraryComponent = ({
   const componentName = definitionProps.componentName?.value;
   const revisionId = definitionProps.revisionId?.value;
 
+  // F5: same resolution as the runner (dev preview > app pin > instance property),
+  // so the Inspector always describes the revision that's actually rendering.
+  const effectiveRevision = useEffectiveLibraryRevision(libraryId, revisionId);
+
   const [manifest, setManifest] = useState(null);
 
   useEffect(() => {
-    if (!libraryId || !revisionId) return;
-    // Public asset endpoint; Cache-Control: immutable makes repeat opens free.
-    fetch(`${config.apiUrl}/custom-component-libraries/${libraryId}/revisions/${revisionId}/files/manifest.json`)
+    if (!libraryId || !effectiveRevision) return;
+    // Published revisions: immutable-cached. Dev slots: no-store — always fresh.
+    fetch(libraryFileUrl(libraryId, effectiveRevision, 'manifest.json'))
       .then((r) => (r.ok ? r.json() : null))
       .then(setManifest)
       .catch(() => setManifest(null));
-  }, [libraryId, revisionId]);
+  }, [libraryId, effectiveRevision]);
 
   const componentManifest = manifest?.components?.[componentName];
   const props = componentManifest?.props ?? [];
@@ -86,7 +90,7 @@ export const LibraryComponent = ({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0' }}>
         {[
           ['Component', componentManifest?.displayName ?? componentName],
-          ['Revision', revisionId],
+          ['Revision', effectiveRevision?.startsWith?.('dev:') ? 'Dev preview' : effectiveRevision],
         ].map(([label, value]) => (
           <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
             <span style={{ color: 'var(--text-placeholder)' }}>{label}</span>

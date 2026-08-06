@@ -159,3 +159,94 @@
     color: var(--text-placeholder);
   }
 }
+
+/* ── F5: version picker (design 38-4040 frames 02/03) ─────────────────── */
+.custom-library-version-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .custom-library-version-chip {
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .custom-library-version-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 100;
+    width: 208px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--surfaces-surface-01);
+    border: 1px solid var(--border-weak);
+    border-radius: 8px;
+    box-shadow: var(--elevation-300-box-shadow);
+  }
+
+  .version-menu-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.1));
+    }
+  }
+
+  .version-menu-check {
+    width: 16px;
+    flex-shrink: 0;
+    color: var(--text-default);
+  }
+
+  .version-menu-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .version-menu-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-default);
+  }
+
+  .version-menu-subtitle {
+    font-size: 11px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+  }
+
+  .version-menu-new-badge {
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--primary-accent-strong);
+    background: var(--interactive-overlays-fill-hover, rgba(67, 104, 227, 0.1));
+  }
+
+  .version-menu-live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--status-success, #2fb344);
+  }
+
+  .version-menu-divider {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--border-weak);
+  }
+}

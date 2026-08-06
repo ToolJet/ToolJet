@@ -284,6 +284,16 @@ export const createEventsSlice = (set, get) => ({
       const customVariables = options?.customVariables ?? {};
       const { setExposedValue } = get();
 
+      // Custom component (LibraryComponent) events carry AUTHOR-DEFINED names — they can't
+      // be enumerated in the static name checks below. Scoped opt-in: only the
+      // LibraryComponent runner sets this flag; executeActionsForEventId already limits
+      // execution to handlers stored for that exact component + eventId, so arbitrary
+      // names are safe here. Return: prevents double-execution for names that ALSO
+      // appear in the standard list.
+      if (options?.isCustomComponentEvent) {
+        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+      }
+
       if (eventName === 'onPageLoad') {
         // for onPageLoad events, we need to execute the actions after the page is loaded
         executeActionsForEventId('onPageLoad', events, mode, customVariables, moduleId);
