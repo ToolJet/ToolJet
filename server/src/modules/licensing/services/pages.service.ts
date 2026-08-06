@@ -60,7 +60,7 @@ export class LicensePageService extends ILicensePageService {
       return {
         pagesCount: generatePayloadForLimits(
           typeof pagesLimit === 'number'
-            ? await this.licenseCountsService.fetchOrganizationPagesCount(organizationId, manager)
+            ? await this.licenseCountsService.fetchMaxPagesCount(organizationId, manager)
             : 0,
           typeof pagesLimit === 'number' ? pagesLimit : LICENSE_LIMIT.UNLIMITED,
           licenseStatus,
@@ -68,7 +68,7 @@ export class LicensePageService extends ILicensePageService {
         ),
         pageGroupsCount: generatePayloadForLimits(
           typeof pageGroupsLimit === 'number'
-            ? await this.licenseCountsService.fetchOrganizationPageGroupsCount(organizationId, manager)
+            ? await this.licenseCountsService.fetchMaxPageGroupsCount(organizationId, manager)
             : 0,
           typeof pageGroupsLimit === 'number' ? pageGroupsLimit : LICENSE_LIMIT.UNLIMITED,
           licenseStatus,

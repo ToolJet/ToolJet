@@ -50,8 +50,8 @@ export interface ILicenseCountsService {
   fetchTotalAppCount(organizationId: string, manager: EntityManager): Promise<number>;
   fetchTotalPagesCount(appVersionId: string, manager: EntityManager): Promise<number>;
   fetchTotalPageGroupsCount(appVersionId: string, manager: EntityManager): Promise<number>;
-  fetchOrganizationPagesCount(organizationId: string, manager: EntityManager): Promise<number>;
-  fetchOrganizationPageGroupsCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchMaxPagesCount(organizationId: string, manager: EntityManager): Promise<number>;
+  fetchMaxPageGroupsCount(organizationId: string, manager: EntityManager): Promise<number>;
 }
 
 export interface ILicenseAppsService {

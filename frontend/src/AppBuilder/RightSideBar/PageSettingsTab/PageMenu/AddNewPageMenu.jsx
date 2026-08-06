@@ -29,7 +29,7 @@ export function AddNewPageMenu({ darkMode }) {
   const isAddNavGroupDisabled = !hasAppPagesAddNavGroupEnabled || isGroupsLimitReached;
   const addNavGroupTooltipMessage = !hasAppPagesAddNavGroupEnabled
     ? "You don't have access to nav groups. Upgrade your plan to access this feature."
-    : 'You have reached the page group limit for this plan. Upgrade to add more page groups.';
+    : "You've reached your page group limit. Upgrade your plan to create more page groups.";
 
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
@@ -41,9 +41,10 @@ export function AddNewPageMenu({ darkMode }) {
       className={`page-type-buttons-container d-flex justify-content-between custom-gap-12 ${darkMode && 'dark-mode'}`}
     >
       <LicenseTooltip
-        message="You have reached the page limit for this plan. Upgrade to add more pages."
+        message="You've reached your page limit. Upgrade your plan to create more pages."
         placement="bottom"
         show={isPagesLimitReached}
+        tooltipClassName="page-limit-tooltip"
       >
         <Button
           ref={newPageBtnRef}
@@ -134,19 +135,24 @@ export function AddNewPageMenu({ darkMode }) {
               Add custom nav item
             </Button>
             <div className={`${isAddNavGroupDisabled && 'd-flex'}`}>
-              <Button
-                variant="ghost"
-                onClick={() => handleOpenPopup('group')}
-                leadingIcon="folder-open-dot"
-                isLucid
-                className={`${!isAddNavGroupDisabled ? 'tw-w-full' : 'tw-opacity-[0.5]'} tw-justify-start`}
-                disabled={isAddNavGroupDisabled}
+              <LicenseTooltip
+                message={addNavGroupTooltipMessage}
+                placement="bottom"
+                show={isAddNavGroupDisabled}
+                tooltipClassName="page-group-limit-tooltip"
               >
-                Add nav group
-              </Button>
-              <LicenseTooltip message={addNavGroupTooltipMessage} placement="bottom" show={isAddNavGroupDisabled}>
-                <div className="d-flex align-items-center">
-                  {isAddNavGroupDisabled && <SolidIcon name="enterprisecrown" />}
+                <div className="d-flex align-items-center tw-w-full">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleOpenPopup('group')}
+                    leadingIcon="folder-open-dot"
+                    isLucid
+                    className={`${!isAddNavGroupDisabled ? 'tw-w-full' : 'tw-opacity-[0.5]'} tw-justify-start`}
+                    disabled={isAddNavGroupDisabled}
+                  >
+                    Add nav group
+                  </Button>
+                  {!hasAppPagesAddNavGroupEnabled && <SolidIcon name="enterprisecrown" />}
                 </div>
               </LicenseTooltip>
             </div>

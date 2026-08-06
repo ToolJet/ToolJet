@@ -325,11 +325,27 @@ export class LicenseCountsService implements ILicenseCountsService {
     return query;
   }
 
-  async fetchOrganizationPagesCount(organizationId: string, manager: EntityManager): Promise<number> {
-    return this.fetchOrganizationPagesQuery(organizationId, manager, false).getCount();
+  private async fetchMaxPagesCountAmongVersions(
+    organizationId: string,
+    manager: EntityManager,
+    isPageGroup: boolean
+  ): Promise<number> {
+    const result = await this.fetchOrganizationPagesQuery(organizationId, manager, isPageGroup)
+      .select('page.appVersionId', 'appVersionId')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('page.appVersionId')
+      .orderBy('count', 'DESC')
+      .limit(1)
+      .getRawOne();
+
+    return result ? parseInt(result.count, 10) : 0;
   }
 
-  async fetchOrganizationPageGroupsCount(organizationId: string, manager: EntityManager): Promise<number> {
-    return this.fetchOrganizationPagesQuery(organizationId, manager, true).getCount();
+  async fetchMaxPagesCount(organizationId: string, manager: EntityManager): Promise<number> {
+    return this.fetchMaxPagesCountAmongVersions(organizationId, manager, false);
+  }
+
+  async fetchMaxPageGroupsCount(organizationId: string, manager: EntityManager): Promise<number> {
+    return this.fetchMaxPagesCountAmongVersions(organizationId, manager, true);
   }
 }
