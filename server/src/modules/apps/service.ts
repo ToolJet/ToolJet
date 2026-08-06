@@ -553,11 +553,14 @@ export class AppsService implements IAppsService {
       }
 
       // serialize
+      // NOTE: no `definition` field here (unlike getOne) — legacy duplicate of `pages` below,
+      // confirmed unused by any FE consumer of the slug-based viewer/released-app path (the
+      // only consumer, the Workflows editor, reads it via getOne/GET-apps-:id instead). Was
+      // ~25% of this endpoint's response bytes for no reason.
       return {
         id: app.id,
         current_version_id: app['currentVersionId'],
         data_queries: serializeDataQueries(versionToLoad?.dataQueries),
-        definition: versionToLoad?.definition,
         is_public: app.isPublic,
         is_maintenance_on: app.isMaintenanceOn,
         name: app.name,
@@ -572,6 +575,7 @@ export class AppsService implements IAppsService {
         editing_version: {
           id: versionToLoad.id,
           name: versionToLoad.name,
+          status: versionToLoad.status,
         },
       };
     };
