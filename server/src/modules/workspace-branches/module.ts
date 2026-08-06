@@ -15,6 +15,8 @@ import { WebhookSkipFlagModule } from '@modules/git-sync-webhooks/webhook-skip-f
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { NotificationsModule } from '@modules/notifications/module';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class WorkspaceBranchesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -49,10 +51,14 @@ export class WorkspaceBranchesModule extends SubModule {
         BullModule.registerQueue({
           name: GIT_SYNC_QUEUE,
         }),
-        BullBoardModule.forFeature({
-          name: GIT_SYNC_QUEUE,
-          adapter: BullMQAdapter,
-        }),
+        ...(getTooljetEdition() !== TOOLJET_EDITIONS.Cloud
+          ? [
+              BullBoardModule.forFeature({
+                name: GIT_SYNC_QUEUE,
+                adapter: BullMQAdapter,
+              }),
+            ]
+          : []),
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
         await AppGitModule.register(configs),
