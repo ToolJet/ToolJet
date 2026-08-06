@@ -12,6 +12,7 @@ import {
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const RadioButtonV2 = ({
   properties,
@@ -217,6 +218,8 @@ export const RadioButtonV2 = ({
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useFormClear(() => onSelect(null));
 
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 

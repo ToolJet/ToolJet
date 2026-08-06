@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { noop } from 'lodash';
+import { isCellContentOverflowing } from '../utils';
 
 /**
  * StringRenderer - Pure string value renderer with editing support
@@ -61,10 +62,7 @@ export const StringRenderer = ({
     </div>
   );
 
-  const _showOverlay =
-    ref?.current &&
-    (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
-      ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
+  const _showOverlay = isCellContentOverflowing(ref?.current);
 
   const focusInput = () => {
     if (ref.current) {
@@ -93,7 +91,7 @@ export const StringRenderer = ({
             contentEditable={true}
             className={`${
               !isValid ? 'is-invalid' : ''
-            } h-100 text-container long-text-input d-flex align-items-center ${
+            } h-100 text-container long-text-input d-flex align-items-safe-center ${
               darkMode ? 'textarea-dark-theme' : ''
             } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
             style={{
@@ -124,6 +122,7 @@ export const StringRenderer = ({
           />
         ) : (
           <div
+            ref={ref}
             onClick={() => setIsEditing(true)}
             className={`${
               !isValid ? 'is-invalid' : ''
@@ -153,7 +152,7 @@ export const StringRenderer = ({
 
   const renderReadOnlyContent = () => (
     <div
-      className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+      className={`d-flex align-items-safe-center h-100 w-100 justify-content-${determineJustifyContentValue(
         horizontalAlignment
       )}`}
       style={{ color: textColor || 'inherit' }}

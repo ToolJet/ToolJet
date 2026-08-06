@@ -29,14 +29,20 @@ const OAuthWrapper = ({
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
   const [initialOptions, setInitialOptions] = useState(null);
+  const [initialName, setInitialName] = useState(null);
   useEffect(() => {
     if (selectedDataSource?.id && !initialOptions) {
       setInitialOptions(options);
+      setInitialName(selectedDataSource.name);
     }
   }, [selectedDataSource?.id, options, initialOptions]);
 
   const hasFieldsChanged = () => {
     if (!selectedDataSource?.id || !initialOptions) {
+      return true;
+    }
+
+    if (selectedDataSource?.name !== initialName) {
       return true;
     }
 
@@ -116,6 +122,7 @@ const OAuthWrapper = ({
           client_id={options?.client_id?.value}
           client_secret={options?.client_secret?.value}
           client_auth={options?.client_auth?.value}
+          company_id={options?.company_id?.value}
           scopes={options?.scopes?.value}
           username={options?.username?.value}
           password={options?.password?.value}

@@ -30,6 +30,8 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { Credential } from 'src/entities/credential.entity';
+import { Page } from 'src/entities/page.entity';
+import { Component } from 'src/entities/component.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 
 /** @group platform */
@@ -119,6 +121,69 @@ describe('AppsController', () => {
           await logout(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
           await logout(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+        });
+
+        it('should be able to create app even after a module app was viewed by another user in the same server instance', async () => {
+          // Regression test: FeatureAbilityGuard (server/src/modules/app/guards/ability.guard.ts)
+          // is a singleton and stores the last-seen app on `this.resource`. Viewing/loading a
+          // "module" type app leaves that field set to `type: 'module'`. A subsequent create
+          // request (which has no app in context) then has its ability resolved against the
+          // MODULES.MODULES resource type instead of MODULES.APP, so a builder's `app_create`
+          // grant is silently ignored and the create is rejected with 403.
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            groups: ['all_users', 'admin'],
+          });
+
+          const adminLogin = await login(app);
+          adminUserData['tokenCookie'] = adminLogin.tokenCookie;
+
+          const organization = adminUserData.organization;
+
+          const moduleApp = await createApplication(app, {
+            name: 'Some Module',
+            user: adminUserData.user,
+            type: 'module',
+          });
+          await createApplicationVersion(app, moduleApp);
+
+          // Admin views the module -- this populates the FeatureAbilityGuard singleton's
+          // `this.resource` with the module app (type: 'module').
+          const moduleGetResponse = await request(app.getHttpServer())
+            .get(`/api/apps/${moduleApp.id}`)
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(moduleGetResponse.statusCode).toBe(200);
+
+          const builderUserData = await createUser(app, {
+            email: 'flaky-builder@tooljet.io',
+            groups: ['all_users', 'builder', 'app-creator'],
+            organization,
+          });
+
+          const customGroup = await findEntityOrFail(GroupPermissions, {
+            organizationId: organization.id,
+            name: 'app-creator',
+          } as any);
+          await updateEntity(GroupPermissions, customGroup.id, { appCreate: true });
+
+          const builderLogin = await login(app, 'flaky-builder@tooljet.io');
+          builderUserData['tokenCookie'] = builderLogin.tokenCookie;
+
+          const createResponse = await request(app.getHttpServer())
+            .post(`/api/apps`)
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', builderUserData['tokenCookie'])
+            .send({
+              name: 'Builder App',
+              type: 'front-end',
+            });
+
+          expect(createResponse.statusCode).toBe(201);
+
+          await logout(app, adminUserData['tokenCookie'], organization.id);
+          await logout(app, builderUserData['tokenCookie'], organization.id);
         });
       });
 
@@ -1815,6 +1880,81 @@ describe('AppsController', () => {
             anotherOrgAdminUserData['tokenCookie'],
             anotherOrgAdminUserData.user.defaultOrganizationId
           );
+        });
+      });
+
+      describe('modules', () => {
+        // Collects every page id across a rendered module. A module rendered off the
+        // wrong version (arbitrary findVersion(undefined)) or as an empty shell will
+        // NOT carry its own version's page, so matching the module's Home page id
+        // proves the module resolved its real version. (Asserting on components would
+        // need Layout rows, since getAllComponents inner-joins on layout.type.)
+        const pageIdsOf = (renderedModule: any): string[] => (renderedModule?.pages || []).map((page: any) => page?.id);
+
+        // Builds a module app (no release lifecycle, so no currentVersionId) plus a
+        // host app whose previewed version embeds it via a ModuleViewer.
+        const seedHostWithModule = async (user: any) => {
+          const moduleApp = await createApplication(app, { name: 'Some Module', user, type: 'module' });
+          const moduleVersion = await createApplicationVersion(app, moduleApp);
+          const moduleHomePage = await findEntityOrFail(Page, { appVersionId: moduleVersion.id } as any);
+
+          const application = await createApplication(app, { name: 'Host App', user });
+          const hostVersion = await createApplicationVersion(app, application, { name: 'v1' });
+          const hostPage = await findEntityOrFail(Page, { appVersionId: hostVersion.id } as any);
+          await saveEntity(Component, {
+            name: 'moduleViewer1',
+            type: 'ModuleViewer',
+            pageId: hostPage.id,
+            properties: { moduleAppId: { value: moduleApp.id } },
+            styles: {},
+            validation: {},
+          });
+
+          return { moduleApp, application, hostVersion, moduleHomePage };
+        };
+
+        it('getVersion (preview) returns the embedded module rendered from its own version', async () => {
+          // Modules have no release lifecycle, so a module's currentVersionId is never
+          // set. getVersion must resolve the module's own version to render it inline;
+          // otherwise the module is dropped/mis-rendered and the frontend falls back to
+          // a direct GET /api/apps/:moduleId that 403s a builder without module perms.
+          const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+          const loggedUser = await login(app);
+          adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+          const { moduleApp, application, hostVersion, moduleHomePage } = await seedHostWithModule(adminUserData.user);
+
+          const response = await request(app.getHttpServer())
+            .get(`/api/v2/apps/${application.id}/versions/${hostVersion.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(response.statusCode).toBe(200);
+          const renderedModule = (response.body.modules || []).find((m: any) => m.id === moduleApp.id);
+          expect(renderedModule).toBeDefined();
+          expect(pageIdsOf(renderedModule)).toContain(moduleHomePage.id);
+
+          await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+        });
+
+        it('getOne (builder) returns the embedded module rendered from its own version', async () => {
+          const adminUserData = await createUser(app, { email: 'admin2@tooljet.io', groups: ['all_users', 'admin'] });
+          const loggedUser = await login(app, 'admin2@tooljet.io');
+          adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+          const { moduleApp, application, moduleHomePage } = await seedHostWithModule(adminUserData.user);
+
+          const response = await request(app.getHttpServer())
+            .get(`/api/apps/${application.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(response.statusCode).toBe(200);
+          const renderedModule = (response.body.modules || []).find((m: any) => m.id === moduleApp.id);
+          expect(renderedModule).toBeDefined();
+          expect(pageIdsOf(renderedModule)).toContain(moduleHomePage.id);
+
+          await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
         });
       });
 

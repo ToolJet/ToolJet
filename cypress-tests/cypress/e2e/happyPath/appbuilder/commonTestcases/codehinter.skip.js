@@ -16,7 +16,7 @@ describe("Editor- CodeHinter", () => {
     });
 
     it.only("should verify singleLine: non dynamic values", () => {
-        cy.dragAndDropWidget("Text", 500, 500);
+        cy.dragAndDropWidget("Text", 500, 100);
         addAndVerifyOnSingleLine(`{{globals.currentUser.email}} {{globals.currentUser.firstName}} {{globals.currentUser.lastName}} {{globals.currentUser.id}} {{globals.currentUser.avatarId}} {{globals.currentUser.groups[0]}} {{globals.currentUser.groups[1]}} {{globals.currentUser.groups[2]}} {{globals.currentUser.role}} {{globals.currentUser.ssoUserInfo}} {{globals.environment.id}} {{globals.environment.name}} {{globals.mode.value}} {{globals.theme.name}} {{globals.urlparams}} {{page.handle}} {{page.id}} {{page.name}}`)
         cy.get('[data-cy=draggable-widget-text1]:eq(0)').invoke('text').then((text => { cy.log(text) }))
     });

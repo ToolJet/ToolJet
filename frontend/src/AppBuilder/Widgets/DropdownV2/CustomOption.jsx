@@ -8,6 +8,9 @@ const CustomOption = (props) => {
   const caption = props.data?.caption;
   const hasCaption = caption !== null && caption !== undefined && caption !== '';
   const captionText = hasCaption ? String(caption) : '';
+  // Server-side search: results come pre-filtered from the backend, so skip client-side highlighting.
+  const serverSideSearch = props.selectProps.serverSideSearch === true;
+  const renderWithHighlight = (text) => (serverSideSearch ? text : highlightText(text, props.selectProps.inputValue));
   return (
     <components.Option
       {...props}
@@ -23,11 +26,11 @@ const CustomOption = (props) => {
         )}
         <div className="tw-min-w-0 tw-flex-1 tw-flex tw-flex-col">
           <span className="tw-truncate" style={{ color: 'unset' }} title={props.label?.toString()}>
-            {highlightText(props.label?.toString(), props.selectProps.inputValue)}
+            {renderWithHighlight(props.label?.toString())}
           </span>
           {hasCaption && (
             <span className="dropdownV2-option-caption tw-truncate" title={captionText}>
-              {highlightText(captionText, props.selectProps.inputValue)}
+              {renderWithHighlight(captionText)}
             </span>
           )}
         </div>

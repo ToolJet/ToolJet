@@ -23,7 +23,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -79,6 +79,7 @@ export const DropdownV2 = ({
     sort,
     showClearBtn,
     showSearchInput,
+    serverSideSearch,
   } = properties;
   const {
     selectedTextColor,
@@ -331,6 +332,8 @@ export const DropdownV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  useFormClear(() => setInputValue(null));
+
   const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
 
   const menuContentWidth = useMemo(() => {
@@ -568,6 +571,7 @@ export const DropdownV2 = ({
             }}
             options={selectOptions}
             filterOption={(option, input) => {
+              if (serverSideSearch === true) return true; // server mode: render all options, no client-side filtering
               if (!input) return true;
               const needle = input.toLowerCase();
               const label = String(option?.label ?? '').toLowerCase();
@@ -585,6 +589,7 @@ export const DropdownV2 = ({
             aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
             isLoading={isDropdownLoading}
             showSearchInput={showSearchInput}
+            serverSideSearch={serverSideSearch}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             placeholder={placeholder}

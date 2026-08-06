@@ -185,7 +185,7 @@ export default class GraphqlQueryService implements QueryService {
     if (process.env.NODE_EXTRA_CA_CERTS) {
       'https' in httpsParams
         ? (httpsParams.https.certificateAuthority =
-            httpsParams.https?.certificateAuthority.concat([
+            (httpsParams.https?.certificateAuthority || []).concat([
               ...tls.rootCertificates,
               readFileSync(process.env.NODE_EXTRA_CA_CERTS),
             ]))

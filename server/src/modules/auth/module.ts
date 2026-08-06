@@ -1,4 +1,6 @@
 import { Module, DynamicModule } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { SessionModule } from '@modules/session/module';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { OrganizationUsersModule } from '@modules/organization-users/module';
@@ -6,6 +8,7 @@ import { RolesModule } from '@modules/roles/module';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { ProfileModule } from '@modules/profile/module';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { RolesRepository } from '@modules/roles/repository';
@@ -19,6 +22,7 @@ import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { SubModule } from '@modules/app/sub-module';
 import { OnboardingModule } from '@modules/onboarding/module';
 import { UserMfaRepository } from './mfa/repository';
+import { TotpUtilService } from './mfa/totp-util.service';
 import { EncryptionModule } from '@modules/encryption/module';
 import { CustomDomainsModule } from '@modules/custom-domains/module';
 
@@ -71,11 +75,18 @@ export class AuthModule extends SubModule {
         await OnboardingModule.register(configs),
         await EncryptionModule.register(configs),
         await CustomDomainsModule.register(configs),
+        JwtModule.registerAsync({
+          useFactory: (config: ConfigService) => ({
+            secret: config.get<string>('SECRET_KEY_BASE'),
+          }),
+          inject: [ConfigService],
+        }),
       ],
       controllers: isMainImport ? [AuthController, OauthController, WebsiteAuthController, WebsiteOtpController] : [],
       providers: [
         AuthService,
         UserRepository,
+        UserBanListRepository,
         OrganizationRepository,
         RolesRepository,
         OrganizationUsersRepository,
@@ -92,6 +103,7 @@ export class AuthModule extends SubModule {
         SSOConfigsRepository,
         WebsiteAuthService,
         UserMfaRepository,
+        TotpUtilService,
       ],
       exports: [AuthUtilService],
     };

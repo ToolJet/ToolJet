@@ -7,7 +7,7 @@ import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import NavItemPopover from './NavItemPopover';
 
-export const MenuItem = ({ darkMode, item, onDeleteItem, onItemChange, getResolvedValue }) => {
+export const MenuItem = ({ componentId, darkMode, item, onDeleteItem, onItemChange, getResolvedValue }) => {
   const [showActionsPopover, setShowActionsPopover] = useState(false);
   const [showEditPopover, setShowEditPopover] = useState(false);
   const optionBtnRef = useRef(null);
@@ -108,6 +108,7 @@ export const MenuItem = ({ darkMode, item, onDeleteItem, onItemChange, getResolv
               onHide={() => setShowEditPopover(false)}
             >
               <NavItemPopover
+                componentId={componentId}
                 item={item}
                 darkMode={darkMode}
                 onItemChange={onItemChange}

@@ -131,7 +131,9 @@ export const createAppSlice = (set, get) => ({
         };
       });
 
-    const maxPermanentHeight = currentMainCanvasComponents.reduce((max, component) => {
+    // Use the effective layout per component (temporary override if reflowed,
+    // else authored) so collapsed widgets shrink the canvas bottom.
+    const maxHeight = currentMainCanvasComponents.reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
       if (!layout) {
         return max;
@@ -141,24 +143,11 @@ export const createAppSlice = (set, get) => ({
       if (currentMode === 'view' && !visibility) {
         return max;
       }
-      const height = visibility ? layout.height : 10;
-      const sum = layout.top + height;
-      return Math.max(max, sum);
+      const temporaryLayout = temporaryLayouts?.[component.id];
+      const top = temporaryLayout?.top ?? layout.top;
+      const height = visibility ? temporaryLayout?.height ?? layout.height : 10;
+      return Math.max(max, top + height);
     }, 0);
-
-    const temporaryLayoutsMaxHeight = Object.entries(temporaryLayouts)
-      .filter(([componentId, layout]) => currentMainCanvasComponents.find((component) => componentId === component.id))
-      .reduce((max, [componentId, layout]) => {
-        const component = currentMainCanvasComponents.find((component) => componentId === component.id);
-        const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
-        if (currentMode === 'view' && !visibility) {
-          return max;
-        }
-        const sum = layout.top + (visibility ? layout.height : 10);
-        return Math.max(max, sum);
-      }, 0);
-
-    const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
 
     const isLicensed =
       !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&

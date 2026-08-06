@@ -12,6 +12,7 @@ import * as uuid from 'uuid';
 import { Page } from '@entities/page.entity';
 import { Component } from '@entities/component.entity';
 import { Layout } from '@entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { isEmpty, set } from 'lodash';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { AppResourceMappings } from '@modules/apps/types';
@@ -531,7 +532,9 @@ export class VersionsCreateService implements IVersionsCreateService {
 
         newComponent.parent = parentId;
 
-        originalComponent.layouts.forEach((layout) => {
+        // Deduplicate layouts by type to prevent duplicate layout rows from propagating
+        const uniqueLayouts = deduplicateLayoutsByType(originalComponent.layouts);
+        uniqueLayouts.forEach((layout) => {
           const newLayout = new Layout();
           newLayout.id = uuid.v4();
           newLayout.type = layout.type;
@@ -642,11 +645,19 @@ export class VersionsCreateService implements IVersionsCreateService {
     for (const event of allEvents) {
       const eventDefinition = updateEntityReferences(event.event, mappings);
 
-      if (eventDefinition?.actionId === 'run-query') {
+      if (
+        eventDefinition?.actionId === 'run-query' ||
+        eventDefinition?.actionId === 'reset-query' ||
+        eventDefinition?.actionId === 'abort-query'
+      ) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 
       if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'scroll-component-into-view') {
         eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
       }
 

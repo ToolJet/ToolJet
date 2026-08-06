@@ -92,7 +92,7 @@ export const DatepickerInput = forwardRef(
               }
             }
           }}
-          // disabled={disable || loading}
+          disabled={disable || loading}
           data-cy={`${String(dataCy).toLowerCase()}-input-field`}
         />
         <span className="cell-icon-display">

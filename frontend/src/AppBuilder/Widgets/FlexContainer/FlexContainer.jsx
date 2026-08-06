@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Container as ContainerCanvas } from '@/AppBuilder/AppCanvas/Container';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useShouldStackFlexRealCanvas } from './useFlexStackBelow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -30,6 +31,10 @@ export const FlexContainer = ({
     setExposedVariables,
     setExposedVariable
   );
+  const containerRef = useRef(null);
+  // Disabled flex container blocks the mouse via `pointer-events:none`; `inert` also removes the
+  // child components from the tab order (runtime only — keeps the builder editable).
+  useDisableInert(containerRef, isDisabled);
 
   const {
     gap,
@@ -120,7 +125,11 @@ export const FlexContainer = ({
   };
 
   return (
-    <div style={outerStyles} className={`flex-container-widget ${isLoading ? 'jet-container-loading' : ''}`}>
+    <div
+      ref={containerRef}
+      style={outerStyles}
+      className={`flex-container-widget ${isLoading ? 'jet-container-loading' : ''}`}
+    >
       {isLoading ? (
         <Spinner />
       ) : (
