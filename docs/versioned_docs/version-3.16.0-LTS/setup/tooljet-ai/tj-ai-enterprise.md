@@ -34,9 +34,11 @@ There are two methods for providing your LLM API key to the server:
 This method is suitable when you prefer centralised key management through the ToolJet interface.
 
 1. Navigate to **Workspace Settings → LLM Key** in your ToolJet workspace.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/llm-key.png" alt="llm key" />
-2. Enter your API key from your LLM provider (e.g., your Anthropic API key from [console.anthropic.com](https://console.anthropic.com)).
-3. Click **Save changes**.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/llm-key-v2.png" alt="llm key" />
+2. Select the provider you want to use. By default "ToolJet managed" will be selected which utilizes the ToolJet AI Credits.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/select.png" alt="llm key" />
+3. After that, enter your API key from your LLM provider (e.g., your Anthropic API key from [console.anthropic.com](https://console.anthropic.com)).
+4. Click **Save changes**.
 
 ToolJet will securely forward the key to your server when making AI requests.
 
@@ -44,13 +46,18 @@ ToolJet will securely forward the key to your server when making AI requests.
 
 This method is recommended for production deployments, CI/CD pipelines, or environments where secrets should not be entered through a UI.
 
-1. In **Workspace Settings → LLM Key**, enable the **Apply configuration from environment variables** toggle.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/env-var.png" alt="llm key" />
-2. Click **Continue** on the pop-up. <br/>
-3. Set the `ANTHROPIC_API_KEY` environment variable directly on your server:
-```bash
-ANTHROPIC_API_KEY=your_api_key_here
-```
+1. Configure the following environment variables:
+    1. `LLM_PROVIDER`: You can set your LLM Provider using this variable.
+        | Value | When to use |
+        |:------|:------------|
+        | `anthropic` | When you want to use Anthropic API Key |
+        | `gemini` | When you want to use Gemini API Key |
+        | `tooljet_managed` | When you want to use ToolJet Managed AI Credits. |
+    2. Set the following variable according to which LLM Provider you are using:
+        - `ANTHROPIC_API_KEY=<your-api-key>`: If you are using Anthropic.
+        - `GEMINI_API_KEY=<base64-string-of-your-JSON>`: If you are using Gemini.
+2. Once you have configured the above variables, navigate to **Workspace Settings → LLM Key** in your ToolJet workspace and turn on the "Apply configuration from environment variable" toggle.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/env-var-v3.jpg" alt="llm key" />
 
 The server will read the key from the environment at runtime. ToolJet will not transmit the key from the UI.
 

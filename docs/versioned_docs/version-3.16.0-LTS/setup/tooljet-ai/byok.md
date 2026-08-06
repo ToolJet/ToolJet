@@ -60,7 +60,7 @@ ToolJet will use your key to authenticate requests sent to your LLM provider.
         - `ANTHROPIC_API_KEY=<your-api-key>`: If you are using Anthropic.
         - `GEMINI_API_KEY=<base64-string-of-your-JSON>`: If you are using Gemini.
 2. Once you have configured the above variables, navigate to **Workspace Settings → LLM Key** in your ToolJet workspace and turn on the "Apply configuration from environment variable" toggle.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/env-var-v2.png" alt="llm key" />
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/env-var-v3.jpg" alt="llm key" />
 
 ## Supported Providers
 

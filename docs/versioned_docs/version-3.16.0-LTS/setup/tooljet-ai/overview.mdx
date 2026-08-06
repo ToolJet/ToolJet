@@ -100,7 +100,9 @@ For organizations that need complete control over where AI workloads run, ToolJe
 
 ## Different Types of Setups
 
-### ToolJet Managed AI Server with ToolJet Cloud
+### ToolJet Cloud
+
+#### ToolJet Managed AI Server with ToolJet Cloud
 
 This is the default setup for any workspace on ToolJet Cloud. AI requests are routed to ToolJet Managed AI Server and authenticated using ToolJet-managed LLM credentials, no configuration is needed.
 
@@ -115,7 +117,24 @@ This is the default setup for any workspace on ToolJet Cloud. AI requests are ro
 
 <GuideLink href="/docs/setup/tooljet-ai/managed-with-cloud">Read the full setup guide</GuideLink>
 
-### ToolJet Managed AI Server with ToolJet Self-Hosted
+#### Use Your Own LLM API Key (BYOK)
+
+Bring Your Own Key (BYOK) lets you configure your own LLM provider API key instead of using ToolJet-managed credentials. Requests still route through ToolJet Managed AI Server, only the credentials used to authenticate them change.
+
+<SpecGrid items={[
+    ['ToolJet deployment', 'Cloud or Self-hosted'],
+    ['Requests routed via', 'ToolJet Managed AI Server'],
+    ['LLM API key', 'Your own'],
+    ['Billing', 'Direct from your LLM provider'],
+    ['Data leaves your network', 'Yes, to ToolJet Managed AI Server'],
+    ['Setup requirement', 'Configure your API key'],
+]} />
+
+<GuideLink href="/docs/setup/tooljet-ai/bring-your-own-key">Read the full setup guide</GuideLink>
+
+### Self Hosted Deployments
+
+#### ToolJet Managed AI Server
 
 Self-hosted instances can use the same ToolJet Managed AI Server that powers ToolJet Cloud, instead of deploying a separate AI server. Your instance needs outbound network access to ToolJe Managed AI Server.
 
@@ -130,9 +149,9 @@ Self-hosted instances can use the same ToolJet Managed AI Server that powers Too
 
 <GuideLink href="/docs/setup/tooljet-ai/managed-with-self-hosted">Read the full setup guide</GuideLink>
 
-### ToolJet Cloud AI (BYOK)
+#### Use Your Own LLM API Key (BYOK)
 
-Bring Your Own Key (BYOK) lets you configure your own LLM provider API key instead of using ToolJet-managed credentials. Requests still route through ToolJet Managed AI Server, only the credentials used to authenticate them change. This works on both ToolJet Cloud and self-hosted deployments.
+Bring Your Own Key (BYOK) lets you configure your own LLM provider API key instead of using ToolJet-managed credentials. Requests still route through ToolJet Managed AI Server, only the credentials used to authenticate them change.
 
 <SpecGrid items={[
     ['ToolJet deployment', 'Cloud or Self-hosted'],
@@ -145,7 +164,7 @@ Bring Your Own Key (BYOK) lets you configure your own LLM provider API key inste
 
 <GuideLink href="/docs/setup/tooljet-ai/bring-your-own-key">Read the full setup guide</GuideLink>
 
-### ToolJet Enterprise AI
+#### ToolJet Enterprise AI
 
 For organizations that cannot let any AI request leave their infrastructure, ToolJet provides a server image you deploy and operate yourself, using your own LLM API key. ToolJet Managed AI Server is not involved at all.
 
