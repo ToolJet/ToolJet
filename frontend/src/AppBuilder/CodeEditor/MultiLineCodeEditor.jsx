@@ -29,6 +29,7 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+import { navigateToComponentExtension } from './navigateToComponentExtension';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -263,6 +264,7 @@ const MultiLineCodeEditor = (props) => {
       }),
       customTabKeymap,
       keymap.of([...staticCustomKeyMaps]),
+      navigateToComponentExtension,
     ],
     [langExtention, overRideFunction, customTabKeymap]
   );
