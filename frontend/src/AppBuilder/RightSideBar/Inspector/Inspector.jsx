@@ -154,6 +154,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'ButtonGroupV2',
   'FlexContainer',
   'Pagination',
+  'Timeline',
 ];
 
 export const Inspector = ({
