@@ -25,9 +25,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.DELETE_ORGANIZATION_SSO,
           FEATURE_KEY.UPDATE_ORGANIZATION_GENERAL_CONFIGS,
           FEATURE_KEY.INSTANCE_SSO_INHERIT,
-          FEATURE_KEY.SAVE_OIDC_ENV_CONFIGS,
-          FEATURE_KEY.SAVE_SAML_ENV_CONFIGS,
-          FEATURE_KEY.SAVE_LDAP_ENV_CONFIGS,
+          FEATURE_KEY.SAVE_ENV_CONFIGS,
         ],
         Organization
       );
@@ -38,7 +36,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         [
           FEATURE_KEY.UPDATE_INSTANCE_SSO,
           FEATURE_KEY.UPDATE_INSTANCE_GENERAL_CONFIGS,
-          FEATURE_KEY.SAVE_INSTANCE_OIDC_ENV_CONFIGS,
+          FEATURE_KEY.SAVE_INSTANCE_ENV_CONFIGS,
         ],
         Organization
       );

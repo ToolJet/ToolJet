@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, UseGuards, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Delete, UseGuards, Body, Patch, Param, ParseEnumPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { OrganizationConfigsUpdateDto, UpdateEnvConfigDTO } from './dto';
@@ -8,7 +8,7 @@ import { LoginConfigsService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { FEATURE_KEY } from './constants';
+import { FEATURE_KEY, SsoEnvProvider, InstanceSsoEnvProvider } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
 import { SSOGuard } from '@modules/licensing/guards/sso.guard';
 import { InstanceConfigsUpdateDto } from './dto';
@@ -99,31 +99,30 @@ export class LoginConfigsController implements ILoginConfigsController {
     return;
   }
 
-  @InitFeature(FEATURE_KEY.SAVE_OIDC_ENV_CONFIGS)
+  // Was 4 routes (/oidc/env-configs, /oidc/instance-env-configs, /saml/env-configs,
+  // /ldap/env-configs), one per provider. The FeatureAbilityGuard's @InitFeature is static
+  // per-method metadata — it can't vary by the runtime :provider param — so this route only
+  // asserts the license common to every provider (WORKSPACE_ENV); the EE service asserts the
+  // specific provider's own license internally, exactly as it always did.
+  @InitFeature(FEATURE_KEY.SAVE_ENV_CONFIGS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  @Patch('/oidc/env-configs')
-  async toggleOidcEnvConfig(@Body() configData: UpdateEnvConfigDTO, @User() user: UserEntity): Promise<{ id: string }> {
+  @Patch('/:provider/env-configs')
+  async toggleEnvConfig(
+    @Param('provider', new ParseEnumPipe(SsoEnvProvider)) provider: SsoEnvProvider,
+    @Body() configData: UpdateEnvConfigDTO,
+    @User() user: UserEntity
+  ): Promise<{ id: string | null } | void> {
     throw new NotFoundException();
   }
 
-  @InitFeature(FEATURE_KEY.SAVE_INSTANCE_OIDC_ENV_CONFIGS)
+  @InitFeature(FEATURE_KEY.SAVE_INSTANCE_ENV_CONFIGS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  @Patch('/oidc/instance-env-configs')
-  async toggleInstanceOidcEnvConfig(@Body() configData: UpdateEnvConfigDTO, @User() user: UserEntity) {
-    throw new NotFoundException();
-  }
-
-  @InitFeature(FEATURE_KEY.SAVE_SAML_ENV_CONFIGS)
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  @Patch('/saml/env-configs')
-  async toggleSamlEnvConfig(@Body() configData: UpdateEnvConfigDTO, @User() user: UserEntity) {
-    throw new NotFoundException();
-  }
-
-  @InitFeature(FEATURE_KEY.SAVE_LDAP_ENV_CONFIGS)
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  @Patch('/ldap/env-configs')
-  async toggleLdapEnvConfig(@Body() configData: UpdateEnvConfigDTO, @User() user: UserEntity) {
+  @Patch('/:provider/instance-env-configs')
+  async toggleInstanceEnvConfig(
+    @Param('provider', new ParseEnumPipe(InstanceSsoEnvProvider)) provider: InstanceSsoEnvProvider,
+    @Body() configData: UpdateEnvConfigDTO,
+    @User() user: UserEntity
+  ) {
     throw new NotFoundException();
   }
 }

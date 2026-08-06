@@ -10,8 +10,7 @@ export const organizationService = {
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
-  updateSamlEnvConfig,
-  updateLdapEnvConfig,
+  updateEnvConfig,
   getWorkspacesLimit,
   checkWorkspaceUniqueness,
   updateOrganization,
@@ -19,7 +18,6 @@ export const organizationService = {
   updateOrganizationStatus,
   updateInheritSSO,
   deleteOIDCConfig,
-  updateOidcEnvConfig,
 };
 
 function getUsersByValue(searchInput) {
@@ -117,34 +115,18 @@ function editOrganizationConfigs(params) {
   return fetch(`${config.apiUrl}/login-configs/organization-sso`, requestOptions).then(handleResponse);
 }
 
-function updateOidcEnvConfig(useEnvConfig, configId) {
+// provider: 'oidc' | 'saml' | 'ldap'. Was 3 separate functions/routes (updateOidcEnvConfig,
+// updateSamlEnvConfig, updateLdapEnvConfig), one per provider — collapsed to one now that the
+// backend route takes :provider instead. configId is only meaningful for OIDC's multi-provider
+// case; omit it for saml/ldap.
+function updateEnvConfig(provider, useEnvConfig, configId) {
   const requestOptions = {
     method: 'PATCH',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ useEnvConfig, configId }),
+    body: JSON.stringify({ useEnvConfig, ...(configId && { configId }) }),
   };
-  return fetch(`${config.apiUrl}/login-configs/oidc/env-configs`, requestOptions).then(handleResponse);
-}
-
-function updateSamlEnvConfig(useEnvConfig) {
-  const requestOptions = {
-    method: 'PATCH',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify({ useEnvConfig }),
-  };
-  return fetch(`${config.apiUrl}/login-configs/saml/env-configs`, requestOptions).then(handleResponse);
-}
-
-function updateLdapEnvConfig(useEnvConfig) {
-  const requestOptions = {
-    method: 'PATCH',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify({ useEnvConfig }),
-  };
-  return fetch(`${config.apiUrl}/login-configs/ldap/env-configs`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/login-configs/${provider}/env-configs`, requestOptions).then(handleResponse);
 }
 
 function getWorkspacesLimit() {
