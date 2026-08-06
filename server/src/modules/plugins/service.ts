@@ -53,7 +53,7 @@ export class PluginsService implements IPluginsService {
 
   async findAll() {
     return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(Plugin, { relations: ['iconFile', 'manifestFile'] });
+      return manager.find(Plugin, { relations: ['iconFile', 'manifestFile'], order: { name: 'ASC' } });
     });
   }
 
