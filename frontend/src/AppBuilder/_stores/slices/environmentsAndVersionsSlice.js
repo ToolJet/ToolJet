@@ -497,8 +497,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
               'is_maintenance_on' in data
                 ? data.is_maintenance_on
                 : 'isMaintenanceOn' in data
-                ? data.isMaintenanceOn
-                : false,
+                  ? data.isMaintenanceOn
+                  : false,
             homePageId: data.editing_version?.homePageId || data.editing_version?.home_page_id,
           },
           moduleId
@@ -559,8 +559,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           get().globalSettings?.appMode && get().globalSettings.appMode !== 'auto'
             ? get().globalSettings.appMode
             : localStorage.getItem('darkMode') === 'true'
-            ? 'dark'
-            : 'light';
+              ? 'dark'
+              : 'light';
         get().setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
         get().setResolvedGlobals(
           'urlparams',
