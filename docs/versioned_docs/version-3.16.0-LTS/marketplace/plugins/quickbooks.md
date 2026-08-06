@@ -3,7 +3,7 @@ id: marketplace-plugin-quickbooks
 title: QuickBooks
 ---
 
-The QuickBooks plugin in ToolJet allows users to manage resources such as customers, invoices, payments, vendors, and reports without building custom backend integrations. QuickBooks exposes REST APIs that allow external applications to securely access and manage accounting data programmatically.
+The QuickBooks plugin brings essential accounting capabilities directly into your ToolJet applications. It lets you create and update customers, generate invoices, record payments, manage vendors, and access financial reports and other QuickBooks data from one connected interface.
 
 :::info NOTE
 Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
