@@ -48,23 +48,6 @@ const queryRerunTimers = new Map();
 // Dependency-triggered query re-runs for those modules are suppressed.
 const suppressedQueryRerunModules = new Set();
 
-// Gate for resolving nested arrays, which can be user data of any size (eg. TreeSelect option trees)
-const hasDynamicValue = (value) => {
-  const pending = [value];
-  while (pending.length) {
-    const current = pending.pop();
-    if (typeof current === 'string') {
-      if (current.includes('{{') && current.includes('}}')) return true;
-    } else if (current && typeof current === 'object') {
-      for (const entry of Object.values(current)) pending.push(entry);
-    }
-  }
-  return false;
-};
-
-// Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
-const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
-
 // Debounce delay for dependency-triggered query re-runs.
 // RunJS/RunPy are blocked at registerQueryDependencies and never reach here.
 function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
@@ -108,6 +91,23 @@ export function setSuppressQueryRerun(moduleId, value) {
 // ======================
 // END SECTION: Query re-run on dependency change
 // ======================
+
+// Gate for resolving nested arrays, which can be user data of any size (eg. TreeSelect option trees)
+const hasDynamicValue = (value) => {
+  const pending = [value];
+  while (pending.length) {
+    const current = pending.pop();
+    if (typeof current === 'string') {
+      if (current.includes('{{') && current.includes('}}')) return true;
+    } else if (current && typeof current === 'object') {
+      for (const entry of Object.values(current)) pending.push(entry);
+    }
+  }
+  return false;
+};
+
+// Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
+const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
 
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
@@ -983,11 +983,13 @@ export const createComponentsSlice = (set, get) => ({
     component,
     resolvedComponentValues,
     updatePassedValue = true,
-    moduleId
+    moduleId,
+    preClonedValue
   ) => {
     const { updateResolvedValues, generateDependencyGraphForRefs, checkValueAndResolve } = get();
     if (Array.isArray(value)) {
-      const updatedPropertyValue = cloneDeep(value);
+      // Nested calls receive the parent's clone of this subtree, so cloning again would repeat per level
+      const updatedPropertyValue = preClonedValue ?? cloneDeep(value);
       value.forEach((val, index) => {
         //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
         if (val && typeof val === 'object') {
@@ -1003,7 +1005,8 @@ export const createComponentsSlice = (set, get) => ({
                 component,
                 resolvedComponentValues,
                 updatePassedValue,
-                moduleId
+                moduleId,
+                updatedPropertyValue[index][key]
               );
               lodashSet(updatedPropertyValue, [index, key], updatedValue);
               return;
@@ -2200,6 +2203,7 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentMode,
       getCustomResolvables,
       setResolvedComponentByProperty,
+      removePropertyNodes,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const componentDef = getComponentDefinition(componentId, moduleId);
@@ -2217,6 +2221,8 @@ export const createComponentsSlice = (set, get) => ({
       if (index === null) {
         resolvedComponent[componentId][paramType][property] = [];
       }
+      // Entries are re-indexed on every edit, so edges for the previous indices must go before the new ones register
+      removePropertyNodes(`components.${componentId}.${paramType}.${property}`, moduleId);
       const { updatedValue } = checkValueAndResolve(
         componentId,
         paramType,
