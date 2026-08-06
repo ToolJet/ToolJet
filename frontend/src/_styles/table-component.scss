@@ -1802,7 +1802,7 @@
 
 .card.jet-table.table-component {
 
-  .table-cell {
+  .table-cell, .table-selector-checkbox {
     input[type="checkbox"] {
       position: relative;
       appearance: none;
@@ -1822,20 +1822,46 @@
         border-color: var(--cc-default-border, --borders-default);
       }
     }
+  }
 
-    .table-selector-checkbox {
-      position: relative;
+  // Selection checkbox ONLY
+  // `.table-selector-checkbox` so it also covers the header (bulk) checkbox, and never leaks into other column types.
+  // Declared after the general rule so it wins the specificity tie.
+  .table-selector-checkbox {
+    position: relative;
+    width: 18px;
+    height: 18px;
 
-      input[type="checkbox"] {
-        &:checked + .table-selector-checkbox-icon {
-            opacity: 1;
-        }
-      }
-  
-      .table-selector-checkbox-icon {
-        position: absolute;
-        opacity: 0;
+    input[type="checkbox"] {
+      margin: 0;
+      width: 18px;
+      height: 18px;
+
+      &:checked + .table-selector-checkbox-icon {
+        opacity: 1;
       }
     }
+
+    .table-selector-checkbox-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  .table-cell.selector-column .td-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .th.selector-header .header-text.selector-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
   }
 }

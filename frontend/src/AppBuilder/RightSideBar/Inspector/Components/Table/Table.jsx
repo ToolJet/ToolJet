@@ -15,6 +15,7 @@ import List from '@/ToolJetUI/List/List';
 import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
+import ToolbarSection from './Toolbar/ToolbarSection';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
 import { ToolTip } from '@/_components/ToolTip';
@@ -392,6 +393,12 @@ export const Table = (props) => {
     [component.component.definition.properties.useDynamicColumn?.value]
   );
 
+  // When enabled (deprecated section), the Toolbar shows the old inverted "Hide column selector" tile instead of the new "Manage columns" tile.
+  const useHideColumnSelectorButton = useMemo(
+    () => resolveReferences(component.component.definition.properties.useHideColumnSelectorButton?.value) ?? false,
+    [component.component.definition.properties.useHideColumnSelectorButton?.value]
+  );
+
   const allowSelection = useMemo(() => {
     const allowSelectionValue = component.component.definition.properties?.allowSelection?.value;
     if (allowSelectionValue) {
@@ -402,6 +409,11 @@ export const Table = (props) => {
       resolveReferences(component.component.definition.properties.showBulkSelector?.value)
     );
   }, [component.component.definition.properties]);
+
+  const highlightSelectedRow = useMemo(
+    () => resolveReferences(component.component.definition.properties.highlightSelectedRow?.value) ?? false,
+    [component.component.definition.properties.highlightSelectedRow?.value]
+  );
 
   // Ensure displaySearchBox is set
   if (!component.component.definition.properties.displaySearchBox) {
@@ -416,6 +428,7 @@ export const Table = (props) => {
         ? [
             'highlightSelectedRow',
             'disableRowDeselection',
+            ...(!highlightSelectedRow ? ['enableRowClickOnCheckbox'] : []),
             'showBulkSelector',
             'defaultSelectedRow',
             'selectRowOnCellEdit',
@@ -424,7 +437,7 @@ export const Table = (props) => {
       'enableExpandableRows',
       'expansionHeight',
     ],
-    [allowSelection]
+    [allowSelection, highlightSelectedRow]
   );
 
   const searchSortFilterOptions = useMemo(
@@ -452,18 +465,10 @@ export const Table = (props) => {
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const additionalActions = [
-    'showAddNewRowButton',
-    'showDownloadButton',
-    'showRefreshButton',
-    'hideColumnSelectorButton',
-    'loadingState',
-    'showBulkUpdateActions',
-    'visibility',
-    'collapseWhenHidden',
-    'disabledState',
-    'dynamicHeight',
-  ];
+  const additionalActions = ['loadingState', 'visibility', 'collapseWhenHidden', 'disabledState', 'dynamicHeight'];
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const deprecatedProperties = ['useHideColumnSelectorButton'];
 
   // Accordion items
   const accordionItems = useMemo(
@@ -702,6 +707,22 @@ export const Table = (props) => {
         title: 'Pagination',
         children: paginationOptions.map((option) => renderCustomElement(option)),
       },
+      // Toolbar section
+      {
+        id: 'toolbar',
+        title: 'Toolbar',
+        children: (
+          <ToolbarSection
+            component={component}
+            paramUpdated={paramUpdated}
+            darkMode={darkMode}
+            columns={columns}
+            useDynamicColumn={useDynamicColumn}
+            useHideColumnSelectorButton={useHideColumnSelectorButton}
+            currentState={currentState}
+          />
+        ),
+      },
       // Additional actions section
       {
         id: ADDITIONAL_ACTIONS_ACCORDION_ID,
@@ -736,6 +757,30 @@ export const Table = (props) => {
             )}
           </>
         ),
+      },
+      // Deprecated properties section
+      {
+        id: 'deprecated-properties',
+        isOpen: false,
+        title: (
+          <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
+            <span>Enable deprecated properties</span>
+            <ToolTip
+              message={
+                <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+                  These properties are deprecated and will be removed in a future update.
+                </div>
+              }
+              show={true}
+              placement="top"
+            >
+              <span>
+                <Icon name={'warning'} height={14} width={14} fill="var(--icon-danger)" />
+              </span>
+            </ToolTip>
+          </div>
+        ),
+        children: deprecatedProperties.map((option) => renderCustomElement(option)),
       },
     ],
     [
@@ -772,6 +817,8 @@ export const Table = (props) => {
       paginationOptions,
       layoutPropertyChanged,
       additionalActions,
+      useHideColumnSelectorButton,
+      deprecatedProperties,
     ]
   );
 
