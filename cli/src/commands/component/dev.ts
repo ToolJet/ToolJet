@@ -4,7 +4,7 @@ import { Auth } from '../../lib/component/auth';
 import { ApiClient } from '../../lib/component/api-client';
 import { ProjectConfig, ProjectConfigData } from '../../lib/component/project-config';
 import { DevWatcher } from '../../lib/component/dev-watcher';
-import { formatError } from '../../lib/log';
+import { formatError, formatSuccess, formatDuration } from '../../lib/log';
 
 export default class Dev extends Command {
   static description = 'Watch src/ and upload to the dev track on every save';
@@ -25,33 +25,42 @@ export default class Dev extends Command {
     try {
       await client.verifyLibrary(config.libraryId);
     } catch (err) {
-      this.log(formatError(`Could not reach library on ${workspaceId}: ${(err as Error).message}`));
+      this.log(formatError((err as Error).message));
       process.exit(1);
     }
 
-    this.log(`✓ Connected to ${workspaceId} workspace`);
-    this.log(`✓ Library: ${config.libraryName} (dev track)\n`);
+    this.log(formatSuccess(`Connected to ${workspaceId} workspace`));
+    this.log(formatSuccess(`Library: ${config.libraryName} (dev track)\n`));
     this.log('Watching src/ for changes...\n');
 
-    DevWatcher.start({
+    const watcher = DevWatcher.start({
       projectRoot: process.cwd(),
       debounceMs: flags.debounce,
       onRebuild: async (result) => {
         if ('error' in result) {
-          this.log(`  → build failed: ${result.error.message} ✗`);
+          this.log(`  ${formatError(`build failed - ${result.error.message}`)}`);
           return;
         }
 
-        this.log(`  → built in ${result.buildMs}ms`);
+        this.log(`  ${formatSuccess(`Built in ${formatDuration(result.buildMs)}`)}`);
 
         try {
           await client.uploadDev(config.libraryId, result.distDir);
-          this.log(`  → uploaded to dev track ✓`);
+          this.log(`  ${formatSuccess('Uploaded to dev track')}`);
         } catch (err) {
-          this.log(`  → upload failed: ${(err as Error).message} ✗`);
+          this.log(`  ${formatError(`upload failed - ${(err as Error).message}`)}`);
         }
       },
     });
+
+    const shutdown = async () => {
+      this.log('\nStopping watcher (waiting for any in-flight build/upload to finish)...');
+      await watcher.stop();
+      process.exit(0);
+    };
+
+    process.once('SIGINT', () => { void shutdown(); });
+    process.once('SIGTERM', () => { void shutdown(); });
 
     // Keep process alive
     await new Promise(() => { });

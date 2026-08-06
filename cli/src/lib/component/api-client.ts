@@ -1,11 +1,22 @@
 import fetch = require('node-fetch');
+import FormData = require('form-data');
 
-import { uploadToEndpoint } from './uploader';
+import { buildUploadFormData } from './upload-form';
+import { parseApiErrorMessage } from '../api-error';
 
 const BASE_URL = 'http://localhost:3000';
 
 export class ApiClient {
   constructor(private readonly apiToken: string) {}
+
+  private async handleResponse<T>(res: import('node-fetch').Response): Promise<T> {
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(parseApiErrorMessage(res.status, text));
+    }
+
+    return res.json() as Promise<T>;
+  }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     const res = await fetch(`${BASE_URL}/api${path}`, {
@@ -17,12 +28,24 @@ export class ApiClient {
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`${method} ${path} → ${res.status}: ${text}`);
-    }
+    return this.handleResponse<T>(res);
+  }
 
-    return res.json() as Promise<T>;
+  // Attaching the 'error' listener before starting the fetch is what matters here — a stream
+  // failure while reading a file (deleted mid-upload, permission error) surfaces as a rejected
+  // promise instead of an unhandled 'error' event that would crash the process.
+  private sendForm<T>(method: string, path: string, form: FormData): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      form.once('error', (err: unknown) => reject(err instanceof Error ? err : new Error(String(err))));
+
+      fetch(`${BASE_URL}/api${path}`, {
+        method,
+        headers: { Authorization: `Bearer ${this.apiToken}`, ...form.getHeaders() },
+        body: form,
+      })
+        .then((res) => this.handleResponse<T>(res))
+        .then(resolve, reject);
+    });
   }
 
   // POST /api/custom-component-libraries
@@ -35,13 +58,10 @@ export class ApiClient {
     await this.request('GET', `/custom-component-libraries/${id}`);
   }
 
-  // POST /api/custom-component-libraries/:id/dev (multipart — handled by uploader.ts)
+  // POST /api/custom-component-libraries/:id/dev (multipart)
   async uploadDev(libraryId: string, distDir: string): Promise<{ devUploadedAt: string }> {
-    return uploadToEndpoint(
-      `${BASE_URL}/api/custom-component-libraries/${libraryId}/dev`,
-      this.apiToken,
-      distDir,
-    ) as Promise<{ devUploadedAt: string }>;
+    const form = buildUploadFormData(distDir);
+    return this.sendForm('POST', `/custom-component-libraries/${libraryId}/dev`, form);
   }
 
   // POST /api/custom-component-libraries/:id/revisions (multipart)
@@ -50,16 +70,11 @@ export class ApiClient {
     distDir: string,
     message?: string
   ): Promise<{ id: string; version: string; bundleUrl: string }> {
-    return uploadToEndpoint(
-      `${BASE_URL}/api/custom-component-libraries/${libraryId}/revisions`,
-      this.apiToken,
-      distDir,
-      message ? { message } : {},
-    ) as Promise<{ id: string; version: string; bundleUrl: string }>;
+    const form = buildUploadFormData(distDir, message ? { message } : {});
+    return this.sendForm('POST', `/custom-component-libraries/${libraryId}/revisions`, form);
   }
 
-  // GET /api/profile — for login verification
-  async fetchProfile(): Promise<{ email: string }> {
+  async login(): Promise<{ email: string }> {
     return this.request('GET', '/custom-component-libraries/validate-token');
   }
 }
