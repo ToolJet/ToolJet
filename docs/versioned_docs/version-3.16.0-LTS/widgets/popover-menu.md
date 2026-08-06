@@ -129,3 +129,13 @@ The following actions of the component can be controlled using the component-spe
 | **Label**       | Sets the color for the display text for the menu option.            | Color picker / HEX / RGBA / Custom Themes |
 | **Icon color**  | Sets the color of the option’s icon.             | Color picker / HEX / RGBA / Custom Themes |
 | **Description** | Sets the color for the optional helper text shown under the main label. | Color picker / HEX / RGBA / Custom Themes |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::

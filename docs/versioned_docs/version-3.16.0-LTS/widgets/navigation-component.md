@@ -81,7 +81,6 @@ The following actions of the Navigation component can be controlled using compon
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
----
 
 ## Styles
 
@@ -105,3 +104,13 @@ The following actions of the Navigation component can be controlled using compon
 | Border | Border color of the navigation container. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border radius | Corner radius of the navigation container. | Enter a number (default: `8`) or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Padding | Inner padding of the navigation container. | Enter a number (default: `8`) or click on **fx** and enter a code that programmatically returns a numeric value. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
