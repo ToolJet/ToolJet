@@ -103,9 +103,9 @@
 
   .entity-delete-nested-note {
     margin: 0 0 2px;
-    padding: 6px 10px;
-    border: 1px dotted var(--border-weak, #e4e7eb);
-    border-radius: 4px;
+    padding: 8px 10px;
+    border: 1px dashed var(--border-strong, #acb2b9);
+    border-radius: 6px;
     font-size: 12px;
     line-height: 18px;
     color: var(--text-placeholder, #6a727c);
