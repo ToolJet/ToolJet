@@ -24,7 +24,7 @@ Public embeds are commonly used for feedback forms, marketing dashboards, survey
 
 For example, if you run an inventory management portal and want to share stock levels publicly — for vendors, partner stores, or customers — you can embed the ToolJet inventory dashboard publicly on your portal. It lets viewers see item names, quantities, and availability, and filter by “Available” or “Out of Stock,” providing a transparent, interactive view of your inventory without requiring any login.
 
-<iframe width="100%" height="650" src="https://app.tooljet.com/applications/docs-inventory-example" title="ToolJet app - docs-inventory-example" frameborder="0" allowfullscreen></iframe>
+<iframe width="100%" height="650" src="https://app.tooljet.ai/applications/docs-inventory-example" title="ToolJet app - docs-inventory-example" frameborder="0" allowfullscreen></iframe>
 
 <br/><br/>
 
