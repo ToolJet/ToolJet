@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, Length, Matches, MaxLength, MinLength } from 'class-validator';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { Transform } from 'class-transformer';
 
@@ -23,11 +23,14 @@ export class AppSignupDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
+  @MaxLength(99, { message: 'Invalid name' })
   name: string;
 
   @IsEmail()
   @Transform(({ value }) => lowercaseString(value))
   @IsNotEmpty()
+  /* NOTE: this change was for attackers not to use random email addresses. Should remove this or find a better way later */
+  @MaxLength(99, { message: 'Invalid email' })
   email: string;
 
   @IsString()
@@ -74,6 +77,17 @@ export class AppPasswordResetDto {
   token: string;
 }
 
+export class MfaVerifyDto {
+  @IsString()
+  @IsNotEmpty()
+  mfa_token: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 6)
+  otp: string;
+}
+
 export class ChangePasswordDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
@@ -86,6 +100,7 @@ export class ChangePasswordDto {
 export class CreateAiUserDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
+  @MaxLength(99, { message: 'Invalid name' })
   name: string;
 
   @IsEmail()
@@ -93,6 +108,7 @@ export class CreateAiUserDto {
     const newValue = sanitizeInput(value);
     return lowercaseString(newValue);
   })
+  @MaxLength(99, { message: 'Invalid email' })
   email: string;
 
   @IsString()
