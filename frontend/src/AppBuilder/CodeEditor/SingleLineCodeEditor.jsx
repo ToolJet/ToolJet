@@ -36,6 +36,7 @@ import Icon from '@/_ui/Icon/solidIcons/index';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+import { navigateToComponentExtension } from './navigateToComponentExtension';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
 // CodeMirror `extensions` prop must stay referentially stable, otherwise
@@ -492,8 +493,9 @@ const EditorInput = ({
             // rows. Enable wrapping so per-row selection rects
             // are generated.
             EditorView.lineWrapping,
+            navigateToComponentExtension,
           ]
-        : [langExtension, tooltipExtension, EditorView.lineWrapping],
+        : [langExtension, tooltipExtension, EditorView.lineWrapping, navigateToComponentExtension],
     [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap]
   );
 
