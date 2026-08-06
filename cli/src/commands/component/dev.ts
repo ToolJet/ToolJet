@@ -33,7 +33,7 @@ export default class Dev extends Command {
     this.log(formatSuccess(`Library: ${config.libraryName} (dev track)\n`));
     this.log('Watching src/ for changes...\n');
 
-    DevWatcher.start({
+    const watcher = DevWatcher.start({
       projectRoot: process.cwd(),
       debounceMs: flags.debounce,
       onRebuild: async (result) => {
@@ -52,6 +52,15 @@ export default class Dev extends Command {
         }
       },
     });
+
+    const shutdown = async () => {
+      this.log('\nStopping watcher (waiting for any in-flight build/upload to finish)...');
+      await watcher.stop();
+      process.exit(0);
+    };
+
+    process.once('SIGINT', () => { void shutdown(); });
+    process.once('SIGTERM', () => { void shutdown(); });
 
     // Keep process alive
     await new Promise(() => { });
