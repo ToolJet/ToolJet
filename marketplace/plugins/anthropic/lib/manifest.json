@@ -7,7 +7,7 @@
   "tj:source": {
     "name": "Anthropic",
     "kind": "anthropic",
-    "type": "api"
+    "type": "ai"
   },
   "properties": {
     "apiKey": {

@@ -4,7 +4,11 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
+import {
+  ABORT_UNSUPPORTED_KINDS,
+  AI_QUERY_SUPPORTED_KINDS,
+  TRANSFORMATION_DISABLED_KINDS,
+} from '@/AppBuilder/QueryManager/constants';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components';
 import { Button } from 'react-bootstrap';
@@ -18,23 +22,9 @@ import { debounce } from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
 
 const ICON_ONLY_BUTTON_BREAKPOINT = 700;
-
-const GENERATE_QUERY_SUPPORTED_KINDS = [
-  'postgresql',
-  'openapi',
-  'gmail',
-  'googlecalendar',
-  'mongodb',
-  'bigquery',
-  'mysql',
-  'mssql',
-  'snowflake',
-  'openai',
-  'runjs',
-  'databricks',
-];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const { moduleId } = useModuleContext();
@@ -119,7 +109,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
     {
       id: 2,
       label: 'Transformation',
-      condition: !['runpy', 'runjs', 'workflows'].includes(selectedQuery?.kind),
+      condition: !TRANSFORMATION_DISABLED_KINDS.has(selectedQuery?.kind),
     },
     { id: 3, label: 'Settings' },
   ];
@@ -314,21 +304,14 @@ const RunButton = ({ buttonLoadingState, iconOnly }) => {
   );
 };
 
-const hasQueryMention = (text, queryName) => {
-  if (!queryName || !text) return false;
-  const escaped = queryName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`(?:^|[ ,])@${escaped}(?=$|[ ,])`).test(text);
-};
-
 const GenerateQueryButton = ({ iconOnly }) => {
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const queryName = selectedQuery?.name ?? '';
-  // Derived boolean so the component only re-renders when mention is added/removed, not on every keystroke
-  const isQueryMentioned = useStore((state) => hasQueryMention(state.ai?.inputMessage ?? '', queryName));
-  const [buttonPressedForQuery, setButtonPressedForQuery] = useState(null);
+  // The hook owns the mention bookkeeping; it re-renders only when the mention is added/removed,
+  // not on every keystroke.
+  const { openChat, isPressed } = useWriteQueryEntry('query');
   const isLoading = useStore(
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
@@ -336,43 +319,14 @@ const GenerateQueryButton = ({ iconOnly }) => {
   const isActive = isLoading || isPreviewQueryLoading;
 
   if (!featureAccess?.ai) return null;
-  if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
+  if (!AI_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
   if (isActive) return null;
 
-  const isPressed = buttonPressedForQuery === queryName && isQueryMentioned;
-
-  const handleGenerateQuery = async () => {
-    posthogHelper.captureEvent('click_generate_query', { dataSource: selectedDataSource?.kind });
-    const store = useStore.getState();
-
-    store.toggleLeftSidebar(true);
-    store.setSelectedSidebarItem('tooljetai');
-
-    if (isPressed) {
-      requestAnimationFrame(() => store.ai.triggerChatInputFocus());
-      return;
-    }
-
-    setButtonPressedForQuery(queryName);
-    store.ai.setGenerateQuerySource({
-      queryName,
-      queryId: selectedQuery?.id,
-      datasourceId: selectedDataSource?.id,
-      datasourceName: selectedDataSource?.name,
-      datasourceType: selectedDataSource?.kind,
-    });
-    await store.ai.createNewConversation();
-
-    const current = store.ai.inputMessage;
-    const mention = `@${queryName} `;
-    store.ai.setInputMessage(current ? `${current} ${mention}` : mention);
-
-    requestAnimationFrame(() => store.ai.triggerChatInputFocus());
-  };
-
   const isRunJs = selectedDataSource?.kind === 'runjs';
-  const buttonLabel = isRunJs ? 'Write custom code' : 'Generate query';
-  const tooltipMessage = isRunJs ? 'Write custom code with AI' : 'Generate query with AI';
+  // "Write" rather than "Generate": the same button now also modifies an existing query and its
+  // transformation, and "write" is the developer-facing verb for both.
+  const buttonLabel = isRunJs ? 'Write custom code' : 'Write query';
+  const tooltipMessage = isRunJs ? 'Write custom code with AI' : 'Write query with AI';
 
   return (
     <ToolTip message={tooltipMessage} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
@@ -383,7 +337,7 @@ const GenerateQueryButton = ({ iconOnly }) => {
           aria-selected={isPressed}
           iconOnly={iconOnly}
           className={isPressed ? '!tw-bg-button-outline-hover' : ''}
-          onClick={handleGenerateQuery}
+          onClick={openChat}
           disabled={shouldFreeze}
           data-cy="query-generate-button"
         >
