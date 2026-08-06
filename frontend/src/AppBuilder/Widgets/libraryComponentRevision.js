@@ -9,16 +9,22 @@ import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreview
 //   2. app-level pin: globalSettings.customComponentLibraries[libraryId].revisionId
 //      (LLD §5.7 — every instance of a library in an app version moves together)
 //   3. the instance's own revisionId property (back-compat: pre-F5 instances)
-// Pins are stored as FLAT STRINGS ({ [libraryId]: 'v1' }) on purpose: the app-load
-// response runs the whole payload through humps' DEEP decamelizeKeys (apps
-// service), which would rename a nested `revisionId` key to `revision_id` in
-// transit — while deep-camelizing on load would corrupt the UUID map keys. A
-// string value has no keys to mangle. normalizePin tolerates rows saved in the
-// short-lived object shape ({revisionId}/{revision_id}).
+// The pin map must survive BOTH of the platform's deep key transforms in transit:
+// released/editor loads run humps decamelizeKeys (renames camel keys → snake), the
+// v2 preview load runs humps camelizeKeys (EATS THE DASHES in UUID keys). Hence:
+//   - VALUES are flat strings ('v1') — nothing nested for either transform to rename
+//   - KEYS are the library UUID WITHOUT dashes (pure lowercase hex) — a no-op under
+//     both camelize and decamelize
+// normalizePin / the `?? pins[libraryId]` fallback tolerate rows written in the
+// short-lived earlier shapes (object values / dashed keys).
+export const pinKey = (libraryId) => libraryId?.replace(/-/g, '');
 export const normalizePin = (pin) => (typeof pin === 'string' ? pin : pin?.revisionId ?? pin?.revision_id);
 
 export const useEffectiveLibraryRevision = (libraryId, instanceRevisionId) => {
-  const pin = useStore((state) => normalizePin(state.globalSettings?.customComponentLibraries?.[libraryId]));
+  const pin = useStore((state) => {
+    const pins = state.globalSettings?.customComponentLibraries;
+    return normalizePin(pins?.[pinKey(libraryId)] ?? pins?.[libraryId]);
+  });
   const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[libraryId]);
   return devPreview ?? pin ?? instanceRevisionId;
 };

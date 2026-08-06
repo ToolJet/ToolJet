@@ -9,7 +9,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
 import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
-import { normalizePin } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { normalizePin, pinKey } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -56,8 +56,8 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
         // latest revision (all future instances of this library follow the pin).
         const { globalSettings, globalSettingsChanged } = useStore.getState();
         const pins = globalSettings?.customComponentLibraries ?? {};
-        if (!normalizePin(pins[libraryId])) {
-          globalSettingsChanged({ customComponentLibraries: { ...pins, [libraryId]: revisionId } });
+        if (!normalizePin(pins[pinKey(libraryId)] ?? pins[libraryId])) {
+          globalSettingsChanged({ customComponentLibraries: { ...pins, [pinKey(libraryId)]: revisionId } });
         }
       },
     }),
@@ -101,14 +101,15 @@ const VersionPicker = ({ library }) => {
   const clearDevPreview = useCustomComponentPreviewStore((state) => state.clearDevPreview);
 
   const latest = library.revisions[0]?.version;
-  const pin = normalizePin(pins?.[library.id]);
+  const pin = normalizePin(pins?.[pinKey(library.id)] ?? pins?.[library.id]);
   const current = devPreview ?? pin ?? latest;
   const hasUpdate = Boolean(pin && pin !== latest);
 
-  // Always write FLAT-STRING pins and normalize any legacy object rows along the
-  // way (see libraryComponentRevision.js — deep decamelize mangles nested keys).
+  // Always write FLAT-STRING values keyed by DASHLESS uuid, migrating any legacy
+  // rows (object values / dashed keys) on every write — see libraryComponentRevision.js
+  // for why (deep camelize/decamelize transforms in the app-load paths).
   const normalizedPins = () =>
-    Object.fromEntries(Object.entries(pins ?? {}).map(([libId, value]) => [libId, normalizePin(value)]));
+    Object.fromEntries(Object.entries(pins ?? {}).map(([libId, value]) => [pinKey(libId), normalizePin(value)]));
 
   useEffect(() => {
     if (!open) return;
@@ -122,7 +123,7 @@ const VersionPicker = ({ library }) => {
   const selectRevision = (version) => {
     clearDevPreview(library.id);
     globalSettingsChanged({
-      customComponentLibraries: { ...normalizedPins(), [library.id]: version },
+      customComponentLibraries: { ...normalizedPins(), [pinKey(library.id)]: version },
     });
     setOpen(false);
   };
