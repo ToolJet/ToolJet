@@ -1,9 +1,10 @@
 ---
-id: cloud-with-cloud
-title: Setup ToolJet Cloud AI with ToolJet Cloud
+id: managed-with-cloud
+title: Setup ToolJet Managed AI Server with ToolJet Cloud
+sidebar_label: ToolJet AI Server on Cloud
 ---
 
-This is the default AI setup for any workspace on **ToolJet Cloud**. AI requests are routed through ToolJet AI Cloud and authenticated using ToolJet-managed LLM credentials, billed against your workspace's [AI credits](/docs/build-with-ai/ai-credits).
+This is the default AI setup for any workspace on **ToolJet Cloud**. AI requests are routed through ToolJet Managed AI Server and authenticated using ToolJet-managed LLM credentials, billed against your workspace's [AI credits](/docs/build-with-ai/ai-credits).
 
 :::info
 See [Setup ToolJet AI &rarr; Overview](/docs/setup/tooljet-ai/overview) for how this fits alongside the other AI setups and how the request is processed end-to-end.

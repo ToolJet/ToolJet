@@ -1,11 +1,12 @@
 ---
-id: cloud-with-self-hosted
-title: Setup ToolJet Cloud AI with ToolJet Self Hosted
+id: managed-with-self-hosted
+title: Setup ToolJet Managed AI Server with ToolJet Self Hosted
+sidebar_label: ToolJet AI Server on Self Hosted
 ---
 
 <PlanBadge type="self-hosted" />
 
-Self-hosted ToolJet instances can use ToolJet-managed AI instead of deploying a separate AI server. AI requests from your instance are sent over the internet to ToolJet AI Cloud, authenticated with ToolJet-managed LLM credentials, and billed against your instance's AI credits.
+Self-hosted ToolJet instances can use ToolJet-managed AI instead of deploying a separate AI server. AI requests from your instance are sent over the internet to ToolJet Managed AI Server, authenticated with ToolJet-managed LLM credentials, and billed against your instance's AI credits.
 
 :::info
 See [Setup ToolJet AI &rarr; Overview](/docs/setup/tooljet-ai/overview) for how this fits alongside the other AI setups and how the request is processed end-to-end.
@@ -14,7 +15,7 @@ See [Setup ToolJet AI &rarr; Overview](/docs/setup/tooljet-ai/overview) for how 
 ## Prerequisites
 
 - A ToolJet license with the AI feature enabled.
-- Outbound HTTPS (443) access from your ToolJet server to ToolJet AI Cloud.
+- Outbound HTTPS (443) access from your ToolJet server to ToolJet Managed AI Server.
 
 ## Whitelisting Network Access
 
@@ -39,5 +40,5 @@ Credits are pooled at the **instance level** for self-hosted deployments. See [U
 
 ## Switching to a Different Setup
 
-- To use your own LLM API key while continuing to route requests through ToolJet AI Cloud, see [Setup ToolJet Cloud AI (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
-- To keep all AI traffic entirely within your own infrastructure with no data sent to ToolJet AI Cloud, see [Setup ToolJet Enterprise AI](/docs/setup/tooljet-ai/tj-ai-enterprise).
+- To use your own LLM API key while continuing to route requests through ToolJet Managed AI Server, see [Setup ToolJet Cloud AI (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).
+- To keep all AI traffic entirely within your own infrastructure with no data sent to ToolJet Managed AI Server, see [Setup ToolJet Enterprise AI](/docs/setup/tooljet-ai/tj-ai-enterprise).

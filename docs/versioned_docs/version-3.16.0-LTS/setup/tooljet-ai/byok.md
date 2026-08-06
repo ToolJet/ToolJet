@@ -1,7 +1,7 @@
 ---
 id: bring-your-own-key
 title: Bring Your Own Key (BYOK)
-sidebar_label: Setup ToolJet Cloud AI (BYOK)
+sidebar_label: Bring Your Own LLM Key
 ---
 
 <PlanBadge type="enterprise" />
@@ -10,10 +10,10 @@ Bring Your Own Key (BYOK) allows you to configure an API key from a supported LL
 
 This is useful when you want direct control over your AI usage and costs. Since the API key belongs to your LLM provider account, you get full visibility into consumption, can set your own rate limits and spending caps, and are billed directly by the provider, independently of your ToolJet subscription.
 
-BYOK does not require any infrastructure changes. Requests continue to be processed via ToolJet AI Cloud, with the only difference being the credentials used to authenticate them.
+BYOK does not require any infrastructure changes. Requests continue to be processed via ToolJet Managed AI Server, with the only difference being the credentials used to authenticate them.
 
 :::info
-AI requests still route through ToolJet AI Cloud when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/setup/tooljet-ai/tj-ai-enterprise).
+AI requests still route through ToolJet Managed AI Server when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/setup/tooljet-ai/tj-ai-enterprise).
 :::
 
 This means:

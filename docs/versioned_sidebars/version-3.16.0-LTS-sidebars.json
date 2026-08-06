@@ -76,8 +76,8 @@
               },
               "items": [
                 "setup/tooljet-ai/overview",
-                "setup/tooljet-ai/cloud-with-cloud",
-                "setup/tooljet-ai/cloud-with-self-hosted",
+                "setup/tooljet-ai/managed-with-cloud",
+                "setup/tooljet-ai/managed-with-self-hosted",
                 "setup/tooljet-ai/bring-your-own-key",
                 "setup/tooljet-ai/tj-ai-enterprise"
               ]

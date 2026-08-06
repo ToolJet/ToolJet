@@ -1,17 +1,14 @@
 ---
 id: tj-ai-enterprise
 title: ToolJet AI Enterprise
-sidebar_label: Setup ToolJet Enterprise AI
 ---
 
 <PlanBadge type="enterprise" />
 <PlanBadge type="self-hosted" />
 
-ToolJet AI Enterprise is designed for organizations that require complete control over where their data is processed. Rather than routing AI requests through ToolJet AI Cloud, you deploy a ToolJet-provided server image within your own environment. All AI workloads execute on your servers, using your own LLM API key, no data is transmitted to or processed by ToolJet at any point.
+ToolJet AI Enterprise is designed for organizations that require complete control over where their data is processed. Rather than routing AI requests through ToolJet Managed AI Server, you deploy a ToolJet-provided server image within your own environment. All AI workloads execute on your servers, using your own LLM API key, no data is transmitted to or processed by ToolJet at any point.
 
 This is particularly relevant for organizations operating under strict data residency regulations, internal compliance policies, or those running in air-gapped or private-cloud environments where external network calls to third-party servers are not permitted.
-
-Unlike [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key), which uses your API key but still processes requests via ToolJet AI Cloud, ToolJet AI Enterprise removes ToolJet from the request path entirely. 
 
 Benefits of ToolJet AI Enterprise:
 
@@ -66,7 +63,7 @@ The server will read the key from the environment at runtime. ToolJet will not t
 <details id="tj-dropdown">
 <summary>**What is the difference between BYOK and ToolJet AI Enterprise?**</summary>
 
-With BYOK, your API key is used but requests are still routed through ToolJet AI Cloud. With ToolJet AI Enterprise, you host the server yourself, no data leaves your infrastructure at any point.
+With BYOK, your API key is used but requests are still routed through ToolJet Managed AI Server. With ToolJet AI Enterprise, you host the server yourself, no data leaves your infrastructure at any point.
 </details>
 
 <details id="tj-dropdown">
