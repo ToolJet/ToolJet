@@ -78,21 +78,3 @@
     color: var(--text-secondary, #9ba1a6);
   }
 }
-
-.delete-widget-dependents {
-  text-align: left;
-
-  .delete-widget-dependents-warning {
-    font-weight: 500;
-    margin-bottom: 8px;
-  }
-
-  .delete-widget-dependents-list {
-    max-height: 180px;
-    overflow-y: auto;
-    margin-bottom: 8px;
-    padding: 6px;
-    border: 1px solid var(--border-weak, #e4e7eb);
-    border-radius: 6px;
-  }
-}

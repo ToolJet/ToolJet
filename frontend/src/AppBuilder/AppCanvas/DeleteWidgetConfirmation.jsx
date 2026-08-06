@@ -1,9 +1,8 @@
 import React, { useMemo } from 'react';
-import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getComponentUsage } from '@/AppBuilder/_utils/entityUsage';
-import EntityUsageList from '@/AppBuilder/Shared/EntityUsage/EntityUsageList';
+import { getDeleteBlockers } from '@/AppBuilder/_utils/entityUsage';
+import EntityDeleteDialog from '@/AppBuilder/Shared/EntityDelete/EntityDeleteDialog';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const DeleteWidgetConfirmation = ({ darkMode }) => {
@@ -12,53 +11,42 @@ export const DeleteWidgetConfirmation = ({ darkMode }) => {
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const deleteComponents = useStore((state) => state.deleteComponents, shallow);
   const selectedComponents = useStore((state) => state.selectedComponents, shallow);
+  const targets = useStore((state) => state.widgetDeleteConfirmationTargets, shallow);
 
-  // Entities that reference the to-be-deleted components (excluding anything
-  // that is itself part of the selection). Computed only while the dialog is open.
-  const dependents = useMemo(() => {
-    if (!showWidgetDeleteConfirmation) return [];
+  // Everything the dialog needs, computed once per opening: the components being
+  // deleted and whatever still references them from outside the selection.
+  const { componentIds, subjects, blockers, componentsById, queriesById } = useMemo(() => {
+    if (!showWidgetDeleteConfirmation) {
+      return { componentIds: [], subjects: [], blockers: [], componentsById: {}, queriesById: {} };
+    }
     const state = useStore.getState();
-    const selectedIds = new Set(
-      (selectedComponents || []).map((component) => (typeof component === 'string' ? component : component?.id))
-    );
-    const seen = new Map();
-    selectedIds.forEach((componentId) => {
-      if (!componentId) return;
-      const usage = getComponentUsage(state, componentId, moduleId);
-      usage.usedBy.forEach((entry) => {
-        if (entry.kind === 'component' && selectedIds.has(entry.id)) return;
-        const key = `${entry.kind}:${entry.id ?? entry.name}`;
-        if (!seen.has(key)) seen.set(key, entry);
-      });
-    });
-    return Array.from(seen.values());
-  }, [showWidgetDeleteConfirmation, selectedComponents, moduleId]);
+    const ids = (targets ?? selectedComponents ?? [])
+      .map((component) => (typeof component === 'string' ? component : component?.id))
+      .filter(Boolean);
+    const allComponents = state.getCurrentPageComponents(moduleId) ?? {};
+    const queries = state.dataQuery?.queries?.modules?.[moduleId] ?? [];
 
-  const handleConfirmDelete = () => {
-    deleteComponents();
-  };
+    return {
+      componentIds: ids,
+      subjects: ids.map((id) => ({ id, name: allComponents[id]?.component?.name ?? id })),
+      blockers: getDeleteBlockers(state, { componentIds: ids }, moduleId),
+      componentsById: allComponents,
+      queriesById: Object.fromEntries(queries.map((query) => [query.id, query])),
+    };
+  }, [showWidgetDeleteConfirmation, targets, selectedComponents, moduleId]);
 
-  const message =
-    dependents.length === 0 ? (
-      'Are you sure you want to delete this component?'
-    ) : (
-      <div className="delete-widget-dependents">
-        <div className="delete-widget-dependents-warning" data-cy="delete-widget-dependents-warning">
-          Deleting will break {dependents.length} reference{dependents.length === 1 ? '' : 's'}:
-        </div>
-        <div className="delete-widget-dependents-list">
-          <EntityUsageList groups={[{ title: 'Used by', entries: dependents }]} readOnly />
-        </div>
-        <div className="delete-widget-dependents-question">Delete anyway?</div>
-      </div>
-    );
+  const close = () => setWidgetDeleteConfirmation(false);
 
   return (
-    <ConfirmDialog
+    <EntityDeleteDialog
       show={showWidgetDeleteConfirmation}
-      message={message}
-      onConfirm={handleConfirmDelete}
-      onCancel={() => setWidgetDeleteConfirmation(false)}
+      entityLabel="component"
+      subjects={subjects}
+      blockers={blockers}
+      componentsById={componentsById}
+      queriesById={queriesById}
+      onCancel={close}
+      onConfirm={() => deleteComponents(componentIds)}
       darkMode={darkMode}
     />
   );
