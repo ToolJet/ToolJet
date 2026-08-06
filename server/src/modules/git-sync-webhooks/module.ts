@@ -4,6 +4,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { SubModule } from '@modules/app/sub-module';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { BullModule } from '@nestjs/bullmq';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
 import { WebhookSkipFlagModule } from '@modules/git-sync-webhooks/webhook-skip-flag.module';
@@ -55,6 +57,16 @@ export class GitSyncWebhookModule extends SubModule {
         await WebhookSkipFlagModule.register(configs),
         await NotificationsModule.register(configs)
       );
+
+      // Bull Board's forRoot is not registered on cloud
+      if (edition !== TOOLJET_EDITIONS.Cloud) {
+        imports.push(
+          BullBoardModule.forFeature({
+            name: 'git-sync-webhooks',
+            adapter: BullMQAdapter,
+          })
+        );
+      }
 
       // EE-only services — no CE stubs needed since the entire block is edition-gated
       const { WebhookSignatureService } = await this.getProviders(configs, 'git-sync-webhooks', [
