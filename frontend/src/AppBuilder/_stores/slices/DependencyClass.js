@@ -175,6 +175,31 @@ class DependencyGraph {
   getOverallOrder() {
     return this.graph.overallOrder();
   }
+
+  /**
+   * Plain-data snapshot of the graph's internal Maps (nodes/edges), for IndexedDB persistence.
+   */
+  toJSON() {
+    return {
+      nodes: Array.from(this.graph.nodes.entries()),
+      outgoingEdges: Array.from(this.graph.outgoingEdges.entries()),
+      incomingEdges: Array.from(this.graph.incomingEdges.entries()),
+      circular: this.graph.circular,
+    };
+  }
+
+  /**
+   * Rebuilds a DependencyGraph directly from toJSON() output, bypassing addNode/addDependency
+   * (and the tree walk that makes the live rebuild expensive) since the edges are already valid.
+   */
+  static fromJSON(json) {
+    const instance = new DependencyGraph();
+    instance.graph.nodes = new Map(json.nodes);
+    instance.graph.outgoingEdges = new Map(json.outgoingEdges);
+    instance.graph.incomingEdges = new Map(json.incomingEdges);
+    instance.graph.circular = json.circular;
+    return instance;
+  }
 }
 
 export default DependencyGraph;

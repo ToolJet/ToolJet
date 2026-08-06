@@ -223,7 +223,7 @@ export class AppsService implements IAppsService {
     return plainToClass(ValidateAppAccessResponseDto, response);
   }
 
-  validateReleasedApp(ability: AppAbility, app: App): { id: string; slug: string } {
+  validateReleasedApp(ability: AppAbility, app: App): { id: string; slug: string; currentVersionId: string } {
     if (!app.currentVersionId) {
       const editPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
       const errorResponse = {
@@ -234,7 +234,7 @@ export class AppsService implements IAppsService {
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
-    return { id: app.id, slug: app.slug };
+    return { id: app.id, slug: app.slug, currentVersionId: app.currentVersionId };
   }
 
   async getAppAuthenticationConfig(slug: string) {

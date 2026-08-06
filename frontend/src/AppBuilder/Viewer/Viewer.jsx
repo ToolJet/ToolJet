@@ -24,12 +24,21 @@ export const Viewer = ({
   switchDarkMode,
   environmentId,
   versionId,
+  currentVersionId,
   moduleMode = false,
   slug: appSlug,
 } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
-  const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
+  const appType = useAppData(
+    appId,
+    moduleId,
+    darkMode,
+    'view',
+    { environmentId, versionId, currentVersionId },
+    moduleMode,
+    appSlug
+  );
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
   const checkIfLicenseNotValid = useStore((state) => state.checkIfLicenseNotValid, shallow);
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);

@@ -31,13 +31,15 @@ import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
+import { getCachedDependencyGraph, setCachedDependencyGraph } from '@/AppBuilder/_helpers/dependencyGraphCache';
+import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
 
 const useAppData = (
   appId,
   moduleId,
   darkMode,
   mode = 'edit',
-  { environmentId, versionId } = {},
+  { environmentId, versionId, currentVersionId: releasedVersionIdPointer } = {},
   moduleMode = false,
   appSlug
 ) => {
@@ -237,6 +239,7 @@ const useAppData = (
       return;
     }
     let appDataPromise;
+    let appDefinitionCacheHit = false;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const isPublicAccess =
       (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
@@ -251,7 +254,17 @@ const useAppData = (
       }
     } else {
       if (isPublicAccess) {
-        appDataPromise = appService.fetchAppBySlug(slug);
+        // releasedVersionIdPointer is only ever populated for the plain released-app viewer link
+        // (validateReleasedApp) — absent for preview/edit, so this never engages there.
+        appDataPromise = releasedVersionIdPointer
+          ? getCachedAppDefinition(releasedVersionIdPointer).then((cached) => {
+              if (cached) {
+                appDefinitionCacheHit = true;
+                return cached;
+              }
+              return appService.fetchAppBySlug(slug);
+            })
+          : appService.fetchAppBySlug(slug);
       } else {
         appDataPromise = isPreviewForVersion
           ? appVersionService.getAppVersionData(appId, versionId, mode)
@@ -575,14 +588,34 @@ const useAppData = (
           moduleId
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
-        initDependencyGraph(moduleId);
+
+        // Use versionId from URL if available (preview mode), otherwise use editing version
+        const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
+        // Dependency-graph cache: PUBLISHED-only, viewer-only — a released version is immutable,
+        // so a versionId-keyed cache entry never goes stale. Draft/edit-mode always rebuilds.
+        const isCacheableView = mode !== 'edit' && appData.editing_version?.status === 'PUBLISHED' && !!versionIdToInit;
+        if (isCacheableView && !appDefinitionCacheHit) {
+          // Fire-and-forget — persisting the raw response must not delay render. Cached under the
+          // authoritative post-fetch versionId, not the pre-fetch currentVersionId prop (same value
+          // for this flow, but this is the one actually confirmed PUBLISHED).
+          setCachedAppDefinition(appId, versionIdToInit, result);
+        }
+        // Keyed by (versionId, startingPage.id) — the dependency graph is built from whichever
+        // page this load lands on (home page or a deep-linked handle), not the whole app, so a
+        // versionId-only key would serve one page's state to a load that starts on another page.
+        const cachedDependencyGraph = isCacheableView
+          ? await getCachedDependencyGraph(versionIdToInit, startingPage.id)
+          : undefined;
+        const freshDependencyGraphSnapshot = initDependencyGraph(moduleId, cachedDependencyGraph);
+        if (isCacheableView && freshDependencyGraphSnapshot) {
+          // Fire-and-forget — persisting the snapshot must not delay render.
+          setCachedDependencyGraph(appId, versionIdToInit, startingPage.id, freshDependencyGraphSnapshot);
+        }
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
-          // Use versionId from URL if available (preview mode), otherwise use editing version
-          const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
           useStore.getState().init(versionIdToInit, envFromQueryParams);
           // Only the editor Query Manager/DataSourcePicker consume globalDataSources — no viewer path reads it.
           mode === 'edit' && fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
