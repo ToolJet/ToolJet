@@ -12084,6 +12084,11 @@ tbody {
 
 .tj-app-input-wrapper {
   display: flex;
+  position: relative;
+
+  input {
+    padding-right: 35px !important;
+  }
 
   .eye-icon {
     position: absolute;
