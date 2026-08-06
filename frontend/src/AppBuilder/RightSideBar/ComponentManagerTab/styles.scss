@@ -52,3 +52,110 @@
     }
   }
 }
+
+/* ── F4a: Custom tab (design 38-4040) ─────────────────────────────────── */
+.custom-components-tab {
+  padding-bottom: 16px;
+
+  .custom-library-section-header {
+    height: 40px;
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+
+    .custom-library-section-title {
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--text-default);
+    }
+
+    .custom-library-section-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .custom-library-version-chip {
+      height: 28px;
+      min-width: 52px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-weak);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-default);
+    }
+  }
+
+  .custom-library-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 16px 16px;
+  }
+
+  .custom-component-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 8px;
+    cursor: grab;
+
+    &:hover {
+      background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.1));
+    }
+
+    .custom-component-card-icon {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: var(--surfaces-surface-02);
+      color: var(--text-placeholder);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.28px;
+    }
+
+    .custom-component-card-name {
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--text-default);
+    }
+
+    .custom-component-card-description {
+      font-size: 11px;
+      line-height: 20px;
+      color: var(--text-placeholder);
+    }
+  }
+}
+
+.custom-components-empty {
+  padding: 48px 24px;
+  text-align: center;
+
+  .custom-components-empty-title {
+    margin: 12px 0 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-default);
+  }
+
+  .custom-components-empty-subtitle {
+    margin: 0;
+    font-size: 11px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+  }
+}

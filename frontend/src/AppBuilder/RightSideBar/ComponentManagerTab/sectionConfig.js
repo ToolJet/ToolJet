@@ -66,7 +66,10 @@ const sectionConfig = {
   },
   custom: {
     title: 'Custom',
-    valueSet: new Set(['CustomComponent', 'LibraryComponent', 'Html', 'IFrame']),
+    // LibraryComponent (custom component host) is deliberately NOT listed: users
+    // discover custom components via the panel's Custom TAB, which drops
+    // pre-filled instances — a bare unconfigured card would be a dead end.
+    valueSet: new Set(['CustomComponent', 'Html', 'IFrame']),
   },
   miscellaneous: {
     title: 'Miscellaneous',

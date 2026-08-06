@@ -33,13 +33,38 @@ export const addNewWidgetToTheEditor = (
   currentLayout,
   realCanvasRef,
   parentId,
-  moduleInfo = undefined
+  moduleInfo = undefined,
+  libraryComponentInfo = undefined
 ) => {
   const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
-  const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
+  // Custom-tab drops are named after the ACTUAL library component (currencyinput1),
+  // not the host widget type (librarycomponent1).
+  const componentName = computeComponentName(
+    libraryComponentInfo?.componentName ?? componentType,
+    useStore.getState().getCurrentPageComponents()
+  );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
+
+  // Custom tab (LibraryComponent host widget): stamp WHICH library component this
+  // instance renders — mirrors the moduleInfo pattern below. Must run before the
+  // defaultWidth/Height reads so a manifest-declared size wins.
+  if (libraryComponentInfo) {
+    componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
+    componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
+    componentData.definition.properties.revisionId = { value: libraryComponentInfo.revisionId };
+    // Manifest prop defaults land as instance values so the Inspector's fields arrive
+    // pre-filled (module input_items precedent below).
+    for (const prop of libraryComponentInfo.props ?? []) {
+      componentData.definition.properties[prop.name] = { value: prop.default ?? '' };
+    }
+    if (libraryComponentInfo.defaultSize?.width)
+      componentData.defaultSize.width = libraryComponentInfo.defaultSize.width;
+    if (libraryComponentInfo.defaultSize?.height)
+      componentData.defaultSize.height = libraryComponentInfo.defaultSize.height;
+  }
+
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
@@ -267,7 +292,11 @@ export function computeComponentName(componentType, currentComponents) {
     (component) => component.component.component === componentType
   );
   let found = false;
-  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
+  // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
+  // instances after the LIBRARY component: 'HelloWorld' → helloworld1). Without the
+  // fallback an unknown seed produced the literal name "undefined1".
+  const componentName =
+    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType;
   let currentNumber = currentComponentsForKind.length + 1;
   let _componentName = '';
   while (!found) {
