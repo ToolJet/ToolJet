@@ -108,7 +108,7 @@ export const copyToClipboard = (data, includeQuotes = true) => {
 export const formatPathForCopy = (path) => {
   const isArray = path.includes('.');
   if (isArray) {
-    const pathArray = path.split('.');
+    const pathArray = path.split('.').filter(Boolean);
     const newPath = pathArray.map((item) => {
       if (!isNaN(item) && item !== '') {
         return `[${item}]`;
