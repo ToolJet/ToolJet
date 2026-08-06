@@ -284,26 +284,26 @@ export default function tjdbDropdownStyles(
         state.isDisabled && darkMode
           ? darkDisabledBackground
           : state.isDisabled && !darkMode
-            ? lightDisabledBackground
-            : state.isFocused && !darkMode
-              ? lightFocussedBackground
-              : state.isFocused && darkMode
-                ? darkFocussedBackground
-                : !darkMode
-                  ? lightBackground
-                  : darkBackground,
+          ? lightDisabledBackground
+          : state.isFocused && !darkMode
+          ? lightFocussedBackground
+          : state.isFocused && darkMode
+          ? darkFocussedBackground
+          : !darkMode
+          ? lightBackground
+          : darkBackground,
       borderColor:
         state.isFocused && !darkMode
           ? lightFocussedBorder
           : state.isFocused && darkMode
-            ? darkFocussedBorder
-            : darkMode && state.isDisabled
-              ? !darkMode && state.isDisabled
-                ? lightDisabledBorder
-                : darkDisabledBorder
-              : darkMode
-                ? darkBorder
-                : lightBorder,
+          ? darkFocussedBorder
+          : darkMode && state.isDisabled
+          ? !darkMode && state.isDisabled
+            ? lightDisabledBorder
+            : darkDisabledBorder
+          : darkMode
+          ? darkBorder
+          : lightBorder,
       '&:hover': {
         borderColor: darkMode ? darkBorderHover : lightBorderHover,
       },

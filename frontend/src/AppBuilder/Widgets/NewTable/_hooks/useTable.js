@@ -55,7 +55,7 @@ export function useTable({
 
   useEffect(() => {
     setPagination((prev) => ({
-      pageIndex: serverSidePagination ? (prev.pageIndex ?? 0) : 0,
+      pageIndex: serverSidePagination ? prev.pageIndex ?? 0 : 0,
       pageSize: enablePagination ? rowsPerPage : data.length,
     }));
   }, [enablePagination, rowsPerPage, data.length, serverSidePagination]);

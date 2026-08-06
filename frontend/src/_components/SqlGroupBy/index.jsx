@@ -25,8 +25,8 @@ const SqlGroupBy = React.memo(function SqlGroupBy({
   queryName,
 }) {
   const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
-  const schema = depKeys.includes('schema') ? (options?.schema ?? '') : '';
-  const table = depKeys.includes('table') ? (options?.table ?? '') : '';
+  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
+  const table = depKeys.includes('table') ? options?.table ?? '' : '';
 
   // group_by is stored as { [uuid]: string[] }
   const groupByMap = readValueMapFromOptions(options, getter, parseKey);
@@ -35,7 +35,7 @@ const SqlGroupBy = React.memo(function SqlGroupBy({
   const existingEntries = Object.entries(groupByMap);
   const groupByEntryKey = existingEntries.length > 0 ? existingEntries[0][0] : null;
   const selectedColumns = useMemo(
-    () => (existingEntries.length > 0 ? (existingEntries[0][1] ?? []) : []),
+    () => (existingEntries.length > 0 ? existingEntries[0][1] ?? [] : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [groupByMap]
   );

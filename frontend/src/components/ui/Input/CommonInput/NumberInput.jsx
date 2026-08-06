@@ -27,8 +27,8 @@ const NumberInput = ({ size, leadingIcon, response, disabled, ...restProps }) =>
     response === true
       ? 'tw-border-border-success-strong focus-visible:!tw-ring-0 focus-visible:!tw-ring-offset-0 focus-visible:!tw-border-border-success-strong'
       : response === false
-        ? 'tw-border-border-danger-strong focus-visible:!tw-ring-0 focus-visible:!tw-ring-offset-0 focus-visible:!tw-border-border-success-strong'
-        : ''
+      ? 'tw-border-border-danger-strong focus-visible:!tw-ring-0 focus-visible:!tw-ring-offset-0 focus-visible:!tw-border-border-success-strong'
+      : ''
   }`;
 
   const handleIncrement = () => {

@@ -103,8 +103,8 @@ const ColumnSelect = React.memo(function ColumnSelect({
   const selectedOption = isMulti
     ? (Array.isArray(value) ? value : []).map((v) => columns.find((c) => c.value === v) ?? { value: v, label: v })
     : value
-      ? (columns.find((c) => c.value === value) ?? { value, label: value })
-      : null;
+    ? columns.find((c) => c.value === value) ?? { value, label: value }
+    : null;
 
   const handleChange = (opt) => {
     if (isMulti) {

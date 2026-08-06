@@ -24,8 +24,8 @@ const TagsInputMenuList = ({
   const selectedValues = Array.isArray(selectProps?.value)
     ? selectProps.value
     : selectProps?.value
-      ? [selectProps.value]
-      : [];
+    ? [selectProps.value]
+    : [];
 
   // Check if inputValue already exists in selected tags or all options (case-insensitive)
   const trimmedInput = inputValue?.trim()?.toLowerCase();
