@@ -71,7 +71,7 @@ export class RolesRepository extends Repository<GroupPermissions> {
         },
       });
 
-      if (roles.length < 2) return roles[0];
+      if (roles.length < 2) return roles[0] ?? null;
 
       return roles.sort(
         (a, b) => USER_ROLE_PRECEDENCE.indexOf(a.name as USER_ROLE) - USER_ROLE_PRECEDENCE.indexOf(b.name as USER_ROLE)
