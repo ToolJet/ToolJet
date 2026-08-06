@@ -8,14 +8,15 @@ title: "Add GitHub HTTPS Git Configuration"
 <ApiColumns>
 <ApiLeft>
 
-Configure GitHub HTTPS settings for an organization by associating a GitHub App and repository.
+Configure GitHub HTTPS settings for an organization by associating a GitHub App and repository. Do this once, before you create or sync any app. The values below all come from the GitHub App you install on your repository, not from ToolJet:
 
+- `githubAppId`: the **App ID** shown on your GitHub App's settings page (`Settings → Developer settings → GitHub Apps → your app`).
+- `githubAppInstallationId`: found in the URL after you install the App on your repository or organization (`github.com/settings/installations/<installationId>`).
+- `githubAppPrivateKey`: the contents of the `.pem` private key file GitHub generates when you create the App.
 
+If you're on GitHub Enterprise Server rather than github.com, also pass `githubEnterpriseUrl` and `githubEnterpriseApiUrl` for your instance.
 
-
-
-
-<ParamsTable title="Request Body" params={[{"name":"organizationId","type":"string","required":true,"description":"UUID of the organization.","in":"body"},{"name":"gitUrl","type":"string","required":true,"description":"Full HTTPS Git URL.","in":"body"},{"name":"branchName","type":"string","required":true,"description":"Branch to sync with (e.g. \"main\").","in":"body"},{"name":"githubAppId","type":"string","required":true,"description":"GitHub App ID.","in":"body"},{"name":"githubAppInstallationId","type":"string","required":true,"description":"GitHub App installation ID.","in":"body"},{"name":"githubAppPrivateKey","type":"string","required":true,"description":"GitHub App private key in PEM format.","in":"body"}]} />
+<ParamsTable title="Request Body" params={[{"name":"organizationId","type":"string","required":true,"description":"UUID of the organization.","in":"body"},{"name":"gitUrl","type":"string","required":true,"description":"Full HTTPS Git URL.","in":"body"},{"name":"branchName","type":"string","required":true,"description":"Branch to sync with (e.g. \"main\").","in":"body"},{"name":"githubAppId","type":"string","required":true,"description":"GitHub App ID.","in":"body"},{"name":"githubAppInstallationId","type":"string","required":true,"description":"GitHub App installation ID.","in":"body"},{"name":"githubAppPrivateKey","type":"string","required":true,"description":"GitHub App private key in PEM format.","in":"body"},{"name":"githubEnterpriseUrl","type":"string","required":false,"description":"Base URL of your GitHub Enterprise Server instance. Omit for github.com.","in":"body"},{"name":"githubEnterpriseApiUrl","type":"string","required":false,"description":"API URL of your GitHub Enterprise Server instance. Omit for github.com.","in":"body"}]} />
 
 <ErrorsTable errors={[
   {"status":"400","description":"Workspace is archived, no admin user found, git connection test failed, or request body validation failure."},
