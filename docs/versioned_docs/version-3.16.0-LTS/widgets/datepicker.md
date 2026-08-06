@@ -35,10 +35,6 @@ Now user won't be able to select the mentioned date since it will be disabled.
 ToolJet uses **[Moment.js](https://momentjs.com/docs/#/displaying/format/)** to parse and format dates, so the **Format** field must use Moment.js tokens, and these tokens are case-sensitive — for example, `D` is the day of the month (`1`–`31`), while lowercase `d` is the day of the week (`0`–`6`, Sunday to Saturday). Also note that `YYYY` gives a 4-digit year, but lowercase `yyyy` isn't a valid Moment.js token and gets rendered as literal text. Use a format like `MMM D, YYYY` (e.g., `Jan 5, 2024`), not `MMM d, yyyy`.
 :::
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Events
 
 To add an event to a date-picker component, click on the component handle to open the component properties on the right sidebar. Go to the **Events** section and click on **+ Add handler**.
