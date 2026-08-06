@@ -17,6 +17,22 @@ const VALID_EVENT_TYPES = ['js_error', 'widget_error', 'web_vital'] as const;
 
 export type ValidEventType = typeof VALID_EVENT_TYPES[number];
 
+// Faro-compatible field names — destined for the logs pillar, never metric attrs
+export class ErrorDetailDto {
+  @IsString()
+  @MaxLength(32)
+  type: string;
+
+  @IsString()
+  @MaxLength(200)
+  value: string;
+
+  @IsString()
+  @MaxLength(1000)
+  @IsOptional()
+  stacktrace?: string;
+}
+
 export class FrontendMetricEventDto {
   @IsEnum(VALID_EVENT_TYPES)
   type: ValidEventType;
@@ -39,6 +55,11 @@ export class FrontendMetricEventDto {
 
   @IsObject()
   attrs: Record<string, string | number | boolean>;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ErrorDetailDto)
+  detail?: ErrorDetailDto;
 }
 
 export class IngestFrontendMetricsDto {
