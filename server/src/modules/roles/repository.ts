@@ -2,7 +2,7 @@ import { GroupPermissions } from '@entities/group_permissions.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
-import { USER_ROLE, GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
+import { USER_ROLE, GROUP_PERMISSIONS_TYPE, USER_ROLE_PRECEDENCE } from '@modules/group-permissions/constants';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, In, Not, Repository } from 'typeorm';
 
@@ -58,7 +58,7 @@ export class RolesRepository extends Repository<GroupPermissions> {
 
   async getUserRole(userId: string, organizationId: string, manager?: EntityManager): Promise<GroupPermissions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(GroupPermissions, {
+      const roles = await manager.find(GroupPermissions, {
         where: {
           type: GROUP_PERMISSIONS_TYPE.DEFAULT,
           organizationId: organizationId,
@@ -70,6 +70,12 @@ export class RolesRepository extends Repository<GroupPermissions> {
           groupUsers: true,
         },
       });
+
+      if (roles.length < 2) return roles[0];
+
+      return roles.sort(
+        (a, b) => USER_ROLE_PRECEDENCE.indexOf(a.name as USER_ROLE) - USER_ROLE_PRECEDENCE.indexOf(b.name as USER_ROLE)
+      )[0];
     }, manager || this.manager);
   }
 
