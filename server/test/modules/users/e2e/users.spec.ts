@@ -2,7 +2,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { createUser, initTestApp, closeTestApp, login, findEntityOrFail } from 'test-helper';
 import { User } from 'src/entities/user.entity';
-const path = require('path');
+import * as path from 'path';
 
 /** @group platform */
 describe('UsersController', () => {

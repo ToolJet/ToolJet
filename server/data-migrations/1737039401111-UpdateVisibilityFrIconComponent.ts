@@ -55,5 +55,5 @@ export class UpdateVisibilityFrIconComponent1737039401111 implements MigrationIn
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

@@ -415,7 +415,11 @@ describe('GitSyncQueueProcessor failed-event hook', () => {
   // removeOnFail erases dead jobs from Bull Board — the onFailed log line is the
   // only durable trail. It must never itself throw, even with a missing job.
   it('should survive a failed event with an undefined job', () => {
-    const processor = new GitSyncQueueProcessor(new FakeWorkspaceBranchService() as any, new FakeRedisService() as any, new FakeNotificationService() as any);
+    const processor = new GitSyncQueueProcessor(
+      new FakeWorkspaceBranchService() as any,
+      new FakeRedisService() as any,
+      new FakeNotificationService() as any
+    );
     expect(() => processor.onFailed(undefined, new Error('worker died'))).not.toThrow();
   });
 

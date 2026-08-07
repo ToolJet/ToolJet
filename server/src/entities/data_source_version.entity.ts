@@ -25,21 +25,22 @@ export class DataSourceVersion {
   @Column({ name: 'version_from_id', nullable: true })
   versionFromId: string;
 
-  @Column({ name: 'is_default', default: false })
-  isDefault: boolean;
-
   @Column()
   name: string;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  // Static origin marker: true when the row originated from git sync (branch_id was set
+  // before backfill). Added in MakeDataSourceVersionBranchIdNotNullAndDropIsDefault.
+  @Column({ name: 'is_synced', default: false })
+  isSynced: boolean;
 
-  // FIXME: misnamed. Stores a content hash (truncated sha256 of the DS's git JSON,
-  // git-sync pull dedup), NOT a timestamp. Also `numeric` → node-pg returns it as a
-  // string; coerce with Number() before comparing. Rename to meta_content_hash needs a migration.
-  @Column({ name: 'meta_timestamp', type: 'numeric', precision: 15, nullable: true, default: null })
-  metaTimestamp: number;
+  // Git-sync change token: git tree SHA of data-sources/<ds>/ that was last
+  // applied to this DSV. Pull skips the per-env options re-apply when the incoming
+  // tree SHA matches this and is_synced is true.
+  @Column({ name: 'git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
+  gitTreeSha: string;
 
   @Column({ name: 'branch_id', nullable: true })
   branchId: string;
@@ -60,7 +61,6 @@ export class DataSourceVersion {
   @ManyToOne(() => DataSourceVersion, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'version_from_id' })
   versionFrom: DataSourceVersion;
-
 
   @ManyToOne(() => WorkspaceBranch, (wb) => wb.id, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'branch_id' })

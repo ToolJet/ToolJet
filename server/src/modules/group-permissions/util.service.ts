@@ -37,7 +37,6 @@ import { User } from '@entities/user.entity';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RequestContext } from '@modules/request-context/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
@@ -60,28 +59,28 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     if (Object.values(USER_ROLE).includes(createGroupPermissionDto.name as USER_ROLE))
       throw new BadRequestException(ERROR_HANDLER.RESERVED_KEYWORDS_FOR_GROUP_NAME);
   }
-    async checkIfGroupHasBuilderGranularPermissions(
-      groupId: string,
-      organizationId: string,
-      manager?: EntityManager
-    ): Promise<boolean> {
-      const allGranularPermissions = await this.groupPermissionsRepository.getAllGranularPermissions(
-        { groupId },
-        organizationId,
-        manager
-      );
+  async checkIfGroupHasBuilderGranularPermissions(
+    groupId: string,
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<boolean> {
+    const allGranularPermissions = await this.groupPermissionsRepository.getAllGranularPermissions(
+      { groupId },
+      organizationId,
+      manager
+    );
 
-      for (const granularPerm of allGranularPermissions) {
-        if (granularPerm.type === ResourceType.APP || granularPerm.type === ResourceType.WORKFLOWS) {
-          if (granularPerm.appsGroupPermissions?.canEdit) return true;
-        }
-        if (granularPerm.type === ResourceType.FOLDER) {
-          const fp = granularPerm.foldersGroupPermissions;
-          if (fp?.canEditFolder || fp?.canEditApps) return true;
-        }
+    for (const granularPerm of allGranularPermissions) {
+      if (granularPerm.type === ResourceType.APP || granularPerm.type === ResourceType.WORKFLOWS) {
+        if (granularPerm.appsGroupPermissions?.canEdit) return true;
       }
-      return false;
+      if (granularPerm.type === ResourceType.FOLDER) {
+        const fp = granularPerm.foldersGroupPermissions;
+        if (fp?.canEditFolder || fp?.canEditApps) return true;
+      }
     }
+    return false;
+  }
 
   validateAddGroupUserOperation(group: GroupPermissions) {
     if (!group || Object.keys(group)?.length === 0) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
@@ -200,12 +199,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
   async createDefaultGroups(organizationId: string, manager?: EntityManager): Promise<void> {
     const defaultGroups: GroupPermissions[] = [];
 
-    // Check if multi-environment feature is available
-    const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
-      LICENSE_FIELD.MULTI_ENVIRONMENT,
-      organizationId
-    );
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create all default group
       for (const defaultGroup of Object.keys(USER_ROLE)) {
@@ -305,7 +298,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         groupId,
         organizationId,
         manager
-    );
+      );
       if ((isBuilderLevel || hasBuilderEnvironments || hasBuilderGranularPermissions) && endUserRoleUsers.length) {
         // Group has builder-level permissions or environment access and end users are to be added
         if (!allowRoleChange) {

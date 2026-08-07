@@ -5,9 +5,11 @@
  * Usage:
  *   npx ts-node -r tsconfig-paths/register --transpile-only scripts/truncate-test-db.ts
  */
-require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env.test') });
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import { Client } from 'pg';
 
-const { Client } = require('pg');
+dotenv.config({ path: path.resolve(__dirname, '../../.env.test') });
 
 (async () => {
   const client = new Client({
@@ -19,9 +21,7 @@ const { Client } = require('pg');
   });
   await client.connect();
 
-  const { rows } = await client.query(
-    `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`
-  );
+  const { rows } = await client.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`);
   const skip = new Set(['instance_settings', 'migrations', 'typeorm_metadata']);
   const tables = rows
     .map((r: { table_name: string }) => r.table_name)
