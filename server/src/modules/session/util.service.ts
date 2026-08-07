@@ -34,7 +34,7 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
-import { incrementActiveSessions, incrementConcurrentUsers } from '@otel/tracing';
+import { incrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionUtilService {
@@ -304,16 +304,6 @@ export class SessionUtilService {
           lastLoggedIn: new Date(),
         })
       );
-
-      // Increment active sessions counter
-      try {
-        incrementActiveSessions({
-          userId,
-          sessionType: 'user',
-        });
-      } catch (error) {
-        console.error('Error incrementing active sessions metric:', error);
-      }
 
       return session;
     }, manager);
