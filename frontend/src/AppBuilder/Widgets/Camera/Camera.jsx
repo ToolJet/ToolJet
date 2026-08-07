@@ -6,12 +6,11 @@ import { Content } from './Content';
 import { Footer } from './Footer';
 import './camera.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-import { isMobileDevice } from '@/_helpers/appUtils';
+import { mapCameraDevices, hasFrontAndBackCameras, isMobileBrowser } from './cameraDevices';
 
 // Mobile cameras are selected by facing direction, not deviceId: iOS lists several
 // rear lenses ("Back Ultra Wide Camera", "Back Dual Wide Camera") whose ids are not
 // stable across sessions, so `facingMode` is the only reliable front/back switch.
-const isMobile = isMobileDevice();
 
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
   // Props
@@ -95,6 +94,14 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     },
     [updateCapturedImage]
   );
+
+  // Before permission is granted browsers blank out device labels, so the facing
+  // capability is unknowable on first render and the browser heuristic stands in.
+  // Once a stream exists the labels arrive and the actual front/back pair wins.
+  const isMobile = useMemo(() => {
+    const camerasHaveFacingLabels = deviceLists.cameras.some((camera) => camera.facing !== null);
+    return camerasHaveFacingLabels ? hasFrontAndBackCameras(deviceLists.cameras) : isMobileBrowser();
+  }, [deviceLists.cameras]);
 
   const isBusy = useMemo(
     () =>
@@ -318,13 +325,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     try {
       const availableDevices = await mediaDevices.enumerateDevices();
 
-      const cameras = availableDevices
-        .filter((device) => device.kind === 'videoinput')
-        .map((device, index) => ({
-          id: device.deviceId || `camera-${index}`,
-          label: device.label || `Camera ${index + 1}`,
-          value: device.deviceId || `camera-${index}`,
-        }));
+      const cameras = mapCameraDevices(availableDevices.filter((device) => device.kind === 'videoinput'));
 
       const microphones = availableDevices
         .filter((device) => device.kind === 'audioinput')
@@ -347,7 +348,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     } catch (error) {
       console.error('Failed to enumerate media devices', error);
     }
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     const mediaDevices = navigator?.mediaDevices;
@@ -414,7 +415,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
     };
-  }, [selectedCameraId, selectedMicrophoneId, facingMode, refreshDeviceLists]);
+  }, [selectedCameraId, selectedMicrophoneId, facingMode, isMobile, refreshDeviceLists]);
 
   // Fullscreen handling
   useEffect(() => {
