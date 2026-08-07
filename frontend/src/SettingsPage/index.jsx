@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { decodeEntities } from '@/_helpers/utils';
 import { userService } from '@/_services/user.service';
 import { authenticationService } from '@/_services/authentication.service';
 
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { TwoFactorAuthCard } from './TwoFactorAuthCard';
 
-function SettingsPage() {
+function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
   const email = currentSession?.current_user.email;
   const [fullName, setFullName] = React.useState(
@@ -172,7 +173,7 @@ function SettingsPage() {
     <>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
-          <div style={{ height: `calc(100vh - 2.5rem - 48px)` }}>
+          <div style={{ height: `calc(100vh - 2.5rem - 48px)`, overflowY: 'auto' }}>
             <div className="container-xl">
               <div className="card profile-page-card">
                 <div className="card-header">
@@ -331,6 +332,7 @@ function SettingsPage() {
                   <div></div>
                 </div>
               </div>
+              <TwoFactorAuthCard darkMode={props.darkMode} />
             </div>
           </div>
         </div>

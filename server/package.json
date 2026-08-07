@@ -41,6 +41,8 @@
     "plugins:uninstall:prod": "node dist/scripts/plugins-uninstall.js",
     "plugins:reload": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/plugins-reload.ts",
     "plugins:reload:prod": "node dist/scripts/plugins-reload.js",
+    "reset-superadmin": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/reset-superadmin.ts --",
+    "reset-mfa": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/reset-mfa.ts --",
     "rotate:keys": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/rotate-lockbox-key.ts --",
     "rotate:keys:prod": "node dist/scripts/rotate-lockbox-key.js --",
     "typeorm": "typeorm-ts-node-commonjs",
