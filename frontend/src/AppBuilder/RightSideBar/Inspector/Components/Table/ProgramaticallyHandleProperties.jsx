@@ -162,6 +162,7 @@ export const ProgramaticallyHandleProperties = ({
           callbackFunction(index, 'fxActiveFields', resultFxActiveFields);
         }}
         fxActive={calcFxActiveState(props, property)}
+        fxStashKey={`${component?.id}-columns-${index}-${property}`}
         component={component.component}
         className={options.className}
       />

@@ -22,6 +22,9 @@ const OptionDetailsPopover = forwardRef(
     const iconVisibility = item?.iconVisibility;
     const { dataCy: dataCyPrefix, popoverFields, popoverClassName, popoverTitle } = config;
 
+    // No componentId here, so two Menu-style widgets share a stash entry per option index.
+    const getFxStashKey = (property) => `${componentType}-options-${index}-${property}`;
+
     // Common CodeHinter props
     const commonCodeHinterProps = {
       theme: darkMode ? 'monokai' : 'default',
@@ -166,7 +169,14 @@ const OptionDetailsPopover = forwardRef(
                       const transformedValue = getResolvedValue(value);
                       onOptionChange('iconVisibility', transformedValue, index);
                     }}
-                    onFxPress={(active) => onOptionChange('icon.fxActive', active, index)}
+                    onFxToggle={(active, newValue) =>
+                      onOptionChange(
+                        'icon',
+                        { ...item?.icon, fxActive: active, ...(newValue !== undefined && { value: newValue }) },
+                        index
+                      )
+                    }
+                    fxStashKey={getFxStashKey('icon')}
                     fxActive={item?.icon?.fxActive}
                     fieldMeta={{ type: 'icon', displayName: 'Icon' }}
                     paramType={'icon'}
@@ -186,7 +196,14 @@ const OptionDetailsPopover = forwardRef(
                     onChange={(value) => {
                       onDefaultChange(value, index);
                     }}
-                    onFxPress={(active) => onOptionChange('default.fxActive', active, index)}
+                    onFxToggle={(active, newValue) =>
+                      onOptionChange(
+                        'default',
+                        { ...item?.default, fxActive: active, ...(newValue !== undefined && { value: newValue }) },
+                        index
+                      )
+                    }
+                    fxStashKey={getFxStashKey('default')}
                     fxActive={item?.default?.fxActive}
                     fieldMeta={{
                       type: 'toggle',
@@ -209,7 +226,14 @@ const OptionDetailsPopover = forwardRef(
                     onChange={(value) => {
                       onOptionChange('visible.value', value, index);
                     }}
-                    onFxPress={(active) => onOptionChange('visible.fxActive', active, index)}
+                    onFxToggle={(active, newValue) =>
+                      onOptionChange(
+                        'visible',
+                        { ...item?.visible, fxActive: active, ...(newValue !== undefined && { value: newValue }) },
+                        index
+                      )
+                    }
+                    fxStashKey={getFxStashKey('visible')}
                     fxActive={item?.visible?.fxActive}
                     fieldMeta={{
                       type: 'toggle',
@@ -231,7 +255,14 @@ const OptionDetailsPopover = forwardRef(
                     onChange={(value) => {
                       onOptionChange('disable.value', value, index);
                     }}
-                    onFxPress={(active) => onOptionChange('disable.fxActive', active, index)}
+                    onFxToggle={(active, newValue) =>
+                      onOptionChange(
+                        'disable',
+                        { ...item?.disable, fxActive: active, ...(newValue !== undefined && { value: newValue }) },
+                        index
+                      )
+                    }
+                    fxStashKey={getFxStashKey('disable')}
                     fxActive={item?.disable?.fxActive}
                     fieldMeta={{
                       type: 'toggle',

@@ -293,7 +293,8 @@ export const Tags = ({
               paramLabel={'Tag visibility'}
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
-              onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
+              onFxToggle={(active, newValue) => handleOnFxPress(active, index, 'visible', newValue)}
+              fxStashKey={`${component?.id}-options-${index}-visible`}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/AppBuilder/RightSideBar/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty, noop, get } from 'lodash';
+import { camelCase, isEmpty, isUndefined, noop, get } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import {
@@ -18,7 +18,7 @@ import { keymap, tooltips, EditorView } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
-import { isInsideParent, resolveReferences } from './utils';
+import { isInsideParent, resolveReferences, getFrozenFxValue } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion, getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
@@ -26,6 +26,7 @@ import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue } from '@/AppBuilder/Widgets/utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -654,8 +655,12 @@ const DynamicEditorBridge = (props) => {
     isEventManagerParam = false,
     iconVisibility,
     componentId,
+    fxStashKey,
+    fxFallbackValue,
+    onFxToggle,
   } = props;
 
+  const persistsFxState = typeof props.onFxPress === 'function' || typeof props.onFxToggle === 'function';
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
@@ -665,15 +670,12 @@ const DynamicEditorBridge = (props) => {
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue,
     shouldResolve = true;
-  // This is to handle the case when the initial value is a string and contains components or queries
-  // and we need to replace the ids with names
-  // but we don't want to resolve the references as it needs to be displayed as it is
-  if (paramName === 'generateFormFrom' || paramName === 'dataSourceSelector') {
-    if (
-      typeof initialValue === 'string' &&
-      (initialValue?.includes('components') || initialValue?.includes('queries'))
-    ) {
-      newInitialValue = replaceIdsWithName(initialValue);
+  // Stored expressions reference components/queries by id, but the resolver only understands names —
+  // so ids are swapped in before resolving, same as SingleLineCodeEditor does.
+  if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
+    newInitialValue = replaceIdsWithName(initialValue);
+    // These two are shown as written instead of resolved.
+    if (paramName === 'generateFormFrom' || paramName === 'dataSourceSelector') {
       shouldResolve = false;
     }
   }
@@ -707,15 +709,48 @@ const DynamicEditorBridge = (props) => {
         <FxButton
           active={codeShow}
           onPress={() => {
+            const { stashFxExpression, takeFxExpression } = useTransientStore.getState();
             if (codeShow) {
+              // Call sites that never store fxActive keep a presentational fx button — freezing there
+              // would write a value nothing reads back.
+              if (persistsFxState) {
+                // Resolution and the dependency graph read `value` and ignore fxActive, so the
+                // expression has to leave `value` for fx-off to have any effect.
+                const frozenValue = getFrozenFxValue({
+                  resolvedValue: paramType === 'colorSwatches' ? modifiedValue : value,
+                  hasError: !!error,
+                  paramType,
+                  fieldMeta,
+                  fallbackValue: fxFallbackValue,
+                });
+                stashFxExpression(fxStashKey, initialValue);
+                setForceCodeBox(false);
+                // One write: call sites rebuilding a list from a render-time snapshot would have the
+                // second of two sequential writes clobber the first.
+                if (onFxToggle) {
+                  onFxToggle(false, frozenValue);
+                } else {
+                  onFxPress(false);
+                  onChange(frozenValue);
+                }
+                return;
+              }
               setForceCodeBox(false);
               onFxPress(false);
               if (paramType === 'colorSwatches') {
                 onChange(modifiedValue);
               }
             } else {
+              const stashedExpression = takeFxExpression(fxStashKey);
               setForceCodeBox(true);
-              onFxPress(true);
+              if (onFxToggle) {
+                onFxToggle(true, stashedExpression);
+              } else {
+                onFxPress(true);
+                if (!isUndefined(stashedExpression)) {
+                  onChange(stashedExpression);
+                }
+              }
             }
           }}
           dataCy={cyLabel}
