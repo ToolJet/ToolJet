@@ -44,6 +44,8 @@ export const MarkdownColumn = ({
       containerWidth={containerWidth}
       darkMode={darkMode}
       maxHeight={getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellSize)}
+      isEditing={isEditing}
+      setIsEditing={setIsEditing}
     />
   );
 };
