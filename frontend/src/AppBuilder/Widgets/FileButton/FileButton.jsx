@@ -51,7 +51,9 @@ export const FileButton = (props) => {
     contentAlignment = 'center',
     buttonType = 'solid',
     backgroundColor = 'var(--cc-primary-brand)',
-    hoverBackgroundColor = 'auto',
+    hoverBackgroundMode,
+    hoverBackgroundColor,
+    borderColor,
     borderRadius = 6,
     boxShadow = '0px 0px 0px 0px #00000040',
     padding = 'default',
@@ -78,6 +80,17 @@ export const FileButton = (props) => {
         ? loaderColor
         : 'var(--cc-primary-brand)'
       : loaderColor;
+
+  // Mirrors the Button widget: the brand default reads as the theme border on the outline variant so
+  // an untouched swatch doesn't paint a blue outline over the neutral one. `--border-default` is the
+  // token the outline variant class already resolves to, so the default repaints the same pixel.
+  const DEFAULT_BRAND_COLOR = 'var(--cc-primary-brand)';
+  const computedBorderColor =
+    DEFAULT_BRAND_COLOR === borderColor
+      ? buttonType === 'solid'
+        ? borderColor
+        : 'var(--border-default)'
+      : borderColor;
 
   const mergedProperties = useMemo(
     () => ({
@@ -137,8 +150,10 @@ export const FileButton = (props) => {
   // Derive hover/pressed/disabled from the configured background so they don't fall back to the
   // theme's brand-blue tokens. Hover/pressed mirror the Button widget (getModifiedColor); disabled
   // fades the chosen color.
-  const computedHoverBgColor =
-    hoverBackgroundColor !== 'auto' ? hoverBackgroundColor : getModifiedColor(backgroundColor, 'hover');
+  // `hoverBackgroundMode` gates the manual swatch. Apps saved before it existed carry neither key, so
+  // they fall through to the auto-derived hover and render exactly as before.
+  const manualHoverBgColor = hoverBackgroundMode === 'manual' ? hoverBackgroundColor : null;
+  const computedHoverBgColor = manualHoverBgColor || getModifiedColor(backgroundColor, 'hover');
   const computedPressedBgColor = getModifiedColor(backgroundColor, 'active');
   const resolvedBgColor = backgroundColor?.startsWith('var(')
     ? getCssVarValue(document.documentElement, backgroundColor) ?? backgroundColor
@@ -149,6 +164,9 @@ export const FileButton = (props) => {
   const buttonStyle = {
     borderRadius: `${borderRadius}px`,
     boxShadow,
+    // Only paint a border once the style exists on the component — the variant classes own the border
+    // otherwise, which is what apps saved before `borderColor` was added still rely on.
+    ...(borderColor && { borderWidth: '1px', borderStyle: 'solid', borderColor: computedBorderColor }),
     ...(buttonType === 'solid' && {
       '--button-primary': backgroundColor,
       '--button-primary-hover': computedHoverBgColor,
@@ -157,7 +175,7 @@ export const FileButton = (props) => {
     }),
     ...(buttonType === 'outline' && {
       background: 'transparent',
-      ...(hoverBackgroundColor !== 'auto' && { '--button-outline-hover': hoverBackgroundColor }),
+      ...(manualHoverBgColor && { '--button-outline-hover': manualHoverBgColor }),
     }),
   };
 
