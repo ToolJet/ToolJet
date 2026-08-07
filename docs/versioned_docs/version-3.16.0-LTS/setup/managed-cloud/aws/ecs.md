@@ -146,26 +146,23 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
       #### SSL Configuration for AWS RDS PostgreSQL
 
       :::warning
-      **Important**: When connecting to PostgreSQL 16.9 on AWS RDS with SSL enabled, you need to configure SSL certificates. The `NODE_EXTRA_CA_CERTS` environment variable is critical for resolving SSL certificate chain issues and for connecting to self-signed HTTPS endpoints.
-      :::
-      For AWS RDS PostgreSQL connections, add these environment variables to your container:
 
-      ```
+      When connecting to AWS RDS PostgreSQL with SSL enabled, set the following environment variable:
+
+      ```bash
       PGSSLMODE=require
-      NODE_EXTRA_CA_CERTS=/certs/global-bundle.pem
       ```
 
-      You'll also need to:
-      1. **Download the AWS RDS global certificate bundle** on your ECS container instances:
-         ```bash
-         mkdir -p /opt/ssl-certs
-         wget -O /opt/ssl-certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-         ```
-      2. **Add a volume mount** in your task definition:
-         - **Volume name**: `ssl-certs`
-         - **Source path**: `/opt/ssl-certs` (on host)
-         - **Container path**: `/certs` (in container)
-         - **Read only**: Yes
+      :::
+
+      :::note NOTE
+
+      - `NODE_EXTRA_CA_CERTS` is configured automatically and points to `/home/appuser/certs/global-bundle.pem`.
+      - The AWS RDS global certificate bundle is downloaded automatically during container startup.
+      - No manual SSL certificate download or certificate volume mounts are required.
+
+      :::
+      
 
    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
       <img className="screenshot-full img-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
