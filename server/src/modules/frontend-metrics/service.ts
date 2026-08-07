@@ -63,15 +63,23 @@ export class FrontendMetricsService {
 
     // Real name for logs, bucketed name for metric labels — the two must not be conflated.
     const organizationName = await getOrganizationName(context.organizationId);
-    const injectedAttrs = {
-      'organization.name': getWorkspaceNameLabel(context.organizationId, organizationName),
-      'tooljet.version': globalThis.TOOLJET_VERSION || 'unknown',
-    };
+    const tooljetVersion = globalThis.TOOLJET_VERSION || 'unknown';
 
-    const events = dto.events.slice(0, MAX_EVENTS_PER_BATCH).map((ev) => ({
-      ...ev,
-      attrs: { ...this.sanitizeAttrs(ev.attrs), ...injectedAttrs },
-    }));
+    const events = dto.events.slice(0, MAX_EVENTS_PER_BATCH).map((ev) => {
+      const attrs = this.sanitizeAttrs(ev.attrs);
+      // Platform-context events are platform health, never bucketed — mirrors organization.id gating
+      const isPlatformContext = attrs['app.context'] === 'platform';
+      return {
+        ...ev,
+        attrs: {
+          ...attrs,
+          'organization.name': isPlatformContext
+            ? organizationName
+            : getWorkspaceNameLabel(context.organizationId, organizationName),
+          'tooljet.version': tooljetVersion,
+        },
+      };
+    });
 
     recordFrontendMetricsBatch(
       {

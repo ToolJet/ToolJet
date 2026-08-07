@@ -81,13 +81,16 @@ export const recordFrontendMetricsBatch = (
 
   // Org id comes from the JWT, never from the client payload.
   // user.id deliberately NOT a label — users × apps × widgets = series explosion.
-  const baseAttrs = {
-    'organization.id': getWorkspaceLabel(context.organizationId || 'unknown'),
-  };
+  const organizationId = context.organizationId || 'unknown';
 
   for (const event of batch.events) {
     try {
-      const attrs: Record<string, string | number | boolean> = { ...event.attrs, ...baseAttrs };
+      // Platform-context events are platform health, never bucketed — only app-scoped metrics gate
+      const isPlatformContext = event.attrs?.['app.context'] === 'platform';
+      const attrs: Record<string, string | number | boolean> = {
+        ...event.attrs,
+        'organization.id': isPlatformContext ? organizationId : getWorkspaceLabel(organizationId),
+      };
       switch (event.type) {
         case 'js_error':
           jsErrorCounter.add(event.count ?? 1, attrs);

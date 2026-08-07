@@ -28,13 +28,10 @@ const PAID_ORG_QUERY = `
 
 // Licenses don't change by the second
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
-// DB may not be up when OTEL starts
-const FIRST_REFRESH_DELAY_MS = 30 * 1000;
 
 const paidOrgIds = new Set<string>();
 let ready = false;
 let refreshInterval: NodeJS.Timeout | null = null;
-let firstRefreshTimeout: NodeJS.Timeout | null = null;
 
 const isCloud = (): boolean => getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
 
@@ -55,16 +52,15 @@ export const initializePlanCache = (): void => {
   if (!isCloud()) return;
   if (refreshInterval) return;
 
-  firstRefreshTimeout = setTimeout(() => void refresh(), FIRST_REFRESH_DELAY_MS);
+  // Immediate first refresh shrinks the fail-open window to the query's own latency;
+  // refresh() swallows DB-not-ready errors and the interval retries.
+  void refresh();
   refreshInterval = setInterval(() => void refresh(), REFRESH_INTERVAL_MS);
-  firstRefreshTimeout.unref?.();
   refreshInterval.unref?.();
 };
 
 export const shutdownPlanCache = (): void => {
-  if (firstRefreshTimeout) clearTimeout(firstRefreshTimeout);
   if (refreshInterval) clearInterval(refreshInterval);
-  firstRefreshTimeout = null;
   refreshInterval = null;
   paidOrgIds.clear();
   ready = false;
