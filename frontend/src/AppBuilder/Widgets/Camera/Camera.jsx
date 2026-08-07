@@ -12,6 +12,16 @@ import { mapCameraDevices, hasFrontAndBackCameras, isMobileBrowser } from './cam
 // rear lenses ("Back Ultra Wide Camera", "Back Dual Wide Camera") whose ids are not
 // stable across sessions, so `facingMode` is the only reliable front/back switch.
 
+// TEMPORARY: surfaces camera failures on phones, where the console is unreachable.
+// Delete this block and its three call sites before merging.
+const alertedMessages = new Set();
+const debugAlert = (headline, details = '') => {
+  const message = `[camera] ${headline}\n${details}`;
+  if (alertedMessages.has(message)) return;
+  alertedMessages.add(message);
+  window.alert(message);
+};
+
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
   // Props
   const { backgroundColor, borderRadius, borderColor, boxShadow, textColor, accentColor } = styles;
@@ -348,6 +358,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       );
     } catch (error) {
       console.error('Failed to enumerate media devices', error);
+      debugAlert(`enumerateDevices failed — ${error?.name || 'UnknownError'}`, error?.message || '');
     }
   }, [isMobile]);
 
@@ -369,8 +380,22 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       if (!navigator?.mediaDevices?.getUserMedia) {
         setPermissionError('unsupported');
         setMediaStream(null);
+        debugAlert('getUserMedia unavailable', `secure context: ${window.isSecureContext}`);
         return;
       }
+
+      // Stopping the old tracks in the cleanup below is not enough: the <video> element
+      // still holds them as its srcObject, and mobile browsers refuse to hand out the
+      // second camera until that reference is dropped. Detach synchronously and yield a
+      // frame so the element has actually released the hardware before we ask again.
+      const videoElement = videoElementRef.current;
+      if (videoElement?.srcObject) {
+        videoElement.pause();
+        videoElement.srcObject = null;
+      }
+      setMediaStream(null);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      if (cancelled) return;
 
       const constraints = {
         // `ideal` rather than `exact`: a device with only one camera still resolves
@@ -401,6 +426,15 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       } catch (error) {
         if (cancelled) return;
         console.error('Failed to acquire media stream', error);
+        debugAlert(
+          `${error?.name || 'UnknownError'}: ${error?.message || ''}`,
+          [
+            `isMobile: ${isMobile}`,
+            `facingMode: ${facingMode}`,
+            `video constraint: ${JSON.stringify(constraints.video)}`,
+            `cameras: ${deviceLists.cameras.map((c) => `${c.label} [${c.facing}]`).join(' | ') || 'none'}`,
+          ].join('\n')
+        );
         setPermissionError(error?.name || 'permission_denied');
         setMediaStream(null);
       }
