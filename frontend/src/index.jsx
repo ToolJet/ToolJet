@@ -4,7 +4,7 @@ import { render } from 'react-dom';
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { appService } from '@/_services';
-// RootRouter now handles route splitting for viewer isolation
+import { initFrontendMetrics } from '@/_services/frontend-metrics.service';
 import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
@@ -32,6 +32,9 @@ appService
     console.log({ config });
 
     window.public_config = config;
+
+    initFrontendMetrics();
+
     const language = config.LANGUAGE || 'en';
     const path = config?.SUB_PATH || '/';
     i18n

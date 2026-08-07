@@ -48,6 +48,7 @@ export class ConfigService implements IConfigService {
       'ENABLE_WORKFLOW_SCHEDULING',
       'SSO_HUBSPOT_PORTAL_ID',
       'SSO_HUBSPOT_FORM_ID',
+      'ENABLE_OTEL_FRONTEND',
     ];
   }
 
