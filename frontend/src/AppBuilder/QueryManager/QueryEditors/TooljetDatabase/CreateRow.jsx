@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import React, { useState, useEffect } from 'react';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import { v4 as uuidv4 } from 'uuid';
-import _, { isEmpty } from 'lodash';
+import { isEmpty, isObject } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RenderColumnUI from './RenderColumnUI';
 import { NoCondition } from './NoConditionUI';
-import cx from 'classnames';
 
 export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
   const mounted = useMounted();
-  const { columns } = useContext(TooljetDatabaseContext);
+  const { columns } = useToolJetDbOperationsContext();
   const [columnOptions, setColumnOptions] = useState(options['create_row'] || {});
   useEffect(() => {
     mounted && optionchanged('create_row', columnOptions);
@@ -102,7 +101,7 @@ const RenderColumnOptions = ({
   removeColumnOptionsPair,
 }) => {
   const filteredColumns = columns.filter(({ column_default }) =>
-    _.isObject(column_default) ? true : !column_default?.startsWith('nextval(')
+    isObject(column_default) ? true : !column_default?.startsWith('nextval(')
   );
   const existingColumnOption = Object.values ? Object.values(columnOptions) : [];
   let displayColumns = filteredColumns.map(({ accessor, dataType }) => ({

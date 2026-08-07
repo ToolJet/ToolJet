@@ -1,11 +1,12 @@
 import React, { useContext } from 'react';
-import Layout from '@/_ui/Layout';
-import { authenticationService } from '@/_services';
-import { BreadCrumbContext } from '@/App/App';
-import FolderList from '@/_ui/FolderList/FolderList';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
-const MarketplacePage = ({ darkMode, switchDarkMode }) => {
+import { authenticationService } from '@/_services/authentication.service';
+
+import { BreadCrumbContext } from '@/App/App';
+import FolderList from '@/_ui/FolderList/FolderList';
+
+const MarketplacePage = () => {
   const [active, setActive] = React.useState('');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   }, [location.pathname, setActive, updateSidebarNAV]);
 
   return (
-    <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
+    <>
       <div className="wrapper">
         <div className="marketplace-body">
           <div className="pt-3 px-3">
@@ -67,8 +68,8 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 
-export { MarketplacePage };
+export default MarketplacePage;

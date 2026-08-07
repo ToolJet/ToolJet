@@ -1,7 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
 import _, { isEmpty } from 'lodash';
-import JSON5 from 'json5';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
@@ -616,15 +615,6 @@ export function toQuery(params, delimiter = '&') {
     return query;
   }, '');
 }
-
-export const isJson = (str) => {
-  try {
-    JSON5.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
-};
 
 export const isStringValidJson = (str) => {
   try {

@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { TooljetDatabaseContext } from '../index';
+import React, { useState, useEffect } from 'react';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import EditRowDrawer from '../Drawers/EditRowDrawer';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
@@ -11,7 +11,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { AddNewDataPopOver } from './ActionsPopover/AddNewDataPopOver';
 import { pluralize } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { isEmpty } from 'lodash';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 import config from 'config';
@@ -55,7 +55,7 @@ const Header = ({
     organizationId,
     handleRefetchQuery,
     pageSize,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
 
   useEffect(() => {
     setErrors({ client: [], server: [] });

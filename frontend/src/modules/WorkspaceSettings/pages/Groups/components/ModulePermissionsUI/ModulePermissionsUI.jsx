@@ -1,8 +1,9 @@
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEModulePermissionsUI from '@ee/modules/WorkspaceSettings/components/ModulePermissionsUI/ModulePermissionsUI';
 
-const ModulePermissionsUI = () => {
-  return <></>;
-};
+const ModulePermissionsUI = pickEditionSpecificComponent({
+  ee: EEModulePermissionsUI,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(ModulePermissionsUI, 'WorkspaceSettings');
+export default ModulePermissionsUI;
