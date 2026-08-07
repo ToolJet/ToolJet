@@ -141,6 +141,17 @@ export async function initializeEnvConfigRegistry(app: NestExpressApplication, l
     const orgEnvUtilService = app.get(OrganizationEnvUtilService, { strict: false });
     await orgEnvUtilService.initialize();
     logger.log('✅ Environment config registry initialized successfully');
+
+    try {
+      const { LoginConfigsService } = await import(`${importPath}/login-configs/service`);
+      const loginConfigsService = app.get(LoginConfigsService, { strict: false });
+      await loginConfigsService.autoEnableEnvConfigs();
+      logger.log('✅ Auto-enabled env-managed SSO providers where eligible');
+    } catch (error) {
+      // Never let an auto-enable failure block app startup — env-config staying off just
+      // means an admin toggles it manually, same as before this existed.
+      logger.error('❌ Failed to auto-enable env-managed SSO providers:', error);
+    }
   } catch (error) {
     logger.error('❌ Failed to initialize environment config registry:', error);
     throw error;
