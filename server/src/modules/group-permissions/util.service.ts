@@ -286,6 +286,21 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       // Validation - Group exist and Group is not default group
       this.validateAddGroupUserOperation(group);
 
+      // Enforce one DEFAULT group per user per org: drop any other default membership
+      // before adding this one — otherwise getUserRole()'s lookup can return either at random.
+      if (group.type === GROUP_PERMISSIONS_TYPE.DEFAULT) {
+        const otherDefaultGroups = await manager.find(GroupPermissions, {
+          where: { organizationId, type: GROUP_PERMISSIONS_TYPE.DEFAULT, id: Not(groupId) },
+          select: ['id'],
+        });
+        if (otherDefaultGroups.length) {
+          await manager.delete(GroupUsers, {
+            userId: In(userIds),
+            groupId: In(otherDefaultGroups.map((g) => g.id)),
+          });
+        }
+      }
+
       // Get end users
       const endUserRoleUsers = endUsers?.length
         ? endUsers

@@ -1,3 +1,4 @@
+/** @group platform */
 import Redis from 'ioredis';
 import { Queue } from 'bullmq';
 import { GitSyncQueueService, GIT_SYNC_JOBS } from '@ee/workspace-branches/git-sync-queue.service';

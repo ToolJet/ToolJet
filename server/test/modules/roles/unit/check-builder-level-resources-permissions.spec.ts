@@ -1,3 +1,4 @@
+/** @group platform */
 /**
  * Unit tests for RolesUtilService.checkIfBuilderLevelResourcesPermissions.
  *

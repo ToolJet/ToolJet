@@ -1,3 +1,4 @@
+/** @group platform */
 import Redis from 'ioredis';
 import { GitObjectCacheService } from '@ee/git-sync-configs/services/git-object-cache.service';
 import { RedisService } from '@modules/redis/service';

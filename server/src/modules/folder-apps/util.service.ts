@@ -1,7 +1,7 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
 import { Injectable } from '@nestjs/common';
-import { EntityManager, In, IsNull, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Equal, In, IsNull, Or, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
@@ -272,9 +272,26 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     };
   }
 
-  async bulkCreate(folderId: string, appIds: string[], branchId?: string): Promise<FolderApp[]> {
+  private buildBranchFilter(branchId?: string, matchNullAsDefaultBranch = false) {
+    if (!branchId) return { branchId: IsNull() };
+    return { branchId: matchNullAsDefaultBranch ? Or(Equal(branchId), IsNull()) : branchId };
+  }
+
+  // matchNullAsDefaultBranch: true when `branchId` is itself a default-branch fallback (the
+  // caller passed no explicit branch — see FolderAppsService.resolveEffectiveBranchId(s)). In
+  // that case, legacy rows written before every org had a default branch still carry
+  // branch_id=NULL — they mean the same thing as "on the default branch" and must be treated
+  // as the same row, or moves/lookups silently miss them and leave an orphaned NULL-branch row
+  // behind. Never set this for an explicitly-requested branchId: a real git-sync branch must
+  // stay isolated from NULL (pre-branch) rows.
+  async bulkCreate(
+    folderId: string,
+    appIds: string[],
+    branchId?: string,
+    matchNullAsDefaultBranch = false
+  ): Promise<FolderApp[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const branchFilter = branchId ? { branchId } : { branchId: IsNull() };
+      const branchFilter = this.buildBranchFilter(branchId, matchNullAsDefaultBranch);
       const existing = await manager.find(FolderApp, { where: { appId: In(appIds), ...branchFilter } });
       const alreadyInFolder = new Set(existing.filter((fa) => fa.folderId === folderId).map((fa) => fa.appId));
       const toRemove = existing.filter((fa) => fa.folderId !== folderId);
@@ -293,9 +310,14 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     });
   }
 
-  async create(folderId: string, appId: string, branchId?: string): Promise<FolderApp> {
+  async create(
+    folderId: string,
+    appId: string,
+    branchId?: string,
+    matchNullAsDefaultBranch = false
+  ): Promise<FolderApp> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const branchFilter = branchId ? { branchId } : { branchId: IsNull() };
+      const branchFilter = this.buildBranchFilter(branchId, matchNullAsDefaultBranch);
       const existingFolderApp = await manager.findOne(FolderApp, {
         where: { appId, ...branchFilter },
       });

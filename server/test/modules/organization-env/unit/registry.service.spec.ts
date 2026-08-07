@@ -1,3 +1,4 @@
+/** @group platform */
 jest.mock('fs', () => {
   const actual = jest.requireActual('fs');
   return {
@@ -12,6 +13,7 @@ jest.mock('fs', () => {
 });
 
 import * as fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 import { OrganizationEnvRegistryService } from '@ee/organization-env/service';
 
 function makeService() {
@@ -96,6 +98,30 @@ describe('OrganizationEnvRegistryService', () => {
       });
       const result = (service as any).parseWorkspaceGitConfigsVar();
       expect(result.has('workspace-a')).toBe(false);
+    });
+  });
+
+  describe('getResolvedOrganizationIds()', () => {
+    it('returns empty array when nothing is resolved', () => {
+      const { service } = makeService();
+      expect(service.getResolvedOrganizationIds()).toEqual([]);
+    });
+
+    it('returns UUID-keyed entries added via env var resolution', async () => {
+      const orgUuid = uuidv4();
+      process.env.WORKSPACE_GIT_CONFIGS = JSON.stringify({ [orgUuid]: { GITHUB_URL: 'env-url' } });
+      const { service } = makeService();
+      await service.initialize();
+      expect(service.getResolvedOrganizationIds()).toEqual([orgUuid]);
+    });
+
+    it('excludes slug-keyed entries — only UUID-shaped keys count as resolved', async () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      (fs.promises.readdir as jest.Mock).mockResolvedValue([`.tj_env.not-a-uuid-slug`]);
+      (fs.promises.readFile as jest.Mock).mockResolvedValue(`GITHUB_URL=file-url`);
+      const { service } = makeService();
+      await service.initialize();
+      expect(service.getResolvedOrganizationIds()).toEqual([]);
     });
   });
 
