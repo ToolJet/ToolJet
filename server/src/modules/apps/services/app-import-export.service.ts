@@ -1629,16 +1629,21 @@ export class AppImportExportService {
     //     ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
     //     : importingAppVersions;
 
+    // Whether git sync is enabled for the workspace. In a git-enabled workspace every
+    // branch (including the default) carries a single editable version — the one-version-
+    // per-branch git contract — so a file import must collapse to a single version. A
+    // non-git workspace keeps full version history, so all versions are imported.
+    const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
+
     // When importing multiple versions, select the right versions to import based on context:
     // - Cloning on a sub-branch (cloning=true, branchId provided): prefer non-stub BRANCH-type
     //   versions matching the source branchId. Fall back to VERSION-type if none found.
     // - Git hydrate (isGitApp + branchId): pass all (pull.service.ts re-parents).
-    // - File import onto a sub-branch (!isGitApp + !cloning + branchId): keep ONLY
-    //   the latest version. Sub-branches have a single editable BRANCH-type DRAFT —
-    //   importing history would create rows the sub-branch can't represent. Older
-    //   versions in the JSON are dropped.
-    // - All other cases (file import without branch): skip BRANCH-type versions,
-    //   only import VERSION-type.
+    // - File import into a git-enabled workspace (!isGitApp + !cloning + git ON): keep ONLY
+    //   the latest version — the one-version-per-branch contract. Older versions in the JSON
+    //   are dropped.
+    // - File import into a non-git workspace (git OFF): import ALL versions, skipping only
+    //   BRANCH-type rows (keep VERSION-type).
     // - Single version: allow through as-is (will be adapted in createAppVersionsForImportedApp).
     let filteredAppVersions: any[];
     if (importingAppVersions.length > 1) {
@@ -1658,9 +1663,9 @@ export class AppImportExportService {
         // (the original cross-workspace-import rule) leaves zero versions and crashes
         // hydration with "No versions found after import".
         filteredAppVersions = importingAppVersions;
-      } else if (!isGitApp && !cloning && branchId) {
-        // File import onto a sub-branch — keep only the latest version. Older
-        // versions are dropped (sub-branches carry one editable DRAFT, no history).
+      } else if (!isGitApp && !cloning && isGitSyncEnabled) {
+        // File import into a git-enabled workspace — keep only the latest version.
+        // Older versions are dropped (one editable version per branch, no history).
         const latest = this.pickLatestVersionFromImport(importingAppVersions);
         filteredAppVersions = latest ? [latest] : [];
       } else {

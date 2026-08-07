@@ -10,6 +10,8 @@ import {
   ensureAppEnvironments,
   setTestLicenseTerms,
   restoreLicensePlan,
+  createApplication,
+  createApplicationVersion,
 } from 'test-helper';
 import * as request from 'supertest';
 import { WorkspaceBranchService } from '@ee/workspace-branches/service';
@@ -4320,6 +4322,133 @@ describe('GitSyncController — GitLab', () => {
           .send({ isBranchingEnabled: true })
           .expect(200);
       }, 540000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // App-import version behavior across git off / on.
+    //
+    // setupImportedAppAssociations() decides how many versions of an imported app to
+    // create based on whether git sync is ENABLED for the target workspace:
+    //   - Git OFF → import ALL versions (full version history is preserved).
+    //   - Git ON  → import ONLY the latest version (one-version-per-branch git contract).
+    // Regression guard: previously a truthy resolved branchId (always the org default
+    // branch) forced the "keep only latest" path even for non-git workspaces, so a
+    // multi-version file import collapsed to a single version.
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('POST /api/v2/resources/import | multi-version import respects git sync', () => {
+      let importDataSource: DataSource;
+      // A real export payload carrying 3 VERSION-type versions, reused by both tests.
+      let multiVersionPayload: { app: any[]; tooljet_version: string };
+
+      const authReq = (r: request.Test, cookie: string[], org: string) =>
+        r.set('Cookie', cookie).set('tj-workspace-id', org);
+
+      const versionCount = async (appId: string): Promise<number> => {
+        const rows = await importDataSource.query(`SELECT COUNT(*)::int AS c FROM app_versions WHERE app_id = $1`, [
+          appId,
+        ]);
+        return rows[0].c;
+      };
+
+      beforeAll(async () => {
+        importDataSource = app.get<DataSource>(getDataSourceToken('default'));
+
+        // Source workspace is git-OFF; seed an app with 3 versions and export it so we
+        // have a definition whose appV2.appVersions holds all three.
+        const { user, organization } = await createUser(app, {
+          email: 'import-versions-src.gl@tooljet.io',
+          firstName: 'import',
+          lastName: 'source',
+        });
+        const { tokenCookie: srcCookie } = await login(app, 'import-versions-src.gl@tooljet.io');
+        await ensureAppEnvironments(app, organization.id);
+
+        const sourceApp = await createApplication(app, {
+          name: `multi-version-source-${Date.now()}`,
+          user: user as any,
+        });
+        await createApplicationVersion(app, sourceApp as any, { name: 'v1' });
+        await createApplicationVersion(app, sourceApp as any, { name: 'v2' });
+        await createApplicationVersion(app, sourceApp as any, { name: 'v3' });
+
+        const exportResp = await authReq(
+          request.agent(app.getHttpServer()).post('/api/v2/resources/export'),
+          srcCookie,
+          organization.id
+        )
+          .send({ app: [{ id: sourceApp.id }], organization_id: organization.id })
+          .expect(201);
+
+        // Sanity check the payload really carries all three versions before we import it.
+        expect(exportResp.body.app[0].definition.appV2.appVersions).toHaveLength(3);
+
+        multiVersionPayload = {
+          app: exportResp.body.app,
+          tooljet_version: exportResp.body.tooljet_version,
+        };
+      });
+
+      it('imports ALL versions when git sync is disabled', async () => {
+        const { organization } = await createUser(app, {
+          email: 'import-versions-gitoff.gl@tooljet.io',
+          firstName: 'import',
+          lastName: 'gitoff',
+        });
+        const { tokenCookie: cookie } = await login(app, 'import-versions-gitoff.gl@tooljet.io');
+        await ensureAppEnvironments(app, organization.id);
+
+        const importResp = await authReq(
+          request.agent(app.getHttpServer()).post('/api/v2/resources/import'),
+          cookie,
+          organization.id
+        )
+          .send({
+            organization_id: organization.id,
+            tooljet_version: multiVersionPayload.tooljet_version,
+            app: [{ appName: 'imported-git-off', definition: multiVersionPayload.app[0].definition }],
+          })
+          .expect(201);
+
+        expect(importResp.body.success).toBe(true);
+        const importedAppId: string = importResp.body.imports.app[0].id;
+
+        // Git OFF → all three versions are recreated.
+        expect(await versionCount(importedAppId)).toBe(3);
+      });
+
+      it('imports ONLY the latest version when git sync is enabled', async () => {
+        const { organization } = await createUser(app, {
+          email: 'import-versions-giton.gl@tooljet.io',
+          firstName: 'import',
+          lastName: 'giton',
+        });
+        const { tokenCookie: cookie } = await login(app, 'import-versions-giton.gl@tooljet.io');
+        await ensureAppEnvironments(app, organization.id);
+
+        // Enable git sync for this workspace — flips getDetails().isEnabled to true
+        // (hits the real GitLab/Gitea simulator, same as the rest of this suite).
+        await authReq(request.agent(app.getHttpServer()).post('/api/git-sync/configs'), cookie, organization.id)
+          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+
+        const importResp = await authReq(
+          request.agent(app.getHttpServer()).post('/api/v2/resources/import'),
+          cookie,
+          organization.id
+        )
+          .send({
+            organization_id: organization.id,
+            tooljet_version: multiVersionPayload.tooljet_version,
+            app: [{ appName: 'imported-git-on', definition: multiVersionPayload.app[0].definition }],
+          })
+          .expect(201);
+
+        expect(importResp.body.success).toBe(true);
+        const importedAppId: string = importResp.body.imports.app[0].id;
+
+        // Git ON → only the latest version is imported (one editable version per branch).
+        expect(await versionCount(importedAppId)).toBe(1);
+      }, 180000);
     });
 
     // ────────────────────────────────────────────────────────────────────────────
