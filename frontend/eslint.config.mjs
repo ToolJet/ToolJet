@@ -8,6 +8,7 @@ import pluginJest from 'eslint-plugin-jest';
 import pluginPrettier from 'eslint-plugin-prettier';
 import configPrettier from 'eslint-config-prettier';
 import pluginStorybook from 'eslint-plugin-storybook';
+import noBarrelFiles from 'eslint-plugin-no-barrel-files';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
@@ -265,6 +266,26 @@ export default [
       ],
 
       'react/no-unknown-property': 'off',
+    },
+  },
+
+  // Barrel-file detection — registers the plugin and enables no-barrel-files as error.
+  // Using the upstream preset so future rule additions (e.g. prefer-source-imports) are
+  // picked up automatically on upgrade without touching this file.
+  ...noBarrelFiles.configs['flat/recommended'],
+
+  // Downgrade to warn: barrel files exist throughout src/ today; warn without blocking CI.
+  {
+    rules: {
+      'no-barrel-files/no-barrel-files': 'warn',
+    },
+  },
+
+  // ee/ architecture intentionally uses barrel exports — disable the rule there entirely.
+  {
+    files: ['ee/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-barrel-files/no-barrel-files': 'off',
     },
   },
 
