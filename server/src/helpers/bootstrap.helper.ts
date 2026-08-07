@@ -605,9 +605,6 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(
     `ORM Slow Query logging threshold in ms: ${configService.get<string>('ORM_SLOW_QUERY_LOGGING_THRESHOLD') || 'Not - configured'}`
   );
-  logger.log(
-    `Transaction logging level: ${configService.get<string>('TRANSACTION_LOGGING_LEVEL') || 'Not - configured'}`
-  );
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log('='.repeat(60));
 }
