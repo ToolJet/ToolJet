@@ -150,8 +150,9 @@ const WidgetWrapper = memo(
     }
 
     let newLayoutData = layoutData;
+    const isModuleContainerInView = componentType === 'ModuleContainer' && mode === 'view';
 
-    if (isGridLayout && componentType === 'ModuleContainer' && mode === 'view') {
+    if ((isModuleContainerInView || isGridLayout) && componentType === 'ModuleContainer' && mode === 'view') {
       const isEmbeddedModule = moduleId !== 'canvas';
       newLayoutData = { ...layoutData, top: 0, left: 0, width: isEmbeddedModule ? NO_OF_GRIDS : layoutData.width };
     }
@@ -181,7 +182,9 @@ const WidgetWrapper = memo(
         (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
           ? 'auto'
           : gridFinalHeight + 'px',
-      transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
+      transform: `translate(${newLayoutData.left * gridWidth}px, ${
+        isModuleContainerInView ? 0 : temporaryLayouts?.top ?? newLayoutData.top
+      }px)`,
       WebkitFontSmoothing: 'antialiased',
       borderTop: !visibility && mode === 'edit' ? `1px dashed var(--border-accent-strong)` : 'none',
       boxSizing: 'content-box',

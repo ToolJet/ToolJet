@@ -49,10 +49,9 @@
  * - Prevents invalid drops (e.g., putting a button inside a Table component).
  * - Enables **modular and flexible** widget movement across different UI sections.
  */
-import { getMouseDistanceFromParentDiv } from '../gridUtils';
+import { getMouseDistanceFromParentDiv, isDroppingRestrictedWidget } from '../gridUtils';
 
-import { DROPPABLE_PARENTS, NESTING_LEVEL_LIMITS } from '../../appCanvasConstants';
-import { isDroppingRestrictedWidget } from '../gridUtils';
+import { DROPPABLE_PARENTS, GRID_HEIGHT, NESTING_LEVEL_LIMITS, NO_OF_GRIDS } from '../../appCanvasConstants';
 
 const CANVAS_ID = 'canvas';
 const REAL_CANVAS_ID = 'real-canvas';
@@ -351,6 +350,71 @@ export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gr
   return {
     left: dragged.left * gridWidth,
     top: dragged.top,
+  };
+};
+
+export const getBaseParentId = (parent, boxList = []) => {
+  if (!parent) return null;
+  if (boxList.some((box) => box.id === parent)) return parent;
+  if (parent.length > 36) return parent.slice(0, 36);
+  return parent;
+};
+
+export const getParentComponentType = (parent, boxList) => {
+  const parentId = getBaseParentId(parent, boxList);
+  return boxList.find((box) => box.id === parentId)?.component?.component;
+};
+
+export const computeDragEndLayout = ({
+  widget,
+  boxList,
+  currentLayout,
+  containerWidth,
+  sourceContainerWidth = containerWidth,
+  x,
+  y,
+  parent,
+}) => {
+  const parentComponentType = getParentComponentType(parent, boxList);
+  let width = widget.layouts[currentLayout].width;
+  let height = widget.layouts[currentLayout].height;
+
+  // Preserve visual width when moving between containers that have different grid column widths.
+  if (parent !== widget.component?.parent) {
+    width = Math.round((width * sourceContainerWidth) / containerWidth);
+  }
+
+  width = Math.max(width, 1);
+  let left = Math.max(0, Math.round(x / containerWidth));
+
+  // Listview rows clip overflowing children visually, but their row-relative left must still be persisted.
+  // Clamping here would make a widget that was dragged past the visible row width reload at its old position.
+  if (parentComponentType !== 'Listview' && width + left > NO_OF_GRIDS) {
+    left = Math.max(0, NO_OF_GRIDS - width);
+    width = Math.min(width, NO_OF_GRIDS);
+  }
+
+  let top = Math.max(0, Math.round(y / GRID_HEIGHT) * GRID_HEIGHT);
+  if (parent) {
+    const parentElem = typeof document === 'undefined' ? null : document.getElementById(`canvas-${parent}`);
+    const parentHeight = parentElem?.clientHeight || height;
+
+    // Listview children are constrained vertically to a row and wrap to the matching row slot.
+    if (height > parentHeight && parentComponentType === 'Listview') {
+      height = parentHeight;
+      top = 0;
+    }
+
+    if (parentComponentType === 'Listview' && top > parentHeight) {
+      top = top % parentHeight;
+    }
+  }
+
+  return {
+    width,
+    height,
+    top,
+    left,
   };
 };
 
