@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { initializeFrontendMetrics } from '@otel/frontend-metrics';
 import { initializeOtelLogs } from '@otel/logs';
+import { initializePlanCache } from '@otel/org-plan-cache';
 import { FrontendMetricsController } from './controller';
 import { FrontendMetricsService } from './service';
 import { FeatureAbilityFactory } from './ability';
@@ -37,5 +38,7 @@ export class FrontendMetricsModule implements OnModuleInit {
     // Module is only imported when ENABLE_OTEL=true (see app/module.ts)
     initializeFrontendMetrics();
     initializeOtelLogs();
+    // No-ops off Cloud — free-tier bucketing only exists there
+    initializePlanCache();
   }
 }

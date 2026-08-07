@@ -1,5 +1,6 @@
 import { metrics } from '@opentelemetry/api';
 import type { Counter, Histogram, Meter } from '@opentelemetry/api';
+import { getWorkspaceLabel } from './org-plan-cache';
 
 let frontendMeter: Meter;
 let jsErrorCounter: Counter;
@@ -81,7 +82,7 @@ export const recordFrontendMetricsBatch = (
   // Org id comes from the JWT, never from the client payload.
   // user.id deliberately NOT a label — users × apps × widgets = series explosion.
   const baseAttrs = {
-    'organization.id': context.organizationId || 'unknown',
+    'organization.id': getWorkspaceLabel(context.organizationId || 'unknown'),
   };
 
   for (const event of batch.events) {
