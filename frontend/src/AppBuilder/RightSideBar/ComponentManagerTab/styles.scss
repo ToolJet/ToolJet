@@ -53,13 +53,19 @@
   }
 }
 
-/* ── F4a: Custom tab (design 38-4040) ─────────────────────────────────── */
 .custom-components-tab {
-  padding-bottom: 16px;
-
+  
+  .custom-library-section{
+    border-bottom: 1px solid var(--border-weak, #E4E7EB);
+    
+    padding: 16px ;
+    &:last-child {
+      border-bottom: none;
+    }
+  }
   .custom-library-section-header {
     height: 40px;
-    padding: 6px 16px;
+    padding: 6px 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -97,7 +103,6 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 0 16px 16px;
   }
 
   .custom-component-card {
@@ -106,7 +111,7 @@
     gap: 12px;
     border-radius: 8px;
     cursor: grab;
-
+    background: var(--surfaces-surface-01);
     &:hover {
       background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.1));
     }
@@ -142,7 +147,7 @@
 }
 
 .custom-components-empty {
-  padding: 48px 24px;
+  padding: 40px 16px;
   text-align: center;
 
   .custom-components-empty-title {
@@ -160,7 +165,6 @@
   }
 }
 
-/* ── F5: version picker (design 38-4040 frames 02/03) ─────────────────── */
 .custom-library-version-picker {
   position: relative;
   display: flex;
@@ -178,6 +182,8 @@
     right: 0;
     z-index: 100;
     width: 208px;
+    max-height: 240px; /* long revision histories scroll instead of overflowing the panel */
+    overflow-y: auto;
     padding: 8px;
     display: flex;
     flex-direction: column;
@@ -248,5 +254,12 @@
     height: 1px;
     margin: 4px 0;
     background: var(--border-weak);
+  }
+}
+
+
+#components-manager-tabs{
+  .nav-link{
+    min-width: 84px !important;
   }
 }
