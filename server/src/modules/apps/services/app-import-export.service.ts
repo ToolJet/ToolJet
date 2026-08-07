@@ -3458,13 +3458,14 @@ export class AppImportExportService {
 
         // chk_app_versions_branch_metadata requires app_name AND slug to be non-null
         // whenever branch_id IS NOT NULL. Imports may carry NULL metadata (e.g. hydrate
-        // temp apps, partial exports) — fall back to a random UUID placeholder for the
-        // slug so the INSERT doesn't violate the CHECK. Workflows are exempt from the
-        // CHECK itself (branch_id is always NULL for them) but still get real metadata
-        // here now. importMeta?.slug carries the exported slug (see createImportedAppForUser)
-        // for every type. If there's a real candidate slug (not the random fallback),
-        // reuse it unless it's already taken — that lets a deleted app's slug be reclaimed
-        // on re-import instead of always minting a fresh one.
+        // temp apps, partial exports) — fall back to the freshly imported app's own id
+        // (guaranteed unique, matches the AppsUtilService.create() placeholder convention)
+        // so the INSERT doesn't violate the CHECK. Workflows are exempt from the CHECK
+        // itself (branch_id is always NULL for them) but still get real metadata here now.
+        // importMeta?.slug carries the exported slug (see createImportedAppForUser) for
+        // every type. If there's a real candidate slug (not the fallback), reuse it unless
+        // it's already taken — that lets a deleted app's slug be reclaimed on re-import
+        // instead of always minting a fresh one.
         //
         // Slug uniqueness is enforced by enforce_app_versions_default_branch_slug_unique which
         // is GLOBAL (no org scope). Use the transaction manager so we also see slugs already
@@ -3483,13 +3484,13 @@ export class AppImportExportService {
             .andWhere('av.app_id != :appId', { appId: importedApp.id })
             .getCount();
           if (slugTakenByOther > 0) {
-            resolvedSlug = uuid();
+            resolvedSlug = importedApp.id;
           } else {
             resolvedSlug = rawSlug;
             assignedSlugsThisImport.add(rawSlug);
           }
         } else {
-          resolvedSlug = uuid();
+          resolvedSlug = importedApp.id;
         }
         const resolvedAppName = appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id;
 
@@ -3767,7 +3768,7 @@ export class AppImportExportService {
       updatedAt: new Date(),
       ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
       ...(importMeta && {
-        slug: uuid(),
+        slug: importedApp.id,
         appName: importMeta.appName,
         icon: importMeta.icon,
         isPublic: importMeta.isPublic,
