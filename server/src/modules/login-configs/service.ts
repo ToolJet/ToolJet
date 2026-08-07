@@ -127,8 +127,6 @@ export class LoginConfigsService implements ILoginConfigsService {
       }
     } else {
       // Other SSO types (single config per organization)
-      // `configs` is omitted from the write payload when not provided (e.g. an env-config-managed
-      // SAML config toggling `enabled` only) so it doesn't null out the existing stored configs.
       ssoConfig = await this.ssoConfigsRepository.createOrUpdateSSOConfig({
         sso: type,
         ...(configs !== undefined && { configs }),

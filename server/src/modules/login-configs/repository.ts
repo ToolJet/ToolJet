@@ -74,8 +74,6 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
   async setUseEnvConfig(organizationId: string, useEnvConfig: boolean, sso: SSOType): Promise<SSOConfigs | null> {
     const existing = await this.findOrgSsoConfig(organizationId, sso);
     if (!existing) {
-      // Nothing to disable if the row doesn't exist yet — creating one just to immediately mark
-      // it disabled would leave a useless, permanently-disabled orphan provider behind.
       if (!useEnvConfig) return null;
       return this.save(
         this.create({

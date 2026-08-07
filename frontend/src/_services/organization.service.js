@@ -115,10 +115,6 @@ function editOrganizationConfigs(params) {
   return fetch(`${config.apiUrl}/login-configs/organization-sso`, requestOptions).then(handleResponse);
 }
 
-// provider: 'oidc' | 'saml' | 'ldap'. Was 3 separate functions/routes (updateOidcEnvConfig,
-// updateSamlEnvConfig, updateLdapEnvConfig), one per provider — collapsed to one now that the
-// backend route takes :provider instead. configId is only meaningful for OIDC's multi-provider
-// case; omit it for saml/ldap.
 function updateEnvConfig(provider, useEnvConfig, configId) {
   const requestOptions = {
     method: 'PATCH',

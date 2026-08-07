@@ -85,9 +85,7 @@ function updateSSOConfigs(settings) {
   };
   return fetch(`${config.apiUrl}/login-configs/instance-sso`, requestOptions).then(handleResponse);
 }
-// Instance-level env config only exists for OIDC today, matching the backend's
-// InstanceSsoEnvProvider (oidc-only) — the :provider segment is fixed here rather than taking
-// a parameter since there's nothing else valid to pass.
+
 function updateOidcEnvConfig(useEnvConfig) {
   const requestOptions = {
     method: 'PATCH',
