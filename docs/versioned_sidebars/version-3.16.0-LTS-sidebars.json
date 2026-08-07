@@ -156,7 +156,8 @@
                   "items": [
                     "setup/migration/upgrade-to-v3",
                     "setup/migration/upgrade-to-v3.16",
-                    "setup/migration/workflow-temporal-to-bullmq-migration"
+                    "setup/migration/workflow-temporal-to-bullmq-migration",
+                    "setup/migration/infra-level-rollback"
                   ]
                 }
               ]
@@ -350,6 +351,7 @@
                 "widgets/button-group-v2",
                 "widgets/calendar",
                 "widgets/camera",
+                "widgets/cascader",
                 {
                   "type": "category",
                   "label": "Chart",
@@ -396,6 +398,7 @@
                 "widgets/file-picker",
                 "widgets/file-input",
                 "widgets/file-button",
+                "widgets/flex-container",
                 {
                   "type": "category",
                   "label": "Form",
@@ -555,28 +558,65 @@
             {
               "type": "category",
               "label": "Actions Reference",
+              "link": {
+                "type": "doc",
+                "id": "actions/overview"
+              },
               "items": [
                 "actions/run-actions-from-runjs",
-                "actions/run-query",
-                "actions/reset-query",
-                "actions/show-alert",
-                "actions/control-component",
-                "actions/show-modal",
-                "actions/close-modal",
-                "actions/set-table-page",
-                "actions/switch-page",
-                "actions/go-to-app",
-                "actions/open-webpage",
-                "actions/set-page-variable",
-                "actions/unset-page-variable",
-                "actions/unset-all-page-var",
-                "actions/set-variable",
-                "actions/unset-variable",
-                "actions/unset-all-var",
-                "actions/logout",
-                "actions/generate-file",
-                "actions/set-localstorage",
-                "actions/copy-to-clipboard"
+                {
+                  "type": "category",
+                  "label": "Run Action",
+                  "items": [
+                    "actions/run-query",
+                    "actions/reset-query",
+                    "actions/abort-query",
+                    "actions/show-alert"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Control Component",
+                  "items": [
+                    "actions/control-component",
+                    "actions/show-modal",
+                    "actions/close-modal",
+                    "actions/set-table-page",
+                    "actions/scroll-component-into-view"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Navigation",
+                  "items": [
+                    "actions/switch-page",
+                    "actions/go-to-app",
+                    "actions/open-webpage"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Variable",
+                  "items": [
+                    "actions/set-page-variable",
+                    "actions/unset-page-variable",
+                    "actions/unset-all-page-var",
+                    "actions/set-variable",
+                    "actions/unset-variable",
+                    "actions/unset-all-var"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Other",
+                  "items": [
+                    "actions/logout",
+                    "actions/generate-file",
+                    "actions/set-localstorage",
+                    "actions/copy-to-clipboard",
+                    "actions/toggle-app-mode"
+                  ]
+                }
               ]
             },
             "tutorial/keyboard-shortcuts"
@@ -641,6 +681,7 @@
             "data-sources/graphql",
             "data-sources/grpc",
             "data-sources/grpcv2",
+            "data-sources/ibmdb",
             "data-sources/influxdb",
             "data-sources/mailgun",
             "data-sources/mariadb",
@@ -724,6 +765,7 @@
               "items": [
                 "marketplace/plugins/marketplace-plugin-aftership",
                 "marketplace/plugins/marketplace-plugin-anthropic",
+                "marketplace/plugins/marketplace-plugin-asana",
                 "marketplace/plugins/marketplace-plugin-authorizenet",
                 "marketplace/plugins/marketplace-plugin-aws-bedrock",
                 "marketplace/plugins/marketplace-plugin-awsredshift",
@@ -758,6 +800,7 @@
                 "marketplace/plugins/marketplace-plugin-qdrant",
                 "marketplace/plugins/marketplace-plugin-quickbooks",
                 "marketplace/plugins/marketplace-plugin-salesforce",
+                "marketplace/plugins/marketplace-plugin-servicenow",
                 "marketplace/plugins/marketplace-plugin-sharepoint",
                 "marketplace/plugins/marketplace-plugin-supabase",
                 "marketplace/plugins/marketplace-plugin-ups",

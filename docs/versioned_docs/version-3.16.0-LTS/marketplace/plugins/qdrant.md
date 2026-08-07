@@ -20,7 +20,7 @@ To connect with Qdrant, you will need Qdrant URL and an API key, which can be ge
 ## Supported Operations
 
 1. **[Get Collection Info](#get-collection-info)**
-2. **[List Collection](#list-collection)**
+2. **[List Collection](#list-collections)**
 3. **[Get Points](#get-points)**
 4. **[Upsert Points](#upsert-points)**
 5. **[Delete Points](#delete-points)**

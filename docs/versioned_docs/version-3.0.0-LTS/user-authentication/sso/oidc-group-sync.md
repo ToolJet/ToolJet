@@ -49,7 +49,7 @@ To set up OIDC group synchronization in ToolJet follow these steps:
   </div>
 
 :::info
-For a detailed guide on setting up OIDC in ToolJet, refer to our [OIDC](/docs/category/openid-connect/) documentation.
+For a detailed guide on setting up OIDC in ToolJet, refer to our [OIDC](/docs/3.0.0-LTS/user-authentication/sso/openid/setup) documentation.
 :::
 
 4. Once you have entered the information related to your IdP credentials, you can proceed to configure group synchronization settings.
@@ -104,4 +104,4 @@ Group mapping in ToolJet follows these principles:
 - Users will need to log in via alternative SSO methods or email/password.
 - If the license limit is reached, new users will not be allowed to log in.
 
-For more information on managing users and groups in ToolJet, please refer to our [Managing Users and Groups](/docs/tutorial/manage-users-groups/) documentation.
+For more information on managing users and groups in ToolJet, please refer to our [Managing Users and Groups](/docs/3.0.0-LTS/tutorial/manage-users-groups) documentation.

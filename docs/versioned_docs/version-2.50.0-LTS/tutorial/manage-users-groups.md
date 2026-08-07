@@ -81,7 +81,7 @@ Admins of a workspace can edit the details of any user in their workspace. The d
 
 Admins of a workspace can archive any user from their workspace. Archiving a user will disable their access to the workspace. 
 
-**Info**: An archived user from a workspace can still be invited to the other workspaces unless they are archived at instance level from the **[Settings](/docs/Enterprise/superadmin#settings)** page.
+**Info**: An archived user from a workspace can still be invited to the other workspaces unless they are archived at instance level from the **[Settings](/docs/2.50.0-LTS/Enterprise/superadmin#settings)** page.
 
 To archive a user:
 
@@ -103,7 +103,7 @@ To archive a user:
 
 Admins of a workspace can unarchive any user from their workspace. Unarchiving a user will enable their access to the workspace. 
 
-**Info**: A user who is **Archived** at instance level from the **[Settings](/docs/Enterprise/superadmin#settings)** page, if **Unarchived** from a workspace, will automatically be **Unarchived** at instance level as well.
+**Info**: A user who is **Archived** at instance level from the **[Settings](/docs/2.50.0-LTS/Enterprise/superadmin#settings)** page, if **Unarchived** from a workspace, will automatically be **Unarchived** at instance level as well.
 
 To unarchive a user:
 
@@ -169,7 +169,7 @@ Admins and Super Admins can add or remove any numbers of users in a group. Just 
 Admins and Super Admins can set granular permission for the users added in that particular group, such as:
 - **Create** and **Delete** Apps
 - **Create**, **Update**, and **Delete** Folders
-- **Create**, **Update**, and **Delete** [Workspace Constants](/docs/org-management/workspaces/workspace_constants/)
+- **Create**, **Update**, and **Delete** [Workspace Constants](/docs/2.50.0-LTS/org-management/workspaces/workspace_constants)
 - **Create** and **Delete** [Data Sources](/docs/data-sources/overview)
 
 <div style={{textAlign: 'center'}}>
@@ -189,7 +189,7 @@ Only Admins and Super Admins can define what data sources can be **viewed** or *
 </div>
 
 :::tip
-All the activities performed by any Admin, Super Admin or any user in a workspace is logged in [Audit logs](/docs/Enterprise/audit_logs) - including any activity related with managing users and groups.
+All the activities performed by any Admin, Super Admin or any user in a workspace is logged in [Audit logs](/docs/2.50.0-LTS/Enterprise/audit_logs) - including any activity related with managing users and groups.
 :::
 
 </div>

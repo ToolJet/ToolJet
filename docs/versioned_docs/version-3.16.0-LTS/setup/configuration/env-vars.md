@@ -197,7 +197,25 @@ You can control workflow execution behavior using the following environment vari
 |-----------|-------------|---------|-------|
 | `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out. | 60 | seconds |
 | `WORKFLOW_JS_MEMORY_LIMIT_MB` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
-| `WORKFLOW_JS_TIMEOUT` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
+| `WORKFLOW_JS_TIMEOUT_MS` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
+
+#### Rate Limiting Data Query Runs
+
+ToolJet rate-limits how often a data query can be run (from the query editor's Run/Preview, or a launched app) to protect against a runaway loop, for example a recursive `onChange` handler or scripted client, that could otherwise flood the connection pool and downstream data sources.
+
+The limit is applied per `(user, app)` — logged-in users are keyed by user ID, and anonymous viewers on public apps are keyed by IP. One limit is shared across both builder and viewer runs, so a runaway app can't starve other apps or other users on the same app. It's on by default.
+
+| Variable | Description | Default | Unit |
+|-----------|-------------|---------|-------|
+| `DISABLE_DATA_QUERY_RUN_THROTTLE` | Set to `true` to bypass the throttle entirely. When unset, the throttle is on. | unset | boolean |
+| `DATA_QUERY_RUN_TTL` | Duration of the rate-limit window. | 1000 | milliseconds |
+| `DATA_QUERY_RUN_LIMIT` | Maximum number of query runs allowed per window, per `(user, app)`. | 50 | runs |
+
+Requests over the limit receive an HTTP `429` response.
+
+:::info
+Rate-limit counters are tracked per pod. In a multi-pod deployment, the effective limit is `DATA_QUERY_RUN_LIMIT` multiplied by the number of pods, until shared (Redis-backed) counter storage is added.
+:::
 
 #### Configuring Non Email Identifier for ToolJet OIDC
 

@@ -12,14 +12,14 @@ The **Components Library** on the right sidebar contains all of the available co
 </div>
 
 :::tip
-Check the **[Components Catalog](/docs/widgets/overview)** to know more about specific component.
+Check the **[Components Catalog](/docs/2.50.0-LTS/widgets/overview)** to know more about specific component.
 :::
 
 ## Properties Panel
 
 The Properties Panel contains all the available settings for the selected component and is where you **set values**, **update component names**, and **create event handlers**. The Properties Panel organizes settings into different sections, such as **Properties** and **Styles**. 
 
-To open the Properties Panel, click on the **[component handle](/docs/app-builder/canvas#arrange-components)** that is present on the top of the component including **⚙️ + Component Name** and the Properties Panel will open up on the right side.
+To open the Properties Panel, click on the **[component handle](/docs/2.50.0-LTS/app-builder/canvas#arrange-components)** that is present on the top of the component including **⚙️ + Component Name** and the Properties Panel will open up on the right side.
 
 <div style={{textAlign: 'center'}}>
 

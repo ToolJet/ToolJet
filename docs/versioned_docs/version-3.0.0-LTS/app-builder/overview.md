@@ -15,13 +15,13 @@ Getting started is straightforward – design your interface, connect your data 
 
 Explore these hands-on guides to start building your first app. The step-by-step guides will walk you through the App-Builder's essential features:
 
-- **[Create UIs Using Pre-Built Components](/docs/app-builder/walkthrough/create-ui)**
-- **[Create Queries to Interact With Data Sources](/docs/app-builder/walkthrough/create-queries)**
-- **[Use Custom Code](/docs/app-builder/walkthrough/using-code)**
-- **[Access and Referring Values Within The App-Builder](/docs/app-builder/walkthrough/accessing-values)**
-- **[Create and Managing Variables](/docs/app-builder/walkthrough/variables)**
-- **[Use Gitsync to Sync your Application with a Git Repository](/docs/gitsync)**
-- **[Versioning and Release](/docs/tutorial/versioning-and-release)**
-- **[Import and Export Apps](/docs/app-builder/importing-exporting-applications)**
+- **[Create UIs Using Pre-Built Components](/docs/3.0.0-LTS/app-builder/walkthrough/create-ui)**
+- **[Create Queries to Interact With Data Sources](/docs/3.0.0-LTS/app-builder/walkthrough/create-queries)**
+- **[Use Custom Code](/docs/3.0.0-LTS/app-builder/walkthrough/using-code)**
+- **[Access and Referring Values Within The App-Builder](/docs/3.0.0-LTS/app-builder/walkthrough/accessing-values)**
+- **[Create and Managing Variables](/docs/3.0.0-LTS/app-builder/walkthrough/variables)**
+- **[Use Gitsync to Sync your Application with a Git Repository](/docs/3.0.0-LTS/gitsync)**
+- **[Versioning and Release](/docs/3.0.0-LTS/tutorial/versioning-and-release)**
+- **[Import and Export Apps](/docs/3.0.0-LTS/app-builder/importing-exporting-applications)**
 
 

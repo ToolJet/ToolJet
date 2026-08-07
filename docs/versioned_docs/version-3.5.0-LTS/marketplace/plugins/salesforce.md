@@ -35,7 +35,7 @@ Note: After completing the OAuth flow, the query must be triggered again to load
 
 ## Querying Salesforce
 
-- To perform queries on Salesforce in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
+- To perform queries on Salesforce in ToolJet, click the **+Add** button in the [query manager](/docs/3.5.0-LTS/app-builder/query-panel#query-manager) located at the bottom panel of the editor.
 - Select the previously configured Salesforce datasource from the **Data Source** dropdown.
 
 - In the Operation dropdown, select the desired operation type. ToolJet supports two operation types for Salesforce interactions:
@@ -54,7 +54,7 @@ Note: After completing the OAuth flow, the query must be triggered again to load
 <br/>
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/tutorial/transformations).
+Query results can be transformed using transformations. Read our [transformations documentation](/docs/3.5.0-LTS/tutorial/transformations).
 :::
 
 ## CRUD Actions

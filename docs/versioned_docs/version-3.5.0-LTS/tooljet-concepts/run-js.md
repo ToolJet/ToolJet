@@ -32,6 +32,6 @@ Run JavaScript code also supports advanced functionalities such as setting and u
 To learn more about Run JavaScript code, go through the below list of documents:
 
 - **[Use Axios in RunJS](/docs/data-sources/runjs/use-axios-in-runjs/)**
-- **[Run Actions From RunJS](/docs/actions/run-actions-from-runjs//)**
+- **[Run Actions From RunJS](/docs/3.5.0-LTS/how-to/run-actions-from-runjs)**
 - **[Import External Libraries Using RunJS](/docs/app-builder/import-libraries/runjs/)**
 - **[Access a User's Location Using RunJS](/docs/data-sources/runjs/access-users-location/)**

@@ -3,7 +3,7 @@ id: switch-page
 title: Switch Page
 ---
 
-Utilize this action with various event handler to transition to a different page within the [Multipage App](/docs/tutorial/pages).
+Utilize this action with various event handler to transition to a different page within the [Multipage App](/docs/3.5.0-LTS/tutorial/pages).
 
 By default, the debounce field is left empty. However, you can input a numeric value to indicate the time in milliseconds before the action is executed. For example, `300`.
 

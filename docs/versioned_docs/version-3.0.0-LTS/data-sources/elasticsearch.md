@@ -38,7 +38,7 @@ ToolJet also supports SSL certificate-based connections:
 2. Choose the operation you want to perform on your Elasticsearch cluster.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/3.0.0-LTS/tutorial/transformations)**
 :::
 
 </div>

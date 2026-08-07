@@ -30,7 +30,7 @@ You can follow the [google documentation](https://cloud.google.com/docs/authenti
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/3.5.0-LTS/tutorial/transformations)
 :::
 
 #### Supported operations

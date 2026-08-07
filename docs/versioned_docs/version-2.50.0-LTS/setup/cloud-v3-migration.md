@@ -214,7 +214,7 @@ After November 11th, applications with the old Kanban Board component will crash
 
 #### Action Required After Upgrade
 
-If you haven't migrated your local data sources to global data sources, you will encounter an error message indicating that local data sources are no longer supported. For detailed instructions on migrating from Local Data Sources to the new Data Sources, please refer to our [Local Data Sources Migration Guide](/docs/data-sources/local-data-sources-migration).
+If you haven't migrated your local data sources to global data sources, you will encounter an error message indicating that local data sources are no longer supported. For detailed instructions on migrating from Local Data Sources to the new Data Sources, please refer to our [Local Data Sources Migration Guide](/docs/3.0.0-LTS/data-sources/local-data-sources-migration).
 
 ### Workspace Variables
 
@@ -228,7 +228,7 @@ If you haven't migrated your local data sources to global data sources, you will
 
 Workspace Constants are designed to be resolved on the server-side only, ensuring a high level of security. You can assign users to a specific role and provide create, update, and delete access to Workspace Constants.
 
-For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](/docs/org-management/workspaces/workspace-variables-migration).
+For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](/docs/2.50.0-LTS/org-management/workspaces/workspace-variables-migration).
 
 ## Response Headers and Metadata
 

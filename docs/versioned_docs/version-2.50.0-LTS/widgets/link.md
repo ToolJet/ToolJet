@@ -27,7 +27,7 @@ The **Link** component allows you to add a hyperlink and navigate to the externa
 | On hover | Triggered when the cursor hovers over the link. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

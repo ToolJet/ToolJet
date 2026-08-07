@@ -22,7 +22,7 @@ The widgets can be resized and repositioned within the canvas.
 
 ## Adding widgets to Modal
 
-To add a widget to Modal, we need to trigger [Show modal action](/docs/tutorial/actions#available-actions)
+To add a widget to Modal, we need to trigger [Show modal action](/docs/2.50.0-LTS/tutorial/actions#available-actions)
 
 :::info
 Before triggering `Show modal action` we need to add a modal widget to the canvas.

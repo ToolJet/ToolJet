@@ -50,7 +50,7 @@ Any file that does not have a size in the range of `Max size limit` and `Min siz
 | On file deselected | Triggers whenever one or more files are removed from the picker. |
 
 :::info
-Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to refer or display images/PDFs using base64 string.
+Checkout **[this](/docs/2.50.0-LTS/how-to/loading-image-pdf-from-db)** guide to learn how to refer or display images/PDFs using base64 string.
 :::
 
 </div>
