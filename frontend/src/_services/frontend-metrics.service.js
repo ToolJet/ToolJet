@@ -49,7 +49,7 @@ export function setCurrentAppName(name) {
   _currentAppName = name || '';
 }
 
-function recordMetricEvent(fingerprint, type, attrs = {}) {
+function recordMetricEvent(fingerprint, type, attrs = {}, detail = undefined) {
   if (!isEnabled()) return;
 
   const existing = eventMap.get(fingerprint);
@@ -62,7 +62,8 @@ function recordMetricEvent(fingerprint, type, attrs = {}) {
     // flush defers when session isn't ready — drop rather than grow unbounded
     if (eventMap.size >= MAX_UNIQUE_ERRORS) return;
   }
-  eventMap.set(fingerprint, { type, attrs, count: 1, firstSeen: Date.now() });
+  // detail rides only on first occurrence per fingerprint — dedup'd at the source
+  eventMap.set(fingerprint, { type, attrs, count: 1, firstSeen: Date.now(), ...(detail && { detail }) });
 }
 
 // Vitals are cumulative values, not occurrences — latest report supersedes, no count increment.
@@ -144,17 +145,28 @@ export function teardownFrontendMetrics() {
 // attrs — unbounded strings would explode Prometheus label cardinality.
 export function recordJsError(errorMessage, source = '') {
   const msg = String(errorMessage).slice(0, 200);
-  recordMetricEvent(`js_error:${msg}:${String(source).slice(0, 100)}`, 'js_error', {
-    'app.name': _currentAppName,
-    'app.context': getAppContext(),
-  });
+  recordMetricEvent(
+    `js_error:${msg}:${String(source).slice(0, 100)}`,
+    'js_error',
+    {
+      'app.name': _currentAppName,
+      'app.context': getAppContext(),
+    },
+    // Faro-compatible field names; server routes detail to logs, never metric attrs
+    { type: 'js_error', value: msg, stacktrace: String(source).slice(0, 1000) }
+  );
 }
 
 export function recordWidgetError(widgetType, errorMessage = '') {
   const msg = String(errorMessage).slice(0, 200);
-  recordMetricEvent(`widget_error:${widgetType}:${msg}`, 'widget_error', {
-    'app.name': _currentAppName,
-    'app.context': getAppContext(),
-    'widget.type': widgetType,
-  });
+  recordMetricEvent(
+    `widget_error:${widgetType}:${msg}`,
+    'widget_error',
+    {
+      'app.name': _currentAppName,
+      'app.context': getAppContext(),
+      'widget.type': widgetType,
+    },
+    { type: 'widget_error', value: msg, stacktrace: '' }
+  );
 }

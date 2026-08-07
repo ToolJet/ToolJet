@@ -68,10 +68,7 @@ function createSDK(): NodeSDK {
         : AggregationTemporality.DELTA,
   });
 
-  // Define the log exporter
-  // TODO:
-  // Add logs exporter when stable support for JS is available. Track here:
-  // https://github.com/open-telemetry/opentelemetry-js
+  // Log export lives in ./logs.ts (frontend error records only; module-local provider)
 
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
