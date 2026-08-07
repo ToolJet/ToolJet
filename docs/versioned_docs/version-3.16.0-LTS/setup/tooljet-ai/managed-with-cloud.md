@@ -6,6 +6,13 @@ sidebar_label: ToolJet AI Server on Cloud
 
 This is the default AI setup for any workspace on **ToolJet Cloud**. AI requests are routed through ToolJet Managed AI Server and authenticated using ToolJet-managed LLM credentials, billed against your workspace's [AI credits](/docs/build-with-ai/ai-credits).
 
+```mermaid
+flowchart LR
+    A["App Builder"] --> B["ToolJet Cloud"]
+    B --> C["ToolJet Managed<br/>AI Server"]
+    C --> D["LLM Provider<br/>(ToolJet-managed key)"]
+```
+
 :::info
 See [Setup ToolJet AI &rarr; Overview](/docs/setup/tooljet-ai/overview) for how this fits alongside the other AI setups and how the request is processed end-to-end.
 :::

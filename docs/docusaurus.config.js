@@ -24,7 +24,15 @@ module.exports = {
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
   themeConfig: {
+    mermaid: {
+      theme: { light: 'neutral', dark: 'dark' },
+      options: { securityLevel: 'loose' },
+    },
     image: 'img/tooljet-ai-og-image.png',
     announcementBar: {
       id: 'support_us',

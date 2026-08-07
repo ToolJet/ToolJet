@@ -8,6 +8,13 @@ sidebar_label: ToolJet AI Server on Self Hosted
 
 Self-hosted ToolJet instances can use ToolJet-managed AI instead of deploying a separate AI server. AI requests from your instance are sent over the internet to ToolJet Managed AI Server, authenticated with ToolJet-managed LLM credentials, and billed against your instance's AI credits.
 
+```mermaid
+flowchart LR
+    A["App Builder"] --> B["ToolJet<br/>(Self-Hosted)"]
+    B --> C["ToolJet Managed<br/>AI Server"]
+    C --> D["LLM Provider<br/>(ToolJet-managed key)"]
+```
+
 :::info
 See [Setup ToolJet AI &rarr; Overview](/docs/setup/tooljet-ai/overview) for how this fits alongside the other AI setups and how the request is processed end-to-end.
 :::

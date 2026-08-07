@@ -17,6 +17,13 @@ Benefits of ToolJet AI Enterprise:
 - **Full data isolation**: All AI execution happens on infrastructure you control. ToolJet servers are not involved in processing requests.
 - **Flexible key management**: Supply your API key through the ToolJet UI or inject it directly as an environment variable on the server. Using an environment variable is preferable for secrets management in automated or containerized deployments.
 
+```mermaid
+flowchart LR
+    A["App Builder"] --> B["ToolJet"]
+    B --> C["Your Own<br/>AI Server"]
+    C --> D["LLM Provider<br/>(Your API key)"]
+```
+
 :::info Not available on ToolJet Cloud
 ToolJet AI Enterprise requires that you deploy and operate the ToolJet-provided server image yourself.
 :::

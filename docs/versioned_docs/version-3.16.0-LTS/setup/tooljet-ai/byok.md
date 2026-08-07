@@ -12,6 +12,13 @@ This is useful when you want direct control over your AI usage and costs. Since 
 
 BYOK does not require any infrastructure changes. Requests continue to be processed via ToolJet Managed AI Server, with the only difference being the credentials used to authenticate them.
 
+```mermaid
+flowchart LR
+    A["App Builder"] --> B["ToolJet"]
+    B --> C["ToolJet Managed<br/>AI Server"]
+    C --> D["LLM Provider<br/>(Your API key)"]
+```
+
 :::info
 AI requests still route through ToolJet Managed AI Server when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/setup/tooljet-ai/tj-ai-enterprise).
 :::
