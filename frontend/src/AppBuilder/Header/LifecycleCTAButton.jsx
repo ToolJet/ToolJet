@@ -93,6 +93,12 @@ const LifecycleCTAButton = () => {
     return null;
   }
 
+  // Only show on the draft version — saved/released versions are read-only and have no
+  // commit or pull action to perform.
+  if (selectedVersion && selectedVersion.status !== 'DRAFT') {
+    return null;
+  }
+
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {
     if (!isGitSyncConfigured) {

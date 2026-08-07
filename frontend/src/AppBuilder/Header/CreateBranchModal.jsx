@@ -52,7 +52,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
         const appTags = data?.meta_data?.tags || [];
         setTags(
           appTags.map((tag) => {
-            const [, version] = tag.name.split('/');
+            const version = tag.name.split('/').slice(1).join('/');
             return {
               label: version || tag.name,
               commitSha: tag.commit?.sha,
@@ -104,6 +104,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const localVersionOptions = developmentVersions
     .filter((version) => (version.versionType || version.version_type) === 'version')
     .filter((version) => !isSourcedFromBranch(version))
+    .filter((version) => version.status !== 'DRAFT')
     .map((version) => ({
       label: version.name,
       commitSha: null,
@@ -115,7 +116,13 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       // same signal VersionDropdownItem.jsx uses.
       isReleased: version.id === releasedVersionId,
     }));
-  const dropdownOptions = [LATEST_MAIN_OPTION, ...localVersionOptions, ...tags];
+
+  // Git tags that share a label with a local released version are redundant — the local
+  // version entry is richer (it carries a versionId for DB-level branching). Drop the
+  // duplicate tag so each version name appears exactly once in the dropdown.
+  const localVersionLabels = new Set(localVersionOptions.map((v) => v.label));
+  const uniqueTags = tags.filter((t) => !localVersionLabels.has(t.label));
+  const dropdownOptions = [LATEST_MAIN_OPTION, ...localVersionOptions, ...uniqueTags];
   const isLoadingOptions = isLoadingTags || isLoadingVersions;
 
   const validateBranchName = (name) => {
