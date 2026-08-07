@@ -19,7 +19,18 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     UserAllPermissions: UserAllPermissions
   ): void {
     // All Operations are available for all users
-    can([FEATURE_KEY.UPDATE, FEATURE_KEY.GET, FEATURE_KEY.UPDATE_AVATAR, FEATURE_KEY.UPDATE_PASSWORD], User);
+    can(
+      [
+        FEATURE_KEY.UPDATE,
+        FEATURE_KEY.GET,
+        FEATURE_KEY.UPDATE_AVATAR,
+        FEATURE_KEY.UPDATE_PASSWORD,
+        FEATURE_KEY.MFA_SETUP,
+        FEATURE_KEY.MFA_CONFIRM,
+        FEATURE_KEY.MFA_DISABLE,
+      ],
+      User
+    );
     return;
   }
 }

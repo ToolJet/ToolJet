@@ -140,6 +140,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
   const existedPaths = [
     'forgot-password',
+    'password-expired',
     'switch-workspace',
     'switch-workspace-archived',
     'reset-password',
@@ -220,6 +221,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
     '/smtp',
     '/llm-key',
     '/license',
+    '/security',
   ];
   if (isUserLoggingIn && !path) {
     const role = authenticationService?.currentSessionValue?.role?.name;

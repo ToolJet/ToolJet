@@ -334,7 +334,12 @@ const useAppData = (
         });
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
-        if (!moduleMode && setConversation && setDocsConversation) {
+        // Modules go through the same AI init as apps: the server always returns an ai_conversation
+        // for every app/module (see server ee apps service), and getCreditBalance() sets
+        // aiFeaturesEnabled which gates the AI sidebar trigger. Gating this behind !moduleMode left
+        // modules without a conversation (crash on open) and without the credit fetch (trigger hidden
+        // unless the singleton store happened to be primed by the create-with-prompt flow).
+        if (setConversation && setDocsConversation) {
           setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs — only the editor's AI builder panel reads credit balance
