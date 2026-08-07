@@ -113,8 +113,10 @@ class BaseManageGranularAccess extends React.Component {
     groupPermissionV2Service
       .fetchAddableApps()
       .then((data) => {
+        // Apps/modules/workflows with no resolved name (e.g. only present on a
+        // non-default branch) render as an empty box in the picker — skip them instead.
         const addableApps = data
-          .filter((app) => app.type === APP_TYPES.FRONT_END)
+          .filter((app) => app.type === APP_TYPES.FRONT_END && app.name)
           .map((app) => {
             return {
               name: app.name,
@@ -123,7 +125,7 @@ class BaseManageGranularAccess extends React.Component {
             };
           });
         const addableWorkflows = data
-          .filter((app) => app.type === APP_TYPES.WORKFLOW)
+          .filter((app) => app.type === APP_TYPES.WORKFLOW && app.name)
           .map((app) => {
             return {
               name: app.name,
@@ -132,7 +134,7 @@ class BaseManageGranularAccess extends React.Component {
             };
           });
         const addableModules = data
-          .filter((app) => app.type === APP_TYPES.MODULE)
+          .filter((app) => app.type === APP_TYPES.MODULE && app.name)
           .map((app) => {
             return {
               name: app.name,
