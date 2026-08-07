@@ -1,4 +1,5 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
+import { getWorkspaceLabel, getWorkspaceNameLabel } from './org-plan-cache';
 import {
   Span,
   DiagConsoleLogger,
@@ -214,6 +215,30 @@ type SeatSnapshot = {
   namesByOrg: Map<string, string>;
 };
 let seatSnapshot: SeatSnapshot = { counts: [], rolesByUser: new Map(), namesByOrg: new Map() };
+
+type MetricAttrs = Record<string, string>;
+type Observation = { attrs: MetricAttrs; value: number };
+
+// Cloud gating collapses many orgs onto one label tuple. The SDK is last-write-wins on
+// duplicate attribute sets within a callback, so sum first or free_tier reports one
+// arbitrary org instead of the bucket total. No-op when every tuple is already unique.
+const sumByLabels = (observations: Observation[]): Observation[] => {
+  const totals = new Map<string, Observation>();
+  for (const { attrs, value } of observations) {
+    const key = JSON.stringify(
+      Object.keys(attrs)
+        .sort()
+        .map((k) => [k, attrs[k]])
+    );
+    const existing = totals.get(key);
+    if (existing) {
+      existing.value += value;
+    } else {
+      totals.set(key, { attrs, value });
+    }
+  }
+  return [...totals.values()];
+};
 
 // Configurable activity window - default 5 minutes
 const ACTIVITY_WINDOW_MINUTES = parseInt(process.env.OTEL_ACTIVE_USER_WINDOW_MINUTES || '5', 10);
@@ -546,14 +571,22 @@ const initializeCustomMetrics = () => {
         activeUsersByApp.delete(key);
       }
 
+      const observations: Observation[] = [];
       for (const [groupKey, users] of usersByAppRole.entries()) {
         const [workspaceId, appId, role] = groupKey.split(':');
-        observableResult.observe(users.size, {
-          'organization.id': workspaceId,
-          'organization.name': namesByOrg.get(workspaceId) || UNKNOWN_ORG_NAME,
-          'app.id': appId,
-          role: role,
+        observations.push({
+          value: users.size,
+          attrs: {
+            'organization.id': getWorkspaceLabel(workspaceId),
+            'organization.name': getWorkspaceNameLabel(workspaceId, namesByOrg.get(workspaceId) || UNKNOWN_ORG_NAME),
+            'app.id': appId,
+            role: role,
+          },
         });
+      }
+
+      for (const { attrs, value } of sumByLabels(observations)) {
+        observableResult.observe(value, attrs);
       }
     } catch (error) {
       console.error('[OTEL] Error in appActiveUsersGauge callback:', error);
@@ -568,12 +601,19 @@ const initializeCustomMetrics = () => {
 
   workspaceSeatsGauge.addCallback((observableResult: ObservableResult) => {
     try {
-      for (const { organizationId, organizationName, role, seats } of seatSnapshot.counts) {
-        observableResult.observe(seats, {
-          'organization.id': organizationId,
-          'organization.name': organizationName,
-          role: role,
-        });
+      const observations: Observation[] = seatSnapshot.counts.map(
+        ({ organizationId, organizationName, role, seats }) => ({
+          value: seats,
+          attrs: {
+            'organization.id': getWorkspaceLabel(organizationId),
+            'organization.name': getWorkspaceNameLabel(organizationId, organizationName),
+            role: role,
+          },
+        })
+      );
+
+      for (const { attrs, value } of sumByLabels(observations)) {
+        observableResult.observe(value, attrs);
       }
     } catch (error) {
       console.error('[OTEL] Error in workspaceSeatsGauge callback:', error);

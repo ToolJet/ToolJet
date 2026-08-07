@@ -5,6 +5,7 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { IngestFrontendMetricsDto, FrontendMetricEventDto } from './dto/ingest.dto';
 import { recordFrontendMetricsBatch } from '@otel/frontend-metrics';
 import { getFrontendErrorLogger } from '@otel/logs';
+import { getWorkspaceNameLabel } from '@otel/org-plan-cache';
 
 const MAX_EVENTS_PER_BATCH = 200;
 const MAX_ATTR_VALUE_LENGTH = 200;
@@ -57,21 +58,28 @@ function takeOrgLogToken(orgId: string): boolean {
 
 @Injectable()
 export class FrontendMetricsService {
-  async ingest(
-    dto: IngestFrontendMetricsDto,
-    context: { userId: string; organizationId: string }
-  ): Promise<void> {
+  async ingest(dto: IngestFrontendMetricsDto, context: { userId: string; organizationId: string }): Promise<void> {
     if (!dto.events || dto.events.length === 0) return;
 
-    const injectedAttrs = {
-      'organization.name': await getOrganizationName(context.organizationId),
-      'tooljet.version': globalThis.TOOLJET_VERSION || 'unknown',
-    };
+    // Real name for logs, bucketed name for metric labels — the two must not be conflated.
+    const organizationName = await getOrganizationName(context.organizationId);
+    const tooljetVersion = globalThis.TOOLJET_VERSION || 'unknown';
 
-    const events = dto.events.slice(0, MAX_EVENTS_PER_BATCH).map((ev) => ({
-      ...ev,
-      attrs: { ...this.sanitizeAttrs(ev.attrs), ...injectedAttrs },
-    }));
+    const events = dto.events.slice(0, MAX_EVENTS_PER_BATCH).map((ev) => {
+      const attrs = this.sanitizeAttrs(ev.attrs);
+      // Platform-context events are platform health, never bucketed — mirrors organization.id gating
+      const isPlatformContext = attrs['app.context'] === 'platform';
+      return {
+        ...ev,
+        attrs: {
+          ...attrs,
+          'organization.name': isPlatformContext
+            ? organizationName
+            : getWorkspaceNameLabel(context.organizationId, organizationName),
+          'tooljet.version': tooljetVersion,
+        },
+      };
+    });
 
     recordFrontendMetricsBatch(
       {
@@ -81,14 +89,16 @@ export class FrontendMetricsService {
       context
     );
 
-    this.emitErrorLogs(events, context);
+    this.emitErrorLogs(events, context, organizationName);
   }
 
   private emitErrorLogs(
     events: (Pick<FrontendMetricEventDto, 'type' | 'count' | 'detail'> & {
       attrs: Record<string, string | number | boolean>;
     })[],
-    context: { userId: string; organizationId: string }
+    context: { userId: string; organizationId: string },
+    // Logs are structured metadata, not label dimensions — diagnosis needs the real workspace
+    organizationName: string
   ): void {
     const logger = getFrontendErrorLogger();
     if (!logger) return;
@@ -110,7 +120,7 @@ export class FrontendMetricsService {
           'error.kind': ev.attrs['error.kind'],
           'widget.type': ev.attrs['widget.type'],
           'organization.id': context.organizationId,
-          'organization.name': ev.attrs['organization.name'],
+          'organization.name': organizationName,
           'user.id': context.userId,
           'error.fingerprint': `${ev.type}:${ev.detail.value}`.slice(0, 80),
           'exception.type': ev.detail.type,
