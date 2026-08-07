@@ -380,7 +380,8 @@ export class DataSourcesService implements IDataSourcesService {
       dataSourceOptions.options,
       user.organizationId,
       dataSourceOptions.environmentId,
-      user
+      user,
+      dataSourceOptions.id
     );
 
     const resolvedArgs = resolvedOptions
@@ -441,7 +442,8 @@ export class DataSourcesService implements IDataSourcesService {
               updatedDataSourceOptions.options,
               user.organizationId,
               updatedDataSourceOptions.environmentId,
-              user
+              user,
+              updatedDataSourceOptions.id
             );
 
             // Retry invoke
