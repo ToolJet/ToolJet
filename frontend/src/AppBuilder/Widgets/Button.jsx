@@ -120,15 +120,8 @@ export const Button = function Button(props) {
     alignItems: 'center',
   };
 
-  const canClick = !disable && !loading;
-
   useEffect(() => {
     const exposedVariables = {
-      click: async function () {
-        if (canClick) {
-          fireEvent('onClick');
-        }
-      },
       setText: async function (text) {
         setLabel(text);
         setExposedVariable('buttonText', text);
@@ -147,7 +140,7 @@ export const Button = function Button(props) {
     setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
+  }, []);
 
   useEffect(() => {
     setExposedVariable('setLoading', async function (loading) {
@@ -194,13 +187,25 @@ export const Button = function Button(props) {
     }
   }, [hovered]);
 
+  const canClick = !disable && !loading;
+
+  useEffect(() => {
+    setExposedVariable('click', async function () {
+      if (canClick) {
+        fireEvent('onClick');
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canClick]);
+
   const handleClick = () => {
-    if (!disable && !loading) {
+    if (canClick) {
       const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } });
       document.dispatchEvent(event1);
       fireEvent('onClick');
     }
   };
+
   const renderButton = () => (
     <div
       className={`widget-button d-flex align-items-center`}
