@@ -1,5 +1,6 @@
 import { metrics } from '@opentelemetry/api';
 import { AuditLogFields } from '@modules/audit-logs/types';
+import { getWorkspaceLabel } from './org-plan-cache';
 
 /**
  * OTEL Metrics for Audit Logs
@@ -404,6 +405,8 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
 
   const { metadata = {}, resourceData = {}, resourceId, resourceName, organizationId, userId } = auditLogData;
 
+  // App-level metric — free-tier orgs bucket on Cloud
+  const workspaceLabel = getWorkspaceLabel(organizationId);
   const appId = metadata['appId'] || resourceData['appId'] || 'unknown';
   const appName = metadata['appName'] || resourceData['appName'] || 'unknown';
   const dataSourceType = resourceData['dataSourceType'] || metadata['dataSourceType'] || 'unknown';
@@ -430,7 +433,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
     query_id: resourceId,
     query_name: resourceName || 'unknown',
     data_source_type: dataSourceType,
-    organization_id: organizationId,
+    organization_id: workspaceLabel,
     status: status,
     mode: mode, // NEW: edit or view
     environment: environment, // NEW: environment name
@@ -455,7 +458,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
       query_name: resourceName || 'unknown',
       error_type: errorType,
       data_source_type: dataSourceType,
-      organization_id: organizationId,
+      organization_id: workspaceLabel,
       mode: mode,
       environment: environment,
       is_released: isReleased,
@@ -471,7 +474,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
         error_type: errorType,
         mode: mode,
         environment: environment,
-        organization_id: organizationId,
+        organization_id: workspaceLabel,
       });
     }
   }
@@ -502,7 +505,8 @@ function recordAppMetrics(auditLogData: AuditLogFields) {
     app_id: appId,
     app_name: appName,
     action_type: actionType,
-    organization_id: organizationId,
+    // App-level metric — free-tier orgs bucket on Cloud
+    organization_id: getWorkspaceLabel(organizationId),
   };
 
   appUsageCounter.add(1, labels);
@@ -577,7 +581,8 @@ function recordAppLifecycleMetrics(auditLogData: AuditLogFields) {
     app_name: resourceName || 'unknown',
     app_slug: appSlug,
     is_public: String(isPublic),
-    organization_id: organizationId,
+    // App-level metric — free-tier orgs bucket on Cloud
+    organization_id: getWorkspaceLabel(organizationId),
   };
 
   switch (actionType) {
@@ -630,7 +635,8 @@ function recordDataSourceLifecycleMetrics(auditLogData: AuditLogFields) {
     datasource_name: resourceName || 'unknown',
     datasource_kind: dataSourceKind,
     datasource_scope: dataSourceScope,
-    organization_id: organizationId,
+    // App-level metric — free-tier orgs bucket on Cloud
+    organization_id: getWorkspaceLabel(organizationId),
     environment_id: environmentId,
   };
 
