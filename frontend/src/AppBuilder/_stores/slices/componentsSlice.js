@@ -148,6 +148,10 @@ const initialState = {
   },
   selectedComponents: [],
   showWidgetDeleteConfirmation: false,
+  // Components the open delete confirmation targets. Null means "whatever is selected
+  // on the canvas"; the component tree sets it so it can delete a component without
+  // stealing the canvas selection.
+  widgetDeleteConfirmationTargets: null,
   focusedParentId: null,
   modalsOpenOnCanvas: [],
   showComponentPermissionModal: false,
@@ -1608,6 +1612,7 @@ export const createComponentsSlice = (set, get) => ({
           }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
+          state.widgetDeleteConfirmationTargets = null;
         });
 
         const filteredEvents = appEvents.filter((event) => !toDeleteEvents.includes(event.id));
@@ -2543,9 +2548,10 @@ export const createComponentsSlice = (set, get) => ({
 
     await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: false });
   },
-  setWidgetDeleteConfirmation: (value) => {
+  setWidgetDeleteConfirmation: (value, targets = null) => {
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
+      state.widgetDeleteConfirmationTargets = value ? targets : null;
     });
   },
 

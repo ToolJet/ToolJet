@@ -92,78 +92,80 @@ const QueryCardMenu = ({ darkMode }) => {
   );
 
   return (
-    <Overlay
-      placement="bottom-start"
-      target={targetElement}
-      show={showQueryHandlerMenu}
-      rootClose
-      transition={false}
-      onHide={() => toggleQueryHandlerMenu(false)}
-      popperConfig={{
-        strategy: 'absolute',
-        modifiers: [
-          {
-            name: 'flip',
-            enabled: true,
-            options: {
-              fallbackPlacements: ['top-start', 'top-end', 'bottom-start', 'bottom-end', 'left-start', 'right-start'],
-              boundary: 'viewport',
+    <>
+      <Overlay
+        placement="bottom-start"
+        target={targetElement}
+        show={showQueryHandlerMenu}
+        rootClose
+        transition={false}
+        onHide={() => toggleQueryHandlerMenu(false)}
+        popperConfig={{
+          strategy: 'absolute',
+          modifiers: [
+            {
+              name: 'flip',
+              enabled: true,
+              options: {
+                fallbackPlacements: ['top-start', 'top-end', 'bottom-start', 'bottom-end', 'left-start', 'right-start'],
+                boundary: 'viewport',
+              },
             },
-          },
-          {
-            name: 'preventOverflow',
-            enabled: true,
-            options: { boundary: 'viewport', rootBoundary: 'viewport', padding: 8, altAxis: true, altBoundary: true },
-          },
-          { name: 'shift', enabled: true, options: { boundary: 'viewport', padding: 8 } },
-          { name: 'offset', options: { offset: [0, 3] } },
-        ],
-      }}
-    >
-      {(props) => (
-        <Popover {...props} id="query-list-menu" className={darkMode && 'dark-theme'}>
-          <Popover.Body bsPrefix="list-item-popover-body">
-            {QUERY_MENU_OPTIONS.map((option) => {
-              const optionBody = (
-                <div
-                  data-cy={`query-card-${String(option?.value).toLowerCase()}-button`}
-                  className="list-item-popover-option"
-                  key={option?.value}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleQueryMenuActions(option.value);
-                  }}
-                >
-                  <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+            {
+              name: 'preventOverflow',
+              enabled: true,
+              options: { boundary: 'viewport', rootBoundary: 'viewport', padding: 8, altAxis: true, altBoundary: true },
+            },
+            { name: 'shift', enabled: true, options: { boundary: 'viewport', padding: 8 } },
+            { name: 'offset', options: { offset: [0, 3] } },
+          ],
+        }}
+      >
+        {(props) => (
+          <Popover {...props} id="query-list-menu" className={darkMode && 'dark-theme'}>
+            <Popover.Body bsPrefix="list-item-popover-body">
+              {QUERY_MENU_OPTIONS.map((option) => {
+                const optionBody = (
                   <div
-                    className={classNames('list-item-option-menu-label', {
-                      'color-tomato9': option.value === 'delete',
-                      'color-disabled': option.value === 'permission' && !hasAppPermissionQuery,
-                    })}
+                    data-cy={`query-card-${String(option?.value).toLowerCase()}-button`}
+                    className="list-item-popover-option"
+                    key={option?.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleQueryMenuActions(option.value);
+                    }}
                   >
-                    {option?.label}
+                    <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                    <div
+                      className={classNames('list-item-option-menu-label', {
+                        'color-tomato9': option.value === 'delete',
+                        'color-disabled': option.value === 'permission' && !hasAppPermissionQuery,
+                      })}
+                    >
+                      {option?.label}
+                    </div>
+                    {option.value === 'permission' && !hasAppPermissionQuery && option.trailingIcon}
                   </div>
-                  {option.value === 'permission' && !hasAppPermissionQuery && option.trailingIcon}
-                </div>
-              );
+                );
 
-              return option.value === 'permission' ? (
-                <ToolTip
-                  key={option.value}
-                  message={"You don't have access to query permissions. Upgrade your plan to access this feature."}
-                  placement="right"
-                  show={!hasAppPermissionQuery}
-                >
-                  {optionBody}
-                </ToolTip>
-              ) : (
-                optionBody
-              );
-            })}
-          </Popover.Body>
-        </Popover>
-      )}
-    </Overlay>
+                return option.value === 'permission' ? (
+                  <ToolTip
+                    key={option.value}
+                    message={"You don't have access to query permissions. Upgrade your plan to access this feature."}
+                    placement="right"
+                    show={!hasAppPermissionQuery}
+                  >
+                    {optionBody}
+                  </ToolTip>
+                ) : (
+                  optionBody
+                );
+              })}
+            </Popover.Body>
+          </Popover>
+        )}
+      </Overlay>
+    </>
   );
 };
 

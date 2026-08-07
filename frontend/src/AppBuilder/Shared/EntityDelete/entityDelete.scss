@@ -1,0 +1,127 @@
+.entity-delete-modal-dialog {
+  max-width: 505px;
+}
+
+.entity-delete-modal {
+  border-radius: 8px;
+  border: none;
+  background: var(--base, #fff);
+
+  .entity-delete-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px 24px 0;
+  }
+
+  .entity-delete-warning-icon {
+    display: flex;
+    height: 40px;
+  }
+
+  .entity-delete-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    word-break: break-word;
+  }
+
+  .entity-delete-title {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .entity-delete-subtitle {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder, #6a727c);
+  }
+
+  // The blocked list is the only part that grows; cap it so a heavily referenced
+  // entity cannot push the footer off screen.
+  .entity-delete-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .entity-delete-card {
+    border: 1px solid var(--border-weak, #e4e7eb);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .entity-delete-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px;
+    background: var(--interactive-default, rgba(136, 144, 153, 0.08));
+    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+
+    &.clickable {
+      cursor: pointer;
+    }
+  }
+
+  .entity-delete-card-subject {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .entity-delete-card-name {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .entity-delete-card-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .entity-delete-card-chevron {
+    color: var(--icon-default, #6a727c);
+  }
+
+  .entity-delete-card-body {
+    padding: 6px;
+  }
+
+  .entity-delete-nested-note {
+    margin: 0 0 2px;
+    padding: 8px 10px;
+    border: 1px dashed var(--border-strong, #acb2b9);
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder, #6a727c);
+  }
+
+  .entity-delete-footer {
+    gap: 8px;
+    border-top: none;
+    padding: 24px;
+  }
+}
+
+.entity-delete-modal.dark-theme {
+  background: var(--base, #1f2936);
+
+  .entity-delete-card-header {
+    background: var(--interactive-default, rgba(136, 144, 153, 0.12));
+  }
+}
