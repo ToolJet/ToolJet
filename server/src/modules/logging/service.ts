@@ -13,25 +13,17 @@ export class TransactionLogger implements LoggerService {
     if (!TransactionLogger.baseLogger) {
       const env = this.configService.get<string>('NODE_ENV', 'development');
       const level =
-        this.configService.get<string>('TRANSACTION_LOGGING_LEVEL') ||
-        {
-          production: 'info',
-          development: 'trace',
-          test: 'error',
-        }[env] ||
-        'trace';
+        env === 'development' ? 'trace' :
+        env === 'test' ? 'error' :
+        (({ all: 'debug', warn: 'warn', error: 'error' } as Record<string, string>)[this.configService.get('ORM_LOGGING') ?? ''] || 'warn');
 
       TransactionLogger.baseLogger = pino({
         level,
-        ...(env !== 'production'
+        ...(env !== 'production' && env !== 'test'
           ? {
               transport: {
                 target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                  levelFirst: true,
-                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
-                },
+                options: { colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z' },
               },
             }
           : {}),

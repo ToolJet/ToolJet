@@ -116,6 +116,9 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
       logger.log('   - Metrics: Enabled');
       logger.log('   - Auto-instrumentation: Active');
     }
+
+    const { initializePlanCache } = await import('@otel/org-plan-cache');
+    initializePlanCache();
   } catch (error) {
     logger.error('❌ Failed to initialize OpenTelemetry:', error);
     // Don't throw - observability should never break the app

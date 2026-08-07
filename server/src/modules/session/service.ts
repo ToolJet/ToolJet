@@ -21,7 +21,7 @@ import { fullName, generateOrgInviteURL, isSuperAdmin } from '@helpers/utils.hel
 import { decamelizeKeys } from 'humps';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
-import { decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
+import { decrementConcurrentUsers, recordSessionEventDirect } from '@otel/tracing';
 
 @Injectable()
 export class SessionService {
@@ -40,11 +40,6 @@ export class SessionService {
 
       // Decrement metrics
       try {
-        decrementActiveSessions({
-          userId: user.id,
-          sessionType: 'user',
-        });
-
         if (user?.organizationId) {
           decrementConcurrentUsers({
             workspaceId: user.organizationId,
@@ -54,6 +49,11 @@ export class SessionService {
       } catch (error) {
         console.error('Error decrementing session metrics:', error);
       }
+
+      // Direct OTEL emit — no need to wait for the audit log pipeline
+      try {
+        recordSessionEventDirect(user.organizationId, 'logout');
+      } catch { /* never break logout */ }
 
       const auditLogData = {
         userId: user.id,

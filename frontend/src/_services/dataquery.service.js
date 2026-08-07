@@ -1,4 +1,5 @@
 import config from 'config';
+import { recordQueryError } from '@/_services/frontend-metrics.service';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
 
@@ -113,7 +114,14 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
     body: JSON.stringify(body),
     signal,
   };
-  return fetch(url, requestOptions).then(handleResponse);
+  return fetch(url, requestOptions)
+    .then(handleResponse)
+    .catch((err) => {
+      if (err.name === 'AbortError') throw err;
+      const errorType = err instanceof TypeError ? 'network_error' : 'server_error';
+      recordQueryError(queryId, null, errorType);
+      throw err;
+    });
 }
 
 function preview(query, options, versionId, environmentId, signal) {
