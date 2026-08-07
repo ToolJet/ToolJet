@@ -24,8 +24,16 @@ module.exports = {
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
   trailingSlash: true,
   themeConfig: {
+    mermaid: {
+      theme: { light: 'neutral', dark: 'dark' },
+      options: { securityLevel: 'loose' },
+    },
     image: 'img/tooljet-ai-og-image.png',
     announcementBar: {
       id: 'support_us',
@@ -384,6 +392,14 @@ module.exports = {
           {
             from: '/docs/setup/cloud-v3-migration',
             to: '/docs/setup/upgrade-to-v3/',
+          },
+          {
+            from: '/docs/build-with-ai/bring-your-own-key',
+            to: '/docs/setup/tooljet-ai/bring-your-own-key',
+          },
+          {
+            from: '/docs/build-with-ai/tj-ai-enterprise',
+            to: '/docs/setup/tooljet-ai/tj-ai-enterprise',
           },
           {
             from: '/docs/tj-setup/observability-otel',

@@ -223,6 +223,8 @@ export const Step = ({ n, title, desc, img, alt, tip, tipHref, imgClass = 'img-f
 
 <SectionSubtitle text="Choose how AI requests are powered: based on your cost, compliance, and infrastructure needs" />
 
+For a full architecture breakdown and a side-by-side comparison of all four setups, see [Setup ToolJet AI](/docs/setup/tooljet-ai/overview) in the deployment docs.
+
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px', marginBottom: '8px' }}>
     <ConfigCard
         label="Default"
@@ -243,7 +245,7 @@ export const Step = ({ n, title, desc, img, alt, tip, tipHref, imgClass = 'img-f
         labelColor="#92400e"
         title="Bring Your Own Key"
         description="Use your own LLM API key instead of consuming ToolJet credits. Requests still route through ToolJet AI Cloud."
-        href="/docs/build-with-ai/bring-your-own-key"
+        href="/docs/setup/tooljet-ai/bring-your-own-key"
         features={[
             'Direct billing from your LLM provider',
             'Full usage visibility',
@@ -256,7 +258,7 @@ export const Step = ({ n, title, desc, img, alt, tip, tipHref, imgClass = 'img-f
         labelColor="#3730a3"
         title="ToolJet AI Enterprise"
         description="Deploy ToolJet's AI server on your own infrastructure. No data leaves your environment ever."
-        href="/docs/build-with-ai/tj-ai-enterprise"
+        href="/docs/setup/tooljet-ai/tj-ai-enterprise"
         features={[
             'Fully air-gapped deployment',
             'Your own LLM keys',
