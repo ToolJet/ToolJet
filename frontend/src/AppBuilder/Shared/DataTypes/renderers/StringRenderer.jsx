@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { noop } from 'lodash';
-import { isCellContentOverflowing } from '../utils';
+import { isCellContentOverflowing, placeCaretAtEnd } from '../utils';
 
 /**
  * StringRenderer - Pure string value renderer with editing support
@@ -23,6 +23,8 @@ import { isCellContentOverflowing } from '../utils';
  * @param {string} props.validationError - Validation error message
  * @param {string} props.searchText - Search text for highlighting
  * @param {React.Component} props.SearchHighlightComponent - Optional component for search highlighting
+ * @param {boolean} props.enableTabNavigation - Opt in to keyboard editing: makes the idle cell focusable
+ *                  so Tab (and a single click) enters edit mode, and focuses the editor once it renders.
  */
 export const StringRenderer = ({
   value = '',
@@ -41,6 +43,7 @@ export const StringRenderer = ({
   isEditing,
   setIsEditing = noop,
   widgetType,
+  enableTabNavigation = false,
 }) => {
   const ref = useRef(null);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -50,6 +53,21 @@ export const StringRenderer = ({
   useEffect(() => {
     setShowOverlay(hovered);
   }, [hovered]);
+
+  // Take ownership of focus once the editor exists. Two paths need this:
+  // - click: the idle cell is not contenteditable, so the browser never focused anything
+  // - Tab: focus survives the cell content swap, but React rewrites this node's content via innerHTML
+  //        in the same commit, which leaves the element focused with no usable caret
+  //
+  // NOTE: Deliberately keyed on isEditing only — adding `value` would drag the caret to the end on
+  //       every keystroke that round-trips through the store.
+  useEffect(() => {
+    if (!enableTabNavigation || !isEditing) return;
+    const node = ref.current;
+    if (!node) return;
+    if (document.activeElement !== node) node.focus({ preventScroll: true });
+    placeCaretAtEnd(node);
+  }, [isEditing, enableTabNavigation]);
 
   const getOverlay = () => (
     <div
@@ -89,6 +107,10 @@ export const StringRenderer = ({
             ref={ref}
             id={id}
             contentEditable={true}
+            // Inert on a contentEditable element, but it keeps the attribute constant across the
+            // idle/editing swap so React never removes tabindex from document.activeElement
+            // mid-commit — behaviour that varies by engine.
+            tabIndex={enableTabNavigation ? 0 : undefined}
             className={`${
               !isValid ? 'is-invalid' : ''
             } h-100 text-container long-text-input d-flex align-items-safe-center ${
@@ -124,6 +146,17 @@ export const StringRenderer = ({
           <div
             ref={ref}
             onClick={() => setIsEditing(true)}
+            // The two props below are what make Tab navigation work.
+            // Without them Tab has nothing to land on, since the display look is not contenteditable.
+            tabIndex={enableTabNavigation ? 0 : undefined}
+            onFocus={
+              enableTabNavigation
+                ? (e) => {
+                    setIsEditing(true); // When focused switch to edit look
+                    e.stopPropagation();
+                  }
+                : undefined
+            }
             className={`${
               !isValid ? 'is-invalid' : ''
             } h-100 text-container long-text-input d-flex align-items-center ${
