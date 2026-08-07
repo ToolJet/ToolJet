@@ -1,6 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createUser, initTestApp, closeTestApp, createApplication, login, findEntityOrFail } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  closeTestApp,
+  createApplication,
+  createApplicationVersion,
+  login,
+  findEntityOrFail,
+} from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 
 /**
@@ -99,12 +107,19 @@ describe('ModuleGranularPermissions (H1)', () => {
       const viewerCookie = (await login(nestApp, 'mgp-viewer@tooljet.io')).tokenCookie;
 
       // --- modules (all owned by admin) -------------------------------------
+      // The dashboard query inner-joins app_versions on the org's default branch (modules are
+      // branch-scoped, same as front-end apps) — createApplication alone leaves an app with no
+      // version, so it never surfaces on the module dashboard. Give each one a version.
       const mEdit = await createApplication(nestApp, { name: 'M-Edit', user: adminData.user, type: 'module' });
+      await createApplicationVersion(nestApp, mEdit);
       const mBuild = await createApplication(nestApp, { name: 'M-Build', user: adminData.user, type: 'module' });
-      await createApplication(nestApp, { name: 'M-None', user: adminData.user, type: 'module' });
+      await createApplicationVersion(nestApp, mBuild);
+      const mNone = await createApplication(nestApp, { name: 'M-None', user: adminData.user, type: 'module' });
+      await createApplicationVersion(nestApp, mNone);
 
       // a module OWNED by the viewer, with no group grant
-      await createApplication(nestApp, { name: 'M-Owned', user: viewerData.user, type: 'module' });
+      const mOwned = await createApplication(nestApp, { name: 'M-Owned', user: viewerData.user, type: 'module' });
+      await createApplicationVersion(nestApp, mOwned);
 
       // --- assign module perms to the custom group --------------------------
       const teamId = await groupId('module-team', org.id);
