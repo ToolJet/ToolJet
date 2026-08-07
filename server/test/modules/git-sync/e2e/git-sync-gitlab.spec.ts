@@ -4831,6 +4831,368 @@ describe('GitSyncController — GitLab', () => {
     });
 
     // ────────────────────────────────────────────────────────────────────────────
+    // Regression: a feature-branch datasource push must NOT sync the default branch.
+    //
+    // A DataSource is one org row (shared co_relation_id) with a DataSourceVersion per
+    // branch. serializeDataSources' scope='datasource' fallback used to look up an
+    // unsynced DSV by data_source_id only (no branch filter), so pushing a feature branch
+    // could grab the DEFAULT branch's unsynced DSV, put it in serializedDsvIds, and have
+    // pushWorkspace flip it to is_synced=true — without any pull. Fixed by scoping the
+    // fallback to the branch being pushed. Against the real Gitea (@group platform).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('feature-branch datasource push does not sync the default branch (regression)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+
+      let dsxOrgId: string;
+      let dsxCookie: string[];
+      let dsxDs: DataSource;
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-ds-crossbranch.gl@tooljet.io',
+          firstName: 'git',
+          lastName: 'dscross',
+        });
+        dsxOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-ds-crossbranch.gl@tooljet.io');
+        dsxCookie = tokenCookie;
+        await ensureAppEnvironments(app, dsxOrgId);
+        dsxDs = app.get<DataSource>(getDataSourceToken('default'));
+        await dsxDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [dsxOrgId]
+        );
+      });
+
+      it('leaves the default-branch data source is_synced=false after a scope=datasource push from a feature branch', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', dsxCookie).set('tj-workspace-id', dsxOrgId);
+
+        const dsvSyncedOnBranch = async (dsId: string, branchId: string): Promise<boolean> =>
+          (
+            await dsxDs.query(
+              `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+              [dsId, branchId]
+            )
+          )[0]?.is_synced;
+        const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+          (
+            await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+          ).body.branches.find((b: any) => b.name === name)?.id;
+
+        // ── 0. resolve the seeded default branch id (git still off) ──────────────────────
+        const [{ id: defaultBranchId }] = await dsxDs.query(
+          `SELECT id FROM organization_git_sync_branches WHERE organization_id = $1 AND is_default = true`,
+          [dsxOrgId]
+        );
+
+        // ── 1. GIT OFF: create an unsynced data source → lands on the default branch ─────
+        step(1, 'git-off: create an unsynced global data source on the default branch');
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${defaultBranchId}`))
+            .send({
+              name: 'crossbranch-ds',
+              kind: 'restapi',
+              options: [
+                { key: 'url', value: 'http://crossbranch.example.com' },
+                { key: 'auth_type', value: 'none' },
+                { key: 'headers', value: [['', '']] },
+                { key: 'ssl_certificate', value: 'none', encrypted: false },
+              ],
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        // Ensure the baseline is unsynced (git-off create already is; force it deterministically).
+        await dsxDs.query(`UPDATE data_source_versions SET is_synced = false WHERE data_source_id = $1`, [dsId]);
+
+        // ── 2. enable git + multi-branch, pull main ──────────────────────────────────────
+        step(2, 'enable git + branching (multi-branch), pull main');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${dsxOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+        await auth(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: mainBranchId })
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // The unsynced git-off DS is still unsynced on the default branch (never pushed).
+        expect(await dsvSyncedOnBranch(dsId, mainBranchId)).toBe(false);
+
+        // ── 3. create a feature branch — the unsynced DS is not in git, so it gets no DSV here
+        step(3, 'create feature branch (unsynced DS is not copied onto it)');
+        await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-ds-cross', sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId: string = await branchIdByName('feat-ds-cross', mainBranchId);
+        expect(featBranchId).toBeDefined();
+        const featDsvCount = (
+          await dsxDs.query(
+            `SELECT COUNT(*)::int AS c FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+            [dsId, featBranchId]
+          )
+        )[0].c;
+        expect(featDsvCount).toBe(0);
+
+        // ── 4. push scope=datasource FROM the feature branch ─────────────────────────────
+        step(4, "scope='datasource' push from the feature branch");
+        await auth(agent().post('/api/workspace-branches/push'))
+          .query({ branch_id: featBranchId })
+          .send({ commitMessage: 'push feature datasources', branchId: featBranchId, scope: 'datasource' })
+          .expect(201);
+
+        // ── 5. the default-branch DS must remain unsynced (pre-fix it flipped to true) ───
+        step(5, 'assert the default-branch data source is still is_synced=false');
+        expect(await dsvSyncedOnBranch(dsId, mainBranchId)).toBe(false);
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Deleted data sources must not be committed / must be removed on push.
+    //
+    // Two related gaps, both about a data source DELETED on a feature branch (soft-delete
+    // flips its DSV is_active=false; the data_sources row stays):
+    //   1) An APP push co-commits its linked global data sources via
+    //      serializeLinkedDataSourcesForApp. Its DSV lookup missed the is_active filter, so a
+    //      deleted-but-still-referenced data source was written into the app's commit.
+    //   2) A scope='datasource' partial push skips ensureCleanDir, and had no explicit
+    //      deleted-file removal, so a data source deleted AFTER being pushed lingered in git.
+    // Both are fixed in workspace-git-sync-adapter.ts. Against the real Gitea (@group platform).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('deleted data sources are not committed / are removed on push (regression)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+
+      let ddOrgId: string;
+      let ddCookie: string[];
+      let ddDs: DataSource;
+
+      const agent = () => request.agent(app.getHttpServer());
+      const auth = (r: request.Test) => r.set('Cookie', ddCookie).set('tj-workspace-id', ddOrgId);
+
+      const pull = (branchId: string) =>
+        auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+        auth(agent().post('/api/workspace-branches/push'))
+          .query({ branch_id: branchId })
+          .send({ commitMessage, branchId, ...(scope && { scope }) });
+      const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+        (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === name)?.id;
+      const editingVersionId = async (appId: string, branchId: string): Promise<string> => {
+        const d = await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: branchId })
+          .expect(200);
+        const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+        return ev.id;
+      };
+      const dsvName = async (dsId: string, branchId: string): Promise<string> =>
+        (
+          await ddDs.query(`SELECT name FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+            dsId,
+            branchId,
+          ])
+        )[0]?.name;
+      const dsvActive = async (dsId: string, branchId: string): Promise<boolean> =>
+        (
+          await ddDs.query(`SELECT is_active FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+            dsId,
+            branchId,
+          ])
+        )[0]?.is_active;
+
+      // Shallow-clone a branch and check whether a repo-relative file exists.
+      const readGitFile = async (branch: string, relPath: string): Promise<string | null> => {
+        const simpleGit = (await import('simple-git')).default;
+        const fs = await import('fs');
+        const path = await import('path');
+        const os = await import('os');
+        const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-ds-del-'));
+        try {
+          const git = simpleGit({
+            baseDir: tmpDir,
+            timeout: { block: 30000 },
+            unsafe: { allowUnsafeCredentialHelper: true },
+          });
+          await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
+            '--branch',
+            branch,
+            '--depth',
+            '1',
+            '--single-branch',
+          ]);
+          const filePath = path.join(tmpDir, relPath);
+          return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : null;
+        } finally {
+          await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+        }
+      };
+
+      const dsOptions = (url: string) => [
+        { key: 'url', value: url },
+        { key: 'auth_type', value: 'none' },
+        { key: 'headers', value: [['', '']] },
+        { key: 'ssl_certificate', value: 'none', encrypted: false },
+      ];
+
+      const enableGitAndFeatureBranch = async (
+        featName: string
+      ): Promise<{ mainBranchId: string; featBranchId: string }> => {
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${ddOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+        await pull(mainBranchId).expect(201);
+        await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: featName, sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await branchIdByName(featName, mainBranchId);
+        expect(featBranchId).toBeDefined();
+        return { mainBranchId, featBranchId };
+      };
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-ds-delete.gl@tooljet.io',
+          firstName: 'git',
+          lastName: 'dsdelete',
+        });
+        ddOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-ds-delete.gl@tooljet.io');
+        ddCookie = tokenCookie;
+        await ensureAppEnvironments(app, ddOrgId);
+        ddDs = app.get<DataSource>(getDataSourceToken('default'));
+        await ddDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [ddOrgId]
+        );
+      });
+
+      it('app push does NOT commit a data source that was deleted on the branch (serializeLinkedDataSourcesForApp)', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-linked-del';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create app + global data source, link the DS to the app via a query');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'linked-del-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const versionId = await editingVersionId(appId, featBranchId);
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'linked-del-ds',
+              kind: 'restapi',
+              options: dsOptions('http://linked-del.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            kind: 'restapi',
+            name: 'q_linked_del',
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          })
+          .expect(201);
+        const dsName = await dsvName(dsId, featBranchId);
+
+        step(3, 'soft-delete the data source on the branch (is_active=false)');
+        await ddDs.query(
+          `UPDATE data_source_versions SET is_active = false WHERE data_source_id = $1 AND branch_id = $2`,
+          [dsId, featBranchId]
+        );
+        expect(await dsvActive(dsId, featBranchId)).toBe(false);
+
+        step(4, 'gitpush the (unsynced, front-end) app — its linked-DS serialization runs');
+        await auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            gitAppName: 'linked-del-app',
+            versionId,
+            lastCommitMessage: 'push app with deleted linked ds',
+            gitVersionName: FEAT,
+            sourceBranch: FEAT,
+          })
+          .expect(201);
+
+        step(5, 'the deleted data source must NOT be present in git');
+        expect(await readGitFile(FEAT, `data-sources/${dsName}/data-source.json`)).toBeNull();
+      }, 300000);
+
+      it('a scope=datasource push REMOVES the file of a data source deleted after being pushed', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-ds-stale';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a global data source on the feature branch');
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'stale-ds',
+              kind: 'restapi',
+              options: dsOptions('http://stale.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        const dsName = await dsvName(dsId, featBranchId);
+        const dsPath = `data-sources/${dsName}/data-source.json`;
+
+        step(3, "scope='datasource' push → the DS file is committed");
+        await pushWorkspace(featBranchId, 'add stale ds', 'datasource').expect(201);
+        expect(await readGitFile(FEAT, dsPath)).not.toBeNull();
+
+        step(4, 'delete the data source on the feature branch (no linked query → API delete allowed)');
+        await auth(agent().delete(`/api/data-sources/${dsId}`).query({ branch_id: featBranchId }));
+        expect(await dsvActive(dsId, featBranchId)).toBe(false);
+
+        step(5, "scope='datasource' push again → the deleted DS's file is removed from git");
+        await pushWorkspace(featBranchId, 'remove stale ds', 'datasource').expect(201);
+        expect(await readGitFile(FEAT, dsPath)).toBeNull();
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
     // Edit restrictions across git off / on and branching states.
     //
     // Exercises the git-sync edit guards end-to-end on a dedicated org (isolated from
