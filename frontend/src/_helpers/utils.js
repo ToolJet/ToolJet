@@ -1268,8 +1268,11 @@ export const computeColor = (styleDefinition, value, meta, component) => {
   if (component === 'FileButton') {
     const DEFAULT_SURFACE = 'var(--cc-surface1-surface)';
     // Check the raw (unresolved) value from styleDefinition since CSS variables get resolved before reaching here
-    if (meta?.displayName === 'Label color') {
+    if (meta?.displayName === 'Text color') {
       return styleDefinition.labelColor?.value === DEFAULT_SURFACE ? 'var(--cc-primary-text)' : value;
+    }
+    if (meta?.displayName === 'Border color') {
+      return styleDefinition.borderColor?.value === 'var(--cc-primary-brand)' ? 'var(--border-default)' : value;
     }
     if (meta?.displayName === 'Icon color') {
       return styleDefinition.iconColor?.value === DEFAULT_SURFACE ? 'var(--cc-primary-text)' : value;
