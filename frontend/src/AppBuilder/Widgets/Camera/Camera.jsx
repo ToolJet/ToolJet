@@ -95,13 +95,14 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     [updateCapturedImage]
   );
 
-  // Before permission is granted browsers blank out device labels, so the facing
-  // capability is unknowable on first render and the browser heuristic stands in.
-  // Once a stream exists the labels arrive and the actual front/back pair wins.
-  const isMobile = useMemo(() => {
-    const camerasHaveFacingLabels = deviceLists.cameras.some((camera) => camera.facing !== null);
-    return camerasHaveFacingLabels ? hasFrontAndBackCameras(deviceLists.cameras) : isMobileBrowser();
-  }, [deviceLists.cameras]);
+  // Either signal is enough. Labels are blank until permission is granted (and some
+  // browsers only ever expose the granted camera), so the front/back pair alone would
+  // miss real phones; the browser heuristic alone misses Android "Desktop site" mode
+  // and ChromeOS, which report a desktop user agent.
+  const isMobile = useMemo(
+    () => hasFrontAndBackCameras(deviceLists.cameras) || isMobileBrowser(),
+    [deviceLists.cameras]
+  );
 
   const isBusy = useMemo(
     () =>

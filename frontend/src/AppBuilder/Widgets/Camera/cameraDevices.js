@@ -44,11 +44,15 @@ export const hasFrontAndBackCameras = (cameras = []) =>
   cameras.some((camera) => camera.facing === 'user') && cameras.some((camera) => camera.facing === 'environment');
 
 // The user agent alone is not enough: Android Chrome in "Desktop site" mode and
-// iPadOS Safari 13+ both report a desktop UA. Touch support plus a coarse pointer
-// catches those. Only used before camera permission is granted, since labels (and
-// therefore the real facing capability) are blank until then.
-export const isMobileBrowser = () =>
-  isMobileDevice() ||
-  (typeof navigator !== 'undefined' &&
-    navigator.maxTouchPoints > 1 &&
-    !!window.matchMedia?.('(pointer: coarse)')?.matches);
+// iPadOS Safari 13+ both report a desktop UA. Touch-only input catches those.
+// `any-pointer: fine` excludes touchscreen laptops/monitors, which report a coarse
+// pointer as well but also have a mouse or trackpad.
+export const isMobileBrowser = () => {
+  if (isMobileDevice()) return true;
+  if (typeof navigator === 'undefined' || !window.matchMedia) return false;
+
+  const isTouchOnly =
+    !!window.matchMedia('(any-pointer: coarse)')?.matches && !window.matchMedia('(any-pointer: fine)')?.matches;
+
+  return navigator.maxTouchPoints > 1 && isTouchOnly;
+};
