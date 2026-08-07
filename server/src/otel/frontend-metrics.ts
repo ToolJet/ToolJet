@@ -6,6 +6,8 @@ let jsErrorCounter: Counter;
 let widgetErrorCounter: Counter;
 let webVitalsHistogram: Histogram;
 let clsHistogram: Histogram;
+let appLoadDurationHistogram: Histogram;
+let appLoadFailureCounter: Counter;
 
 let initialized = false;
 
@@ -37,6 +39,17 @@ export const initializeFrontendMetrics = () => {
     advice: { explicitBucketBoundaries: [0.05, 0.1, 0.15, 0.25, 0.5, 0.75, 1, 2] },
   });
 
+  // The end-user SLI: viewer mount -> app loaded.
+  appLoadDurationHistogram = frontendMeter.createHistogram('tooljet.frontend.app_load.duration', {
+    description: 'Time from viewer mount to app loaded',
+    unit: 'ms',
+  });
+
+  appLoadFailureCounter = frontendMeter.createCounter('tooljet.frontend.app_load.failures', {
+    description: 'App load did not complete (error/timeout before loaded)',
+    unit: '1',
+  });
+
   initialized = true;
 
   if (process.env.OTEL_LOG_LEVEL === 'debug') {
@@ -44,7 +57,7 @@ export const initializeFrontendMetrics = () => {
   }
 };
 
-export type FrontendMetricEventType = 'js_error' | 'widget_error' | 'web_vital';
+export type FrontendMetricEventType = 'js_error' | 'widget_error' | 'web_vital' | 'app_load' | 'app_load_failure';
 
 export interface FrontendMetricEvent {
   type: FrontendMetricEventType;
@@ -91,6 +104,13 @@ export const recordFrontendMetricsBatch = (
           }
           break;
         }
+        case 'app_load':
+          if (typeof event.value !== 'number' || !Number.isFinite(event.value) || event.value < 0) break;
+          appLoadDurationHistogram.record(event.value, attrs);
+          break;
+        case 'app_load_failure':
+          appLoadFailureCounter.add(event.count ?? 1, attrs);
+          break;
       }
     } catch (err) {
       if (process.env.OTEL_LOG_LEVEL === 'debug') {

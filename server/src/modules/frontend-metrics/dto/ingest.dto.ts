@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-const VALID_EVENT_TYPES = ['js_error', 'widget_error', 'web_vital'] as const;
+const VALID_EVENT_TYPES = ['js_error', 'widget_error', 'web_vital', 'app_load', 'app_load_failure'] as const;
 
 export type ValidEventType = typeof VALID_EVENT_TYPES[number];
 
