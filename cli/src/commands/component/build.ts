@@ -12,7 +12,7 @@ export default class Build extends Command {
     try {
       this.log(`Building your component library...\n`);
 
-      const result = await build(process.cwd());
+      const result = await build(process.cwd(), { env: 'production' });
 
       const tsCompiledMsg = `TypeScript compiled (${result.tsErrors} errors)`;
       const buildTime = formatDuration(result.buildMs);

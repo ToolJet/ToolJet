@@ -34,7 +34,7 @@ export default class ComponentDeploy extends Command {
 
       this.log(`Building your component library...\n`);
 
-      const result = await build(currentDir);
+      const result = await build(currentDir, { env: 'production' });
 
       this.log(formatSuccess(`Manifest generated: dist/manifest.json (${result.componentCount} components)`));
       this.log(formatSuccess(`Bundle built: dist/index.js (${result.bundleSizeKb} KB)`));
