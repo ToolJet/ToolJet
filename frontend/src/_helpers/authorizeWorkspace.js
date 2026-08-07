@@ -330,6 +330,16 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
             /* logout */
             sessionService.logout();
             return;
+          case 'USER_BANNED':
+            redirectToErrorPage(ERROR_TYPES.USER_SUSPENDED);
+            return;
+          case 'WORKSPACE_BANNED': {
+            const { workspaceName } = extraErrorData;
+            redirectToErrorPage(ERROR_TYPES.WORKSPACE_SUSPENDED, {
+              workspaceName: workspaceName || 'This workspace',
+            });
+            return;
+          }
           default:
             break;
         }

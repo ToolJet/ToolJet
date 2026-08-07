@@ -110,7 +110,30 @@ export const useDynamicHeight = ({
       // For containers, height is calculated from child layout positions (not DOM measurement),
       // so we can adjust synchronously without setting height to 'auto' first.
       // For non-containers, we need the element at 'auto' height so the DOM can be measured.
-      if (!isContainer && element) element.style.height = 'auto';
+      if (!isContainer && element) {
+        element.style.height = 'auto';
+        // A flex child's flex-basis governs its MAIN axis: WIDTH in a row
+        // container, HEIGHT in a column one (useFlexWidgetLayout sets
+        // `flex: 0 0 <effectiveWidthPx|effectiveHeightPx>px` accordingly; same
+        // axis rule as gridResizeUtils.computeFlexResizeStyles). For dynamic
+        // height we only care about freeing the basis when it IS the height —
+        // i.e. column direction. Left as-is there, offsetHeight reads the stale
+        // basis (authored height) no matter how much the content grew, so the
+        // reflow measures zero growth and every sibling below stays put. Free it
+        // so the measurement reflects real content height; React re-applies the
+        // correct `flex` shorthand once the measured temp height lands.
+        //
+        // In a ROW container the basis is the WIDTH — freeing it to `auto` would
+        // collapse the child to its content width (the editor/viewer width bug).
+        // Row height growth instead comes from the height:'auto' above, because
+        // height is the cross axis there. Use the parent's COMPUTED direction so
+        // stackBelow stacking (row → effective column) and *-reverse are honored.
+        if (element.classList.contains('flex-child-wrapper')) {
+          const parent = element.parentElement;
+          const flexDirection = parent && getComputedStyle(parent).flexDirection;
+          if (flexDirection && flexDirection.startsWith('column')) element.style.flexBasis = 'auto';
+        }
+      }
       useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices, moduleId);
     } else if (!isDynamicHeightEnabled && prevDynamicHeight.current) {
       if (element) element.style.height = `${height}px`;

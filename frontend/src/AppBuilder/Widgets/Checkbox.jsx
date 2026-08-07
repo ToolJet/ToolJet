@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
 export const Checkbox = ({
@@ -185,6 +185,8 @@ export const Checkbox = ({
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };
+
+  useFormClear(() => setInputValue(false));
 
   const renderCheckBox = () => (
     <>

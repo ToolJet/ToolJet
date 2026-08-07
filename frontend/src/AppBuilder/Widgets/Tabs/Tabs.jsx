@@ -13,7 +13,6 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useTabsNavScrollArrows } from '@/AppBuilder/Widgets/Tabs/useTabsNavScrollArrows';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
-import { useTransition, animated } from 'react-spring';
 import './tabs.scss';
 const tinycolor = require('tinycolor2');
 const TAB_HEADER_HEIGHT = 49.5;
@@ -307,26 +306,6 @@ export const Tabs = function Tabs({
   const someTabsVisible = tabItems?.filter((tab) => tab?.visible !== false);
   const equalSplitWidth = 100 / someTabsVisible?.length || 1;
 
-  // React Spring transitions for tab switching
-  const transitions = useTransition(currentTab, {
-    from: {
-      opacity: 0,
-      transform: transition !== 'none' ? 'translateX(100%)' : 'translateX(0%)',
-    },
-    enter: {
-      opacity: 1,
-      transform: 'translateX(0%)',
-    },
-    leave: {
-      opacity: 0,
-      transform: transition !== 'none' ? 'translateX(-100%)' : 'translateX(0%)',
-    },
-    config: {
-      tension: 300,
-      friction: 30,
-      clamp: true,
-    },
-  });
   return (
     <div
       data-disabled={isDisabled}
@@ -509,18 +488,38 @@ export const Tabs = function Tabs({
             position: 'relative',
           }}
         >
-          {transition === 'none' ? (
-            // Simple show/hide when no transition
-            tabItems.map((tab) => (
+          {tabItems.map((tab, index) => {
+            const activeTabIndex = tabItems.findIndex((t) => t.id == currentTab);
+            const isActiveTab = tab.id == currentTab;
+            return (
               <div
                 key={tab.id}
-                style={{
-                  display: tab.id === currentTab ? 'block' : 'none',
-                  width: '100%',
-                  height: '100%',
-                  overflow: 'hidden',
-                  boxSizing: 'border-box',
-                }}
+                style={
+                  transition === 'none'
+                    ? {
+                        display: isActiveTab ? 'block' : 'none',
+                        width: '100%',
+                        height: '100%',
+                        overflow: 'hidden',
+                        boxSizing: 'border-box',
+                      }
+                    : {
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        overflow: 'hidden',
+                        boxSizing: 'border-box',
+                        transform: `translateX(${(index - activeTabIndex) * 100}%)`,
+                        opacity: isActiveTab ? 1 : 0,
+                        pointerEvents: isActiveTab ? 'auto' : 'none',
+                        visibility: isActiveTab ? 'visible' : 'hidden',
+                        transition: isActiveTab
+                          ? 'transform 300ms cubic-bezier(0.22, 0.9, 0.35, 1), opacity 300ms cubic-bezier(0.22, 0.9, 0.35, 1)'
+                          : 'transform 300ms cubic-bezier(0.22, 0.9, 0.35, 1), opacity 300ms cubic-bezier(0.22, 0.9, 0.35, 1), visibility 0s linear 300ms',
+                      }
+                }
               >
                 {shouldRenderTabContent(tab) && (
                   <TabContent
@@ -538,48 +537,8 @@ export const Tabs = function Tabs({
                   />
                 )}
               </div>
-            ))
-          ) : (
-            // React Spring transitions - each tab content positioned absolutely
-            <>
-              {transitions((style, activeTabId) => {
-                const tab = tabItems.find((t) => t.id === activeTabId);
-                if (!tab) return null;
-
-                return (
-                  <animated.div
-                    key={activeTabId}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      overflow: 'hidden',
-                      boxSizing: 'border-box',
-                      ...style, // Apply React Spring animation styles
-                    }}
-                  >
-                    {shouldRenderTabContent(tab) && (
-                      <TabContent
-                        id={id}
-                        tab={tab}
-                        height={height}
-                        width={width}
-                        parsedHideTabs={parsedHideTabs}
-                        bgColor={bgColor}
-                        darkMode={darkMode}
-                        isDynamicHeightEnabled={isDynamicHeightEnabled}
-                        currentTab={currentTab}
-                        isTransitioning={isTransitioning}
-                        commonBackgroundColor={commonBackgroundColor}
-                      />
-                    )}
-                  </animated.div>
-                );
-              })}
-            </>
-          )}
+            );
+          })}
         </div>
       )}
     </div>
