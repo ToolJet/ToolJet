@@ -2543,6 +2543,21 @@ export const createComponentsSlice = (set, get) => ({
 
     await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: false });
   },
+  turnOnAutoComputeLayout: async (moduleId = 'canvas') => {
+    const { appStore, getCurrentPageId, currentVersionId } = get();
+    const app = appStore.modules[moduleId].app;
+    const currentPageId = getCurrentPageId(moduleId);
+    set(
+      (state) => {
+        const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
+        state.modules[moduleId].pages[currentPageIndex].autoComputeLayout = true;
+      },
+      false,
+      'turnOnAutoComputeLayout'
+    );
+    // The mobile-layout compute effect re-runs on this flag flip and overwrites the mobile boxes (resetting any manual positions), so no explicit recompute here.
+    await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: true });
+  },
   setWidgetDeleteConfirmation: (value) => {
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
