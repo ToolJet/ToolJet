@@ -16,6 +16,8 @@ import { PluginsServiceSelector } from '@modules/data-sources/services/plugin-se
 import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
+import { recordDirectQueryMetric } from '@otel/audit-metrics';
+import { getOrganizationNameCached, getEnvironmentNameCached } from '@otel/org-name-cache';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
@@ -84,6 +86,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     let appToUse: App;
     let effectiveAppName: string | undefined;
     let effectiveIsPublic: boolean | undefined;
+    let resolvedEnvironmentId: string | undefined;
 
     try {
       dataSource = dataQuery?.dataSource;
@@ -126,6 +129,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         branchId
       );
       const environmentId = dataSourceOptions.environmentId;
+      resolvedEnvironmentId = environmentId;
 
       dataSource.options = dataSourceOptions.options;
 
@@ -407,7 +411,60 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           },
         };
         RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditData);
+
+        await this.emitQueryMetric(user, dataQuery, queryStatus, {
+          appId: appToUse?.id,
+          appName: effectiveAppName,
+          dataSourceType: dataSource?.kind,
+          appMode: mode,
+          environmentId: resolvedEnvironmentId,
+        });
       }
+    }
+  }
+
+  // Direct OTEL emission — metrics flow regardless of audit log licensing.
+  // Protected: the EE override of runQuery has its own finally block and calls this too.
+  protected async emitQueryMetric(
+    user: User,
+    dataQuery: any,
+    queryStatus: DataQueryStatus,
+    context: {
+      appId?: string;
+      appName?: string;
+      dataSourceType?: string;
+      appMode?: string;
+      environmentId?: string;
+    }
+  ): Promise<void> {
+    try {
+      const { status, queryError, duration, parsedQueryOptions } = queryStatus.getMetaData();
+      const [organizationName, environment] = await Promise.all([
+        getOrganizationNameCached(user.organizationId),
+        context.environmentId ? getEnvironmentNameCached(context.environmentId) : Promise.resolve('unknown'),
+      ]);
+
+      recordDirectQueryMetric({
+        userId: user.id,
+        organizationId: user.organizationId,
+        organizationName,
+        appId: context.appId || 'unknown',
+        appName: context.appName,
+        queryId: dataQuery?.id || 'unknown',
+        queryName: dataQuery?.name,
+        dataSourceType: context.dataSourceType || 'unknown',
+        appMode: context.appMode || 'unknown',
+        environment,
+        status,
+        duration,
+        error: (queryError as { message?: string })?.message,
+        queryText: parsedQueryOptions?.['query'] || '',
+        queryType: parsedQueryOptions?.['mode'] || 'unknown',
+        versionName: dataQuery?.appVersion?.name,
+      });
+    } catch (error) {
+      // Observability must never break query execution
+      console.error('[OTEL] Failed to emit query metric:', error);
     }
   }
 

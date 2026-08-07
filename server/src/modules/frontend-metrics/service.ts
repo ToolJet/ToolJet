@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { SeverityNumber } from '@opentelemetry/api-logs';
-import { Organization } from '@entities/organization.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
 import { IngestFrontendMetricsDto, FrontendMetricEventDto } from './dto/ingest.dto';
 import { recordFrontendMetricsBatch } from '@otel/frontend-metrics';
 import { getFrontendErrorLogger } from '@otel/logs';
 import { getWorkspaceNameLabel } from '@otel/org-plan-cache';
+import { getOrganizationNameCached } from '@otel/org-name-cache';
 
 const MAX_EVENTS_PER_BATCH = 200;
 const MAX_ATTR_VALUE_LENGTH = 200;
@@ -22,22 +21,6 @@ const ALLOWED_ATTR_KEYS = new Set([
 ]);
 // Server injects these — strip from client payload so clients cannot pre-empt them.
 const RESERVED_ATTR_KEYS = new Set(['organization.id', 'user.id', 'organization.name', 'tooljet.version']);
-
-// organization.name changes rarely — cache id->name to avoid a DB hit per ingest.
-const ORG_NAME_CACHE_TTL_MS = 5 * 60_000;
-const orgNameCache = new Map<string, { name: string; ts: number }>();
-
-async function getOrganizationName(organizationId: string): Promise<string> {
-  const cached = orgNameCache.get(organizationId);
-  if (cached && Date.now() - cached.ts < ORG_NAME_CACHE_TTL_MS) return cached.name;
-
-  const name = await dbTransactionWrap(async (manager) => {
-    const organization = await manager.findOne(Organization, { where: { id: organizationId } });
-    return organization?.name ?? 'unknown';
-  });
-  orgNameCache.set(organizationId, { name, ts: Date.now() });
-  return name;
-}
 
 // Client dedup doesn't protect against N clients or attacker-chosen fingerprints;
 // cap verbose log emits per org. Metrics keep counting when capped.
@@ -62,7 +45,7 @@ export class FrontendMetricsService {
     if (!dto.events || dto.events.length === 0) return;
 
     // Real name for logs, bucketed name for metric labels — the two must not be conflated.
-    const organizationName = await getOrganizationName(context.organizationId);
+    const organizationName = await getOrganizationNameCached(context.organizationId);
     const tooljetVersion = globalThis.TOOLJET_VERSION || 'unknown';
 
     const events = dto.events.slice(0, MAX_EVENTS_PER_BATCH).map((ev) => {
