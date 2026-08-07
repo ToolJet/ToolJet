@@ -4452,6 +4452,232 @@ describe('GitSyncController — GitLab', () => {
     });
 
     // ────────────────────────────────────────────────────────────────────────────
+    // Pull re-marks resources synced after their is_synced was reset out-of-band.
+    //
+    // Repro of the "git disable → re-enable → pull leaves resources unsynced" bug:
+    // disabling git flips is_synced=false on every default-branch app/module version
+    // and data source version (git-sync-configs service), WITHOUT changing git content
+    // or the branch's cached category tree SHAs. On the next pull the category-level
+    // skip (git tree unchanged) used to return before anything re-flagged those rows,
+    // so they stayed unsynced forever. The fix reconciles is_synced=true on the skip
+    // path for every resource still present in git (matched by co_relation_id).
+    //
+    // The real disable endpoint only resets the DEFAULT branch, but the shared Gitea
+    // blocks direct default-branch pushes — so this test pushes resources to a FEATURE
+    // branch and reproduces the disable's effect with the same UPDATE it runs (a raw
+    // is_synced=false flip). The reconcile under test is branch-agnostic, so a feature
+    // branch exercises the exact code path. Runs against the real Gitea (@group platform).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('pull re-marks resources synced after is_synced reset (git disable→enable)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+
+      let syncOrgId: string;
+      let syncCookie: string[];
+      let syncDs: DataSource;
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-resync.gl@tooljet.io',
+          firstName: 'git',
+          lastName: 'resync',
+        });
+        syncOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-resync.gl@tooljet.io');
+        syncCookie = tokenCookie;
+        await ensureAppEnvironments(app, syncOrgId);
+        syncDs = app.get<DataSource>(getDataSourceToken('default'));
+        await syncDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [syncOrgId]
+        );
+      });
+
+      it('restores is_synced=true on the next pull for data source, app and module still in git', async () => {
+        const { randomUUID } = await import('crypto');
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', syncCookie).set('tj-workspace-id', syncOrgId);
+
+        const pull = (branchId: string) =>
+          auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+        const pushWorkspace = (branchId: string, commitMessage: string) =>
+          auth(agent().post('/api/workspace-branches/push'))
+            .query({ branch_id: branchId })
+            .send({ commitMessage, branchId });
+        const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+          (
+            await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+          ).body.branches.find((b: any) => b.name === name)?.id;
+
+        const dsvSynced = async (dsId: string, branchId: string): Promise<boolean> =>
+          (
+            await syncDs.query(
+              `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+              [dsId, branchId]
+            )
+          )[0]?.is_synced;
+        const versionSynced = async (versionId: string): Promise<boolean> =>
+          (await syncDs.query(`SELECT is_synced FROM app_versions WHERE id = $1`, [versionId]))[0]?.is_synced;
+
+        const editingVersionOf = async (appId: string, branchId: string) => {
+          const d = await auth(agent().get(`/api/apps/${appId}`))
+            .query({ branch_id: branchId })
+            .expect(200);
+          const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+          const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || d.body?.pages?.[0]?.id;
+          return { versionId: ev.id as string, pageId: pageId as string };
+        };
+
+        const gitpush = (appId: string, versionId: string, gitAppName: string, branchName: string, branchId: string) =>
+          auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
+            .query({ branch_id: branchId })
+            .send({
+              gitAppName,
+              versionId,
+              lastCommitMessage: 'commit-resync',
+              gitVersionName: branchName,
+              sourceBranch: branchName,
+            });
+
+        // ── 1. reset gitea, enable git + branching, pull main ─────────────────────
+        step(1, 'reset gitea, configure git + branching, pull main');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${syncOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+        await pull(mainBranchId).expect(201);
+
+        // ── 2. feature branch to author + push on (main pushes are blocked) ───────
+        step(2, 'create feat-resync branch');
+        await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-resync', sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId: string = await branchIdByName('feat-resync', mainBranchId);
+        expect(featBranchId).toBeDefined();
+
+        // ── 3. data source → workspace push ───────────────────────────────────────
+        step(3, 'create global data source, push it to git');
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'resync-ds',
+              kind: 'restapi',
+              options: [
+                { key: 'url', value: 'http://resync.example.com' },
+                { key: 'auth_type', value: 'none' },
+                { key: 'headers', value: [['', '']] },
+                { key: 'ssl_certificate', value: 'none', encrypted: false },
+              ],
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await pushWorkspace(featBranchId, 'push resync data source').expect(201);
+
+        // ── 4. app (+ a component) → app-git push ─────────────────────────────────
+        step(4, 'create app, add a component, gitpush it');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'resync-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await editingVersionOf(appId, featBranchId);
+        const btnId = randomUUID();
+        await auth(agent().post(`/api/v2/apps/${appId}/versions/${appCtx.versionId}/components`))
+          .query({ branch_id: featBranchId })
+          .send({
+            is_user_switched_version: false,
+            pageId: appCtx.pageId,
+            diff: {
+              [btnId]: {
+                name: `button_${btnId.slice(0, 6)}`,
+                layouts: {
+                  desktop: { top: 80, left: 15, width: 4, height: 40 },
+                  mobile: { top: 80, left: 15, width: 4, height: 40 },
+                },
+                type: 'Button',
+                general: {},
+                generalStyles: {},
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: { text: { value: 'Button' } },
+                styles: {},
+              },
+            },
+          })
+          .expect(201);
+        await gitpush(appId, appCtx.versionId, 'resync-app', 'feat-resync', featBranchId).expect(201);
+
+        // ── 5. module → app-git push ──────────────────────────────────────────────
+        step(5, 'create module, gitpush it');
+        const moduleId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'resync-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const modCtx = await editingVersionOf(moduleId, featBranchId);
+        await gitpush(moduleId, modCtx.versionId, 'resync-module', 'feat-resync', featBranchId).expect(201);
+
+        // ── 6. pull feat-resync → stamps the category tree SHAs and marks synced ──
+        step(6, 'pull feat-resync (stamps category tree SHAs, marks resources synced)');
+        await pull(featBranchId).expect(201);
+        // Re-resolve editing versions — a pull may re-parent / re-hydrate the rows.
+        const appAfterPull = await editingVersionOf(appId, featBranchId);
+        const modAfterPull = await editingVersionOf(moduleId, featBranchId);
+
+        step(7, 'sanity: data source, app and module are is_synced=true');
+        expect(await dsvSynced(dsId, featBranchId)).toBe(true);
+        expect(await versionSynced(appAfterPull.versionId)).toBe(true);
+        expect(await versionSynced(modAfterPull.versionId)).toBe(true);
+
+        // ── 8. reproduce the git-disable reset (same writes the service runs) ─────
+        // The git-disable flow flips is_synced=false on the default branch AND clears the
+        // branch's last_synced_commit so the next pull isn't whole-pull-skipped on an
+        // unchanged remote HEAD. Mirror both here (feature branch stands in for default —
+        // the reconcile is branch-agnostic). Category tree SHAs are left intact so the pull
+        // takes the cheap category-skip + reconcile path.
+        step(8, 'flip is_synced=false + clear last_synced_commit (mirrors the git-disable reset)');
+        await syncDs.query(`UPDATE data_source_versions SET is_synced = false WHERE branch_id = $1`, [featBranchId]);
+        await syncDs.query(
+          `UPDATE app_versions SET is_synced = false
+             WHERE branch_id = $1 AND app_id IN (SELECT id FROM apps WHERE organization_id = $2)`,
+          [featBranchId, syncOrgId]
+        );
+        await syncDs.query(`UPDATE organization_git_sync_branches SET last_synced_commit = NULL WHERE id = $1`, [
+          featBranchId,
+        ]);
+        expect(await dsvSynced(dsId, featBranchId)).toBe(false);
+        expect(await versionSynced(appAfterPull.versionId)).toBe(false);
+        expect(await versionSynced(modAfterPull.versionId)).toBe(false);
+
+        // ── 9. pull again — whole-pull runs (HEAD token cleared); git content unchanged
+        //      so each category takes the category-skip path → reconcile re-marks synced.
+        step(9, 're-enable/pull: reconcile restores is_synced=true');
+        await pull(featBranchId).expect(201);
+
+        step(10, 'assert every resource still in git is is_synced=true again');
+        expect(await dsvSynced(dsId, featBranchId)).toBe(true);
+        expect(await versionSynced(appAfterPull.versionId)).toBe(true);
+        expect(await versionSynced(modAfterPull.versionId)).toBe(true);
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
     // Edit restrictions across git off / on and branching states.
     //
     // Exercises the git-sync edit guards end-to-end on a dedicated org (isolated from
