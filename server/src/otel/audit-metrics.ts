@@ -1,6 +1,6 @@
 import { metrics } from '@opentelemetry/api';
 import { AuditLogFields } from '@modules/audit-logs/types';
-import { getWorkspaceLabel } from './org-plan-cache';
+import { getWorkspaceLabel, getWorkspaceNameLabel } from './org-plan-cache';
 
 /**
  * OTEL Metrics for Audit Logs
@@ -363,10 +363,8 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
       });
     }
 
-    // Record query-specific metrics
-    if (actionType === 'DATA_QUERY_RUN') {
-      recordQueryMetrics(auditLogData);
-    }
+    // Query metrics are recorded directly at the execution site (recordDirectQueryMetric),
+    // not from the audit pipeline — recording here too would double-count.
 
     // Record app-specific metrics
     if (resourceType === 'APP' || actionType.startsWith('APP_')) {
@@ -397,98 +395,109 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
   }
 };
 
+export interface DirectQueryMetricPayload {
+  userId: string;
+  organizationId: string;
+  organizationName?: string;
+  appId: string;
+  appName?: string;
+  queryId: string;
+  queryName?: string;
+  dataSourceType: string;
+  appMode: string; // 'edit' | 'view'
+  environment: string; // environment name
+  status: 'success' | 'failure' | string;
+  duration?: number; // ms
+  error?: string;
+  errorType?: string;
+  queryText?: string; // only labeled if OTEL_INCLUDE_QUERY_TEXT=true
+  queryType?: string; // 'sql' | 'gui' | etc.
+  versionName?: string;
+}
+
 /**
- * Record query execution metrics
+ * Record query metrics directly at the query execution site — no audit
+ * pipeline dependency, so metrics flow regardless of audit log licensing.
  */
-function recordQueryMetrics(auditLogData: AuditLogFields) {
+export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
   if (!queryExecutionsCounter) return;
 
-  const { metadata = {}, resourceData = {}, resourceId, resourceName, organizationId, userId } = auditLogData;
+  try {
+    const {
+      userId,
+      organizationId,
+      organizationName = 'unknown',
+      appId,
+      appName = 'unknown',
+      queryId,
+      queryName = 'unknown',
+      dataSourceType,
+      appMode,
+      environment,
+      status,
+      duration,
+      error,
+      queryText = '',
+      queryType = 'unknown',
+      versionName = 'unknown',
+    } = payload;
 
-  // App-level metric — free-tier orgs bucket on Cloud
-  const workspaceLabel = getWorkspaceLabel(organizationId);
-  const appId = metadata['appId'] || resourceData['appId'] || 'unknown';
-  const appName = metadata['appName'] || resourceData['appName'] || 'unknown';
-  const dataSourceType = resourceData['dataSourceType'] || metadata['dataSourceType'] || 'unknown';
-  const status = metadata['status'] || 'success';
-  const duration = metadata['duration'];
-  const error = metadata['error'];
-  const errorType = metadata['errorType'] || categorizeError(error);
+    const errorType = payload.errorType || categorizeError(error);
+    const isReleased = appMode === 'view' ? 'true' : 'false';
+    const qtLabel = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '';
 
-  // New labels for mode and environment tracking
-  const mode = metadata['mode'] || resourceData['mode'] || 'unknown'; // 'edit' or 'view'
-  const environment = metadata['environment'] || resourceData['environment'] || 'unknown'; // environment name
-  const isReleased = mode === 'view' ? 'true' : 'false';
-
-  // Extract query from parsedQueryOptions (camelCase from queryStatus.getMetaData())
-  // Only include query text if explicitly enabled (to avoid high cardinality)
-  const includeQueryText = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true';
-  const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
-  const queryText = includeQueryText ? (parsedQueryOptions['query'] || '') : '';
-  const queryMode = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, etc.
-
-  const labels = {
-    app_id: appId,
-    app_name: appName,
-    query_id: resourceId,
-    query_name: resourceName || 'unknown',
-    data_source_type: dataSourceType,
-    organization_id: workspaceLabel,
-    status: status,
-    mode: mode, // NEW: edit or view
-    environment: environment, // NEW: environment name
-    is_released: isReleased, // NEW: boolean string
-    query_text: queryText, // NEW: actual SQL/query text
-    query_mode: queryMode, // NEW: sql or gui
-  };
-
-  // Count query execution
-  queryExecutionsCounter.add(1, labels);
-
-  // Record query duration if available
-  if (duration && typeof duration === 'number') {
-    queryDurationHistogram.record(duration, labels);
-  }
-
-  // Record failure if present
-  if (status === 'failure' || error) {
-    queryFailuresCounter.add(1, {
-      app_id: appId,
+    // App-level metric — free-tier orgs bucket on Cloud; id and name gate together
+    const labels = {
+      app_id: appId || 'unknown',
       app_name: appName,
-      query_name: resourceName || 'unknown',
-      error_type: errorType,
+      query_id: queryId,
+      query_name: queryName,
       data_source_type: dataSourceType,
-      organization_id: workspaceLabel,
-      mode: mode,
-      environment: environment,
+      organization_id: getWorkspaceLabel(organizationId),
+      organization_name: getWorkspaceNameLabel(organizationId, organizationName),
+      status,
+      app_mode: appMode,
+      environment,
       is_released: isReleased,
-      query_text: queryText,
-      query_mode: queryMode,
-    });
+      query_text: qtLabel,
+      query_type: queryType,
+      version_name: versionName,
+    };
 
-    // Record app-level error
-    if (appErrorsCounter) {
-      appErrorsCounter.add(1, {
-        app_id: appId,
+    queryExecutionsCounter.add(1, labels);
+
+    if (typeof duration === 'number') {
+      queryDurationHistogram.record(duration, labels);
+    }
+
+    if (status === 'failure' || error) {
+      queryFailuresCounter?.add(1, {
+        ...labels,
+        error_type: errorType,
+      });
+
+      appErrorsCounter?.add(1, {
+        app_id: appId || 'unknown',
         app_name: appName,
         error_type: errorType,
-        mode: mode,
-        environment: environment,
-        organization_id: workspaceLabel,
+        app_mode: appMode,
+        environment,
+        organization_id: getWorkspaceLabel(organizationId),
+        organization_name: getWorkspaceNameLabel(organizationId, organizationName),
       });
     }
-  }
 
-  // Track active users per app
-  if (appId !== 'unknown') {
-    trackAppActiveUser(appId, userId);
+    if (appId && appId !== 'unknown') {
+      trackAppActiveUser(appId, userId);
+      if (appMode !== 'unknown' && environment !== 'unknown') {
+        trackAppSuccess(appId, appMode, environment, status === 'success');
+      }
+    }
+  } catch (err) {
+    // Observability must never break query execution
+    console.error('[OTEL] Error in recordDirectQueryMetric:', err);
   }
-
-  // Track app success rate
-  if (appId !== 'unknown' && mode !== 'unknown' && environment !== 'unknown') {
-    trackAppSuccess(appId, mode, environment, status === 'success');
-  }
-}
+};
 
 /**
  * Record app usage metrics
