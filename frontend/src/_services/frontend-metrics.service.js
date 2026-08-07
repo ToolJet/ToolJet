@@ -10,9 +10,14 @@ let eventMap = new Map();
 let flushTimer = null;
 let initialized = false;
 
-const _onUnload = () => flush();
+const _onUnload = () => {
+  recordAppLoadFailureIfPending();
+  flush();
+};
 const _onVisibility = () => {
-  if (document.visibilityState === 'hidden') flush();
+  if (document.visibilityState !== 'hidden') return;
+  recordAppLoadFailureIfPending();
+  flush();
 };
 
 const _onGlobalError = (event) => {
@@ -37,9 +42,10 @@ function getCurrentWorkspaceId() {
 }
 
 function getAppContext() {
+  // Editor/preview URLs carry a workspace-slug prefix (/demo/apps/...) — match anywhere, not anchored
   const path = window.location.pathname;
-  if (path.startsWith('/applications/') || path.startsWith('/embed-apps/')) return 'released_app';
-  if (path.match(/^\/apps\/[^/]+(\/preview)?$/)) return path.includes('/preview') ? 'preview' : 'edit';
+  if (path.includes('/applications/') || path.includes('/embed-apps/')) return 'released_app';
+  if (path.match(/\/apps\/[^/]+/)) return path.includes('/preview') ? 'preview' : 'edit';
   return 'platform';
 }
 
@@ -47,6 +53,45 @@ function getAppContext() {
 let _currentAppName = '';
 export function setCurrentAppName(name) {
   _currentAppName = name || '';
+}
+
+// ToolJet app environment (development|staging|production) + released version name.
+let _currentAppEnvironment = '';
+let _currentAppVersion = '';
+export function setCurrentAppMeta({ environment, version } = {}) {
+  _currentAppEnvironment = environment || '';
+  _currentAppVersion = version || '';
+}
+
+function appAttrs() {
+  const attrs = {
+    'app.name': _currentAppName,
+    'app.context': getAppContext(),
+    'app.environment': _currentAppEnvironment,
+  };
+  // Version only for released traffic — bounds cardinality, answers "did the last release break it?"
+  if (getAppContext() === 'released_app' && _currentAppVersion) attrs['app.version'] = _currentAppVersion;
+  return attrs;
+}
+
+// App load SLI: mount -> layout ready. Load that never completes before the session
+// ends (tab close/navigation) counts as a failure — the user never saw the app.
+let _appLoad = null; // { start } while in-flight, null otherwise
+let _appLoadResult = null; // { duration, firstSeen } awaiting flush
+export function markAppLoadStart() {
+  if (!isEnabled()) return;
+  _appLoad = { start: performance.now() };
+}
+export function markAppLoaded() {
+  if (!isEnabled() || !_appLoad) return;
+  // Attrs materialize at flush — layout can be ready before the env/version store populates
+  _appLoadResult = { duration: Math.round(performance.now() - _appLoad.start), firstSeen: Date.now() };
+  _appLoad = null;
+}
+function recordAppLoadFailureIfPending() {
+  if (!_appLoad) return;
+  _appLoad = null;
+  recordMetricEvent(`app_load_failure:${getAppContext()}`, 'app_load_failure', appAttrs());
 }
 
 function recordMetricEvent(fingerprint, type, attrs = {}, detail = undefined) {
@@ -86,7 +131,18 @@ function recordWebVital(metric) {
 }
 
 export function flush() {
-  if (!isEnabled() || eventMap.size === 0) return;
+  if (!isEnabled()) return;
+  if (_appLoadResult) {
+    eventMap.set(`app_load:${_appLoadResult.firstSeen}`, {
+      type: 'app_load',
+      attrs: appAttrs(),
+      value: _appLoadResult.duration,
+      count: 1,
+      firstSeen: _appLoadResult.firstSeen,
+    });
+    _appLoadResult = null;
+  }
+  if (eventMap.size === 0) return;
   const wsId = getCurrentWorkspaceId();
   if (!wsId) return;
 
@@ -145,13 +201,12 @@ export function teardownFrontendMetrics() {
 // attrs — unbounded strings would explode Prometheus label cardinality.
 export function recordJsError(errorMessage, source = '') {
   const msg = String(errorMessage).slice(0, 200);
+  // chunk_load = stale assets after deploy, not an app bug — tag so dashboards can split them
+  const kind = /Loading (CSS )?chunk|ChunkLoadError/.test(msg) ? 'chunk_load' : 'generic';
   recordMetricEvent(
     `js_error:${msg}:${String(source).slice(0, 100)}`,
     'js_error',
-    {
-      'app.name': _currentAppName,
-      'app.context': getAppContext(),
-    },
+    { ...appAttrs(), 'error.kind': kind },
     // Faro-compatible field names; server routes detail to logs, never metric attrs
     { type: 'js_error', value: msg, stacktrace: String(source).slice(0, 1000) }
   );
@@ -162,11 +217,7 @@ export function recordWidgetError(widgetType, errorMessage = '') {
   recordMetricEvent(
     `widget_error:${widgetType}:${msg}`,
     'widget_error',
-    {
-      'app.name': _currentAppName,
-      'app.context': getAppContext(),
-      'widget.type': widgetType,
-    },
+    { ...appAttrs(), 'widget.type': widgetType },
     { type: 'widget_error', value: msg, stacktrace: '' }
   );
 }

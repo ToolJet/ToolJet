@@ -10,7 +10,7 @@ import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
 import { TransactionLogger } from '@modules/logging/service';
-import { trackUserActivity } from '@otel/tracing';
+import { trackUserActivity, extractAppIdFromPath } from '@otel/tracing';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 
@@ -160,6 +160,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
               workspaceId: user.organizationId,
               userId: user.id,
               sessionId: payload.sessionId,
+              /* App-scoped requests only; PAT sessions carry the app id on the token itself */
+              appId: extractAppIdFromPath(req.originalUrl || req.url) || payload.appId,
             });
           } catch (error) {
             // Don't let metrics tracking failures affect authentication
@@ -205,11 +207,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     /* Re-fetch with the workspace context so organizationUsers relations are populated,
        matching the shape produced by the regular JWT flow. */
-    const user = await this.userRepository.findByEmail(
-      adminUser.email,
-      organizationId,
-      WORKSPACE_USER_STATUS.ACTIVE
-    );
+    const user = await this.userRepository.findByEmail(adminUser.email, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
     if (!user) {
       throw new UnauthorizedException('No admin user found for the requested workspace');
     }
@@ -227,6 +225,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           workspaceId: user.organizationId,
           userId: user.id,
           sessionId: user.sessionId,
+          appId: extractAppIdFromPath(req.originalUrl || req.url),
         });
       } catch (error) {
         console.error('Error tracking user activity:', error);

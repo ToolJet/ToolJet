@@ -1,5 +1,13 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
-import { Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
+import {
+  Span,
+  DiagConsoleLogger,
+  DiagLogLevel,
+  diag,
+  metrics,
+  ObservableGauge,
+  ObservableResult,
+} from '@opentelemetry/api';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
@@ -153,6 +161,8 @@ let concurrentUsersCounter: any;
 let activeSessionsCounter: any;
 let concurrentUsersGauge: any;
 let sessionsActiveGauge: any;
+let appActiveUsersGauge: ObservableGauge;
+let workspaceSeatsGauge: ObservableGauge;
 
 // Track active users per workspace with last activity timestamp
 // Key format: "workspaceId:userId", Value: { lastSeen: timestamp, role: string }
@@ -162,14 +172,61 @@ const activeUsersByWorkspace = new Map<string, { lastSeen: number; role?: string
 // Key format: "workspaceId:sessionId", Value: { lastSeen: timestamp, userId: string, role?: string }
 const activeSessionsByWorkspace = new Map<string, { lastSeen: number; userId: string; role?: string }>();
 
+// Track active users per app with last activity timestamp
+// Key format: "workspaceId:appId:userId", Value: { lastSeen: timestamp, role: string }
+const activeUsersByApp = new Map<string, { lastSeen: number; role: UserRoleBucket }>();
+
+// Roles reported on user metrics. 'unknown' when the request carries no role signal.
+type UserRoleBucket = 'admin' | 'builder' | 'end-user' | 'unknown';
+const KNOWN_ROLES: readonly string[] = ['admin', 'builder', 'end-user'];
+
+const normalizeRole = (role?: string): UserRoleBucket => {
+  const normalized = String(role || '')
+    .trim()
+    .toLowerCase();
+  return (KNOWN_ROLES.includes(normalized) ? normalized : 'unknown') as UserRoleBucket;
+};
+
+// App-scoped routes look like /api/apps/<uuid>/... — uuid match avoids catching /apps/slugs, /apps/addable etc.
+const APP_ID_IN_PATH = /\/apps\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:[/?#]|$)/i;
+
+export const extractAppIdFromPath = (path?: string): string | undefined => {
+  if (!path) return undefined;
+  return APP_ID_IN_PATH.exec(path)?.[1];
+};
+
+// Seat counts, per-user roles and workspace names, all refreshed by a periodic DB poll
+// (see pollWorkspaceSeats). Held as one snapshot object so a refresh swaps them together —
+// readers never see a half-updated set.
+const UNKNOWN_ORG_NAME = 'unknown';
+
+type SeatCount = {
+  organizationId: string;
+  organizationName: string;
+  role: UserRoleBucket;
+  seats: number;
+};
+type SeatSnapshot = {
+  counts: SeatCount[];
+  // Key format: "organizationId:userId"
+  rolesByUser: Map<string, UserRoleBucket>;
+  // Workspace name is 1:1 with its id — no series multiplication from carrying both
+  namesByOrg: Map<string, string>;
+};
+let seatSnapshot: SeatSnapshot = { counts: [], rolesByUser: new Map(), namesByOrg: new Map() };
+
 // Configurable activity window - default 5 minutes
 const ACTIVITY_WINDOW_MINUTES = parseInt(process.env.OTEL_ACTIVE_USER_WINDOW_MINUTES || '5', 10);
 // Validate and constrain between 1 and 60 minutes
 const ACTIVE_USER_WINDOW_MS = Math.max(1, Math.min(60, ACTIVITY_WINDOW_MINUTES)) * 60 * 1000;
 const CLEANUP_INTERVAL_MS = 60 * 1000; // Run cleanup every 1 minute
 const MAX_TRACKED_USERS = parseInt(process.env.OTEL_MAX_TRACKED_USERS || '10000', 10);
+const SEAT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+const SEAT_FIRST_POLL_DELAY_MS = 30 * 1000; // Early first poll — DB may not be up at OTEL start
 
 let cleanupInterval: NodeJS.Timeout | null = null;
+let seatPollInterval: NodeJS.Timeout | null = null;
+let seatPollTimeout: NodeJS.Timeout | null = null;
 
 // Proactive cleanup of inactive users and sessions
 const cleanupInactiveUsers = () => {
@@ -207,6 +264,19 @@ const cleanupInactiveUsers = () => {
       cleanedSessions++;
     }
 
+    // Cleanup per-app users
+    const appUsersToDelete: string[] = [];
+    for (const [key, data] of activeUsersByApp.entries()) {
+      if (data.lastSeen < cutoffTime) {
+        appUsersToDelete.push(key);
+      }
+    }
+
+    for (const key of appUsersToDelete) {
+      activeUsersByApp.delete(key);
+      cleanedUsers++;
+    }
+
     if ((cleanedUsers > 0 || cleanedSessions > 0) && process.env.OTEL_LOG_LEVEL === 'debug') {
       console.log(
         `[OTEL] Cleaned up ${cleanedUsers} inactive user entries and ${cleanedSessions} inactive session entries from memory`
@@ -224,6 +294,81 @@ const cleanupInactiveUsers = () => {
     }
   } catch (error) {
     console.error('[OTEL] Error during cleanup:', error);
+  }
+};
+
+// One row per active workspace member
+type SeatRow = { organization_id: string; organization_name: string; user_id: string; role: string };
+
+// A user's role is their single default group membership in that workspace; ordering picks the
+// highest role when a user somehow sits in more than one default group.
+// Per-user rows (not pre-aggregated) so the same pass also feeds the active-user role and name lookups.
+const SEAT_QUERY = `
+  SELECT ou.organization_id AS organization_id,
+         o.name AS organization_name,
+         ou.user_id AS user_id,
+         COALESCE(r.role, 'unknown') AS role
+  FROM organization_users ou
+  JOIN organizations o ON o.id = ou.organization_id
+  LEFT JOIN LATERAL (
+    SELECT pg.name AS role
+    FROM group_users gu
+    JOIN permission_groups pg ON pg.id = gu.group_id
+    WHERE gu.user_id = ou.user_id
+      AND pg.organization_id = ou.organization_id
+      AND pg.type = 'default'
+      AND pg.name IN ('admin', 'builder', 'end-user')
+    ORDER BY CASE pg.name WHEN 'admin' THEN 0 WHEN 'builder' THEN 1 ELSE 2 END
+    LIMIT 1
+  ) r ON TRUE
+  WHERE ou.status = 'active'
+`;
+
+// Refresh the snapshot read by workspaceSeatsGauge and by the app active-user role lookup.
+// Lazy import: tracing.ts loads before the DB (and before pg instrumentation patches apply),
+// so the connection helper must not be pulled in at module load time.
+const pollWorkspaceSeats = async (): Promise<void> => {
+  try {
+    const { getConnectionInstance } = await import('../helpers/database.helper');
+    const rows: SeatRow[] = await getConnectionInstance().query(SEAT_QUERY);
+
+    // Build into locals, publish in one assignment — the gauge callbacks never see a partial snapshot
+    const rolesByUser = new Map<string, UserRoleBucket>();
+    const namesByOrg = new Map<string, string>();
+    const countsByOrgRole = new Map<string, number>();
+
+    for (const row of rows) {
+      const role = normalizeRole(row.role);
+      rolesByUser.set(`${row.organization_id}:${row.user_id}`, role);
+      namesByOrg.set(row.organization_id, row.organization_name || UNKNOWN_ORG_NAME);
+      const countKey = `${row.organization_id}:${role}`;
+      countsByOrgRole.set(countKey, (countsByOrgRole.get(countKey) || 0) + 1);
+    }
+
+    const counts: SeatCount[] = [];
+    for (const [countKey, seats] of countsByOrgRole.entries()) {
+      const separatorIndex = countKey.lastIndexOf(':');
+      const organizationId = countKey.slice(0, separatorIndex);
+      counts.push({
+        organizationId,
+        organizationName: namesByOrg.get(organizationId) || UNKNOWN_ORG_NAME,
+        role: countKey.slice(separatorIndex + 1) as UserRoleBucket,
+        seats,
+      });
+    }
+
+    seatSnapshot = { counts, rolesByUser, namesByOrg };
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.log(
+        `[OTEL] Seats refreshed: ${rolesByUser.size} members, ${namesByOrg.size} workspaces, ${counts.length} workspace/role rows`
+      );
+    }
+  } catch (error) {
+    // Observability must never break the app — keep the previous snapshot
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.error('[OTEL] Error polling workspace seats:', error);
+    }
   }
 };
 
@@ -364,6 +509,77 @@ const initializeCustomMetrics = () => {
     }
   });
 
+  // ObservableGauge for per-app active users by role
+  appActiveUsersGauge = meter.createObservableGauge('tooljet.app.active_users', {
+    description: 'Number of active users per app by role based on app-scoped request activity in last 5 minutes',
+    unit: '{users}',
+  });
+
+  appActiveUsersGauge.addCallback((observableResult: ObservableResult) => {
+    try {
+      const cutoffTime = Date.now() - ACTIVE_USER_WINDOW_MS;
+
+      // Roles and workspace names come from the seat poll snapshot — read once so every entry
+      // in this observation resolves against the same one
+      const { rolesByUser, namesByOrg } = seatSnapshot;
+
+      // Group by workspace + app + role, dropping stale entries (same two-pass shape as the workspace gauges)
+      const usersByAppRole = new Map<string, Set<string>>();
+      const entriesToDelete: string[] = [];
+
+      for (const [key, data] of activeUsersByApp.entries()) {
+        if (data.lastSeen < cutoffTime) {
+          entriesToDelete.push(key);
+          continue;
+        }
+        const [workspaceId, appId, userId] = key.split(':');
+        // Request-supplied role wins when present; otherwise the poll snapshot, else unknown (pre-first-poll)
+        const role = data.role !== 'unknown' ? data.role : rolesByUser.get(`${workspaceId}:${userId}`) || 'unknown';
+        const groupKey = `${workspaceId}:${appId}:${role}`;
+        if (!usersByAppRole.has(groupKey)) {
+          usersByAppRole.set(groupKey, new Set());
+        }
+        usersByAppRole.get(groupKey)!.add(userId);
+      }
+
+      for (const key of entriesToDelete) {
+        activeUsersByApp.delete(key);
+      }
+
+      for (const [groupKey, users] of usersByAppRole.entries()) {
+        const [workspaceId, appId, role] = groupKey.split(':');
+        observableResult.observe(users.size, {
+          'organization.id': workspaceId,
+          'organization.name': namesByOrg.get(workspaceId) || UNKNOWN_ORG_NAME,
+          'app.id': appId,
+          role: role,
+        });
+      }
+    } catch (error) {
+      console.error('[OTEL] Error in appActiveUsersGauge callback:', error);
+    }
+  });
+
+  // ObservableGauge for registered seats per workspace by role (DB-polled snapshot)
+  workspaceSeatsGauge = meter.createObservableGauge('tooljet.workspace.seats', {
+    description: 'Number of registered users per workspace by role',
+    unit: '{users}',
+  });
+
+  workspaceSeatsGauge.addCallback((observableResult: ObservableResult) => {
+    try {
+      for (const { organizationId, organizationName, role, seats } of seatSnapshot.counts) {
+        observableResult.observe(seats, {
+          'organization.id': organizationId,
+          'organization.name': organizationName,
+          role: role,
+        });
+      }
+    } catch (error) {
+      console.error('[OTEL] Error in workspaceSeatsGauge callback:', error);
+    }
+  });
+
   // Histogram for API duration
   apiDurationHistogram = meter.createHistogram('api.duration', {
     description: 'API request duration in milliseconds',
@@ -390,6 +606,16 @@ process.on('SIGTERM', () => {
   if (cleanupInterval) {
     clearInterval(cleanupInterval);
     cleanupInterval = null;
+  }
+
+  if (seatPollInterval) {
+    clearInterval(seatPollInterval);
+    seatPollInterval = null;
+  }
+
+  if (seatPollTimeout) {
+    clearTimeout(seatPollTimeout);
+    seatPollTimeout = null;
   }
 
   if (sdk) {
@@ -423,6 +649,16 @@ export const startOpenTelemetry = async (): Promise<void> => {
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
 
+    // Seat counts come from the DB, not from request traffic — poll only when OTEL is on.
+    // First poll runs early so dashboards aren't stuck on 'unknown' for a whole interval; if the
+    // DB isn't up yet pollWorkspaceSeats swallows it and the next scheduled poll wins.
+    if (process.env.ENABLE_OTEL === 'true') {
+      seatPollTimeout = setTimeout(() => void pollWorkspaceSeats(), SEAT_FIRST_POLL_DELAY_MS);
+      seatPollTimeout.unref();
+      seatPollInterval = setInterval(() => void pollWorkspaceSeats(), SEAT_POLL_INTERVAL_MS);
+      seatPollInterval.unref();
+    }
+
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
       console.log('OpenTelemetry instrumentation initialized');
       console.log(
@@ -444,6 +680,7 @@ export const trackUserActivity = (attributes: {
   userId: string;
   sessionId?: string;
   userRole?: string;
+  appId?: string;
 }) => {
   try {
     // Validate required fields
@@ -500,6 +737,28 @@ export const trackUserActivity = (attributes: {
         lastSeen: now,
         userId: userId,
         role: attributes.userRole,
+      });
+    }
+
+    // Track per-app activity only for app-scoped requests
+    if (attributes.appId) {
+      const appId = String(attributes.appId).slice(0, 100);
+      const appUserKey = `${workspaceId}:${appId}:${userId}`;
+
+      // Safety cap to prevent unbounded memory growth for per-app users
+      if (activeUsersByApp.size >= MAX_TRACKED_USERS && !activeUsersByApp.has(appUserKey)) {
+        const oldestKey = activeUsersByApp.keys().next().value;
+        if (oldestKey) {
+          activeUsersByApp.delete(oldestKey);
+          if (process.env.OTEL_LOG_LEVEL === 'debug') {
+            console.warn('[OTEL] Max tracked app users reached, removed oldest entry');
+          }
+        }
+      }
+
+      activeUsersByApp.set(appUserKey, {
+        lastSeen: now,
+        role: normalizeRole(attributes.userRole),
       });
     }
   } catch (error) {
