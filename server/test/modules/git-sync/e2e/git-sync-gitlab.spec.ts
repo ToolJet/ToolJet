@@ -4678,6 +4678,159 @@ describe('GitSyncController — GitLab', () => {
     });
 
     // ────────────────────────────────────────────────────────────────────────────
+    // Changing the repo URL resets the default branch's sync state.
+    //
+    // Pointing the workspace at a different remote invalidates the local "synced to
+    // commit X" bookkeeping, so saveProviderConfig runs the same reset as disabling git:
+    // is_synced=false on the default branch's app/module versions + data source versions,
+    // and last_synced_commit cleared. Runs in single-branch mode so the resources live on
+    // the default branch (which the reset targets). Against the real Gitea (@group platform).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('changing the repo URL resets the default branch sync state', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      // A second repo on the same simulator to switch to. Reset (auto-init) gives it a
+      // clean 'main' so the config re-finalize (testBranchExistence) passes.
+      const NEW_REPO_PATH = `${GIT_REPO_PATH}-urlchange`;
+      const NEW_REPO_URL = `${GIT_BASE_URL}/${NEW_REPO_PATH}`;
+      const NEW_RESET_URL = `${GIT_BASE_URL}/admin/repos/${NEW_REPO_PATH}.git/reset`;
+
+      let urlOrgId: string;
+      let urlCookie: string[];
+      let urlDs: DataSource;
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-url-change.gl@tooljet.io',
+          firstName: 'git',
+          lastName: 'urlchange',
+        });
+        urlOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-url-change.gl@tooljet.io');
+        urlCookie = tokenCookie;
+        await ensureAppEnvironments(app, urlOrgId);
+        urlDs = app.get<DataSource>(getDataSourceToken('default'));
+        await urlDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [urlOrgId]
+        );
+      });
+
+      it('flips is_synced=false and clears last_synced_commit on the default branch when the git URL changes', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', urlCookie).set('tj-workspace-id', urlOrgId);
+
+        const versionSynced = async (versionId: string): Promise<boolean> =>
+          (await urlDs.query(`SELECT is_synced FROM app_versions WHERE id = $1`, [versionId]))[0]?.is_synced;
+        const dsvSynced = async (dsId: string, branchId: string): Promise<boolean> =>
+          (
+            await urlDs.query(
+              `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+              [dsId, branchId]
+            )
+          )[0]?.is_synced;
+        const lastSyncedCommit = async (branchId: string): Promise<string | null> =>
+          (
+            await urlDs.query(`SELECT last_synced_commit FROM organization_git_sync_branches WHERE id = $1`, [branchId])
+          )[0]?.last_synced_commit;
+        const editingVersionId = async (appId: string, branchId: string): Promise<string> => {
+          const d = await auth(agent().get(`/api/apps/${appId}`))
+            .query({ branch_id: branchId })
+            .expect(200);
+          const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+          return ev.id;
+        };
+
+        // ── 1. reset repo, enable git, switch to single-branch so resources land on main ──
+        step(1, 'reset gitea, configure git, disable branching (single-branch)');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${urlOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: false })
+          .expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+
+        // ── 2. create app + module + data source on the default (single) branch ──────────
+        step(2, 'create app + module + data source on the default branch');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: mainBranchId })
+            .send({ icon: 'home', name: 'url-change-app', type: 'front-end', branchId: mainBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: mainBranchId })
+            .send({ icon: 'folderupload', name: 'url-change-module', type: 'module', branchId: mainBranchId })
+            .expect(201)
+        ).body.id;
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${mainBranchId}`))
+            .send({
+              name: 'url-change-ds',
+              kind: 'restapi',
+              options: [
+                { key: 'url', value: 'http://url-change.example.com' },
+                { key: 'auth_type', value: 'none' },
+                { key: 'headers', value: [['', '']] },
+                { key: 'ssl_certificate', value: 'none', encrypted: false },
+              ],
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        const appVersionId = await editingVersionId(appId, mainBranchId);
+        const moduleVersionId = await editingVersionId(moduleId, mainBranchId);
+
+        // ── 3. force a known "synced" baseline (is_synced=true + a commit hash) ──────────
+        step(3, 'seed synced baseline: is_synced=true + a last_synced_commit');
+        await urlDs.query(
+          `UPDATE app_versions SET is_synced = true
+             WHERE branch_id = $1 AND app_id IN (SELECT id FROM apps WHERE organization_id = $2)`,
+          [mainBranchId, urlOrgId]
+        );
+        await urlDs.query(`UPDATE data_source_versions SET is_synced = true WHERE branch_id = $1`, [mainBranchId]);
+        await urlDs.query(
+          `UPDATE organization_git_sync_branches SET last_synced_commit = '0123456789abcdef0123456789abcdef01234567' WHERE id = $1`,
+          [mainBranchId]
+        );
+        expect(await versionSynced(appVersionId)).toBe(true);
+        expect(await versionSynced(moduleVersionId)).toBe(true);
+        expect(await dsvSynced(dsId, mainBranchId)).toBe(true);
+        expect(await lastSyncedCommit(mainBranchId)).toBeTruthy();
+
+        // ── 4. change the repo (URL + project id) → point at a different, freshly-reset repo
+        step(4, 'reset the new repo, then save configs with a different gitUrl + gitLabProjectId');
+        await fetch(NEW_RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, gitUrl: NEW_REPO_URL, gitLabProjectId: NEW_REPO_PATH, useEnvConfig: false })
+          .expect(201);
+
+        // ── 5. assert the reset fired on the default branch ──────────────────────────────
+        step(5, 'assert is_synced=false everywhere on the default branch and commit hash cleared');
+        expect(await versionSynced(appVersionId)).toBe(false);
+        expect(await versionSynced(moduleVersionId)).toBe(false);
+        expect(await dsvSynced(dsId, mainBranchId)).toBe(false);
+        expect(await lastSyncedCommit(mainBranchId)).toBeNull();
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
     // Edit restrictions across git off / on and branching states.
     //
     // Exercises the git-sync edit guards end-to-end on a dedicated org (isolated from
