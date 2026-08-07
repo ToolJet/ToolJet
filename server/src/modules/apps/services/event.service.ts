@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap, getDBConnection } from 'src/helpers/database.helper';
 import { CreateEventHandlerDto, UpdateEvent, BulkCreateEventHandlerDto } from '../dto/event';
 import { App } from '@entities/app.entity';
 import {
@@ -90,10 +90,7 @@ export class EventsService implements IEventsService {
   /**
    * Hook called before event deletion - override in EE to capture state for history
    */
-  protected async beforeEventDelete(
-    eventId: string,
-    appVersionId: string
-  ): Promise<EventDeleteContext | null> {
+  protected async beforeEventDelete(eventId: string, appVersionId: string): Promise<EventDeleteContext | null> {
     return null; // No-op in CE, EE overrides
   }
 
@@ -120,12 +117,8 @@ export class EventsService implements IEventsService {
   }
 
   async findEventsForVersion(appVersionId: string, manager?: EntityManager): Promise<EventHandler[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId },
-      });
-      return allEvents;
-    }, manager);
+    const m = manager ?? getDBConnection();
+    return m.find(EventHandler, { where: { appVersionId } });
   }
 
   async findAllEventsWithSourceId(sourceId: string): Promise<EventHandler[]> {
@@ -204,7 +197,7 @@ export class EventsService implements IEventsService {
       }
 
       const newEvent = new EventHandler();
-      newEvent.name = eventHandler?.name
+      newEvent.name = eventHandler?.name;
       newEvent.sourceId = eventHandler.attachedTo;
       newEvent.target = eventHandler.eventType;
       newEvent.event = eventHandler.event;
@@ -216,8 +209,9 @@ export class EventsService implements IEventsService {
     });
 
     const operationTimestamp = Date.now();
-    this.afterEventCreate(context, result, versionId, skipHistoryCapture, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventCreate failed:', err.message));
+    this.afterEventCreate(context, result, versionId, skipHistoryCapture, historyUserId, operationTimestamp).catch(
+      (err) => console.error('[AppHistory] Fire-and-forget afterEventCreate failed:', err.message)
+    );
 
     return result;
   }
@@ -299,10 +293,7 @@ export class EventsService implements IEventsService {
    * Bulk create events with its own transaction and history capture
    * Use this when creating events as a standalone operation (not part of a larger batch)
    */
-  async bulkCreateEvents(
-    bulkEventHandlerDto: BulkCreateEventHandlerDto,
-    versionId: string
-  ): Promise<EventHandler[]> {
+  async bulkCreateEvents(bulkEventHandlerDto: BulkCreateEventHandlerDto, versionId: string): Promise<EventHandler[]> {
     const { events: eventHandlers } = bulkEventHandlerDto;
 
     if (!eventHandlers || eventHandlers.length === 0) {
@@ -317,8 +308,9 @@ export class EventsService implements IEventsService {
     });
 
     const operationTimestamp = Date.now();
-    this.afterBulkEventCreate(context, results, versionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterBulkEventCreate failed:', err.message));
+    this.afterBulkEventCreate(context, results, versionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterBulkEventCreate failed:', err.message)
+    );
 
     return results;
   }
@@ -347,7 +339,7 @@ export class EventsService implements IEventsService {
 
           if (updateType === 'update') {
             updatedEvent.name = diff?.name;
-            updatedEvent.event = eventDiff
+            updatedEvent.event = eventDiff;
           }
 
           if (updateType === 'reorder') {
@@ -360,8 +352,14 @@ export class EventsService implements IEventsService {
     });
 
     const operationTimestamp = Date.now();
-    this.afterEventUpdate(context, result as EventHandler[], updateType, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventUpdate failed:', err.message));
+    this.afterEventUpdate(
+      context,
+      result as EventHandler[],
+      updateType,
+      appVersionId,
+      historyUserId,
+      operationTimestamp
+    ).catch((err) => console.error('[AppHistory] Fire-and-forget afterEventUpdate failed:', err.message));
 
     return result;
   }
@@ -406,8 +404,9 @@ export class EventsService implements IEventsService {
     });
 
     const operationTimestamp = Date.now();
-    this.afterEventDelete(context, eventId, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventDelete failed:', err.message));
+    this.afterEventDelete(context, eventId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterEventDelete failed:', err.message)
+    );
 
     return result;
   }

@@ -1,10 +1,13 @@
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { User } from '@entities/user.entity';
-import { CreateBranchDto, WorkspacePushDto } from '../dto';
+import { CreateBranchDto, WorkspacePushDto, PullConflictResolutionDto } from '../dto';
 
 export interface WorkspaceBranchListResponse {
   branches: WorkspaceBranch[];
   activeBranchId: string | null;
+  // Whether the workspace supports multiple branches. When false (single-branch mode) only the
+  // default branch is returned and the UI disables branch create / switch.
+  isMultiBranchingEnabled?: boolean;
 }
 
 export interface CheckUpdatesResponse {
@@ -18,21 +21,31 @@ export interface CheckUpdatesResponse {
 }
 
 export interface IWorkspaceBranchService {
-  list(organizationId: string): Promise<WorkspaceBranchListResponse>;
-  createBranch(organizationId: string, dto: CreateBranchDto, user?: User): Promise<WorkspaceBranch>;
+  list(organizationId: string, userId?: string): Promise<WorkspaceBranchListResponse>;
+  createBranch(
+    organizationId: string,
+    dto: CreateBranchDto,
+    user?: User
+  ): Promise<{ enqueued: boolean; isImport: boolean }>;
   switchBranch(
     organizationId: string,
     branchId: string,
-    appId?: string
+    appId?: string,
+    userId?: string
   ): Promise<{ success: boolean; resolvedAppId?: string }>;
-  deleteBranch(organizationId: string, branchId: string, user?: User): Promise<void>;
-  deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ jobId: string }>;
+  // Heavy delete (remote ref + DB cascade) runs on the git-sync queue — the request only enqueues
+  deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ enqueued: boolean }>;
   pushWorkspace(organizationId: string, dto: WorkspacePushDto, user?: User): Promise<{ success: boolean }>;
   pullWorkspace(
     organizationId: string,
     user?: User,
     sourceBranch?: string,
-    branchId?: string,
+    branchId?: string
+  ): Promise<{ success: boolean }>;
+  resolveConflicts(
+    organizationId: string,
+    resolutions: PullConflictResolutionDto[],
+    branchId?: string
   ): Promise<{ success: boolean }>;
   pullApp(
     organizationId: string,
@@ -41,7 +54,7 @@ export interface IWorkspaceBranchService {
     branchId?: string,
     tagSha?: string,
     tagName?: string,
-    tagDescription?: string,
+    tagDescription?: string
   ): Promise<{ success: boolean; draftVersionId: string | null }>;
   ensureAppDraft(
     organizationId: string,
@@ -58,7 +71,7 @@ export interface IWorkspaceBranchService {
     branchId?: string,
     tagSha?: string,
     tagName?: string,
-    tagDescription?: string,
+    tagDescription?: string
   ): Promise<{ success: boolean; draftVersionId: string | null }>;
   checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse>;
   listRemoteBranches(organizationId: string): Promise<{ branches: any[] }>;

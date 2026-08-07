@@ -23,7 +23,7 @@ type OpenId = {
   clientId: string;
   clientSecret: string;
   name: string;
-  customScopes: string; 
+  customScopes: string;
   wellKnownUrl: string;
   claimName: string;
   groupMapping: { [key: string]: string };
@@ -41,6 +41,8 @@ type LDAP = {
     serverCert: string;
   };
   basedn: string;
+  basedns?: string[];
+  bindAttribute?: 'cn' | 'upn';
   enableGroupSync: boolean;
 };
 type SAML = {

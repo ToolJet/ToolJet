@@ -40,6 +40,14 @@ export class GitSyncConfigsService implements IGitSyncConfigsService {
     throw new NotImplementedException();
   }
 
+  async updateBranchingEnabled(
+    _userOrganizationId: string,
+    _organizationGitId: string,
+    _isBranchingEnabled: boolean
+  ): Promise<void> {
+    throw new NotImplementedException();
+  }
+
   async deleteConfig(_organizationId: string, _organizationGitId: string, _gitType: string): Promise<void> {
     throw new NotImplementedException();
   }

@@ -1,11 +1,17 @@
 import { DataSource } from '@entities/data_source.entity';
-import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
 import Ajv2020 from 'ajv/dist/2020';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager, ILike } from 'typeorm';
+import { EntityManager, EntityNotFoundError, ILike } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -116,6 +122,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           createArgumentsDto.options,
           manager
         );
+
+        // In single-branch git sync mode, mark the newly created DSV as synced so
+        // the sync indicator doesn't show for data sources that were just created.
+        // Multi-branch is unaffected: default-branch DSVs arrive via pull (already
+        // isSynced=true) and feature-branch creates are blocked on the default branch.
+        const { isEnabled: isGitConfigured, isMultiBranchingEnabled: isMBEnabled } =
+          await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        if (isGitConfigured && !isMBEnabled) {
+          await manager.update(DataSourceVersion, { dataSourceId: dataSource.id, branchId }, { isSynced: true });
+        }
       } else {
         // No branch: create the default DSV and write options to it
         await this.createDataSourceInAllEnvironments(user.organizationId, dataSource.id, manager);
@@ -689,18 +705,26 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId?: string,
     branchId?: string
   ): Promise<DataSource> {
-    const dataSource = await this.dataSourceRepository.findOneOrFail({
-      where: { id: dataSourceId, organizationId },
-      relations: [
-        'apps',
-        'appVersion',
-        'appVersion.app',
-        'plugin',
-        'plugin.iconFile',
-        'plugin.manifestFile',
-        'plugin.operationsFile',
-      ],
-    });
+    let dataSource: DataSource;
+    try {
+      dataSource = await this.dataSourceRepository.findOneOrFail({
+        where: { id: dataSourceId, organizationId },
+        relations: [
+          'apps',
+          'appVersion',
+          'appVersion.app',
+          'plugin',
+          'plugin.iconFile',
+          'plugin.manifestFile',
+          'plugin.operationsFile',
+        ],
+      });
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException('Data source not found');
+      }
+      throw error;
+    }
 
     if (!environmentId) {
       //fix for env id issue when importing cloud/enterprise apps to CE

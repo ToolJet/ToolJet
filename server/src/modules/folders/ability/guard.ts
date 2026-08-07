@@ -16,9 +16,9 @@ export class FeatureAbilityGuard extends AbilityGuard {
     moduleRef: ModuleRef,
     licenseTermsService: LicenseTermsService,
     transactionLogger: TransactionLogger,
-    private readonly dataSource: DataSource
+    dataSource: DataSource
   ) {
-    super(reflector, moduleRef, licenseTermsService, transactionLogger);
+    super(reflector, moduleRef, licenseTermsService, transactionLogger, dataSource);
   }
 
   protected getAbilityFactory() {
@@ -36,6 +36,10 @@ export class FeatureAbilityGuard extends AbilityGuard {
     const rawFeatures = cloneDeep(this.reflector.get<string[]>('tjFeatureId', context.getHandler()));
     const features = Array.isArray(rawFeatures) ? rawFeatures : rawFeatures ? [rawFeatures] : [];
 
+    if (user && features.includes(FEATURE_KEY.CREATE_FOLDER)) {
+      request.tj_folder_type = request.body?.type;
+    }
+
     if (
       user &&
       folderId &&
@@ -45,10 +49,11 @@ export class FeatureAbilityGuard extends AbilityGuard {
 
       const folder = await this.dataSource.manager.findOne(Folder, {
         where: { id: folderId, organizationId: user.organizationId },
-        select: ['id', 'createdBy'],
+        select: ['id', 'createdBy', 'type'],
       });
 
       request.tj_allow_owner_folder_manage = !!folder && folder.createdBy === user.id;
+      request.tj_folder_type = folder?.type;
     }
 
     return super.canActivate(context);

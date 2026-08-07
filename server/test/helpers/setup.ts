@@ -21,6 +21,7 @@ import {
 } from '@ee/licensing/constants/PlanTerms';
 import { BASIC_PLAN_TERMS as CE_BASIC_PLAN_TERMS } from '@modules/licensing/constants/PlanTerms';
 import { Terms } from '@modules/licensing/interfaces/terms';
+import { LicenseDecryptService } from '@ee/licensing/services/decrypt.service';
 import * as fs from 'fs';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { InternalTable } from '@entities/internal_table.entity';
@@ -167,6 +168,8 @@ let _suiteDS: TypeOrmDataSource | undefined;
 // Test-level: SAVEPOINT name within the suite transaction
 let _testSavepoint: string | undefined;
 let _testSavepointId = 0;
+// Last savepoint that was actually created — recovery anchor when TX aborts between tests
+let _lastGoodSavepoint: string | undefined;
 
 /** No-op proxy: routes all queries through the suite QR, ignores transaction management. */
 function createQRProxy(realQR: QueryRunner): QueryRunner {
@@ -234,7 +237,9 @@ export async function rollbackSuiteTransaction() {
     try {
       await _suiteQR_tj.rollbackTransaction();
       await _suiteQR_tj.release();
-    } catch { /* best effort */ }
+    } catch {
+      /* best effort */
+    }
     _suiteQR_tj = undefined;
   }
   const tjDs = getTooljetDbDataSource();
@@ -244,6 +249,7 @@ export async function rollbackSuiteTransaction() {
   _suiteOrigCreateQR_tj = undefined;
   _suiteDS = undefined;
   _testSavepointId = 0;
+  _lastGoodSavepoint = undefined;
 }
 
 /** Creates a SAVEPOINT within the suite transaction. Call in beforeEach. */
@@ -254,10 +260,35 @@ export async function beginTestTransaction() {
   if (!_suiteQR) await beginSuiteTransaction();
   if (!_suiteQR) return;
   _testSavepoint = `test_${++_testSavepointId}`;
-  await _suiteQR.query(`SAVEPOINT ${_testSavepoint}`);
-  if (_suiteQR_tj) {
-    await _suiteQR_tj.query(`SAVEPOINT ${_testSavepoint}`);
+  try {
+    await createTestSavepoint(_testSavepoint);
+  } catch (err) {
+    // TX aborted between tests (stray async server work): rewind to anchor, retry
+    if (!_lastGoodSavepoint) throw err;
+    await _suiteQR.query(`ROLLBACK TO SAVEPOINT ${_lastGoodSavepoint}`);
+    if (_suiteQR_tj) {
+      await _suiteQR_tj.query(`ROLLBACK TO SAVEPOINT ${_lastGoodSavepoint}`);
+    }
+    await createTestSavepoint(_testSavepoint);
   }
+  _lastGoodSavepoint = _testSavepoint;
+}
+
+async function createTestSavepoint(name: string) {
+  await _suiteQR.query(`SAVEPOINT ${name}`);
+  if (_suiteQR_tj) {
+    await _suiteQR_tj.query(`SAVEPOINT ${name}`);
+  }
+}
+
+/** Recovers an aborted suite TX (stray async server work between tests). Returns false when not applicable. */
+export async function recoverAbortedSuiteTx(): Promise<boolean> {
+  if (!_suiteQR || !_testSavepoint) return false;
+  await _suiteQR.query(`ROLLBACK TO SAVEPOINT ${_testSavepoint}`);
+  if (_suiteQR_tj) {
+    await _suiteQR_tj.query(`ROLLBACK TO SAVEPOINT ${_testSavepoint}`);
+  }
+  return true;
 }
 
 /** Rolls back to the test SAVEPOINT. Call in afterEach. */
@@ -303,11 +334,25 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   database: { table: 'UNLIMITED' },
   type: LICENSE_TYPE.ENTERPRISE,
   features: {
-    auditLogs: true, oidc: true, ldap: true, saml: true,
-    customStyling: true, whiteLabelling: true, appWhiteLabelling: true, customThemes: true,
-    serverSideGlobalResolve: true, multiEnvironment: true, multiPlayerEdit: true,
-    comments: true, gitSync: true, ai: true, externalApi: true, scim: true,
-    customDomains: true, google: true, github: true,
+    auditLogs: true,
+    oidc: true,
+    ldap: true,
+    saml: true,
+    customStyling: true,
+    whiteLabelling: true,
+    appWhiteLabelling: true,
+    customThemes: true,
+    serverSideGlobalResolve: true,
+    multiEnvironment: true,
+    multiPlayerEdit: true,
+    comments: true,
+    gitSync: true,
+    ai: true,
+    externalApi: true,
+    scim: true,
+    customDomains: true,
+    google: true,
+    github: true,
   },
   auditLogs: { maximumDays: 365 },
   app: {
@@ -319,7 +364,11 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   permissions: { customGroups: true },
   observability: { enabled: true },
   workflows: {
-    enabled: true, execution_timeout: 0,
+    enabled: true,
+    // execution_timeout is a plain number (unlike the 'UNLIMITED' sentinel fields below) —
+    // the runtime check in workflow-executions.service.ts is `elapsedSeconds > timeout`,
+    // so 0 timed out every execution immediately instead of meaning unlimited.
+    execution_timeout: 3600,
     workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
     instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
   },
@@ -393,6 +442,64 @@ function configurePlanMock(app: INestApplication, plan: string) {
   lts._licenseInstance = createLicenseInstance(plan);
 }
 
+/** Builds a LicenseBase from arbitrary Terms. `expired` sets a past expiry → basic-plan fallback. */
+function buildTestLicenseInstance(terms: Partial<Terms>, expired = false): LicenseBase {
+  const expiry = new Date();
+  if (expired) expiry.setDate(expiry.getDate() - 1);
+  else expiry.setMinutes(expiry.getMinutes() + 30);
+  return new (LicenseBase as any)(
+    CE_BASIC_PLAN_TERMS,
+    terms,
+    new Date(),
+    new Date(),
+    expiry,
+    (terms as any).type ?? 'enterprise'
+  );
+}
+
+/**
+ * Spy installed on LicenseDecryptService.prototype.decrypt so the real License path
+ * (ee/licensing/configs/License.ts, which does `new LicenseDecryptService().decrypt(key)`)
+ * yields test terms instead of decrypting a signed key. Kept in module scope so
+ * restoreLicensePlan() can tear it down.
+ */
+let _decryptSpy: jest.SpyInstance | undefined;
+
+/**
+ * Overrides the license terms on the running app's (mocked) LicenseTermsService at runtime — no
+ * restart. Use it to drive license-dependent scenarios mid-test (e.g. gitSync unlicensed,
+ * multi-branch unlicensed, or an expired plan). Call restoreLicensePlan() afterwards to revert.
+ *
+ * The same terms are also fed to the real License path by mocking
+ * LicenseDecryptService.prototype.decrypt: License.ts constructs its own decrypt service and calls
+ * `.decrypt(key)`, so the prototype spy intercepts it and returns these terms (with an expiry
+ * consistent with the `expired` flag) instead of decrypting a signed key. This keeps any code that
+ * resolves through the real License instance consistent with the mock — without a test-only escape
+ * hatch living in production code.
+ */
+export function setTestLicenseTerms(
+  app: INestApplication,
+  terms: Partial<Terms>,
+  opts: { expired?: boolean } = {}
+): void {
+  const lts = app.get(LicenseTermsService) as ReturnType<typeof createResilientLicenseTermsMock>;
+  if (!lts?._licenseInstance) return; // not our mock — skip
+
+  // Make the real License path (new LicenseDecryptService().decrypt(key)) return these terms.
+  const decryptedTerms = { expiry: opts.expired ? '2000-01-01' : '2999-12-31', ...terms };
+  _decryptSpy?.mockRestore();
+  _decryptSpy = jest.spyOn(LicenseDecryptService.prototype, 'decrypt').mockReturnValue(decryptedTerms);
+
+  lts._licenseInstance = buildTestLicenseInstance(terms, opts.expired);
+}
+
+/** Restores the license mock to a plan (default enterprise) and removes the decrypt spy. */
+export function restoreLicensePlan(app: INestApplication, plan = 'enterprise'): void {
+  _decryptSpy?.mockRestore();
+  _decryptSpy = undefined;
+  configurePlanMock(app, plan);
+}
+
 async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: unknown) => T }): Promise<void> {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
@@ -428,11 +535,7 @@ export interface InitTestAppResult {
 
 /** Creates or reuses a cached NestJS test app for the given edition, configured with the specified license plan. */
 export async function initTestApp(options?: InitTestAppOptions): Promise<InitTestAppResult> {
-  const {
-    edition = 'ee',
-    plan = 'enterprise',
-    freshApp = false,
-  } = options ?? {};
+  const { edition = 'ee', plan = 'enterprise', freshApp = false } = options ?? {};
 
   // Cache key: only edition matters. Plan reconfigures the mock, not the app.
   const isCacheable = !freshApp;
@@ -564,6 +667,4 @@ export async function resetDB() {
 
   if (existingSet.has('instance_settings'))
     await ds.query(`UPDATE "instance_settings" SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE'`);
-
 }
-

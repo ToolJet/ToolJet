@@ -3,11 +3,15 @@ export const RESOURCE_TYPE = {
   DATA_SOURCES: 'data_source',
   WORKFLOWS: 'workflow',
   FOLDERS: 'folder',
+  MODULES: 'module',
+  WORKFLOW_FOLDERS: 'workflow_folder',
+  MODULE_FOLDERS: 'module_folder',
 };
 
 export const APP_TYPES = {
   FRONT_END: 'front-end',
   WORKFLOW: 'workflow',
+  MODULE: 'module',
 };
 
 export const RESOURCE_NAME_MAPPING = {
@@ -15,4 +19,7 @@ export const RESOURCE_NAME_MAPPING = {
   [RESOURCE_TYPE.DATA_SOURCES]: 'Data Sources',
   [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
   [RESOURCE_TYPE.FOLDERS]: 'Folder',
+  [RESOURCE_TYPE.MODULES]: 'Modules',
+  [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'Workflow folders',
+  [RESOURCE_TYPE.MODULE_FOLDERS]: 'Module folders',
 };

@@ -62,7 +62,20 @@ import { DataQuery } from '@entities/data_query.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import {
+  assertNotGitLicenseLocked,
+  assertGitSyncEditAllowedForOrg,
+} from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { Component } from '@entities/component.entity';
+import { Page } from '@entities/page.entity';
+
+// App type → the UserPermissions bucket holding its folder's resolved access.
+// Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
+const FOLDER_RESOURCE_TYPE_BY_APP_TYPE: Partial<Record<APP_TYPES, MODULES>> = {
+  [APP_TYPES.WORKFLOW]: MODULES.WORKFLOW_FOLDER,
+  [APP_TYPES.MODULE]: MODULES.MODULE_FOLDER,
+};
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -86,25 +99,29 @@ export class AppsService implements IAppsService {
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
+    // Git configured but license expired/invalid → workspace is read-only; block creates.
+    if (type !== APP_TYPES.WORKFLOW) {
+      await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, user.organizationId);
+    }
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Workflows don't participate in branching — their app_versions row must have
-      // branch_id NULL. Drop any DTO-supplied branchId (frontend may send the current
-      // dashboard branch from localStorage even for workflows) and skip the
-      // default-branch auto-fill below. Otherwise the row lands with branch_id set
-      // but app_name/slug NULL (the workflow create path doesn't write those), which
-      // trips chk_app_versions_branch_metadata.
+      // Workflows always resolve to the org's default branch, ignoring any DTO-supplied
+      // branchId (frontend may send the current dashboard branch even for workflow
+      // creation) — they don't support feature-branch creation, so there is only ever
+      // one branch context for a workflow.
       let branchId = type === APP_TYPES.WORKFLOW ? undefined : appCreateDto.branchId;
-      if (!branchId && type !== APP_TYPES.WORKFLOW) {
+      if (!branchId) {
         const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         branchId = options.defaultBranch?.id;
       }
 
-      // Reject app creation on the default branch when branching is enabled.
+      // Reject app creation on the default branch when multi-branching is enabled.
       // Apps must be authored on feature branches and merged in; creating
       // directly on main would bypass the git-sync review flow entirely.
+      // Single-branch mode (and no-multi-branch-license) is exempt — there are no feature
+      // branches, so the default branch IS the working branch.
       if (type !== APP_TYPES.WORKFLOW && branchId) {
-        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-        if (orgGit?.isBranchingEnabled) {
+        const { isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        if (isMultiBranchingEnabled) {
           const targetBranch = await manager.findOne(WorkspaceBranch, {
             where: { id: branchId, organizationId: user.organizationId },
             select: ['id', 'isDefault'],
@@ -116,20 +133,35 @@ export class AppsService implements IAppsService {
       }
 
       // Metadata (name/slug/icon) is written directly during creation —
-      // appsUtilService.create routes to apps.* for workflows and to app_versions for
-      // non-workflows. No follow-up update call needed.
+      // appsUtilService.create routes it onto app_versions for every app type. No
+      // follow-up update call needed.
       const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId, icon);
 
-      // Mirror the metadata onto the in-memory App so the response carries the values
-      // we just wrote to app_versions (non-workflows leave apps.* fields NULL). For
-      // workflows these fields are already populated on apps.*.
-      if (app.type !== APP_TYPES.WORKFLOW) {
-        app.name = name;
-        // slug is set by appsUtilService.create (a random UUID placeholder mirrored
-        // onto the returned app) — do not override it with app.id here.
-        app.icon = icon ?? null;
-        app.isPublic = false;
+      // In single-branch git sync mode, the workspace commit is the only sync mechanism.
+      // Apps created here have never had a chance to be committed, so their initial
+      // AppVersion starts with isSynced=false and the sync indicator always shows.
+      // Mark it synced at creation so the icon only appears after the user edits the app
+      // (which doesn't yet flip isSynced back to false — workspace push handles that).
+      // Multi-branch is unaffected: feature-branch creates use BRANCH-type versions,
+      // and default-branch apps arrive via pull (which already sets isSynced=true).
+      if (type !== APP_TYPES.WORKFLOW) {
+        const { isEnabled: isGitConfigured, isMultiBranchingEnabled: isMBEnabled } =
+          await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        if (isGitConfigured && !isMBEnabled) {
+          await manager.update(
+            AppVersion,
+            { appId: app.id, status: AppVersionStatus.DRAFT, versionType: AppVersionType.VERSION },
+            { isSynced: true }
+          );
+        }
       }
+
+      // Mirror the metadata onto the in-memory App so the response carries the values
+      // just written to app_versions. app.slug is already correct for every type —
+      // appsUtilService.create's versionSlug mirror (Task 3) sets it unconditionally.
+      app.name = name;
+      app.icon = icon ?? null;
+      app.isPublic = false;
 
       //APP_CREATE audit.
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -172,17 +204,26 @@ export class AppsService implements IAppsService {
 
     // If no app-level edit permission, check folder-level edit apps permission
     if (!hasEditPermission) {
-      hasEditPermission = await this.checkFolderEditPermission(app.id, user);
+      hasEditPermission = await this.checkFolderEditPermission(app.id, user, app.type);
     }
 
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
-      // Viewer role: require access_type=view explicitly; reject edit or missing
-      if (accessType?.toLowerCase() !== 'view') {
-        throw new ForbiddenException({
-          organizationId: app.organizationId,
-          type: 'restricted-preview',
-        });
+      if (app.type === APP_TYPES.MODULE && hasViewPermission) {
+        // Build-with: user can open the module builder read-only.
+        // If preview params are present we need version resolution — fall through.
+        // Only short-circuit when there is nothing to resolve.
+        if (!versionName && !environmentName && !versionId && !envId) {
+          return plainToClass(ValidateAppAccessResponseDto, { ...response, canEdit: false });
+        }
+      } else {
+        // Viewer role: require access_type=view explicitly; reject edit or missing
+        if (accessType?.toLowerCase() !== 'view') {
+          throw new ForbiddenException({
+            organizationId: app.organizationId,
+            type: 'restricted-preview',
+          });
+        }
       }
     }
     /* If the request comes from preview which needs version id */
@@ -273,6 +314,9 @@ export class AppsService implements IAppsService {
       response['versionId'] = version.id;
       response['environmentId'] = environment.id;
     }
+    if (!hasEditPermission && app.type === APP_TYPES.MODULE && hasViewPermission) {
+      response['canEdit'] = false;
+    }
     return plainToClass(ValidateAppAccessResponseDto, response);
   }
 
@@ -312,14 +356,21 @@ export class AppsService implements IAppsService {
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
-    const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+    // Git configured but license expired/invalid → workspace is read-only; block metadata edits.
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, app.organizationId);
+    }
+    const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
+      app.organizationId
+    );
 
-    // Block metadata edits on the default branch when git-sync is enabled. These fields
+    // Block metadata edits on the default branch when multi-branching is enabled. These fields
     // (name/slug/icon/is_public) must be edited from a feature branch — the change then
     // flows to the default branch via push + merge. Workflows are exempt because they
-    // keep metadata on apps.* and don't participate in branching. For non-git-sync
-    // workspaces no block applies; util.service.update writes to all VERSION rows.
-    if (isGitSyncEnabled && app.type !== APP_TYPES.WORKFLOW) {
+    // keep metadata on apps.* and don't participate in branching. Single-branch mode (and
+    // non-git-sync workspaces) are exempt too — the default branch is the working branch;
+    // util.service.update writes to all VERSION rows.
+    if (isGitSyncEnabled && isMultiBranchingEnabled && app.type !== APP_TYPES.WORKFLOW) {
       const blockedFields: string[] = [];
       if (appUpdateDto.name !== undefined) blockedFields.push('name');
       if (appUpdateDto.slug !== undefined) blockedFields.push('slug');
@@ -327,13 +378,13 @@ export class AppsService implements IAppsService {
       if (appUpdateDto.is_public !== undefined) blockedFields.push('is_public');
 
       if (blockedFields.length > 0) {
-        // Require an explicit branch_id (from the x-branch-id header). Without it the
-        // server can't tell whether the request is targeting the default branch or a
+        // Require an explicit branch_id (resolved from the branch_id query param). Without it
+        // the server can't tell whether the request is targeting the default branch or a
         // sub-branch, and util.service.update would otherwise fan the write out across
         // every VERSION row of the app — leaking sub-branch edits into the default branch.
         if (!appUpdateDto.branch_id) {
           throw new BadRequestException(
-            `Editing ${blockedFields.join(', ')} requires a feature branch context (missing x-branch-id header).`
+            `Editing ${blockedFields.join(', ')} requires a feature branch context (missing branch_id).`
           );
         }
         const branch = await this.appRepository.manager.findOne(WorkspaceBranch, {
@@ -372,10 +423,10 @@ export class AppsService implements IAppsService {
           });
       if (versionForRename?.isSynced !== false) {
         const draftVersion = await this.versionRepository.findOne({
-          where: { 
+          where: {
             appId: app.id,
-             status: AppVersionStatus.DRAFT,
-             },
+            status: AppVersionStatus.DRAFT,
+          },
         });
         if (!draftVersion) {
           throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
@@ -423,6 +474,36 @@ export class AppsService implements IAppsService {
   async delete(app: App, user: User) {
     const { organizationId } = user;
     const { id } = app;
+
+    // Git checks: block deleting a synced app on the default branch (multi-branch) or any
+    // feature-branch delete (single-branch), and the whole workspace when license-locked. Workflows
+    // don't participate in branching. Uses the resolved version's branch/synced state.
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      const version = app.appVersions?.[0];
+      await assertGitSyncEditAllowedForOrg(
+        this.gitSyncConfigsUtilService,
+        app.organizationId,
+        { branchId: version?.branchId, status: version?.status, isSynced: version?.isSynced },
+        app.type === APP_TYPES.MODULE ? 'module' : 'app'
+      );
+    }
+    if (app.type === APP_TYPES.MODULE) {
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        const refCount = await manager
+          .createQueryBuilder(Component, 'component')
+          .innerJoin(Page, 'page', 'page.id = component.page_id')
+          .innerJoin(AppVersion, 'appVersion', 'appVersion.id = page.app_version_id')
+          .where("component.type = 'ModuleViewer'")
+          .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleId", { moduleId: app.id })
+          .andWhere('appVersion.app_id != :appId', { appId: app.id })
+          .getCount();
+        if (refCount > 0) {
+          throw new BadRequestException(
+            'This module is currently used in one or more apps. Remove its dependencies before deleting it.'
+          );
+        }
+      });
+    }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const schedules = await manager
@@ -475,7 +556,7 @@ export class AppsService implements IAppsService {
   }
 
   async getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any> {
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, context } = appListDto;
     // When no branchId is provided (e.g. end users) and the workspace has git-sync
     // configured, fall back to the default branch so only default-branch apps surface.
     // Non-git-sync workspaces have no orgGit; branchId stays undefined and the no-branch
@@ -505,61 +586,70 @@ export class AppsService implements IAppsService {
         isGetAll,
         branchId,
         folderId,
-        manager
+        manager,
+        context
       );
 
       // When a branch is in scope, the loaded `appVersions[0]` is the branch-specific
-      // version. The branch row is the single source of truth for non-workflow metadata
-      // — overlay all four fields unconditionally, including NULLs. Falling back to
-      // apps.* would surface stale or unmigrated values and mask data issues on the
-      // branch. Workflows keep metadata on apps.* and are skipped.
+      // version for branch-scoped types (front-end/module — util.service.ts's INNER
+      // JOIN guarantees a match whenever the app is present in `apps` at all, so
+      // `!branchVersion` is unreachable for them here). Workflows are never
+      // branch-joined — a single version permanently tied to the org's default branch
+      // (see ee/apps/util.service.ts's "common across all branches" comment) — so
+      // `appVersions` is never populated for them regardless of branchId. Route
+      // whichever apps the branch join didn't cover (workflows, or every app when no
+      // branch is in scope at all) through the appId-keyed default-branch query below,
+      // instead of leaving their metadata unresolved.
+      const unresolvedAppIds: string[] = [];
       if (branchId) {
         for (const app of apps) {
-          if (app.type === APP_TYPES.WORKFLOW) continue;
           const branchVersion = app?.appVersions?.[0];
-          if (!branchVersion) continue;
+          if (!branchVersion) {
+            unresolvedAppIds.push(app.id);
+            continue;
+          }
           app.name = branchVersion.appName;
           app.slug = branchVersion.slug;
           app.icon = branchVersion.icon;
           app.isPublic = branchVersion.isPublic;
         }
       } else {
-        // No branch context: route by git-sync state.
-        //   - Git enabled: pull per-app metadata from the default branch row.
-        //   - Git off:     any version row works (every row carries identical metadata).
-        const nonWorkflowAppIds = apps.filter((a) => a.type !== APP_TYPES.WORKFLOW).map((a) => a.id);
-        if (nonWorkflowAppIds.length > 0) {
-          const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-          const defaultBranchId = options.defaultBranch?.id;
-          const qb = manager
-            .createQueryBuilder()
-            .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
-            .addSelect('av.app_name', 'app_name')
-            .addSelect('av.slug', 'slug')
-            .addSelect('av.icon', 'icon')
-            .addSelect('av.is_public', 'is_public')
-            .from('app_versions', 'av')
-            .where('av.app_id IN (:...appIds)', { appIds: nonWorkflowAppIds });
-          if (defaultBranchId) {
-            qb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId });
-          }
-          const rows: {
-            app_id: string;
-            app_name: string | null;
-            slug: string | null;
-            icon: string | null;
-            is_public: boolean | null;
-          }[] = await qb.getRawMany();
-          const metaByAppId = new Map(rows.map((r) => [r.app_id, r]));
-          for (const app of apps) {
-            if (app.type === APP_TYPES.WORKFLOW) continue;
-            const meta = metaByAppId.get(app.id);
-            if (!meta) continue;
-            if (meta.app_name != null) app.name = meta.app_name;
-            if (meta.slug != null) app.slug = meta.slug;
-            if (meta.icon != null) app.icon = meta.icon;
-            if (meta.is_public != null) app.isPublic = meta.is_public;
-          }
+        unresolvedAppIds.push(...apps.map((a) => a.id));
+      }
+
+      // Resolve metadata for apps the branch join above didn't cover.
+      //   - Git enabled: pull per-app metadata from the default branch row.
+      //   - Git off:     any version row works (every row carries identical metadata).
+      if (unresolvedAppIds.length > 0) {
+        const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        const defaultBranchId = options.defaultBranch?.id;
+        const qb = manager
+          .createQueryBuilder()
+          .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
+          .addSelect('av.app_name', 'app_name')
+          .addSelect('av.slug', 'slug')
+          .addSelect('av.icon', 'icon')
+          .addSelect('av.is_public', 'is_public')
+          .from('app_versions', 'av')
+          .where('av.app_id IN (:...appIds)', { appIds: unresolvedAppIds });
+        if (defaultBranchId) {
+          qb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId });
+        }
+        const rows: {
+          app_id: string;
+          app_name: string | null;
+          slug: string | null;
+          icon: string | null;
+          is_public: boolean | null;
+        }[] = await qb.getRawMany();
+        const metaByAppId = new Map(rows.map((r) => [r.app_id, r]));
+        for (const app of apps) {
+          const meta = metaByAppId.get(app.id);
+          if (!meta) continue;
+          if (meta.app_name != null) app.name = meta.app_name;
+          if (meta.slug != null) app.slug = meta.slug;
+          if (meta.icon != null) app.icon = meta.icon;
+          if (meta.is_public != null) app.isPublic = meta.is_public;
         }
       }
 
@@ -593,9 +683,14 @@ export class AppsService implements IAppsService {
     type: string,
     providedBranchId?: string
   ): Promise<string | undefined> {
-    if (providedBranchId || type !== APP_TYPES.FRONT_END) return providedBranchId;
-    const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-    return options.defaultBranch?.id;
+    if (providedBranchId) return providedBranchId;
+    // Resolve default branch for git-synced app types (FRONT_END and MODULE).
+    // Workflows are never branch-scoped — their folder_apps rows always use branch_id=NULL.
+    if (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE) {
+      const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+      return options.defaultBranch?.id;
+    }
+    return providedBranchId;
   }
 
   private async fetchDashboardApps(
@@ -606,7 +701,8 @@ export class AppsService implements IAppsService {
     isGetAll: boolean,
     branchId: string | undefined,
     folderId: string | undefined,
-    manager: EntityManager
+    manager: EntityManager,
+    context?: string
   ): Promise<{ apps: AppListItem[]; totalCount: number; folderCount: number }> {
     if (folderId) {
       const folder = await this.foldersUtilService.findOne(folderId, manager);
@@ -616,13 +712,23 @@ export class AppsService implements IAppsService {
         this.folderAppsUtilService.getAppsFor(user, folder, pageArg, searchKey, type as APP_TYPES, branchId),
         this.appsUtilService.count(user, searchKey, type as APP_TYPES, branchId),
       ]);
+      // getAppsFor doesn't stamp isAppSynced (unlike allWithCount/all). Stamp here so
+      // app cards inside a folder show the same sync state as the top-level listing.
+      await this.appsUtilService.stampIsAppSynced(viewableApps, branchId, type);
       return { apps: viewableApps, totalCount, folderCount };
     }
     if (isGetAll) {
-      const apps = await this.appsUtilService.all(user, page, searchKey, type, true, branchId);
+      const apps = await this.appsUtilService.all(user, page, searchKey, type, true, branchId, context);
       return { apps, totalCount: 0, folderCount: 0 };
     }
-    const { apps, totalCount } = await this.appsUtilService.allWithCount(user, page, searchKey, type, branchId);
+    const { apps, totalCount } = await this.appsUtilService.allWithCount(
+      user,
+      page,
+      searchKey,
+      type,
+      branchId,
+      context
+    );
     return { apps, totalCount, folderCount: 0 };
   }
 
@@ -777,6 +883,12 @@ export class AppsService implements IAppsService {
     response['definition'] = app.editingVersion?.definition;
     response['pages'] = this.appsUtilService.mergeDefaultComponentData(pagesForVersion);
     response['events'] = eventsForVersion;
+    response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
+      pagesForVersion,
+      eventsForVersion,
+      app.organizationId,
+      branchId
+    );
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion) {
@@ -943,6 +1055,16 @@ export class AppsService implements IAppsService {
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module)));
 
+    // Top-level linkedApps map: covers main app + every module
+    // Helps frontend to resolve go-to-app link for any correlationId referenced
+    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
+    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
+    response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
+      allPages,
+      allEvents,
+      app.organizationId
+    );
+
     return response;
   }
 
@@ -1043,15 +1165,16 @@ export class AppsService implements IAppsService {
    * Check if user has folder-level edit permission for the app.
    * This checks if the app belongs to any folder where the user has canEditApps permission.
    */
-  protected async checkFolderEditPermission(appId: string, user: User): Promise<boolean> {
+  protected async checkFolderEditPermission(appId: string, user: User, appType: APP_TYPES): Promise<boolean> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const folderResource = FOLDER_RESOURCE_TYPE_BY_APP_TYPE[appType] ?? MODULES.FOLDER;
       // Get folder permissions from the ability service
       const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-        resources: [{ resource: MODULES.FOLDER }],
+        resources: [{ resource: folderResource }],
         organizationId: user.organizationId,
       });
 
-      const folderPermissions = userPermissions?.[MODULES.FOLDER];
+      const folderPermissions = userPermissions?.[folderResource];
       if (!folderPermissions) {
         return false;
       }

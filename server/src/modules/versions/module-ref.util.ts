@@ -2,6 +2,7 @@ import { EntityManager, IsNull } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { APP_TYPES } from '@modules/apps/constants';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 /**
  * Module version resolution.
@@ -35,38 +36,31 @@ import { APP_TYPES } from '@modules/apps/constants';
 
 // defaultBranchId — caller-supplied (from GitSyncConfigsUtilService.getDetails.options.defaultBranch?.id).
 // Null when git-sync is off; this util then returns only branchless PUBLISHED versions.
+
+function findDefaultBranch(manager: EntityManager, organizationId: string) {
+  return manager.findOne(WorkspaceBranch, {
+    where: { organizationId, isDefault: true },
+  });
+}
+
 async function listSavedVersionsOnDefaultBranch(
   manager: EntityManager,
   moduleApp: App,
   defaultBranchId: string | null
 ): Promise<AppVersion[]> {
   if (!defaultBranchId) return [];
-  // Include both the DRAFT on the default branch AND branchless PUBLISHED versions.
-  // Published versions have branch_id = NULL after the metadata migration detached them.
-  const [onBranch, published] = await Promise.all([
-    manager.find(AppVersion, {
-      where: {
-        appId: moduleApp.id,
-        branchId: defaultBranchId,
-        versionType: AppVersionType.VERSION,
-        isStub: false,
-      },
-      order: { createdAt: 'DESC' },
-    }),
-    manager.find(AppVersion, {
-      where: {
-        appId: moduleApp.id,
-        branchId: IsNull(),
-        versionType: AppVersionType.VERSION,
-        status: AppVersionStatus.PUBLISHED,
-        isStub: false,
-      },
-      order: { createdAt: 'DESC' },
-    }),
-  ]);
-  // Dedupe by id in case any overlap
-  const seen = new Set(onBranch.map((v) => v.id));
-  return [...onBranch, ...published.filter((v) => !seen.has(v.id))];
+  // branch_id is NOT NULL on every app_versions row (every org has a default branch
+  // row, git-sync or not) — saved/published versions live on it directly, so a single
+  // query covers them; there's no more "branchless" bucket to union in separately.
+  return manager.find(AppVersion, {
+    where: {
+      appId: moduleApp.id,
+      branchId: defaultBranchId,
+      versionType: AppVersionType.VERSION,
+      isStub: false,
+    },
+    order: { createdAt: 'DESC' },
+  });
 }
 
 /**
@@ -110,24 +104,32 @@ const DRAFT_SENTINEL = '__default_branch_draft__';
  *
  * The UUID guard prevents `where: { moduleReferenceId: <non-uuid> }` from crashing
  * the postgres uuid-typed column lookup with `invalid input syntax for type uuid`.
+ *
+ * `isGitSyncEnabled` must come from the org's actual git-sync configuration
+ * (GitSyncConfigsUtilService.getDetails().isEnabled) — every org now has a default
+ * WorkspaceBranch row regardless of whether git-sync is turned on, so `!!defaultBranch`
+ * is no longer a valid signal for it.
  */
 export async function resolveModuleRef(
   manager: EntityManager,
   moduleApp: App,
   moduleReferenceId: string | null | undefined,
   consumerBranchId: string | undefined,
-  defaultBranchId: string | null
+  organizationId: string,
+  isGitSyncEnabled: boolean
 ): Promise<AppVersion | null> {
+  const defaultBranch = await findDefaultBranch(manager, organizationId);
+
   // Tier D — default-branch draft sentinel. Resolves to the DRAFT on the default branch
   // at query time, ignoring consumerBranchId entirely. Stored when the user explicitly
   // pins to "main draft" in the inspector. Follows default branch renames automatically
   // because findDefaultBranch uses isDefault:true, not a hardcoded name.
   if (moduleReferenceId === DRAFT_SENTINEL) {
-    if (defaultBranchId) {
+    if (defaultBranch) {
       const draftOnDefault = await manager.findOne(AppVersion, {
         where: {
           appId: moduleApp.id,
-          branchId: defaultBranchId,
+          branchId: defaultBranch.id,
           status: AppVersionStatus.DRAFT,
           versionType: AppVersionType.VERSION,
           isStub: false,
@@ -141,109 +143,105 @@ export async function resolveModuleRef(
   }
 
   // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).
-  // Branchless PUBLISHED is checked first: by constraint chk_app_versions_branched_implies_draft,
-  // any branched row MUST be DRAFT — so onConsumer/onDefault can only ever return a DRAFT.
-  // Checking PUBLISHED first prevents a same-named DRAFT on the branch shadowing the real release.
-  if (moduleReferenceId && !UUID_RE.test(moduleReferenceId)) {
+  // Check PUBLISHED first regardless of git-sync: a released version by that name should
+  // always win over a same-named unreleased draft. Then fall back to an any-status match on
+  // the default branch, but under git-sync only for isSynced: false rows — legacy versions
+  // stamped before this workspace had git-sync/branching enabled (is_synced defaults false on
+  // backfill; new versions get isSynced: gitDetails.isEnabled at creation, see
+  // VersionUtilService.buildVersionFromParent). A genuinely git-native draft (isSynced: true)
+  // still requires PUBLISHED — that's the case chk_app_versions_branched_implies_draft actually
+  // guards against, and this fallback must not relax it.
+  if (moduleReferenceId && !UUID_RE.test(moduleReferenceId) && defaultBranch) {
     const versionName = moduleReferenceId;
-    const branchlessForName = await manager.findOne(AppVersion, {
+    const defaultBranchForName = await manager.findOne(AppVersion, {
       where: {
         appId: moduleApp.id,
         name: versionName,
-        branchId: IsNull(),
+        branchId: defaultBranch.id,
         status: AppVersionStatus.PUBLISHED,
         versionType: AppVersionType.VERSION,
         isStub: false,
       },
     });
-    if (branchlessForName) return branchlessForName;
-    if (consumerBranchId) {
-      const onConsumer = await manager.findOne(AppVersion, {
-        where: {
-          appId: moduleApp.id,
-          name: versionName,
-          branchId: consumerBranchId,
-          versionType: AppVersionType.VERSION,
-          isStub: false,
-        },
-      });
-      if (onConsumer) return onConsumer;
-    }
-    if (defaultBranchId) {
-      const onDefault = await manager.findOne(AppVersion, {
-        where: {
-          appId: moduleApp.id,
-          name: versionName,
-          branchId: defaultBranchId,
-          versionType: AppVersionType.VERSION,
-          isStub: false,
-        },
-      });
-      if (onDefault) return onDefault;
-    }
-    // Name not found on any branch — fall through to latest non-stub.
+    if (defaultBranchForName) return defaultBranchForName;
+    const defaultBranchDraft = await manager.findOne(AppVersion, {
+      where: {
+        appId: moduleApp.id,
+        name: versionName,
+        branchId: defaultBranch.id,
+        versionType: AppVersionType.VERSION,
+        isStub: false,
+        ...(isGitSyncEnabled ? { isSynced: false } : {}),
+      },
+    });
+    if (defaultBranchDraft) return defaultBranchDraft;
+    // Name isn't found — fall through to orphan guard. The pinning contract (see
+    // ModuleViewerInspector) never persists a bare branch name here, so this is legacy data.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
-  if (moduleReferenceId && UUID_RE.test(moduleReferenceId)) {
-    if (consumerBranchId) {
-      const local = await manager.findOne(AppVersion, {
+  // git-sync: branched rows are always DRAFTs (chk_app_versions_branched_implies_draft) —
+  // a pin must only resolve to a default-branch PUBLISHED row, unless the row predates
+  // git-sync on this workspace (isSynced: false) — same legacy-draft-pin case as Tier 0.
+  // non-git-sync: default-branch lookup with no status filter is correct.
+  if (moduleReferenceId && UUID_RE.test(moduleReferenceId) && defaultBranch) {
+    if (isGitSyncEnabled) {
+      // git-sync: default-branch PUBLISHED first.
+      const published = await manager.findOne(AppVersion, {
         where: {
           appId: moduleApp.id,
           moduleReferenceId,
-          branchId: consumerBranchId,
+          branchId: defaultBranch.id,
+          status: AppVersionStatus.PUBLISHED,
           isStub: false,
         },
       });
-      if (local) return local;
-    }
-    if (defaultBranchId) {
-      const onDefault = await manager.findOne(AppVersion, {
+      if (published) return published;
+      // Not published — only a legacy (isSynced: false) draft is allowed to match here.
+      const unsyncedDraft = await manager.findOne(AppVersion, {
         where: {
           appId: moduleApp.id,
           moduleReferenceId,
-          branchId: defaultBranchId,
+          branchId: defaultBranch.id,
+          isSynced: false,
           isStub: false,
         },
       });
-      if (onDefault) return onDefault;
+      if (unsyncedDraft) return unsyncedDraft;
     } else {
-      // Non-git-sync workspace: defaultBranch === null means no WorkspaceBranch rows exist.
-      const noGitSync = await manager.findOne(AppVersion, {
-        where: { appId: moduleApp.id, moduleReferenceId, branchId: IsNull(), isStub: false },
+      // Non-git-sync: default-branch (all rows land there, no status filter needed).
+      const byMref = await manager.findOne(AppVersion, {
+        where: { appId: moduleApp.id, moduleReferenceId, branchId: defaultBranch.id, isStub: false },
       });
-      if (noGitSync) return noGitSync;
+      if (byMref) return byMref;
     }
-    // Branchless PUBLISHED versions (branch_id = NULL after metadata migration)
-    const branchless = await manager.findOne(AppVersion, {
-      where: {
-        appId: moduleApp.id,
-        moduleReferenceId,
-        branchId: IsNull(),
-        isStub: false,
-      },
-    });
-    if (branchless) return branchless;
-    // id present but no branch/branchless match — orphan fallback below.
+    // id present but no match — orphan fallback below.
   }
 
   // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
-  const targetBranchId = consumerBranchId ?? defaultBranchId ?? null;
-  if (!targetBranchId) return null;
-  // Prefer the active DRAFT on the target branch. Saved versions have a newer createdAt
-  // (they're forked from the draft), so a plain DESC sort would return a released version
-  // instead of the editable draft — which broke module CRUD in non-git-sync workspaces (#16593,
-  // where non-git-sync apps now live on the default branch). Fall back to latest if no draft.
-  const draft = await manager.findOne(AppVersion, {
-    where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false, status: AppVersionStatus.DRAFT },
+  // If a ref was provided but no tier matched, return null — don't silently load the wrong version.
+  if (moduleReferenceId) return null;
+
+  const targetBranchId = consumerBranchId ?? defaultBranch?.id;
+  if (!targetBranchId) {
+    // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
+    // Prefer the active draft — saved versions have a newer createdAt (they are created from
+    // the draft), so a plain DESC sort would return a released version instead of the draft.
+    const draft = await manager.findOne(AppVersion, {
+      where: { appId: moduleApp.id, branchId: IsNull(), isStub: false, status: AppVersionStatus.DRAFT },
+    });
+    return (
+      draft ??
+      (await manager.findOne(AppVersion, {
+        where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
+        order: { createdAt: 'DESC' },
+      }))
+    );
+  }
+  return manager.findOne(AppVersion, {
+    where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
+    order: { createdAt: 'DESC' },
   });
-  return (
-    draft ??
-    (await manager.findOne(AppVersion, {
-      where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
-      order: { createdAt: 'DESC' },
-    }))
-  );
 }
 
 /**
@@ -351,11 +349,7 @@ export async function reconcileModuleViewerPinsFromDefault(
  *   unpinned-fallback  — pin empty/missing; same fallback path.
  *   no-row             — no module app OR no usable rows. Module unrenderable.
  */
-export type ModuleResolutionMatch =
-  | 'pin-hit'
-  | 'orphan-fallback'
-  | 'unpinned-fallback'
-  | 'no-row';
+export type ModuleResolutionMatch = 'pin-hit' | 'orphan-fallback' | 'unpinned-fallback' | 'no-row';
 
 export interface ResolvedModuleViewer {
   componentId: string;
@@ -555,20 +549,12 @@ export async function resolveAllModuleViewersForVersion(
       if (byId) return pickKind(byId, 'pin-hit');
       // Clause 4: module_reference_id on consumer's branch then default then branchless
       const onConsumer = parent.branchId
-        ? candidates.find(
-            (r) =>
-              r.moduleReferenceId === pin &&
-              r.branchId === parent.branchId &&
-              r.isStub === false
-          )
+        ? candidates.find((r) => r.moduleReferenceId === pin && r.branchId === parent.branchId && r.isStub === false)
         : undefined;
       if (onConsumer) return pickKind(onConsumer, 'pin-hit');
       if (defaultBranchId) {
         const onDefault = candidates.find(
-          (r) =>
-            r.moduleReferenceId === pin &&
-            r.branchId === defaultBranchId &&
-            r.isStub === false
+          (r) => r.moduleReferenceId === pin && r.branchId === defaultBranchId && r.isStub === false
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
       } else {
@@ -580,10 +566,7 @@ export async function resolveAllModuleViewersForVersion(
       }
       // Clause 4b: module_reference_id on branchless PUBLISHED versions
       const branchless = candidates.find(
-        (r) =>
-          r.moduleReferenceId === pin &&
-          r.branchId === null &&
-          r.isStub === false
+        (r) => r.moduleReferenceId === pin && r.branchId === null && r.isStub === false
       );
       if (branchless) return pickKind(branchless, 'pin-hit');
     } else if (pin) {
@@ -603,8 +586,7 @@ export async function resolveAllModuleViewersForVersion(
       // Clause 3: pin is a branch_name → default-branch version_type='version' row
       if (branchNameSet.has(pin) && defaultBranchId) {
         const onDefault = candidates.find(
-          (r) =>
-            r.branchId === defaultBranchId && r.versionType === AppVersionType.VERSION && r.isStub === false
+          (r) => r.branchId === defaultBranchId && r.versionType === AppVersionType.VERSION && r.isStub === false
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
       }

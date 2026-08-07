@@ -204,8 +204,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-            ? '-26px'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+              ? '-26px'
+              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -315,15 +315,17 @@ export const ConfigHandle = ({
         <Trash size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
       {/* Tooltip for invalid license on ModuleViewer */}
-      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
-        <Tooltip
-          delay={{ show: 500, hide: 50 }}
-          id={`invalid-license-modules-${componentName?.toLowerCase()}`}
-          className="tooltip"
-          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
-          style={{ textAlign: 'center' }}
-        />
-      )}
+      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') &&
+        !isModulesEnabled &&
+        !isModuleEditor && (
+          <Tooltip
+            delay={{ show: 500, hide: 50 }}
+            id={`invalid-license-modules-${componentName?.toLowerCase()}`}
+            className="tooltip"
+            isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
+            style={{ textAlign: 'center' }}
+          />
+        )}
     </div>
   );
 };

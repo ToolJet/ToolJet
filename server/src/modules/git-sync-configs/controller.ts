@@ -4,6 +4,7 @@ import {
   OrganizationGitCreateDto,
   OrganizationGitStatusUpdateDto,
   OrganizationGitUpdateDto,
+  UpdateBranchingEnabledDto,
 } from '@dto/organization_git.dto';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -38,6 +39,16 @@ export class GitSyncConfigsController implements IGitSyncConfigsController {
     @User() _user: UserEntity,
     @Param('id') _organizationGitId: string,
     @Body() _organizationGitStatusUpdateDto: OrganizationGitStatusUpdateDto
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  // Two-segment path, declared before the bare :id routes so the router matches it first.
+  @Put(':id/is-branching-enabled')
+  async updateBranchingEnabled(
+    @User() _user: UserEntity,
+    @Param('id') _organizationGitId: string,
+    @Body() _updateBranchingEnabledDto: UpdateBranchingEnabledDto
   ): Promise<any> {
     throw new NotFoundException();
   }

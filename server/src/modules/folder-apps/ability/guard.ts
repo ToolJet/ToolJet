@@ -21,9 +21,9 @@ export class FeatureAbilityGuard extends AbilityGuard {
     moduleRef: ModuleRef,
     licenseTermsService: LicenseTermsService,
     transactionLogger: TransactionLogger,
-    private readonly dataSource: DataSource
+    dataSource: DataSource
   ) {
-    super(reflector, moduleRef, licenseTermsService, transactionLogger);
+    super(reflector, moduleRef, licenseTermsService, transactionLogger, dataSource);
   }
 
   protected getAbilityFactory() {
@@ -34,10 +34,12 @@ export class FeatureAbilityGuard extends AbilityGuard {
     return FolderApp;
   }
 
-  protected getResource(): ResourceDetails {
-    return {
-      resourceType: MODULES.FOLDER,
-    };
+  protected getResource(): ResourceDetails | ResourceDetails[] {
+    return [
+      { resourceType: MODULES.FOLDER },
+      { resourceType: MODULES.WORKFLOW_FOLDER },
+      { resourceType: MODULES.MODULE_FOLDER },
+    ];
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -62,6 +64,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
       });
 
       const folderOwnedByUser = !!folder && folder.createdBy === request.user.id;
+      request.tj_folder_type = folder?.type;
 
       if (request.body?.app_id) {
         // Single-app path: require both folder and app to be owned by the user.
@@ -69,8 +72,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
           where: { id: request.body.app_id, organizationId: request.user.organizationId },
           select: ['id', 'userId', 'type'],
         });
-        request.tj_allow_owner_folder_app_create =
-          folderOwnedByUser && !!app && app.userId === request.user.id;
+        request.tj_allow_owner_folder_app_create = folderOwnedByUser && !!app && app.userId === request.user.id;
         request.tj_allow_owner_folder_app_delete = folderOwnedByUser && !!app;
         request.tj_app_is_module = app?.type === APP_TYPES.MODULE;
         request.tj_folder_app_type_mismatch = !!(folder?.type && app?.type && folder.type !== app.type);

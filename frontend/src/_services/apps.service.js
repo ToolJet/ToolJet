@@ -1,6 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
-import { getActiveBranchId } from '@/_helpers/active-branch';
+import { getActiveBranchId, appendBranchParam } from '@/_helpers/active-branch';
 import queryString from 'query-string';
 
 export const appsService = {
@@ -60,26 +60,29 @@ function validatePrivateApp(slug, queryParams) {
   const query = queryString.stringify(queryParams);
 
   return fetch(
-    `${config.apiUrl}/apps/validate-private-app-access/${slug}${query ? `?${query}` : ''}`,
+    appendBranchParam(`${config.apiUrl}/apps/validate-private-app-access/${slug}${query ? `?${query}` : ''}`),
     requestOptions
   ).then((response) => handleResponse(response, false, { param: 'version', value: 'versionName' }));
 }
 
 //use default value for type of apps i.e.'front-end'
-function getAll(page, folder, searchKey, type = 'front-end') {
+function getAll(page, folder, searchKey, type = 'front-end', context = undefined) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const branchId = getActiveBranchId();
   const branchParam = branchId ? `&branch_id=${branchId}` : '';
+  const contextParam = context ? `&context=${context}` : '';
   if (page === 0)
     return fetch(
       `${config.apiUrl}/apps?all=true&folder=${folder || ''}&type=${type}${
         searchKey ? `&searchKey=${searchKey}` : ''
-      }${branchParam}`,
+      }${branchParam}${contextParam}`,
       requestOptions
     ).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}${branchParam}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${
+        folder || ''
+      }&searchKey=${searchKey}&type=${type}${branchParam}${contextParam}`,
       requestOptions
     ).then(handleResponse);
 }
@@ -126,19 +129,20 @@ function cloneApp(id, name) {
     credentials: 'include',
     body: JSON.stringify({ name }),
   };
-  return fetch(`${config.apiUrl}/apps/${id}/clone`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${id}/clone`), requestOptions).then(handleResponse);
 }
 
 function exportApp(id, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}/export${versionId ? `?versionId=${versionId}` : ''}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/apps/${id}/export${versionId ? `?versionId=${versionId}` : ''}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getVersions(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}/versions`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${id}/versions`), requestOptions).then(handleResponse);
 }
 
 function importApp(app, name) {
@@ -161,26 +165,30 @@ function changeIcon(icon, appId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}/icons`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/icons`), requestOptions).then(handleResponse);
 }
 
 function getApp(id, accessType) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}${accessType ? `?access_type=${accessType}` : ''}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/apps/${id}${accessType ? `?access_type=${accessType}` : ''}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function deleteApp(id, appType) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/${appType === 'module' ? 'modules' : 'apps'}/${id}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/${appType === 'module' ? 'modules' : 'apps'}/${id}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getAppByVersion(appId, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function saveApp(id, attributes, appType) {
@@ -192,9 +200,10 @@ function saveApp(id, attributes, appType) {
     credentials: 'include',
     body: JSON.stringify({ app: attributes }),
   };
-  return fetch(`${config.apiUrl}/${appType === 'module' ? 'modules' : 'apps'}/${id}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/${appType === 'module' ? 'modules' : 'apps'}/${id}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getAppUsers(id) {
@@ -212,7 +221,7 @@ function setVisibility(appId, visibility) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}/public`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/public`), requestOptions).then(handleResponse);
 }
 
 function setMaintenance(appId, value) {
@@ -222,7 +231,7 @@ function setMaintenance(appId, value) {
     credentials: 'include',
     body: JSON.stringify({ app: { is_maintenance_on: value } }),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}`), requestOptions).then(handleResponse);
 }
 
 function setSlug(appId, slug) {
@@ -235,21 +244,20 @@ function setSlug(appId, slug) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}`), requestOptions).then(handleResponse);
 }
 
 function exportResource(body, appType) {
-  const branchId = getActiveBranchId();
   const requestOptions = {
     method: 'POST',
-    headers: { ...authHeader(), ...(branchId && { 'x-branch-id': branchId }) },
+    headers: authHeader(),
     body: JSON.stringify(body),
     credentials: 'include',
   };
   if (appType === 'module') {
-    return fetch(`${config.apiUrl}/modules/export`, requestOptions).then(handleResponse);
+    return fetch(appendBranchParam(`${config.apiUrl}/modules/export`), requestOptions).then(handleResponse);
   } else {
-    return fetch(`${config.apiUrl}/v2/resources/export`, requestOptions).then(handleResponse);
+    return fetch(appendBranchParam(`${config.apiUrl}/v2/resources/export`), requestOptions).then(handleResponse);
   }
 }
 
@@ -263,9 +271,9 @@ function importResource(body, appType) {
     body: JSON.stringify(body),
   };
   if (appType === 'module') {
-    return fetch(`${config.apiUrl}/modules/import`, requestOptions).then(handleResponse);
+    return fetch(appendBranchParam(`${config.apiUrl}/modules/import`), requestOptions).then(handleResponse);
   } else {
-    return fetch(`${config.apiUrl}/v2/resources/import`, requestOptions).then(handleResponse);
+    return fetch(appendBranchParam(`${config.apiUrl}/v2/resources/import`), requestOptions).then(handleResponse);
   }
 }
 
@@ -279,15 +287,15 @@ function cloneResource(body, appType) {
     credentials: 'include',
   };
   if (appType === 'module') {
-    return fetch(`${config.apiUrl}/modules/clone`, requestOptions).then(handleResponse);
+    return fetch(appendBranchParam(`${config.apiUrl}/modules/clone`), requestOptions).then(handleResponse);
   } else {
-    return fetch(`${config.apiUrl}/v2/resources/clone`, requestOptions).then(handleResponse);
+    return fetch(appendBranchParam(`${config.apiUrl}/v2/resources/clone`), requestOptions).then(handleResponse);
   }
 }
 
 function getTables(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${id}/tables`), requestOptions).then(handleResponse);
 }
 
 function getWorkflowLimit(type) {

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '@helpers/utils.helper';
 import { AppVersionType } from '@entities/app_version.entity';
@@ -8,7 +8,9 @@ export class VersionCreateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty({ message: 'Version name cannot be empty.' })
   @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
-  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, {
+    message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).',
+  })
   versionName: string;
 
   @IsUUID()
@@ -28,6 +30,13 @@ export class VersionCreateDto {
   @IsUUID()
   @IsOptional()
   branchId?: string;
+
+  // Git single-branch: keeps exactly one draft on the default branch. When true (the
+  // "Replace with new draft" action), the existing draft is atomically swapped for the new one
+  // cloned from versionFromId, sidestepping the single-draft guard.
+  @IsOptional()
+  @IsBoolean()
+  replace?: boolean;
 }
 
 export class PromoteVersionDto {
@@ -51,4 +60,10 @@ export class DraftVersionDto {
 
   @IsOptional()
   branchId?: string;
+
+  // Git single-branch: keeps exactly one draft on the default branch. When true (the
+  // "Replace with new draft" action), the existing draft is atomically swapped for the new one.
+  @IsOptional()
+  @IsBoolean()
+  replace?: boolean;
 }

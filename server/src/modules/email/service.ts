@@ -13,6 +13,8 @@ import {
   SendCommentMentionEmailPayload,
   SendPasswordResetEmailPayload,
   SendEmailOtpPayload,
+  SendUserBannedEmailPayload,
+  SendWorkspaceBannedEmailPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
@@ -96,7 +98,14 @@ export class EmailService implements IEmailService {
     await this.init(organizationId);
     const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
     const isOrgInvite = organizationInvitationToken && sender && organizationName;
-    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null, redirectTo, host);
+    const inviteUrl = generateInviteURL(
+      invitationtoken,
+      organizationInvitationToken,
+      organizationId,
+      null,
+      redirectTo,
+      host
+    );
     const subject = isOrgInvite ? `Welcome to ${organizationName || 'ToolJet'}` : 'Set up your account!';
     const footerText = isOrgInvite
       ? 'You have received this email as an invitation to join ToolJet’s workspace'
@@ -204,6 +213,45 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(email, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because a request to signUp was made',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  async sendUserBannedEmail(payload: SendUserBannedEmailPayload) {
+    const { to, name } = payload;
+    await this.init();
+    const subject = `Your ${this.WHITE_LABEL_TEXT || 'ToolJet'} account has been suspended`;
+    const templateData = {
+      name: name || to,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const htmlEmailContent = this.compileTemplate('user_banned.hbs', templateData);
+    return await this.sendEmail(to, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because your account has been suspended',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  async sendWorkspaceBannedEmail(payload: SendWorkspaceBannedEmailPayload) {
+    const { to, adminName, workspaceName } = payload;
+    await this.init();
+    const subject = `Workspace "${workspaceName}" has been suspended`;
+    const templateData = {
+      adminName: adminName || to,
+      workspaceName,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const htmlEmailContent = this.compileTemplate('workspace_banned.hbs', templateData);
+    return await this.sendEmail(to, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because a workspace you administer has been suspended',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });

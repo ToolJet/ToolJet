@@ -1,0 +1,521 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "ServiceNow datasource",
+  "description": "A schema defining ServiceNow datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_tables",
+          "name": "List Tables"
+        },
+        {
+          "value": "get_table_schema",
+          "name": "Get Table Schema"
+        },
+        {
+          "value": "get_field_choices",
+          "name": "Get Field Choices"
+        },
+        {
+          "value": "list_records",
+          "name": "List Records"
+        },
+        {
+          "value": "get_record",
+          "name": "Get Record"
+        },
+        {
+          "value": "create_record",
+          "name": "Create Record"
+        },
+        {
+          "value": "update_record",
+          "name": "Update Record"
+        },
+        {
+          "value": "delete_record",
+          "name": "Delete Record"
+        },
+        {
+          "value": "aggregate",
+          "name": "Aggregate / Stats"
+        },
+        {
+          "value": "list_workflows",
+          "name": "List Workflows"
+        },
+        {
+          "value": "invoke_workflow",
+          "name": "Invoke Workflow"
+        },
+        {
+          "value": "trigger_flow",
+          "name": "Trigger Flow (REST)"
+        },
+        {
+          "value": "list_flows",
+          "name": "List Flows (REST)"
+        }
+      ]
+    },
+    "list_tables": {
+      "name_filter": {
+        "label": "Name filter",
+        "key": "name_filter",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional. Returns tables whose name or label contains this text",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "sysparm_limit": {
+        "label": "Limit",
+        "key": "sysparm_limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum number of tables to return",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "100"
+      }
+    },
+    "get_table_schema": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Table whose columns/schema you want to inspect",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "sysparm_limit": {
+        "label": "Limit",
+        "key": "sysparm_limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum number of columns to return",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "500"
+      }
+    },
+    "get_field_choices": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Table that contains the choice field",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "field": {
+        "label": "Field",
+        "key": "field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Choice field (column name) to fetch options for",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "state"
+      },
+      "language": {
+        "label": "Language",
+        "key": "language",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional. Choice language (defaults to en)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "en"
+      }
+    },
+    "list_records": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "sysparm_query": {
+        "label": "Query (encoded)",
+        "key": "sysparm_query",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter an encoded query string to filter records",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "active=true^priority=1"
+      },
+      "sysparm_limit": {
+        "label": "Limit",
+        "key": "sysparm_limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum number of records to return",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "100"
+      },
+      "sysparm_offset": {
+        "label": "Offset",
+        "key": "sysparm_offset",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Number of records to skip before returning results",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "0"
+      },
+      "sysparm_fields": {
+        "label": "Fields",
+        "key": "sysparm_fields",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Comma-separated list of fields to return",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "number,short_description,state"
+      },
+      "sysparm_display_value": {
+        "label": "Display value",
+        "key": "sysparm_display_value",
+        "type": "dropdown",
+        "description": "Single select dropdown for display value",
+        "list": [
+          {
+            "value": "true",
+            "name": "true"
+          },
+          {
+            "value": "false",
+            "name": "false"
+          },
+          {
+            "value": "all",
+            "name": "all"
+          }
+        ]
+      }
+    },
+    "get_record": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "sys_id": {
+        "label": "Sys ID",
+        "key": "sys_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the sys_id of the record",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "a9e30c7dc61122760116894de7bcc7bd"
+      },
+      "sysparm_fields": {
+        "label": "Fields",
+        "key": "sysparm_fields",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Comma-separated list of fields to return",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "number,short_description,state"
+      },
+      "sysparm_display_value": {
+        "label": "Display value",
+        "key": "sysparm_display_value",
+        "type": "dropdown",
+        "description": "Single select dropdown for display value",
+        "list": [
+          {
+            "value": "true",
+            "name": "true"
+          },
+          {
+            "value": "false",
+            "name": "false"
+          },
+          {
+            "value": "all",
+            "name": "all"
+          }
+        ]
+      }
+    },
+    "create_record": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter the record fields as a JSON object",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "placeholder": "{\n  \"short_description\": \"Network outage\",\n  \"urgency\": \"1\"\n}"
+      }
+    },
+    "update_record": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "sys_id": {
+        "label": "Sys ID",
+        "key": "sys_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the sys_id of the record",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "a9e30c7dc61122760116894de7bcc7bd"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter the fields to update as a JSON object",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "placeholder": "{\n  \"state\": \"2\"\n}"
+      }
+    },
+    "delete_record": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "sys_id": {
+        "label": "Sys ID",
+        "key": "sys_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the sys_id of the record",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "a9e30c7dc61122760116894de7bcc7bd"
+      }
+    },
+    "aggregate": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Table to aggregate over",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "sysparm_count": {
+        "label": "Count",
+        "key": "sysparm_count",
+        "type": "dropdown",
+        "description": "Return a record count",
+        "list": [
+          {
+            "value": "true",
+            "name": "true"
+          },
+          {
+            "value": "false",
+            "name": "false"
+          }
+        ]
+      },
+      "sysparm_group_by": {
+        "label": "Group by",
+        "key": "sysparm_group_by",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional. Field to group results by (e.g. state)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "state"
+      },
+      "sysparm_query": {
+        "label": "Query (encoded)",
+        "key": "sysparm_query",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional. Encoded query to filter records before aggregating",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "active=true"
+      },
+      "sysparm_avg": {
+        "label": "Average of field",
+        "key": "sysparm_avg",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional. Numeric field to average",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "reassignment_count"
+      },
+      "sysparm_sum": {
+        "label": "Sum of field",
+        "key": "sysparm_sum",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional. Numeric field to sum",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "business_duration"
+      }
+    },
+    "list_workflows": {
+      "name_filter": {
+        "label": "Name filter",
+        "key": "name_filter",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional. Returns only workflow tools whose name contains this text",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "create_incident"
+      }
+    },
+    "invoke_workflow": {
+      "workflow": {
+        "label": "Workflow",
+        "key": "workflow",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Name of the Action Fabric workflow tool (subflow) to invoke",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "create_incident"
+      },
+      "arguments": {
+        "label": "Arguments",
+        "key": "arguments",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Workflow inputs as a JSON object",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "placeholder": "{\n  \"short_description\": \"VPN not working\",\n  \"urgency\": \"2\"\n}"
+      }
+    },
+    "trigger_flow": {
+      "subflow": {
+        "label": "Subflow",
+        "key": "subflow",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Scoped name or sys_id of the subflow to run (e.g. global.create_incident)",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "global.create_incident"
+      },
+      "inputs": {
+        "label": "Inputs",
+        "key": "inputs",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Subflow inputs as a JSON object",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "placeholder": "{\n  \"short_description\": \"VPN not working\"\n}"
+      }
+    },
+    "list_flows": {
+      "name_filter": {
+        "label": "Name filter",
+        "key": "name_filter",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Optional. Returns subflows whose name or internal name contains this text",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "incident"
+      },
+      "sysparm_limit": {
+        "label": "Limit",
+        "key": "sysparm_limit",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum number of subflows to return",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "100"
+      }
+    }
+  }
+}

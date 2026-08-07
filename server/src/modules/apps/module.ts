@@ -63,7 +63,7 @@ export class AppsModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: AppsModule,
       imports: [
-        TypeOrmModule.forFeature([App, Page, EventHandler, Organization, Component, VersionRepository]),
+        TypeOrmModule.forFeature([App, Page, EventHandler, Organization, Component]),
         await FolderAppsModule.register(configs),
         await ThemesModule.register(configs),
         await FoldersModule.register(configs),

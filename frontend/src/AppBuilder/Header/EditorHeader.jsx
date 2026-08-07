@@ -28,6 +28,8 @@ export const EditorHeader = ({ darkMode, appType }) => {
     isGitSyncConfigured,
     orgGit,
     developmentVersions,
+    isGitSyncLicenseLocked,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
@@ -40,15 +42,21 @@ export const EditorHeader = ({ darkMode, appType }) => {
       isGitSyncConfigured: state.isGitSyncConfigured,
       orgGit: state.orgGit,
       developmentVersions: state.developmentVersions,
+      isGitSyncLicenseLocked: state.isGitSyncLicenseLocked,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
+  // Git configured but unlicensed → freeze every header action (undo/redo, preview/share,
+  // branch, version, release/commit). The logo/app-name nav stays clickable so the user can
+  // still navigate to workspace settings and turn git off.
+  const headerLockClass = cx({ 'tw-pointer-events-none tw-opacity-50': isGitSyncLicenseLocked });
 
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isOnWorkspaceFeatureBranch =
     workspaceActiveBranch && !workspaceActiveBranch.is_default && !workspaceActiveBranch.isDefault;
 
-  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  const defaultBranchName = orgGit?.git_https?.github_branch || 'main';
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
       workspaceActiveBranch.isDefault ||
@@ -85,32 +93,39 @@ export const EditorHeader = ({ darkMode, appType }) => {
                     <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
                       <LogoNavDropdown darkMode={darkMode} type={appType} />
                     </h1>
-                    <div className="d-flex flex-row tw-mr-1">
+                    <div className={cx('d-flex flex-row tw-mr-1', headerLockClass)}>
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
-                    <div>
-                      <span
-                        className={cx('autosave-indicator tj-text-xsm', {
-                          'autosave-indicator-saving': isSaving,
-                          'text-danger': saveError,
-                          'd-none': isVersionReleased,
-                        })}
-                        data-cy="autosave-indicator"
-                      >
-                        <SaveIndicator isSaving={isSaving} saveError={saveError} />
-                      </span>
-                    </div>
+                    {!isEditorReadOnly && (
+                      <div>
+                        <span
+                          className={cx('autosave-indicator tj-text-xsm', {
+                            'autosave-indicator-saving': isSaving,
+                            'text-danger': saveError,
+                            'd-none': isVersionReleased,
+                          })}
+                          data-cy="autosave-indicator"
+                        >
+                          <SaveIndicator isSaving={isSaving} saveError={saveError} />
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <HeaderActions darkMode={darkMode} />
+            <div className={headerLockClass} aria-disabled={isGitSyncLicenseLocked || undefined}>
+              <HeaderActions darkMode={darkMode} />
+            </div>
 
             <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
               <div className="d-flex align-items-center p-0">
-                <div className="d-flex version-manager-container p-0  align-items-center gap-0">
+                <div
+                  className={cx('d-flex version-manager-container p-0  align-items-center gap-0', headerLockClass)}
+                  aria-disabled={isGitSyncLicenseLocked || undefined}
+                >
                   {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
                   {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}

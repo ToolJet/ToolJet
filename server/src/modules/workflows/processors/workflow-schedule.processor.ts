@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class WorkflowScheduleProcessor {
-    constructor() { }
+  constructor() {}
 
-    async process(job: any): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
+  async process(job: any): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }

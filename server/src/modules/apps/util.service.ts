@@ -50,7 +50,7 @@ import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.servic
 const PERMISSION_RESOURCE_BY_APP_TYPE: Record<string, MODULES> = {
   [APP_TYPES.WORKFLOW]: MODULES.WORKFLOWS,
   [APP_TYPES.FRONT_END]: MODULES.APP,
-  [APP_TYPES.MODULE]: MODULES.APP,
+  [APP_TYPES.MODULE]: MODULES.MODULES,
 };
 const DEFAULT_PERMISSION_RESOURCE = MODULES.APP;
 
@@ -98,7 +98,7 @@ export class AppsUtilService implements IAppsUtilService {
       //                a front-end app "Foo" doesn't collide with a module "Foo" —
       //                apps and modules share the table but live in separate
       //                dashboards.
-      if (!isWorkflow && name) {
+      if (name) {
         const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         if (!isGitEnabled) {
           const conflictingNameVersion = await manager
@@ -139,8 +139,7 @@ export class AppsUtilService implements IAppsUtilService {
             type,
             // Workflows still carry name/icon on apps.*; non-workflows store metadata
             // on app_versions and leave apps.* fields null/placeholder.
-            name: isWorkflow ? name : null,
-            ...(isWorkflow && icon !== undefined && { icon }),
+            name: null,
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user.organizationId,
@@ -154,6 +153,12 @@ export class AppsUtilService implements IAppsUtilService {
           })
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+
+      // Workflows keep their historical slug placeholder (app.id, matching the
+      // pre-migration apps.subscriber.ts auto-fill and Task 1's backfill); every other
+      // type keeps the existing random-UUID placeholder (`slug`, declared above at
+      // line 84) — unchanged from before this task.
+      const versionSlug = isWorkflow ? app.id : slug;
 
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
 
@@ -199,20 +204,23 @@ export class AppsUtilService implements IAppsUtilService {
                 // editor recognises them as editable branch copies.
                 versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
                 branchId: branchId,
+                // A freshly created app/module on a feature branch has never been pushed to git —
+                // it must start unsynced so it's treated as new content until its first push
+                // (which flips is_synced=true). Explicit so it doesn't depend on the column default.
+                isSynced: false,
                 showViewerNavigation: type === 'module' ? false : true,
                 globalSettings: defaultSettings,
                 pageSettings: {},
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
-                // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-                // slug defaults to a random UUID placeholder; user can rename later.
-                ...(!isWorkflow && {
-                  appName: name,
-                  slug,
-                  icon: icon ?? null,
-                  isPublic: false,
-                }),
+                // Every type carries slug/appName/icon/isPublic on app_versions.
+                // slug defaults to a random UUID placeholder (or app.id for workflows,
+                // see versionSlug above); user can rename later.
+                appName: name,
+                slug: versionSlug,
+                icon: icon ?? null,
+                isPublic: false,
               })
             ),
           [
@@ -315,14 +323,12 @@ export class AppsUtilService implements IAppsUtilService {
               null,
               manager,
               effectiveBranchId,
-              !isWorkflow
-                ? {
-                    appName: name,
-                    slug,
-                    icon: icon ?? null,
-                    isPublic: false,
-                  }
-                : undefined
+              {
+                appName: name,
+                slug: versionSlug,
+                icon: icon ?? null,
+                isPublic: false,
+              }
             ),
           [
             {
@@ -392,14 +398,13 @@ export class AppsUtilService implements IAppsUtilService {
           );
         }
 
-        // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-        // slug defaults to a random UUID placeholder; user can rename later.
-        if (!isWorkflow) {
-          appVersion.appName = name;
-          appVersion.slug = slug;
-          appVersion.icon = icon ?? null;
-          appVersion.isPublic = false;
-        }
+        // Every type carries slug/appName/icon/isPublic on app_versions.
+        // slug defaults to a random UUID placeholder (or app.id for workflows,
+        // see versionSlug above); user can rename later.
+        appVersion.appName = name;
+        appVersion.slug = versionSlug;
+        appVersion.icon = icon ?? null;
+        appVersion.isPublic = false;
         appVersion.showViewerNavigation = type === 'module' ? false : true;
         appVersion.homePageId = defaultHomePage.id;
         appVersion.globalSettings = {
@@ -425,9 +430,7 @@ export class AppsUtilService implements IAppsUtilService {
 
       // Mirror the app_versions slug placeholder onto the in-memory App so callers
       // (e.g. AppsService.create's response) carry the value just written.
-      if (!isWorkflow) {
-        app.slug = slug;
-      }
+      app.slug = versionSlug;
 
       return app;
     }, manager);
@@ -509,32 +512,25 @@ export class AppsUtilService implements IAppsUtilService {
     const branchId = appUpdateDto.branch_id;
     const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
-    const isWorkflow = app.type === 'workflow';
-
-    // Version-level fields (for non-workflows, written to app_versions)
+    // Version-level fields, written to app_versions for every app type.
     const versionParams: Record<string, any> = {};
-    if (!isWorkflow) {
-      if (slug !== undefined) versionParams.slug = slug;
-      if (name !== undefined) versionParams.appName = name;
-      if (icon !== undefined) versionParams.icon = icon;
-      if (isPublic !== undefined) versionParams.isPublic = isPublic;
-    }
+    if (slug !== undefined) versionParams.slug = slug;
+    if (name !== undefined) versionParams.appName = name;
+    if (icon !== undefined) versionParams.icon = icon;
+    if (isPublic !== undefined) versionParams.isPublic = isPublic;
 
-    // App-level fields (always written to apps table)
-    const appParams: Record<string, any> = {
+    // App-level fields (always written to apps table) -- name/slug/icon/isPublic
+    // never land here for any type; they're version-level fields above.
+    let appParams: Record<string, any> = {
       isMaintenanceOn,
       currentVersionId,
       appBuilderMode,
     };
-    // For workflows, all fields stay on apps table
-    if (isWorkflow) {
-      appParams.name = name;
-      appParams.slug = slug;
-      appParams.isPublic = isPublic;
-      appParams.icon = icon;
-    }
 
-    cleanObject(appParams);
+    // cleanObject returns a new object; reassign, or the undefined-valued keys never get
+    // stripped and Object.keys(appParams) below fires a spurious manager.update(App, ...)
+    // on every call regardless of which fields the caller actually touched.
+    appParams = cleanObject(appParams);
     cleanObject(versionParams);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -591,14 +587,14 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      // Slug conflict check — query app_versions for non-workflows.
+      // Slug conflict check — query app_versions.
       // Slug is the public app handle, resolved by findAppBySlug only on
       // default-branch rows. Mirrors the case-insensitive, instance-wide,
       // type-scoped, cross-app slug-uniqueness triggers so a collision surfaces
       // here as a friendly message instead of bubbling up as a trigger exception
       // from the manager.update further down. Sub-branch rows aren't
       // slug-addressable until they merge to the default branch.
-      if (versionParams.slug && !isWorkflow) {
+      if (versionParams.slug) {
         // Same-branch collision (git-sync sub-branch path only). Without a
         // branchId we skip this — a non-git-sync update has no branch scope
         // and would otherwise scan unaddressable sub-branch rows on other
@@ -638,13 +634,6 @@ export class AppsUtilService implements IAppsUtilService {
         if (defaultBranchSlugCollision) {
           throw new BadRequestException('This slug is already taken.');
         }
-      } else if (isWorkflow && appParams.slug) {
-        const conflictingApp = await manager.findOne(App, {
-          where: { slug: appParams.slug, organizationId, id: Not(appId) },
-        });
-        if (conflictingApp) {
-          await manager.update(App, conflictingApp.id, { slug: uuidv4() });
-        }
       }
 
       // Cross-app app_name uniqueness on rename.
@@ -659,7 +648,7 @@ export class AppsUtilService implements IAppsUtilService {
       //                app.type so apps and modules can share names (separate
       //                dashboards, separate slug namespaces). Stubs are included —
       //                they carry the real app_name (only the slug is a placeholder).
-      if (versionParams.appName && !isWorkflow && !branchId) {
+      if (versionParams.appName && !branchId) {
         const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
         if (!isGitEnabled) {
           const conflictingNameVersion = await manager
@@ -678,11 +667,11 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      // Write version-level fields to app_versions for non-workflows. Route by git-sync
+      // Write version-level fields to app_versions. Route by git-sync
       // state, not just by whether branchId is supplied — the no-branchId case in a
       // git-enabled workspace should still go through the branch-aware path rather than
       // fanning the write out across NULL branch rows.
-      if (Object.keys(versionParams).length > 0 && !isWorkflow) {
+      if (Object.keys(versionParams).length > 0) {
         const details = await this.gitSyncConfigsUtilService.getDetails(organizationId);
         const isGitEnabled = details.isEnabled;
 
@@ -719,6 +708,10 @@ export class AppsUtilService implements IAppsUtilService {
               dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
               message: 'This slug is already taken.',
             },
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_WORKFLOW_SLUG_UNIQUE,
+              message: 'This slug is already taken.',
+            },
           ]);
         } else {
           // Non-git-sync flow: write metadata to the canonical default-branch DRAFT
@@ -728,7 +721,7 @@ export class AppsUtilService implements IAppsUtilService {
           const defaultBranchId = details.options.defaultBranch?.id;
           if (defaultBranchId) {
             await catchDbException(async () => {
-              await manager.update(
+              const draftUpdate = await manager.update(
                 AppVersion,
                 {
                   appId,
@@ -739,6 +732,29 @@ export class AppsUtilService implements IAppsUtilService {
                 },
                 versionParams
               );
+
+              // A git-off app can have NO draft row: create → save/publish flips the draft
+              // to PUBLISHED and (unlike git-enabled apps) no continuity draft is seeded for
+              // unsynced apps, so an app that was only ever saved/released has just
+              // PUBLISHED version_type='version' rows. The draft-scoped update above then
+              // matches nothing and the metadata edit is silently lost. When that happens,
+              // fall back to writing every non-stub default-branch version row directly.
+              // The propagate_app_version_metadata trigger only fans out from a DRAFT source,
+              // so with no draft present we must update the saved rows ourselves to keep the
+              // app's version rows consistent (mirrors resolveMetadataVersion, which reads
+              // any non-stub default-branch row regardless of status).
+              if (!draftUpdate.affected) {
+                await manager.update(
+                  AppVersion,
+                  {
+                    appId,
+                    branchId: defaultBranchId,
+                    versionType: AppVersionType.VERSION,
+                    isStub: false,
+                  },
+                  versionParams
+                );
+              }
             }, [
               {
                 dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
@@ -746,6 +762,10 @@ export class AppsUtilService implements IAppsUtilService {
               },
               {
                 dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
+                message: 'This slug is already taken.',
+              },
+              {
+                dbConstraint: DataBaseConstraints.APP_VERSION_WORKFLOW_SLUG_UNIQUE,
                 message: 'This slug is already taken.',
               },
             ]);
@@ -761,7 +781,6 @@ export class AppsUtilService implements IAppsUtilService {
       }
     }, manager);
   }
-
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
     const { currentEnvironmentId, definition } = body;
@@ -835,12 +854,23 @@ export class AppsUtilService implements IAppsUtilService {
     searchKey: string,
     type: string,
     isGetAll: boolean,
-    branchId?: string
+    branchId?: string,
+    context?: string
   ): Promise<AppBase[]> {
-    const qb = await this.buildViewableAppsQuery(user, type, searchKey, isGetAll, branchId, this.appRepository.manager);
-    const apps = isGetAll
-      ? await qb.getMany()
-      : await qb.take(APPS_PAGE_SIZE).skip(APPS_PAGE_SIZE * (page - 1)).getMany();
+    const qb = await this.buildViewableAppsQuery(
+      user,
+      type,
+      searchKey,
+      isGetAll,
+      branchId,
+      this.appRepository.manager,
+      context
+    );
+    if (isGetAll) return qb.getMany();
+    const apps = await qb
+      .take(APPS_PAGE_SIZE)
+      .skip(APPS_PAGE_SIZE * (page - 1))
+      .getMany();
     await this.stampIsAppSynced(apps, branchId, type);
     return apps;
   }
@@ -850,9 +880,18 @@ export class AppsUtilService implements IAppsUtilService {
     page: number,
     searchKey: string,
     type: string,
-    branchId?: string
+    branchId?: string,
+    context?: string
   ): Promise<{ apps: AppBase[]; totalCount: number }> {
-    const qb = await this.buildViewableAppsQuery(user, type, searchKey, false, branchId, this.appRepository.manager);
+    const qb = await this.buildViewableAppsQuery(
+      user,
+      type,
+      searchKey,
+      false,
+      branchId,
+      this.appRepository.manager,
+      context
+    );
     const [apps, totalCount] = await qb
       .take(APPS_PAGE_SIZE)
       .skip(APPS_PAGE_SIZE * (page - 1))
@@ -865,7 +904,7 @@ export class AppsUtilService implements IAppsUtilService {
   // Mirrors the app builder's developmentVersions.some(v => v.isSynced && v.status=DRAFT && v.versionType=version) check.
   // Only runs for FRONT_END apps in the git-sync flow (branchId present) — no-op for
   // all other app types and all non-git flows.
-  private async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
+  async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
     if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
     const rows: { app_id: string }[] = await this.appRepository.manager.query(
       `SELECT DISTINCT app_id FROM app_versions
@@ -883,7 +922,8 @@ export class AppsUtilService implements IAppsUtilService {
     searchKey: string,
     isGetAll: boolean,
     branchId: string | undefined,
-    manager: EntityManager
+    manager: EntityManager,
+    context?: string
   ) {
     const resourceType = PERMISSION_RESOURCE_BY_APP_TYPE[type] ?? DEFAULT_PERMISSION_RESOURCE;
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
@@ -891,18 +931,17 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
-    const willInnerJoinOnBranch =
-      !!branchId &&
-      (type === APP_TYPES.MODULE || type === APP_TYPES.FRONT_END);
+    const willInnerJoinOnBranch = !!branchId && (type === APP_TYPES.MODULE || type === APP_TYPES.FRONT_END);
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
       manager,
       searchKey,
-      isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
+      isGetAll ? ['id', 'slug', 'name', 'currentVersionId', 'co_relation_id'] : undefined,
       type,
       branchId,
-      willInnerJoinOnBranch
+      willInnerJoinOnBranch,
+      context
     );
     this.applyAppVersionsJoin(qb, type, branchId, isGetAll);
     return qb;
@@ -942,8 +981,9 @@ export class AppsUtilService implements IAppsUtilService {
     type?: string,
     branchId?: string,
     // consumed by the EE override (which applies addBranchFilter); unused in CE base
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _skipBranchScope?: boolean
+
+    _skipBranchScope?: boolean,
+    context?: string
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -963,11 +1003,8 @@ export class AppsUtilService implements IAppsUtilService {
 
     if (searchKey) {
       viewableAppsQb.andWhere(
-        `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))`,
-        {
-          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-          workflowType: APP_TYPES.WORKFLOW,
-        }
+        `EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey)`,
+        { searchKey: `%${searchKey && searchKey.toLowerCase()}%` }
       );
     }
 
@@ -1012,8 +1049,19 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
 
     switch (type) {
+      // Modules are now permission-scoped (H1): filter to the user's editable ∪ viewable ∪ owned
+      // module ids, exactly like front-end apps. Previously modules were returned unfiltered.
       case APP_TYPES.MODULE:
-        return viewableAppsQb;
+        if (context === 'picker') {
+          return this.addPickerModulesFilter(viewableAppsQb, userAppPermissions as unknown as UserAppsPermissions);
+        }
+        // Modules support hide-from-dashboard on Edit groups (#5135) — use dedicated helpers
+        // that treat editable ids the same as viewable ids for hiding purposes.
+        return this.addViewableModulesFilter(
+          viewableAppsQb,
+          userAppPermissions as unknown as UserAppsPermissions,
+          this.calculateViewableModules(userAppPermissions as unknown as UserAppsPermissions)
+        );
       case APP_TYPES.FRONT_END:
       default:
         return this.addViewableFrontEndAppsFilter(
@@ -1083,6 +1131,88 @@ export class AppsUtilService implements IAppsUtilService {
       });
     }
 
+    return query;
+  }
+
+  /**
+   * Picker context: include hidden modules (hide_from_dashboard is irrelevant for the picker).
+   * Still intersects with the user's permitted module sets — never returns unfiltered.
+   * isAllEditable || isAllViewable → no id filter (user can see all modules in the org).
+   * Otherwise → apps.id IN (editableAppsId ∪ viewableAppsId).
+   */
+  private addPickerModulesFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userModulePermissions: UserAppsPermissions
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, editableAppsId, viewableAppsId } = userModulePermissions;
+
+    if (isAllEditable || isAllViewable) {
+      // User can access all modules — no id restriction needed.
+      return query;
+    }
+
+    const viewableModules = Array.from(new Set([...editableAppsId, ...viewableAppsId]));
+
+    if (viewableModules.length === 0) {
+      query.andWhere('1 = 0'); // user has no module access
+      return query;
+    }
+
+    query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
+    return query;
+  }
+
+  /**
+   * Modules support hide-from-dashboard on Edit groups (#5135 / DEV-63).
+   * Unlike front-end apps, editable module ids are subject to hiding — a builder-role
+   * member can be hidden from the dashboard while still having URL + builder access.
+   *
+   * hideAll → everything hidden (no id in the whitelist).
+   * else    → union of editable ∪ viewable, minus hidden ids.
+   */
+  private calculateViewableModules(userModulePermissions: UserAppsPermissions): string[] {
+    const { ownedAppsId } = userModulePermissions;
+    // Owner exemption is absolute: a creator always sees their own module on the dashboard,
+    // even under hideAll or a hide-from-dashboard group containing the module.
+    if (userModulePermissions.hideAll) {
+      // Everything hidden except owned; [null] keeps the IN-clause valid when nothing is owned.
+      return [null, ...ownedAppsId];
+    }
+    const allPermittedIds = Array.from(
+      new Set([...userModulePermissions.editableAppsId, ...userModulePermissions.viewableAppsId])
+    );
+    return [
+      null,
+      ...allPermittedIds.filter((id) => !userModulePermissions.hiddenAppsId.includes(id) || ownedAppsId.includes(id)),
+    ];
+  }
+
+  private addViewableModulesFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userModulePermissions: UserAppsPermissions,
+    viewableModules: string[]
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, hideAll, hiddenAppsId } = userModulePermissions;
+
+    // "All modules" grant with no per-module hides — no restriction needed.
+    if ((isAllEditable || isAllViewable) && !hideAll && hiddenAppsId.length === 0) {
+      return query;
+    }
+
+    // "All modules" grant but some specific modules are hidden — exclude them (including
+    // edit-via-group ones, unlike the apps filter which exempts editable ids). Owned modules
+    // are always exempt: a creator never loses their own module from the dashboard.
+    if ((isAllEditable || isAllViewable) && !hideAll && hiddenAppsId.length > 0) {
+      const { ownedAppsId } = userModulePermissions;
+      const hiddenExceptOwned = hiddenAppsId.filter((id) => !ownedAppsId.includes(id));
+      if (hiddenExceptOwned.length > 0) {
+        query.andWhere('apps.id NOT IN (:...hiddenExceptOwned)', { hiddenExceptOwned });
+      }
+      return query;
+    }
+
+    // All other cases (hideAll, or no isAll grant): whitelist of permitted & visible modules.
+    query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
     return query;
   }
 
@@ -1182,8 +1312,7 @@ export class AppsUtilService implements IAppsUtilService {
 
   async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
     return skipAppEditingVersionHydration.run(true, async () => {
-      const versionToLoadId =
-        versionId || app.currentVersionId || (app as any).editingVersion?.id;
+      const versionToLoadId = versionId || app.currentVersionId || (app as any).editingVersion?.id;
       if (!versionToLoadId && !allVersions) return [];
 
       const manager = getConnectionInstance().manager;
@@ -1300,9 +1429,7 @@ export class AppsUtilService implements IAppsUtilService {
 
         const meta = metaMap.get(moduleApp.id);
         if (gitEnabled && !meta && parentBranchId) {
-          throw new BadRequestException(
-            `No DRAFT version found for app ${moduleApp.id} on branch ${parentBranchId}.`
-          );
+          throw new BadRequestException(`No DRAFT version found for app ${moduleApp.id} on branch ${parentBranchId}.`);
         }
         if (meta) {
           // apps.name/slug/icon/isPublic are NULL for modules (metadata on app_versions).
@@ -1361,6 +1488,124 @@ export class AppsUtilService implements IAppsUtilService {
         return { table_id };
       });
     });
+  }
+
+  /**
+   * Resolves each co_relation_id to its app's slug + currentVersionId, scoped to the org
+   * (and branch, when provided). Used to build the `linkedApps` side-table for "go to app"
+   * references — an entry lets the frontend build /applications/{slug}; an absent entry
+   * signals the target app no longer exists in this workspace.
+   *
+   * Multiple app rows can share one co_relation_id: git-sync branch rows by design, and
+   * legacy duplicate imports (pre conflict-check) in plain workspaces. The ORDER BY +
+   * first-wins loop makes the pick deterministic: prefer a released row, then the most
+   * recently updated, then lowest id.
+   */
+  async findAppDataByCorelationIds(
+    coRelationIds: string[],
+    organizationId: string,
+    branchId?: string,
+    manager?: EntityManager
+  ): Promise<Map<string, { slug: string | null; currentVersionId: string | null }>> {
+    const ids = Array.from(new Set((coRelationIds || []).filter(Boolean)));
+    if (ids.length === 0) return new Map();
+
+    // Single read-only statement — no transaction needed.
+    const mgr = manager ?? getConnectionInstance().manager;
+
+    const releasedJoin = branchId
+      ? 'released.id = app.currentVersionId AND released.branch_id = :branchId'
+      : 'released.id = app.currentVersionId';
+    const avJoin = branchId
+      ? 'av.appId = app.id AND av.slug IS NOT NULL AND av.branch_id = :branchId'
+      : 'av.appId = app.id AND av.slug IS NOT NULL';
+
+    const qb = mgr
+      .createQueryBuilder(App, 'app')
+      .leftJoin(AppVersion, 'released', releasedJoin, branchId ? { branchId } : undefined)
+      .leftJoin(AppVersion, 'av', avJoin, branchId ? { branchId } : undefined)
+      .where('app.co_relation_id IN (:...ids)', { ids })
+      .andWhere('app.organizationId = :organizationId', { organizationId })
+      .select('app.co_relation_id', 'coRelationId')
+      .addSelect('app.currentVersionId', 'currentVersionId')
+      .addSelect('COALESCE(released.slug, MIN(av.slug))', 'slug')
+      .groupBy('app.id')
+      .addGroupBy('app.co_relation_id')
+      .addGroupBy('app.currentVersionId')
+      .addGroupBy('released.slug')
+      // Deterministic winner among rows sharing a co_relation_id (git branch rows,
+      // legacy duplicate imports): released row first, then newest, then lowest id.
+      .orderBy('CASE WHEN app.current_version_id IS NULL THEN 1 ELSE 0 END', 'ASC')
+      .addOrderBy('app.updated_at', 'DESC')
+      .addOrderBy('app.id', 'ASC');
+
+    if (branchId) {
+      qb.andWhere((sub) => {
+        const exists = sub
+          .subQuery()
+          .select('1')
+          .from(AppVersion, 'scope')
+          .where('scope.appId = app.id')
+          .andWhere('scope.branch_id = :branchId', { branchId })
+          .getQuery();
+        return 'EXISTS ' + exists;
+      });
+    }
+
+    const rows = await qb.getRawMany<{
+      coRelationId: string;
+      slug: string | null;
+      currentVersionId: string | null;
+    }>();
+    const result = new Map<string, { slug: string | null; currentVersionId: string | null }>();
+    for (const row of rows) {
+      // Rows arrive best-first (see ORDER BY) — keep the first per co_relation_id.
+      if (result.has(row.coRelationId)) continue;
+      result.set(row.coRelationId, {
+        slug: row.slug ?? null,
+        currentVersionId: row.currentVersionId ?? null,
+      });
+    }
+    return result;
+  }
+
+  /**
+   * Side-table builder for app-load responses.
+   * Scans pages and event handlers, collects every referenced target-app `co_relation_id`,
+   * returns a flat map keyed by correlationId with `{ slug, currentVersionId }` for each.
+   *
+   * Entries are only present for ids whose app row exists in this organization. The
+   * frontend uses an absent entry as the "target deleted" signal, and a present entry
+   * with null `currentVersionId` as the "target has no released version" signal.
+   *
+   * `branchId` may be a lazy provider — it is only awaited when the response actually
+   * references linked apps, so zero-link app loads (the common case) never pay for a
+   * branch lookup.
+   */
+  async collectLinkedAppsForResponse(
+    pages: any[],
+    events: any[],
+    organizationId: string,
+    branchId?: string | (() => Promise<string | undefined>),
+    manager?: EntityManager
+  ): Promise<Record<string, { slug: string | null; currentVersionId: string | null }>> {
+    const ids = new Set<string>();
+    for (const p of pages || []) {
+      if (p?.type === 'app' && p?.targetCorelationId) ids.add(p.targetCorelationId);
+    }
+    for (const e of events || []) {
+      if (e?.event?.actionId === 'go-to-app' && e?.event?.correlationId) ids.add(e.event.correlationId);
+    }
+    if (ids.size === 0) return {};
+
+    const resolvedBranchId = typeof branchId === 'function' ? await branchId() : branchId;
+    const meta = await this.findAppDataByCorelationIds(Array.from(ids), organizationId, resolvedBranchId, manager);
+
+    const result: Record<string, { slug: string | null; currentVersionId: string | null }> = {};
+    for (const [id, info] of meta) {
+      result[id] = { slug: info.slug, currentVersionId: info.currentVersionId };
+    }
+    return result;
   }
 
   async findByAppName(name: string, organizationId: string): Promise<App> {
@@ -1495,7 +1740,8 @@ export class AppsUtilService implements IAppsUtilService {
   /**
    * Overlay name/slug/icon/isPublic from the right app_version row onto the App entity
    * in-memory so single-app reads (`getOne`, `getBySlug`, etc.) return the correct
-   * user-facing metadata. Workflows are skipped — they keep metadata on apps.* directly.
+   * user-facing metadata. Every type, including workflows, stores this metadata on
+   * app_versions post-migration.
    *
    * Source resolution (mirrors AppsRepository.resolveMetadataVersion):
    *   1. Detect git-sync state via the default-branch lookup.
@@ -1506,10 +1752,12 @@ export class AppsUtilService implements IAppsUtilService {
    *
    * DRAFT scoping in the git-enabled cases matches the metadata-write path
    * (AppsUtilService.update writes the DRAFT branch row) so published/released
-   * snapshots can't shadow the current metadata.
+   * snapshots can't shadow the current metadata. Workflows always have branch_id
+   * pinned to the org's default branch (Task 3.5), so they resolve through the
+   * same default-branch DRAFT lookup as every other type.
    */
   async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
-    if (!app || app.type === APP_TYPES.WORKFLOW) return;
+    if (!app) return;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);

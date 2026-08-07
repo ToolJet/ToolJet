@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsOptional, IsObject, IsNotEmpty, IsArray,IsNumber } from 'class-validator';
+import { IsUUID, IsString, IsOptional, IsObject, IsNotEmpty, IsArray, IsNumber } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -68,7 +68,7 @@ export class ListTablesDto {
   @IsString()
   @IsOptional()
   datasetId?: string;
-  
+
   @IsString()
   @IsOptional()
   search?: string;

@@ -80,8 +80,8 @@ export const ModalV2 = function Modal({
   const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
     ? normalizedTriggerButtonFontWeight
     : normalizedTriggerButtonFontWeight === '0'
-    ? 0
-    : 'normal';
+      ? 0
+      : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
@@ -332,6 +332,7 @@ export const ModalV2 = function Modal({
           customStyles,
           parentRef,
           id,
+          moduleId,
           title,
           titleAlignment,
           hideTitleBar,

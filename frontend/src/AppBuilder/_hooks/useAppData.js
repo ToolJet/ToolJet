@@ -17,15 +17,19 @@ import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorURL } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
+import { whenBranchResolved } from '@/_helpers/active-branch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -52,6 +56,8 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'notificationDuration',
   'disableQuery',
   'disabledMessage',
+  'workflowId',
+  'workflowVersionId',
 ];
 
 const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
@@ -78,6 +84,7 @@ const useAppData = (
   mode = 'edit',
   { environmentId, versionId, componentName } = {},
   moduleMode = false,
+  isModuleEditor = false,
   appSlug
 ) => {
   const mounted = useMounted();
@@ -91,6 +98,10 @@ const useAppData = (
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
   const user = useStore((state) => state.user);
+  // The top-level app containing this module instance — used to let the backend verify this
+  // module read is happening in the context of an app the user can edit, even when they have
+  // no standalone module permission. Forwarded to appVersion.service.js getAll/getModuleVersionData.
+  const parentAppId = useStore((state) => state.appStore?.modules?.['canvas']?.app?.appId);
   const setCurrentVersionId = useStore((state) => state.setCurrentVersionId);
   const currentVersionId = useStore((state) => state.currentVersionId);
   const setPages = useStore((state) => state.setPages);
@@ -104,6 +115,7 @@ const useAppData = (
   const setCurrentPageId = useStore((state) => state.setCurrentPageId);
   const updateEventsField = useEventActions().updateEventsField;
   const setCurrentMode = useStore((state) => state.setCurrentMode);
+  const setIsEditorReadOnly = useStore((state) => state.setIsEditorReadOnly);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
@@ -159,7 +171,7 @@ const useAppData = (
     let totalPages = 1;
 
     while (currentPage <= totalPages) {
-      const data = await appsService.getAll(currentPage, '', '', 'module');
+      const data = await appsService.getAll(currentPage, '', '', 'module', 'picker');
       const pageModules = data?.apps || [];
 
       allModules.push(...pageModules);
@@ -181,7 +193,8 @@ const useAppData = (
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  let slug = pathParams?.slug;
+  // A module instance has its own app slug, distinct from the parent app's route slug.
+  let slug = appSlug ?? pathParams?.slug;
 
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
@@ -248,6 +261,16 @@ const useAppData = (
     }
   }, [pageSwitchInProgress, moduleMode]);
 
+  // Sync editor freeze state from global store to app builder store (for cross-bundle triggers like auto-sync)
+  useEffect(() => {
+    const unsubscribe = useAppVersionStore.subscribe((state) => {
+      if (state.isEditorFreezed) {
+        setIsEditorFreezed(true);
+      }
+    });
+    return unsubscribe;
+  }, [setIsEditorFreezed]);
+
   useEffect(() => {
     const subscription = authenticationService.currentSession
       .pipe(
@@ -312,7 +335,14 @@ const useAppData = (
       (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
-    if (moduleMode) {
+    if (moduleMode && isModuleEditor) {
+      // Editing the module itself directly — appId is the module's real DB id (from the
+      // route), not its co_relation_id, so this must use the same id-based fetch as a
+      // regular app rather than the by-correlation endpoint (which expects co_relation_id).
+      appDataPromise = isPreviewForVersion
+        ? appVersionService.getAppVersionData(appId, versionId, mode)
+        : appService.fetchApp(appId);
+    } else if (moduleMode) {
       // The moduleDefinition cached by the parent app reflects the module from the parent's current
       // branch — not the specific version pinned on this ModuleViewer. Authenticated viewers call the
       // version API directly to get the correct pinned version. Public (unauthenticated) viewers
@@ -327,24 +357,27 @@ const useAppData = (
           // versionId is a versionName string (cross-workspace stable, git-tag-backed) when the
           // bridge field is populated, a UUID module_reference_id for legacy same-workspace-only
           // pins, or '' when unpinned. The server resolver handles all three cases.
-          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode, parentAppId);
         }
       } else if (versionId) {
         // Pinned: call the by-correlation endpoint with the module_reference_id ref.
-        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode, parentAppId);
       } else {
         // Unpinned: always hit the backend — cached definition may be from the default branch,
         // not the consumer's feature branch. Server resolver correctly returns the current
         // branch's draft (or 404 if nothing is available there).
-        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode, parentAppId);
       }
     } else {
       if (isPublicAccess) {
         appDataPromise = appService.fetchAppBySlug(slug);
       } else {
-        appDataPromise = isPreviewForVersion
-          ? appVersionService.getAppVersionData(appId, versionId, mode)
-          : appService.fetchApp(appId);
+        // Gate on branch resolution so the app-load (and its hydration) carries the right
+        // branch_id. The branch is resolved async (URL name -> id) by AppsRoute; without this
+        // gate the load can race ahead with no branch_id and hydrate on the default branch.
+        appDataPromise = whenBranchResolved().then(() =>
+          isPreviewForVersion ? appVersionService.getAppVersionData(appId, versionId, mode) : appService.fetchApp(appId)
+        );
       }
     }
 
@@ -358,8 +391,10 @@ const useAppData = (
         // dependency cascade over them before initDependencyGraph rebuilds — dereferencing resolved
         // entries that don't exist in the new app and throwing (caught + swallowed -> blank editor).
         // cleanUpStore installs a fresh graph + clears resolved values so the cascade starts clean.
-        // Canvas-only (mirrors the version-change effect's own cleanUpStore); modules manage their own.
-        if (!moduleMode) cleanUpStore(false);
+        // Canvas-only (mirrors the version-change effect's own cleanUpStore); embedded modules manage
+        // their own. Standalone module editor (moduleId === 'canvas') is its own canvas mount too.
+        const isFreshCanvasMount = !moduleMode || moduleId === 'canvas';
+        if (isFreshCanvasMount) cleanUpStore(false);
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
@@ -385,24 +420,31 @@ const useAppData = (
 
         let constantsResp;
         if (mode !== 'edit') {
-          try {
-            const queryParams = { slug: slug };
+          if (moduleMode) {
+            // A module's own is_public is always false, so PublicAppEnvironmentGuard 401s
+            // on the module's slug. ModuleViewer already resolved the parent's environment
+            // into environmentId — reuse it instead of re-resolving.
+            editorEnvironment = { id: environmentId };
+          } else {
+            try {
+              const queryParams = { slug: slug };
 
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+              const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
 
-            editorEnvironment = {
-              id: viewerEnvironment?.environment?.id,
-              name: viewerEnvironment?.environment?.name,
-            };
-            constantsResp =
-              isPublicAccess && appData.is_public
-                ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
-                : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
-          } catch (error) {
-            console.error('Error fetching viewer environment:', error);
+              editorEnvironment = {
+                id: viewerEnvironment?.environment?.id,
+                name: viewerEnvironment?.environment?.name,
+              };
+              constantsResp =
+                isPublicAccess && appData.is_public
+                  ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
+                      slug,
+                      viewerEnvironment?.environment?.id
+                    )
+                  : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
+            } catch (error) {
+              console.error('Error fetching viewer environment:', error);
+            }
           }
         }
 
@@ -476,6 +518,9 @@ const useAppData = (
           },
           moduleId
         );
+
+        // Also populate the global app data store so route-level hooks can access co_relation_id
+        useAppDataStore.getState().actions.updateState({ coRelationId: appData.co_relation_id });
 
         const liveMessages = useStore.getState().ai?.conversation?.aiConversationMessages;
         if (
@@ -588,6 +633,23 @@ const useAppData = (
         if (!moduleMode) {
           updateFeatureAccess();
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          setIsEditorReadOnly(false); // non-module editors are never gated by module read-only
+        } else if (moduleId === 'canvas') {
+          // Module opened as the main editor (not a nested module): AppLoader resets all
+          // stores on mount, so feature access must be reloaded here too — otherwise
+          // modulesEnabled stays false and the ModuleContainer renders with the `disabled`
+          // class (opacity + pointer-events:none), breaking drops/move inside the module.
+          updateFeatureAccess();
+          // Needs its own currentVersionId so saveComponentChanges can reach the correct version endpoint.
+          setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          // Build-with (view-only) access → read-only editor. Security is enforced server-side;
+          // this only switches the editor UI into read-only (see getShouldFreeze).
+          const moduleOwnerId = appData?.user_id ?? appData?.editing_version?.app?.user_id ?? appData?.app?.user_id;
+          const canEdit = canEditModule(authenticationService.currentSessionValue, appId, moduleOwnerId);
+          setIsEditorReadOnly(!canEdit);
+          // Backend git/branch-based freeze (e.g. first draft locked on main) was only ever
+          // applied to non-module editors above — modules opened as their own editor need it too.
+          setIsEditorFreezed(appData.should_freeze_editor);
         }
         setAppHomePageId(homePageId, moduleId);
         if (!moduleMode && appData.modules) {
@@ -618,6 +680,11 @@ const useAppData = (
               setFolderMappings(folderData.folderMappings ?? []);
             })
             .catch(() => {});
+        } else if (moduleMode && moduleId === 'canvas' && setFolders) {
+          // Modules have no folder structure. Signal foldersReady so the EE QueryFolderTree
+          // renders the flat query list instead of returning null while waiting for fetch.
+          setFolders([]);
+          setFolderMappings([]);
         }
 
         const constants = constantsResp?.constants;
@@ -637,9 +704,15 @@ const useAppData = (
         }
         setQueryMapping(moduleId);
 
+        // On a fresh canvas mount, ignore the `selectedEnvironment` closure above — it's whatever
+        // app/module was open earlier in the same SPA session, not this one (it gets reassigned
+        // once init() resolves further down, but setResolvedGlobals below runs before that).
+        const currentSelectedEnvironment = isFreshCanvasMount ? null : selectedEnvironment;
         setResolvedGlobals(
           'environment',
-          selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
+          currentSelectedEnvironment
+            ? { id: currentSelectedEnvironment.id, name: currentSelectedEnvironment.name }
+            : editorEnvironment,
           moduleId
         );
         setResolvedGlobals(
@@ -672,8 +745,16 @@ const useAppData = (
           const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
           useStore.getState().init(versionIdToInit, envFromQueryParams);
           fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+        } else if (!isPublicAccess && moduleMode && moduleId === 'canvas') {
+          // Standalone module editor: load static data sources (RunJS, RestAPI, RunPy) the same
+          // way a regular app editor does. Embedded modules skip this — they inherit the parent's.
+          const versionIdToInit = appData.editing_version?.id || appData.current_version_id;
+          // init() populates selectedVersion and selectedEnvironment, which useAppPreviewLink
+          // needs to build the preview URL with correct ?version=...&env=... params.
+          useStore.getState().init(versionIdToInit);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
-        if (!moduleMode) {
+        if (!moduleMode || moduleId === 'canvas') {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
           // On workspace feature branches, set releasedVersionId to null so that
           // selectedVersionId === releasedVersionId doesn't falsely trigger freeze
@@ -823,6 +904,15 @@ const useAppData = (
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
+    // Tried extending this to the standalone module editor (isModuleEditor) too, since it
+    // used to run unconditionally here before AppBuilder.jsx started passing moduleMode for
+    // direct module edits. Reverted: changeEditorVersionAction's onSuccess callers set
+    // currentVersionId a beat after changeEditorVersionAction's own atomic state update
+    // (mirroring the non-module VersionManagerDropdown pattern) — for modules that second
+    // write re-triggers this effect on top of the refresh changeEditorVersionAction already
+    // did, racing cleanUpStore/setApp/initDependencyGraph against themselves. The targeted
+    // fix lives in changeEditorVersionAction itself (pages/freeze/environment sync in one
+    // pass) instead of relying on this effect for modules.
     if (moduleMode) return;
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';

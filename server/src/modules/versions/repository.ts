@@ -4,8 +4,8 @@ import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
@@ -236,7 +236,14 @@ export class VersionRepository extends Repository<AppVersion> {
 
   getVersionsInApp(appId: string, branchId?: string, manager?: EntityManager): Promise<AppVersion[]> {
     const m = manager ?? this.manager;
-    const where = branchId ? { appId, branchId, isStub: false } : { appId, isStub: false };
+    // When branchId is provided, also include versions with null branchId
+    // (created before branching was enabled) so they remain visible on the default branch.
+    const where = branchId
+      ? [
+          { appId, branchId, isStub: false },
+          { appId, branchId: IsNull(), isStub: false },
+        ]
+      : { appId, isStub: false };
     return m.find(AppVersion, { where, order: { createdAt: 'DESC' }, relations: ['branch'] });
   }
 
@@ -258,9 +265,9 @@ export class VersionRepository extends Repository<AppVersion> {
       relations: ['app'],
     });
     const app = appVersion.app;
-    // Workflows keep metadata on apps.*; non-workflows carry it on the version row.
+    // Every app type, including workflows, carries metadata on the version row.
     // The version is already in scope — overlay its own metadata directly.
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app) {
       this.overlayMetadata(app, appVersion);
     }
     return app;
@@ -363,7 +370,7 @@ export class VersionRepository extends Repository<AppVersion> {
     if (!version) throw new BadRequestException('Wrong version Id');
 
     const app = version.app;
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app) {
       // The version is already in scope — its own row carries the metadata for this view,
       // so overlay directly instead of re-resolving.
       this.overlayMetadata(app, version);
@@ -383,12 +390,12 @@ export class VersionRepository extends Repository<AppVersion> {
     try {
       version = await this.manager.findOneOrFail(AppVersion, {
         where: { name: versionId, appId },
-        relations: ['app'],
+        relations: ['app', 'branch'],
       });
-    } catch (error) {
+    } catch {
       version = await this.manager.findOneOrFail(AppVersion, {
         where: { id: versionId },
-        relations: ['app'],
+        relations: ['app', 'branch'],
       });
     }
     if (!version) throw new BadRequestException('Wrong version Id');

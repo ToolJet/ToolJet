@@ -156,6 +156,8 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
         'appVersion.currentEnvironmentId',
         'appVersion.versionType',
         'appVersion.branchId',
+        'appVersion.status',
+        'appVersion.isSynced',
       ])
       .addSelect('branch.branch_name', 'branch_name')
       .leftJoin(WorkspaceBranch, 'branch', 'appVersion.branch_id = branch.id')
@@ -180,6 +182,8 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       currentEnvironmentId: result.appVersion_current_environment_id,
       current_environment_id: result.appVersion_current_environment_id,
       versionType,
+      status: result.appVersion_status,
+      isSynced: result.appVersion_is_synced,
       ...(versionType === AppVersionType.BRANCH && branchName ? { displayName: branchName } : {}),
     };
   }

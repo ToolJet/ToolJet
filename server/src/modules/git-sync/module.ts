@@ -1,4 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { EncryptionModule } from '@modules/encryption/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
@@ -9,6 +10,8 @@ import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 
 export class GitSyncModule extends SubModule {
@@ -21,35 +24,44 @@ export class GitSyncModule extends SubModule {
       GitSyncController,
       GitSyncService,
       SourceControlProviderService,
-      SSHGitSyncService,
       HTTPSGitSyncService,
       GitLabGitSyncService,
       HTTPSGitSyncUtilityService,
-      SSHGitSyncUtilityService,
       GitLabGitSyncUtilityService,
       BaseGitUtilService,
       BaseGitSyncService,
       GitSyncAdapter,
       WorkspaceGitSyncAdapter,
+      GitMirrorWarmerService,
     } = await this.getProviders(configs, 'git-sync', [
       'controller',
       'service',
       'source-control-provider',
-      'providers/github-ssh/service',
       'providers/github-https/service',
       'providers/gitlab/service',
       'providers/github-https/util.service',
-      'providers/github-ssh/util.service',
       'providers/gitlab/util.service',
       'base-git-util.service',
       'base-git.service',
       'git-sync-adapter',
       'workspace-git-sync-adapter',
+      'git-mirror-warmer.service',
     ]);
+
+    const edition = getTooljetEdition();
+    const isEEOrCloud = edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud;
+
+    const additionalProviders: any[] = [];
+    if (isEEOrCloud) {
+      const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
+      const { AutoSyncAdminService } = await import(`${importPath}/git-sync-webhooks/services/auto-sync-admin.service`);
+      additionalProviders.push(AutoSyncAdminService);
+    }
 
     return this.cacheModule(cacheKey, {
       module: GitSyncModule,
       imports: [
+        ConfigModule,
         await GitSyncConfigsModule.register(configs),
         await EncryptionModule.register(configs),
         await ImportExportResourcesModule.register(configs),
@@ -65,20 +77,27 @@ export class GitSyncModule extends SubModule {
         BaseGitUtilService,
         BaseGitSyncService,
         GitSyncService,
-        SSHGitSyncService,
         HTTPSGitSyncService,
         GitLabGitSyncService,
         HTTPSGitSyncUtilityService,
-        SSHGitSyncUtilityService,
         GitLabGitSyncUtilityService,
+        // Registry of git-sync provider adapters — the SINGLE place a new provider (e.g. Bitbucket)
+        // is added. The dispatcher (SourceControlProviderService) resolves by gitType from this list,
+        // so no dispatcher/base/adapter file changes are needed to add a provider.
+        {
+          provide: 'GIT_SYNC_PROVIDER_ADAPTERS',
+          useFactory: (https, gitlab) => [https, gitlab],
+          inject: [HTTPSGitSyncService, GitLabGitSyncService],
+        },
         SourceControlProviderService,
         FeatureAbilityFactory,
         GitSyncAdapter,
         WorkspaceGitSyncAdapter,
+        GitMirrorWarmerService,
+        ...additionalProviders,
       ],
       exports: [
         HTTPSGitSyncUtilityService,
-        SSHGitSyncUtilityService,
         GitLabGitSyncUtilityService,
         BaseGitSyncService,
         BaseGitUtilService,
@@ -86,6 +105,7 @@ export class GitSyncModule extends SubModule {
         WorkspaceGitSyncAdapter,
         OrganizationGitSyncRepository,
         SourceControlProviderService,
+        GitMirrorWarmerService,
       ],
     });
   }

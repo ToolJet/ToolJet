@@ -9,12 +9,17 @@ import {
   createApplicationVersion,
   updateEntity,
   saveEntity,
+  findEntityOrFail,
+  resolveOrSeedDefaultBranch,
 } from 'test-helper';
 import { INestApplication } from '@nestjs/common';
 import { AppsRepository } from '@modules/apps/repository';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { WorkspaceBranch } from 'src/entities/workspace_branch.entity';
+import { Page } from 'src/entities/page.entity';
+import { Component } from 'src/entities/component.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 // initTestApp() can exceed 60s when Jest restarts the worker to free memory
 jest.setTimeout(120_000);
@@ -73,6 +78,12 @@ describe('AppsRepository', () => {
 
         expect(result).toBeNull();
       });
+
+      it('should return null for an unknown UUID', async () => {
+        const result = await appsRepository.findByIdOrSlug('00000000-0000-0000-0000-000000000000');
+
+        expect(result).toBeNull();
+      });
     });
   });
 
@@ -95,38 +106,51 @@ describe('AppsRepository', () => {
 
       const admin = await createAdmin(nestApp, 'apps-repo-branch-slug@tooljet.io');
       orgId = admin.user.organizationId;
-      testApp = await createApplication(nestApp, { name: 'branch-slug-test-app', user: admin.user }) as App & { organizationId: string };
+      testApp = (await createApplication(nestApp, { name: 'branch-slug-test-app', user: admin.user })) as App & {
+        organizationId: string;
+      };
 
       // Default branch — simulates a git-sync-enabled workspace.
-      const mainBranch = await saveEntity(WorkspaceBranch, { organizationId: orgId, name: 'main', isDefault: true });
+      // reuse the seeded default — (organization_id, branch_name) is unique
+      const mainBranch = await resolveOrSeedDefaultBranch(orgId);
       mainBranchId = mainBranch.id;
 
       // Feature branch.
-      const featBranch = await saveEntity(WorkspaceBranch, { organizationId: orgId, name: 'feature/test', isDefault: false });
+      const featBranch = await saveEntity(WorkspaceBranch, {
+        organizationId: orgId,
+        name: 'feature/test',
+        isDefault: false,
+      });
       featBranchId = featBranch.id;
 
       // Default-branch version: slug = apps.id (PR #16818 stub placeholder).
       // chk_app_versions_branch_metadata requires app_name when branch_id is set.
       const mainVersion = await createApplicationVersion(nestApp, testApp);
-      await updateEntity(AppVersion, mainVersion.id, { branchId: mainBranchId, slug: testApp.id, appName: 'branch-slug-test-app' });
+      await updateEntity(AppVersion, mainVersion.id, {
+        branchId: mainBranchId,
+        slug: testApp.id,
+        appName: 'branch-slug-test-app',
+      });
 
       // Feature-branch version: holds the real canonical slug.
       const featVersion = await createApplicationVersion(nestApp, testApp);
-      await updateEntity(AppVersion, featVersion.id, { branchId: featBranchId, slug: featureSlug, appName: 'branch-slug-test-app' });
+      await updateEntity(AppVersion, featVersion.id, {
+        branchId: featBranchId,
+        slug: featureSlug,
+        appName: 'branch-slug-test-app',
+      });
     });
 
     afterAll(async () => {
       await closeTestApp(nestApp);
     }, 60000);
 
-    it('findAppBySlug returns null for a feature-branch slug (cross-org safety)', async () => {
-      // findAppBySlug is cross-workspace. Accepting feature-branch rows without
-      // org context risks returning the wrong org's app when the same slug exists
-      // in multiple orgs pulled from the same git source. The guard resolves this
-      // via workspace-scoped findBySlug instead; findAppBySlug correctly returns
-      // null so the guard can take over.
+    it('findAppBySlug resolves a slug written on a feature branch (metadata propagation)', async () => {
+      // trg_propagate_app_version_metadata copies metadata across an app's version rows,
+      // so a per-branch-only slug (the old #16818 scenario) can no longer exist
       const result = await appsRepository.findAppBySlug(featureSlug);
-      expect(result).toBeNull();
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(testApp.id);
     });
 
     it('findAppBySlug returns null for a completely unknown slug', async () => {
@@ -140,19 +164,22 @@ describe('AppsRepository', () => {
       expect(result!.id).toBe(testApp.id);
     });
 
-    // When both branches carry the same slug, findByIdOrSlug must resolve via the
-    // default-branch row (the inner join with is_default=true wins). overlayMetadata
-    // stamps app.name from the resolved AppVersion.appName, so setting distinct
-    // appName values on each branch lets us verify which row was used.
-    it('findByIdOrSlug prefers the default-branch row when both branches carry the same slug', async () => {
+    // trg_propagate_app_version_metadata copies metadata across version rows — last write wins app-wide
+    it('findByIdOrSlug resolves the app when both branches carry the same slug', async () => {
       const sharedSlug = 'shared-branch-slug';
 
       const admin = await createAdmin(nestApp, 'apps-repo-branch-pref@tooljet.io');
       const prefOrgId = admin.user.organizationId;
-      const prefApp = await createApplication(nestApp, { name: 'branch-pref-app', user: admin.user }) as App & { organizationId: string };
+      const prefApp = (await createApplication(nestApp, { name: 'branch-pref-app', user: admin.user })) as App & {
+        organizationId: string;
+      };
 
-      const mainBranch = await saveEntity(WorkspaceBranch, { organizationId: prefOrgId, name: 'main', isDefault: true });
-      const featBranch = await saveEntity(WorkspaceBranch, { organizationId: prefOrgId, name: 'feat/pref', isDefault: false });
+      const mainBranch = await resolveOrSeedDefaultBranch(prefOrgId);
+      const featBranch = await saveEntity(WorkspaceBranch, {
+        organizationId: prefOrgId,
+        name: 'feat/pref',
+        isDefault: false,
+      });
 
       const mainVer = await createApplicationVersion(nestApp, prefApp);
       await updateEntity(AppVersion, mainVer.id, {
@@ -171,9 +198,8 @@ describe('AppsRepository', () => {
       const result = await appsRepository.findByIdOrSlug(sharedSlug);
       expect(result).not.toBeNull();
       expect(result!.id).toBe(prefApp.id);
-      // overlayMetadata sets app.name from the resolved AppVersion.appName.
-      // If the default-branch row was used, name is 'from-default-branch'.
-      expect(result!.name).toBe('from-default-branch');
+      // propagation makes app_name uniform — feature-branch write was last
+      expect(result!.name).toBe('from-feature-branch');
     });
 
     it('findBySlug resolves a feature-branch slug when orgId and branchId are both provided', async () => {
@@ -182,18 +208,23 @@ describe('AppsRepository', () => {
       expect(result!.id).toBe(testApp.id);
     });
 
-    it('findBySlug returns null for a feature-branch slug when branchId is absent (default-branch-only path)', async () => {
-      // Slug lives only on the feature branch; without branchId the function
-      // queries the default branch — nothing found.
+    it('findBySlug resolves a feature-branch-written slug without branchId (propagated to default branch)', async () => {
+      // propagation stamps the slug on the default-branch row — the row this path queries
       const result = await appsRepository.findBySlug(featureSlug, orgId, undefined, undefined);
-      expect(result).toBeNull();
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(testApp.id);
     });
 
     it('findBySlug returns null when the slug exists in a different org (cross-org isolation)', async () => {
       // The slug was created under testApp's org in beforeAll. Querying with a
       // different orgId must return null — no cross-org data leak.
       const otherAdmin = await createAdmin(nestApp, 'apps-repo-crossorg@tooljet.io');
-      const result = await appsRepository.findBySlug(featureSlug, otherAdmin.user.organizationId, undefined, featBranchId);
+      const result = await appsRepository.findBySlug(
+        featureSlug,
+        otherAdmin.user.organizationId,
+        undefined,
+        featBranchId
+      );
       expect(result).toBeNull();
     });
   });
@@ -210,7 +241,9 @@ describe('AppsRepository', () => {
 
       // Workspace with no WorkspaceBranch rows — simulates git-sync OFF.
       const admin = await createAdmin(nestApp, 'apps-repo-nogitsync@tooljet.io');
-      branchlessApp = await createApplication(nestApp, { name: 'no-gitsync-app', user: admin.user }) as App & { organizationId: string };
+      branchlessApp = (await createApplication(nestApp, { name: 'no-gitsync-app', user: admin.user })) as App & {
+        organizationId: string;
+      };
       const version = await createApplicationVersion(nestApp, branchlessApp);
       await updateEntity(AppVersion, version.id, { slug: branchlessSlug });
     });
@@ -242,5 +275,53 @@ describe('AppsRepository', () => {
       expect(result).not.toBeNull();
       expect(result!.id).toBe(branchlessApp.id);
     });
+  });
+
+  // Gap check: isModuleEmbeddedInApp filters only on `app.id = parentAppId` — it never
+  // checks the parent app's organizationId. It's a pure structural check with no
+  // independent org boundary; org safety for the module-permission bypass relies entirely
+  // on the caller (editableAppsId) already being org-scoped upstream.
+  describe('isModuleEmbeddedInApp() [gap]', () => {
+    it('returns true for a parentAppId belonging to a different organization than the module', async () => {
+      const { app: nestApp } = await initTestApp();
+      const appsRepository = nestApp.get<AppsRepository>(AppsRepository);
+
+      const moduleOrgAdmin = await createAdmin(nestApp, 'apps-repo-crossorg-module@tooljet.io');
+      const otherOrgAdmin = await createAdmin(nestApp, 'apps-repo-crossorg-parent@tooljet.io');
+
+      const coRelationId = uuidv4();
+      const moduleApp = await createApplication(nestApp, {
+        name: 'crossorg-module',
+        user: moduleOrgAdmin.user,
+        type: 'module',
+      });
+      await updateEntity(App, moduleApp.id, { co_relation_id: coRelationId } as any);
+
+      // Foreign-org app embeds a ModuleViewer pointing at the same co_relation_id.
+      const foreignApp = await createApplication(nestApp, {
+        name: 'crossorg-parent',
+        user: otherOrgAdmin.user,
+        type: 'front-end',
+      });
+      const foreignVersion = await createApplicationVersion(nestApp, foreignApp as any);
+      const homePage = await findEntityOrFail(Page, { appVersionId: foreignVersion.id } as any);
+      await saveEntity(Component, {
+        name: 'module1',
+        type: 'ModuleViewer',
+        pageId: homePage.id,
+        properties: { moduleAppId: { value: coRelationId }, moduleVersionId: { value: '' } },
+        general: {},
+        styles: {},
+        generalStyles: {},
+        validation: {},
+      } as any);
+
+      const result = await appsRepository.isModuleEmbeddedInApp(coRelationId, foreignApp.id);
+      // Current behavior: true, with no org check at all in this method. Safety today
+      // depends entirely on editableAppsId already being org-scoped before this is called.
+      expect(result).toBe(true);
+
+      await closeTestApp(nestApp);
+    }, 60_000);
   });
 });

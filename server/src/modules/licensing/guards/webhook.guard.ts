@@ -14,7 +14,7 @@ export class WebhookGuard implements CanActivate {
     protected readonly appsRepository: AppsRepository,
     protected licenseTermsService: LicenseTermsService,
     protected configService: ConfigService
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -70,7 +70,10 @@ export class WebhookGuard implements CanActivate {
           throw new HttpException('Maximum daily limit for workflow execution has reached for this workspace', 451);
         }
 
-        if (needsMonthlyCheck && parseInt(workspaceCounts.monthly_count, 10) >= workflowsLimit.workspace.monthly_executions) {
+        if (
+          needsMonthlyCheck &&
+          parseInt(workspaceCounts.monthly_count, 10) >= workflowsLimit.workspace.monthly_executions
+        ) {
           throw new HttpException('Maximum monthly limit for workflow execution has reached for this workspace', 451);
         }
       }
@@ -97,7 +100,10 @@ export class WebhookGuard implements CanActivate {
           throw new HttpException('Maximum daily limit for workflow execution has been reached', 451);
         }
 
-        if (needsMonthlyCheck && parseInt(instanceCounts.monthly_count, 10) >= workflowsLimit.instance.monthly_executions) {
+        if (
+          needsMonthlyCheck &&
+          parseInt(instanceCounts.monthly_count, 10) >= workflowsLimit.instance.monthly_executions
+        ) {
           throw new HttpException('Maximum monthly limit for workflow execution has been reached', 451);
         }
       }

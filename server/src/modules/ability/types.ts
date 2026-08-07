@@ -19,6 +19,8 @@ export interface UserPermissions {
   appDelete: boolean;
   workflowCreate: boolean;
   workflowDelete: boolean;
+  moduleCreate?: boolean;
+  moduleDelete?: boolean;
   appPromote: boolean;
   appRelease: boolean;
   dataSourceCreate: boolean;
@@ -26,6 +28,10 @@ export interface UserPermissions {
 
   folderCreate: boolean;
   folderDelete: boolean;
+  workflowFolderCreate: boolean;
+  workflowFolderDelete: boolean;
+  moduleFolderCreate?: boolean;
+  moduleFolderDelete?: boolean;
   orgConstantCRUD: boolean;
   tjdbCRUD: boolean;
   orgVariableCRUD: boolean;
@@ -33,6 +39,10 @@ export interface UserPermissions {
   [MODULES.GLOBAL_DATA_SOURCE]?: UserDataSourcePermissions;
   [MODULES.WORKFLOWS]?: UserWorkflowPermissions;
   [MODULES.FOLDER]?: UserFolderPermissions;
+  // Modules reuse the apps permission shape (editable/viewable sets), resolved from ResourceType.MODULE.
+  [MODULES.MODULES]?: UserAppsPermissions;
+  [MODULES.WORKFLOW_FOLDER]?: UserFolderPermissions;
+  [MODULES.MODULE_FOLDER]?: UserFolderPermissions;
 }
 export interface UserWorkflowPermissions {
   editableWorkflowsId: string[];
@@ -55,6 +65,8 @@ export interface UserAppsPermissions {
   isAllViewable: boolean;
   hiddenAppsId: string[];
   hideAll: boolean;
+  // Modules the user owns (apps.user_id). Owner-exempt from hide-from-dashboard.
+  ownedAppsId: string[];
   environmentAccess?: EnvironmentPermissionSet;
   appSpecificEnvironmentAccess?: Record<string, EnvironmentPermissionSet>;
 }

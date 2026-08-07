@@ -52,6 +52,10 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     // ── 3. Backfill branch_id = org default branch, then enforce NOT NULL ────────
     // Covers the remaining NULL rows: DRAFT version rows and PUBLISHED rows. All of
     // them already carry app_name/slug, so chk_app_versions_branch_metadata holds.
+    // Workflows are excluded from the backfill and from the NOT NULL requirement below —
+    // they don't participate in branching (1778000000000's step 2a-bis already detached
+    // their branch_id to NULL) and never carry app_name/slug, so backfilling a real
+    // branch_id here would immediately trip chk_app_versions_branch_metadata.
     await queryRunner.query(`
       UPDATE app_versions av
       SET branch_id = wb.id
@@ -60,9 +64,43 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
         ON wb.organization_id = a.organization_id AND wb.is_default = true
       WHERE av.app_id = a.id
         AND av.branch_id IS NULL
+        AND a.type <> 'workflow'
     `);
 
-    await queryRunner.query(`ALTER TABLE app_versions ALTER COLUMN branch_id SET NOT NULL`);
+    // branch_id is mandatory for every type EXCEPT workflows, which is not expressible as
+    // a column-level NOT NULL (that can't be conditioned on apps.type). Enforce it with a
+    // trigger instead, mirroring the app_name/slug uniqueness triggers below in this same
+    // migration.
+    await queryRunner.query(`
+      CREATE OR REPLACE FUNCTION enforce_app_versions_branch_id_required()
+      RETURNS TRIGGER AS $$
+      DECLARE
+        v_app_type varchar;
+      BEGIN
+        IF NEW.branch_id IS NOT NULL THEN
+          RETURN NEW;
+        END IF;
+
+        SELECT type INTO v_app_type FROM apps WHERE id = NEW.app_id;
+        IF v_app_type IS NULL OR v_app_type = 'workflow' THEN
+          RETURN NEW;
+        END IF;
+
+        RAISE EXCEPTION 'null value in column "branch_id" violates not-null constraint'
+          USING ERRCODE = 'not_null_violation';
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+    await queryRunner.query(`
+      DROP TRIGGER IF EXISTS trg_app_versions_branch_id_required ON app_versions
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trg_app_versions_branch_id_required
+        BEFORE INSERT OR UPDATE OF branch_id, app_id
+        ON app_versions
+        FOR EACH ROW
+        EXECUTE FUNCTION enforce_app_versions_branch_id_required()
+    `);
 
     // branch_id is mandatory now, so ON DELETE SET NULL can no longer satisfy the
     // NOT NULL column. Switch the FK to CASCADE (matches data_source_versions):
@@ -418,8 +456,12 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     await queryRunner.query(`DROP FUNCTION IF EXISTS enforce_app_versions_slug_branch_unique()`);
     await queryRunner.query(`DROP FUNCTION IF EXISTS enforce_app_versions_default_branch_slug_unique()`);
 
-    // Restore FK to ON DELETE SET NULL and relax NOT NULL.
-    await queryRunner.query(`ALTER TABLE app_versions ALTER COLUMN branch_id DROP NOT NULL`);
+    // No column-level NOT NULL was ever set (Task 0 replaced it with a trigger) — drop
+    // the trigger instead.
+    await queryRunner.query(`DROP TRIGGER IF EXISTS trg_app_versions_branch_id_required ON app_versions`);
+    await queryRunner.query(`DROP FUNCTION IF EXISTS enforce_app_versions_branch_id_required()`);
+
+    // Restore FK to ON DELETE SET NULL.
     await queryRunner.query(`ALTER TABLE app_versions DROP CONSTRAINT IF EXISTS fk_app_versions_branch`);
     await queryRunner.query(`
       ALTER TABLE app_versions

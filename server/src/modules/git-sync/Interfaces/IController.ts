@@ -9,9 +9,5 @@ export interface IGitSyncController {
 
   testConnection(user: UserEntity, payload: unknown): Promise<any>;
 
-  setFinalizeConfig(
-    user: UserEntity,
-    organizationGitId: string,
-    configDto: ProviderConfigDTO
-  ): Promise<void>;
+  setFinalizeConfig(user: UserEntity, organizationGitId: string, configDto: ProviderConfigDTO): Promise<void>;
 }

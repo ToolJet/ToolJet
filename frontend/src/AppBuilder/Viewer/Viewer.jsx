@@ -38,6 +38,7 @@ export const Viewer = ({
     'view',
     { environmentId, versionId, componentName },
     moduleMode,
+    false,
     appSlug
   );
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
@@ -196,8 +197,8 @@ export const Viewer = ({
                                 isPagesSidebarHidden || currentLayout === 'mobile'
                                   ? 'auto'
                                   : position === 'top'
-                                  ? '0px'
-                                  : '256px',
+                                    ? '0px'
+                                    : '256px',
                             }}
                           >
                             <div

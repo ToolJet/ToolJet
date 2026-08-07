@@ -170,8 +170,8 @@ class ResetPasswordComponent extends React.Component {
                                     ? '#D1D5DB'
                                     : '#656565'
                                   : this.state?.password?.length
-                                  ? '#384151'
-                                  : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                               }
                             />
                           ) : (
@@ -182,8 +182,8 @@ class ResetPasswordComponent extends React.Component {
                                     ? '#D1D5DB'
                                     : '#656565'
                                   : this.state?.password?.length
-                                  ? '#384151'
-                                  : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                               }
                             />
                           )}
@@ -226,8 +226,8 @@ class ResetPasswordComponent extends React.Component {
                                     ? '#D1D5DB'
                                     : '#656565'
                                   : this.state?.password_confirmation?.length
-                                  ? '#384151'
-                                  : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                               }
                             />
                           ) : (
@@ -238,8 +238,8 @@ class ResetPasswordComponent extends React.Component {
                                     ? '#D1D5DB'
                                     : '#656565'
                                   : this.state?.password_confirmation?.length
-                                  ? '#384151'
-                                  : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                               }
                             />
                           )}

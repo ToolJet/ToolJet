@@ -16,11 +16,7 @@ import type {
   CascaderValidationStatus,
   CascaderValue,
 } from './types';
-import {
-  buildPathMaps,
-  computeSelection,
-  getCascaderValueKey,
-} from './utils';
+import { buildPathMaps, computeSelection, getCascaderValueKey } from './utils';
 
 interface UseCascaderParams {
   tree: CascaderNode[];
@@ -119,7 +115,9 @@ export function useCascader({
 
   const [selectedValue, setSelectedValue] = useState<CascaderValue | null>(() => {
     const initialMaps = buildPathMaps(tree);
-    return defaultValue !== null && defaultValue !== undefined && initialMaps.leafSet.has(getCascaderValueKey(defaultValue))
+    return defaultValue !== null &&
+      defaultValue !== undefined &&
+      initialMaps.leafSet.has(getCascaderValueKey(defaultValue))
       ? defaultValue
       : null;
   });

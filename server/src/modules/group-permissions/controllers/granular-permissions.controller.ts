@@ -45,6 +45,20 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     return await this.granularPermissionsService.getAddableFolders(user.organizationId);
   }
 
+  @InitFeature(FEATURE_KEY.GET_ADDABLE_WORKFLOW_FOLDERS)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
+  @Get('granular-permissions/addable-workflow-folders')
+  async getAddableWorkflowFolders(@User() user: UserEntity): Promise<AddableResourceItem[]> {
+    return await this.granularPermissionsService.getAddableWorkflowFolders(user.organizationId);
+  }
+
+  @InitFeature(FEATURE_KEY.GET_ADDABLE_MODULE_FOLDERS)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
+  @Get('granular-permissions/addable-module-folders')
+  async getAddableModuleFolders(@User() user: UserEntity): Promise<AddableResourceItem[]> {
+    return await this.granularPermissionsService.getAddableModuleFolders(user.organizationId);
+  }
+
   @InitFeature(FEATURE_KEY.CREATE_GRANULAR_APP_PERMISSIONS)
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Post(':id/granular-permissions/app')
@@ -73,6 +87,30 @@ export class GranularPermissionsController implements IGranularPermissionsContro
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Post(':id/granular-permissions/folder')
   async createGranularFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') groupId: string,
+    @Body() createGranularPermissionsDto: CreateGranularPermissionDto
+  ) {
+    createGranularPermissionsDto.groupId = groupId;
+    return await this.granularPermissionsService.create(user, createGranularPermissionsDto);
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
+  @Post(':id/granular-permissions/workflow-folder')
+  async createGranularWorkflowFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') groupId: string,
+    @Body() createGranularPermissionsDto: CreateGranularPermissionDto
+  ) {
+    createGranularPermissionsDto.groupId = groupId;
+    return await this.granularPermissionsService.create(user, createGranularPermissionsDto);
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE_GRANULAR_MODULE_FOLDER_PERMISSIONS)
+  @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
+  @Post(':id/granular-permissions/module-folder')
+  async createGranularModuleFolderPermissions(
     @User() user: UserEntity,
     @Param('id') groupId: string,
     @Body() createGranularPermissionsDto: CreateGranularPermissionDto
@@ -124,6 +162,28 @@ export class GranularPermissionsController implements IGranularPermissionsContro
     await this.granularPermissionsService.update(granularPermissionsId, user, updateGranularPermissionDto);
   }
 
+  @InitFeature(FEATURE_KEY.UPDATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS)
+  @UseGuards(FeatureAbilityGuard)
+  @Put('granular-permissions/workflow-folder/:id')
+  async updateGranularWorkflowFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string,
+    @Body() updateGranularPermissionDto: UpdateGranularPermissionDto<any>
+  ) {
+    await this.granularPermissionsService.update(granularPermissionsId, user, updateGranularPermissionDto);
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_GRANULAR_MODULE_FOLDER_PERMISSIONS)
+  @UseGuards(FeatureAbilityGuard)
+  @Put('granular-permissions/module-folder/:id')
+  async updateGranularModuleFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string,
+    @Body() updateGranularPermissionDto: UpdateGranularPermissionDto<any>
+  ) {
+    await this.granularPermissionsService.update(granularPermissionsId, user, updateGranularPermissionDto);
+  }
+
   @InitFeature(FEATURE_KEY.DELETE_GRANULAR_APP_PERMISSIONS)
   @UseGuards(FeatureAbilityGuard)
   @Delete('granular-permissions/app/:id')
@@ -148,6 +208,26 @@ export class GranularPermissionsController implements IGranularPermissionsContro
   @UseGuards(FeatureAbilityGuard)
   @Delete('granular-permissions/folder/:id')
   async deleteGranularFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string
+  ): Promise<void> {
+    await this.granularPermissionsService.delete(granularPermissionsId, user);
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS)
+  @UseGuards(FeatureAbilityGuard)
+  @Delete('granular-permissions/workflow-folder/:id')
+  async deleteGranularWorkflowFolderPermissions(
+    @User() user: UserEntity,
+    @Param('id') granularPermissionsId: string
+  ): Promise<void> {
+    await this.granularPermissionsService.delete(granularPermissionsId, user);
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_GRANULAR_MODULE_FOLDER_PERMISSIONS)
+  @UseGuards(FeatureAbilityGuard)
+  @Delete('granular-permissions/module-folder/:id')
+  async deleteGranularModuleFolderPermissions(
     @User() user: UserEntity,
     @Param('id') granularPermissionsId: string
   ): Promise<void> {

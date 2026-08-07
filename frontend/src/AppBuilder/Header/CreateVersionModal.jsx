@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
+import { ToolTip } from '@/_components/ToolTip';
 import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
@@ -22,13 +23,14 @@ const CreateVersionModal = ({
   versionId,
   onVersionCreated,
   isBranchingEnabled,
+  getSuccessMessage,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
-  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isGitSyncEnabled = orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
 
   const {
@@ -41,8 +43,8 @@ const CreateVersionModal = ({
     currentMode,
     currentEnvironment,
     environments,
-    setIsEditorFreezed,
     branchingEnabled,
+    isEditorReadOnly,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -58,8 +60,8 @@ const CreateVersionModal = ({
       currentMode: state.currentMode,
       currentEnvironment: state.selectedEnvironment,
       environments: state.environments,
-      setIsEditorFreezed: state.setIsEditorFreezed,
       branchingEnabled: state.branchingEnabled,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
@@ -135,6 +137,10 @@ const CreateVersionModal = ({
   const { t } = useTranslation();
 
   const createVersion = async () => {
+    if (isEditorReadOnly) {
+      toast.error('You do not have permission to save this version');
+      return;
+    }
     if (versionName.trim().length > 25) {
       toast.error('Version name should not be longer than 25 characters');
       return;
@@ -221,7 +227,21 @@ const CreateVersionModal = ({
 
       // Apps never pushed to git (isSynced === false) have no commit history to tag —
       // treat the save like a non-git workspace and skip tagging silently.
-      if (isGitSyncEnabled && effectiveIsBranchingEnabled && selectedVersionForCreation?.isSynced !== false) {
+      //
+      // Saving FROM a feature-branch draft (versionType 'branch') is a separate case:
+      // the backend (createPublishedVersionFromBranchDraft) clones the draft into a new,
+      // deliberately isSynced:false row on the default branch — but selectedVersionForCreation
+      // here is still the ORIGINAL branch draft object, whose own isSynced can be true (it
+      // was pushed to git as a draft earlier). Tagging it directly would tag the wrong row
+      // under its random UUID placeholder name, so skip tagging for this case too.
+      const isBranchDraftSave =
+        selectedVersionForCreation?.versionType === 'branch' || selectedVersionForCreation?.version_type === 'branch';
+      if (
+        isGitSyncEnabled &&
+        effectiveIsBranchingEnabled &&
+        !isBranchDraftSave &&
+        selectedVersionForCreation?.isSynced !== false
+      ) {
         gitSyncService
           .createGitTag(
             appId,
@@ -237,7 +257,7 @@ const CreateVersionModal = ({
           });
       }
 
-      toast.success('Version Created successfully');
+      toast.success(getSuccessMessage ? getSuccessMessage(versionName.trim()) : 'Version Created successfully');
       setVersionName('');
       setVersionDescription('');
       setSelectedVersionForCreation(null);
@@ -259,11 +279,6 @@ const CreateVersionModal = ({
           selectedVersionForCreation.id,
           currentMode
         );
-
-        // Set editor freeze state based on should_freeze_editor
-        if (newVersionData.should_freeze_editor !== undefined) {
-          setIsEditorFreezed(newVersionData.should_freeze_editor);
-        }
 
         if (newVersionData.editing_version?.id) {
           const newVersionEnvironmentId = newVersionData.editing_version.currentEnvironmentId;
@@ -500,16 +515,28 @@ const CreateVersionModal = ({
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
-              <ButtonSolid
-                size="lg"
-                variant="primary"
-                className=""
-                type="submit"
-                disabled={!selectedVersionForCreation || isCreatingVersion}
-                data-cy="create-version-save-button"
+              <ToolTip
+                message={
+                  isEditorReadOnly
+                    ? "You don't have access to save this version. Contact admin to know more."
+                    : 'Save this version'
+                }
+                placement="top"
+                width="280px"
               >
-                {t('editor.appVersionManager.saveVersion', 'Save version')}
-              </ButtonSolid>
+                <span>
+                  <ButtonSolid
+                    size="lg"
+                    variant="primary"
+                    className=""
+                    type="submit"
+                    disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
+                    data-cy="create-version-save-button"
+                  >
+                    {t('editor.appVersionManager.saveVersion', 'Save version')}
+                  </ButtonSolid>
+                </span>
+              </ToolTip>
             </div>
           </div>
         </form>

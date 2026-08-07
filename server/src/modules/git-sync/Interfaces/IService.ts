@@ -6,11 +6,7 @@ import { TestConnectionPayloadDTO } from '@modules/git-sync/providers/dto/test-p
 export interface IGitSyncService {
   saveProviderConfig(userId: string, organizationId: string, configData: ProviderConfigDTO): Promise<void>;
 
-  toggleEnvProviderConfig(
-    userId: string,
-    organizationId: string,
-    configData: UpdateGitEnvConfigDTO
-  ): Promise<void>;
+  toggleEnvProviderConfig(userId: string, organizationId: string, configData: UpdateGitEnvConfigDTO): Promise<void>;
 
   testProviderConnection(userId: string, organizationId: string, payload: TestConnectionPayloadDTO): Promise<any>;
 }

@@ -62,7 +62,7 @@ export const useDynamicHeight = ({
       indices = [];
     }
     const contextIndices = normalizeLayoutContext(indices);
-    const elementSelector = getDynamicElementSelector(id, contextIndices);
+    const elementSelector = getDynamicElementSelector(id, contextIndices, moduleId);
     const element = document.querySelector(elementSelector);
     // Note: element may be null when the caller is a row-context reflow for a
     // widget whose own WidgetWrapper lives at a different context (e.g.
@@ -125,7 +125,7 @@ export const useDynamicHeight = ({
       // owns the clear at the widget level instead.
       if (isContainer && !isRowSubcontainer) {
         const clearContainerTempLayouts = useStore.getState().clearContainerTempLayouts;
-        clearContainerTempLayouts?.(id, contextIndices);
+        clearContainerTempLayouts?.(id, contextIndices, moduleId);
       }
       useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices, moduleId);
     }

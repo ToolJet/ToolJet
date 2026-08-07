@@ -1,0 +1,10 @@
+# keep in sync with eslint ignores
+**/node_modules
+**/dist
+frontend/build
+frontend/assets
+server/src/migrations
+server/ee/migrations
+docs/build
+plugins/dist
+**/package-lock.json

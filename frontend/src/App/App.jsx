@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
+import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
@@ -18,6 +18,7 @@ import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
+import { toast } from 'react-hot-toast';
 import '@/_styles/theme.scss';
 import AppLoader from '@/AppLoader';
 export const BreadCrumbContext = React.createContext({});
@@ -120,6 +121,15 @@ class AppComponent extends React.Component {
   }
 
   async componentDidMount() {
+    // Set before a window.location.reload() (e.g. after resolving git sync conflicts) —
+    // a toast fired right before a full reload gets torn down with the DOM before it's
+    // ever visible, so the message is persisted and shown here once the fresh page mounts.
+    const pendingSyncToast = sessionStorage.getItem('sync_success_toast');
+    if (pendingSyncToast) {
+      sessionStorage.removeItem('sync_success_toast');
+      setTimeout(() => toast.success(pendingSyncToast), 500);
+    }
+
     setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
@@ -396,9 +406,9 @@ class AppComponent extends React.Component {
                     exact
                     path="/integrations"
                     element={
-                      <AdminRoute {...this.props} darkMode={darkMode}>
+                      <MarketplaceRoute>
                         <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </AdminRoute>
+                      </MarketplaceRoute>
                     }
                   >
                     <Route path="installed" element={<InstalledPlugins />} />

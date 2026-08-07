@@ -8,6 +8,7 @@ import {
 } from '@/modules/common/components/BasePromoteReleaseButton/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
@@ -37,6 +38,7 @@ const VersionDropdownItem = ({
   const versions = useVersionManagerStore((state) => state.versions);
   const developmentVersions = useStore((state) => state.developmentVersions);
   const featureAccess = useStore((state) => state.license.featureAccess);
+  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const { appType } = useModuleContext();
   const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
 
@@ -66,6 +68,17 @@ const VersionDropdownItem = ({
       developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
+
+  // Versions saved from a feature branch (see createPublishedVersionFromBranchDraft in
+  // versions/util.service.ts) have a BRANCH-type parent whose own `name` is a random
+  // UUID, not a human name — the real branch name lives on WorkspaceBranch. Surface
+  // that as a tag instead of the generic "created from <uuid>" line.
+  const parentIsBranchVersion = parentVersion?.versionType === 'branch' || parentVersion?.version_type === 'branch';
+  const workspaceBranches = useWorkspaceBranchesStore((state) => state.branches);
+  const sourceBranchId = parentVersion?.branchId || parentVersion?.branch_id;
+  const sourceBranchName = parentIsBranchVersion
+    ? workspaceBranches.find((b) => b.id === sourceBranchId)?.name ?? 'feature-branch'
+    : null;
 
   const metadataRef = useRef(null);
   const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
@@ -121,6 +134,7 @@ const VersionDropdownItem = ({
     !isReleased &&
     (featureAccess?.multiEnvironment ? isInProduction : isPublished);
   const canCreateVersion = isDraft; // Show create version button for drafts
+  const canOpenMoreMenu = !isEditorReadOnly; // Build-with: no-op edit/delete actions, hide entirely
 
   const renderMenu = (
     <Popover
@@ -187,7 +201,7 @@ const VersionDropdownItem = ({
         {version.name}
       </div>
       <div style={{ padding: '12px 12px 8px' }}>
-        {createdFromVersionName && (
+        {sourceBranchName ? (
           <div
             style={{
               fontSize: '12px',
@@ -197,8 +211,22 @@ const VersionDropdownItem = ({
               fontWeight: 400,
             }}
           >
-            Version created from {createdFromVersionName}
+            Version created from {sourceBranchName}
           </div>
+        ) : (
+          createdFromVersionName && (
+            <div
+              style={{
+                fontSize: '12px',
+                lineHeight: '18px',
+                color: 'var(--text-default)',
+                marginBottom: '4px',
+                fontWeight: 400,
+              }}
+            >
+              created from {createdFromVersionName}
+            </div>
+          )
         )}
         {version.description && (
           <div
@@ -250,6 +278,33 @@ const VersionDropdownItem = ({
               >
                 {displayName}
               </div>
+
+              {/* Source branch tag — this version was saved from a feature branch draft */}
+              {sourceBranchName && (
+                <ToolTip message={`Version created from ${sourceBranchName}`} placement="top">
+                  <span
+                    className="tj-text-xsm"
+                    style={{
+                      backgroundColor: 'var(--slate3)',
+                      color: 'var(--slate11)',
+                      padding: '0 8px',
+                      borderRadius: '4px',
+                      fontWeight: 500,
+                      lineHeight: '18px',
+                      flexShrink: 0,
+                      display: 'inline-block',
+                      maxWidth: '100px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      verticalAlign: 'middle',
+                    }}
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-source-branch-tag`}
+                  >
+                    {sourceBranchName}
+                  </span>
+                </ToolTip>
+              )}
 
               {/* Draft tag */}
               {isDraft && (
@@ -357,23 +412,36 @@ const VersionDropdownItem = ({
 
                     {/* Create version button - shown for drafts */}
                     {canCreateVersion && (
-                      <Button
-                        variant="outline"
-                        size="small"
-                        className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuVersionId?.(null);
-                          onCreateVersion?.(version);
-                        }}
-                        data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                      <ToolTip
+                        message={
+                          isEditorReadOnly
+                            ? "You don't have access to save this version. Contact admin to know more."
+                            : 'Save this version'
+                        }
+                        placement="left"
+                        width="280px"
                       >
-                        Save version
-                      </Button>
+                        <span>
+                          <Button
+                            variant="outline"
+                            size="small"
+                            disabled={isEditorReadOnly}
+                            className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuVersionId?.(null);
+                              onCreateVersion?.(version);
+                            }}
+                            data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                          >
+                            Save version
+                          </Button>
+                        </span>
+                      </ToolTip>
                     )}
 
                     {/* More menu */}
-                    {!(isGitSyncEnabled && isReleased) && (
+                    {canOpenMoreMenu && !(isGitSyncEnabled && isReleased) && (
                       <OverlayTrigger
                         trigger="click"
                         placement="bottom-end"
@@ -420,8 +488,11 @@ const VersionDropdownItem = ({
               }}
               data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-creation-details`}
             >
-              {!isGitSyncDraft && createdFromVersionName && `created from ${createdFromVersionName}`}
-              {!isGitSyncDraft && createdFromVersionName && version.description && ' | '}
+              {!isGitSyncDraft &&
+                !sourceBranchName &&
+                createdFromVersionName &&
+                `created from ${createdFromVersionName}`}
+              {!isGitSyncDraft && !sourceBranchName && createdFromVersionName && version.description && ' | '}
               {effectiveDescription}
             </div>
           )}

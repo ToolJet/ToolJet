@@ -15,7 +15,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
     return App;
   }
 
-  protected getResource(): ResourceDetails {
+  protected getResource(request?: any): ResourceDetails | ResourceDetails[] {
     const resource: App = this.getResourceObject();
     switch (resource?.type) {
       case APP_TYPES.FRONT_END:
@@ -27,9 +27,13 @@ export class FeatureAbilityGuard extends AbilityGuard {
           resourceType: MODULES.WORKFLOWS,
         };
       case APP_TYPES.MODULE:
-        return {
-          resourceType: MODULES.MODULES,
-        };
+        // parentAppId present -> caller may qualify for the embedded-in-editable-app
+        // bypass (see FeatureAbilityFactory.defineAbilityFor). That check needs the
+        // requester's APP-bucket editableAppsId, which is only computed when APP is
+        // in the requested resource list, so request it too.
+        return request?.query?.parentAppId
+          ? [{ resourceType: MODULES.MODULES }, { resourceType: MODULES.APP }]
+          : { resourceType: MODULES.MODULES };
       default:
         return null;
     }
