@@ -1,0 +1,32 @@
+import { Command } from '@oclif/core';
+
+import { build } from '../../lib/component/builder';
+import { formatError, formatSuccess, formatDuration } from '../../lib/log';
+
+export default class Build extends Command {
+  static description = 'Build the component library locally to dist/ (no upload, no auth required)';
+
+  static examples = [`$ tooljet component build`];
+
+  async run(): Promise<void> {
+    try {
+      this.log(`Building your component library...\n`);
+
+      const result = await build(process.cwd(), { env: 'production' });
+
+      const tsCompiledMsg = `TypeScript compiled (${result.tsErrors} errors)`;
+      const buildTime = formatDuration(result.buildMs);
+
+      this.log(result.tsErrors > 0 ? tsCompiledMsg : formatSuccess(tsCompiledMsg));
+      this.log(formatSuccess(`Manifest generated: dist/manifest.json (${result.componentCount} components)`));
+      this.log(formatSuccess(`Bundle built: dist/index.js (${result.bundleSizeKb} KB)`));
+
+      if (result.hasCss) this.log(formatSuccess(`CSS output: dist/index.css (${result.cssSizeKb} KB)`));
+
+      this.log(`\n Build completed in ${buildTime}`);
+    } catch (err) {
+      this.log(formatError((err as Error).message));
+      process.exit(1);
+    }
+  }
+}
