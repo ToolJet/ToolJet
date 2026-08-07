@@ -7,6 +7,8 @@ import { NextFunction } from 'express';
 import { Request, Response } from 'express';
 import { recordApiDuration, recordApiHit } from '@otel/tracing';
 import { Logger } from 'nestjs-pino';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 @Injectable()
 export class OtelMiddleware implements NestMiddleware {
@@ -20,7 +22,10 @@ export class OtelMiddleware implements NestMiddleware {
     if (this.configService.get<string>('ENABLE_OTEL') !== 'true') {
       return next();
     }
-    if (!(await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.OBSERVABILITY_ENABLED))) {
+    // Observability license is an EE (self-hosted) construct. On Cloud, ToolJet operates
+    // the platform — ENABLE_OTEL is the only gate.
+    const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
+    if (!isCloud && !(await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.OBSERVABILITY_ENABLED))) {
       return next();
     }
 
