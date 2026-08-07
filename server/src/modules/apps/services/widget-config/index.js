@@ -40,6 +40,7 @@ import { tagsConfig } from './tags';
 import { paginationConfig } from './pagination';
 import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
+import { libraryComponentConfig } from './libraryComponent';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
 import { timelineConfig } from './timeline';
@@ -132,6 +133,7 @@ const widgets = {
   paginationConfig,
   circularProgressbarConfig,
   spinnerConfig,
+  libraryComponentConfig,
   statisticsConfig,
   rangeSliderConfig,
   rangeSliderV2Config,
