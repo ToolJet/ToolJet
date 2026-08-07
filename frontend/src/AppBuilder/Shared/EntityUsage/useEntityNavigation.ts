@@ -1,8 +1,9 @@
 import useStore from '@/AppBuilder/_stores/store';
+import type { UsageEntryKind } from '@/AppBuilder/_utils/entityUsage';
 
-export const NAVIGABLE_KINDS = new Set(['component', 'query', 'variable', 'pageVariable', 'global', 'constant']);
+export const NAVIGABLE_KINDS = new Set<string>(['component', 'query', 'variable', 'pageVariable', 'global', 'constant']);
 
-export const KIND_LABELS = {
+export const KIND_LABELS: Record<UsageEntryKind, string> = {
   component: 'component',
   query: 'query',
   variable: 'variable',
@@ -14,11 +15,27 @@ export const KIND_LABELS = {
   unknown: 'unknown',
 };
 
+/** Anything with enough shape to navigate to. `UsageEntry` satisfies it. */
+export type NavigableEntry = {
+  kind?: string | null;
+  id?: string | null;
+  name?: string;
+};
+
+/**
+ * A callable with an `inspect` method hung off it: calling it navigates the builder,
+ * `.inspect(entry)` only opens the left Inspector. Same function object, two entry points.
+ */
+export interface NavigateToEntity {
+  (entry: NavigableEntry): boolean;
+  inspect: (entry: NavigableEntry) => boolean;
+}
+
 // Navigates the builder to a usage entry ({ kind, id, name }): components are
 // selected on canvas, queries open in the query panel, variables/globals/constants
 // open the left Inspector. Returns true when navigation happened.
 // Inspector node path for an entry, or null when the entry has no Inspector node.
-export const inspectorPathFor = (entry) => {
+export const inspectorPathFor = (entry?: NavigableEntry | null): string | null => {
   switch (entry?.kind) {
     case 'component':
       return `components.${entry.name}`;
@@ -37,25 +54,25 @@ export const inspectorPathFor = (entry) => {
   }
 };
 
-const useEntityNavigation = () => {
-  const setSelectedComponents = useStore((state) => state.setSelectedComponents);
-  const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
-  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
-  const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
-  const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
-  const setSelectedNodePath = useStore((state) => state.setSelectedNodePath);
+const useEntityNavigation = (): NavigateToEntity => {
+  const setSelectedComponents = useStore((state: any) => state.setSelectedComponents);
+  const setSelectedQuery = useStore((state: any) => state.queryPanel.setSelectedQuery);
+  const setIsQueryPaneExpanded = useStore((state: any) => state.queryPanel.setIsQueryPaneExpanded);
+  const setSelectedSidebarItem = useStore((state: any) => state.setSelectedSidebarItem);
+  const toggleLeftSidebar = useStore((state: any) => state.toggleLeftSidebar);
+  const setSelectedNodePath = useStore((state: any) => state.setSelectedNodePath);
 
-  const openLeftInspector = (path) => {
+  const openLeftInspector = (path: string) => {
     setSelectedNodePath?.(path);
     setSelectedSidebarItem('inspect');
     toggleLeftSidebar(true);
   };
 
-  const navigateToEntity = (entry) => {
+  const navigate = (entry: NavigableEntry): boolean => {
     switch (entry.kind) {
       case 'component': {
         setSelectedComponents([entry.id]);
-        document.getElementById(entry.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById(entry.id as string)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return true;
       }
       case 'query': {
@@ -80,7 +97,9 @@ const useEntityNavigation = () => {
     }
   };
 
-  navigateToEntity.inspect = (entry) => {
+  // Same function object, with `inspect` hung off it — see NavigateToEntity.
+  const navigateToEntity = navigate as NavigateToEntity;
+  navigateToEntity.inspect = (entry: NavigableEntry): boolean => {
     const path = inspectorPathFor(entry);
     if (!path) return false;
     openLeftInspector(path);

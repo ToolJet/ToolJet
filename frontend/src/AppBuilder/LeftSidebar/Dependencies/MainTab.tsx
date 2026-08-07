@@ -5,14 +5,32 @@ import DependencyEntityRow from './DependencyEntityRow';
 import { NoDependenciesEmptyState, NoSearchMatchesEmptyState } from './EmptyState';
 import { ComponentIcon, EntityIcon, QueryIcon } from './entityIcons';
 import { getComponentDisplayName } from './relationshipLabels';
+import type { DependencySections } from '@/AppBuilder/_utils/entityUsage';
+import type { ComponentsById, DependencySelection, QueriesById } from './types';
 
-const matches = (name, term) => !term || String(name).toLowerCase().includes(term);
+const matches = (name: string, term: string) => !term || String(name).toLowerCase().includes(term);
+
+export type MainTabProps = {
+  sections: DependencySections;
+  searchTerm: string;
+  queriesById: QueriesById;
+  componentsById: ComponentsById;
+  onSelect: (selection: DependencySelection) => void;
+  onClearSearch: () => void;
+};
 
 /**
  * The Dependencies list: every entity on the page that participates in at least
  * one relationship, grouped by kind. Clicking a row opens its detail tab.
  */
-export const MainTab = ({ sections, searchTerm, queriesById, componentsById, onSelect, onClearSearch }) => {
+export const MainTab = ({
+  sections,
+  searchTerm,
+  queriesById,
+  componentsById,
+  onSelect,
+  onClearSearch,
+}: MainTabProps) => {
   const term = searchTerm.trim().toLowerCase();
   const searching = Boolean(term);
 
@@ -65,7 +83,9 @@ export const MainTab = ({ sections, searchTerm, queriesById, componentsById, onS
                 name={entry.name}
                 highlight={term}
                 onClick={
-                  entry.kind === 'query' && entry.id ? () => onSelect({ kind: 'query', id: entry.id }) : undefined
+                  entry.kind === 'query' && entry.id
+                    ? () => onSelect({ kind: 'query', id: entry.id as string })
+                    : undefined
                 }
                 dataCy={`dependency-row-${entry.kind}-${String(entry.name).toLowerCase()}`}
               />

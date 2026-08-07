@@ -1,46 +1,69 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button';
-import InputComponent from '@/components/ui/Input/Index';
+import { Button as RawButton } from '@/components/ui/Button/Button';
+import RawInputComponent from '@/components/ui/Input/Index';
 import { getDependencySections } from '@/AppBuilder/_utils/entityUsage';
+import type { DependencySections } from '@/AppBuilder/_utils/entityUsage';
 import useEntityNavigation from '@/AppBuilder/Shared/EntityUsage/useEntityNavigation';
+import type { NavigateToEntity } from '@/AppBuilder/Shared/EntityUsage/useEntityNavigation';
 import MainTab from './MainTab';
 import DetailTab, { DetailHeader, detailMenuIcons, subSectionIcons } from './DetailTab';
 import { ComponentIcon, EntityIcon, QueryIcon } from './entityIcons';
+import type {
+  ComponentsById,
+  DependencyEntry,
+  DependencySelection,
+  DetailGroup,
+  DetailView,
+  QueriesById,
+} from './types';
 import './styles.scss';
+
+// Untyped JS modules — cast at the import site.
+const ButtonComponent = RawButton as React.ComponentType<any>;
+const InputComponent = RawInputComponent as React.ComponentType<any>;
+
+export type DependencyViewerProps = {
+  darkMode?: boolean;
+  onClose: () => void;
+  moduleId: string;
+};
 
 // Left sidebar "Dependencies" panel. The main tab lists every entity on the page
 // that participates in a relationship; selecting one opens its detail tab.
-const DependencyViewer = ({ darkMode, onClose, moduleId }) => {
+const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps) => {
   const [searchValue, setSearchValue] = useState('');
-  const [selected, setSelected] = useState(null); // { kind, id }
+  const [selected, setSelected] = useState<DependencySelection | null>(null);
 
   // Subscriptions that make the lists recompute when bindings can have changed:
   // page components (property bindings), queries (options refs) and events (triggers).
-  const pageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
-  const queries = useStore((state) => state.dataQuery.queries.modules[moduleId]);
-  const events = useStore((state) => state.eventsSlice.module[moduleId]?.events);
-  const selectedComponent = useStore((state) => state.selectedComponents?.[0]);
+  const pageComponents = useStore((state: any) => state.getCurrentPageComponents(moduleId), shallow);
+  const queries = useStore((state: any) => state.dataQuery.queries.modules[moduleId]);
+  const events = useStore((state: any) => state.eventsSlice.module[moduleId]?.events);
+  const selectedComponent = useStore((state: any) => state.selectedComponents?.[0]);
   const navigateToEntity = useEntityNavigation();
 
   const selectedComponentId = typeof selectedComponent === 'string' ? selectedComponent : selectedComponent?.id;
 
-  const sections = useMemo(
+  const sections = useMemo<DependencySections>(
     () => getDependencySections(useStore.getState(), moduleId),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [pageComponents, queries, events, moduleId]
   );
 
-  const queriesById = useMemo(() => Object.fromEntries((queries ?? []).map((query) => [query.id, query])), [queries]);
-  const componentsById = pageComponents ?? {};
+  const queriesById = useMemo<QueriesById>(
+    () => Object.fromEntries((queries ?? []).map((query: any) => [query.id, query])),
+    [queries]
+  );
+  const componentsById: ComponentsById = pageComponents ?? {};
 
   // Selecting a component on canvas opens its detail tab, when it has relationships.
   // Keyed off the id alone so that later edits to bindings don't yank the panel back
   // to the canvas selection while the user is browsing something else.
-  const sectionsRef = useRef(sections);
+  const sectionsRef = useRef<DependencySections>(sections);
   sectionsRef.current = sections;
-  const lastSyncedComponentId = useRef(null);
+  const lastSyncedComponentId = useRef<string | null>(null);
   useEffect(() => {
     if (!selectedComponentId || selectedComponentId === lastSyncedComponentId.current) return;
     lastSyncedComponentId.current = selectedComponentId;
@@ -48,7 +71,7 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }) => {
     setSelected({ kind: 'component', id: selectedComponentId });
   }, [selectedComponentId]);
 
-  const detail = useMemo(
+  const detail = useMemo<DetailView | null>(
     () => buildDetail(selected, sections, { queriesById, componentsById, navigateToEntity }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [selected, sections, queriesById, componentsById]
@@ -86,7 +109,7 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }) => {
           <div className="inspector-header-search">
             <InputComponent
               leadingIcon="search01"
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={(e: any) => setSearchValue(e.target.value)}
               onClear={() => setSearchValue('')}
               size="medium"
               placeholder="Search"
@@ -116,18 +139,43 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }) => {
   );
 };
 
+/** The optional flags `group()` folds onto a DetailGroup. */
+type GroupExtra = {
+  showCount?: boolean;
+  eventSourceIsSubject?: boolean;
+  bindingOwnerIsSubject?: boolean;
+  subjectComponentType?: string;
+};
+
+type BuildDetailContext = {
+  queriesById: QueriesById;
+  componentsById: ComponentsById;
+  navigateToEntity: NavigateToEntity;
+};
+
 /**
  * Turns the selected entity into everything DetailTab renders: breadcrumb subject,
  * the ordered relationship groups, and the kebab actions.
  * Returns null when nothing is selected or the selection no longer exists.
  */
-function buildDetail(selected, sections, { queriesById, componentsById, navigateToEntity }) {
+function buildDetail(
+  selected: DependencySelection | null,
+  sections: DependencySections,
+  { queriesById, componentsById, navigateToEntity }: BuildDetailContext
+): DetailView | null {
   if (!selected) return null;
 
   const lookups = { queriesById, componentsById };
-  const componentTypeOf = (id) => componentsById?.[id]?.component?.component;
+  const componentTypeOf = (id: string | null): string | undefined =>
+    id == null ? undefined : componentsById?.[id]?.component?.component;
 
-  const group = (title, icon, verb, entries, extra = {}) => ({
+  const group = (
+    title: string,
+    icon: React.ReactNode,
+    verb: string,
+    entries: DependencyEntry[],
+    extra: GroupExtra = {}
+  ): DetailGroup => ({
     title,
     icon,
     verb,
@@ -143,9 +191,13 @@ function buildDetail(selected, sections, { queriesById, componentsById, navigate
   if (selected.kind === 'query') {
     const item = sections.queries.find((q) => q.id === selected.id);
     if (!item) return null;
-    const loadRows = [
-      ...(item.loadTriggers.appLoad ? [{ kind: 'appLoad', id: null, name: 'App load', details: [] }] : []),
-      ...(item.loadTriggers.pageLoad ? [{ kind: 'pageLoad', id: null, name: 'Page load', details: [] }] : []),
+    const loadRows: DependencyEntry[] = [
+      ...(item.loadTriggers.appLoad
+        ? [{ kind: 'appLoad' as const, id: null, name: 'App load', details: [] }]
+        : []),
+      ...(item.loadTriggers.pageLoad
+        ? [{ kind: 'pageLoad' as const, id: null, name: 'Page load', details: [] }]
+        : []),
     ];
     return {
       breadcrumbRoot: 'Queries',
@@ -219,7 +271,8 @@ function buildDetail(selected, sections, { queriesById, componentsById, navigate
   }
 
   if (selected.kind === 'variable') {
-    const [scope, ...rest] = String(selected.id).split(':');
+    const [rawScope, ...rest] = String(selected.id).split(':');
+    const scope = rawScope as 'app' | 'page';
     const name = rest.join(':');
     const item = sections.variables[scope]?.find((v) => v.name === name);
     if (!item) return null;

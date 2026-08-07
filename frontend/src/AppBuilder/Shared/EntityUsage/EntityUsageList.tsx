@@ -1,24 +1,44 @@
 import React, { useState } from 'react';
 import { decodeEntities } from '@/_helpers/utils';
-import { SearchBox } from '@/_components/SearchBox';
+import { SearchBox as RawSearchBox } from '@/_components/SearchBox';
 import useEntityNavigation, { KIND_LABELS, NAVIGABLE_KINDS } from './useEntityNavigation';
+import type { UsageEntry } from '@/AppBuilder/_utils/entityUsage';
 import './entityUsage.scss';
+
+// Untyped JS module — cast at the import site.
+const SearchBox = RawSearchBox as React.ComponentType<any>;
 
 const SEARCH_THRESHOLD = 10;
 
+export type EntityUsageGroup = {
+  title: string;
+  entries: UsageEntry[];
+};
+
+export type EntityUsageListProps = {
+  groups: EntityUsageGroup[];
+  emptyMessage?: string;
+  onNavigate?: () => void;
+  readOnly?: boolean;
+};
+
 // Renders usage groups (e.g. Uses / Used by / Triggers) with click-to-navigate rows.
-// groups: [{ title, entries: UsageEntry[] }]
-export const EntityUsageList = ({ groups, emptyMessage = 'No dependencies yet', onNavigate, readOnly = false }) => {
+export const EntityUsageList = ({
+  groups,
+  emptyMessage = 'No dependencies yet',
+  onNavigate,
+  readOnly = false,
+}: EntityUsageListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigateToEntity = useEntityNavigation();
 
   const totalEntries = groups.reduce((sum, group) => sum + group.entries.length, 0);
 
-  const handleEntryClick = (entry) => {
+  const handleEntryClick = (entry: UsageEntry) => {
     if (navigateToEntity(entry)) onNavigate?.();
   };
 
-  const matchesSearch = (entry) => {
+  const matchesSearch = (entry: UsageEntry) => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
@@ -46,7 +66,7 @@ export const EntityUsageList = ({ groups, emptyMessage = 'No dependencies yet', 
           <SearchBox
             width="100%"
             placeholder="Search dependencies"
-            callBack={(e) => setSearchTerm(e.target.value)}
+            callBack={(e: any) => setSearchTerm(e.target.value)}
             onClearCallback={() => setSearchTerm('')}
             dataCy="entity-usage"
           />

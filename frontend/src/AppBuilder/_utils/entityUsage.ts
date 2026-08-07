@@ -534,6 +534,12 @@ export function getQueryOwnEvents(state: any, queryId: string, moduleId = 'canva
   return { onSuccess, onFailure };
 }
 
+export type RunsOnLoadSections = {
+  appLoad: UsageEntry[];
+  pageLoad: UsageEntry[];
+  pageLoadActions: UsageEntry[];
+};
+
 /**
  * Queries that run automatically on load, split by lifecycle (see useAppData.js):
  * - appLoad: per-query "Run this query on application load" option (internally
@@ -542,7 +548,7 @@ export function getQueryOwnEvents(state: any, queryId: string, moduleId = 'canva
  *   (`target === 'page' && sourceId === currentPageId`) — run on app load AND on
  *   every navigation to the page.
  */
-export function getPageLoadQueries(state: any, moduleId = 'canvas') {
+export function getPageLoadQueries(state: any, moduleId = 'canvas'): RunsOnLoadSections {
   const appLoad = new Map<string, UsageEntry>();
   const pageLoad = new Map<string, UsageEntry>();
 
@@ -830,6 +836,13 @@ export type ComponentSection = {
   usage: ReturnType<typeof getComponentUsage>;
 };
 
+export type DependencySections = {
+  runsOnLoad: RunsOnLoadSections;
+  queries: QuerySection[];
+  components: ComponentSection[];
+  variables: { app: VariableUsage[]; page: VariableUsage[] };
+};
+
 /**
  * Everything the Dependencies panel renders, in one traversal.
  *
@@ -837,7 +850,7 @@ export type ComponentSection = {
  * participate in a relationship — an entity nothing references and that
  * references nothing is not a dependency, so it is left out of the lists.
  */
-export function getDependencySections(state: any, moduleId = 'canvas') {
+export function getDependencySections(state: any, moduleId = 'canvas'): DependencySections {
   const runsOnLoad = getPageLoadQueries(state, moduleId);
   const appLoadIds = new Set(runsOnLoad.appLoad.map((entry) => entry.id));
   const pageLoadIds = new Set(runsOnLoad.pageLoad.map((entry) => entry.id));

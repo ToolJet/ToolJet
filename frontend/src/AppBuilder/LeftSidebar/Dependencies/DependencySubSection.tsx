@@ -5,7 +5,15 @@ import React from 'react';
  * `icon` is used on the detail tab only; the main tab passes none.
  * `count` is optional — Figma's "Events" header has no count.
  */
-export const DependencySubSection = ({ title, count, icon, indent = false, children }) => {
+export type DependencySubSectionProps = {
+  title: string;
+  count?: number;
+  icon?: React.ReactNode;
+  indent?: boolean;
+  children?: React.ReactNode;
+};
+
+export const DependencySubSection = ({ title, count, icon, indent = false, children }: DependencySubSectionProps) => {
   const hasChildren = React.Children.toArray(children).some(Boolean);
   if (!hasChildren) return null;
 

@@ -10,6 +10,15 @@ import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
  * `forceExpanded` keeps sections open while a search is active, so a collapsed
  * section can never hide a match.
  */
+export type DependencySectionProps = {
+  title: string;
+  count: number;
+  defaultExpanded?: boolean;
+  forceExpanded?: boolean;
+  children?: React.ReactNode;
+  dataCy?: string;
+};
+
 export const DependencySection = ({
   title,
   count,
@@ -17,7 +26,7 @@ export const DependencySection = ({
   forceExpanded = false,
   children,
   dataCy,
-}) => {
+}: DependencySectionProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   if (!count) return null;
 

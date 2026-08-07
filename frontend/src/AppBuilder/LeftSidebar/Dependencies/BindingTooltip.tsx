@@ -1,12 +1,29 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
+import type { OverlayTriggerProps } from 'react-bootstrap';
+import type { TooltipBinding } from './types';
+
+export type BindingTooltipProps = {
+  id?: string;
+  title?: string;
+  bindings?: TooltipBinding[];
+  placement?: OverlayTriggerProps['placement'];
+  /** A single element, not ReactNode — OverlayTrigger needs something it can clone. */
+  children: React.ReactElement;
+};
 
 /**
  * Dark card shown on hover over a relationship row: a sentence describing the
  * relationship, then one `label / expression` pair per binding behind it.
  * Renders the child untouched when there is nothing to explain.
  */
-export const BindingTooltip = ({ id, title, bindings, placement = 'right', children }) => {
+export const BindingTooltip = ({
+  id,
+  title,
+  bindings,
+  placement = 'right',
+  children,
+}: BindingTooltipProps): React.ReactElement => {
   const resolved = (bindings ?? []).filter((binding) => binding.expression);
   if (!title || resolved.length === 0) return children;
 

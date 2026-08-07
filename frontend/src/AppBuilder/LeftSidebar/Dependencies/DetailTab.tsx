@@ -11,12 +11,20 @@ import {
   formatPropertyLabel,
   getComponentDisplayName,
 } from './relationshipLabels';
+import type {
+  DependencyEntry,
+  DependencyEntryKind,
+  DependencySelection,
+  DetailGroup,
+  DetailMenuItem,
+  DetailSubject,
+} from './types';
 
 const usesIcon = <DatabaseArrowDownIcon size={16} className="dependency-subsection-lucide" />;
 const usedByIcon = <DatabaseArrowUpIcon size={16} className="dependency-subsection-lucide" />;
 const eventsIcon = <MousePointerClickIcon size={16} className="dependency-subsection-lucide" />;
 
-const KIND_SUBTITLES = {
+const KIND_SUBTITLES: Partial<Record<DependencyEntryKind, string>> = {
   query: 'Query',
   variable: 'variable',
   pageVariable: 'page variable',
@@ -26,10 +34,24 @@ const KIND_SUBTITLES = {
   unknown: 'unknown',
 };
 
-const NAVIGABLE = new Set(['query', 'component']);
+const NAVIGABLE = new Set<string>(['query', 'component']);
+
+export type DetailHeaderProps = {
+  subject: DetailSubject;
+  breadcrumbRoot: string;
+  onNavigateRoot: () => void;
+  menuItems: DetailMenuItem[];
+  darkMode?: boolean;
+};
 
 /** Breadcrumb + kebab. Lives in the panel header so it stays put while the list scrolls. */
-export const DetailHeader = ({ subject, breadcrumbRoot, onNavigateRoot, menuItems, darkMode }) => (
+export const DetailHeader = ({
+  subject,
+  breadcrumbRoot,
+  onNavigateRoot,
+  menuItems,
+  darkMode,
+}: DetailHeaderProps) => (
   <div className="dependency-breadcrumb-bar">
     <div className="dependency-breadcrumb">
       <span className="dependency-breadcrumb-root" role="button" onClick={onNavigateRoot}>
@@ -47,9 +69,9 @@ export const DetailHeader = ({ subject, breadcrumbRoot, onNavigateRoot, menuItem
   </div>
 );
 
-const truncate = (str, max) => (str.length > max ? `${str.slice(0, max)}…` : str);
+const truncate = (str: string, max: number) => (str.length > max ? `${str.slice(0, max)}…` : str);
 
-const previewOf = (value) => {
+const previewOf = (value: unknown): string => {
   if (value === undefined) return '—';
   try {
     const str = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
@@ -61,8 +83,14 @@ const previewOf = (value) => {
 
 // Live value of the variable being viewed — subscribes directly so it stays current
 // without re-running the whole dependency traversal.
-const VariableValue = ({ moduleId, scope, name }) => {
-  const value = useStore((state) => {
+type VariableValueProps = {
+  moduleId: string;
+  scope: 'app' | 'page';
+  name: string;
+};
+
+const VariableValue = ({ moduleId, scope, name }: VariableValueProps) => {
+  const value = useStore((state: any) => {
     const exposed = state.resolvedStore.modules[moduleId]?.exposedValues;
     return previewOf(scope === 'app' ? exposed?.variables?.[name] : exposed?.page?.variables?.[name]);
   });
@@ -77,12 +105,19 @@ const VariableValue = ({ moduleId, scope, name }) => {
   );
 };
 
+export type DetailTabProps = {
+  subject: DetailSubject;
+  groups: DetailGroup[];
+  moduleId: string;
+  onSelect: (selection: DependencySelection) => void;
+};
+
 /**
  * Detail view for a single entity: who triggers it, what it uses, who uses it,
  * and the events it owns. Rows drill into the entity they point at.
  */
-export const DetailTab = ({ subject, groups, moduleId, onSelect }) => {
-  const renderEntry = (entry, group) => {
+export const DetailTab = ({ subject, groups, moduleId, onSelect }: DetailTabProps) => {
+  const renderEntry = (entry: DependencyEntry, group: DetailGroup) => {
     const componentType = entry.kind === 'component' ? group.componentTypeOf?.(entry.id) : undefined;
     const subtitle =
       entry.kind === 'component'
@@ -130,7 +165,11 @@ export const DetailTab = ({ subject, groups, moduleId, onSelect }) => {
           title: `${subject.name} ${group.verb} ${name} in`,
           bindings,
         }}
-        onClick={NAVIGABLE.has(entry.kind) && entry.id ? () => onSelect({ kind: entry.kind, id: entry.id }) : undefined}
+        onClick={
+          NAVIGABLE.has(entry.kind) && entry.id
+            ? () => onSelect({ kind: entry.kind as DependencySelection['kind'], id: entry.id as string })
+            : undefined
+        }
         dataCy={`dependency-detail-row-${String(name).toLowerCase()}`}
       />
     );
@@ -154,14 +193,19 @@ export const DetailTab = ({ subject, groups, moduleId, onSelect }) => {
   );
 };
 
-const DetailMenu = ({ items, darkMode }) => {
+type DetailMenuProps = {
+  items?: DetailMenuItem[];
+  darkMode?: boolean;
+};
+
+const DetailMenu = ({ items, darkMode }: DetailMenuProps) => {
   const [open, setOpen] = React.useState(false);
-  const ref = React.useRef(null);
+  const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (!open) return undefined;
-    const close = (e) => {
-      if (!ref.current?.contains(e.target)) setOpen(false);
+    const close = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener('mousedown', close);
     return () => document.removeEventListener('mousedown', close);
@@ -203,11 +247,15 @@ const DetailMenu = ({ items, darkMode }) => {
   );
 };
 
-export const detailMenuIcons = {
+export const detailMenuIcons: Record<'inspect' | 'goTo', React.ReactNode> = {
   inspect: <SquareDashedMousePointerIcon size={16} className="dependency-lucide-icon" />,
   goTo: <ArrowRightIcon size={16} className="dependency-lucide-icon" />,
 };
 
-export const subSectionIcons = { uses: usesIcon, usedBy: usedByIcon, events: eventsIcon };
+export const subSectionIcons: Record<'uses' | 'usedBy' | 'events', React.ReactNode> = {
+  uses: usesIcon,
+  usedBy: usedByIcon,
+  events: eventsIcon,
+};
 
 export default DetailTab;

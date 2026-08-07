@@ -1,14 +1,15 @@
 import React from 'react';
 import { decodeEntities } from '@/_helpers/utils';
 import BindingTooltip from './BindingTooltip';
+import type { RowTooltip } from './types';
 
 // Wraps every case-insensitive occurrence of `term` in a <mark> so the reason a row
 // survived the search is visible.
-const withHighlight = (text, term) => {
+const withHighlight = (text: string, term?: string): React.ReactNode => {
   if (!term) return text;
   const needle = term.toLowerCase();
   const haystack = text.toLowerCase();
-  const parts = [];
+  const parts: React.ReactNode[] = [];
   let cursor = 0;
   let at = haystack.indexOf(needle);
   while (at !== -1) {
@@ -30,6 +31,18 @@ const withHighlight = (text, term) => {
  * One entity row. Compact (single line) on the main tab's query/variable lists;
  * stacked (name + type + relationship tags) for components and every detail row.
  */
+export type DependencyEntityRowProps = {
+  icon?: React.ReactNode;
+  name: string;
+  subtitle?: string;
+  tags?: string[];
+  tooltip?: RowTooltip;
+  highlight?: string;
+  selected?: boolean;
+  onClick?: () => void;
+  dataCy?: string;
+};
+
 export const DependencyEntityRow = ({
   icon,
   name,
@@ -40,7 +53,7 @@ export const DependencyEntityRow = ({
   selected = false,
   onClick,
   dataCy,
-}) => {
+}: DependencyEntityRowProps) => {
   const stacked = Boolean(subtitle) || tags.length > 0;
   const label = decodeEntities(name);
 

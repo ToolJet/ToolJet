@@ -6,30 +6,61 @@
  * the entities being deleted:
  *  - blocked  → explain what to remove first; the dialog offers only "Got it"
  *  - clear    → plain confirmation with Cancel / Delete
+ *
+ * The parameter types are structural on purpose — only what the copy actually reads.
+ * `DeleteSubject` from entityUsage satisfies them, and so do plain test fixtures.
  */
 
-const PLURALS = { component: 'components', query: 'queries' };
+/** A subject still referenced from outside the selection. */
+export type DeleteDialogBlocker = {
+  dependents: readonly unknown[];
+  viaDescendant?: Record<string, string>;
+};
 
-export const pluralizeEntity = (entityLabel, count) =>
+/** Anything the user asked to delete. */
+export type DeleteDialogSubject = {
+  name?: string;
+};
+
+export type DeleteDialogCopy = {
+  blocked: boolean;
+  title: string;
+  subtitle: string;
+};
+
+export type DeleteDialogCopyInput = {
+  entityLabel?: string;
+  subjects?: readonly DeleteDialogSubject[];
+  blockers?: readonly DeleteDialogBlocker[];
+};
+
+const PLURALS: Record<string, string> = { component: 'components', query: 'queries' };
+
+export const pluralizeEntity = (entityLabel: string, count: number): string =>
   count === 1 ? entityLabel : PLURALS[entityLabel] ?? `${entityLabel}s`;
 
 /** Card header count, e.g. "Used by 1 entity" / "Used by 4 entities". */
-export const usedByLabel = (count) => `Used by ${count} ${count === 1 ? 'entity' : 'entities'}`;
+export const usedByLabel = (count: number): string => `Used by ${count} ${count === 1 ? 'entity' : 'entities'}`;
 
 /** Dashed note explaining that the reference points at a child, not at the subject. */
-export const nestedChildNote = (descendantName, subjectName) => `${descendantName} lives inside ${subjectName}`;
+export const nestedChildNote = (descendantName: string, subjectName: string): string =>
+  `${descendantName} lives inside ${subjectName}`;
 
 const REMOVE_REFERENCES = 'Remove these references, then try again.';
 
 // True when every dependent of a subject reaches it through a descendant rather than
 // through the subject itself — the "a component inside it" case in the design.
-const isBlockedOnlyByDescendants = (subject) => {
+const isBlockedOnlyByDescendants = (subject: DeleteDialogBlocker): boolean => {
   const viaDescendant = subject.viaDescendant ?? {};
   const keys = Object.keys(viaDescendant);
   return keys.length > 0 && keys.length === subject.dependents.length;
 };
 
-const blockedSubtitle = (entityLabel, subjects, blockers) => {
+const blockedSubtitle = (
+  entityLabel: string,
+  subjects: readonly DeleteDialogSubject[],
+  blockers: readonly DeleteDialogBlocker[]
+): string => {
   const total = subjects.length;
 
   if (total === 1) {
@@ -57,7 +88,11 @@ const blockedSubtitle = (entityLabel, subjects, blockers) => {
  * @param blockers    the subset still referenced from outside (getDeleteBlockers output)
  * @returns { blocked, title, subtitle }
  */
-export function buildDeleteDialogCopy({ entityLabel = 'component', subjects = [], blockers = [] } = {}) {
+export function buildDeleteDialogCopy({
+  entityLabel = 'component',
+  subjects = [],
+  blockers = [],
+}: DeleteDialogCopyInput = {}): DeleteDialogCopy {
   const total = subjects.length;
   const blocked = blockers.length > 0;
   const noun = pluralizeEntity(entityLabel, total);

@@ -2,18 +2,25 @@ import React, { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { decodeEntities } from '@/_helpers/utils';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ButtonSolid as RawButtonSolid } from '@/_ui/AppButton/AppButton';
+import RawSolidIcon from '@/_ui/Icon/SolidIcons';
 import DependencyEntityRow from '@/AppBuilder/LeftSidebar/Dependencies/DependencyEntityRow';
 import { ComponentIcon, EntityIcon, QueryIcon } from '@/AppBuilder/LeftSidebar/Dependencies/entityIcons';
 import { formatActionLabel, getComponentDisplayName } from '@/AppBuilder/LeftSidebar/Dependencies/relationshipLabels';
 import { buildDeleteDialogCopy, nestedChildNote, usedByLabel } from './deleteDialogCopy';
+import type { DeleteSubject, UsageEntry } from '@/AppBuilder/_utils/entityUsage';
+import type { ComponentsById, QueriesById } from '@/AppBuilder/LeftSidebar/Dependencies/types';
+import type { DeleteDialogSubject } from './deleteDialogCopy';
 // The dependent rows are the Dependencies panel's rows; pull in their styles so the
 // dialog does not depend on that panel having been mounted first.
 import '@/AppBuilder/LeftSidebar/Dependencies/styles.scss';
 import './entityDelete.scss';
 
-const KIND_SUBTITLES = {
+// Untyped JS modules — cast at the import site.
+const ButtonSolid = RawButtonSolid as React.ComponentType<any>;
+const SolidIcon = RawSolidIcon as React.ComponentType<any>;
+
+const KIND_SUBTITLES: Record<string, string | undefined> = {
   query: 'Query',
   variable: 'Variable',
   pageVariable: 'Page variable',
@@ -25,12 +32,18 @@ const KIND_SUBTITLES = {
 
 // Name and entity type only — the dialog says what still references the subject, not
 // which property or event does the referencing.
-const subtitleOf = (entry, componentsById) =>
+const subtitleOf = (entry: UsageEntry, componentsById?: ComponentsById): string =>
   entry.kind === 'component'
-    ? getComponentDisplayName(componentsById?.[entry.id]?.component?.component)
+    ? getComponentDisplayName(componentsById?.[entry.id as string]?.component?.component)
     : KIND_SUBTITLES[entry.kind] ?? '';
 
-const SubjectIcon = ({ subject, queriesById, componentsById }) =>
+type SubjectIconProps = {
+  subject: DeleteSubject;
+  queriesById?: QueriesById;
+  componentsById?: ComponentsById;
+};
+
+const SubjectIcon = ({ subject, queriesById, componentsById }: SubjectIconProps) =>
   subject.kind === 'query' ? (
     <QueryIcon query={subject.query ?? queriesById?.[subject.id]} size={16} />
   ) : (
@@ -40,8 +53,16 @@ const SubjectIcon = ({ subject, queriesById, componentsById }) =>
     />
   );
 
+type BlockerCardProps = {
+  subject: DeleteSubject;
+  collapsible: boolean;
+  defaultExpanded: boolean;
+  queriesById?: QueriesById;
+  componentsById?: ComponentsById;
+};
+
 /** One blocked subject: header with its dependent count, body with the dependents. */
-const BlockerCard = ({ subject, collapsible, defaultExpanded, queriesById, componentsById }) => {
+const BlockerCard = ({ subject, collapsible, defaultExpanded, queriesById, componentsById }: BlockerCardProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const isOpen = !collapsible || expanded;
   const Chevron = isOpen ? ChevronUpIcon : ChevronDownIcon;
@@ -100,6 +121,21 @@ const BlockerCard = ({ subject, collapsible, defaultExpanded, queriesById, compo
   );
 };
 
+export type EntityDeleteDialogProps = {
+  show: boolean;
+  /** 'component' | 'query' — free-form; deleteDialogCopy pluralises anything. */
+  entityLabel?: string;
+  /** Everything the user asked to delete. */
+  subjects?: DeleteDialogSubject[];
+  /** The subset still referenced from outside — getDeleteBlockers output. */
+  blockers?: DeleteSubject[];
+  queriesById?: QueriesById;
+  componentsById?: ComponentsById;
+  onCancel?: () => void;
+  onConfirm?: () => void;
+  darkMode?: boolean;
+};
+
 /**
  * Delete confirmation for components and queries.
  *
@@ -117,7 +153,7 @@ export const EntityDeleteDialog = ({
   onCancel,
   onConfirm,
   darkMode = false,
-}) => {
+}: EntityDeleteDialogProps) => {
   const { blocked, title, subtitle } = buildDeleteDialogCopy({ entityLabel, subjects, blockers });
   // A lone card is always open — there is nothing to compare it against. With several,
   // everything starts collapsed so the subject names stay scannable.
@@ -131,7 +167,7 @@ export const EntityDeleteDialog = ({
       centered
       contentClassName={`entity-delete-modal ${darkMode ? 'dark-theme' : ''}`}
       dialogClassName="entity-delete-modal-dialog"
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e: any) => e.stopPropagation()}
       data-cy="entity-delete-modal"
     >
       <Modal.Body className="entity-delete-body">

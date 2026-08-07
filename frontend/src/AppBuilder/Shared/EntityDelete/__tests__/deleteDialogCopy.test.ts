@@ -5,7 +5,7 @@ import {
   usedByLabel,
 } from '@/AppBuilder/Shared/EntityDelete/deleteDialogCopy';
 
-const subject = (name, dependentCount, viaDescendant = {}) => ({
+const subject = (name: string, dependentCount: number, viaDescendant: Record<string, string> = {}) => ({
   kind: 'component',
   id: name,
   name,
@@ -18,7 +18,7 @@ const subject = (name, dependentCount, viaDescendant = {}) => ({
   viaDescendant,
 });
 
-const named = (...names) => names.map((name) => ({ id: name, name }));
+const named = (...names: string[]) => names.map((name) => ({ id: name, name }));
 
 describe('buildDeleteDialogCopy — blocked', () => {
   it('names the single subject and counts its references', () => {
