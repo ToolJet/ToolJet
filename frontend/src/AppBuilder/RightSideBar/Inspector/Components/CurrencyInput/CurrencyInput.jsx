@@ -7,7 +7,7 @@ import flags from 'react-phone-number-input/flags';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import cx from 'classnames';
-import { CurrencyMap } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
+import { CurrencyMap, NUMBER_FORMATS } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
 
 export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -37,10 +37,7 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
   }, []);
 
   const numberFormatOptions = useMemo(() => {
-    return [
-      { name: 'US / UK (eg. 1,234.56)', value: 'us' },
-      { name: 'European (eg. 1.234,56)', value: 'eu' },
-    ];
+    return Object.entries(NUMBER_FORMATS).map(([value, { name }]) => ({ name, value }));
   }, []);
 
   const renderCustomOption = ({ label, value: optionValue }) => {
