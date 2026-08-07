@@ -99,11 +99,6 @@ export class LoginConfigsController implements ILoginConfigsController {
     return;
   }
 
-  // Was 4 routes (/oidc/env-configs, /oidc/instance-env-configs, /saml/env-configs,
-  // /ldap/env-configs), one per provider. The FeatureAbilityGuard's @InitFeature is static
-  // per-method metadata — it can't vary by the runtime :provider param — so this route only
-  // asserts the license common to every provider (WORKSPACE_ENV); the EE service asserts the
-  // specific provider's own license internally, exactly as it always did.
   @InitFeature(FEATURE_KEY.SAVE_ENV_CONFIGS)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Patch('/:provider/env-configs')

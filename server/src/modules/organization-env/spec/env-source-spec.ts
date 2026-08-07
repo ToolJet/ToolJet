@@ -5,14 +5,6 @@ import { SAML_ENV_KEYS, LDAP_ENV_KEYS, REQUIRED_KEYS } from '@modules/organizati
 import { SamlEnvConfig, LdapEnvConfig } from '@modules/organization-env/types';
 import { parseSamlEnvConfig, parseLdapEnvConfig, deriveSamlTemplate, deriveLdapTemplate } from '@modules/organization-env/parsers/parse-env-config';
 
-/**
- * Everything that's specific to one env-config provider (SAML, LDAP — OIDC's shape differs too
- * much to be a spec instance of the same generic service, see OidcEnvUtilService), so
- * EnvSettingsSourceService<T> can hold ALL the shared plumbing (initialize, ensureResolved,
- * license checks, hydrate/revoke, provider state) exactly once instead of hand-copied per
- * provider. hasGuiFallback answers "is there a usable saved GUI config to fall back to if env
- * config is turned off/becomes invalid" — used only by the revoke path, never by parse.
- */
 export interface EnvSourceSpec<T> {
   readonly sso: SSOType;
   readonly licenseField: LICENSE_FIELD;
