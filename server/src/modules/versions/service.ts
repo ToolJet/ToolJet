@@ -217,15 +217,18 @@ export class VersionService implements IVersionService {
       const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId);
       const eventsForVersion = await this.eventsService.findEventsForVersion(updatedVersionId);
 
-      const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
-
-      if (
-        appCurrentEditingVersion &&
-        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId))
-      ) {
-        const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
-        appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
-      }
+      /*
+        Data-query contains `options` which are a free-form, mixed-case blob (snake_case alongside camelCase keys).
+        Pull dataQueries out and serialize them separately, before the clone below — `camelizeKeys` recurses
+        deeply and would silently break queries if they stayed on the version object. Excluding dataQueries
+        from the clone also skips serializing the (already-decoded) plugin manifest/icon blobs findVersion
+        eagerly loads onto appVersion — they'd just be dropped again a few lines down, so there's no reason
+        to pay JSON.stringify/parse cost on them. serializeDataQueries doesn't mutate its input, so this is
+        safe to do straight off the entity before cloning.
+      */
+      const serializedDataQueries = serializeDataQueries(appVersion.dataQueries);
+      const { dataQueries: _dataQueries, ...appVersionWithoutDataQueries } = appVersion;
+      const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersionWithoutDataQueries));
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
@@ -252,14 +255,6 @@ export class VersionService implements IVersionService {
       };
 
       delete appData['editingVersion'];
-
-      /*
-        Data-query contains `options` which are a free-form, mixed-case blob (snake_case alongside camelCase keys).
-        Strip them here so the rest of the version envelope can be camelized safely below.
-        `camelizeKeys` recurses deeply and would silently break queries if they stayed on the version object.
-      */
-      const serializedDataQueries = serializeDataQueries(appCurrentEditingVersion?.dataQueries);
-      delete appCurrentEditingVersion['dataQueries'];
 
       const editingVersion = camelizeKeys(appCurrentEditingVersion);
 

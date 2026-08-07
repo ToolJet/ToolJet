@@ -1095,7 +1095,11 @@ export const createComponentsSlice = (set, get) => ({
     return resolvedComponentValues[componentId];
   },
 
-  initDependencyGraph: (moduleId) => {
+  // cachedSnapshot (optional): { depGraph, validatedComponentValues, exposedValuesComponents }
+  // previously returned by this function, from IndexedDB. When present, skips the expensive
+  // per-component {{}} resolution walk AND the validateComponents pass and hydrates state
+  // directly instead. Returns a snapshot to persist only on a fresh (non-cached) build.
+  initDependencyGraph: (moduleId, cachedSnapshot) => {
     // Cancel any pending rerun timers from the previous page/context
     clearAllQueryRerunTimers();
 
@@ -1103,68 +1107,104 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageComponents,
       addToDependencyGraph,
       setResolvedComponents,
+      hydrateResolvedComponents,
       resolveOthers,
       startDependencyBatch,
       flushDependencyBatch,
       registerQueryDependencies,
+      hydrateDependencyGraph,
     } = get();
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
-    let resolvedComponentValues = {};
+    let validatedComponentValues;
+    let exposedValuesComponents;
 
-    startDependencyBatch();
-    Object.entries(components).forEach(([componentId, component]) => {
-      resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
-    });
-    flushDependencyBatch();
+    if (cachedSnapshot) {
+      hydrateDependencyGraph(moduleId, cachedSnapshot.depGraph);
+      validatedComponentValues = cachedSnapshot.validatedComponentValues;
+      exposedValuesComponents = cachedSnapshot.exposedValuesComponents;
+      // Bypasses validateComponents entirely — cachedSnapshot.validatedComponentValues is already
+      // that function's output from the original build. Safe because the debugger logs
+      // validateComponents produces are editor-only UI (never rendered in the viewer, where this
+      // cache exclusively applies) and property coercion is preserved in the cached values.
+      hydrateResolvedComponents(validatedComponentValues, moduleId);
+      set(
+        (state) => {
+          state.resolvedStore.modules[moduleId].exposedValues.components = exposedValuesComponents;
+        },
+        false,
+        'hydrateDefaultExposedValues'
+      );
+    } else {
+      const resolvedComponentValues = {};
+      startDependencyBatch();
+      Object.entries(components).forEach(([componentId, component]) => {
+        resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
+      });
+      flushDependencyBatch();
 
-    setResolvedComponents(resolvedComponentValues, moduleId);
+      validatedComponentValues = setResolvedComponents(resolvedComponentValues, moduleId);
+
+      // Pre-populate default exposed values for all components in a single store write.
+      // This prevents 600+ individual set() calls during component mount in RenderWidget
+      // (setDefaultExposedValues will early-return since values already exist).
+      exposedValuesComponents = {};
+      set(
+        (state) => {
+          Object.entries(components).forEach(([componentId, component]) => {
+            const componentType = component.component.component;
+            const parentId = component.component.parent;
+
+            const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+            if (existing && Object.keys(existing).length > 0) {
+              exposedValuesComponents[componentId] = existing;
+              return;
+            }
+
+            const compDef = componentTypeDefinitionMap[componentType];
+            if (!compDef) return;
+
+            // Skip components with a Listview ancestor — they use per-row array storage at runtime
+            // and cannot be pre-populated flat. Form children without a Listview ancestor can be
+            // pre-populated here, eliminating their individual set() calls at mount time.
+            if (parentId) {
+              let cur = components[parentId];
+              while (cur) {
+                if (ROW_SCOPED_WIDGET_TYPES.includes(cur.component.component)) return;
+                cur = components[cur.component.parent];
+              }
+            }
+
+            const exposedVariables = compDef.exposedVariables || {};
+            const value = { ...exposedVariables, id: componentId };
+            state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = value;
+            exposedValuesComponents[componentId] = value;
+          });
+        },
+        false,
+        'batchSetDefaultExposedValues'
+      );
+    }
+
     resolveOthers(moduleId);
 
-    // Pre-populate default exposed values for all components in a single store write.
-    // This prevents 600+ individual set() calls during component mount in RenderWidget
-    // (setDefaultExposedValues will early-return since values already exist).
-    set(
-      (state) => {
-        Object.entries(components).forEach(([componentId, component]) => {
-          const componentType = component.component.component;
-          const parentId = component.component.parent;
-
-          const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
-          if (existing && Object.keys(existing).length > 0) return;
-
-          const compDef = componentTypeDefinitionMap[componentType];
-          if (!compDef) return;
-
-          // Skip components with a Listview ancestor — they use per-row array storage at runtime
-          // and cannot be pre-populated flat. Form children without a Listview ancestor can be
-          // pre-populated here, eliminating their individual set() calls at mount time.
-          if (parentId) {
-            let cur = components[parentId];
-            while (cur) {
-              if (ROW_SCOPED_WIDGET_TYPES.includes(cur.component.component)) return;
-              cur = components[cur.component.parent];
-            }
-          }
-
-          const exposedVariables = compDef.exposedVariables || {};
-          state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
-            ...exposedVariables,
-            id: componentId,
-          };
-        });
-      },
-      false,
-      'batchSetDefaultExposedValues'
-    );
-    // Register query option dependencies for queries with runOnDependencyChange enabled
+    // Register query option dependencies for queries with runOnDependencyChange enabled.
+    // Idempotent (addDependency no-ops on existing edges) so safe to re-run on a cache hit too.
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
     queries.forEach((query) => {
       if (query.options?.runOnDependencyChange) {
         registerQueryDependencies(query.id, query.name, query.kind, query.options, moduleId);
       }
     });
+
+    if (!cachedSnapshot) {
+      return {
+        depGraph: get().dependencyGraph.modules[moduleId].graph.toJSON(),
+        validatedComponentValues,
+        exposedValuesComponents,
+      };
+    }
   },
 
   registerQueryDependencies: (queryId, queryName, kind, options, moduleId = 'canvas') => {

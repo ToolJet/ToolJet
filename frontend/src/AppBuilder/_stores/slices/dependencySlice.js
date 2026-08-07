@@ -31,6 +31,20 @@ export const createDependencySlice = (set, get) => {
       );
     },
 
+    // Replaces the module's graph with one rebuilt from a DependencyGraph.toJSON() snapshot,
+    // skipping the addNode/addDependency tree walk (used for IndexedDB cache hydration).
+    hydrateDependencyGraph: (moduleId, serializedGraph) => {
+      set(
+        (state) => {
+          state.dependencyGraph.modules[moduleId] = {
+            graph: DependencyGraph.fromJSON(serializedGraph),
+          };
+        },
+        false,
+        'hydrateDependencyGraph'
+      );
+    },
+
     startDependencyBatch: () => _depBatch.startBatch(),
 
     flushDependencyBatch: () => _depBatch.flush('flushDependencyBatch'),

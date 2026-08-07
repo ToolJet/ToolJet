@@ -41,7 +41,7 @@ export interface IAppsController {
 
   show(user: UserEntity, app: AppEntity): Promise<any>;
 
-  appFromSlug(user: UserEntity, app: AppEntity): Promise<any>;
+  appFromSlug(user: UserEntity, app: AppEntity, res: Response): Promise<any>;
 
   releaseVersion(user: UserEntity, app: AppEntity, versionReleaseDto: VersionReleaseDto): Promise<any>;
 

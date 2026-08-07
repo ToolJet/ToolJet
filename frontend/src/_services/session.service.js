@@ -4,6 +4,7 @@ import queryString from 'query-string';
 import { getWorkspaceId, stripTrailingSlash } from '@/_helpers/utils';
 import { getRedirectToWithParams, getPathname, isCustomDomain } from '@/_helpers/routes';
 import { getPatToken } from '@/AppBuilder/EmbedApp';
+import { clearAllViewerCaches } from '@/AppBuilder/_helpers/versionedIndexedDbStore';
 
 export const sessionService = {
   validateSession,
@@ -27,6 +28,12 @@ function validateSession(appId, workspaceSlug) {
 }
 
 function logout(avoidRedirection = false, organizationId = null) {
+  // Clears cached app definitions/dependency-graph snapshots so a different user logging into
+  // this browser afterward can't read a previous (possibly more-permissive) user's cached data —
+  // these caches are keyed by versionId/page, not by user, and EE permission redaction can vary
+  // per viewer. Client-side only, done regardless of whether the server-side logout call succeeds.
+  clearAllViewerCaches();
+
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
