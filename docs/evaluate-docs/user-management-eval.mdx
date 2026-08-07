@@ -1,0 +1,121 @@
+---
+id: user-management-eval
+title: User & Workspace Management
+sidebar_label: 08 — User & Workspace Management
+---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
+
+# User & Workspace Management
+
+This section covers how users are authenticated, provisioned, and organized in ToolJet. For enterprise deployments, the key questions are: Can ToolJet integrate with your existing IdP? Can user lifecycle be automated? How do workspaces map to your team structure?
+
+## Authentication Options
+
+<CapabilityGrid items={[
+  {
+    icon: '📧',
+    title: 'Email & Password',
+    description: 'Built-in credential authentication with email verification. Available on all tiers. Suitable for small teams or environments without an IdP requirement.',
+  },
+  {
+    icon: '🔑',
+    title: 'Social SSO',
+    description: 'Google and GitHub OAuth out of the box. Users sign in with existing accounts — no password management required. Available on all tiers.',
+  },
+  {
+    icon: '🏢',
+    title: 'Enterprise SSO',
+    description: 'SAML 2.0, OIDC, Okta, Azure Active Directory, Google Workspace (SAML), and LDAP. Full IdP integration with attribute mapping. Business and Enterprise tiers.',
+  },
+  {
+    icon: '🔄',
+    title: 'SCIM 2.0 Provisioning',
+    description: 'Automated user lifecycle management via your IdP. New users are provisioned automatically; departing users are deprovisioned on their last day without manual ToolJet admin action. Enterprise tier.',
+  },
+]} />
+
+## Enterprise SSO in Practice
+
+When SSO is configured, users authenticate through your IdP and are issued a ToolJet session. No ToolJet credentials are created or stored.
+
+Key behaviors:
+- **Just-in-time provisioning**: users who authenticate via SSO for the first time are automatically created in ToolJet with the default group assignment you configure
+- **Group sync**: IdP group membership maps to ToolJet groups at each login — see [Governance & Access Control](/evaluate/governance) for how group-based permissions work
+- **Single sign-out**: ToolJet supports IdP-initiated logout, so users who are deactivated in the IdP lose ToolJet access at their next authentication attempt
+- **Multiple IdPs**: a single ToolJet workspace can support multiple SSO configurations simultaneously (e.g., one for internal employees, one for contractors)
+
+## SCIM Provisioning
+
+SCIM 2.0 support allows your IdP to manage the full user lifecycle in ToolJet automatically.
+
+| Event in IdP | Result in ToolJet |
+|---|---|
+| User created and assigned to ToolJet app | User account created, assigned to mapped groups |
+| User group membership changed | ToolJet group assignment updated at next sync |
+| User deactivated or removed from ToolJet app | ToolJet account suspended immediately |
+| User re-enabled | ToolJet account re-activated with prior group assignments |
+
+Supported IdPs for SCIM: Okta, Azure Active Directory, and any IdP that implements SCIM 2.0.
+
+## Workspace Structure
+
+A ToolJet workspace is the organizational unit: it contains users, apps, data sources, groups, and settings. Think of it as a tenant boundary.
+
+**When one workspace is enough:** Most organizations run a single workspace for their entire internal tooling platform. Users are segmented by group, and apps are scoped to the groups that need them.
+
+**When multiple workspaces make sense:**
+- **Business unit isolation**: teams with no overlap in apps or users that need separate admin boundaries
+- **External partner workspaces**: a workspace for contractors or external teams with controlled access to a limited app set
+- **Environment separation**: a dedicated workspace per environment (dev/staging/prod) for strict separation — though this is typically handled by multi-environment support within a single workspace for most teams
+
+Multiple workspaces run on a single ToolJet instance. Users can belong to multiple workspaces and switch between them. Data sources, apps, and groups are not shared across workspaces.
+
+## User Onboarding Flows
+
+<CapabilityGrid items={[
+  {
+    icon: '📨',
+    title: 'Email Invitation',
+    description: 'Admins invite users by email. The invited user sets a password or authenticates via SSO. Default group assignment is configured per workspace.',
+  },
+  {
+    icon: '🔗',
+    title: 'Invite Link',
+    description: 'Generate a shareable invite link for a workspace. Useful for onboarding batches of users without sending individual invites. Link can be scoped to a specific group.',
+  },
+  {
+    icon: '⚡',
+    title: 'JIT via SSO',
+    description: 'When SSO is configured, users who authenticate for the first time are created automatically — no admin invite required. Default group assignment applies.',
+  },
+  {
+    icon: '🤖',
+    title: 'SCIM Provisioning',
+    description: 'IdP-driven creation at scale. Users are provisioned the moment the IdP assigns them to the ToolJet application — before their first login.',
+  },
+]} />
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'You require SAML or OIDC SSO with an existing IdP (Okta, Azure AD, Google Workspace)',
+    'You need automated user provisioning and deprovisioning tied to your HR or IdP lifecycle',
+    'Your team structure maps cleanly to workspace-level isolation or group-level access control',
+    'You need multiple workspaces on a single instance for business unit or environment separation',
+  ]}
+  notGood={[
+    'You need per-user data isolation at the database level — ToolJet\'s workspace model is an organizational boundary, not a data isolation boundary',
+    'You need a fully self-service user registration flow open to external end users — ToolJet is designed for managed user onboarding, not open registration',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="🔐" title="Governance & Access Control" description="RBAC, custom groups, IdP sync, and component-level permission rules." href="/evaluate/governance" />
+  <NavCard icon="🔁" title="Development Lifecycle" description="App versioning, multi-environment promotion, and GitSync for CI/CD." href="/evaluate/development-lifecycle-eval" />
+</NavCardGrid>

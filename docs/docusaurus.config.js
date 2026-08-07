@@ -366,6 +366,15 @@ module.exports = {
       },
     ],
     [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'evaluate',
+        path: 'evaluate-docs',
+        routeBasePath: 'evaluate',
+        sidebarPath: require.resolve('./sidebars-evaluate.js'),
+      },
+    ],
+    [
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [

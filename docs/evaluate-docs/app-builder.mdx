@@ -1,0 +1,162 @@
+---
+id: app-builder
+title: App Builder & Components
+sidebar_label: App Builder & Components
+---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
+
+# App Builder & Components
+
+ToolJet's app builder is a visual development environment for building data-connected internal tools. This section covers what the builder can produce, how the component library is structured, and where the visual model hits its limits.
+
+## The Builder Interface
+
+The editor has four main working areas:
+
+<CapabilityGrid items={[
+  {
+    icon: '🖼️',
+    title: 'Canvas',
+    description: 'A snap grid where you drag, drop, resize, and layer components. Supports multi-select, copy/paste, clone, and configurable max width. Height expands automatically as you add content.',
+  },
+  {
+    icon: '⚙️',
+    title: 'Properties & Style Panel',
+    description: 'Per-component configuration panel. Set labels, values, visibility, colors, and event handlers. Most properties accept dynamic expressions using {{ }} syntax.',
+  },
+  {
+    icon: '🔗',
+    title: 'Query Panel',
+    description: 'Build and manage queries against connected data sources. Queries can run on page load, on user action, or chained to another query\'s success or failure.',
+  },
+  {
+    icon: '📄',
+    title: 'Pages Panel',
+    description: 'Manage pages, navigation structure, and page-level access control from a single panel. Add external URLs and other ToolJet apps to the nav menu.',
+  },
+]} />
+
+## Component Library
+
+60+ production-ready components organized into functional categories:
+
+<CapabilityGrid items={[
+  {
+    icon: '📊',
+    title: 'Data Display',
+    description: 'Table (with server-side pagination, inline editing, row actions), Chart (bar, line, pie, scatter, heatmap).',
+  },
+  {
+    icon: '📋',
+    title: 'Layouts',
+    description: 'Form, Modal, Container, Tabs, ListView, Kanban board, Calendar — for structuring complex page layouts.',
+  },
+  {
+    icon: '✏️',
+    title: 'Form Inputs',
+    description: 'Text input, textarea, number, email, password, phone, currency, rich text editor, file picker, color picker, code editor.',
+  },
+  {
+    icon: '☑️',
+    title: 'Select & Toggle Inputs',
+    description: 'Dropdown, multi-select, radio button, checkbox, toggle switch, tree select, range slider, star rating.',
+  },
+  {
+    icon: '📅',
+    title: 'Date & Time',
+    description: 'Date picker, date-range picker, time picker, datetime picker — all with configurable formats.',
+  },
+  {
+    icon: '🗺️',
+    title: 'Media & Navigation',
+    description: 'Image, PDF viewer, Map, SVG image, Link, Pagination, Steps, Timeline, QR scanner.',
+  },
+  {
+    icon: '📈',
+    title: 'Presentation',
+    description: 'Statistics card, circular progress bar, spinner, tags, timer, divider — for dashboards and status displays.',
+  },
+  {
+    icon: '🧩',
+    title: 'Custom & Embed',
+    description: 'Custom Component (React), HTML viewer, iFrame — for cases the standard library doesn\'t cover.',
+  },
+]} />
+
+## Data Binding
+
+Components connect to query results through dynamic expressions. Any component property that accepts a value can be bound to a query output, component state, or page variable using `{{ }}` syntax.
+
+- A table's data prop accepts `{{ queries.getUsers.data }}`
+- A button's disabled state accepts `{{ currentUser.groups.includes('viewer') }}`
+- An input's default value accepts `{{ components.dropdown1.value }}`
+
+This means components re-render reactively as query results and user interactions change app state — without writing render logic.
+
+**Events** drive interactivity: button click, form submission, page load, query success, and query failure all emit events that can trigger queries, navigate pages, open modals, show notifications, or set variables. Multiple actions can be chained on a single event.
+
+## Multi-page Apps
+
+Applications can have any number of pages. Each page gets a URL slug, an optional icon, and configurable access control.
+
+- **Navigation menu** is configurable as top or side, with Text, Icon, or Text + Icon display
+- **Page access** can be open to all users, restricted to specific users, or gated by user group
+- **Nav items** can point to app pages, external URLs, or other ToolJet apps in the same workspace
+- **Hidden pages** can still be reached via the Switch Page event or direct URL
+
+## Custom Code
+
+When visual configuration isn't enough, JavaScript and Python queries run directly within the app context.
+
+Custom code queries have full access to component values, other query outputs, and page variables. Common uses:
+
+- Transform or reshape query results before binding to a component
+- Compute derived values from multiple inputs
+- Conditionally trigger other queries based on logic
+- Directly set or reset component values
+
+No separate backend required — the code runs in the app context with access to the full app state.
+
+## Modules
+
+Modules are reusable UI bundles: components, queries, and logic packaged together and published to your workspace. They accept typed inputs and return outputs, so the same module behaves differently depending on where it's used.
+
+Updates to a module propagate automatically to every app that uses it. Teams use modules for shared patterns like customer profile panels, approval forms, filter bars, and navigation components.
+
+## What Teams Build With It
+
+- Internal admin panels and user management consoles
+- Approval and review queues for operations teams
+- Data management apps with inline editing and bulk operations
+- Inventory and logistics tracking dashboards
+- Employee onboarding and HR tooling
+- Customer onboarding and case management portals
+- Compliance reporting and audit dashboards
+- Engineering incident response tools
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'You need tables with server-side pagination, filtering, and row-level actions',
+    'Your apps need multiple pages, role-gated navigation, and per-page access control',
+    'Business users need to make UI changes after initial developer setup',
+    'You want to embed custom JS or Python logic without leaving the visual environment',
+    'You have repeating UI patterns across apps that benefit from shared modules',
+  ]}
+  notGood={[
+    'You need pixel-perfect custom UI with full CSS control at every element',
+    'Your app requires highly animated or interaction-heavy consumer-grade UX',
+    'The grid-based layout model fundamentally conflicts with your target interface design',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="🔌" title="Integrations & Data Sources" description="How the builder connects to your databases, APIs, and SaaS tools." href="/evaluate/integrations" />
+  <NavCard icon="🤖" title="AI Development" description="AI-assisted app building, natural language scaffolding, and the MCP bridge." href="/evaluate/ai-development" />
+</NavCardGrid>
