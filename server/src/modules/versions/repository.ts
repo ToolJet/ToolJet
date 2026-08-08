@@ -170,7 +170,7 @@ export class VersionRepository extends Repository<AppVersion> {
     }
 
     const m = manager ?? this.manager;
-    const appVersion = await m.findOneOrFail(AppVersion, {
+    const appVersion = await m.findOne(AppVersion, {
       where: { id },
       relations: [
         'app',
@@ -255,12 +255,13 @@ export class VersionRepository extends Repository<AppVersion> {
     return m.delete(AppVersion, { id: versionId });
   }
 
-  async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App> {
+  async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App | null> {
     const m = manager ?? this.manager;
-    const appVersion = await m.findOneOrFail(AppVersion, {
+    const appVersion = await m.findOne(AppVersion, {
       where: { id, app: { organizationId } },
       relations: ['app'],
     });
+    if (!appVersion) return null;
     const app = appVersion.app;
     // Workflows keep metadata on apps.*; non-workflows must overlay from the
     // canonical version row resolved by git-sync state. Forward the loaded
