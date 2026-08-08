@@ -1052,8 +1052,8 @@ class BaseManageGranularAccess extends React.Component {
     const addPermissionTooltipMessage = !newPermissionName
       ? 'Please input permissions name'
       : isCustom && this.getSelectedResources().length === 0
-      ? 'Please select apps or select all apps option'
-      : '';
+        ? 'Please select apps or select all apps option'
+        : '';
     const isBasicPlan = this.props.isBasicPlan;
     const disableEditUpdate = currentGroupPermission.name == 'end-user' || isBasicPlan;
 
@@ -1104,10 +1104,10 @@ class BaseManageGranularAccess extends React.Component {
                       resourceType === RESOURCE_TYPE.APPS
                         ? 'apps'
                         : resourceType === RESOURCE_TYPE.MODULES
-                        ? 'modules'
-                        : resourceType === RESOURCE_TYPE.WORKFLOWS
-                        ? 'workflows'
-                        : 'datasource'
+                          ? 'modules'
+                          : resourceType === RESOURCE_TYPE.WORKFLOWS
+                            ? 'workflows'
+                            : 'datasource'
                     }
                     fill="var(--slate8)"
                   />

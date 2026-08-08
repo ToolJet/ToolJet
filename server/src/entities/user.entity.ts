@@ -100,8 +100,20 @@ export class User extends BaseEntity {
   @Column({ name: 'invitation_token' })
   invitationToken: string;
 
+  @Column({ name: 'invitation_token_expiry', type: 'timestamptz', nullable: true, default: null })
+  invitationTokenExpiry: Date | null;
+
   @Column({ name: 'forgot_password_token' })
   forgotPasswordToken: string;
+
+  @Column({ name: 'forgot_password_token_expiry', type: 'timestamptz', nullable: true, default: null })
+  forgotPasswordTokenExpiry: Date;
+
+  @Column({ name: 'password_expiry', type: 'timestamptz', nullable: true, default: null })
+  passwordExpiry: Date;
+
+  @Column({ name: 'expired_password_token', nullable: true, default: null })
+  expiredPasswordToken: string;
 
   @Column({ name: 'password_digest' })
   password: string;
