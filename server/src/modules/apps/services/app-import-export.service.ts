@@ -640,17 +640,14 @@ export class AppImportExportService {
             const byCoRelId = await manager.findOne(AppVersion, {
               where: { co_relation_id: moduleAppId.versionIdentifier, appId: resolvedId },
             });
-            versionDbId = byCoRelId?.id;
-
-            if (!versionDbId) {
-              const byRefId = await manager.findOne(AppVersion, {
+            let resolvedVersion = byCoRelId;
+            if (!resolvedVersion) {
+              resolvedVersion = await manager.findOne(AppVersion, {
                 where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
               });
-              versionDbId = byRefId?.id;
             }
-            // Only a resolved pin counts — an unresolvable pin (e.g. cross-workspace import)
-            // falls through to branch-local resolution below and must be treated as unpinned.
-            isPinnedToVersion = Boolean(versionDbId);
+            versionDbId = resolvedVersion?.id;
+            isPinnedToVersion = Boolean(versionDbId) && Boolean(resolvedVersion?.isSynced);
           }
 
           // Fall through to branch-local resolution when:
