@@ -319,7 +319,9 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
   permissions: { customGroups: true },
   observability: { enabled: true },
   workflows: {
-    enabled: true, execution_timeout: 0,
+    // workflowExecutionTimeout is a literal timeout ceiling, not a sentinel like the
+    // 'UNLIMITED' fields above -- 0 means "time out immediately", not "no limit".
+    enabled: true, execution_timeout: 3600,
     workspace: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
     instance: { total: 'UNLIMITED', daily_executions: 'UNLIMITED', monthly_executions: 'UNLIMITED' },
   },

@@ -11,6 +11,7 @@ const TreeSelectOptionsList = ({
   onAddNestedItem,
   onReorder,
   getResolvedValue,
+  showSelectionFields = true,
 }) => {
   return (
     <div className="treeselect-inspector" data-cy="inspector-treeselect-options-list" style={{ marginBottom: '12px' }}>
@@ -23,6 +24,7 @@ const TreeSelectOptionsList = ({
           onAddNestedItem={onAddNestedItem}
           onReorder={onReorder}
           getResolvedValue={getResolvedValue}
+          showSelectionFields={showSelectionFields}
         />
       </div>
       <div>

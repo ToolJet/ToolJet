@@ -58,7 +58,7 @@ describe(
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-button-App`);
     cy.openApp();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 100);
   });
 
   // QUARANTINED: depends on the SHARED `cy.moveComponent` command
@@ -572,9 +572,12 @@ describe(
     cy.get('[data-cy="component-inspector-options"]').click();
     cy.get('[data-cy="component-inspector-delete-button"]').click();
     cy.get('[data-cy="yes-button"]').click();
+    // Assert only the platform-agnostic prefix: the undo hint renders as
+    // "(⌘ + Z to undo)" on macOS but "(Ctrl + Z to undo)" on Linux CI
+    // (componentsSlice.js isMac branch), so matching the full string is flaky.
     cy.verifyToastMessage(
-      `[class=go3958317564]`,
-      "Component deleted! (⌘ + Z to undo)"
+      commonSelectors.toastMessage,
+      "Component deleted!"
     );
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
     cy.reload();
@@ -587,9 +590,12 @@ describe(
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.realPress("Backspace");
     cy.get('[data-cy="yes-button"]').click();
+    // Assert only the platform-agnostic prefix: the undo hint renders as
+    // "(⌘ + Z to undo)" on macOS but "(Ctrl + Z to undo)" on Linux CI
+    // (componentsSlice.js isMac branch), so matching the full string is flaky.
     cy.verifyToastMessage(
-      `[class=go3958317564]`,
-      "Component deleted! (⌘ + Z to undo)"
+      commonSelectors.toastMessage,
+      "Component deleted!"
     );
 
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));

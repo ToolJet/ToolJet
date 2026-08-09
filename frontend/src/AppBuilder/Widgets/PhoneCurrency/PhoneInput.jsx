@@ -296,6 +296,7 @@ export const PhoneInput = (props) => {
             placeholder={placeholder}
             style={computedStyles}
             id={`component-${id}`}
+            disabled={disabledState}
             aria-disabled={disabledState}
             aria-busy={loading}
             aria-required={isMandatory}

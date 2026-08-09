@@ -310,7 +310,6 @@ describe("dashboard", () => {
       .and("have.text", dashboardText.appClonedToast);
     cy.wait(3000);
 
-    cy.get(commonSelectors.editorAppNameInput).click();
     cy.renameApp(data.cloneAppName);
     cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
 
