@@ -8,7 +8,7 @@
  * Importing this service drags in the GitSyncAdapter → import/export → `got` (ESM) chain, so
  * those DI-only modules are stubbed. The methods under test use only the deps we fake.
  *
- * @group unit
+ * @group gitsync
  */
 jest.mock('got', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('@ee/git-sync/git-sync-adapter', () => ({ GitSyncAdapter: class {} }));

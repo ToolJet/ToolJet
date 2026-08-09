@@ -64,7 +64,7 @@ const BASIC =
   Buffer.from(`${process.env.TOOLJET_GIT_ADMIN_USER}:${process.env.TOOLJET_GIT_ADMIN_PASSWORD}`).toString('base64');
 
 /**
- * @group platform
+ * @group gitsync
  */
 describe('GitSyncController', () => {
   describe('EE (plan: enterprise)', () => {
@@ -4457,7 +4457,7 @@ describe('GitSyncController', () => {
     // blocks direct default-branch pushes — so this test pushes resources to a FEATURE
     // branch and reproduces the disable's effect with the same UPDATE it runs (a raw
     // is_synced=false flip). The reconcile under test is branch-agnostic, so a feature
-    // branch exercises the exact code path. Runs against the real Gitea (@group platform).
+    // branch exercises the exact code path. Runs against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('pull re-marks resources synced after is_synced reset (git disable→enable)', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -4675,7 +4675,7 @@ describe('GitSyncController', () => {
     // commit X" bookkeeping, so saveProviderConfig runs the same reset as disabling git:
     // is_synced=false on the default branch's app/module versions + data source versions,
     // and last_synced_commit cleared. Runs in single-branch mode so the resources live on
-    // the default branch (which the reset targets). Against the real Gitea (@group platform).
+    // the default branch (which the reset targets). Against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('changing the repo URL resets the default branch sync state', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -4829,7 +4829,7 @@ describe('GitSyncController', () => {
     // unsynced DSV by data_source_id only (no branch filter), so pushing a feature branch
     // could grab the DEFAULT branch's unsynced DSV, put it in serializedDsvIds, and have
     // pushWorkspace flip it to is_synced=true — without any pull. Fixed by scoping the
-    // fallback to the branch being pushed. Against the real Gitea (@group platform).
+    // fallback to the branch being pushed. Against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('feature-branch datasource push does not sync the default branch (regression)', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -4964,7 +4964,7 @@ describe('GitSyncController', () => {
     //      deleted-but-still-referenced data source was written into the app's commit.
     //   2) A scope='datasource' partial push skips ensureCleanDir, and had no explicit
     //      deleted-file removal, so a data source deleted AFTER being pushed lingered in git.
-    // Both are fixed in workspace-git-sync-adapter.ts. Against the real Gitea (@group platform).
+    // Both are fixed in workspace-git-sync-adapter.ts. Against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('deleted data sources are not committed / are removed on push (regression)', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -5241,7 +5241,7 @@ describe('GitSyncController', () => {
     // default branch name (`single-branch-main`) sidesteps the protection — the simulator
     // auto-creates the branch on the test-connection branch check and accepts direct pushes to
     // it — letting us exercise a genuine single-branch push/pull lifecycle directly on the
-    // (unprotected) default branch. Against the real Gitea (@group platform).
+    // (unprotected) default branch. Against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('single-branch lifecycle: push/pull apps, modules, data sources on the default branch', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -5473,7 +5473,7 @@ describe('GitSyncController', () => {
     // it clones a single app's folder and creates it fresh in a DIFFERENT workspace.
     // SRC org pushes an app to the (unprotected) single-branch default; DST org — a
     // separate workspace pointed at the SAME repo — imports it by name. Exercises
-    // AppGitOperationsUtil.createGitApp end-to-end. Against the real Gitea (@group platform).
+    // AppGitOperationsUtil.createGitApp end-to-end. Against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('per-app import from git (createGitApp)', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -5778,7 +5778,7 @@ describe('GitSyncController', () => {
     // that rides into git via a query on the app, serializeLinkedDataSourcesForApp): after the
     // app is merged to main, pulled (→ stub) and hydrated, the DS's default-branch DSV is
     // is_synced=true. (The connected-MODULE cascade is exercised by the App-git-lifecycle step
-    // 54.) Against the real Gitea (@group platform).
+    // 54.) Against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe("hydration marks an app's connected data source is_synced=true", () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -5970,7 +5970,7 @@ describe('GitSyncController', () => {
     // BOTH as stubs. Opening the host app cascade-hydrates the referenced module
     // (hydrateReferencedModuleStubs → hydrateStubApp on the module). The cascade-hydrated
     // module's version must be is_synced=true (content pulled from git). Complements §19 (the
-    // connected data-source case). Against the real Gitea (@group platform).
+    // connected data-source case). Against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('hydration cascade marks a referenced module is_synced=true', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -7233,7 +7233,7 @@ describe('GitSyncController', () => {
     // diverged to manufacture the conflicts. A data source rides into git via a query on a carrier app
     // (serializeLinkedDataSourcesForApp). Modules push through the same gitpush route as apps. The
     // conflict response is asserted to SHRINK after each resolution until the final pull succeeds.
-    // Runs against the real Gitea simulator (@group platform).
+    // Runs against the real Gitea simulator (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('resolve conflicts during workspace pull', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -7686,7 +7686,7 @@ describe('GitSyncController', () => {
     // that saved version → edit + save a version on the feature branch → merge → the new version appears
     // in main's version list. It must be is_synced=true there (git holds its content). The final
     // assertion carries a full diagnostic dump so any is_synced gap is pinpointed on the first run.
-    // Runs against the real Gitea simulator (@group platform).
+    // Runs against the real Gitea simulator (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('create feature branch from a saved version', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -8221,7 +8221,7 @@ describe('GitSyncController', () => {
     // for the skipped scope, so a manufactured orphan survives as is_synced=true.
     // The orphan sweep is gated to the DEFAULT branch, so these tests operate on main
     // (content lands on main via the admin /merge, mirroring the conflict suite).
-    // Runs against the real Gitea simulator (@group platform).
+    // Runs against the real Gitea simulator (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('pull skip — token storage + whole-pull skip (git tree SHAs)', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;

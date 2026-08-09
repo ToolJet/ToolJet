@@ -7,7 +7,7 @@
  * are fakes; crypto is real (secrets are just asserted to be hex of the right length).
  * No Nest app / DB / Redis.
  *
- * @group unit
+ * @group gitsync
  */
 jest.mock('@helpers/database.helper', () => ({ getConnectionInstance: jest.fn() }));
 

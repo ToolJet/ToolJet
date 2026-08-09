@@ -1,3 +1,4 @@
+/** @group gitsync */
 import { GitSyncWebhookService } from '@ee/git-sync-webhooks/services/git-sync-webhook.service';
 
 // Only the pure payload-summary / branch-extraction helpers are exercised here — the

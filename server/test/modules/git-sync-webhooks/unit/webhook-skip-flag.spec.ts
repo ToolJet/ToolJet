@@ -1,3 +1,4 @@
+/** @group gitsync */
 import { WebhookSkipFlagService } from '@ee/git-sync-webhooks/services/webhook-skip-flag.service';
 
 describe('WebhookSkipFlagService', () => {

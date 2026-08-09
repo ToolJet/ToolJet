@@ -8,7 +8,7 @@
  * is stubbed (via requireActual spread, so the module's other exports still load) so
  * the test asserts the branch decision, not the converter's internals.
  *
- * @group unit
+ * @group gitsync
  */
 jest.mock('@modules/apps/services/app-import-export.service', () => ({
   ...jest.requireActual('@modules/apps/services/app-import-export.service'),

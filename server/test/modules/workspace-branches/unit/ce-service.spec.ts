@@ -3,7 +3,7 @@
  * NotFoundException on the community edition. The EE class overrides this in real runs, so
  * these lines are only reached by instantiating the CE class directly. One assertion per method.
  *
- * @group unit
+ * @group gitsync
  */
 import { NotFoundException } from '@nestjs/common';
 import { WorkspaceBranchService } from '@modules/workspace-branches/service';

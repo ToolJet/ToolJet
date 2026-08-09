@@ -6,7 +6,7 @@
  * touched. We assert the exact argv handed to git and the control flow (clean-existing,
  * skip-empty commit, url-swap on push + the finally-unset, tag local→fetch fallback).
  *
- * @group unit
+ * @group gitsync
  */
 let mockGit: any;
 const mockSimpleGit = jest.fn(() => mockGit);

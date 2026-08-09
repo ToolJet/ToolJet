@@ -273,16 +273,9 @@ jobs:
       ENABLE_TOOLJET_DB: 'true'
       ENABLE_EXTERNAL_API: 'true'
       EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
-      # git-sync e2e: real Gitea/GitHub-Enterprise-shaped simulator. Repo path is
-      # namespaced per run (must start with "run-ci/" per simulator owner) so
-      # concurrent CI runs don't collide on the same shared repo.
-      TEST_GIT_BASE_URL: ${{ secrets.GIT_SYNC_SIMULATOR_BASE_URL }}
-      TEST_GIT_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}
-      TOOLJET_GIT_ADMIN_USER: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_USER }}
-      TOOLJET_GIT_ADMIN_PASSWORD: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_PASSWORD }}
-      TOOLJET_GITHUB_APP_ID: ${{ secrets.GIT_SYNC_GITHUB_APP_ID }}
-      TOOLJET_GITHUB_INSTALLATION_ID: ${{ secrets.GIT_SYNC_GITHUB_INSTALLATION_ID }}
-      TOOLJET_GITHUB_APP_PRIVATE_KEY: ${{ secrets.GIT_SYNC_GITHUB_APP_PRIVATE_KEY }}
+      # NOTE: git-sync tests do NOT run in this job. They need the external git simulator and
+      # are isolated in the dedicated `test-gitsync` job below. The unit + e2e steps here
+      # exclude them via `--group=-gitsync` (all git-sync specs carry `@group gitsync`).
     steps:
       - uses: actions/checkout@v7
       - name: Checkout EE submodules
@@ -307,8 +300,10 @@ jobs:
       - name: Unit tests
         id: unit
         continue-on-error: true
+        # --group=-gitsync excludes the git-sync unit specs (they run in the test-gitsync job).
         run: >-
           npm run --prefix server test --
+          --group=-gitsync
           --coverage --coverageReporters=json
           --json --outputFile /tmp/tj-unit-results.json
       - name: Strip coverage map from results JSON
@@ -329,9 +324,10 @@ jobs:
       # suites always get a full run (see "Fail job if unit or e2e failed" below).
       - name: E2E tests
         id: e2e
+        # --group=-gitsync excludes the git-sync e2e specs (they run in the test-gitsync job).
         run: >-
           mkdir -p /tmp/tj-e2e-json &&
-          npm run --prefix server test:e2e:cov -- --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
+          npm run --prefix server test:e2e:cov -- --group=-gitsync --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
       - name: Upload e2e results for the PR comment
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
@@ -370,6 +366,123 @@ jobs:
       # fail here explicitly so needs.test-server.result stays accurate for ci-gate.
       - name: Fail job if unit or e2e failed
         if: ${{ steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure' }}
+        run: exit 1
+
+  # ---------------------------------------------------------------------------
+  # 3a-bis. git-sync suite — isolated because it depends on an EXTERNAL git simulator
+  # (secret-gated). Runs the git-sync unit + e2e specs via --group=gitsync, INCLUDING the
+  # GitLab suite (TEST_GITLAB_TOKEN). Parallel to test-server, so no added wall-clock on the
+  # critical path; feeds ci-gate. Isolating it keeps simulator flakiness/outages from failing
+  # the core suite. In `changed` mode the fast lane (test-changed) runs git-sync when touched.
+  # ---------------------------------------------------------------------------
+  test-gitsync:
+    name: 'Test Suite · git-sync'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    outputs:
+      unit: ${{ steps.gitsync-unit.outcome }}
+      e2e: ${{ steps.gitsync-e2e.outcome || 'skipped' }}
+    container: node:22.15.1-bookworm
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+    env:
+      FORCE_COLOR: true
+      NODE_OPTIONS: '--max-old-space-size=8192'
+      NODE_ENV: test
+      LOCKBOX_MASTER_KEY: lockbox-master-key
+      SECRET_KEY_BASE: secret-key-base
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASS: postgres
+      PG_DB: tooljet_test
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB: tooljet_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WORKFLOW_TIMEOUT_SECONDS: '60'
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      ENABLE_EXTERNAL_API: 'true'
+      EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
+      # git-sync simulator (real Gitea/GitHub-Enterprise + GitLab-shaped host). Repo paths are
+      # namespaced per run (must start with "run-ci/" per simulator owner) so concurrent runs
+      # don't collide on the shared repo.
+      TEST_GIT_BASE_URL: ${{ secrets.GIT_SYNC_SIMULATOR_BASE_URL }}
+      TEST_GIT_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}
+      TEST_GITLAB_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}-gitlab
+      TOOLJET_GIT_ADMIN_USER: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_USER }}
+      TOOLJET_GIT_ADMIN_PASSWORD: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_PASSWORD }}
+      TOOLJET_GITHUB_APP_ID: ${{ secrets.GIT_SYNC_GITHUB_APP_ID }}
+      TOOLJET_GITHUB_INSTALLATION_ID: ${{ secrets.GIT_SYNC_GITHUB_INSTALLATION_ID }}
+      TOOLJET_GITHUB_APP_PRIVATE_KEY: ${{ secrets.GIT_SYNC_GITHUB_APP_PRIVATE_KEY }}
+      # NEW secret — enables the un-quarantined GitLab suite. When unset the GitLab spec
+      # self-skips (prints "[git-sync-gitlab] SKIPPED"), so the job stays green without it.
+      TEST_GITLAB_TOKEN: ${{ secrets.GIT_SYNC_GITLAB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
+      - name: git-sync unit tests
+        id: gitsync-unit
+        continue-on-error: true
+        run: npm run --prefix server test:gitsync:unit
+      # No `if:` — runs regardless of the unit outcome (unit's continue-on-error keeps the job
+      # alive), so both suites always get a full run; the fail-guard below sets the conclusion.
+      - name: git-sync e2e tests
+        id: gitsync-e2e
+        run: npm run --prefix server test:gitsync:e2e
+      - name: Fail job if unit or e2e failed
+        if: ${{ steps.gitsync-unit.outcome == 'failure' || steps.gitsync-e2e.outcome == 'failure' }}
         run: exit 1
 
   # ---------------------------------------------------------------------------
@@ -441,11 +554,14 @@ jobs:
       # concurrent CI runs don't collide on the same shared repo.
       TEST_GIT_BASE_URL: ${{ secrets.GIT_SYNC_SIMULATOR_BASE_URL }}
       TEST_GIT_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}
+      TEST_GITLAB_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}-gitlab
       TOOLJET_GIT_ADMIN_USER: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_USER }}
       TOOLJET_GIT_ADMIN_PASSWORD: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_PASSWORD }}
       TOOLJET_GITHUB_APP_ID: ${{ secrets.GIT_SYNC_GITHUB_APP_ID }}
       TOOLJET_GITHUB_INSTALLATION_ID: ${{ secrets.GIT_SYNC_GITHUB_INSTALLATION_ID }}
       TOOLJET_GITHUB_APP_PRIVATE_KEY: ${{ secrets.GIT_SYNC_GITHUB_APP_PRIVATE_KEY }}
+      # GitLab suite runs here too when a git-sync file is touched in `changed` mode.
+      TEST_GITLAB_TOKEN: ${{ secrets.GIT_SYNC_GITLAB_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -567,6 +683,7 @@ jobs:
       - build-marketplace
       - test-changed
       - test-server
+      - test-gitsync
       - cypress-platform
       - cypress-marketplace
     steps:
@@ -609,6 +726,7 @@ jobs:
             results=(
               "${builds[@]}"
               "test-server:${{ needs.test-server.result }}"
+              "test-gitsync:${{ needs.test-gitsync.result }}"
               "cypress-platform:${{ needs.cypress-platform.result }}"
               "cypress-marketplace:${{ needs.cypress-marketplace.result }}"
             )

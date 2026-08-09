@@ -25,19 +25,46 @@ npm run test:cov:gitsync:merge   # combine both       → coverage-gitsync-combi
 
 ---
 
+## Separation: git-sync runs on its own (`@group gitsync`)
+
+**Every git-sync spec (unit + e2e) carries `@group gitsync`** — the jest-runner-groups tag. This is what
+lets git-sync run **separately** from the core suite (it depends on the external git simulator, so it
+must not be coupled to the general test runs). Two directions:
+
+- **Run only git-sync:** `--group=gitsync` → `test:gitsync:*`.
+- **Run everything except git-sync:** `--group=-gitsync` → `test:core:*` (this is what CI's `test-server`
+  job uses for its unit + e2e steps).
+
+⚠️ **New git-sync specs MUST include `@group gitsync`** in their first docblock. Without it, the spec is
+neither excluded from the core run nor picked up by the git-sync run. The six git-sync dirs are
+`git-sync`, `git-sync-configs`, `git-sync-webhooks`, `platform-git-sync`, `workspace-branches`, `app-git`.
+
 ## npm scripts
 
 | Script | What it runs | Needs |
 |---|---|---|
-| `test:gitsync:unit` | All git-sync-family **unit** specs (`jest.config.ts`, `--testPathPatterns 'modules/(git-sync\|git-sync-configs\|git-sync-webhooks\|platform-git-sync\|workspace-branches\|app-git)/unit/'`) | nothing (host-free) |
-| `test:gitsync:e2e` | git-sync + git-sync-webhooks **e2e** specs via `run-e2e.sh` (sharded) | git simulator + DB |
+| `test:gitsync:unit` | git-sync **unit** specs (`jest.config.ts --group=gitsync`) | nothing (host-free) |
+| `test:gitsync:e2e` | git-sync **e2e** specs via `run-e2e.sh --group=gitsync` (sharded) | git simulator + DB |
 | `test:gitsync` | `test:gitsync:unit` then `test:gitsync:e2e` | git simulator + DB |
-| `test:cov:gitsync:unit` | Unit specs with coverage (`test/jest-unit.gitsync-cov.config.ts`, `SKIP_GLOBAL_SETUP=true`) → `coverage-gitsync-unit/lcov.info` | nothing |
-| `test:e2e:cov:gitsync` | git-sync + webhooks e2e with coverage (`test/jest-e2e.gitsync-cov.config.ts`, `--runInBand`) → `coverage-gitsync/lcov.info` | git simulator + DB |
-| `test:cov:gitsync:merge` | Union-merge the unit + e2e lcov (`scripts/merge-lcov.mjs`) → `coverage-gitsync-combined/lcov.info` + prints combined totals | the two runs above |
-| `test:e2e` / `test:e2e:cov` | The full e2e suite (all modules), optionally with coverage | git simulator + DB |
+| `test:core:unit` | All **non**-git-sync unit specs (`jest.config.ts --group=-gitsync`) | DB (per the general unit run) |
+| `test:core:e2e` | All **non**-git-sync e2e specs (`run-e2e.sh --group=-gitsync`) | DB |
+| `test:cov:gitsync:unit` | git-sync unit coverage (`test/jest-unit.gitsync-cov.config.ts`) → `coverage-gitsync-unit/lcov.info` | nothing |
+| `test:e2e:cov:gitsync` | git-sync e2e coverage (`test/jest-e2e.gitsync-cov.config.ts`) → `coverage-gitsync/lcov.info` | git simulator + DB |
+| `test:cov:gitsync:merge` | Union-merge unit + e2e lcov (`scripts/merge-lcov.mjs`) → `coverage-gitsync-combined/lcov.info` + totals | the two runs above |
 
 > **jest v30 note:** the flag is `--testPathPatterns` (plural). `--testPathPattern` (singular) is silently ignored.
+> The coverage configs still select git-sync by path (`testRegex`), independent of the `@group` tag.
+
+### CI (`.github/workflows/ci.yml`)
+
+Git-sync is a **dedicated job** (`test-gitsync`), not part of `test-server`:
+- `test-server` runs the core suite with `--group=-gitsync` on both its unit and e2e steps (git env removed).
+- `test-gitsync` (parallel job) runs `test:gitsync` with the git simulator secrets **plus `TEST_GITLAB_TOKEN`**
+  so the un-quarantined GitLab suite executes in CI. It feeds `ci-gate` (a failure blocks the merge).
+- In `changed` mode, the fast lane (`test-changed`) still runs git-sync when a git-sync file is touched.
+
+> **Action required to enable GitLab in CI:** add the repo secret **`GIT_SYNC_GITLAB_TOKEN`** (matching the
+> simulator's `EXPECTED_GITLAB_TOKEN`). Without it the GitLab spec self-skips and `test-gitsync` stays green.
 
 ---
 

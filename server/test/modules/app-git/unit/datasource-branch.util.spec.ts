@@ -5,7 +5,7 @@
  * new credential) and stitching those new ids through the options JSON, then chunked inserts.
  * The manager is a fake; dbTransactionWrap is stubbed to invoke its callback with it. No DB.
  *
- * @group unit
+ * @group gitsync
  */
 jest.mock('@helpers/database.helper', () => ({
   dbTransactionWrap: jest.fn((operation: any) => operation(globalThis.__dsbManager)),

@@ -3,7 +3,7 @@
  * NotImplementedException on the community edition. Only reached by instantiating the CE
  * class directly (the EE class overrides it in real runs). One assertion per method.
  *
- * @group unit
+ * @group gitsync
  */
 import { NotImplementedException } from '@nestjs/common';
 import { GitSyncConfigsService } from '@modules/git-sync-configs/service';

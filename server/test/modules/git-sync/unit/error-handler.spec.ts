@@ -1,3 +1,4 @@
+/** @group gitsync */
 import { ErrorHandler } from '@ee/git-sync/error-handler/error-handler';
 import { GitErrorMessages } from '@modules/git-sync/error-constants/gitsync_error.constant';
 

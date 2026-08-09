@@ -1,3 +1,4 @@
+/** @group gitsync */
 import { WebhookDeduplicationService } from '@ee/git-sync-webhooks/services/webhook-deduplication.service';
 
 describe('WebhookDeduplicationService', () => {

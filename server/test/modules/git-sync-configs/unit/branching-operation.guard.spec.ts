@@ -4,7 +4,7 @@
  * Pure guard logic: the one dependency (GitSyncConfigsUtilService.getDetails) is a fake, and the
  * ExecutionContext is a minimal stub exposing request.user. No Nest app / DB.
  *
- * @group unit
+ * @group gitsync
  */
 import { ForbiddenException, ExecutionContext } from '@nestjs/common';
 import { BranchingOperationGuard } from '@modules/git-sync-configs/guards/branching-operation.guard';

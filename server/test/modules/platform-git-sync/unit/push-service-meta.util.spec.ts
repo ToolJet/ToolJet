@@ -6,7 +6,7 @@
  * `fs` is mocked; `path` is real. The DB/git push paths (pushApp, resolveAppPath,
  * findTooljetDbTables, …) are exercised by the e2e lifecycle specs, not here.
  *
- * @group unit
+ * @group gitsync
  */
 jest.mock('fs', () => ({
   existsSync: jest.fn(),

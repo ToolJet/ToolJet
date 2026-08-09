@@ -1,3 +1,4 @@
+/** @group gitsync */
 import { BranchingBusinessUtil } from '@ee/app-git/shared/branching-business.util';
 import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 

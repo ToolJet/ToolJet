@@ -4,7 +4,7 @@
  * logger, licenseTermsService) are fakes; provider state is pre-seeded so ensureResolved
  * short-circuits (its DB/hydration path isn't under test here). No Nest app / DB.
  *
- * @group unit
+ * @group gitsync
  */
 import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
 import { GIT_ENV_KEYS } from '@modules/organization-env/constants';

@@ -12,7 +12,7 @@
  *
  * Needs the DB + Redis (dedupe SETNX + BullMQ enqueue). No git host.
  *
- * @group platform
+ * @group gitsync
  */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';

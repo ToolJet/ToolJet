@@ -5,7 +5,7 @@
  * Pure parsing: `simple-git` is mocked so no git host / repo is touched. We drive
  * canned stdout through the parsers and assert the extracted SHAs.
  *
- * @group unit
+ * @group gitsync
  */
 
 // Mock names must be `mock`-prefixed to satisfy jest's out-of-scope guard.

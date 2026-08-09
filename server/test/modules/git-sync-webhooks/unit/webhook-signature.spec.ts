@@ -1,3 +1,4 @@
+/** @group gitsync */
 import * as crypto from 'crypto';
 import { WebhookSignatureService } from '@ee/git-sync-webhooks/services/webhook-signature.service';
 

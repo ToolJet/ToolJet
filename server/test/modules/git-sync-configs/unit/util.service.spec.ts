@@ -5,7 +5,7 @@
  * dbTransactionWrap is stubbed to invoke its callback with a fake EntityManager (the existing
  * pattern in git-sync-configs/service.spec.ts). No Nest app / DB.
  *
- * @group unit
+ * @group gitsync
  */
 jest.mock('@helpers/database.helper', () => ({
   dbTransactionWrap: jest.fn((operation: any, manager?: any) => operation(manager ?? globalThis.__fakeManager)),

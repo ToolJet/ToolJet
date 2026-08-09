@@ -10,7 +10,7 @@
  * Needs the DB (the worker reads OrganizationGitSync / WorkspaceBranch and writes
  * GitSyncWebhookEvent via getConnectionInstance()) but no git host.
  *
- * @group platform
+ * @group gitsync
  */
 import { INestApplication } from '@nestjs/common';
 import { getDataSourceToken } from '@nestjs/typeorm';

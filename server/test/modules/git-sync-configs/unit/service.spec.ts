@@ -1,3 +1,4 @@
+/** @group gitsync */
 // Write paths (updateOrgGit, updateBranchingEnabled, updateOrgGitStatus, deleteConfig) call
 // dbTransactionWrap with no manager, which opens a real DB transaction outside a unit test's
 // reach — stub it to just invoke the callback, matching the existing pattern in

@@ -1,3 +1,4 @@
+/** @group gitsync */
 import {
   classifyGitError,
   sanitizeGitError,
