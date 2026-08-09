@@ -5468,6 +5468,307 @@ describe('GitSyncController', () => {
     });
 
     // ────────────────────────────────────────────────────────────────────────────
+    // Per-app import from git (createGitApp) — the legacy "import an app from git"
+    // flow, POST /api/app-git/gitpull/app. Distinct from the workspace-wide pull:
+    // it clones a single app's folder and creates it fresh in a DIFFERENT workspace.
+    // SRC org pushes an app to the (unprotected) single-branch default; DST org — a
+    // separate workspace pointed at the SAME repo — imports it by name. Exercises
+    // AppGitOperationsUtil.createGitApp end-to-end. Against the real Gitea (@group platform).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('per-app import from git (createGitApp)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      const IMP_BRANCH = 'single-branch-main';
+
+      let srcOrgId: string;
+      let srcCookie: string[];
+      let dstOrgId: string;
+      let dstCookie: string[];
+      let impDs: DataSource;
+
+      const agent = () => request.agent(app.getHttpServer());
+      const authAs = (cookie: string[], org: string) => (r: request.Test) =>
+        r.set('Cookie', cookie).set('tj-workspace-id', org);
+
+      const editingVersionOf = async (auth: (r: request.Test) => request.Test, appId: string, branchId: string) => {
+        const d = await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: branchId })
+          .expect(200);
+        const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+        const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || d.body?.pages?.[0]?.id;
+        return { versionId: ev.id as string, pageId: pageId as string };
+      };
+
+      const seedDefaultBranch = async (org: string) =>
+        impDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, $2, true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [org, IMP_BRANCH]
+        );
+
+      beforeAll(async () => {
+        const src = await createUser(app, { email: 'git-import-src@tooljet.io', firstName: 'imp', lastName: 'src' });
+        srcOrgId = src.organization.id;
+        srcCookie = (await login(app, 'git-import-src@tooljet.io')).tokenCookie;
+        await ensureAppEnvironments(app, srcOrgId);
+
+        const dst = await createUser(app, { email: 'git-import-dst@tooljet.io', firstName: 'imp', lastName: 'dst' });
+        dstOrgId = dst.organization.id;
+        dstCookie = (await login(app, 'git-import-dst@tooljet.io')).tokenCookie;
+        await ensureAppEnvironments(app, dstOrgId);
+
+        impDs = app.get<DataSource>(getDataSourceToken('default'));
+        await seedDefaultBranch(srcOrgId);
+        await seedDefaultBranch(dstOrgId);
+      });
+
+      it('imports an app pushed to git into a separate workspace via /app-git/gitpull/app', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const { randomUUID } = await import('crypto');
+        const authSrc = authAs(srcCookie, srcOrgId);
+        const authDst = authAs(dstCookie, dstOrgId);
+
+        const configureGit = (auth: (r: request.Test) => request.Test, org: string) =>
+          (async () => {
+            await auth(agent().post('/api/git-sync/configs'))
+              .send({ ...GITHUB_HTTPS_PAYLOAD, branchName: IMP_BRANCH, useEnvConfig: false })
+              .expect(201);
+            const cfg = await auth(agent().get(`/api/git-sync/${org}`)).expect(200);
+            const orgGitId: string = cfg.body.organization_git.id;
+            await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+              .send({ isBranchingEnabled: false })
+              .expect(200);
+            return (await auth(agent().get('/api/workspace-branches')).expect(200)).body.activeBranchId as string;
+          })();
+
+        // ── 1. SRC: configure git + push an app to the unprotected single-branch default ──
+        step(1, 'reset gitea; SRC workspace configures git + pushes an app');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        const srcBranchId = await configureGit(authSrc, srcOrgId);
+        await authSrc(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: srcBranchId })
+          .send({ branchId: srcBranchId })
+          .expect(201);
+
+        const appId: string = (
+          await authSrc(agent().post('/api/apps'))
+            .query({ branch_id: srcBranchId })
+            .send({ icon: 'home', name: 'importable-app', type: 'front-end', branchId: srcBranchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await editingVersionOf(authSrc, appId, srcBranchId);
+        const btnId = randomUUID();
+        await authSrc(agent().post(`/api/v2/apps/${appId}/versions/${appCtx.versionId}/components`))
+          .query({ branch_id: srcBranchId })
+          .send({
+            is_user_switched_version: false,
+            pageId: appCtx.pageId,
+            diff: {
+              [btnId]: {
+                name: `button_${btnId.slice(0, 6)}`,
+                layouts: {
+                  desktop: { top: 80, left: 15, width: 4, height: 40 },
+                  mobile: { top: 80, left: 15, width: 4, height: 40 },
+                },
+                type: 'Button',
+                general: {},
+                generalStyles: {},
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: { text: { value: 'Button' } },
+                styles: {},
+              },
+            },
+          })
+          .expect(201);
+        await authSrc(agent().post(`/api/app-git/gitpush/${appId}/${appCtx.versionId}`))
+          .query({ branch_id: srcBranchId })
+          .send({
+            gitAppName: 'importable-app',
+            versionId: appCtx.versionId,
+            lastCommitMessage: 'push importable-app',
+            gitVersionName: IMP_BRANCH,
+            sourceBranch: IMP_BRANCH,
+          })
+          .expect(201);
+
+        // ── 2. DST: separate workspace pointed at the same repo imports the app by name ──
+        step(2, 'DST workspace configures git (same repo) and imports the app');
+        const dstBranchId = await configureGit(authDst, dstOrgId);
+
+        step(3, 'POST /api/app-git/gitpull/app → createGitApp creates the app in DST');
+        const importRes = await authDst(agent().post('/api/app-git/gitpull/app')).send({
+          gitAppName: 'importable-app',
+          gitBranchName: IMP_BRANCH,
+          workspaceBranchId: dstBranchId,
+        });
+        if (importRes.status !== 201 && importRes.status !== 200) {
+          throw new Error(`createGitApp import failed: ${importRes.status} ${JSON.stringify(importRes.body)}`);
+        }
+
+        // ── 3. the import created an app in the (previously empty) DST workspace ──────────
+        // createGitApp ran end-to-end (step 3 returned success); the fresh DST org, which had
+        // no apps before, now owns exactly the imported app. (App display name lives on the
+        // version row, not apps.name, so we assert on ownership/existence rather than name.)
+        step(4, 'the imported app exists in the DST workspace');
+        const importedApps = await impDs.query(`SELECT id, organization_id FROM apps WHERE organization_id = $1`, [
+          dstOrgId,
+        ]);
+        expect(importedApps.length).toBeGreaterThan(0);
+        expect(importedApps[0].organization_id).toBe(dstOrgId);
+        // it has at least one non-stub version created by the import
+        const versions = await impDs.query(
+          `SELECT av.id FROM app_versions av WHERE av.app_id = $1 AND av.is_stub = false`,
+          [importedApps[0].id]
+        );
+        expect(versions.length).toBeGreaterThan(0);
+      }, 300000);
+
+      it('imports a published tag version into a separate workspace (createGitApp tag path)', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const { randomUUID } = await import('crypto');
+        const authSrc = authAs(srcCookie, srcOrgId);
+        const authDst = authAs(dstCookie, dstOrgId);
+
+        const configureGit = (auth: (r: request.Test) => request.Test, org: string) =>
+          (async () => {
+            await auth(agent().post('/api/git-sync/configs'))
+              .send({ ...GITHUB_HTTPS_PAYLOAD, branchName: IMP_BRANCH, useEnvConfig: false })
+              .expect(201);
+            const cfg = await auth(agent().get(`/api/git-sync/${org}`)).expect(200);
+            const orgGitId: string = cfg.body.organization_git.id;
+            await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+              .send({ isBranchingEnabled: false })
+              .expect(200);
+            return (await auth(agent().get('/api/workspace-branches')).expect(200)).body.activeBranchId as string;
+          })();
+
+        // Resolve a tag's commit SHA by cloning the repo and fetching + rev-parsing the tag ref.
+        const resolveTagSha = async (tagName: string): Promise<string> => {
+          const simpleGit = (await import('simple-git')).default;
+          const fs = await import('fs');
+          const path = await import('path');
+          const os = await import('os');
+          const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-tag-'));
+          try {
+            const git = simpleGit({
+              baseDir: tmpDir,
+              timeout: { block: 30000 },
+              unsafe: { allowUnsafeCredentialHelper: true },
+            });
+            await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', ['--branch', IMP_BRANCH, '--single-branch']);
+            await git.raw(['fetch', 'origin', 'refs/tags/*:refs/tags/*']);
+            return (await git.raw(['rev-parse', `refs/tags/${tagName}^{commit}`])).trim();
+          } finally {
+            await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+          }
+        };
+
+        // ── 1. SRC: push an app, publish v1, and create its git tag ──────────────────────
+        step(1, 'reset gitea; SRC pushes an app, publishes v1, and tags it');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        const srcBranchId = await configureGit(authSrc, srcOrgId);
+        await authSrc(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: srcBranchId })
+          .send({ branchId: srcBranchId })
+          .expect(201);
+
+        const appId: string = (
+          await authSrc(agent().post('/api/apps'))
+            .query({ branch_id: srcBranchId })
+            .send({ icon: 'home', name: 'tag-app', type: 'front-end', branchId: srcBranchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await editingVersionOf(authSrc, appId, srcBranchId);
+        const btnId = randomUUID();
+        await authSrc(agent().post(`/api/v2/apps/${appId}/versions/${appCtx.versionId}/components`))
+          .query({ branch_id: srcBranchId })
+          .send({
+            is_user_switched_version: false,
+            pageId: appCtx.pageId,
+            diff: {
+              [btnId]: {
+                name: `button_${btnId.slice(0, 6)}`,
+                layouts: {
+                  desktop: { top: 80, left: 15, width: 4, height: 40 },
+                  mobile: { top: 80, left: 15, width: 4, height: 40 },
+                },
+                type: 'Button',
+                general: {},
+                generalStyles: {},
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: { text: { value: 'Button' } },
+                styles: {},
+              },
+            },
+          })
+          .expect(201);
+        await authSrc(agent().post(`/api/app-git/gitpush/${appId}/${appCtx.versionId}`))
+          .query({ branch_id: srcBranchId })
+          .send({
+            gitAppName: 'tag-app',
+            versionId: appCtx.versionId,
+            lastCommitMessage: 'push tag-app',
+            gitVersionName: IMP_BRANCH,
+            sourceBranch: IMP_BRANCH,
+          })
+          .expect(201);
+
+        // publish v1 then create the git tag (<co_relation_id>/v1)
+        await authSrc(agent().put(`/api/v2/apps/${appId}/versions/${appCtx.versionId}`))
+          .query({ branch_id: srcBranchId })
+          .send({ is_user_switched_version: false, name: 'v1', description: 'v1', status: 'PUBLISHED' })
+          .expect(200);
+        await authSrc(agent().post(`/api/app-git/${appId}/versions/${appCtx.versionId}/tag`))
+          .query({ branch_id: srcBranchId })
+          .send({ message: 'v1' })
+          .expect(201);
+
+        const srcCoRel: string = (await impDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [appId]))[0]
+          .co_relation_id;
+        const tagSha = await resolveTagSha(`${srcCoRel}/v1`);
+        expect(tagSha).toMatch(/^[0-9a-f]{40}$/);
+
+        // ── 2. DST: import the TAGGED version (commitHash + gitVersionName → importTagVersion) ──
+        step(2, 'DST imports the tagged version via /app-git/gitpull/app');
+        const dstBranchId = await configureGit(authDst, dstOrgId);
+        const dstAppIdsBefore: string[] = (
+          await impDs.query(`SELECT id FROM apps WHERE organization_id = $1`, [dstOrgId])
+        ).map((r: any) => r.id);
+
+        const importRes = await authDst(agent().post('/api/app-git/gitpull/app')).send({
+          gitAppId: srcCoRel,
+          gitAppName: 'tag-app',
+          gitVersionName: 'v1',
+          commitHash: tagSha,
+          gitBranchName: IMP_BRANCH,
+          workspaceBranchId: dstBranchId,
+        });
+        if (importRes.status !== 201 && importRes.status !== 200) {
+          throw new Error(`tag import failed: ${importRes.status} ${JSON.stringify(importRes.body)}`);
+        }
+
+        // ── 3. a NEW app with a PUBLISHED version landed in DST ──────────────────────────
+        step(3, 'DST gained a new app carrying a published (tag) version');
+        const dstAppsAfter = await impDs.query(`SELECT id FROM apps WHERE organization_id = $1`, [dstOrgId]);
+        const newAppIds = dstAppsAfter.map((r: any) => r.id).filter((id: string) => !dstAppIdsBefore.includes(id));
+        expect(newAppIds.length).toBeGreaterThan(0);
+        const published = await impDs.query(`SELECT id FROM app_versions WHERE app_id = ANY($1) AND is_stub = false`, [
+          newAppIds,
+        ]);
+        expect(published.length).toBeGreaterThan(0);
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
     // Hydration syncs an app's connected resources.
     //
     // When an app is pulled from git it lands as a STUB; opening it hydrates the content
