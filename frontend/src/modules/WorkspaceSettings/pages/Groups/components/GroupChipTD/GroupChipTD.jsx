@@ -40,11 +40,14 @@ const GroupChipTD = ({ groups = [] }) => {
     setShowAllGroups(!showAllGroups);
   };
 
-  const renderGroupChip = (group, index) => (
-    <span className="group-chip" key={index} data-cy={`${group.toLowerCase().replace(/\s+/g, '-')}-group-chip`}>
-      {humanizeifDefaultGroupName(group)}
-    </span>
-  );
+  const renderGroupChip = (group, index) => {
+    const label = group ?? 'Untitled';
+    return (
+      <span className="group-chip" key={index} data-cy={`${label.toLowerCase().replace(/\s+/g, '-')}-group-chip`}>
+        {humanizeifDefaultGroupName(label)}
+      </span>
+    );
+  };
 
   return (
     <div
