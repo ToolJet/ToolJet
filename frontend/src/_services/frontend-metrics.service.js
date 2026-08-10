@@ -16,7 +16,9 @@ const _onUnload = () => {
 };
 const _onVisibility = () => {
   if (document.visibilityState !== 'hidden') return;
-  recordAppLoadFailureIfPending();
+  // Tab-hide is not session end. Failing the pending load here fabricates a failure for anyone
+  // who switches tabs mid-load AND permanently discards the real duration, since markAppLoaded
+  // no-ops once _appLoad is cleared. Bias lands hardest on slow loads. Flush only; pagehide owns failure.
   flush();
 };
 
