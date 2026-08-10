@@ -1,7 +1,6 @@
-import { EntityManager } from 'typeorm';
 import { Organization } from '@entities/organization.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { getDBConnection } from '@helpers/database.helper';
 
 // Shared id->name caches for metric labels — names change rarely, never a DB hit per emission
 
@@ -12,10 +11,9 @@ export async function getOrganizationNameCached(organizationId: string): Promise
   const cached = orgNameCache.get(organizationId);
   if (cached && Date.now() - cached.ts < ORG_NAME_TTL_MS) return cached.name;
 
-  const name = await dbTransactionWrap(async (manager: EntityManager) => {
-    const organization = await manager.findOne(Organization, { where: { id: organizationId } });
-    return organization?.name ?? 'unknown';
-  });
+  // Plain read — no transaction needed
+  const organization = await getDBConnection().findOne(Organization, { where: { id: organizationId } });
+  const name = organization?.name ?? 'unknown';
   orgNameCache.set(organizationId, { name, ts: Date.now() });
   return name;
 }
@@ -27,10 +25,9 @@ export async function getEnvironmentNameCached(environmentId: string): Promise<s
   const cached = envNameCache.get(environmentId);
   if (cached) return cached;
 
-  const name = await dbTransactionWrap(async (manager: EntityManager) => {
-    const environment = await manager.findOne(AppEnvironment, { where: { id: environmentId } });
-    return environment?.name ?? 'unknown';
-  });
+  // Plain read — no transaction needed
+  const environment = await getDBConnection().findOne(AppEnvironment, { where: { id: environmentId } });
+  const name = environment?.name ?? 'unknown';
   if (name !== 'unknown') envNameCache.set(environmentId, name);
   return name;
 }
