@@ -12,59 +12,78 @@ function isModPressed(event: MouseEvent | KeyboardEvent): boolean {
   return isMac ? event.metaKey : event.ctrlKey;
 }
 
-/**
- * Regex to match full `components.componentName.property.subProperty` references.
- * Captures the component name (group 1).
- */
-const COMPONENT_REF_REGEX = /components\.([a-zA-Z_][a-zA-Z0-9_]*)(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*/g;
+type RefKind = 'component' | 'query';
 
-const linkHoverMark = Decoration.mark({ class: 'cm-component-link-hover' });
-
-/** Payload for the combined state effect */
-interface HoverState {
-  modKeyHeld: boolean;
+interface RefMatch {
   from: number;
   to: number;
-  componentName: string;
+  name: string;
+  kind: RefKind;
 }
 
-const setHoverEffect = StateEffect.define<HoverState | null>();
+/**
+ * Regex to match `components.name[.prop]*` or `queries.name[.prop]*` references.
+ * Group 1 = "components" or "queries", Group 2 = the name.
+ */
+const REF_REGEX = /(components|queries)\.([a-zA-Z_][a-zA-Z0-9_]*)(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*/g;
+
+const linkHoverMark = Decoration.mark({ class: 'cm-ref-link-hover' });
+
+const setHoverEffect = StateEffect.define<RefMatch | null>();
 
 /**
- * Find the component reference range at a given document position.
- * Returns { from, to, componentName } or null. Only checks the single line
- * containing `pos` — O(line length), not O(document).
+ * Find a component/query reference at a given document position.
+ * Only checks the single line containing `pos` — O(line length).
  */
-function componentRefAtPos(view: EditorView, pos: number): { from: number; to: number; componentName: string } | null {
+function refAtPos(view: EditorView, pos: number): RefMatch | null {
   if (pos < 0 || pos > view.state.doc.length) return null;
   const line = view.state.doc.lineAt(pos);
-  COMPONENT_REF_REGEX.lastIndex = 0;
+  REF_REGEX.lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = COMPONENT_REF_REGEX.exec(line.text)) !== null) {
+  while ((match = REF_REGEX.exec(line.text)) !== null) {
     const from = line.from + match.index;
     const to = from + match[0].length;
     if (pos >= from && pos <= to) {
-      return { from, to, componentName: match[1] };
+      return {
+        from,
+        to,
+        name: match[2],
+        kind: match[1] === 'queries' ? 'query' : 'component',
+      };
     }
   }
   return null;
 }
 
+/** Execute the navigation action for the given reference */
+function navigateToRef(ref: RefMatch): void {
+  const store = useStore.getState();
+  if (ref.kind === 'component') {
+    store.navigateToComponent(ref.name);
+  } else {
+    const queryId = store.getQueryIdFromName(ref.name);
+    if (queryId) {
+      store.queryPanel.setSelectedQuery(queryId);
+      store.queryPanel.expandQueryPaneIfNeeded();
+    }
+  }
+}
+
 /**
  * CodeMirror ViewPlugin that:
- * 1. Underlines + colors only the SINGLE `components.X.Y` reference under the cursor
- *    when Cmd (Mac) / Ctrl (Win/Linux) is held — just like VS Code "Go to Definition".
- * 2. Navigates to the component on Cmd/Ctrl + Click.
+ * 1. Underlines + colors the SINGLE `components.X.Y` or `queries.X.Y` reference
+ *    under the cursor when Cmd (Mac) / Ctrl (Win/Linux) is held.
+ * 2. Navigates to the component/query on Cmd/Ctrl + Click.
  *
  * Performance: never scans the full document. Only checks the line under the mouse
  * pointer and maintains at most one decoration range.
  */
-const navigateToComponentPlugin = ViewPlugin.fromClass(
+const navigateRefPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet = Decoration.none;
     modKeyHeld = false;
-    currentHover: { from: number; to: number; componentName: string } | null = null;
+    currentHover: RefMatch | null = null;
     private view: EditorView;
     private onKeyDown: (e: KeyboardEvent) => void;
     private onKeyUp: (e: KeyboardEvent) => void;
@@ -103,12 +122,8 @@ const navigateToComponentPlugin = ViewPlugin.fromClass(
       window.removeEventListener('blur', this.onWindowBlur);
     }
 
-    /** Dispatch an effect so CodeMirror re-reads decorations */
     syncDecoration() {
-      const payload =
-        this.modKeyHeld && this.currentHover
-          ? { modKeyHeld: true, ...this.currentHover }
-          : null;
+      const payload = this.modKeyHeld && this.currentHover ? this.currentHover : null;
       this.view.dispatch({ effects: setHoverEffect.of(payload) });
     }
 
@@ -127,7 +142,6 @@ const navigateToComponentPlugin = ViewPlugin.fromClass(
         }
       }
 
-      // If the document changed, the stored hover range may be stale
       if (update.docChanged) {
         this.currentHover = null;
         if (this.decorations !== Decoration.none) {
@@ -136,12 +150,10 @@ const navigateToComponentPlugin = ViewPlugin.fromClass(
       }
     }
 
-    /** Update hover from mouse coordinates (called on mousemove) */
     updateHoverFromMouse(view: EditorView, x: number, y: number) {
       const pos = view.posAtCoords({ x, y });
-      const ref = pos !== null ? componentRefAtPos(view, pos) : null;
+      const ref = pos !== null ? refAtPos(view, pos) : null;
 
-      // Only dispatch if the hovered reference actually changed
       const prev = this.currentHover;
       if (ref?.from === prev?.from && ref?.to === prev?.to) return;
 
@@ -169,32 +181,30 @@ const navigateToComponentPlugin = ViewPlugin.fromClass(
         const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
         if (pos === null) return false;
 
-        const ref = componentRefAtPos(view, pos);
+        const ref = refAtPos(view, pos);
         if (!ref) return false;
 
         event.preventDefault();
         event.stopPropagation();
-        useStore.getState().navigateToComponent(ref.componentName);
+        navigateToRef(ref);
         return true;
       },
     },
   }
 );
 
-/** Base theme — only applied to the single hovered reference.
- *  Targets both the decoration span AND any child syntax-highlighting spans
- *  so the color override applies regardless of CodeMirror's token nesting. */
-const navigateToComponentTheme = EditorView.baseTheme({
-  '.cm-component-link-hover, .cm-component-link-hover *': {
+/** Base theme — targets the decoration span AND child syntax-highlighting spans */
+const navigateRefTheme = EditorView.baseTheme({
+  '.cm-ref-link-hover, .cm-ref-link-hover *': {
     borderBottom: 'none',
     color: 'var(--primary-accent-strong, #4368E3) !important',
     cursor: 'pointer',
   },
-  '.cm-component-link-hover': {
+  '.cm-ref-link-hover': {
     borderBottom: '1.5px solid var(--primary-accent-strong, #4368E3)',
     paddingBottom: '1px',
   },
 });
 
-/** Combined extension to enable Cmd/Ctrl+Click navigation to components */
-export const navigateToComponentExtension = [navigateToComponentPlugin, navigateToComponentTheme];
+/** Combined extension to enable Cmd/Ctrl+Click navigation to components and queries */
+export const navigateToComponentExtension = [navigateRefPlugin, navigateRefTheme];
