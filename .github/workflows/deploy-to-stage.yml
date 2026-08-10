@@ -197,26 +197,13 @@ jobs:
               echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
               echo "✅ $name: checked out branch $BRANCH"
             else
-              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'lts-3.16'"
-              PREV=$(git rev-parse --short HEAD || echo "unknown")
-              git fetch origin lts-3.16:lts-3.16 || {
-                echo "❌ $name: fetch failed for lts-3.16"
-                exit 1
-              }
-              git checkout lts-3.16 || {
-                echo "❌ $name: fallback to lts-3.16 failed"
-                exit 1
-              }
-              echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
-              echo "✅ $name: now on branch lts-3.16"
+              # No matching submodule branch: keep the commit recorded in the base repo.
+              # Substituting another branch ships submodule code this base was never built
+              # against, which is how half-features reach a deploy and crash at runtime.
+              echo "ℹ️ $name: no matching branch on origin — keeping the pinned commit"
             fi
 
-            CURRENT=$(git rev-parse --abbrev-ref HEAD)
-            echo "🔎 $name: current branch = $CURRENT"
-            if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "lts-3.16" ]; then
-              echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'lts-3.16', got '$CURRENT'"
-              exit 1
-            fi
+            echo "🔎 $name: building from $(git rev-parse --short HEAD): $(git log -1 --pretty=%s || echo unknown)"
           '
 
       - name: 🧰 Setup Node.js
