@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Pinecone Plugin",
   "description": "A schema defining Pinecone datasource",
-  "type": "api",
+  "type": "ai",
   "source": {
     "name": "Pinecone",
     "kind": "pinecone",
