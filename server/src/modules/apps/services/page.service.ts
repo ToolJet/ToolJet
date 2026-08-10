@@ -8,6 +8,7 @@ import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { EventsService } from './event.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
@@ -350,8 +351,9 @@ export class PageService implements IPageService {
           const componentLayouts = await manager.find(Layout, {
             where: { componentId: component.id },
           });
-          // CORRECTED: Use manager.create(Layout, ...) to ensure entity instances are created
-          const clonedLayouts = componentLayouts.map((layout) =>
+          // Deduplicate layouts by type to prevent duplicate layout rows from propagating
+          const uniqueLayouts = deduplicateLayoutsByType(componentLayouts);
+          const clonedLayouts = uniqueLayouts.map((layout) =>
             manager.create(Layout, {
               ...layout,
               id: undefined, // Let TypeORM generate a new ID
