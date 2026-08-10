@@ -46,7 +46,21 @@ export const useFlexWidgetLayout = ({
   const effectiveHeightPx = visibility ? visibleHeightPx : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
   const availableWidth = containerWidth ?? effectiveWidthPx;
   let widgetWidth = fillWidth ? availableWidth : effectiveWidthPx;
-  const widgetHeight = effectiveHeightPx;
+  // The flex SLOT (wrapper / flex-basis) grows to the measured temp height via
+  // `effectiveHeightPx`, but the WIDGET itself must render at its authored
+  // canonical height — exactly like the grid path passes `newLayoutData.height`,
+  // not the temp height. A dynamic-height leaf (TextArea, CodeEditor, …)
+  // autosizes its own content and uses this prop only as its min-height floor.
+  // Feeding the grown temp height here would ratchet that floor up with the
+  // content so the widget could never shrink back when text is deleted.
+  const authoredHeightPx = height ?? flexLayoutData.height ?? 100;
+  const widgetHeight = visibility
+    ? dynamicHeight
+      ? authoredHeightPx
+      : visibleHeightPx
+    : mode === 'edit'
+    ? HIDDEN_COMPONENT_HEIGHT
+    : 0;
   const flexMainFill = isFlexRow ? fillWidth : false;
   const flexMainPx = isFlexRow ? effectiveWidthPx : effectiveHeightPx;
 

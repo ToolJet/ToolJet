@@ -16,7 +16,7 @@ import {
   hasEnvironmentAccess,
   getSafeEnvironment,
 } from '@/_helpers/environmentAccess';
-import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppData';
+import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
 
 const initialState = {
   selectedVersion: null,
@@ -593,9 +593,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           // bindings referencing a query by name can't resolve and fall back to showing the
           // stale id instead of the name. Must run before initDependencyGraph below, which
           // reads the current queries list to register query dependencies.
-          const dataQueries =
-            (await dataqueryService.getAll(versionId, get().getCurrentMode(moduleId))).data_queries || [];
-          dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+          const dataQueries = (
+            (await dataqueryService.getAll(versionId, get().getCurrentMode(moduleId))).data_queries || []
+          ).map(normalizeQueryTransformationOptions);
           get().dataQuery.setQueries(dataQueries, moduleId);
           get().initialiseResolvedQuery(
             dataQueries.map((query) => query.id),
