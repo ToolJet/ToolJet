@@ -144,7 +144,7 @@
     "nestjs-otel": "^8.0.1",
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
-    "nodemailer": "^8.0.2",
+    "nodemailer": "^9.0.1",
     "openid-client": "^5.4.0",
     "otpauth": "^9.4.1",
     "passport-jwt": "^4.0.0",
@@ -164,13 +164,13 @@
     "socket.io-client": "^4.8.1",
     "sshpk": "^1.17.0",
     "stripe": "^20.1.2",
-    "typeorm": "^0.3.24",
+    "typeorm": "^0.3.31",
     "undici": "^7.11.0",
     "utf-8-validate": "^6.0.6",
     "uuid": "^8.3.2",
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^4.7.1",
-    "ws": "^8.17.1",
+    "ws": "^8.21.0",
     "y-websocket": "^1.4.0",
     "zod": "^3.25.76"
   },
@@ -180,7 +180,15 @@
   "overrides": {
     "@nestjs/platform-ws": {
       "ws": "$ws"
-    }
+    },
+    "engine.io-client": {
+      "ws": "$ws"
+    },
+    "mailparser": {
+      "nodemailer": "^9.0.1"
+    },
+    "jsondiffpatch": "^0.7.6",
+    "@opentelemetry/propagator-jaeger": "^2.9.0"
   },
   "optionalDependencies": {
     "html-minifier": "^5.0.0",
