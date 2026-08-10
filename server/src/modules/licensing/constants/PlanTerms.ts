@@ -53,6 +53,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     pages: {
       enabled: false,
       count: '',
+      groupCount: '',
       features: {
         appHeaderAndLogo: false,
         addNavGroup: false,
