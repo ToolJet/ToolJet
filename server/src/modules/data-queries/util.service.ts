@@ -16,7 +16,7 @@ import { PluginsServiceSelector } from '@modules/data-sources/services/plugin-se
 import { IDataQueriesUtilService } from './interfaces/IUtilService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueryStatus } from './services/status.service';
-import { recordDirectQueryMetric } from '@otel/audit-metrics';
+import { recordQueryMetric } from '@otel/audit-metrics';
 import { getOrganizationNameCached, getEnvironmentNameCached } from '@otel/org-name-cache';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
@@ -444,7 +444,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         context.environmentId ? getEnvironmentNameCached(context.environmentId) : Promise.resolve('unknown'),
       ]);
 
-      recordDirectQueryMetric({
+      recordQueryMetric({
         userId: user.id,
         organizationId: user.organizationId,
         organizationName,

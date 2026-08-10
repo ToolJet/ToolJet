@@ -363,7 +363,7 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
       });
     }
 
-    // Query metrics are recorded directly at the execution site (recordDirectQueryMetric),
+    // Query metrics are recorded directly at the execution site (recordQueryMetric),
     // not from the audit pipeline — recording here too would double-count.
 
     // Record app-specific metrics
@@ -395,7 +395,7 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
   }
 };
 
-export interface DirectQueryMetricPayload {
+export interface QueryMetricPayload {
   userId: string;
   organizationId: string;
   organizationName?: string;
@@ -419,7 +419,7 @@ export interface DirectQueryMetricPayload {
  * Record query metrics directly at the query execution site — no audit
  * pipeline dependency, so metrics flow regardless of audit log licensing.
  */
-export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
+export const recordQueryMetric = (payload: QueryMetricPayload) => {
   if (!queryExecutionsCounter) return;
 
   try {
@@ -495,7 +495,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
     }
   } catch (err) {
     // Observability must never break query execution
-    console.error('[OTEL] Error in recordDirectQueryMetric:', err);
+    console.error('[OTEL] Error in recordQueryMetric:', err);
   }
 };
 
