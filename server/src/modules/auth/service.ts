@@ -179,6 +179,11 @@ export class AuthService implements IAuthService {
             auth_method: 'password',
           },
         });
+
+        const mfaChallenge = await this.maybeRequireMfa(user);
+        if (mfaChallenge) {
+          return mfaChallenge;
+        }
       }
 
       return await this.sessionUtilService.generateLoginResultPayload(
@@ -191,6 +196,14 @@ export class AuthService implements IAuthService {
         manager
       );
     });
+  }
+
+  // Overridden on EE to gate login behind authenticator-app MFA. Returns null when MFA
+  // isn't required (CE/Cloud never require it), in which case login proceeds as normal.
+  // When MFA is required, returns the `{ mfa_required, mfa_token, ... }` payload to send
+  // to the client instead of issuing a session.
+  protected async maybeRequireMfa(_user: User): Promise<any | null> {
+    return null;
   }
 
   async authorizeOrganization(user: User) {
