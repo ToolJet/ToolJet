@@ -124,6 +124,7 @@ export enum LICENSE_FIELD {
   AI_PLAN = 'aiPlan',
   EXTERNAL_API = 'externalApiEnabled',
   APP_HISTORY = 'appHistoryEnabled',
+  APP_PUBLIC = 'appPublicEnabled',
   APP_JS_LIBRARIES = 'appJsLibrariesEnabled',
   SCIM = 'scimEnabled',
   MFA = 'mfaEnabled',
@@ -145,6 +146,8 @@ export enum LICENSE_FIELD {
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
   MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
   QUERY_FOLDERS = 'queryFoldersEnabled',
+  AUTOMATIC_SSO_LOGIN = 'automaticSsoLoginEnabled',
+  RELEASE = 'releaseEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

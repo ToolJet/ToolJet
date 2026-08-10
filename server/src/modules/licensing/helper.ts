@@ -76,6 +76,12 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.MULTIPLAYER_EDIT:
       return licenseInstance.multiPlayerEdit;
 
+    case LICENSE_FIELD.AUTOMATIC_SSO_LOGIN:
+      return licenseInstance.automaticSsoLogin;
+
+    case LICENSE_FIELD.APP_PUBLIC:
+      return licenseInstance.appPublic;
+
     case LICENSE_FIELD.VALID:
       return licenseInstance.isValid && !licenseInstance.isExpired;
 
@@ -174,6 +180,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
 
     case LICENSE_FIELD.APP_JS_LIBRARIES:
       return licenseInstance.appJsLibraries;
+
+    case LICENSE_FIELD.RELEASE:
+      return licenseInstance.canRelease;
 
     default:
       return licenseInstance.terms;

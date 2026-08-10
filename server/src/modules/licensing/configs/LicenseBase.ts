@@ -21,6 +21,8 @@ export default class LicenseBase {
   private _isServerSideGlobalResolve: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
+  private _isAppPublic: boolean;
+  private _isAutomaticSsoLogin: boolean;
   private _isComments: boolean;
   private _expiryDate: Date;
   private _updatedDate: Date;
@@ -81,6 +83,8 @@ export default class LicenseBase {
       this._isServerSideGlobalResolve = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
+      this._isAppPublic = true;
+      this._isAutomaticSsoLogin = true;
       this._isAi = true;
       this._aiPlan = 'credits';
       this._isExternalApis = true;
@@ -140,6 +144,10 @@ export default class LicenseBase {
     this._isServerSideGlobalResolve = this.getFeatureValue('serverSideGlobalResolve');
     this._isMultiEnvironment = this.getFeatureValue('multiEnvironment');
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
+    
+    // license with these set explicitly to true rather than being grandfathered in.
+    this._isAppPublic = this._app?.features?.['appPublic'] === true;
+    this._isAutomaticSsoLogin = this._features?.['automaticSsoLogin'] === true;
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
@@ -461,6 +469,20 @@ export default class LicenseBase {
     return this._isMultiEnvironment;
   }
 
+  public get appPublic(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.appPublic;
+    }
+    return this._isAppPublic;
+  }
+
+  public get automaticSsoLogin(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.automaticSsoLogin;
+    }
+    return this._isAutomaticSsoLogin;
+  }
+
   public get customStyling(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.customStyling;
@@ -578,6 +600,8 @@ export default class LicenseBase {
       serverSideGlobalResolve: this.serverSideGlobalResolve,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
+      appPublic: this.appPublic,
+      automaticSsoLogin: this.automaticSsoLogin,
       gitSync: this.gitSync,
       comments: this.comments,
       ai: this.aiFeature,
@@ -673,13 +697,7 @@ export default class LicenseBase {
     return !!this._workflows?.['enabled'];
   }
   public get canPromote(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.app?.features?.promote;
-    }
-    if (this._app?.features?.promote === undefined) {
-      return true;
-    }
-    return !!this._app?.features?.promote;
+    return this.canRelease;
   }
 
   public get canRelease(): boolean {

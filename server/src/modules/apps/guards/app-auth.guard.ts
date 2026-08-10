@@ -13,6 +13,8 @@ import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
   // This guard will allow access for unauthenticated user if the app is public
@@ -20,7 +22,8 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     protected readonly appUtilService: AppsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly appRepository: AppsRepository,
-    protected readonly dataSource: DataSource
+    protected readonly dataSource: DataSource,
+    protected readonly licenseTermsService: LicenseTermsService
   ) {
     super();
   }
@@ -61,10 +64,21 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     request.tj_resource_id = app.id;
     request.headers['tj-workspace-id'] = app.organizationId;
 
-    if (app.isPublic === true) {
+    const isAppPublicLicensed =
+      app.isPublic === true
+        ? await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.APP_PUBLIC, app.organizationId)
+        : false;
+
+    if (app.isPublic === true && isAppPublicLicensed) {
       // No need to do user validation
       this.organizationRepository.touchLastAccessedAt(app.organizationId);
       return true;
+    }
+
+    if (app.isPublic === true && !isAppPublicLicensed) {
+      // License no longer covers public apps: treat this app as private for the rest of the
+      // guard chain (group-permission check decides access), without rewriting the DB row.
+      app.isPublic = false;
     }
 
     // Fall back to JWT authentication
