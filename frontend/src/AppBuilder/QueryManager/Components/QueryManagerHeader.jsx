@@ -35,6 +35,9 @@ const GENERATE_QUERY_SUPPORTED_KINDS = [
   'openai',
   'runjs',
   'databricks',
+  'servicenow',
+  'quickbooks',
+  'hubspot',
 ];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {

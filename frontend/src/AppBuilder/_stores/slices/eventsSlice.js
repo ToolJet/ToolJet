@@ -1,6 +1,6 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
-import { debounce, replaceEntityReferencesWithIds, isLinkedAppValid } from '../utils';
+import { debounce, replaceQueryOptionsEntityReferencesWithIds, isLinkedAppValid } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
@@ -208,23 +208,27 @@ export const createEventsSlice = (set, get) => ({
       //! Revisit this
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
-      const newEvents = replaceEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
-      const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
-      get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
-      get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
-      set((state) => {
-        const eventsInState = state.eventsSlice.getModuleEvents('canvas');
-        const newEvents = eventsInState.map((event) => {
-          const updatedEvent = response.find((r) => r.id === event.id);
-          if (updatedEvent) {
-            return updatedEvent;
-          }
-          return event;
-        });
+      const newEvents = replaceQueryOptionsEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
+      try {
+        const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
+        set((state) => {
+          const eventsInState = state.eventsSlice.getModuleEvents(moduleId);
+          const newEvents = eventsInState.map((event) => {
+            const updatedEvent = response.find((r) => r.id === event.id);
+            if (updatedEvent) {
+              return updatedEvent;
+            }
+            return event;
+          });
 
-        // state.eventsSlice.setEvents(newEvents);
-        state.eventsSlice.module[moduleId].events = newEvents;
-      });
+          // state.eventsSlice.setEvents(newEvents);
+          state.eventsSlice.module[moduleId].events = newEvents;
+        });
+      } finally {
+        // In `finally` so a failed save cannot leave the loaders spinning forever
+        get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
+        get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
+      }
     },
     setTablePageIndex: (tableId, index, eventObj, moduleId = 'canvas') => {
       try {
