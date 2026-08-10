@@ -241,10 +241,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       return;
     }
 
-    const hasReleaseLicense = await this.licenseTermsService.getLicenseTerms(
-      LICENSE_FIELD.RELEASE,
-      organizationId
-    );
+    const hasReleaseLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.RELEASE, organizationId);
 
     if (hasReleaseLicense) {
       return;
@@ -447,10 +444,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     const { organizationId, groupId, isBuilderPermissions, isEnvironmentPermissions } = params;
 
     if (isEnvironmentPermissions && !isBuilderPermissions) {
-      const hasReleaseLicense = await this.licenseTermsService.getLicenseTerms(
-        LICENSE_FIELD.RELEASE,
-        organizationId
-      );
+      const hasReleaseLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.RELEASE, organizationId);
 
       if (hasReleaseLicense) {
         return;
