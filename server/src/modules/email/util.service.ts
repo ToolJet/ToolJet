@@ -286,7 +286,7 @@ export class EmailUtilService implements IEmailUtilService {
     if (!to) {
       return;
     }
-    const subject = 'Action Needed – Host Details for Your ToolJet License';
+    const subject = 'Action needed - one thing we need before your license is ready';
     const templateData = {
       name: name || '',
       whiteLabelText: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_text,
