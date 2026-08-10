@@ -24,6 +24,15 @@ module.exports = {
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'fr'],
+    localeConfigs: {
+      fr: {
+        label: 'Français',
+      },
+    },
+  },
   markdown: {
     mermaid: true,
   },
@@ -67,6 +76,10 @@ module.exports = {
         },
         {
           type: 'search',
+          position: 'right',
+        },
+        {
+          type: 'localeDropdown',
           position: 'right',
         },
         {
