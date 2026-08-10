@@ -17,9 +17,65 @@ The Gitea admin endpoints drive the git side directly (not ToolJet APIs):
 ### Running
 
 ```bash
-npm run test:e2e -- --testPathPatterns "git-sync"          # whole suite
-npm run test:e2e:cov -- --testPathPatterns "git-sync"      # with coverage
+npm run test:gitsync                                       # ALL git-sync tests: unit + e2e (single command)
+npm run test:gitsync:unit                                  # git-sync UNIT specs only (no simulator/DB-light)
+npm run test:gitsync:e2e                                   # git-sync E2E specs only (needs the git simulator)
+npm run test:e2e -- --testPathPatterns "git-sync"          # e2e whole suite (alt)
+npm run test:e2e:cov -- --testPathPatterns "git-sync"      # e2e with coverage (alt)
 ```
+
+**Per-run repo isolation.** `scripts/run-e2e.sh` (used by every `test:e2e`/`test:gitsync:e2e` run)
+mints one fresh repo id per invocation and exports `TEST_GIT_REPO_PATH=run-ci/<uuid>` (GitHub) and
+`TEST_GITLAB_REPO_PATH=run-ci/<uuid>-gitlab` (GitLab). Generated **once** — not per shard, not per
+spec — so a single `npm run test:gitsync` touches exactly one repo, which the simulator's reset
+endpoint auto-creates as an empty bare repo on first use. This stops concurrent runs (and stale refs
+left by a run that died mid-way) from colliding on the shared simulator. Pin a specific repo by
+exporting `TEST_GIT_REPO_PATH` / `TEST_GITLAB_REPO_PATH` yourself — the runner respects a set value
+and only falls back to `run-ci/<uuid>` when unset. (The old static defaults `gsmithun4/e2e` /
+`gsmithun4/gitlab-e2e` remain the in-spec fallback when a spec is run directly via `jest`, bypassing
+`run-e2e.sh`.)
+
+> **Note:** `git-sync-gitlab.spec.ts` is **not quarantined** — it runs under the normal
+> `test:e2e` / `test:gitsync:e2e` flow (all GitHub lifecycle cases are mirrored into it). It
+> **self-guards**: when the GitLab env (`TEST_GITLAB_TOKEN`, `TEST_GIT_BASE_URL`,
+> `TOOLJET_GIT_ADMIN_USER`, `TOOLJET_GIT_ADMIN_PASSWORD`) is present it executes for real against
+> the GitLab-shaped simulator; when any is missing it prints a `[git-sync-gitlab] SKIPPED …` line
+> and skips the whole suite at runtime (via `describe.skip`) instead of throwing at import — so a
+> GitLab-less `npm run test:e2e` stays green. Set the env to run it.
+
+`test:gitsync:unit` covers the pure/near-pure helpers with fast, host-free unit specs under
+`test/modules/{git-sync,git-sync-configs,git-sync-webhooks,platform-git-sync,workspace-branches,app-git}/unit/`
+(error classifier + sanitizer, connection-error handler, webhook signature + dedup, datasource/resource
+FS readers, branching-tag/target helpers, `git-tree-sha` ls-remote/ls-tree parsing,
+`AppGitFileOperationsUtil` layout resolvers + `validateAppJsonForImport` normalization,
+the whole `GitOperationsUtil` simple-git wrapper — clone/sparseClone/commit/push/branchExists/
+resolveTagToSha argv shaping — and `PlatformGitPushService`'s fs-only meta helpers
+(`deleteAppFromRepo`, `readAppMeta`/`writeAppMeta`)). `test:gitsync` chains unit then e2e.
+
+### Coverage (git-sync files only)
+
+```bash
+# export git + DB env first (the runner only loads PG_*/TOOLJET_DB from .env.test):
+set -a; source ../.env.test; set +a
+npm run test:e2e:cov:gitsync            # → coverage-gitsync/ (html + lcov + text summary)
+```
+
+`test:e2e:cov:gitsync` (config `test/jest-e2e.gitsync-cov.config.ts`) runs only the git-sync e2e specs
+and narrows `collectCoverageFrom` to the git-sync source surface, so the report is just those files
+instead of all of `src/**`+`ee/**`. Covered dirs: `ee/git-sync`, `ee/platform-git-sync`,
+`ee/git-sync-configs`, `ee/workspace-branches`, `ee/app-git`, and their CE counterparts under
+`src/modules/{git-sync,git-sync-configs,platform-git-sync,workspace-branches,app-git}`
+(minus `*.module.ts` / `*.entity.ts` / `*.dto.ts`).
+
+> **GitLab coverage:** `git-sync-gitlab.spec.ts` self-skips when the GitLab env is missing (see the
+> note above), so without it **`**/providers/gitlab/**` reads as uncovered** here. To include GitLab
+> coverage, just export the GitLab env (`TEST_GITLAB_TOKEN` et al.) before running
+> `npm run test:e2e:cov:gitsync` — no `--testPathIgnorePatterns` override is needed anymore, the spec
+> is no longer quarantined.
+
+Requires the same infra as the tests below — a reachable git simulator (`TEST_GIT_BASE_URL`) and the
+test DB. Because the whole suite hits a real git host and is `@group platform`, the run is slow
+(several minutes) and single-threaded (`--runInBand`).
 
 Tagged `@group platform`. The two big tests are single ordered `it` blocks (each step depends on the
 previous) with long timeouts (~9 min) since they hit a real git host.
@@ -160,11 +216,17 @@ invalid/removed or branching-off falls back to the default). Steps 81–83 are t
 (branching-disabled) flow: create app/module/data-source directly on the default branch and assert
 push-eligibility + resource state.
 
-> **Test-env note:** the shared test Gitea blocks **direct pushes to the default branch** (pre-receive
-> hook — everything lands there via feature-branch + admin `/merge`). Single-branch pushes go straight
-> to the default branch, so the actual git transport / committed-file validation for single-branch
-> can't be exercised against this repo; steps 81–83 validate the behaviour at the app/authorization
-> layer instead.
+> **Test-env note:** the shared test Gitea blocks **direct pushes to the default branch** *when it is
+> named `main`* (that's the simulator's `PROTECTED_BRANCH`). Steps 81–83 keep the default branch as
+> `main`, so single-branch git transport can't be exercised there and they validate at the
+> app/authorization layer instead.
+>
+> **Single-branch push/pull IS testable** by configuring git with a **non-`main` default branch name**
+> (the suite uses `single-branch-main`): the simulator only protects `main`, so a differently-named
+> default branch accepts direct pushes. Section 18 uses this to exercise a real single-branch
+> push/pull lifecycle for apps, modules, and data sources straight onto the (unprotected) default
+> branch. Set `branchName: 'single-branch-main'` in the `POST /configs` payload and seed the workspace
+> default branch with that name.
 
 ---
 
@@ -383,6 +445,8 @@ a genuine content change (mirroring how a real "locally edited but not yet pushe
 
 Both fixes were verified live against the real test Gitea server before being locked in as this test.
 
+**Mirrored in `git-sync-gitlab.spec.ts`** (same assertions, `GITLAB_PAYLOAD` provider config).
+
 ---
 
 ## 9. Git-off metadata update with no draft version (`it: persists name/slug/icon/is_public and keeps the app resolvable by its new slug`)
@@ -417,6 +481,257 @@ original path (write the draft, let the trigger fan out) is unchanged.
 
 Draft count and the persisted metadata are read from the DB (`app_versions`), so the core assertions
 are deterministic; the released-slug lookup exercises `findAppBySlug` end-to-end.
+
+---
+
+## 10. Pull skip — whole-pull skip + token storage (`it: stores tree-SHA tokens on pull and skips the whole pull when the remote HEAD is unchanged`)
+
+Dedicated isolated org. Pull is short-circuited at three granularities using git's own tree SHAs as
+content hashes (a tree SHA changes iff something beneath it changed):
+- **whole pull** — remote branch HEAD (ls-remote) vs `organization_git_sync_branches.last_synced_commit`
+- **category** — tree SHA of `apps/` · `modules/` · `data-sources/` vs `*_git_tree_sha` on the branch row
+- **per-resource** — tree SHA of `apps/<app>/` · `data-sources/<ds>/` vs `app_versions`/`data_source_versions.git_tree_sha`
+
+All tokens are **READ from git and STORED on PULL only** (push never stamps them). The observable
+effect of a skip is that the pull's orphan sweep — which marks `is_synced=false` any default-branch DB
+resource absent from git — does NOT run for the skipped scope, so a manufactured orphan survives as
+`is_synced=true`. The orphan sweep is gated to the DEFAULT branch, so these tests operate on `main`
+(content lands via admin `/merge`). This test asserts the tokens get stored on pull and that a second
+pull with an unchanged remote HEAD skips the whole pull (a manufactured orphan stays `is_synced=true`).
+
+## 11. Pull skip — category-level skip (`it: skips the datasource category when data-sources/ tree SHA is unchanged despite a moved HEAD`)
+
+Dedicated isolated org. A commit that leaves a category's tree SHA unchanged skips that whole category
+even when the whole-pull skip does NOT fire (branch HEAD moved). HEAD is moved via an admin `/files`
+write of a top-level file (touches neither `apps/` nor `data-sources/`), so `data-sources/`'s tree SHA
+is byte-identical → `pullDataSources` returns early → the datasource orphan sweep is skipped → a
+manufactured DS orphan survives. Clearing only the DS token then forces the sweep, isolating the
+category skip as the cause.
+
+## 12. Push serialization — no DB timestamps in pushed files (`it: omits created_at / updated_at / remote_updated_at from pushed app version files`)
+
+Dedicated isolated org. The pull-side tree-SHA skip only works if a resource's serialized bytes are
+stable across no-op pushes. DB-internal timestamps (`created_at` / `updated_at` / `remote_updated_at`)
+change on every save, so if they leaked into pushed files the app's tree SHA would flip on an
+otherwise-unchanged push and the skip would never fire. This test pushes an app and asserts none of its
+committed version files carry those fields.
+
+## 13. Multi-version import respects git sync (`describe: POST /api/v2/resources/import | multi-version import respects git sync`)
+
+Dedicated isolated org (EE). App import via `POST /api/v2/resources/import` chooses how many versions
+to create based on whether git sync is enabled for the target workspace.
+
+| # | `it` | Expected |
+|---|------|----------|
+| 1 | imports ALL versions when git sync is **disabled** | a 3-version export payload imports all 3 versions |
+| 2 | imports ONLY the latest version when git sync is **enabled** | the same payload imports exactly 1 version (one-version-per-branch git contract) |
+
+Fix: `setupImportedAppAssociations` keys the "keep only latest" decision off
+`gitSyncConfigsUtilService.getDetails().isEnabled`, not off a (always-truthy) resolved `branchId`.
+
+## 14. Pull re-marks resources synced after `is_synced` reset — git disable→enable (`it: restores is_synced=true on the next pull for data source, app and module still in git`)
+
+Dedicated isolated org. Repro of "git disable → re-enable → pull leaves resources unsynced": disabling
+git flips `is_synced=false` on every default-branch app/module version + data source version **and**
+clears the branch's `last_synced_commit` (so the next pull isn't whole-pull-skipped), without changing
+git content or the cached category tree SHAs. On the next pull the category-level skip fires, and the
+new reconcile (`reconcileSyncedDataSourceVersions` / `reconcileSyncedAppVersions`) re-marks
+`is_synced=true` for every resource still present in git (matched by `co_relation_id`).
+
+Runs on a feature branch (the reconcile is branch-agnostic) and reproduces the disable's effect with
+the same writes the git-sync-configs service now performs (flip `is_synced=false` + clear
+`last_synced_commit`). Steps: push a DS (workspace) + app + module (gitpush) → pull (stamps SHAs, marks
+synced) → flip unsynced + clear the HEAD token → pull again → assert all three back to `is_synced=true`.
+
+## 15. Changing the repo URL resets the default branch sync state (`it: flips is_synced=false and clears last_synced_commit on the default branch when the git URL changes`)
+
+Dedicated isolated org, **single-branch** (so resources live on the default branch, which the reset
+targets). Pointing the workspace at a different remote invalidates the local "synced to commit X"
+bookkeeping, so `saveProviderConfig` runs the same reset as disabling git: `is_synced=false` on the
+default branch's app/module/data-source versions + `last_synced_commit` cleared. Steps: single-branch
+git + app/module/DS on the default branch → force a synced baseline (is_synced=true + a commit hash) →
+`POST /configs` with a **different `gitUrl`** (GitLab: also a different `gitLabProjectId`) → assert all
+flip to `is_synced=false` and the commit hash clears. Fix lives in `BaseGitUtilService.resetDefaultBranchSyncState`,
+invoked from the GitHub/GitLab `createGitHttpsConfig` / `createGitLabConfig` on a URL change.
+
+## 16. Feature-branch datasource push does not sync the default branch (`it: leaves the default-branch data source is_synced=false after a scope=datasource push from a feature branch`)
+
+Dedicated isolated org, multi-branch. A DataSource is one org row (shared `co_relation_id`) with a DSV
+per branch. `serializeDataSources`' `scope='datasource'` fallback used to look up an unsynced DSV by
+`data_source_id` only (no branch), so pushing a feature branch could grab the DEFAULT branch's DSV and
+have `pushWorkspace` flip it `is_synced=true`. Steps: create an unsynced DS on the default branch
+(git-off) → enable multi-branch → create a feature branch (the unsynced DS gets no feature DSV) →
+`scope='datasource'` push from the feature branch → assert the default-branch DSV stays
+`is_synced=false`. Fix: the fallback is now branch-scoped.
+
+## 17. Deleted data sources are not committed / are removed on push (`describe: deleted data sources are not committed / are removed on push (regression)`)
+
+Dedicated isolated org, multi-branch. Two related gaps about a data source **deleted** on a branch
+(feature-branch delete soft-deletes the DSV `is_active=false`; the `data_sources` row stays):
+
+| # | `it` | Expected |
+|---|------|----------|
+| 1 | app push does NOT commit a data source deleted on the branch (`serializeLinkedDataSourcesForApp`) | app links a DS via a query, the DS's DSV is soft-deleted, then `gitpush` the (unsynced, front-end) app → the DS file is **absent** from the commit |
+| 2 | a `scope=datasource` push REMOVES the file of a DS deleted after being pushed | create DS → push (file present) → delete (soft) → `scope=datasource` push → file **removed** |
+| 3 | a `scope=datasource` push removes a DS whose DSV was **hard-deleted** (single-branch delete shape) | create DS → push → **hard-delete the DSV row** (what a single-branch default-branch delete does) → `scope=datasource` push → file **removed** via the orphan sweep |
+
+Fixes (`ee/git-sync/workspace-git-sync-adapter.ts`):
+- `serializeLinkedDataSourcesForApp` DSV lookup now filters `is_active: true` + the app version's
+  `branchId` (was `data_source_id` + `isSynced:false` only).
+- `serializeDataSources` (`scope='datasource'`, which skips `ensureCleanDir`) now runs an **orphan
+  sweep** after serialization: removes any `data-sources/<name>/` git file whose DS has no ACTIVE DSV on
+  the branch — covering both soft-delete (inactive DSV) and single-branch hard-delete (absent DSV).
+
+## 18. Single-branch lifecycle — push/pull apps, modules, data sources (`it: pushes and pulls apps, modules, and data sources directly on the (unprotected) single-branch default`)
+
+Dedicated isolated org. A **genuine** single-branch push/pull lifecycle straight onto the default
+branch — made possible by naming the default branch **`single-branch-main`** (not `main`). The
+simulator only protects `main`, and its `GET /repos/.../branches/:branch` auto-creates a missing branch
+on the `test-connection` existence check, so configuring git with `branchName: 'single-branch-main'`
+yields an unprotected default branch that accepts direct pushes.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset; `POST /configs` with `branchName: 'single-branch-main'`; disable branching (single-branch); pull the default branch | 201/200 |
+| 2 | Create an **app** (+ a Button component), a **module**, and a **data source** on the default branch | 201 |
+| 3 | `gitpush` the app, `gitpush` the module, workspace-push the data source — all **directly to the default branch** | **201** (push to the unprotected default succeeds — the whole point) |
+| 4 | Clone the default branch | `apps/` non-empty, `modules/` non-empty, and the data source's `data-sources/<name>/data-source.json` present |
+| 5 | Pull the default branch (round-trip) | 201; the data source's DSV is `is_synced=true` |
+| 6 | Delete the data source (single-branch default → **hard-delete** DSV), then push | 201; the DS file is **removed** from git (orphan sweep); `apps/` + `modules/` remain |
+
+This is the only place the single-branch git transport is exercised end-to-end (steps 81–83 in §2 stay
+on the protected `main` and assert at the app/authorization layer only). App/module presence is checked
+as "directory non-empty" (folder names aren't fixed); the data source is checked at its deterministic
+path. **Mirrored in `git-sync-gitlab.spec.ts`** (uses `GITLAB_PAYLOAD` with the same `branchName`).
+
+## 19. Hydration marks an app's connected data source synced (`it: an app pulled from git and hydrated has its connected data source is_synced=true on the default branch`)
+
+Dedicated isolated org, multi-branch. When an app is pulled from git it lands as a **stub**; opening it
+runs `hydrateStubApp`, which pulls in the app's connected resources — `deserializeWorkspaceResources`
+for connected global **data sources** and `hydrateReferencedModuleStubs` for connected **modules**.
+Resources brought in from git this way must be `is_synced=true`.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Configure git + branching, pull `main`, create a feature branch | 201/200 |
+| 2 | Create app + component; create a global data source; **link the DS to the app via a query** (so the app push carries the DS, `serializeLinkedDataSourcesForApp`) | 201 |
+| 3 | `gitpush` the (unsynced, front-end) app — its linked data source rides into the commit | 201 |
+| 4 | Merge feature → `main`, pull `main` | 201; the app lands as a **stub** on `main` |
+| 5 | Hydrate the app: `GET /apps/:id` on `main` | `hydration_status: 'success'` |
+| 6 | The connected data source's DSV on the default branch | **`is_synced=true`** |
+
+Covers the connected **data source** on hydrate. The connected **module** cascade is covered by §20.
+**Mirrored in `git-sync-gitlab.spec.ts`.**
+
+## 20. Hydration cascade marks a referenced module synced (`it: opening a host app cascade-hydrates its referenced module and marks the module is_synced=true`)
+
+Dedicated isolated org, multi-branch. A host app references a module via a **ModuleViewer**
+(`properties.moduleAppId.value` = the module's `co_relation_id`). Both are pushed and merged to `main`;
+pulling `main` lands BOTH as **stubs**. Opening the host app cascade-hydrates the referenced module
+(`hydrateReferencedModuleStubs` → `hydrateStubApp` on the module), and the module's materialized version
+must be `is_synced=true`.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Configure git + branching, pull `main`, create a feature branch | 201/200 |
+| 2 | Create a **module** + a **host app**; wire a **ModuleViewer** on the host referencing the module's `co_relation_id` | 201 |
+| 3 | `gitpush` the module and the host app | 201 |
+| 4 | Merge feature → `main`, pull `main` | both land as **stubs** (`is_stub: true`) |
+| 5 | Hydrate the **host** app (`GET /apps/:id`) | `hydration_status: 'success'`; a direct `GET` on the module then reports `not_hydrated_reason: 'already-up-to-date'` (cascade materialized it) |
+| 6 | The referenced module's non-stub version on the default branch | **`is_synced=true`** (host app's too) |
+
+This is the DB-level assertion that §2 step 54 (which checks the cascade via the API) does not make.
+**Mirrored in `git-sync-gitlab.spec.ts`.**
+
+---
+
+## 22. Per-app import from git — createGitApp (`it: imports an app pushed to git into a separate workspace via /app-git/gitpull/app`)
+
+Covers the legacy **per-app import** flow (`POST /api/app-git/gitpull/app` → `AppGitOperationsUtil.createGitApp`),
+which is distinct from the workspace-wide pull (that uses `PlatformGitPullService`). Uses TWO workspaces
+sharing one repo: SRC pushes an app; a separate DST workspace imports it by name. Exercises `createGitApp`
+end-to-end (clone the app folder → resolve name → read app JSON → deserialize resources → create the app +
+a non-stub version → folder assignment).
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset repo; **SRC** workspace configures git (default branch `single-branch-main`, single-branch), creates an app + Button component, `gitpush`es it | 201 |
+| 2 | **DST** workspace (separate org, same repo) configures git | 201 |
+| 3 | `POST /api/app-git/gitpull/app` `{ gitAppName, gitBranchName: single-branch-main, workspaceBranchId: <dst default> }` | 200/201 (createGitApp runs) |
+| 4 | The previously-empty DST org now owns the imported app with a non-stub version | app row `organization_id = DST`; ≥1 `app_versions` with `is_stub = false` |
+
+Two workspaces are required because `createGitApp` rejects importing an app that already exists in the
+target workspace (matched by `co_relation_id`/slug). Asserts on ownership/version existence rather than
+`apps.name` (the display name lives on the version row, not `apps.name`).
+**Mirrored in `git-sync-gitlab.spec.ts`** (exercises the GitLab provider's `createGitApp` path).
+
+---
+
+## 23. Per-app TAG import — createGitApp tag path (`it: imports a published tag version into a separate workspace`)
+
+The tag-import branch of `createGitApp`: when the body carries `commitHash` + `gitVersionName`, it routes to
+`importTagVersion` → `importTagOnDefaultBranch` (`bootstrapDefaultBranchVersionFromMain` +
+`appendPublishedSnapshotFromTag`). SRC publishes a version and creates its git tag; a separate DST workspace
+imports that exact tagged commit.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset repo; SRC configures git, pushes an app to `single-branch-main`, PUBLISHes `v1`, then `POST /api/app-git/:appId/versions/:versionId/tag` | 201 (creates git tag `<co_relation_id>/v1`) |
+| 1b | Resolve the tag's commit SHA in-test (clone + `git fetch refs/tags/*` + `rev-parse <tag>^{commit}`) | 40-hex SHA |
+| 2 | **DST** (separate org, same repo) configures git, then `POST /api/app-git/gitpull/app` `{ gitAppId: <src co_rel>, gitAppName, gitVersionName: 'v1', commitHash: <sha>, gitBranchName, workspaceBranchId: <dst default> }` | 200/201 (importTagVersion runs) |
+| 3 | DST gained a NEW app carrying a non-stub (published) version | new `apps` row for DST + ≥1 non-stub `app_versions` |
+
+`workspaceBranchId` is required for tag imports (guarded in `importTagVersion`); a default-branch target routes
+to `importTagOnDefaultBranch`. **Mirrored in `git-sync-gitlab.spec.ts`.**
+
+## 21. Inbound webhooks → auto-sync (`test/modules/git-sync-webhooks/`)
+
+The inbound webhook feature (`POST /api/v2/git-sync/webhooks/:provider/:organizationId` → verify
+signature → dedupe → route event → BullMQ enqueue → worker → auto-sync pull) is covered by fast unit
+specs for the services plus a worker-level integration test — no git simulator needed.
+
+**Unit** (`git-sync-webhooks/unit/`, run under the unit config, host-free):
+- `webhook-signature.spec.ts` — GitHub HMAC-SHA256 verify (valid/invalid/length-mismatch), GitLab token compare, old-secret rotation via Redis.
+- `webhook-deduplication.spec.ts` — SETNX first-vs-duplicate, org-scoped keys.
+- `webhook-skip-flag.spec.ts` — `setSkipFlag` (TTL + operation value) and `checkAndClear` (atomic GETDEL via Lua).
+- `git-sync-webhook.service.spec.ts` — the pure payload-summary / branch-extraction helpers (github push/PR/delete + gitlab).
+
+**Worker integration** (`git-sync-webhooks/e2e/webhook-worker.spec.ts`): the worker is NOT in the e2e
+DI (gated by `isMainImport && !IS_GET_CONTEXT`), so it's constructed manually with fakes (Redis,
+skip-flag, `WorkspaceBranchService`, notifications) and `process(job)` is driven directly against the
+test DB (`OrganizationGitSync` + `WorkspaceBranch` fixtures). `pullWorkspace` is a spy — **no git host
+required**. Cases (decision tree of the 585-line `process`):
+
+| # | Job | Expected |
+|---|-----|----------|
+| 1 | `pull_request` merged into the **default** branch | `pullWorkspace(org, null, 'main', <id>, { source: 'auto-sync' })`; `action: pulled`, `trigger: pr_merged` |
+| 2 | `pull_request` opened (not merged) | `ignored`, no pull |
+| 3 | `pull_request` merged into a **non-default** branch | `skipped`, no pull |
+| 4 | `push` to a branch | `branch_push_skipped`, no pull (only PR merges + tags sync) |
+| 5 | `pull_request` with a **self-trigger** skip-flag set | `self_triggered`, no pull |
+| 6 | `pull_request` when the event is **disabled** at processing time | `event_disabled_at_processing`, no pull |
+| 7 | `delete` on a feature branch | `deleteWorkspaceBranch(org, <id>)`; `action: deleted` |
+| 8 | tag push (`refs/tags/<coRelId>/v1`) for an **unknown** app | `skipped`, no `pullTagVersion` |
+
+**Controller endpoint** (`git-sync-webhooks/e2e/webhook-endpoint.spec.ts`): drives the HTTP endpoint
+through the full Nest app (supertest) using the **GitLab** provider on purpose — GitLab verification is a
+plain `X-Gitlab-Token` compare, so it does not need the `rawBodyBuffer` json hook that the e2e harness
+(`configureApp`) leaves out (GitHub HMAC would throw on an undefined rawBody). Seeds an
+`OrganizationGitSync` (`webhookEnabled`, known `webhookSecret`, `webhookEvents`); needs the DB **and Redis**
+(dedupe SETNX + BullMQ enqueue) but no git host. The worker isn't in the e2e DI, so the enqueued job never
+drains — it asserts the controller's own decisions + the recorded `git_sync_webhook_events` row:
+
+| # | Request | Expected |
+|---|---------|----------|
+| 1 | unknown org (no `OrganizationGitSync`) | `403` (webhooks not enabled) |
+| 2 | wrong `X-Gitlab-Token` | `401` (invalid signature) |
+| 3 | valid token, `Push Hook`, enabled event | `202 { status: accepted, deliveryId, jobId: <deliveryId>_<org> }`; a `git_sync_webhook_events` row with `status=queued`, `event_type=push`, `branch_name=main` |
+| 4 | same `x-gitlab-event-uuid` re-sent | `202 { status: duplicate, deliveryId }` |
+| 5 | `Merge Request Hook` (→ `pull_request`) while `webhookEvents=['push']` | `202 { status: ignored, reason: event_not_enabled, event: pull_request }` |
+
+Run: part of `npm run test:gitsync` (unit + e2e). The e2e webhook specs need the DB (and, for the
+endpoint spec, Redis) but not the simulator, so
+`npm run test:e2e -- --testPathPatterns 'git-sync-webhooks/e2e'` runs them standalone.
 
 ---
 
@@ -460,7 +775,7 @@ knobs are independent — set only the GitLab token for a GitLab-only locked sim
 |---|---|---|
 | `TEST_GIT_BASE_URL` | `http://localhost:3002` | The simulator host (shared with the GitHub suite) |
 | `TEST_GITLAB_TOKEN` | `glpat-e2e-secret` | **Must equal the simulator's `EXPECTED_GITLAB_TOKEN`** |
-| `TEST_GITLAB_REPO_PATH` | `gsmithun4/gitlab-e2e` (default) | Distinct repo from the GitHub suite; becomes `gitLabProjectId` |
+| `TEST_GITLAB_REPO_PATH` | per-run `run-ci/<uuid>-gitlab` (see below); static `gsmithun4/gitlab-e2e` fallback | Distinct repo from the GitHub suite; becomes `gitLabProjectId` |
 | `TEST_GITLAB_BRANCH` | `main` (default) | Default branch |
 | `TOOLJET_GIT_ADMIN_USER` / `TOOLJET_GIT_ADMIN_PASSWORD` | admin creds | Shared — for the `/admin/reset` + `/admin/merge` endpoints |
 

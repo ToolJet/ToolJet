@@ -167,7 +167,6 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
         onBranchSwitch(branch);
       } else {
         onClose();
-        window.location.reload();
       }
     } catch (error) {
       console.error('Error switching branch:', error);

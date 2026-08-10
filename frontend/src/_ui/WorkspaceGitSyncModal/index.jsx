@@ -267,7 +267,6 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
       await actions.pullWorkspace();
       toast.success('Commit pulled successfully!');
       onClose();
-      window.location.reload();
     } catch (error) {
       if (error?.statusCode === 409) {
         try {

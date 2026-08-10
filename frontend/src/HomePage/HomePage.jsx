@@ -419,7 +419,7 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName, type, prompt) => {
+  createApp = async (appName, type, prompt, taggedResources) => {
     const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
     if (currentBranch && this.props.appType !== 'workflow') {
       try {
@@ -458,7 +458,7 @@ class HomePageComponent extends React.Component {
 
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, {
-        state: { commitEnabled: this.state.commitEnabled, prompt },
+        state: { commitEnabled: this.state.commitEnabled, prompt, taggedResources },
       });
       this.eraseAIOnboardingRelatedCookies();
       this.props.appType !== 'front-end' && toast.success(`${capitalize(this.getAppType())} created successfully!`);
@@ -2101,8 +2101,8 @@ class HomePageComponent extends React.Component {
                   this.props.appType === 'workflow'
                     ? 'homePage.deleteWorkflowAndData'
                     : this.props.appType === 'front-end'
-                    ? 'homePage.deleteAppAndData'
-                    : deleteModuleText,
+                      ? 'homePage.deleteAppAndData'
+                      : deleteModuleText,
                   { appName: appToBeDeleted?.name }
                 )
               )
@@ -2436,8 +2436,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                        ? 'modules'
-                        : 'apps'
+                          ? 'modules'
+                          : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -2458,8 +2458,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                              ? 'modules'
-                              : 'apps'
+                                ? 'modules'
+                                : 'apps'
                           }-button`}
                         >
                           <>
@@ -2723,8 +2723,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}

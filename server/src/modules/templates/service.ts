@@ -50,6 +50,9 @@ export class TemplatesService {
     const maxNumber = getMaxCopyNumber(existNameList, ' ');
     const nameWithCount = `${name} ${maxNumber}`;
     const sampleAppDef = JSON.parse(readFileSync(`templates/sample_app_def.json`, 'utf-8'));
+    if (sampleAppDef?.app?.[0]?.definition?.appV2) {
+      delete sampleAppDef.app[0].definition.appV2.slug;
+    }
     return this.importTemplate(currentUser, sampleAppDef, nameWithCount);
   }
 
@@ -59,8 +62,10 @@ export class TemplatesService {
     // Give each instance a fresh co_relation_id so the onboarding app is not
     // treated as the same git entity across workspaces (the template JSON has a
     // hardcoded appV2.id that createImportedAppForUser would otherwise copy verbatim).
+    // Also drop the hardcoded slug for the same reason — see createSampleApp above.
     if (sampleAppDef?.app?.[0]?.definition?.appV2) {
       sampleAppDef.app[0].definition.appV2.id = uuidv4();
+      delete sampleAppDef.app[0].definition.appV2.slug;
     }
     return this.importTemplate(currentUser, sampleAppDef, name);
   }
