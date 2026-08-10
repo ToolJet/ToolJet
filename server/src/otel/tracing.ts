@@ -194,6 +194,9 @@ export const extractAppIdFromPath = (path?: string): string | undefined => {
 // (see pollWorkspaceSeats). Held as one snapshot object so a refresh swaps them together —
 // readers never see a half-updated set.
 const UNKNOWN_ORG_NAME = 'unknown';
+// An app first seen since the last seat poll has no name yet. Reporting it as unknown keeps the
+// count honest; the placeholder series goes stale on its own once the name resolves.
+const UNKNOWN_APP_NAME = 'unknown';
 
 type SeatCount = {
   organizationId: string;
@@ -207,8 +210,15 @@ type SeatSnapshot = {
   rolesByUser: Map<string, UserRoleBucket>;
   // Workspace name is 1:1 with its id — no series multiplication from carrying both
   namesByOrg: Map<string, string>;
+  // Same 1:1 story for apps. Resolved in the poll so the gauge callback stays synchronous.
+  namesByApp: Map<string, string>;
 };
-let seatSnapshot: SeatSnapshot = { counts: [], rolesByUser: new Map(), namesByOrg: new Map() };
+let seatSnapshot: SeatSnapshot = {
+  counts: [],
+  rolesByUser: new Map(),
+  namesByOrg: new Map(),
+  namesByApp: new Map(),
+};
 
 type MetricAttrs = Record<string, string>;
 type Observation = { attrs: MetricAttrs; value: number };
@@ -301,6 +311,20 @@ const cleanupInactiveUsers = () => {
 // One row per active workspace member
 type SeatRow = { organization_id: string; organization_name: string; user_id: string; role: string };
 
+type AppNameRow = { id: string; name: string };
+// The name lives on the version row, not on apps — apps.name is only populated for workflows.
+// Same source the query metrics read (dataQuery.appVersion.appName), so both agree on what an
+// app is called. Latest version wins, so a rename shows up without waiting for a release.
+const APP_NAME_QUERY = `
+  SELECT DISTINCT ON (app_id) app_id AS id, app_name AS name
+  FROM app_versions
+  WHERE app_id = ANY($1::uuid[]) AND app_name IS NOT NULL
+  ORDER BY app_id, updated_at DESC
+`;
+// The ::uuid[] cast throws on a malformed id, and that throw would abort the whole seat poll —
+// leaving seats and roles frozen at their last snapshot. Filter before the query, not after.
+const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // A user's role is their single default group membership in that workspace; ordering picks the
 // highest role when a user somehow sits in more than one default group.
 // Per-user rows (not pre-aggregated) so the same pass also feeds the active-user role and name lookups.
@@ -346,6 +370,19 @@ const pollWorkspaceSeats = async (): Promise<void> => {
       countsByOrgRole.set(countKey, (countsByOrgRole.get(countKey) || 0) + 1);
     }
 
+    // Names for the apps we are currently tracking activity on. Scoped to that set rather than
+    // the whole apps table, so the query stays small however many apps the instance holds.
+    const namesByApp = new Map<string, string>();
+    const trackedAppIds = [...new Set([...activeUsersByApp.keys()].map((key) => key.split(':')[1]))].filter((id) =>
+      UUID_SHAPE.test(id)
+    );
+    if (trackedAppIds.length) {
+      const appRows: AppNameRow[] = await getConnectionInstance().query(APP_NAME_QUERY, [trackedAppIds]);
+      for (const row of appRows) {
+        if (row.name) namesByApp.set(row.id, row.name);
+      }
+    }
+
     const counts: SeatCount[] = [];
     for (const [countKey, seats] of countsByOrgRole.entries()) {
       const separatorIndex = countKey.lastIndexOf(':');
@@ -358,7 +395,7 @@ const pollWorkspaceSeats = async (): Promise<void> => {
       });
     }
 
-    seatSnapshot = { counts, rolesByUser, namesByOrg };
+    seatSnapshot = { counts, rolesByUser, namesByOrg, namesByApp };
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
       console.log(
@@ -460,7 +497,7 @@ const initializeCustomMetrics = () => {
 
       // Roles and workspace names come from the seat poll snapshot — read once so every entry
       // in this observation resolves against the same one
-      const { rolesByUser, namesByOrg } = seatSnapshot;
+      const { rolesByUser, namesByOrg, namesByApp } = seatSnapshot;
 
       // Group by workspace + app + role, dropping stale entries (same two-pass shape as the workspace gauges)
       const usersByAppRole = new Map<string, Set<string>>();
@@ -494,6 +531,9 @@ const initializeCustomMetrics = () => {
             'organization.id': getWorkspaceLabel(workspaceId),
             'organization.name': getWorkspaceNameLabel(workspaceId, namesByOrg.get(workspaceId) || UNKNOWN_ORG_NAME),
             'app.id': appId,
+            // Name rides alongside the id rather than replacing it: the id is what drilldown links
+            // key on, the name is what a human reads. One name per id, so no extra series.
+            'app.name': namesByApp.get(appId) || UNKNOWN_APP_NAME,
             role: role,
           },
         });

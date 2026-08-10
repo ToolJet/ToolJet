@@ -437,6 +437,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       environmentId?: string;
     }
   ): Promise<void> {
+    // Runs inside every query's finally block. Bail before the two cached name lookups so
+    // installs with OTel off pay nothing in the query path.
+    if (process.env.ENABLE_OTEL !== 'true') return;
+
     try {
       const { status, queryError, duration, parsedQueryOptions } = queryStatus.getMetaData();
       const [organizationName, environment] = await Promise.all([

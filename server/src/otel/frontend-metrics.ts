@@ -31,6 +31,10 @@ export const initializeFrontendMetrics = () => {
   webVitalsHistogram = frontendMeter.createHistogram('tooljet.frontend.web_vitals.duration', {
     description: 'Web vitals durations (lcp, fcp, ttfb, inp) reported by the browser',
     unit: 'ms',
+    // Default buckets top out at 10s — real ToolJet lcp/fcp land past that, pinning every
+    // quantile to the ceiling. Boundaries straddle the web-vitals good/poor thresholds
+    // (inp 200/500, ttfb 800/1800, fcp 1800/3000, lcp 2500/4000) and are fewer than the default 15.
+    advice: { explicitBucketBoundaries: [100, 200, 500, 800, 1200, 1800, 2500, 4000, 6000, 10000, 20000, 40000] },
   });
 
   clsHistogram = frontendMeter.createHistogram('tooljet.frontend.cls', {
@@ -44,6 +48,8 @@ export const initializeFrontendMetrics = () => {
   appLoadDurationHistogram = frontendMeter.createHistogram('tooljet.frontend.app_load.duration', {
     description: 'Time from viewer mount to app loaded',
     unit: 'ms',
+    // Same ceiling problem as web vitals: app loads routinely exceed the default 10s top bucket.
+    advice: { explicitBucketBoundaries: [250, 500, 1000, 2000, 3000, 5000, 8000, 12000, 20000, 30000, 60000] },
   });
 
   appLoadFailureCounter = frontendMeter.createCounter('tooljet.frontend.app_load.failures', {
