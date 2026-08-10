@@ -373,6 +373,29 @@ export class AppsRepository extends Repository<App> {
 
     return await qb.orderBy('app.updated_at', 'DESC').getRawMany();
   }
+  async findAllOrganizationWorkflows(organizationId: string): Promise<{ id: string; name: string }[]> {
+    const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
+    const qb = this.createQueryBuilder('app')
+      .select(['app.id AS id'])
+      .addSelect('COALESCE(av_meta.app_name, app.name) AS name')
+      .where('app.organizationId = :organizationId', { organizationId })
+      .andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW });
+    qb.leftJoin(
+      'app_versions',
+      'av_meta',
+      `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
+         AND av_meta.version_type = 'version' AND av_meta.is_stub = false
+         AND av_meta.id = (
+           SELECT av_inner.id FROM app_versions av_inner
+           WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+             AND av_inner.version_type = 'version' AND av_inner.is_stub = false
+           ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
+           LIMIT 1
+         )`,
+      { defaultBranchId }
+    );
+    return await qb.orderBy('app.created_at', 'ASC').getRawMany();
+  }
 
   async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
     const mgr = manager ?? this.manager;
