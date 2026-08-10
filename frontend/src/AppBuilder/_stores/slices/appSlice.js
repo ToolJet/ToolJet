@@ -212,13 +212,11 @@ export const createAppSlice = (set, get) => ({
       }
     }
 
-    // Mobile auto-layout has no manual drop zone, so skip the 300px editor drop-zone padding that
-    // would otherwise leave empty canvas below the stacked content and push it past the viewport.
+    // Mobile auto-layout has no manual drop zone, so it skips the 300px editor drop-zone padding.
     const bottomPadding = currentMode === 'view' ? 100 : currentLayout === 'mobile' ? 16 : 300;
     const frameHeight =
       currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
-    // Mobile editor: size canvas from the real DOM bottom (stored layout lags dynamic-height widgets by a
-    // reflow cycle), + bottomPadding so the 16px gap sits inside the box below the lowest widget.
+    // Mobile editor: measure the DOM, since stored layout lags dynamic-height widgets by a reflow cycle.
     // The 100% floor keeps the page background filling the frame when every component is hidden.
     if (currentLayout === 'mobile' && currentMode === 'edit') {
       const realCanvasEl =

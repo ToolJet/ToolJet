@@ -52,7 +52,7 @@ VisibilityRow.displayName = 'VisibilityRow';
 export default function ManageMobileVisibilityDialog({ open, onClose, moduleId = 'canvas', darkMode }) {
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const setComponentPropertyByComponentIds = useStore((state) => state.setComponentPropertyByComponentIds, shallow);
-  const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const clearTemporaryLayouts = useStore((state) => state.clearTemporaryLayouts, shallow);
 
   const [search, setSearch] = useState('');
@@ -62,9 +62,9 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
   const hiddenComponents = useMemo(
     () =>
       Object.entries(currentPageComponents)
-        .filter(([id]) => !getResolvedComponent(id)?.others?.showOnMobile)
+        .filter(([, comp]) => !getResolvedValue(comp?.component?.definition?.others?.showOnMobile?.value))
         .map(([id, comp]) => ({ id, name: comp?.component?.name ?? id, type: comp?.component?.component ?? '' })),
-    [currentPageComponents, getResolvedComponent]
+    [currentPageComponents, getResolvedValue]
   );
 
   const filtered = useMemo(() => {
@@ -114,8 +114,7 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
       };
     });
     if (Object.keys(componentDiffs).length) setComponentPropertyByComponentIds(componentDiffs, moduleId);
-    // Force a fresh mobile re-measure (as a layout switch does) so dynamic-height components size the
-    // canvas correctly; without it the canvas keeps its stale desktop-derived height.
+    // Forces a re-measure so dynamic-height components don't keep their desktop-derived height.
     clearTemporaryLayouts();
     handleClose();
   };
