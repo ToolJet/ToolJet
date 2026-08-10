@@ -39,8 +39,7 @@ export const MobileLayout = ({
         position: 'relative',
         transform: 'translateZ(0)',
         maxWidth: CANVAS_WIDTHS.deviceWindowWidth,
-        // Edit mode: pin the frame to the canvas viewport and scroll only its canvas region (below the
-        // sticky header) so the frame never rides up with the outer canvas.
+        // Edit mode: pin the frame so only its canvas region scrolls, not the frame itself.
         ...(currentMode === 'edit'
           ? { height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }
           : {}),
@@ -94,7 +93,7 @@ export const MobileLayout = ({
               flex: 1,
               minHeight: 0,
               overflow: 'hidden auto',
-              // Bottom gap lives in canvas height (updateCanvasBottomHeight); pad top/sides only to avoid doubling.
+              // Top/sides only: the bottom gap already lives in the canvas height.
               padding: '16px 16px 0',
               boxSizing: 'border-box',
               backgroundColor: 'var(--surfaces-app-bg-default)',

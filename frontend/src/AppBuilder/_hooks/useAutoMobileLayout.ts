@@ -9,12 +9,10 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 type MobileBoxes = Record<string, { top: number; left: number; width: number; height: number }>;
 
-// Viewer-only: applies mobile auto-stacking to the current page in-memory (no save),
-// so every page renders aligned in preview/view. Mirrors the editor's compute.
+// Viewer-only mirror of the editor's mobile stacking — computes in-memory, never saves.
 export const useAutoMobileLayout = (currentLayout: string, moduleIdOverride?: string): void => {
   const { moduleId: contextModuleId } = useModuleContext();
-  // Viewer calls this above its own ModuleProvider, so context is the default here —
-  // prefer the moduleId the caller passes in.
+  // Viewer calls this above its own ModuleProvider, so prefer the caller's moduleId over context.
   const moduleId = moduleIdOverride ?? contextModuleId;
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(moduleId), shallow);

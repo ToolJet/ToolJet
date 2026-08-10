@@ -2555,7 +2555,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'turnOnAutoComputeLayout'
     );
-    // The mobile-layout compute effect re-runs on this flag flip and overwrites the mobile boxes (resetting any manual positions), so no explicit recompute here.
+    // No explicit recompute: the compute effect re-runs on this flag flip and overwrites the boxes.
     await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: true });
   },
   setWidgetDeleteConfirmation: (value) => {

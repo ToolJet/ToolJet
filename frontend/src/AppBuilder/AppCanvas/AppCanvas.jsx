@@ -248,7 +248,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 'tw-w-full tw-mx-auto': isMobileLayout,
               })}
               style={{
-                // Skip desktop-only minCanvasWidth on mobile; it forces a horizontal scrollbar that shifts the frame
+                // minCanvasWidth is desktop-only; on mobile it forces a scrollbar that shifts the frame.
                 minWidth: isMobileLayout ? undefined : minCanvasWidth,
                 // Reserve room below the phone frame for the toolbar gutter
                 ...(isMobileLayout && currentMode === 'edit' ? { paddingBottom: '76px' } : {}),

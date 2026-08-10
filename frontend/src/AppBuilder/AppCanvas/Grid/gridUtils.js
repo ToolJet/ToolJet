@@ -26,10 +26,10 @@ export function computeAutoMobileLayout(currentPageComponents) {
   const updatedBoxes = {};
   const visited = new Set(); // guard against cyclic parent refs (corrupt data)
 
-  // Components hidden on mobile must not reserve a slot, so visible siblings fill the gap.
-  // Cached read: getResolvedValue would compile a Function per component.
-  const getResolvedComponent = useStore.getState().getResolvedComponent;
-  const isVisibleOnMobile = (id) => getResolvedComponent(id)?.others?.showOnMobile;
+  // Raw definition, not the resolved cache — the cache is empty in the viewer on first compute.
+  const getResolvedValue = useStore.getState().getResolvedValue;
+  const isVisibleOnMobile = (id) =>
+    getResolvedValue(currentPageComponents[id]?.component?.definition?.others?.showOnMobile?.value);
 
   // Stack a parent's direct children into one full-width column (children recursed first).
   const stackGroup = (parentKey) => {

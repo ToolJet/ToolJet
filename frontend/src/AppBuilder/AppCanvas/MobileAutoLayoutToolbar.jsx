@@ -49,7 +49,7 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(moduleId), shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
   const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
-  const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const turnOnAutoComputeLayout = useStore((state) => state.turnOnAutoComputeLayout, shallow);
   const turnOffAutoComputeLayout = useStore((state) => state.turnOffAutoComputeLayout, shallow);
   const lastComputedRef = useRef();
@@ -69,10 +69,13 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLayout, currentPageComponents, isAutoMobileLayout, moduleId]);
 
-  // Cached read: getResolvedValue would compile a Function per component, on every store write.
+  // Raw definition, not the resolved cache — the cache can lag a bulk visibility write.
   const hiddenCount = useMemo(
-    () => Object.keys(currentPageComponents).filter((id) => !getResolvedComponent(id)?.others?.showOnMobile).length,
-    [currentPageComponents, getResolvedComponent]
+    () =>
+      Object.values(currentPageComponents).filter(
+        (comp) => !getResolvedValue(comp?.component?.definition?.others?.showOnMobile?.value)
+      ).length,
+    [currentPageComponents, getResolvedValue]
   );
 
   if (currentLayout !== 'mobile') return null;
