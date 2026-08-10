@@ -155,6 +155,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
   const existedPaths = [
     'forgot-password',
+    'password-expired',
     'switch-workspace',
     'switch-workspace-archived',
     'reset-password',

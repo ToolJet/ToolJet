@@ -89,7 +89,7 @@ describe('AppsRepository — workflow metadata overlay (post-migration)', () => 
     const orgUser = { ...admin.user, organizationId: admin.workspace.id } as any;
     const { workflow } = await seedWorkflowWithVersionMetadata(orgUser, { slug: 'find-by-slug-workflow' });
 
-    const resolved = await appsRepository.findBySlug('find-by-slug-workflow', admin.workspace.id);
+    const resolved = await appsRepository.findBySlug('find-by-slug-workflow', admin.workspace.id, undefined, undefined);
     expect(resolved?.id).toBe(workflow.id);
   });
 

@@ -42,9 +42,7 @@ export class PrivateAppAuthGuard extends AuthGuard('jwt') {
     // read the branch_id query param directly.
     const branchId = request.query['branch_id'] as string;
 
-    let app = workspaceId
-      ? await this.appRepository.findBySlug(slug, workspaceId, undefined, undefined, branchId)
-      : null;
+    let app = workspaceId ? await this.appRepository.findBySlug(slug, workspaceId, undefined, branchId) : null;
 
     if (!app && !workspaceId) {
       app = await this.appRepository.findAppBySlug(slug);
