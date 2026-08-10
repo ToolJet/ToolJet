@@ -50,6 +50,9 @@ export const StringRenderer = ({
   const [hovered, setHovered] = useState(false);
   // const [isEditing, setIsEditing] = useState(false);
 
+  // Set on pointerdown so onFocus can tell pointer-driven focus from keyboard focus.
+  const pointerFocusRef = useRef(false);
+
   useEffect(() => {
     setShowOverlay(hovered);
   }, [hovered]);
@@ -146,17 +149,30 @@ export const StringRenderer = ({
           <div
             ref={ref}
             onClick={() => setIsEditing(true)}
-            // The two props below are what make Tab navigation work.
+            // A pointer (mouse, touch or pen) must enter edit mode from onClick above, never from onFocus.
+            // Focus lands during pointerdown/mousedown, and entering edit mode there swaps the display div with editor div,
+            // whose dangerouslySetInnerHTML detaches the node the press landed on, so the browser then never dispatches the click at all.
+            // That click is what carries row selection, onRowClicked and selectedCell up to the <td>/<tr>
+            // so entering edit mode from focus silently breaks "Select row on cell edit".
+            onPointerDown={enableTabNavigation ? () => (pointerFocusRef.current = true) : undefined}
+            // The props below are what make Tab navigation work.
             // Without them Tab has nothing to land on, since the display look is not contenteditable.
             tabIndex={enableTabNavigation ? 0 : undefined}
             onFocus={
               enableTabNavigation
                 ? (e) => {
-                    setIsEditing(true); // When focused switch to edit look
+                    // Pointer-driven focus: leave it to onClick, so the click event bubbles up to the row.
+                    if (pointerFocusRef.current) {
+                      pointerFocusRef.current = false;
+                      return;
+                    }
+                    setIsEditing(true); // When focused via Keyboard, switch to edit look
                     e.stopPropagation();
                   }
                 : undefined
             }
+            // Reset the flag on the way out, so a press that never produced a click can't strand it.
+            onBlur={enableTabNavigation ? () => (pointerFocusRef.current = false) : undefined}
             className={`${
               !isValid ? 'is-invalid' : ''
             } h-100 text-container long-text-input d-flex align-items-center ${
