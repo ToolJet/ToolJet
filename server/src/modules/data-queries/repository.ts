@@ -45,10 +45,9 @@ export class DataQueryRepository extends Repository<DataQuery> {
         .innerJoin(DataQuery, 'data_query', 'data_query.id = :dataQueryId', { dataQueryId })
         .innerJoin(AppVersion, 'module_version', 'module_version.id = data_query.app_version_id')
         .innerJoin(App, 'module_app', 'module_app.id = module_version.app_id')
-        // Metadata join: resolve is_public independently of which version is deployed.
-        // For git-sync apps apps.is_public is null; the canonical flag lives on the most
-        // recently updated version on the default branch (mirrors resolveMetadataVersion).
-        // For non-git-sync apps wb and av_meta will both be null, falling through to app.is_public.
+        // Metadata join: same row selection as AppsRepository.resolveMetadataVersion —
+        // without the is_stub filter/is_synced ordering, a stub row can outrank the
+        // canonical one on updated_at and read is_public as null, 401-ing a genuinely public app.
         .leftJoin(
           'organization_git_sync_branches',
           'wb',
@@ -59,15 +58,17 @@ export class DataQueryRepository extends Repository<DataQuery> {
           'av_meta',
           `av_meta.app_id = app.id
          AND av_meta.branch_id = wb.id
+         AND av_meta.is_stub = false
          AND av_meta.id = (
            SELECT av2.id FROM app_versions av2
-           WHERE av2.app_id = app.id AND av2.branch_id = wb.id
-           ORDER BY av2.updated_at DESC LIMIT 1
+           WHERE av2.app_id = app.id AND av2.branch_id = wb.id AND av2.is_stub = false
+           ORDER BY av2.is_synced DESC, av2.updated_at DESC LIMIT 1
          )`
         )
         .where('component.type = :componentType', { componentType: 'ModuleViewer' })
-        // Priority: git-sync metadata version → app row → structural version (non-git-sync fallback).
-        .andWhere('COALESCE(av_meta.is_public, app.is_public, app_version.is_public) = true')
+        // apps.is_public is never written (AppsUtilService.update), so app_version.is_public
+        // is the only real fallback if av_meta doesn't match.
+        .andWhere('COALESCE(av_meta.is_public, app_version.is_public) = true')
         .andWhere('module_version.app_id = :moduleAppId', { moduleAppId })
         .andWhere('module_version.app_id != app.id')
         .andWhere('app.organization_id = module_app.organization_id')
