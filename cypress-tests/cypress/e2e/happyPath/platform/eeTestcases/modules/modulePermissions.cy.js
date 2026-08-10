@@ -13,7 +13,7 @@ import {
 import { groupsText } from "Texts/manageGroups";
 
 
-describe("Modules — Permissions Negative: Build-with User Blocked From Editing", { retries: 0 }, () => {
+describe("Modules — Permissions Negative: Build-with User Blocked From Editing", () => {
   const testId = Date.now();
   const shortId = String(testId).slice(-6);
   const wsName = `modules-permissions-${testId}`;
@@ -56,10 +56,6 @@ describe("Modules — Permissions Negative: Build-with User Blocked From Editing
       Cypress.env("workspaceSlug", wsSlug);
     });
 
-    // cy.then(): defers past apiCreateWorkspace's own .then() so
-    // Cypress.env("workspaceId") is actually set before createModuleViaAPI
-    // reads it — see moduleConsumption.cy.js before() for the full
-    // explanation of the underlying race.
     cy.then(() => {
       createModuleViaAPI(moduleName).then((module) => {
         moduleAppId = module.id;

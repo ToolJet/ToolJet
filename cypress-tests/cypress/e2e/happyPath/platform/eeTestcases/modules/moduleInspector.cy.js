@@ -6,7 +6,7 @@ import {
 } from "Support/utils/platform/modules";
 
 
-describe("Modules — Globals Inspector", { retries: 0 }, () => {
+describe("Modules — Inspector", { retries: 0 }, () => {
   const testId = Date.now();
   const shortId = String(testId).slice(-6);
   const wsName = `modules-globals-${testId}`;
@@ -127,17 +127,19 @@ describe("Modules — Globals Inspector", { retries: 0 }, () => {
 
   it("should verify the values of theme inside globals inspector", () => {
 
-    cy.apiUpdateGlobalSettings({ appMode: "light" });
-    cy.reload();
+    const themeToggleButton = () => cy.get(".left-sidebar-item:has(svg.lucide-moon), .left-sidebar-item:has(svg.lucide-sun)");
+
+
     navigateAndVerifyInspector(["globals", "theme"], [["name", `light`]]);
 
-    cy.apiUpdateGlobalSettings({ appMode: "dark" });
 
-    cy.wait(1000);
-
+    themeToggleButton().click();
     cy.reload();
-
     navigateAndVerifyInspector(["globals", "theme"], [["name", `dark`]]);
+
+    themeToggleButton().click();
+    cy.reload();
+    navigateAndVerifyInspector(["globals", "theme"], [["name", `light`]]);
   });
 
   it("should verify the module-specific 'input' global is present", () => {
