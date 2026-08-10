@@ -69,11 +69,16 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       return manager.findOne(WorkspaceBranch, { where: { id: branchId } });
     });
 
-    if (branch?.isDefault) {
-      throw new BadRequestException(
-        'Constants cannot be added directly on master branch and must go through PR approval flow.'
-      );
-    }
+    if (!branch?.isDefault) return;
+
+    // Git sync on but branching not enabled (single-branch mode): there's no other branch to
+    // raise a PR from, so the PR-approval requirement doesn't apply — allow constants directly.
+    const { isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(branch.organizationId);
+    if (!isMultiBranchingEnabled) return;
+
+    throw new BadRequestException(
+      'Constants cannot be added directly on master branch and must go through PR approval flow.'
+    );
   }
 
   async create(createArgumentsDto: CreateArgumentsDto, user: User, branchId?: string): Promise<DataSource> {
