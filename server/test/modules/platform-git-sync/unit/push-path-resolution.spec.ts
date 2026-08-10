@@ -19,7 +19,7 @@ jest.mock('@modules/logging/service', () => ({ TransactionLogger: class {} }));
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { PlatformGitPushService } from '@ee/platform-git-sync/push.service';
 
-/** @group platform */
+/** @group gitsync */
 describe('PlatformGitPushService — app name path resolution', () => {
   const REPO = '/tmp/repo';
   const nameOfLength = (n: number): string => 'a'.repeat(n);

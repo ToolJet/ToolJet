@@ -15,14 +15,10 @@ const config: Config.InitialOptions = {
   testRegex: 'test/modules/.*/e2e/.*spec\\.ts$',
   // Explicitly setting this key drops Jest's own default ('/node_modules/'), so it's
   // restored here — rootDir now covers server/node_modules too.
-  // QUARANTINE(git-sync-gitlab): suite throws at import (requires TEST_GIT_BASE_URL +
-  // a live GitLab-shaped simulator not yet wired into CI) — describe.skip can't guard
-  // module-load failures. #17265
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    'modules/git-sync/e2e/git-sync-gitlab\\.spec\\.ts$',
-    'modules/workflows/e2e/workflow-lifecycle\\.e2e-spec\\.ts$',
-  ],
+  // NOTE: git-sync-gitlab.spec.ts is NOT quarantined — it self-guards, skipping the whole
+  // suite at runtime when the GitLab env (TEST_GITLAB_TOKEN et al.) is absent instead of
+  // throwing at import, so it runs for real wherever the GitLab simulator env is configured.
+  testPathIgnorePatterns: ['/node_modules/', 'modules/workflows/e2e/workflow-lifecycle\\.e2e-spec\\.ts$'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   runner: 'groups',
   testTimeout: 60000,

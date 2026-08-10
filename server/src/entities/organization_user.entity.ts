@@ -41,6 +41,9 @@ export class OrganizationUser extends BaseEntity {
   @Column({ name: 'last_branch_id', type: 'uuid', nullable: true })
   lastBranchId?: string | null;
 
+  @Column({ name: 'invitation_token_expiry', type: 'timestamptz', nullable: true, default: null })
+  invitationTokenExpiry: Date | null;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
