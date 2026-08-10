@@ -4978,10 +4978,15 @@ describe('GitSyncController', () => {
 
       const pull = (branchId: string) =>
         auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
-      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string, onlyUnsynced?: boolean) =>
         auth(agent().post('/api/workspace-branches/push'))
           .query({ branch_id: branchId })
-          .send({ commitMessage, branchId, ...(scope && { scope }) });
+          .send({
+            commitMessage,
+            branchId,
+            ...(scope && { scope }),
+            ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+          });
       const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
         (
           await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
@@ -5173,7 +5178,7 @@ describe('GitSyncController', () => {
         const dsPath = `data-sources/${dsName}/data-source.json`;
 
         step(3, "scope='datasource' push → the DS file is committed");
-        await pushWorkspace(featBranchId, 'add stale ds', 'datasource').expect(201);
+        await pushWorkspace(featBranchId, 'add stale ds', 'datasource', true).expect(201);
         expect(await readGitFile(FEAT, dsPath)).not.toBeNull();
 
         step(4, 'delete the data source on the feature branch (no linked query → API delete allowed)');
@@ -5211,7 +5216,7 @@ describe('GitSyncController', () => {
         ).body.id;
         const dsName = await dsvName(dsId, featBranchId);
         const dsPath = `data-sources/${dsName}/data-source.json`;
-        await pushWorkspace(featBranchId, 'add harddel ds', 'datasource').expect(201);
+        await pushWorkspace(featBranchId, 'add harddel ds', 'datasource', true).expect(201);
         expect(await readGitFile(FEAT, dsPath)).not.toBeNull();
 
         step(3, 'hard-delete the DSV row (mirrors a single-branch default-branch delete)');
@@ -5257,10 +5262,15 @@ describe('GitSyncController', () => {
 
       const pull = (branchId: string) =>
         auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
-      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string, onlyUnsynced?: boolean) =>
         auth(agent().post('/api/workspace-branches/push'))
           .query({ branch_id: branchId })
-          .send({ commitMessage, branchId, ...(scope && { scope }) });
+          .send({
+            commitMessage,
+            branchId,
+            ...(scope && { scope }),
+            ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+          });
       const gitpush = (appId: string, versionId: string, gitAppName: string, branchId: string) =>
         auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
           .query({ branch_id: branchId })
@@ -5433,7 +5443,7 @@ describe('GitSyncController', () => {
         step(3, 'gitpush app + module, workspace-push the data source (all to the default branch)');
         await gitpush(appId, appCtx.versionId, 'sb-app', defaultBranchId).expect(201);
         await gitpush(moduleId, moduleCtx.versionId, 'sb-module', defaultBranchId).expect(201);
-        await pushWorkspace(defaultBranchId, 'push sb data source', 'datasource').expect(201);
+        await pushWorkspace(defaultBranchId, 'push sb data source', 'datasource', true).expect(201);
 
         // ── 4. assert all three resources landed in git on the default branch ────────────
         step(4, 'clone the default branch → apps/, modules/, and the DS file are present');
@@ -8047,10 +8057,15 @@ describe('GitSyncController', () => {
             })
             .expect(201);
 
-        const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+        const pushWorkspace = (branchId: string, commitMessage: string, scope?: string, onlyUnsynced?: boolean) =>
           auth(agent().post('/api/workspace-branches/push'))
             .query({ branch_id: branchId })
-            .send({ commitMessage, branchId, ...(scope && { scope }) });
+            .send({
+              commitMessage,
+              branchId,
+              ...(scope && { scope }),
+              ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+            });
 
         const pull = (branchId: string) =>
           auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
@@ -8184,7 +8199,7 @@ describe('GitSyncController', () => {
         expect(await isSyncedOnBranch(unsyncedDsId, featBranchId)).toBe(false);
 
         step(5, "push scope='datasource' → only ds-scope-unsynced should be (re)committed");
-        const push2 = await pushWorkspace(featBranchId, 'sync unsynced datasources', 'datasource');
+        const push2 = await pushWorkspace(featBranchId, 'sync unsynced datasources', 'datasource', true);
         if (push2.status !== 201) {
           throw new Error(`scoped push failed: ${push2.status} ${JSON.stringify(push2.body)}`);
         }
@@ -8350,10 +8365,15 @@ describe('GitSyncController', () => {
               targetBranch: branchName,
             })
             .expect(201);
-        const pushDataSources = (branchId: string, commitMessage: string) =>
+        const pushDataSources = (branchId: string, commitMessage: string, onlyUnsynced?: boolean) =>
           auth(agent().post('/api/workspace-branches/push'))
             .query({ branch_id: branchId })
-            .send({ commitMessage, branchId, scope: 'datasource' });
+            .send({
+              commitMessage,
+              branchId,
+              scope: 'datasource',
+              ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+            });
         const pull = (branchId: string) =>
           auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
         const mergeToMain = async (sourceBranch: string) => {
@@ -8431,7 +8451,7 @@ describe('GitSyncController', () => {
         await gitpush(skipAppId, appVersionId, 'ps-skip-app', 'feat-skip', mainBranchId);
 
         const skipDsId = await createDataSource('ps-skip-ds', featBranchId);
-        const push = await pushDataSources(featBranchId, 'commit ps-skip-ds');
+        const push = await pushDataSources(featBranchId, 'commit ps-skip-ds', true);
         expect(push.status).toBe(201);
 
         await mergeToMain('feat-skip');
@@ -8585,10 +8605,15 @@ describe('GitSyncController', () => {
               })
               .expect(201)
           ).body.id as string;
-        const pushDataSources = (branchId: string, commitMessage: string) =>
+        const pushDataSources = (branchId: string, commitMessage: string, onlyUnsynced?: boolean) =>
           auth(agent().post('/api/workspace-branches/push'))
             .query({ branch_id: branchId })
-            .send({ commitMessage, branchId, scope: 'datasource' });
+            .send({
+              commitMessage,
+              branchId,
+              scope: 'datasource',
+              ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+            });
         const pull = (branchId: string) =>
           auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
         const mergeToMain = async (sourceBranch: string) => {
@@ -8678,7 +8703,7 @@ describe('GitSyncController', () => {
         const featBranchId = await branchIdByName('feat-cat', mainBranchId);
         expect(featBranchId).toBeDefined();
         const realDsId = await createDataSource('cat-real-ds', featBranchId);
-        expect((await pushDataSources(featBranchId, 'commit cat-real-ds')).status).toBe(201);
+        expect((await pushDataSources(featBranchId, 'commit cat-real-ds', true)).status).toBe(201);
         await mergeToMain('feat-cat');
         await pull(mainBranchId).expect(201);
 
