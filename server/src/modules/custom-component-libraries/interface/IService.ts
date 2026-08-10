@@ -1,8 +1,14 @@
 import { CustomComponentLibrary } from '@entities/custom_component_library.entity';
 
+// A1: profile-settings token table — USER-scoped management of WORKSPACE-bound tokens
+// (Final Design milestone #1: "Profile Settings → API Tokens page"; token binding per LLD §4.7).
 export interface CliTokenView {
   id: string;
   name: string;
+  organizationId: string;
+  organizationName: string | null;
+  expiresAt: Date | null; // null = never expires
+  lastUsedAt: Date | null; // null = never used
   createdAt: Date;
 }
 
@@ -29,9 +35,14 @@ export interface ICustomComponentLibrariesService {
   createLibrary(organizationId: string, name: string): Promise<{ id: string; name: string }>;
   getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary>;
   listLibraries(organizationId: string): Promise<LibraryListItem[]>;
-  createCliToken(userId: string, organizationId: string, name: string): Promise<CliTokenView & { token: string }>;
-  listCliTokens(userId: string, organizationId: string): Promise<CliTokenView[]>;
-  deleteCliToken(userId: string, organizationId: string, id: string): Promise<void>;
+  createCliToken(
+    userId: string,
+    organizationId: string,
+    name: string,
+    expiresAt?: Date | null
+  ): Promise<CliTokenView & { token: string }>;
+  listCliTokens(userId: string): Promise<CliTokenView[]>;
+  deleteCliToken(userId: string, id: string): Promise<void>;
   uploadDev(
     userId: string,
     organizationId: string,
