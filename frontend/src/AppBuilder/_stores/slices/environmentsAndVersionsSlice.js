@@ -3,6 +3,7 @@ import {
   appVersionService,
   authenticationService,
   dataqueryService,
+  gitSyncService,
   orgEnvironmentConstantService,
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
@@ -330,8 +331,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   deleteVersionAction: async (appId, versionId, onSuccess, onFailure) => {
     try {
-      // Delete versions
-      await appVersionService.del(appId, versionId);
+      // Delete the version. In a git-enabled workspace the app-git endpoint performs the DB delete
+      // AND removes the git tag in one server-side call; non-git workspaces (incl. CE) use the
+      // versions endpoint. (This replaces the old versions→app-git moduleRef git-tag cleanup.)
+      const orgGit = useStore.getState().orgGit;
+      const isGitSyncEnabled = !!(orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled);
+      if (isGitSyncEnabled) {
+        await gitSyncService.deleteVersion(appId, versionId);
+      } else {
+        await appVersionService.del(appId, versionId);
+      }
 
       // Delete version from every environment
       const response = await appEnvironmentService.postVersionDeleteAction({

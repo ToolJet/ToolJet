@@ -347,6 +347,7 @@ const ENTERPRISE_TEST_TERMS: Partial<Terms> = {
     multiPlayerEdit: true,
     comments: true,
     gitSync: true,
+    gitSyncMultiBranch: true,
     ai: true,
     externalApi: true,
     scim: true,
