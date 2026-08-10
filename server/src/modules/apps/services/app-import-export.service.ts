@@ -26,6 +26,7 @@ import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
+import { readWorkflowQueryRefs } from 'src/helpers/workflow_query_options.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
@@ -483,6 +484,8 @@ export class AppImportExportService {
         };
       });
 
+      await this.stampWorkflowNames(manager, queriesWithPermissionGroups, appToExport.organizationId);
+
       const components =
         pages.length > 0
           ? await manager
@@ -571,6 +574,66 @@ export class AppImportExportService {
 
       return { appV2: appToExport };
     });
+  }
+
+  /*
+   * A workflow query points at a workflow app by uuid, which means nothing in any other
+   * workspace — git-sync doesn't push the workflow itself, so after a pull the reference
+   * dangles. Stamp the names alongside so the reader can resolve them by name.
+   * Mutates options on the passed objects; nothing is written back to data_queries.
+   */
+  private async stampWorkflowNames(
+    manager: EntityManager,
+    queries: any[],
+    organizationId: string
+  ): Promise<void> {
+    const workflowQueries = queries
+      .map((query) => ({ query, refs: readWorkflowQueryRefs(query.options) }))
+      .filter(({ refs }) => refs.workflowId);
+    if (!workflowQueries.length) return;
+
+    const workflowAppIds = [...new Set(workflowQueries.map(({ refs }) => refs.workflowId))];
+
+    // getRawMany() skips entity hydration. AppsSubscriber.afterLoad fires per hydrated App
+    // and issues an extra app_versions query each, on a connection outside this transaction.
+    const workflowApps = await manager
+      .createQueryBuilder(App, 'app')
+      .select(['app.id AS id', 'app.name AS name'])
+      .where('app.id IN (:...ids)', { ids: workflowAppIds })
+      // scoped: options.workflowId is untrusted JSON and may point at another workspace
+      .andWhere('app.organization_id = :organizationId', { organizationId })
+      .andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW })
+      .getRawMany();
+    const workflowNameById = new Map(workflowApps.map((a) => [a.id, a.name]));
+
+    const workflowVersionIds = [
+      ...new Set(workflowQueries.map(({ refs }) => refs.workflowVersionId).filter(Boolean)),
+    ];
+    const workflowVersions =
+      workflowVersionIds.length && workflowNameById.size
+        ? await manager
+            .createQueryBuilder(AppVersion, 'version')
+            .select(['version.id AS id', 'version.name AS name'])
+            .where('version.id IN (:...ids)', { ids: workflowVersionIds })
+            .andWhere('version.app_id IN (:...appIds)', { appIds: [...workflowNameById.keys()] })
+            .getRawMany()
+        : [];
+    const workflowVersionNameById = new Map(workflowVersions.map((v) => [v.id, v.name]));
+
+    for (const { query, refs } of workflowQueries) {
+      /*
+       * options is still the managed entity's object (the caller's map is a shallow copy),
+       * so clone before writing. Keep any incoming name when the lookup misses — otherwise
+       * a re-push from a workspace holding stale ids would null the names out of the repo.
+       * Always write camelCase, so exporting normalizes snake-cased rows on the way out.
+       */
+      query.options = {
+        ...query.options,
+        workflowName: workflowNameById.get(refs.workflowId) ?? refs.workflowName ?? null,
+        workflowVersionName:
+          workflowVersionNameById.get(refs.workflowVersionId) ?? refs.workflowVersionName ?? null,
+      };
+    }
   }
 
   async mapModulesForAppImport(
