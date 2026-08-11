@@ -377,7 +377,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       return result;
     } catch (queryError) {
-      abortCtrl.cleanup();
+      // abortCtrl is only constructed once the data source and its options resolve.
+      // Anything that throws before that (permissions, getOptions, plugin load) used to
+      // hit a TypeError HERE, which replaced the real error and skipped setFailure —
+      // and then threw again in finally, so the query metric never emitted.
+      abortCtrl?.cleanup();
       queryStatus.setFailure({
         message: queryError?.message,
         description: queryError?.description,
@@ -386,7 +390,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       });
       throw queryError;
     } finally {
-      abortCtrl.cleanup();
+      abortCtrl?.cleanup();
       if (user) {
         // Get metadata from queryStatus
         const queryMetadata = queryStatus.getMetaData();
