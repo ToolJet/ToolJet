@@ -27,8 +27,7 @@ export const BUCKETS_SECONDS = {
 export const ATTR_DEPLOYMENT_ENVIRONMENT_NAME = 'deployment.environment.name';
 
 // Where this server runs. NOT service.name, which must be identical across instances.
-export const deploymentEnvironmentName = (): string =>
-  process.env.DEPLOYMENT_ENVIRONMENT_NAME || process.env.NODE_ENV || 'development';
+export const deploymentEnvironmentName = (): string => process.env.NODE_ENV || 'development';
 
 export const ATTR = {
   // Set only on failure — absence marks success, so no parallel `status` label.
