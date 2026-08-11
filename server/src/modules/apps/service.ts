@@ -323,7 +323,9 @@ export class AppsService implements IAppsService {
 
   validateReleasedApp(ability: AppAbility, app: App): { id: string; slug: string } {
     if (!app.currentVersionId) {
-      const editPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
+      // ability is undefined for unauthenticated visitors on a public app - the guard
+      // lets them through without computing one. No ability means no edit permission.
+      const editPermission = ability?.can(FEATURE_KEY.UPDATE, App, app.id) ?? false;
       const errorResponse = {
         statusCode: HttpStatus.NOT_IMPLEMENTED,
         error: 'App is not released yet',

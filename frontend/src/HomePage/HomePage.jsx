@@ -38,6 +38,7 @@ import { LicenseTooltip } from '@/LicenseTooltip';
 import ModalBase from '@/_ui/Modal';
 import FolderFilter from './FolderFilter';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { getFolderGroupPermissions, appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
@@ -67,8 +68,6 @@ import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { TriangleAlert } from 'lucide-react';
-
-import { appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
 
 const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
 class HomePageComponent extends React.Component {
@@ -2326,11 +2325,9 @@ class HomePageComponent extends React.Component {
                         const currentSession = authenticationService.currentSessionValue;
                         if (currentSession?.super_admin || currentSession?.admin) return true;
 
-                        // Builders have admin-level access to module folders
-                        if (this.props.appType === 'module' && currentSession?.role?.name === 'builder') return true;
-
-                        // Check if user has edit permissions for the folder
-                        const folderPermissions = currentSession?.user_permissions?.folder;
+                        // Check if user has edit permissions for the folder — resolved per
+                        // appType (front-end/module/workflow each have their own granular bucket).
+                        const folderPermissions = getFolderGroupPermissions(currentSession, this.props.appType);
                         if (folderPermissions?.is_all_editable) return true;
                         if (folderPermissions?.editable_folders_id?.includes(folder.id)) return true;
 

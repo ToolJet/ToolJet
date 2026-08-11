@@ -11,7 +11,8 @@ export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
 
 // Folder-flavor → the UserPermissions bucket holding its resolved folder access.
 // Add an entry here (not another ternary arm) when a new folder-owning resource type is introduced.
-const FOLDER_RESOURCE_TYPE_BY_APP_TYPE: Partial<Record<APP_TYPES, MODULES>> = {
+// Exported so FolderAppsService.getFolders resolves the same bucket the ability check uses.
+export const FOLDER_RESOURCE_TYPE_BY_APP_TYPE: Partial<Record<APP_TYPES, MODULES>> = {
   [APP_TYPES.WORKFLOW]: MODULES.WORKFLOW_FOLDER,
   [APP_TYPES.MODULE]: MODULES.MODULE_FOLDER,
 };
@@ -50,10 +51,6 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
       if (ownerCanDeleteFolderApp) {
         can(FEATURE_KEY.DELETE_FOLDER_APP, FolderApp);
-      }
-
-      if (request?.tj_app_is_module && userPermission.isBuilder) {
-        can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
       }
 
       if (folderPermissions) {
