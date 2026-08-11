@@ -5,7 +5,11 @@ export interface ManifestProp {
   name: string;
   type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'enumeration';
   default?: unknown;
+  label?: string;
+  description?: string;
+  inspector?: string;
   enumValues?: string[];  // only present when type === 'enumeration'
+  enumLabels?: Record<string, string>;  // only present when type === 'enumeration'
 }
 
 export interface ManifestEvent { name: string; }
@@ -19,7 +23,6 @@ export interface ManifestComponent {
 }
 
 export interface Manifest {
-  schemaVersion: '1';
   components: Record<string, ManifestComponent>;
 }
 
@@ -86,7 +89,7 @@ export async function generateManifest(
     .getPreEmitDiagnostics(program)
     .filter((d) => d.category === ts.DiagnosticCategory.Error).length;
 
-  return { manifest: { schemaVersion: '1', components }, tsErrorCount };
+  return { manifest: { components }, tsErrorCount };
 }
 
 function walkComponentDeclaration(
@@ -119,8 +122,12 @@ function walkComponentDeclaration(
             const [optionsArg] = node.arguments;
             if (ts.isObjectLiteralExpression(optionsArg)) {
               const name = getStringProp(optionsArg, 'name');
+              const label = getStringProp(optionsArg, 'label');
+              const description = getStringProp(optionsArg, 'description');
+              const inspector = getStringProp(optionsArg, 'inspector');
               const initialValue = getPropNode(optionsArg, 'initialValue');
               const enumDef = getPropNode(optionsArg, 'enumDefinition'); // useStateEnumeration only
+              const enumLabelsNode = getPropNode(optionsArg, 'enumLabels'); // useStateEnumeration only
 
               if (name) {
                 if (propNames.has(name)) {
@@ -139,11 +146,20 @@ function walkComponentDeclaration(
                   enumValues = enumDef.elements.map((e) => (e as ts.StringLiteral).text);
                 }
 
+                let enumLabels: Record<string, string> | undefined;
+                if (enumLabelsNode && ts.isObjectLiteralExpression(enumLabelsNode)) {
+                  enumLabels = evalLiteralNode(enumLabelsNode) as Record<string, string>;
+                }
+
                 props.push({
                   name,
                   type: HOOK_TYPE_MAP[method],
                   default: initialValue ? evalLiteralNode(initialValue) : undefined,
+                  ...(label ? { label } : {}),
+                  ...(description ? { description } : {}),
+                  ...(inspector ? { inspector } : {}),
                   ...(enumValues ? { enumValues } : {}),
+                  ...(enumLabels ? { enumLabels } : {}),
                 });
               }
             }
@@ -268,8 +284,11 @@ function getStringProp(obj: ts.ObjectLiteralExpression, key: string): string | u
 }
 
 function toDisplayName(name: string): string {
-  // 'MyComponent' → 'My Component'
-  return name.replace(/([A-Z])/g, ' $1').trim();
+  // 'MyComponent' → 'My Component', 'QRCodeGenerator' → 'QR Code Generator'
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .trim();
 }
 
 function evalLiteralNode(node: ts.Node): unknown {

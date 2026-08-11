@@ -30,7 +30,20 @@ const tooljetSdkPlugin: esbuild.Plugin = {
   },
 };
 
-export async function build(projectRoot: string): Promise<BuildResult> {
+export type BuildEnv = 'production' | 'development';
+
+// Extra esbuild options applied only for production builds (build & deploy commands),
+// keeping dev-watch builds fast and untouched.
+const prodBuildOptions: Partial<esbuild.BuildOptions> = {
+  minify: true,
+  legalComments: 'eof',
+  drop: ['debugger'],
+};
+
+export async function build(projectRoot: string, options: { env?: BuildEnv } = {}): Promise<BuildResult> {
+  const { env = 'development' } = options;
+  const isProduction = env === 'production';
+
   const start = Date.now();
   const distDir = path.join(projectRoot, 'dist');
 
@@ -47,11 +60,15 @@ export async function build(projectRoot: string): Promise<BuildResult> {
     jsx: 'automatic',
     tsconfig: path.join(projectRoot, 'tsconfig.json'),
     logLevel: 'silent',
+    ...(isProduction ? prodBuildOptions : {}),
   });
 
   // Manifest generation via TS Compiler API
   const { manifest, tsErrorCount } = await generateManifest(projectRoot);
-  fs.writeFileSync(path.join(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+  fs.writeFileSync(
+    path.join(distDir, 'manifest.json'),
+    isProduction ? JSON.stringify(manifest) : JSON.stringify(manifest, null, 2)
+  );
 
   const bundleSize = fs.statSync(path.join(distDir, 'index.js')).size;
   const hasCss = fs.existsSync(path.join(distDir, 'index.css'));
