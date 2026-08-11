@@ -27,7 +27,7 @@ Role Required: **Admin** <br/>
     - **Port**: Enter the Port number of LDAP server.
     - **Base DN**: Enter the distinguished name of the container that holds your users, for example `OU=Users,DC=example,DC=com`. Specify the location without the UID or CN. Click **+ Add another Base DN** to search across more than one Organizational Unit (OU).
     - **Username attribute**: Choose whether users sign in with their **CN** (for example, `Amy Wong`) or their **UPN** (for example, `amy@contoso.local`). The default is CN.
-    - **Use UPN as email**: Available when the username attribute is set to UPN. Turn it on to use the user's UPN as their ToolJet email instead of the `mail` attribute.
+    - **Use UPN as email**: Available when the username attribute is set to UPN. Turn it on to use the user's UPN as their ToolJet email instead of the `mail` attribute, provided the UPN is a valid email address.
     - **Enable group sync**: Syncs the user's groups from your directory on every login. Enabled by default.
     - **SSL**: Toggle this option to enable the SSL. After enabling you can select the type of SSL: **None** or **Certificates**. If you choose Certificates, you'll need to provide the **Client Key**, **Client Certificate**, and **Server Certificate**.
 
@@ -80,7 +80,7 @@ TOOLJET_LDAP_BASE_DNS__nexus_corps='["ou=team1,dc=company,dc=com","ou=team2,dc=c
 Configuring Base DNs in the UI is the recommended approach. Use this variable only if you already rely on it, and restart the ToolJet server after changing it.
 
 :::warning
-When this variable is set, it takes precedence and the Base DNs entered in the LDAP configuration are ignored. If the value is not a valid JSON array string, login fails with the error: `Invalid TOOLJET_LDAP_BASE_DNS format. Must be a JSON array string.`
+When this variable is set, it takes precedence and the Base DNs entered in the LDAP configuration are ignored. If the value is not a valid JSON array string, login fails and the server logs `Invalid TOOLJET_LDAP_BASE_DNS format. Must be a JSON array string.`
 :::
 
 ## Username Attribute
@@ -105,10 +105,9 @@ ToolJet needs an email address to create or match the ToolJet account for an LDA
 
 By default, ToolJet reads the `mail` attribute and uses the first value if it holds several. If `mail` is empty, ToolJet falls back to the `userPrincipalName` attribute, provided its value is a valid email address. This fallback exists because Windows Active Directory often leaves `mail` empty while the UPN holds the user's actual email address.
 
-When the username attribute is set to UPN, you can turn on **Use UPN as email** to reverse this order and always use the UPN as the ToolJet email, ignoring the `mail` attribute. This is useful when `mail` holds an alias that differs from the address you want people to have in ToolJet.
+When the username attribute is set to UPN, you can turn on **Use UPN as email** to reverse this order and use the UPN as the ToolJet email instead of the `mail` attribute, provided the UPN is a valid email address. If it is not, ToolJet uses `mail` as usual. This is useful when `mail` holds an alias that differs from the address you want people to have in ToolJet.
 
 If no valid email address can be determined, the user cannot sign in. To resolve this, populate either `mail` or `userPrincipalName` for that user in your directory.
-
 
 ---
 
