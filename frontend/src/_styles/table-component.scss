@@ -1011,6 +1011,13 @@
       width: 100%;
       text-transform: uppercase;
 
+      // header overflow set to wrap: grow with the content like the body rows do
+      &.header-wrap {
+        height: auto;
+        min-height: 32px;
+        white-space: normal;
+      }
+
       &:hover {
         background: var(--cc-table-header-hover) !important;
       }
