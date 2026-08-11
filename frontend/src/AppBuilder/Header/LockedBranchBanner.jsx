@@ -16,6 +16,7 @@ const LockedBranchBanner = ({
   reason = 'merged',
   pageContext = '',
   variant = 'inline',
+  licenseLockMessage = '',
 }) => {
   if (!isVisible) {
     return null;
@@ -27,7 +28,7 @@ const LockedBranchBanner = ({
     reason === 'released'
       ? 'This branch has been released and is now read-only'
       : isLicenseLock
-        ? 'Your plan has expired. Renew your plan or disable git sync to continue.'
+        ? licenseLockMessage || 'Your plan has expired. Renew your plan or disable git sync to continue.'
         : reason === 'main_config_branch'
           ? `Master is locked. Create a branch to add or ${pageContextText}.`
           : 'This branch has been merged and is now read-only';

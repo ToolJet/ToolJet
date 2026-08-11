@@ -51,6 +51,14 @@ export class WorkspacePushDto {
   @IsOptional()
   deletionOnly?: boolean;
 
+  // Internal only (set by the app-deletion worker, never from an HTTP body): the exact
+  // co_relation_ids to remove from the repo on a deletionOnly push. Scopes the removal to the
+  // apps that were actually deleted instead of a DB-vs-git diff.
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  deletionCoRelIds?: string[];
+
   @IsOptional()
   @IsString()
   scope?: 'app' | 'module' | 'datasource' | 'all';

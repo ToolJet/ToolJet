@@ -63,6 +63,7 @@ import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { whenBranchResolved } from '@/_helpers/active-branch';
 import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
@@ -958,6 +959,16 @@ class HomePageComponent extends React.Component {
     return !!(isBranchingEnabled && isDefault);
   };
 
+  // Git sync is configured but the workspace's license no longer covers it (expired/invalid, or the
+  // current plan simply doesn't include git sync). This is the exact case the dashboard
+  // WorkspaceLockedBanner surfaces ("...disable git sync to continue"): the workspace is read-locked
+  // until git sync is disabled, so creating apps/modules must be blocked too.
+  isGitSyncLicenseLocked = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return !!(state.isGitSyncConfigured && isGitSyncLicenseInvalid(this.state.featureAccess));
+  };
+
   isOnFeatureBranch = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
@@ -1817,9 +1828,9 @@ class HomePageComponent extends React.Component {
 
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
-        return !moduleEnabled;
+        return !moduleEnabled || this.isGitSyncLicenseLocked();
       } else if (this.props.appType === 'front-end') {
-        return appsLimit?.percentage >= 100;
+        return appsLimit?.percentage >= 100 || this.isGitSyncLicenseLocked();
       } else {
         return this.hasWorkflowLimitReached();
       }
@@ -2657,6 +2668,7 @@ class HomePageComponent extends React.Component {
                       viewTemplateLibraryModal={this.showTemplateLibraryModal}
                       hideTemplateLibraryModal={this.hideTemplateLibraryModal}
                       appType={this.props.appType}
+                      gitSyncLicenseLocked={this.isGitSyncLicenseLocked()}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
                         100 > workflowInstanceLevelLimit.percentage >= 90 ||
@@ -2684,7 +2696,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={!moduleEnabled || !this.canCreateApp()}
+                        disabled={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={() => {
@@ -2699,11 +2711,13 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={!moduleEnabled || !this.canCreateApp()}
+                          show={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
                           message={
                             !moduleEnabled
                               ? 'Modules are not available on your current plan.'
-                              : "You don't have permission to create a module."
+                              : this.isGitSyncLicenseLocked()
+                                ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
+                                : "You don't have permission to create a module."
                           }
                           placement="bottom"
                         >
