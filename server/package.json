@@ -145,6 +145,7 @@
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
     "nodemailer": "^9.0.1",
+    "@types/nodemailer": "^8.0.1",
     "openid-client": "^5.4.0",
     "otpauth": "^9.4.1",
     "passport-jwt": "^4.0.0",

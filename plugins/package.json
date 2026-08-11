@@ -80,8 +80,7 @@
     },
     "fast-xml-parser": "^5.5.7",
     "protobufjs": "^7.6.5",
-    "ws": "^8.21.0",
-    "nodemailer": "^9.0.5"
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",
