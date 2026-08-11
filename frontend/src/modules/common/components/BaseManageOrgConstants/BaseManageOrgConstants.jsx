@@ -574,13 +574,7 @@ const BaseManageOrgConstants = ({
 
                       <div>
                         <Button
-                          // Todo: Update link to documentation: workspace constants
-                          onClick={() =>
-                            window.open(
-                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
-                              '_blank'
-                            )
-                          }
+                          onClick={() => window.open('https://docs.tooljet.com/docs/security/constants/', '_blank')}
                           darkMode={darkMode}
                           size="sm"
                           styles={{

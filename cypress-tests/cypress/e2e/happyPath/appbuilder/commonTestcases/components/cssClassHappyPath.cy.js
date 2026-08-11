@@ -13,7 +13,7 @@ describe("Widget - CSS class field (Styles > Advanced)", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-cssClass-App`);
     cy.openApp();
-    cy.dragAndDropWidget("Button", 500, 500);
+    cy.dragAndDropWidget("Button", 500, 100);
     openEditorSidebar(widgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     openAccordion("Advanced");

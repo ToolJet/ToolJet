@@ -273,4 +273,19 @@ export const navigateToSettingPage = () => {
   cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 };
 
+export const apiUpdateInstanceSettings = (variables) => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method :"PATCH", 
+      url:`${Cypress.env("server_host")}/api/login-configs/instance-general`,
+      headers: headers,
+      body: {
+        ...variables
+      }
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  })
+}
+
 export const sanitize = (str) => str.toLowerCase().replace(/[^A-Za-z]/g, "");

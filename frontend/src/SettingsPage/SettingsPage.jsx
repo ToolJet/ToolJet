@@ -6,6 +6,7 @@ import Layout from '@/_ui/Layout';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
 import { decodeEntities } from '@/_helpers/utils';
+import { TwoFactorAuthCard } from './TwoFactorAuthCard';
 
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
@@ -177,7 +178,7 @@ function SettingsPage(props) {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
-          <div style={{ height: `calc(100vh - 2.5rem - 48px)` }}>
+          <div style={{ height: `calc(100vh - 2.5rem - 48px)`, overflowY: 'auto' }}>
             <div className="container-xl">
               <div className="card profile-page-card">
                 <div className="card-header">
@@ -231,6 +232,12 @@ function SettingsPage(props) {
                         <input
                           onChange={(e) => {
                             const file = e.target.files[0];
+                            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                            if (!ALLOWED_TYPES.includes(file.type)) {
+                              toast.error('Only JPEG, PNG, GIF, and WebP images are allowed');
+                              e.target.value = null;
+                              return;
+                            }
                             if (Math.round(file.size / 1024) > 2048) {
                               toast.error('File size cannot exceed more than 2MB');
                               e.target.value = null;
@@ -238,7 +245,7 @@ function SettingsPage(props) {
                               setSelectedFile(file);
                             }
                           }}
-                          accept="image/*"
+                          accept="image/jpeg,image/png,image/gif,image/webp"
                           type="file"
                           className="form-control"
                           data-cy="avatar-upload-field"
@@ -330,6 +337,7 @@ function SettingsPage(props) {
                   <div></div>
                 </div>
               </div>
+              <TwoFactorAuthCard darkMode={props.darkMode} />
             </div>
           </div>
         </div>

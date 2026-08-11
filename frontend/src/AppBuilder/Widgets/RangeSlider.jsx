@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+
 export const RangeSlider = function RangeSlider({
   height,
   properties,
@@ -63,6 +65,14 @@ export const RangeSlider = function RangeSlider({
     setExposedVariable('value', value);
     setRangeValue(value);
   };
+
+  useFormClear(() => {
+    if (enableTwoHandle) {
+      onRangeChange([min, min]);
+    } else {
+      onSliderChange(min);
+    }
+  });
 
   const rangeStyles = {
     handleStyle: toArray(sliderValue).map(() => {

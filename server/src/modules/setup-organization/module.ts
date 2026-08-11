@@ -2,6 +2,7 @@ import { DynamicModule } from '@nestjs/common';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { RolesModule } from '@modules/roles/module';
@@ -37,6 +38,7 @@ export class SetupOrganizationsModule extends SubModule {
         SetupOrganizationsUtilService,
         OrganizationRepository,
         OrganizationUsersRepository,
+        UserBanListRepository,
         FeatureAbilityFactory,
         DataSourcesRepository,
       ],

@@ -653,6 +653,58 @@ export default class Databricks implements QueryService {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  //  listTables — used by ToolJet's generic /list-tables data explorer endpoint
+  // ──────────────────────────────────────────────────────────────────────────
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    _dataSourceId?: string,
+    _dataSourceUpdatedAt?: string,
+    queryOptions?: { search?: string; page?: number; limit?: number }
+  ): Promise<QueryResult> {
+    const authType = sourceOptions['authentication_type'] || 'personal_access_token';
+    try {
+      let result: { items: Array<{ table_name: string; table_schema: string }>; totalCount: number } | Array<{ table_name: string; table_schema: string }>;
+
+      if (authType === 'oauth_u2m') {
+        const httpPath = sourceOptions.http_path || '';
+        if (!httpPath)
+          throw new QueryError('Missing http_path', 'HTTP path is required for OAuth U2M table listing.', {});
+        const accessToken = this._getOAuthU2MAccessToken(sourceOptions);
+        const connOpts = this.getOAuthConnectionOptions(sourceOptions);
+        result = await this._fetchTablesViaRest(
+          sourceOptions.host,
+          accessToken,
+          httpPath,
+          queryOptions?.search,
+          queryOptions?.page,
+          queryOptions?.limit,
+          connOpts['default_catalog'],
+          connOpts['default_schema']
+        );
+      } else {
+        result = await this._fetchTables(sourceOptions, queryOptions?.search, queryOptions?.page, queryOptions?.limit);
+      }
+
+      if (queryOptions?.limit) {
+        const { items, totalCount } = result as { items: Array<{ table_name: string; table_schema: string }>; totalCount: number };
+        const rows = items.map(({ table_name, table_schema }) => ({ table_name, table_schema }));
+        return { status: 'ok', data: { rows, totalCount } };
+      }
+
+      const rows = (result as Array<{ table_name: string; table_schema: string }>).map(({ table_name, table_schema }) => ({
+        table_name,
+        table_schema,
+      }));
+      return { status: 'ok', data: rows };
+    } catch (err) {
+      if (err instanceof QueryError || err instanceof OAuthUnauthorizedClientError) throw err;
+      const errorMessage = err.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   //  _fetchTables — list tables via information_schema (PAT only)
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -664,7 +716,8 @@ export default class Databricks implements QueryService {
     _userId?: string,
     _isAppPublic?: boolean
   ): Promise<
-    { items: Array<{ value: string; label: string }>; totalCount: number } | Array<{ value: string; label: string }>
+    | { items: Array<{ value: string; label: string; table_name: string; table_schema: string }>; totalCount: number }
+    | Array<{ value: string; label: string; table_name: string; table_schema: string }>
   > {
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
@@ -689,27 +742,29 @@ export default class Databricks implements QueryService {
         const totalCount = Number((countRows as any[])?.[0]?.cnt ?? (countRows as any[])?.[0]?.CNT ?? 0);
 
         const dataOp: IOperation = await session.executeStatement(
-          `SELECT table_name FROM ${catalogPrefix}information_schema.tables WHERE ${baseWhere} ORDER BY table_name LIMIT ${limit} OFFSET ${offset}`,
+          `SELECT table_name, table_schema FROM ${catalogPrefix}information_schema.tables WHERE ${baseWhere} ORDER BY table_name LIMIT ${limit} OFFSET ${offset}`,
           { runAsync: true, queryTimeout: new Int64(10000) }
         );
         const dataRows = (await dataOp.fetchAll()) as any[];
         const items = dataRows.map((row) => {
           const name = row.table_name || row.TABLE_NAME;
+          const schema = row.table_schema || row.TABLE_SCHEMA || sourceOptions.default_schema;
           const qualified = this._qualifyTableName(name, sourceOptions.default_catalog, sourceOptions.default_schema);
-          return { value: qualified, label: qualified };
+          return { value: qualified, label: qualified, table_name: name, table_schema: schema };
         });
         return { items, totalCount };
       }
 
       const op: IOperation = await session.executeStatement(
-        `SELECT table_name FROM ${catalogPrefix}information_schema.tables WHERE ${baseWhere} ORDER BY table_name`,
+        `SELECT table_name, table_schema FROM ${catalogPrefix}information_schema.tables WHERE ${baseWhere} ORDER BY table_name`,
         { runAsync: true, queryTimeout: new Int64(10000) }
       );
       const rows = (await op.fetchAll()) as any[];
       return rows.map((row) => {
         const name = row.table_name || row.TABLE_NAME;
+        const schema = row.table_schema || row.TABLE_SCHEMA || sourceOptions.default_schema;
         const qualified = this._qualifyTableName(name, sourceOptions.default_catalog, sourceOptions.default_schema);
-        return { value: qualified, label: qualified };
+        return { value: qualified, label: qualified, table_name: name, table_schema: schema };
       });
     } catch (err) {
       if (err instanceof QueryError) throw err;
@@ -856,7 +911,8 @@ export default class Databricks implements QueryService {
     defaultCatalog?: string,
     defaultSchema?: string
   ): Promise<
-    { items: Array<{ value: string; label: string }>; totalCount: number } | Array<{ value: string; label: string }>
+    | { items: Array<{ value: string; label: string; table_name: string; table_schema: string }>; totalCount: number }
+    | Array<{ value: string; label: string; table_name: string; table_schema: string }>
   > {
     const warehouseId = this.extractWarehouseId(httpPath);
 
@@ -892,9 +948,9 @@ export default class Databricks implements QueryService {
         const name = row.table_name || row.TABLE_NAME;
         if (!schema || !name) return null;
         const fullName = catalog ? `${catalog}.${schema}.${name}` : `${schema}.${name}`;
-        return { value: fullName, label: fullName };
+        return { value: fullName, label: fullName, table_name: name, table_schema: schema };
       })
-      .filter(Boolean) as Array<{ value: string; label: string }>;
+      .filter(Boolean) as Array<{ value: string; label: string; table_name: string; table_schema: string }>;
 
     const filtered = search ? allTables.filter((t) => t.label.toLowerCase().includes(search.toLowerCase())) : allTables;
 

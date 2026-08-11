@@ -16,6 +16,7 @@ class Switch extends React.Component {
           checked={on}
           onChange={onChange}
           onClick={onClick}
+          disabled={disabledState}
           aria-disabled={disabledState}
           aria-hidden={!visibility}
           aria-labelledby={`${id}-label`}
