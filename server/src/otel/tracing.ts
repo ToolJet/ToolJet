@@ -556,7 +556,6 @@ export const startOpenTelemetry = async (): Promise<void> => {
 export const trackUserActivity = (attributes: {
   workspaceId: string;
   userId: string;
-  sessionId?: string;
   userRole?: string;
   appId?: string;
 }) => {

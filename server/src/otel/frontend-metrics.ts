@@ -99,6 +99,9 @@ export const recordFrontendMetricsBatch = (
         ...translateBeaconAttrs(event.attrs),
         [ATTR.ORGANIZATION_ID]: isPlatformContext ? organizationId : getWorkspaceLabel(organizationId),
       };
+      // The beacon's own error kind is diagnostic detail for the log record, not a
+      // metric dimension — as a label it would multiply every error series by it.
+      delete attrs[ATTR.ERROR_KIND];
 
       switch (event.type) {
         case 'js_error':

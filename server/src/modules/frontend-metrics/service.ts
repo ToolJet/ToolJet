@@ -5,7 +5,7 @@ import { recordFrontendMetricsBatch } from '@otel/frontend-metrics';
 import { getFrontendErrorLogger } from '@otel/logs';
 import { getWorkspaceNameLabel } from '@otel/org-plan-cache';
 import { getOrganizationNameCached } from '@otel/org-name-cache';
-import { ATTR, isAcceptedBeaconAttr } from '@otel/semconv';
+import { ATTR, isAcceptedBeaconAttr, translateBeaconAttrs } from '@otel/semconv';
 
 const MAX_EVENTS_PER_BATCH = 200;
 const MAX_ATTR_VALUE_LENGTH = 200;
@@ -83,13 +83,13 @@ export class FrontendMetricsService {
         severityText: 'WARN',
         body: ev.detail.value,
         attributes: {
+          // Same translation the metric path uses, so logs and metrics cannot
+          // disagree about what a beacon key is called.
+          ...translateBeaconAttrs(ev.attrs),
           [ATTR.EVENT_TYPE]: ev.type,
-          [ATTR.APP_CONTEXT]: ev.attrs['app.context'],
-          [ATTR.APP_NAME]: ev.attrs['app.name'],
-          [ATTR.ENVIRONMENT_NAME]: ev.attrs['app.environment'],
-          [ATTR.APP_VERSION]: ev.attrs['app.version'],
-          [ATTR.ERROR_TYPE]: ev.attrs['error.kind'],
-          [ATTR.WIDGET_TYPE]: ev.attrs['widget.type'],
+          // Same value the metric counter is split by, so error.type reads the
+          // same on both signals
+          [ATTR.ERROR_TYPE]: ev.type,
           [ATTR.ORGANIZATION_ID]: context.organizationId,
           [ATTR.ORGANIZATION_NAME]: organizationName,
           [ATTR.USER_ID]: context.userId,

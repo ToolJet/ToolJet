@@ -112,6 +112,12 @@ export const ATTR = {
 
   USER_ROLE: 'tooljet.user.role',
   WEB_VITAL_NAME: 'tooljet.web_vital.name',
+  /**
+   * The beacon's own error classification ('boundary', 'render', …). Kept
+   * distinct from ERROR_TYPE so one key never means two things: ERROR_TYPE is
+   * always the event class (js_error / widget_error) on both metrics and logs.
+   */
+  ERROR_KIND: 'tooljet.error.kind',
   /** Component kind that threw — 'table', 'button', … Bounded by the widget catalogue. */
   WIDGET_TYPE: 'tooljet.widget.type',
 
@@ -150,7 +156,7 @@ export const BEACON_ATTR_MAP: Readonly<Record<string, string>> = {
   'app.context': ATTR.APP_CONTEXT,
   'app.environment': ATTR.ENVIRONMENT_NAME,
   'app.version': ATTR.APP_VERSION,
-  'error.kind': ATTR.ERROR_TYPE,
+  'error.kind': ATTR.ERROR_KIND,
   'vital.name': ATTR.WEB_VITAL_NAME,
   'widget.type': ATTR.WIDGET_TYPE,
 };
@@ -164,12 +170,10 @@ export const BEACON_ATTR_MAP: Readonly<Record<string, string>> = {
 export const isAcceptedBeaconAttr = (key: string): boolean =>
   Object.prototype.hasOwnProperty.call(BEACON_ATTR_MAP, key);
 
-/** Longest label value we accept from the browser before truncating. */
-export const MAX_BEACON_LABEL_LENGTH = 120;
-
 /**
- * Translate one beacon attribute bag into canonical keys, dropping anything
- * unrecognised and clamping value length.
+ * Rename one beacon attribute bag to canonical keys, dropping anything
+ * unrecognised. Pure renaming — the ingest endpoint is the trust boundary and
+ * has already clamped value length, so this does not clamp again.
  */
 export const translateBeaconAttrs = (
   raw: Record<string, string | number | boolean> | undefined
@@ -179,8 +183,7 @@ export const translateBeaconAttrs = (
 
   for (const [key, value] of Object.entries(raw)) {
     const canonical = BEACON_ATTR_MAP[key];
-    if (!canonical) continue;
-    out[canonical] = typeof value === 'string' ? value.slice(0, MAX_BEACON_LABEL_LENGTH) : value;
+    if (canonical) out[canonical] = value;
   }
   return out;
 };
