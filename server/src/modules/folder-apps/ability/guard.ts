@@ -8,7 +8,6 @@ import { Folder } from '@entities/folder.entity';
 import { App } from '@entities/app.entity';
 import { ResourceDetails } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
-import { APP_TYPES } from '@modules/apps/constants';
 import { cloneDeep } from 'lodash';
 import { FEATURE_KEY } from '../constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -74,13 +73,11 @@ export class FeatureAbilityGuard extends AbilityGuard {
         });
         request.tj_allow_owner_folder_app_create = folderOwnedByUser && !!app && app.userId === request.user.id;
         request.tj_allow_owner_folder_app_delete = folderOwnedByUser && !!app;
-        request.tj_app_is_module = app?.type === APP_TYPES.MODULE;
         request.tj_folder_app_type_mismatch = !!(folder?.type && app?.type && folder.type !== app.type);
       } else {
         // Bulk path (app_ids): folder ownership is sufficient — the frontend already
         // gates on canModifyApp before surfacing the "Add to folder" option.
         request.tj_allow_owner_folder_app_create = folderOwnedByUser;
-        request.tj_app_is_module = folder?.type === APP_TYPES.MODULE;
       }
     }
 

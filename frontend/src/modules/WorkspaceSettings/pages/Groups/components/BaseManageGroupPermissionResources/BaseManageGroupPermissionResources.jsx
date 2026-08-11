@@ -699,7 +699,7 @@ class BaseManageGroupPermissionResources extends React.Component {
             class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
             data-cy="folder-create-helper-text"
           >
-            Create new folders in this workspace
+            Create new app folders in this workspace
           </span>
         </label>
         <label className="form-check form-check-inline">
@@ -1483,7 +1483,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   <div data-cy="resource-folders">
                                     {this.props.t(
                                       'header.organization.menus.manageGroups.permissionResources.folder',
-                                      'Folder'
+                                      'App folder'
                                     )}
                                   </div>
                                   <div className="text-muted">

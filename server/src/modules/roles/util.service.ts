@@ -196,8 +196,11 @@ export class RolesUtilService implements IRolesUtilService {
         (permissions) => permissions.type === ResourceType.DATA_SOURCE
       ).length;
       // Modules are never assignable to end-users, regardless of canView/canEdit - any module permission makes the group builder-level.
+      // Same rule for module folders — end-users can't see modules at all, so even a
+      // view-only module-folder grant makes the group builder-level (unlike plain/workflow
+      // folders, where view-only stays end-user-safe — see checkIfGroupHasBuilderGranularPermissions).
       const hasModulePermissions = allPermission.filter(
-        (permissions) => permissions.type === ResourceType.MODULE
+        (permissions) => permissions.type === ResourceType.MODULE || permissions.type === ResourceType.MODULE_FOLDER
       ).length;
       return isBuilderLevelAppsPermission || isBuilderLevelDataSourcePermissions || hasModulePermissions;
     }, manager);
