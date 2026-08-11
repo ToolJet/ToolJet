@@ -103,6 +103,37 @@ export const Table = (props) => {
     paramUpdated,
   });
 
+  // Default sort column has no fixed set of options in the static widget config - it depends on
+  // the table's current columns, so it's patched into componentMeta here at render time.
+  const defaultSortColumnOptions = useMemo(
+    () =>
+      columns.map((col) => {
+        const columnKey = col.key || col.name;
+        return { name: getSafeRenderableValue(resolveReferences(col.name)) || columnKey, value: columnKey };
+      }),
+    [columns]
+  );
+
+  const tableComponentMeta = useMemo(
+    () => ({
+      ...componentMeta,
+      properties: {
+        ...componentMeta.properties,
+        defaultSortColumn: { type: 'select', displayName: 'Default sort column', options: defaultSortColumnOptions },
+        defaultSortDirection: {
+          type: 'select',
+          displayName: 'Default sort order',
+          options: [
+            { name: 'Ascending', value: 'asc' },
+            { name: 'Descending', value: 'desc' },
+            { name: 'Auto', value: 'auto' },
+          ],
+        },
+      },
+    }),
+    [componentMeta, defaultSortColumnOptions]
+  );
+
   const {
     activeIndex: activeColumnPopoverIndex,
     isRootCloseEnabled,
@@ -146,8 +177,8 @@ export const Table = (props) => {
   // Render helpers
   const renderCustomElement = useCallback(
     (param, paramType = 'properties') =>
-      renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType),
-    [component, componentMeta, paramUpdated, dataQueries]
+      renderElement(component, tableComponentMeta, paramUpdated, dataQueries, param, paramType),
+    [component, tableComponentMeta, paramUpdated, dataQueries]
   );
 
   // Column popover
@@ -387,6 +418,11 @@ export const Table = (props) => {
     [component.component.definition.properties.enabledSort?.value]
   );
 
+  const serverSideSort = useMemo(
+    () => resolveReferences(component.component.definition.properties.serverSideSort?.value) ?? false,
+    [component.component.definition.properties.serverSideSort?.value]
+  );
+
   const useDynamicColumn = useMemo(
     () => resolveReferences(component.component.definition.properties.useDynamicColumn?.value) ?? false,
     [component.component.definition.properties.useDynamicColumn?.value]
@@ -406,6 +442,16 @@ export const Table = (props) => {
   // Ensure displaySearchBox is set
   if (!component.component.definition.properties.displaySearchBox) {
     paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
+  }
+
+  // Default sort only applies to client side sorting - clear it out when sort type is server side
+  if (serverSideSort) {
+    if (component.component.definition.properties.defaultSortColumn?.value) {
+      paramUpdated({ name: 'defaultSortColumn' }, 'value', '', 'properties');
+    }
+    if (component.component.definition.properties.defaultSortDirection?.value) {
+      paramUpdated({ name: 'defaultSortDirection' }, 'value', '', 'properties');
+    }
   }
 
   // Options arrays
@@ -433,10 +479,11 @@ export const Table = (props) => {
       ...(displayServerSideSearch ? ['serverSideSearch'] : []),
       'enabledSort',
       ...(enabledSort ? ['serverSideSort'] : []),
+      ...(enabledSort && !serverSideSort ? ['defaultSortColumn', 'defaultSortDirection'] : []),
       'showFilterButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
     ],
-    [displaySearchBox, displayServerSideSearch, enabledSort, displayServerSideFilter]
+    [displaySearchBox, displayServerSideSearch, enabledSort, serverSideSort, displayServerSideFilter]
   );
 
   const paginationOptions = useMemo(
