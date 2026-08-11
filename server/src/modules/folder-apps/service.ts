@@ -15,6 +15,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { UserFolderPermissions } from '@modules/ability/types';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
+import { FOLDER_RESOURCE_TYPE_BY_APP_TYPE } from './ability';
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
@@ -128,18 +129,15 @@ export class FolderAppsService implements IFolderAppsService {
         branchId = options.defaultBranch?.id;
       }
       const resourceType = this.getResourceTypefromAppType(type as APP_TYPES);
+      // Module/workflow folders are gated by their own MODULE_FOLDER/WORKFLOW_FOLDER bucket,
+      // not the generic front-end FOLDER bucket — same mapping the ability guard uses.
+      const folderResourceType = FOLDER_RESOURCE_TYPE_BY_APP_TYPE[type as APP_TYPES] ?? MODULES.FOLDER;
       const userPermissions = await this.abilityService.resourceActionsPermission(user, {
-        resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
+        resources: [{ resource: resourceType }, { resource: folderResourceType }],
         organizationId: user.organizationId,
       });
       const userAppPermissions = userPermissions?.[resourceType] ?? userPermissions?.[MODULES.APP];
-      const userFolderPermissions = userPermissions?.[MODULES.FOLDER];
-
-      const isModuleBuilderAccess =
-        type === APP_TYPES.MODULE && (userPermissions?.isBuilder || userPermissions?.isAdmin);
-      const effectiveAppPermissions = isModuleBuilderAccess
-        ? { ...userAppPermissions, isAllEditable: true }
-        : userAppPermissions;
+      const userFolderPermissions = userPermissions?.[folderResourceType];
 
       const folders = await this.foldersUtilService.allFolders(user, manager, type);
       if (folders.length === 0) {
@@ -149,7 +147,7 @@ export class FolderAppsService implements IFolderAppsService {
       const folderIds = folders.map((f) => f.id);
       const folderApps = await this.folderAppsUtilService.findFolderAppsForFolders(
         folderIds,
-        effectiveAppPermissions,
+        userAppPermissions,
         manager,
         type as APP_TYPES,
         searchKey,
@@ -170,7 +168,7 @@ export class FolderAppsService implements IFolderAppsService {
       const visibleFolders = this.filterFoldersByPermissions(
         folders,
         user,
-        isModuleBuilderAccess || userPermissions?.isAdmin,
+        userPermissions?.isAdmin,
         userFolderPermissions
       );
 

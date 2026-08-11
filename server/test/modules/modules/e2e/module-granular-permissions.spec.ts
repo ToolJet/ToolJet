@@ -138,6 +138,8 @@ describe('ModuleGranularPermissions (H1)', () => {
       });
       expect(buildRes.statusCode).toBe(201);
 
+      console.log('Module permissions assigned.', { editRes: editRes.body, buildRes: buildRes.body });
+
       // --- assertions: dashboard reflects grants + ownership ----------------
       const visible = await listModuleNames(org.id, viewerCookie);
       expect(new Set(visible)).toEqual(new Set(['M-Edit', 'M-Build', 'M-Owned']));
