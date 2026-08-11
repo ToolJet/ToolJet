@@ -3,19 +3,22 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const customComponentLibrariesService = {
   list,
+  deleteLibrary,
   listTokens,
   createToken,
   deleteToken,
 };
 
-// B9: libraries + revisions (newest first) + latest manifest + dev bundles.
-// Session-guarded — the builder user browses with their cookie, not a CLI token.
 function list() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/custom-component-libraries`, requestOptions).then(handleResponse);
 }
 
-// A1: personal access tokens — USER-scoped management of workspace-bound CLI tokens.
+function deleteLibrary(id) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/custom-component-libraries/${id}`, requestOptions).then(handleResponse);
+}
+
 function listTokens() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/custom-component-libraries/tokens`, requestOptions).then(handleResponse);

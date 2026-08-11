@@ -1,7 +1,5 @@
 import { CustomComponentLibrary } from '@entities/custom_component_library.entity';
 
-// A1: profile-settings token table — USER-scoped management of WORKSPACE-bound tokens
-// (Final Design milestone #1: "Profile Settings → API Tokens page"; token binding per LLD §4.7).
 export interface CliTokenView {
   id: string;
   name: string;
@@ -18,10 +16,6 @@ export interface UploadFiles {
   manifest: Record<string, any>;
 }
 
-// B9: what the builder's Custom tab needs — lean on purpose. Only the LATEST
-// revision's manifest ships inline (drives the component list); older revision
-// manifests are fetchable via the public /files/manifest.json endpoint when F5
-// actually switches versions.
 export interface LibraryListItem {
   id: string;
   name: string;
@@ -35,6 +29,7 @@ export interface ICustomComponentLibrariesService {
   createLibrary(organizationId: string, name: string): Promise<{ id: string; name: string }>;
   getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary>;
   listLibraries(organizationId: string): Promise<LibraryListItem[]>;
+  deleteLibrary(organizationId: string, id: string): Promise<void>;
   createCliToken(
     userId: string,
     organizationId: string,

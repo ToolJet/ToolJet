@@ -16,6 +16,10 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
     throw new Error('Method not implemented.');
   }
 
+  async deleteLibrary(organizationId: string, id: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   async createCliToken(
     userId: string,
     organizationId: string,
