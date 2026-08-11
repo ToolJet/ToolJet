@@ -256,6 +256,40 @@ describe('GitSyncConfigsService.getOrgGitStatusById — env config', () => {
 
     expect(result.git_type).toBe(GITConnectionType.GITHUB_HTTPS);
     expect(result.is_git_sync_configured).toBe(true);
+    expect(result.repo_url).toBe(HTTPS_CONFIG.GITHUB_URL);
+    expect(result.default_git_branch).toBe(HTTPS_CONFIG.GITHUB_BRANCH);
+  });
+
+  // Regression coverage for the actual bug report: a workspace configured via the UI first (leaving
+  // a real gitHttps row in the DB), then switched to env-var config, correctly shows the env repo on
+  // the config page (getOrgGitByOrgId) but getOrgGitStatusById — which feeds the "Connected to repo"
+  // label plus the "View in Git Repo"/"Create PR" links in the pull/push modal — used to read
+  // orgGit.gitHttps directly and report the stale, never-deleted UI-configured repo instead.
+  it('reports the env repo, not the stale UI-configured repo, once switched to env config', async () => {
+    const orgGit = {
+      id: 'org-git-id',
+      organizationId: WORKSPACE_ID,
+      useEnvConfig: true,
+      envGitProvider: null,
+      isBranchingEnabled: true,
+      // Leftover row from when this workspace was configured through the UI — superseded by env
+      // config, never deleted. If the fix regresses, this is the URL getOrgGitStatusById returns.
+      gitHttps: {
+        isEnabled: true,
+        isFinalized: true,
+        httpsUrl: 'https://github.com/old-org/ui-configured-repo.git',
+        githubBranch: 'ui-branch',
+      },
+      gitLab: null,
+    };
+    const { service, registry } = makeService(orgGit);
+    await registry.initialize();
+
+    const result = await service.getOrgGitStatusById(WORKSPACE_ID, WORKSPACE_ID);
+
+    expect(result.repo_url).toBe(HTTPS_CONFIG.GITHUB_URL);
+    expect(result.default_git_branch).toBe(HTTPS_CONFIG.GITHUB_BRANCH);
+    expect(result.repo_url).not.toBe('https://github.com/old-org/ui-configured-repo.git');
   });
 });
 
