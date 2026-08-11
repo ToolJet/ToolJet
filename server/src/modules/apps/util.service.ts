@@ -896,9 +896,22 @@ export class AppsUtilService implements IAppsUtilService {
   async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
     if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
     const rows: { app_id: string }[] = await this.appRepository.manager.query(
-      `SELECT DISTINCT app_id FROM app_versions
-       WHERE app_id = ANY($1::uuid[]) AND branch_id = $2::uuid AND is_synced = true
-         AND status = 'DRAFT' AND version_type = 'version'`,
+      `SELECT DISTINCT av.app_id FROM app_versions av
+       WHERE av.app_id = ANY($1::uuid[]) AND av.branch_id = $2::uuid AND av.is_synced = true
+         AND av.version_type = 'version'
+         AND (
+           av.status = 'DRAFT'
+           -- Special case: a 0-draft import collapses to a single synced PUBLISHED row
+           -- (see AppImportExportService.createAppVersionsForImportedApp) — no DRAFT row
+           -- ever exists to satisfy the normal check above. Only take this branch when no
+           -- DRAFT row exists at all for the app on this branch, so it never overrides the
+           -- normal DRAFT-based check once a real draft shows up.
+           OR NOT EXISTS (
+             SELECT 1 FROM app_versions av_draft
+             WHERE av_draft.app_id = av.app_id AND av_draft.branch_id = $2::uuid
+               AND av_draft.status = 'DRAFT' AND av_draft.version_type = 'version'
+           )
+         )`,
       [apps.map((a) => a.id), branchId]
     );
     const syncedIds = new Set(rows.map((r) => r.app_id));

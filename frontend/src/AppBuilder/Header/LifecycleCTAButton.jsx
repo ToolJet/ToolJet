@@ -83,9 +83,26 @@ const LifecycleCTAButton = () => {
   // (versionType=branch) — getVersionsByEnvironment has no branchId filter, so feature-branch
   // drafts with isSynced=true (set on push) would otherwise falsely mark the app as synced
   // on main before it has ever been pulled there.
-  const isAppSyncedToGit = developmentVersions?.some(
-    (v) => v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  //
+  // Special case: a 0-draft import collapses to a single synced PUBLISHED row (see
+  // AppImportExportService.createAppVersionsForImportedApp) — no DRAFT row ever exists to
+  // satisfy the check above. Only take this branch when no DRAFT row exists at all, so it
+  // never overrides the normal DRAFT-based check once a real draft shows up.
+  const hasDraftVersionRow = developmentVersions?.some(
+    (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
   );
+  const isAppSyncedToGit =
+    developmentVersions?.some(
+      (v) =>
+        v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+    ) ||
+    (!hasDraftVersionRow &&
+      developmentVersions?.some(
+        (v) =>
+          v.isSynced === true &&
+          v.status === 'PUBLISHED' &&
+          (v.versionType === 'version' || v.version_type === 'version')
+      ));
   const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
   // Only show the button on the development environment — not on staging/production.
