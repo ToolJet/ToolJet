@@ -54,6 +54,9 @@ export class WorkspacePushDto {
   @IsOptional()
   @IsString()
   scope?: 'app' | 'module' | 'datasource' | 'all';
+  @IsOptional()
+  @IsBoolean()
+  onlyUnsyncedDatasources?: boolean;
 }
 
 export class WorkspacePullDto {

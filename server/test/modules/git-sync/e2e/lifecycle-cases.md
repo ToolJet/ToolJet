@@ -676,13 +676,43 @@ imports that exact tagged commit.
 
 | # | Step | Expected |
 |---|------|----------|
-| 1 | Reset repo; SRC configures git, pushes an app to `single-branch-main`, PUBLISHes `v1`, then `POST /api/app-git/:appId/versions/:versionId/tag` | 201 (creates git tag `<co_relation_id>/v1`) |
+| 1 | Reset repo; SRC configures git, pushes an app to `single-branch-main`, PUBLISHes `v1` (the save auto-creates the git tag server-side) | git tag `<co_relation_id>/v1` created |
 | 1b | Resolve the tag's commit SHA in-test (clone + `git fetch refs/tags/*` + `rev-parse <tag>^{commit}`) | 40-hex SHA |
 | 2 | **DST** (separate org, same repo) configures git, then `POST /api/app-git/gitpull/app` `{ gitAppId: <src co_rel>, gitAppName, gitVersionName: 'v1', commitHash: <sha>, gitBranchName, workspaceBranchId: <dst default> }` | 200/201 (importTagVersion runs) |
 | 3 | DST gained a NEW app carrying a non-stub (published) version | new `apps` row for DST + ≥1 non-stub `app_versions` |
 
 `workspaceBranchId` is required for tag imports (guarded in `importTagVersion`); a default-branch target routes
 to `importTagOnDefaultBranch`. **Mirrored in `git-sync-gitlab.spec.ts`.**
+
+---
+
+## 24. Saving a version creates a git tag — backend-owned (`describe: saving a version creates a git tag`)
+
+Covers "on save/publish a version → a git tag is created on the remote", for **both branching modes**
+plus the **git-off** negative. Tagging is **owned by the app-git save endpoint**:
+`PUT /api/app-git/:id/versions/:versionId` with `status=PUBLISHED` performs the DB save AND creates the
+tag in one server-side call (`ee/app-git/services/versions.service.ts → AppGitVersionService.saveVersion`,
+which calls `VersionService.update` then `createGitTag` after the DB commit). This lives in the app-git
+module (not versions) so it can depend on both without a cycle — replacing the old
+versions→app-git `moduleRef.get(AppGitService)` hack. Permissions are identical to the versions endpoint
+(`MODULES.VERSION` + `FEATURE_KEY.APP_VERSION_UPDATE` + `JwtAuthGuard`+`ValidAppGuard`+`FeatureAbilityGuard`).
+There is **no separate tag call** — the standalone `POST …/tag` endpoint was removed. Non-git workspaces
+(incl. CE) keep using the versions endpoint `PUT /api/v2/apps/:id/versions/:versionId` (no tag). Tag name =
+`buildTagName(co_relation_id, versionName)` = `<coRelId>/<versionName>`, at the default branch HEAD. Gating:
+git **configured + enabled**, version **synced**, not a workflow, not a branch-draft row. Idempotent
+("already exists" → success). The sibling **DELETE /api/app-git/:id/versions/:versionId** likewise deletes
+the version + its git tag in one call.
+
+| # | Case (`it`) | Flow | Asserts |
+|---|---|---|---|
+| 1 | **single-branch** (`isBranchingEnabled=false`) | config (default `single-branch-main`), create app on the unprotected default, gitpush, **publish `v1` via `PUT /api/app-git/:id/versions/:versionId`** | after the save alone: `check-tag` → `exists:true`, `tagName === <coRel>/v1` (matches `<uuid>/v1`), and a clone resolves `refs/tags/<coRel>/v1` to a 40-hex SHA |
+| 2 | **multi-branch** (`isBranchingEnabled=true`) | default is edit-locked → create app on a **feature branch**, gitpush, admin-`/merge` feature→default, pull default, hydrate, **publish `v1` via app-git** | same tag assertions as #1 (auto-created by the publish) |
+| 3 | **git off** (never configured) | create app, publish `v1` locally via the **versions** endpoint | version stays `is_synced=false` — no git, no tag |
+
+Tag creation is now a **side-effect of the publish**, verified by check-tag `exists:true` + a physical clone
+resolving the ref (no explicit tag call). Since the standalone endpoint is gone, single-branch tags via the
+same save path (the gate is git-enabled, not multi-branch-only).
+**Mirrored in `git-sync-gitlab.spec.ts`** (exercises the GitLab provider's `createGitTag` / `checkTagExists`).
 
 ## 21. Inbound webhooks → auto-sync (`test/modules/git-sync-webhooks/`)
 

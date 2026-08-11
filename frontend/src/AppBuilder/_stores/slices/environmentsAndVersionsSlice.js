@@ -3,6 +3,7 @@ import {
   appVersionService,
   authenticationService,
   dataqueryService,
+  gitSyncService,
   orgEnvironmentConstantService,
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
@@ -330,8 +331,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   deleteVersionAction: async (appId, versionId, onSuccess, onFailure) => {
     try {
-      // Delete versions
-      await appVersionService.del(appId, versionId);
+      // Delete the version. In a git-enabled workspace the app-git endpoint performs the DB delete
+      // AND removes the git tag in one server-side call; non-git workspaces (incl. CE) use the
+      // versions endpoint. (This replaces the old versions→app-git moduleRef git-tag cleanup.)
+      const orgGit = useStore.getState().orgGit;
+      const isGitSyncEnabled = !!(orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled);
+      if (isGitSyncEnabled) {
+        await gitSyncService.deleteVersion(appId, versionId);
+      } else {
+        await appVersionService.del(appId, versionId);
+      }
 
       // Delete version from every environment
       const response = await appEnvironmentService.postVersionDeleteAction({
@@ -787,14 +796,22 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       isReleaseVersionEnabled: !isEditorReadOnly && (isModuleApp || hasReleasePermission),
     };
   },
-  createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {
+  createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure, replace = false) => {
     // Callers must follow up with changeEditorVersionAction to actually switch the editor
     // onto the new version — it applies the full state (selectedVersion, freeze status,
     // pages/currentPageId) from a fresh getAppVersionData fetch, so only selectedEnvironment
     // is set provisionally here (changeEditorVersionAction doesn't touch it).
+    // `replace` — git single-branch mode already has one synced draft tied to the default
+    // branch; pass true to swap it instead of hitting the backend's single-draft guard.
     try {
       const editorEnvironment = get().selectedEnvironment.id;
-      const newVersion = await appVersionService.createDraftVersion(appId, selectedVersionId, editorEnvironment);
+      const newVersion = await appVersionService.createDraftVersion(
+        appId,
+        selectedVersionId,
+        editorEnvironment,
+        '',
+        replace
+      );
       // A new draft always starts on development, regardless of which environment its
       // source version was on — sync the header's environment display to match.
       set((state) => ({

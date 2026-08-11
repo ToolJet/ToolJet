@@ -422,7 +422,8 @@ describeGitLab('GitSyncController — GitLab', () => {
 
         expect(statusResp.body.is_enabled).toBe(true);
         expect(statusResp.body.is_finalized).toBe(true);
-        expect(statusResp.body.is_branching_enabled).toBe(true);
+        // Freshly-saved config defaults to single-branch mode (#17425); multi-branch is opt-in.
+        expect(statusResp.body.is_branching_enabled).toBe(false);
         expect(statusResp.body.id).toBe(organizationGit.id);
         expect(statusResp.body.active_branch_id).toBeNull();
         expect(statusResp.body.active_branch_name).toBeNull();
@@ -493,6 +494,24 @@ describeGitLab('GitSyncController — GitLab', () => {
           .set('tj-workspace-id', orgId)
           .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
           .expect(201);
+
+        // Multi-branch is opt-in — a freshly-saved config defaults to single-branch mode (#17425).
+        // Enable branching so the feature-branch steps below work.
+        const lifecycleOrgGitId: string = (
+          await request
+            .agent(app.getHttpServer())
+            .get(`/api/git-sync/${orgId}`)
+            .set('Cookie', tokenCookie)
+            .set('tj-workspace-id', orgId)
+            .expect(200)
+        ).body.organization_git.id;
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/git-sync/${lifecycleOrgGitId}/is-branching-enabled`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({ isBranchingEnabled: true })
+          .expect(200);
 
         // GitLab config-save doesn't auto-seed the workspace default branch (HTTPS does), so seed
         // it here — same pattern the other describe blocks in this suite use.
@@ -985,7 +1004,7 @@ describeGitLab('GitSyncController — GitLab', () => {
 
         await request
           .agent(app.getHttpServer())
-          .put(`/api/v2/apps/${hydratedApp.id}/versions/${hydratedVersion.id}`)
+          .put(`/api/app-git/${hydratedApp.id}/versions/${hydratedVersion.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
           .query({ branch_id: mainBranchId })
@@ -997,14 +1016,8 @@ describeGitLab('GitSyncController — GitLab', () => {
           })
           .expect(200);
 
-        await request
-          .agent(app.getHttpServer())
-          .post(`/api/app-git/${hydratedApp.id}/versions/${hydratedVersion.id}/tag`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .send({ message: 'saving draft 1' })
-          .expect(201);
+        // Publishing the version (above) auto-creates the git tag server-side (backend-owned
+        // tagging) — no separate tag call. The standalone POST .../tag endpoint has been removed.
 
         step(21, 'env-versions after publish → 3 versions (UUID draft on main)');
         // 22. After publish, the env-versions endpoint should list three
@@ -3610,7 +3623,7 @@ describeGitLab('GitSyncController — GitLab', () => {
 
         await request
           .agent(app.getHttpServer())
-          .put(`/api/v2/apps/${metaAppId}/versions/${metaMainDraftId}`)
+          .put(`/api/app-git/${metaAppId}/versions/${metaMainDraftId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
           .query({ branch_id: mainBranchId })
@@ -3622,14 +3635,7 @@ describeGitLab('GitSyncController — GitLab', () => {
           })
           .expect(200);
 
-        await request
-          .agent(app.getHttpServer())
-          .post(`/api/app-git/${metaAppId}/versions/${metaMainDraftId}/tag`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .send({ message: 'meta-prop save' })
-          .expect(201);
+        // Publishing (above) auto-creates the git tag server-side (backend-owned tagging).
 
         // On save there must be two default-branch rows: one PUBLISHED, one
         // DRAFT — and both carry identical app_name / slug / icon.
@@ -4995,10 +5001,15 @@ describeGitLab('GitSyncController — GitLab', () => {
 
       const pull = (branchId: string) =>
         auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
-      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string, onlyUnsynced?: boolean) =>
         auth(agent().post('/api/workspace-branches/push'))
           .query({ branch_id: branchId })
-          .send({ commitMessage, branchId, ...(scope && { scope }) });
+          .send({
+            commitMessage,
+            branchId,
+            ...(scope && { scope }),
+            ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+          });
       const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
         (
           await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
@@ -5187,7 +5198,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         const dsPath = `data-sources/${dsName}/data-source.json`;
 
         step(3, "scope='datasource' push → the DS file is committed");
-        await pushWorkspace(featBranchId, 'add stale ds', 'datasource').expect(201);
+        await pushWorkspace(featBranchId, 'add stale ds', 'datasource', true).expect(201);
         expect(await readGitFile(FEAT, dsPath)).not.toBeNull();
 
         step(4, 'delete the data source on the feature branch (no linked query → API delete allowed)');
@@ -5225,7 +5236,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         ).body.id;
         const dsName = await dsvName(dsId, featBranchId);
         const dsPath = `data-sources/${dsName}/data-source.json`;
-        await pushWorkspace(featBranchId, 'add harddel ds', 'datasource').expect(201);
+        await pushWorkspace(featBranchId, 'add harddel ds', 'datasource', true).expect(201);
         expect(await readGitFile(FEAT, dsPath)).not.toBeNull();
 
         step(3, 'hard-delete the DSV row (mirrors a single-branch default-branch delete)');
@@ -5271,10 +5282,15 @@ describeGitLab('GitSyncController — GitLab', () => {
 
       const pull = (branchId: string) =>
         auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
-      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+      const pushWorkspace = (branchId: string, commitMessage: string, scope?: string, onlyUnsynced?: boolean) =>
         auth(agent().post('/api/workspace-branches/push'))
           .query({ branch_id: branchId })
-          .send({ commitMessage, branchId, ...(scope && { scope }) });
+          .send({
+            commitMessage,
+            branchId,
+            ...(scope && { scope }),
+            ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+          });
       const gitpush = (appId: string, versionId: string, gitAppName: string, branchId: string) =>
         auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
           .query({ branch_id: branchId })
@@ -5445,7 +5461,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         step(3, 'gitpush app + module, workspace-push the data source (all to the default branch)');
         await gitpush(appId, appCtx.versionId, 'sb-app', defaultBranchId).expect(201);
         await gitpush(moduleId, moduleCtx.versionId, 'sb-module', defaultBranchId).expect(201);
-        await pushWorkspace(defaultBranchId, 'push sb data source', 'datasource').expect(201);
+        await pushWorkspace(defaultBranchId, 'push sb data source', 'datasource', true).expect(201);
 
         // ── 4. assert all three resources landed in git on the default branch ────────────
         step(4, 'clone the default branch → apps/, modules/, and the DS file are present');
@@ -5720,14 +5736,11 @@ describeGitLab('GitSyncController — GitLab', () => {
           })
           .expect(201);
 
-        await authSrc(agent().put(`/api/v2/apps/${appId}/versions/${appCtx.versionId}`))
+        // publish v1 — the save auto-creates the git tag <co_relation_id>/v1 server-side.
+        await authSrc(agent().put(`/api/app-git/${appId}/versions/${appCtx.versionId}`))
           .query({ branch_id: srcBranchId })
           .send({ is_user_switched_version: false, name: 'v1', description: 'v1', status: 'PUBLISHED' })
           .expect(200);
-        await authSrc(agent().post(`/api/app-git/${appId}/versions/${appCtx.versionId}/tag`))
-          .query({ branch_id: srcBranchId })
-          .send({ message: 'v1' })
-          .expect(201);
 
         const srcCoRel: string = (await impDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [appId]))[0]
           .co_relation_id;
@@ -5761,6 +5774,264 @@ describeGitLab('GitSyncController — GitLab', () => {
         ]);
         expect(published.length).toBeGreaterThan(0);
       }, 300000);
+    });
+
+    // GitLab mirror of git-sync.spec.ts "saving a version creates a git tag" — single-branch,
+    // multi-branch, and git-off. Exercises the GitLab provider's createGitTag / checkTagExists.
+    // Against the real Gitea (@group gitsync).
+    describe('saving a version creates a git tag', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      const MERGE_URL = `${GIT_BASE_URL}/admin/merge`;
+      const TAG_BRANCH = 'single-branch-main';
+      const UUID_TAG_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/v1$/;
+
+      let tagDs: DataSource;
+      const agent = () => request.agent(app.getHttpServer());
+
+      const editingVersionOf = async (auth: (r: request.Test) => request.Test, appId: string, branchId?: string) => {
+        let req = auth(agent().get(`/api/apps/${appId}`));
+        if (branchId) req = req.query({ branch_id: branchId });
+        const d = await req.expect(200);
+        const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+        const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || d.body?.pages?.[0]?.id;
+        return { versionId: ev.id as string, pageId: pageId as string };
+      };
+
+      const resolveTagSha = async (tagName: string): Promise<string | null> => {
+        const simpleGit = (await import('simple-git')).default;
+        const fs = await import('fs');
+        const path = await import('path');
+        const os = await import('os');
+        const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-gl-tagcreate-'));
+        try {
+          const git = simpleGit({
+            baseDir: tmpDir,
+            timeout: { block: 30000 },
+            unsafe: { allowUnsafeCredentialHelper: true },
+          });
+          await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', ['--branch', TAG_BRANCH, '--single-branch']);
+          await git.raw(['fetch', 'origin', 'refs/tags/*:refs/tags/*']).catch(() => undefined);
+          return (await git.raw(['rev-parse', `refs/tags/${tagName}^{commit}`]).catch(() => '')).trim() || null;
+        } finally {
+          await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+        }
+      };
+
+      const addComponent = (
+        auth: (r: request.Test) => request.Test,
+        appId: string,
+        versionId: string,
+        pageId: string,
+        branchId: string,
+        btnId: string
+      ) =>
+        auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+          .query({ branch_id: branchId })
+          .send({
+            is_user_switched_version: false,
+            pageId,
+            diff: {
+              [btnId]: {
+                name: `button_${btnId.slice(0, 6)}`,
+                layouts: {
+                  desktop: { top: 80, left: 15, width: 4, height: 40 },
+                  mobile: { top: 80, left: 15, width: 4, height: 40 },
+                },
+                type: 'Button',
+                general: {},
+                generalStyles: {},
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: { text: { value: 'Button' } },
+                styles: {},
+              },
+            },
+          })
+          .expect(201);
+
+      beforeAll(() => {
+        tagDs = app.get<DataSource>(getDataSourceToken('default'));
+      });
+
+      const setup = async (email: string) => {
+        const { organization } = await createUser(app, { email, firstName: 'tag', lastName: 'gl' });
+        const org = organization.id;
+        const { tokenCookie } = await login(app, email);
+        await ensureAppEnvironments(app, org);
+        const auth = (r: request.Test) => r.set('Cookie', tokenCookie).set('tj-workspace-id', org);
+        await tagDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, $2, true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [org, TAG_BRANCH]
+        );
+        return { org, auth };
+      };
+
+      const configureGit = async (auth: (r: request.Test) => request.Test, org: string, multiBranch: boolean) => {
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, branchName: TAG_BRANCH, useEnvConfig: false })
+          .expect(201);
+        const orgGitId: string = (await auth(agent().get(`/api/git-sync/${org}`)).expect(200)).body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: multiBranch })
+          .expect(200);
+        const defaultBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+        await auth(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: defaultBranchId })
+          .send({ branchId: defaultBranchId })
+          .expect(201);
+        return defaultBranchId;
+      };
+
+      const assertTag = async (
+        auth: (r: request.Test) => request.Test,
+        appId: string,
+        versionId: string,
+        branchId: string,
+        coRel: string
+      ) => {
+        const preCheck = await auth(agent().get(`/api/app-git/${appId}/check-tag`))
+          .query({ versionName: 'v1', branch_id: branchId })
+          .expect(200);
+        expect(preCheck.body.exists).toBe(false);
+        expect(preCheck.body.tagName).toBe(`${coRel}/v1`);
+        expect(preCheck.body.tagName).toMatch(UUID_TAG_RE);
+        // Publishing auto-creates the git tag server-side (backend-owned tagging) — no separate call.
+        await auth(agent().put(`/api/app-git/${appId}/versions/${versionId}`))
+          .query({ branch_id: branchId })
+          .send({ is_user_switched_version: false, name: 'v1', description: 'v1', status: 'PUBLISHED' })
+          .expect(200);
+        const postCheck = await auth(agent().get(`/api/app-git/${appId}/check-tag`))
+          .query({ versionName: 'v1', branch_id: branchId })
+          .expect(200);
+        expect(postCheck.body.exists).toBe(true);
+        expect(await resolveTagSha(`${coRel}/v1`)).toMatch(/^[0-9a-f]{40}$/);
+      };
+
+      it('single-branch: saving a version creates a properly-formatted tag on git', async () => {
+        const { randomUUID } = await import('crypto');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        const { org, auth } = await setup('gl-tag-single@tooljet.io');
+        const defaultBranchId = await configureGit(auth, org, false);
+
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: defaultBranchId })
+            .send({ icon: 'home', name: 'gl-tag-single', type: 'front-end', branchId: defaultBranchId })
+            .expect(201)
+        ).body.id;
+        const ctx = await editingVersionOf(auth, appId, defaultBranchId);
+        await addComponent(auth, appId, ctx.versionId, ctx.pageId, defaultBranchId, randomUUID());
+        await auth(agent().post(`/api/app-git/gitpush/${appId}/${ctx.versionId}`))
+          .query({ branch_id: defaultBranchId })
+          .send({
+            gitAppName: 'gl-tag-single',
+            versionId: ctx.versionId,
+            lastCommitMessage: 'push',
+            gitVersionName: TAG_BRANCH,
+            sourceBranch: TAG_BRANCH,
+          })
+          .expect(201);
+        const coRel: string = (await tagDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [appId]))[0]
+          .co_relation_id;
+        await assertTag(auth, appId, ctx.versionId, defaultBranchId, coRel);
+      }, 300000);
+
+      it('multi-branch: saving a version creates a properly-formatted tag on git', async () => {
+        const { randomUUID } = await import('crypto');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        const { org, auth } = await setup('gl-tag-multi@tooljet.io');
+        const defaultBranchId = await configureGit(auth, org, true);
+
+        // multi-branch: work on a feature branch, merge to default, then publish + tag on default
+        await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: defaultBranchId })
+          .send({ name: 'tag-feat', sourceBranchId: defaultBranchId })
+          .expect(201);
+        const featBranchId: string = (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', defaultBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === 'tag-feat')?.id;
+        expect(featBranchId).toBeDefined();
+
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'gl-tag-multi', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const featCtx = await editingVersionOf(auth, appId, featBranchId);
+        await addComponent(auth, appId, featCtx.versionId, featCtx.pageId, featBranchId, randomUUID());
+        await auth(agent().post(`/api/app-git/gitpush/${appId}/${featCtx.versionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            gitAppName: 'gl-tag-multi',
+            versionId: featCtx.versionId,
+            lastCommitMessage: 'push feat',
+            gitVersionName: 'tag-feat',
+            sourceBranch: 'tag-feat',
+          })
+          .expect(201);
+
+        const mergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: GIT_REPO_NAME,
+            source: 'tag-feat',
+            target: TAG_BRANCH,
+            message: 'land tag-feat',
+          }),
+        });
+        expect(mergeResp.ok).toBe(true);
+        await auth(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: defaultBranchId })
+          .send({ branchId: defaultBranchId })
+          .expect(201);
+
+        await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: defaultBranchId })
+          .expect(200);
+        const defCtx = await editingVersionOf(auth, appId, defaultBranchId);
+        const coRel: string = (await tagDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [appId]))[0]
+          .co_relation_id;
+        await assertTag(auth, appId, defCtx.versionId, defaultBranchId, coRel);
+      }, 300000);
+
+      it('git off: saving a version does NOT create a git tag', async () => {
+        const { organization } = await createUser(app, {
+          email: 'gl-tag-gitoff@tooljet.io',
+          firstName: 'tag',
+          lastName: 'off',
+        });
+        const org = organization.id;
+        const { tokenCookie } = await login(app, 'gl-tag-gitoff@tooljet.io');
+        await ensureAppEnvironments(app, org);
+        const auth = (r: request.Test) => r.set('Cookie', tokenCookie).set('tj-workspace-id', org);
+
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .send({ icon: 'home', name: 'gl-tag-off', type: 'front-end' })
+            .expect(201)
+        ).body.id;
+        const ctx = await editingVersionOf(auth, appId);
+        await auth(agent().put(`/api/v2/apps/${appId}/versions/${ctx.versionId}`))
+          .send({ is_user_switched_version: false, name: 'v1', description: 'v1', status: 'PUBLISHED' })
+          .expect(200);
+        // No git configured → the backend save flow creates no tag; is_synced staying false is the
+        // observable proof that no tag/push side-effect occurred on save.
+        const synced = (await tagDs.query(`SELECT is_synced FROM app_versions WHERE id = $1`, [ctx.versionId]))[0]
+          ?.is_synced;
+        expect(synced).toBe(false);
+      }, 120000);
     });
 
     // ────────────────────────────────────────────────────────────────────────────
@@ -7755,7 +8026,7 @@ describeGitLab('GitSyncController — GitLab', () => {
               diff: buttonDiff(),
             });
         const publishVersion = (appId: string, versionId: string, name: string, branchId?: string) =>
-          auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}`))
+          auth(agent().put(`/api/app-git/${appId}/versions/${versionId}`))
             .query(branchId ? { branch_id: branchId } : {})
             .send({ is_user_switched_version: false, name, description: `save ${name}`, status: 'PUBLISHED' });
         const createDraftFrom = (
@@ -7803,7 +8074,9 @@ describeGitLab('GitSyncController — GitLab', () => {
           });
           expect((await resp.json().catch(() => ({}))).ok).toBe(true);
         };
-        // Save a version = check no remote tag yet → publish the draft → create the git tag (marks synced).
+        // Save a version = check no remote tag yet → publish the draft. Publishing auto-creates the
+        // git tag server-side (backend-owned tagging) and marks the version synced — no separate
+        // tag call (the standalone tag endpoint was removed).
         const saveVersion = async (appId: string, versionId: string, name: string, branchId: string) => {
           await auth(agent().get(`/api/app-git/${appId}/check-tag`))
             .query({ versionName: name, branch_id: branchId })
@@ -7811,14 +8084,6 @@ describeGitLab('GitSyncController — GitLab', () => {
           const pubResp = await publishVersion(appId, versionId, name, branchId);
           if (pubResp.status !== 200) {
             const diag = `publish ${name} (branch ${branchId}) got ${pubResp.status}: ${JSON.stringify(pubResp.body)}\nDB versions:\n${await dumpVersions()}`;
-            process.stdout.write(`\n${diag}\n`);
-            throw new Error(diag);
-          }
-          const tagResp = await auth(agent().post(`/api/app-git/${appId}/versions/${versionId}/tag`))
-            .query({ branch_id: branchId })
-            .send({ message: `save ${name}` });
-          if (tagResp.status !== 201) {
-            const diag = `tag ${name} (branch ${branchId}) got ${tagResp.status}: ${JSON.stringify(tagResp.body)}\nDB versions:\n${await dumpVersions()}`;
             process.stdout.write(`\n${diag}\n`);
             throw new Error(diag);
           }
@@ -8033,10 +8298,15 @@ describeGitLab('GitSyncController — GitLab', () => {
             })
             .expect(201);
 
-        const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+        const pushWorkspace = (branchId: string, commitMessage: string, scope?: string, onlyUnsynced?: boolean) =>
           auth(agent().post('/api/workspace-branches/push'))
             .query({ branch_id: branchId })
-            .send({ commitMessage, branchId, ...(scope && { scope }) });
+            .send({
+              commitMessage,
+              branchId,
+              ...(scope && { scope }),
+              ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+            });
 
         const pull = (branchId: string) =>
           auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
@@ -8170,7 +8440,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         expect(await isSyncedOnBranch(unsyncedDsId, featBranchId)).toBe(false);
 
         step(5, "push scope='datasource' → only ds-scope-unsynced should be (re)committed");
-        const push2 = await pushWorkspace(featBranchId, 'sync unsynced datasources', 'datasource');
+        const push2 = await pushWorkspace(featBranchId, 'sync unsynced datasources', 'datasource', true);
         if (push2.status !== 201) {
           throw new Error(`scoped push failed: ${push2.status} ${JSON.stringify(push2.body)}`);
         }
@@ -8336,10 +8606,15 @@ describeGitLab('GitSyncController — GitLab', () => {
               targetBranch: branchName,
             })
             .expect(201);
-        const pushDataSources = (branchId: string, commitMessage: string) =>
+        const pushDataSources = (branchId: string, commitMessage: string, onlyUnsynced?: boolean) =>
           auth(agent().post('/api/workspace-branches/push'))
             .query({ branch_id: branchId })
-            .send({ commitMessage, branchId, scope: 'datasource' });
+            .send({
+              commitMessage,
+              branchId,
+              scope: 'datasource',
+              ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+            });
         const pull = (branchId: string) =>
           auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
         const mergeToMain = async (sourceBranch: string) => {
@@ -8417,7 +8692,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         await gitpush(skipAppId, appVersionId, 'ps-skip-app', 'feat-skip', mainBranchId);
 
         const skipDsId = await createDataSource('ps-skip-ds', featBranchId);
-        const push = await pushDataSources(featBranchId, 'commit ps-skip-ds');
+        const push = await pushDataSources(featBranchId, 'commit ps-skip-ds', true);
         expect(push.status).toBe(201);
 
         await mergeToMain('feat-skip');
@@ -8571,10 +8846,15 @@ describeGitLab('GitSyncController — GitLab', () => {
               })
               .expect(201)
           ).body.id as string;
-        const pushDataSources = (branchId: string, commitMessage: string) =>
+        const pushDataSources = (branchId: string, commitMessage: string, onlyUnsynced?: boolean) =>
           auth(agent().post('/api/workspace-branches/push'))
             .query({ branch_id: branchId })
-            .send({ commitMessage, branchId, scope: 'datasource' });
+            .send({
+              commitMessage,
+              branchId,
+              scope: 'datasource',
+              ...(onlyUnsynced && { onlyUnsyncedDatasources: true }),
+            });
         const pull = (branchId: string) =>
           auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
         const mergeToMain = async (sourceBranch: string) => {
@@ -8664,7 +8944,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         const featBranchId = await branchIdByName('feat-cat', mainBranchId);
         expect(featBranchId).toBeDefined();
         const realDsId = await createDataSource('cat-real-ds', featBranchId);
-        expect((await pushDataSources(featBranchId, 'commit cat-real-ds')).status).toBe(201);
+        expect((await pushDataSources(featBranchId, 'commit cat-real-ds', true)).status).toBe(201);
         await mergeToMain('feat-cat');
         await pull(mainBranchId).expect(201);
 

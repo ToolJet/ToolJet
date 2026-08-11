@@ -169,6 +169,14 @@ export default class QuickBooks implements QueryService {
       );
     }
 
+    if (!companyId) {
+      throw new QueryError(
+        'Invalid configuration',
+        'Missing QuickBooks Company ID. Please add it in the datasource configuration.',
+        { code: 'MISSING_COMPANY_ID' }
+      );
+    }
+
     const operation = queryOptions?.operation?.toLowerCase?.();
     const path = queryOptions['path'];
     // companyid always comes from the datasource connection, never from the query itself —

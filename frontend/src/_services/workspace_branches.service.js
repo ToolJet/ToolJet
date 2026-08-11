@@ -58,13 +58,14 @@ function deleteBranch(branchId) {
   return fetch(`${config.apiUrl}/workspace-branches/${branchId}`, requestOptions).then(handleResponse);
 }
 
-function pushWorkspace(commitMessage, targetBranch, branchId, { deletionOnly, scope } = {}) {
+function pushWorkspace(commitMessage, targetBranch, branchId, { deletionOnly, scope, onlyUnsyncedDatasources } = {}) {
   const body = {
     commitMessage,
     ...(targetBranch && { targetBranch }),
     ...(branchId && { branchId }),
     ...(deletionOnly && { deletionOnly }),
     ...(scope && { scope }),
+    ...(onlyUnsyncedDatasources && { onlyUnsyncedDatasources }),
   };
   const requestOptions = {
     method: 'POST',
