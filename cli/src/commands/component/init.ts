@@ -4,8 +4,12 @@ import * as fs from 'fs';
 
 import { Auth } from '../../lib/component/auth';
 import { ApiClient } from '../../lib/component/api-client';
-import { scaffoldProject } from '../../lib/component/scaffolder';
+import { scaffoldTemplate, writeLibraryConfig } from '../../lib/component/scaffolder';
 import { formatError } from '../../lib/log';
+
+interface InitAnswers {
+  display_name: string;
+}
 
 export default class ComponentInit extends Command {
   static description = 'Initialize a new custom component library';
@@ -20,8 +24,12 @@ export default class ComponentInit extends Command {
     const { args } = await this.parse(ComponentInit);
     const libraryDirectoryName = args.library_directory_name;
 
-    if (Number(libraryDirectoryName)) {
-      this.log(formatError('Library directory name can not be a number'));
+    if (!/^[A-Za-z][A-Za-z0-9_-]*$/.test(libraryDirectoryName)) {
+      this.log(
+        formatError(
+          'Library directory name must start with a letter and contain only letters, numbers, hyphens, and underscores'
+        )
+      );
       process.exit(1);
     }
 
@@ -30,7 +38,7 @@ export default class ComponentInit extends Command {
       process.exit(1);
     }
 
-    const answers: any = await inquirer.prompt([
+    const answers = await inquirer.prompt<InitAnswers>([
       {
         name: 'display_name',
         message: 'Component library display name',
@@ -47,9 +55,19 @@ export default class ComponentInit extends Command {
       }
     ]);
 
-    const { display_name: displayName } = answers;
+    const displayName = answers.display_name.trim();
 
     const { workspaceId, apiToken } = Auth.resolveOrExit();
+
+    // Scaffold locally first: this makes no remote calls, so any failure here
+    // leaves nothing to clean up on the server.
+    try {
+      await scaffoldTemplate(libraryDirectoryName, displayName);
+    } catch (err) {
+      fs.rmSync(libraryDirectoryName, { recursive: true, force: true });
+      this.log(formatError((err as Error).message));
+      process.exit(1);
+    }
 
     const client = new ApiClient(apiToken);
 
@@ -57,12 +75,23 @@ export default class ComponentInit extends Command {
     try {
       library = await client.createLibrary(displayName);
     } catch (err) {
+      fs.rmSync(libraryDirectoryName, { recursive: true, force: true });
       this.log(formatError((err as Error).message));
       process.exit(1);
     }
 
-    // Scaffold project via hygen templates
-    await scaffoldProject(libraryDirectoryName, { workspaceId, libraryId: library.id, libraryName: library.name });
+    try {
+      writeLibraryConfig(libraryDirectoryName, { workspaceId, libraryId: library.id, libraryName: library.name });
+    } catch (err) {
+      this.log(
+        formatError(
+          `Library "${displayName}" (ID: ${library.id}) was registered on ${workspaceId}, but writing ./${libraryDirectoryName}/.tooljet/config.json failed: ${
+            (err as Error).message
+          }. The project directory is otherwise valid — retry writing the config manually or contact support.`
+        )
+      );
+      process.exit(1);
+    }
 
     this.log(`✓ Registered library "${displayName}" on ${workspaceId} workspace (ID: ${library.id})`);
     this.log(`✓ Created project directory: ./${libraryDirectoryName}/`);
