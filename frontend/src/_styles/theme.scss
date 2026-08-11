@@ -12216,6 +12216,10 @@ tbody {
 .profile-page-card {
   background-color: var(--surfaces-surface-01);
   border-radius: 6px;
+  // Stated explicitly rather than inherited from .card. Note the fallback: --slate5 is
+  // referenced 112 times in this file and defined nowhere, so `var(--slate5)` on its own
+  // is invalid at computed-value time and collapses the whole shorthand to border:none.
+  border: 1px solid var(--slate5, #e6e8eb);
 }
 
 .all-apps-link-cotainer {
