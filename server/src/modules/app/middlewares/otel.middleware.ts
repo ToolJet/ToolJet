@@ -5,8 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { trace, context } from '@opentelemetry/api';
 import { NextFunction } from 'express';
 import { Request, Response } from 'express';
-import { recordApiDuration, recordApiHit } from '@otel/tracing';
-import { Logger } from 'nestjs-pino';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
@@ -14,8 +12,7 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 export class OtelMiddleware implements NestMiddleware {
   constructor(
     private readonly licenseTermsService: LicenseTermsService,
-    private readonly configService: ConfigService,
-    private readonly logger: Logger
+    private readonly configService: ConfigService
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
@@ -32,28 +29,14 @@ export class OtelMiddleware implements NestMiddleware {
     const span = trace.getSpan(context.active());
     const route = req.route?.path || req.path || 'unknown_route';
     const method = req.method || 'UNKNOWN_METHOD';
-    const startTime = Date.now();
 
+    // Span naming only. The api.hits / api.duration counters this used to feed were
+    // duplicates of http.server.request.duration from auto-instrumentation, and the
+    // res.json monkey-patch existed solely to time them.
     if (span && route.startsWith('/api/') && route !== '/api/health') {
       span.updateName(`${method} ${route}`);
       span.setAttribute('http.route', route);
       span.setAttribute('http.method', method);
-
-      recordApiHit({ route, method });
-
-      const originalJson = res.json.bind(res);
-      res.json = (body: any) => {
-        const statusCode = res.statusCode;
-        const duration = Date.now() - startTime;
-
-        span.setAttribute('http.status_code', statusCode);
-        recordApiDuration(duration, { route, method, status_code: statusCode });
-        this.logger.log(
-          `Setting up Otel logging : API ${method} ${route} completed with status ${statusCode} in ${duration}ms`
-        );
-
-        return originalJson(body);
-      };
     }
 
     next();

@@ -3,6 +3,7 @@ import { LoggerProvider, BatchLogRecordProcessor } from '@opentelemetry/sdk-logs
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import { ATTR_DEPLOYMENT_ENVIRONMENT_NAME, deploymentEnvironmentName } from './semconv';
 
 // Module-local provider, deliberately NOT registered via logs.setGlobalLoggerProvider:
 // tracing.ts runs PinoInstrumentation, whose dormant log-sending bridge activates against
@@ -13,9 +14,12 @@ export const initializeOtelLogs = () => {
   if (provider || !process.env.OTEL_EXPORTER_OTLP_LOGS) return;
 
   provider = new LoggerProvider({
+    // Same three resource attributes tracing.ts sets, so logs and metrics agree
+    // on which service and deployment they came from.
     resource: resourceFromAttributes({
       [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
       [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
+      [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: deploymentEnvironmentName(),
     }),
     processors: [
       // Bounded queue (default 2048); drops on overflow / exporter failure instead of retry-spamming
@@ -24,5 +28,4 @@ export const initializeOtelLogs = () => {
   });
 };
 
-export const getFrontendErrorLogger = (): Logger | undefined =>
-  provider?.getLogger('tooljet-frontend-errors');
+export const getFrontendErrorLogger = (): Logger | undefined => provider?.getLogger('tooljet-frontend-errors');

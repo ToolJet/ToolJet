@@ -5,22 +5,10 @@ import { recordFrontendMetricsBatch } from '@otel/frontend-metrics';
 import { getFrontendErrorLogger } from '@otel/logs';
 import { getWorkspaceNameLabel } from '@otel/org-plan-cache';
 import { getOrganizationNameCached } from '@otel/org-name-cache';
+import { ATTR, isAcceptedBeaconAttr } from '@otel/semconv';
 
 const MAX_EVENTS_PER_BATCH = 200;
 const MAX_ATTR_VALUE_LENGTH = 200;
-
-// Bounded keyspace — prevents unbounded OTEL cardinality from arbitrary client keys.
-const ALLOWED_ATTR_KEYS = new Set([
-  'app.name',
-  'app.context',
-  'widget.type',
-  'vital.name',
-  'app.environment',
-  'app.version',
-  'error.kind',
-]);
-// Server injects these — strip from client payload so clients cannot pre-empt them.
-const RESERVED_ATTR_KEYS = new Set(['organization.id', 'user.id', 'organization.name', 'tooljet.version']);
 
 // Client dedup doesn't protect against N clients or attacker-chosen fingerprints;
 // cap verbose log emits per org. Metrics keep counting when capped.
@@ -95,21 +83,22 @@ export class FrontendMetricsService {
         severityText: 'WARN',
         body: ev.detail.value,
         attributes: {
-          'event.type': ev.type,
-          'app.context': ev.attrs['app.context'],
-          'app.name': ev.attrs['app.name'],
-          'app.environment': ev.attrs['app.environment'],
-          'app.version': ev.attrs['app.version'],
-          'error.kind': ev.attrs['error.kind'],
-          'widget.type': ev.attrs['widget.type'],
-          'organization.id': context.organizationId,
-          'organization.name': organizationName,
-          'user.id': context.userId,
-          'error.fingerprint': `${ev.type}:${ev.detail.value}`.slice(0, 80),
-          'exception.type': ev.detail.type,
-          'exception.message': ev.detail.value,
-          'exception.stacktrace': ev.detail.stacktrace ?? '',
-          'event.count': ev.count ?? 1,
+          [ATTR.EVENT_TYPE]: ev.type,
+          [ATTR.APP_CONTEXT]: ev.attrs['app.context'],
+          [ATTR.APP_NAME]: ev.attrs['app.name'],
+          [ATTR.ENVIRONMENT_NAME]: ev.attrs['app.environment'],
+          [ATTR.APP_VERSION]: ev.attrs['app.version'],
+          [ATTR.ERROR_TYPE]: ev.attrs['error.kind'],
+          [ATTR.WIDGET_TYPE]: ev.attrs['widget.type'],
+          [ATTR.ORGANIZATION_ID]: context.organizationId,
+          [ATTR.ORGANIZATION_NAME]: organizationName,
+          [ATTR.USER_ID]: context.userId,
+          [ATTR.ERROR_FINGERPRINT]: `${ev.type}:${ev.detail.value}`.slice(0, 80),
+          // exception.* stay log-record-only — the unbounded detail metrics can't carry
+          [ATTR.EXCEPTION_TYPE]: ev.detail.type,
+          [ATTR.EXCEPTION_MESSAGE]: ev.detail.value,
+          [ATTR.EXCEPTION_STACKTRACE]: ev.detail.stacktrace ?? '',
+          [ATTR.EVENT_COUNT]: ev.count ?? 1,
         },
       });
     }
@@ -119,8 +108,9 @@ export class FrontendMetricsService {
     if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return {};
     const result: Record<string, string | number | boolean> = {};
     for (const key of Object.keys(attrs as object)) {
-      if (RESERVED_ATTR_KEYS.has(key)) continue;
-      if (!ALLOWED_ATTR_KEYS.has(key)) continue;
+      // Bounded keyspace — an arbitrary client key is unbounded OTEL cardinality.
+      // Server-injected keys are absent from the map, so a client cannot pre-empt them.
+      if (!isAcceptedBeaconAttr(key)) continue;
       const val = (attrs as Record<string, unknown>)[key];
       if (typeof val === 'boolean' || typeof val === 'number') {
         result[key] = val;
