@@ -23,7 +23,7 @@ export const initializeFrontendMetrics = () => {
     unit: '1',
   });
 
-  // Durations and CLS are separate instruments — seconds vs unitless score need different buckets
+  // Separate instruments — seconds vs unitless score need different buckets
   webVitalDurationHistogram = frontendMeter.createHistogram(METRIC.FRONTEND_WEB_VITAL_DURATION, {
     description: 'Web vitals durations (lcp, fcp, ttfb, inp) reported by the browser',
     unit: 's',
@@ -72,7 +72,6 @@ export interface FrontendMetricsBatch {
 
 const MS_PER_SECOND = 1000;
 
-/** Beacon values are milliseconds; every duration metric is in seconds. */
 const isUsableDuration = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
 
@@ -91,16 +90,11 @@ export const recordFrontendMetricsBatch = (
       // Platform-context events are platform health, never bucketed — only app-scoped metrics gate
       const isPlatformContext = event.attrs?.['app.context'] === 'platform';
 
-      // The browser sends its own key names and keeps sending them; translation happens
-      // here so a deployed frontend and a newer server never have to agree on labels.
-      // Unrecognised keys are dropped rather than passed through — client-controlled
-      // input becomes Prometheus label cardinality.
       const attrs: Record<string, string | number | boolean> = {
         ...translateBeaconAttrs(event.attrs),
         [ATTR.ORGANIZATION_ID]: isPlatformContext ? organizationId : getWorkspaceLabel(organizationId),
       };
-      // The beacon's own error kind is diagnostic detail for the log record, not a
-      // metric dimension — as a label it would multiply every error series by it.
+      // Log-record detail. As a label it would multiply every error series.
       delete attrs[ATTR.ERROR_KIND];
 
       switch (event.type) {
@@ -114,7 +108,7 @@ export const recordFrontendMetricsBatch = (
           if (!isUsableDuration(event.value)) break;
           const { [ATTR.WEB_VITAL_NAME]: vitalName, ...withoutName } = attrs;
           if (vitalName === 'cls') {
-            // CLS is a unitless score, not a duration — no ms->s conversion, no name label
+            // Unitless score — no ms->s, no name label
             webVitalScoreHistogram.record(event.value, withoutName);
           } else {
             webVitalDurationHistogram.record(event.value / MS_PER_SECOND, attrs);

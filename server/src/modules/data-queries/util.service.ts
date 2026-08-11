@@ -377,10 +377,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       return result;
     } catch (queryError) {
-      // abortCtrl is only constructed once the data source and its options resolve.
-      // Anything that throws before that (permissions, getOptions, plugin load) used to
-      // hit a TypeError HERE, which replaced the real error and skipped setFailure —
-      // and then threw again in finally, so the query metric never emitted.
+      // Null if we threw before it was built. Unguarded, that TypeError masked the real error.
       abortCtrl?.cleanup();
       queryStatus.setFailure({
         message: queryError?.message,

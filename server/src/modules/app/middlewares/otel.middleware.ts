@@ -30,9 +30,6 @@ export class OtelMiddleware implements NestMiddleware {
     const route = req.route?.path || req.path || 'unknown_route';
     const method = req.method || 'UNKNOWN_METHOD';
 
-    // Span naming only. The api.hits / api.duration counters this used to feed were
-    // duplicates of http.server.request.duration from auto-instrumentation, and the
-    // res.json monkey-patch existed solely to time them.
     if (span && route.startsWith('/api/') && route !== '/api/health') {
       span.updateName(`${method} ${route}`);
       span.setAttribute('http.route', route);

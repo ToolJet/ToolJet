@@ -3,18 +3,7 @@ import type { Counter, Histogram, Meter } from '@opentelemetry/api';
 import { getWorkspaceLabel, getWorkspaceNameLabel } from './org-plan-cache';
 import { ATTR, BUCKETS_SECONDS, METRIC } from './semconv';
 
-/**
- * Query execution metrics.
- *
- * Emitted directly at the query execution site rather than off the audit
- * pipeline, so they flow regardless of audit-log licensing and carry the full
- * label set the app drilldown needs.
- *
- * The audit-log counter family that used to live here (audit.logs.*,
- * user.sessions.total, app.usage/errors/lifecycle.*, datasource.lifecycle.*)
- * was removed: no dashboard ever queried it, and every emit carried label
- * cardinality for nothing.
- */
+// Emitted at the query site, not off the audit pipeline — flows regardless of audit licensing.
 
 let appMeter: Meter;
 let queryExecutionsCounter: Counter;
@@ -67,9 +56,6 @@ export interface QueryMetricPayload {
   versionName?: string;
 }
 
-/**
- * Categorize an error message into a low-cardinality error.type value.
- */
 function categorizeError(error: unknown): string {
   if (!error) return 'unknown';
 
@@ -126,9 +112,7 @@ export const recordQueryMetric = (payload: QueryMetricPayload) => {
       [ATTR.QUERY_TEXT]: process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '',
     };
 
-    // error.type is set if and only if the query failed. Its absence is what
-    // marks success, which is why there is no separate `status` label and no
-    // separate failures counter to drift out of step with this one.
+    // Set only on failure — absence marks success, so no `status` label, no failures counter.
     if (failed) {
       labels[ATTR.ERROR_TYPE] = payload.errorType || categorizeError(error);
     }

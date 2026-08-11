@@ -83,18 +83,14 @@ export class FrontendMetricsService {
         severityText: 'WARN',
         body: ev.detail.value,
         attributes: {
-          // Same translation the metric path uses, so logs and metrics cannot
-          // disagree about what a beacon key is called.
           ...translateBeaconAttrs(ev.attrs),
           [ATTR.EVENT_TYPE]: ev.type,
-          // Same value the metric counter is split by, so error.type reads the
-          // same on both signals
+          // Same value the metric counter splits on
           [ATTR.ERROR_TYPE]: ev.type,
           [ATTR.ORGANIZATION_ID]: context.organizationId,
           [ATTR.ORGANIZATION_NAME]: organizationName,
           [ATTR.USER_ID]: context.userId,
           [ATTR.ERROR_FINGERPRINT]: `${ev.type}:${ev.detail.value}`.slice(0, 80),
-          // exception.* stay log-record-only — the unbounded detail metrics can't carry
           [ATTR.EXCEPTION_TYPE]: ev.detail.type,
           [ATTR.EXCEPTION_MESSAGE]: ev.detail.value,
           [ATTR.EXCEPTION_STACKTRACE]: ev.detail.stacktrace ?? '',
@@ -108,8 +104,7 @@ export class FrontendMetricsService {
     if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return {};
     const result: Record<string, string | number | boolean> = {};
     for (const key of Object.keys(attrs as object)) {
-      // Bounded keyspace — an arbitrary client key is unbounded OTEL cardinality.
-      // Server-injected keys are absent from the map, so a client cannot pre-empt them.
+      // Arbitrary client key = unbounded cardinality
       if (!isAcceptedBeaconAttr(key)) continue;
       const val = (attrs as Record<string, unknown>)[key];
       if (typeof val === 'boolean' || typeof val === 'number') {

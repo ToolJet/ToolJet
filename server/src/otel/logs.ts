@@ -14,8 +14,7 @@ export const initializeOtelLogs = () => {
   if (provider || !process.env.OTEL_EXPORTER_OTLP_LOGS) return;
 
   provider = new LoggerProvider({
-    // Same three resource attributes tracing.ts sets, so logs and metrics agree
-    // on which service and deployment they came from.
+    // Must match tracing.ts, else logs and metrics disagree on service identity
     resource: resourceFromAttributes({
       [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
       [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
