@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import moment from 'moment';
 import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import useStore from '@/AppBuilder/_stores/store';
@@ -7,6 +8,8 @@ import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
+import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
+import { normalizePin, pinKey } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -49,6 +52,13 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
       end: (item) => {
         const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
         handleDrop(item, currentDragCanvasId);
+        // F5: first drop of a library into this app sets the app-level pin to the
+        // latest revision (all future instances of this library follow the pin).
+        const { globalSettings, globalSettingsChanged } = useStore.getState();
+        const pins = globalSettings?.customComponentLibraries ?? {};
+        if (!normalizePin(pins[pinKey(libraryId)] ?? pins[libraryId])) {
+          globalSettingsChanged({ customComponentLibraries: { ...pins, [pinKey(libraryId)]: revisionId } });
+        }
       },
     }),
     [dragComponent]
@@ -76,6 +86,115 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
   );
 };
 
+// F5: the version picker on the library header (design 38-4040 frames 02/03).
+// Picking a REVISION writes the app-level pin (globalSettings.customComponentLibraries)
+// — every instance of the library in this app moves together (LLD §5.7), autosaved.
+// Picking a DEV bundle sets a session-local preview override — never persisted.
+const VersionPicker = ({ library }) => {
+  const [open, setOpen] = useState(false);
+  const pickerRef = useRef(null);
+
+  const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
+  const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
+  const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[library.id]);
+  const setDevPreview = useCustomComponentPreviewStore((state) => state.setDevPreview);
+  const clearDevPreview = useCustomComponentPreviewStore((state) => state.clearDevPreview);
+
+  const latest = library.revisions[0]?.version;
+  const pin = normalizePin(pins?.[pinKey(library.id)] ?? pins?.[library.id]);
+  const current = devPreview ?? pin ?? latest;
+  const hasUpdate = Boolean(pin && pin !== latest);
+
+  // Always write FLAT-STRING values keyed by DASHLESS uuid, migrating any legacy
+  // rows (object values / dashed keys) on every write — see libraryComponentRevision.js
+  // for why (deep camelize/decamelize transforms in the app-load paths).
+  const normalizedPins = () =>
+    Object.fromEntries(Object.entries(pins ?? {}).map(([libId, value]) => [pinKey(libId), normalizePin(value)]));
+
+  useEffect(() => {
+    if (!open) return;
+    const onClickOutside = (e) => {
+      if (!pickerRef.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [open]);
+
+  const selectRevision = (version) => {
+    clearDevPreview(library.id);
+    globalSettingsChanged({
+      customComponentLibraries: { ...normalizedPins(), [pinKey(library.id)]: version },
+    });
+    setOpen(false);
+  };
+
+  const selectDevPreview = (userId) => {
+    setDevPreview(library.id, `dev:${userId}`);
+    setOpen(false);
+  };
+
+  return (
+    <div className="custom-library-version-picker" ref={pickerRef} onClick={(e) => e.stopPropagation()}>
+      {hasUpdate && (
+        <TablerIcon
+          iconName="IconRefresh"
+          title="New revision available"
+          style={{ width: 16, height: 16, color: 'var(--text-placeholder)' }}
+          stroke={1.5}
+        />
+      )}
+      <button
+        type="button"
+        className="custom-library-version-chip"
+        onClick={() => setOpen((prev) => !prev)}
+        data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
+      >
+        {devPreview ? 'dev' : current}
+      </button>
+      {open && (
+        <div className="custom-library-version-menu">
+          {library.revisions.map(({ id, version, createdAt }) => (
+            <div key={id} className="version-menu-row" onClick={() => selectRevision(version)}>
+              <span className="version-menu-check">
+                {version === current && (
+                  <TablerIcon iconName="IconCheck" style={{ width: 16, height: 16 }} stroke={1.5} />
+                )}
+              </span>
+              <span className="version-menu-text">
+                <span className="version-menu-title">
+                  {version}
+                  {version === latest && hasUpdate && <span className="version-menu-new-badge">New</span>}
+                </span>
+                <span className="version-menu-subtitle">
+                  {moment(createdAt).format('MMM D')}
+                  {version === pin ? ' · current' : version === latest ? ' · latest' : ''}
+                </span>
+              </span>
+            </div>
+          ))}
+          {library.devBundles.length > 0 && <div className="version-menu-divider" />}
+          {library.devBundles.map(({ userId, userEmail }) => (
+            <div key={userId} className="version-menu-row" onClick={() => selectDevPreview(userId)}>
+              <span className="version-menu-check">
+                {devPreview === `dev:${userId}` && (
+                  <TablerIcon iconName="IconCheck" style={{ width: 16, height: 16 }} stroke={1.5} />
+                )}
+              </span>
+              <span className="version-menu-text">
+                <span className="version-menu-title">
+                  Dev preview
+                  <span className="version-menu-live-dot" />
+                </span>
+                <span className="version-menu-subtitle">@{userEmail ?? userId} · preview only</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const LibrarySection = ({ library }) => {
   const [open, setOpen] = useState(true);
   const latestVersion = library.revisions[0]?.version;
@@ -93,7 +212,7 @@ const LibrarySection = ({ library }) => {
       >
         <span className="custom-library-section-title">{library.name}</span>
         <div className="custom-library-section-meta">
-          {latestVersion && <span className="custom-library-version-chip">{latestVersion}</span>}
+          <VersionPicker library={library} />
           <TablerIcon
             iconName={open ? 'IconChevronUp' : 'IconChevronDown'}
             style={{ width: 16, height: 16, color: 'var(--text-placeholder)' }}

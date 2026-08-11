@@ -16,15 +16,20 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
     throw new Error('Method not implemented.');
   }
 
-  async createCliToken(userId: string, organizationId: string, name: string): Promise<CliTokenView & { token: string }> {
+  async createCliToken(
+    userId: string,
+    organizationId: string,
+    name: string,
+    expiresAt?: Date | null
+  ): Promise<CliTokenView & { token: string }> {
     throw new Error('Method not implemented.');
   }
 
-  async listCliTokens(userId: string, organizationId: string): Promise<CliTokenView[]> {
+  async listCliTokens(userId: string): Promise<CliTokenView[]> {
     throw new Error('Method not implemented.');
   }
 
-  async deleteCliToken(userId: string, organizationId: string, id: string): Promise<void> {
+  async deleteCliToken(userId: string, id: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

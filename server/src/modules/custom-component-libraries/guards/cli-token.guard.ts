@@ -28,6 +28,17 @@ export class CliTokenGuard implements CanActivate {
       return manager.findOne(CliApiToken, { where: { tokenHash }, relations: ['user'] });
     });
     if (!cliToken) throw new UnauthorizedException('Invalid CLI token');
+    if (cliToken.expiresAt && cliToken.expiresAt < new Date()) {
+      // Expired = dead credential; deliberately NOT stamped as "used" — lastUsedAt only
+      // records successful auths (product decision, 2026-08-07).
+      throw new UnauthorizedException('CLI token expired');
+    }
+
+    // "Last used" for the profile-settings token table. Per-auth write, no throttling —
+    // CLI call volume (login/init/dev-save/deploy) is trivially low.
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(CliApiToken, { id: cliToken.id }, { lastUsedAt: new Date() });
+    });
 
     const user = cliToken.user;
     user.organizationId = cliToken.organizationId; // token is workspace-scoped, not session-scoped

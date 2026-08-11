@@ -21,6 +21,12 @@ export class CliApiToken extends BaseEntity {
   @Column({ name: 'token_hash' })
   tokenHash: string; // sha256 of the raw tj_cli_ token
 
+  @Column({ type: 'timestamptz', name: 'expires_at', nullable: true })
+  expiresAt: Date | null; // NULL = never expires
+
+  @Column({ type: 'timestamptz', name: 'last_used_at', nullable: true })
+  lastUsedAt: Date | null; // stamped by CliTokenGuard on every authenticated call
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

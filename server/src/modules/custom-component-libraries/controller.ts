@@ -24,7 +24,10 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
   }
 
   @Post('tokens')
-  async createToken(@User() user, @Body() body: { name: string }): Promise<any> {
+  async createToken(
+    @User() user,
+    @Body() body: { name: string; organizationId?: string; expiresInDays?: number | null }
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

@@ -209,22 +209,26 @@ export const createEventsSlice = (set, get) => ({
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
       const newEvents = replaceQueryOptionsEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
-      const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
-      get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
-      get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
-      set((state) => {
-        const eventsInState = state.eventsSlice.getModuleEvents('canvas');
-        const newEvents = eventsInState.map((event) => {
-          const updatedEvent = response.find((r) => r.id === event.id);
-          if (updatedEvent) {
-            return updatedEvent;
-          }
-          return event;
-        });
+      try {
+        const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
+        set((state) => {
+          const eventsInState = state.eventsSlice.getModuleEvents(moduleId);
+          const newEvents = eventsInState.map((event) => {
+            const updatedEvent = response.find((r) => r.id === event.id);
+            if (updatedEvent) {
+              return updatedEvent;
+            }
+            return event;
+          });
 
-        // state.eventsSlice.setEvents(newEvents);
-        state.eventsSlice.module[moduleId].events = newEvents;
-      });
+          // state.eventsSlice.setEvents(newEvents);
+          state.eventsSlice.module[moduleId].events = newEvents;
+        });
+      } finally {
+        // In `finally` so a failed save cannot leave the loaders spinning forever
+        get().eventsSlice.updateEventsField('actionsUpdatedLoader', false, moduleId);
+        get().eventsSlice.updateEventsField('eventsUpdatedLoader', false, moduleId);
+      }
     },
     setTablePageIndex: (tableId, index, eventObj, moduleId = 'canvas') => {
       try {
@@ -283,6 +287,16 @@ export const createEventsSlice = (set, get) => ({
       const executeActionsForEventId = get().eventsSlice.executeActionsForEventId;
       const customVariables = options?.customVariables ?? {};
       const { setExposedValue } = get();
+
+      // Custom component (LibraryComponent) events carry AUTHOR-DEFINED names — they can't
+      // be enumerated in the static name checks below. Scoped opt-in: only the
+      // LibraryComponent runner sets this flag; executeActionsForEventId already limits
+      // execution to handlers stored for that exact component + eventId, so arbitrary
+      // names are safe here. Return: prevents double-execution for names that ALSO
+      // appear in the standard list.
+      if (options?.isCustomComponentEvent) {
+        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+      }
 
       if (eventName === 'onPageLoad') {
         // for onPageLoad events, we need to execute the actions after the page is loaded
