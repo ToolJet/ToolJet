@@ -30,6 +30,8 @@ export const TableExposedVariables = ({
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
   const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
   const defaultSelectedRow = useTableStore((state) => state.getTableProperties(id)?.defaultSelectedRow, shallow);
+  const defaultSortColumn = useTableStore((state) => state.getTableProperties(id)?.defaultSortColumn, shallow);
+  const defaultSortDirection = useTableStore((state) => state.getTableProperties(id)?.defaultSortDirection, shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
   const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
@@ -378,8 +380,8 @@ export const TableExposedVariables = ({
   }, [setColumnFilters, setExposedVariables, columns]);
 
   // CSA to set sort programmatically
-  useEffect(() => {
-    function setSort(columnKey, direction) {
+  const setSort = useCallback(
+    (columnKey, direction) => {
       if (columnKey === undefined && direction === undefined) {
         table.setSorting([]);
         return;
@@ -403,9 +405,19 @@ export const TableExposedVariables = ({
         desc = direction === 'desc';
       }
       table.setSorting([{ id: tanstackId, desc }]);
-    }
+    },
+    [columns, table]
+  );
+
+  useEffect(() => {
     setExposedVariables({ setSort });
-  }, [setExposedVariables, columns, table]);
+  }, [setExposedVariables, setSort]);
+
+  useEffect(() => {
+    if (!defaultSortColumn || !defaultSortDirection || defaultSortDirection === 'auto') return;
+    setSort(defaultSortColumn, defaultSortDirection);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultSortColumn, defaultSortDirection]);
 
   // CSA to download table data
   useEffect(() => {
