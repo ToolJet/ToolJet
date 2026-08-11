@@ -77,7 +77,11 @@
     "tar": "^7.5.19",
     "@databricks/sql": {
       "thrift": "0.24.0"
-    }
+    },
+    "fast-xml-parser": "^5.5.7",
+    "protobufjs": "^7.6.5",
+    "ws": "^8.21.0",
+    "nodemailer": "^9.0.5"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",

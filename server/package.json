@@ -184,6 +184,9 @@
     "engine.io-client": {
       "ws": "$ws"
     },
+    "y-websocket": {
+      "ws": "$ws"
+    },
     "mailparser": {
       "nodemailer": "^9.0.1"
     },
