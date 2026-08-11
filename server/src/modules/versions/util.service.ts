@@ -440,21 +440,26 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   /**
-   * Resolve the branch id a new non-workflow version lands on: the forwarded branch id, else the
-   * org's default branch (branch_id is NOT NULL in the DB). Workflows never carry a branch id —
-   * setting one would trip chk_app_versions_branch_metadata since they don't carry app_name/slug.
+   * Resolve the branch id a new version lands on: the forwarded branch id, else the org's
+   * default branch. branch_id is NOT NULL on app_versions for every app type now (see
+   * 1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull), so every type needs a real value —
+   * but workflows never participate in git-sync branching, so they're pinned to the org's
+   * default branch unconditionally, ignoring any branch context on the request. That context is
+   * normally absent for workflow calls (the frontend omits it — see active-branch.js's
+   * isBranchRelevantPath), but `_activeBranchId` is a session-wide client cache that can still
+   * carry a stale feature-branch id left over from an unrelated app opened earlier in the same
+   * session; the backend must not trust it for a type that structurally can't branch. This is a
+   * pure constraint-satisfaction fix, not new git-sync participation for workflows.
    */
   private async resolveVersionBranchId(
     app: App,
     user: User,
     versionCreateDto: VersionCreateDto
   ): Promise<string | undefined> {
-    if (app.type === APP_TYPES.WORKFLOW) return undefined;
-    return (
-      versionCreateDto.branchId ??
-      (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch?.id ??
-      undefined
-    );
+    const defaultBranchId = (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch
+      ?.id;
+    if (app.type === APP_TYPES.WORKFLOW) return defaultBranchId ?? undefined;
+    return versionCreateDto.branchId ?? defaultBranchId ?? undefined;
   }
 
   /**
@@ -479,10 +484,11 @@ export class VersionUtilService implements IVersionUtilService {
 
     const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
 
-    // Non-workflow metadata (slug/appName/icon/isPublic) lives on app_versions and every row
-    // carries the same values for a given branch. Carry them over from the parent version so the
-    // new row stays consistent with the rest of the app. Workflows keep these on apps.*.
-    const isWorkflow = app.type === APP_TYPES.WORKFLOW;
+    // Every type — including workflows — carries slug/appName/icon/isPublic on app_versions,
+    // and every row for a given branch carries the same values. Carry them over from the
+    // parent version so the new row stays consistent with the rest of the app; branch_id is
+    // NOT NULL for every type now, and chk_app_versions_branch_metadata requires app_name AND
+    // slug to be non-null whenever branch_id is set, so this can't be skipped for workflows.
     const appVersion = await manager.save(
       AppVersion,
       manager.create(AppVersion, {
@@ -503,12 +509,10 @@ export class VersionUtilService implements IVersionUtilService {
         isSynced: versionFrom?.isSynced ?? false,
         ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
         ...(branchId && { branchId }),
-        ...(!isWorkflow && {
-          slug: versionFrom?.slug ?? null,
-          appName: versionFrom?.appName ?? null,
-          icon: versionFrom?.icon ?? null,
-          isPublic: versionFrom?.isPublic ?? false,
-        }),
+        slug: versionFrom?.slug ?? app.id,
+        appName: versionFrom?.appName ?? app.name ?? app.id,
+        icon: versionFrom?.icon ?? null,
+        isPublic: versionFrom?.isPublic ?? false,
       })
     );
 
@@ -568,7 +572,6 @@ export class VersionUtilService implements IVersionUtilService {
         relations: ['dataSources', 'dataSources.dataQueries'],
       });
 
-      const isWorkflow = app.type === APP_TYPES.WORKFLOW;
       const appVersion = await manager.save(
         AppVersion,
         manager.create(AppVersion, {
@@ -591,16 +594,14 @@ export class VersionUtilService implements IVersionUtilService {
           // true; gating on isEnabled keeps it correct if the license has lapsed.
           isSynced: gitDetails.isEnabled === true,
           // Target the default branch, not the source branch — see method doc.
-          // chk_app_versions_branch_metadata requires appName/slug when branch_id
-          // is set, and both are inherited below.
+          // chk_app_versions_branch_metadata requires appName/slug when branch_id is set (every
+          // type now, including workflows), and both are inherited below with a non-null fallback.
           branchId: defaultBranchId,
           ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
-          ...(!isWorkflow && {
-            slug: versionFrom?.slug ?? null,
-            appName: versionFrom?.appName ?? null,
-            icon: versionFrom?.icon ?? null,
-            isPublic: versionFrom?.isPublic ?? false,
-          }),
+          slug: versionFrom?.slug ?? app.id,
+          appName: versionFrom?.appName ?? app.name ?? app.id,
+          icon: versionFrom?.icon ?? null,
+          isPublic: versionFrom?.isPublic ?? false,
         })
       );
 
