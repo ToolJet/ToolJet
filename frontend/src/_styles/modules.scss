@@ -99,6 +99,28 @@
     }
 }
 
+// Anchors the loading overlay. The wrapper had no base rule before — only the
+// `.padding-none` and `.dynamic-height` variants below.
+.module-viewer-wrapper {
+    position: relative;
+}
+
+// Loading keeps the nested <Viewer> mounted and covers it, rather than unmounting it the way
+// the Container widget unmounts its children. Unmounting would re-run useAppData's fetchApp
+// and every run-on-page-load query in the module each time loading cleared.
+//
+// Note this renders at 50% opacity: RenderWidget puts a `disabled` class on the widget for
+// `isDisabled || isLoading`, and `.disabled` is a global rule in theme.scss. Container behaves
+// the same way — don't "fix" it here in isolation.
+.module-viewer-loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .module-viewer-wrapper.padding-none {
     .real-canvas {
         padding: 0 !important;

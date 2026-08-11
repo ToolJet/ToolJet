@@ -18,6 +18,18 @@ export const moduleViewerConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disabled',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -50,8 +62,31 @@ export const moduleViewerConfig = {
       ],
     },
   },
-  exposedVariables: {},
-  actions: [],
+  exposedVariables: {
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+  },
+  // Param handle is `value` on all three. container.js uses `disable` for setVisibility and
+  // action-named handles elsewhere — copy-paste artifacts. Safe to diverge: no saved event
+  // definition references this widget's params yet.
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -59,6 +94,8 @@ export const moduleViewerConfig = {
     },
     properties: {
       visibility: { value: '{{true}}' },
+      loadingState: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       collapseWhenHidden: { value: '{{false}}' },
     },
