@@ -53,9 +53,9 @@ export const AppMenu = function AppMenu({
       ? currentSession?.workflow_group_permissions?.is_all_editable ||
         currentSession?.workflow_group_permissions?.editable_workflows_id?.includes(appId)
       : appType === 'module'
-      ? canEditModule(currentSession, appId, appUserId)
-      : currentSession?.app_group_permissions?.is_all_editable ||
-        currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
+        ? canEditModule(currentSession, appId, appUserId)
+        : currentSession?.app_group_permissions?.is_all_editable ||
+          currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
 
   const canModifyApp = canEditApp || isAppOwner;
 
