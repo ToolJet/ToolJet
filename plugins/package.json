@@ -79,6 +79,9 @@
       "thrift": "0.24.0"
     },
     "fast-xml-parser": "^5.5.7",
+    "minio": {
+      "fast-xml-parser": "^5.5.7"
+    },
     "protobufjs": "^7.6.5",
     "ws": "^8.21.0"
   },
