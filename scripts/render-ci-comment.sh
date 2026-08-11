@@ -104,6 +104,14 @@ if [ "$MODE" = "full" ]; then
     echo "$coverage"
     echo
   fi
+
+  # Patch coverage (combined + server/git-sync) — full mode only, informational.
+  # Reads PATCH_COV_INPUTS (comma-separated patch-coverage JSONs); empty if none.
+  patchcov=$(node "$SCRIPT_DIR/render-patch-coverage.mjs" || true)
+  if [ -n "$patchcov" ]; then
+    echo "$patchcov"
+    echo
+  fi
 fi
 
 if [ "$MODE" = "full" ]; then

@@ -361,6 +361,32 @@ jobs:
           name: coverage-summary
           path: server/coverage-combined/coverage-summary.json
           if-no-files-found: ignore
+      # Patch coverage (server suite): of the lines this PR changed, how many did the
+      # server tests cover. Computed here (not in ci-gate) because it must diff inside
+      # the server/ee submodule, which is checked out with the token in this job. PR
+      # events only (needs a base SHA); informational — never gates.
+      - name: Patch coverage (server)
+        if: >-
+          ${{ !cancelled() && github.event_name == 'pull_request'
+          && steps.unit.outcome == 'success' && steps.e2e.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p /tmp/patchcov
+          git fetch --no-tags --depth=1 origin "$BASE_SHA" || true
+          node scripts/compute-patch-coverage.mjs \
+            --lcov server/coverage-combined/lcov.info \
+            --suite server --base "$BASE_SHA" \
+            --out /tmp/patchcov/server.json
+      - name: Upload server patch coverage
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: patch-coverage-server
+          path: /tmp/patchcov/server.json
+          if-no-files-found: ignore
+          retention-days: 1
       # unit's continue-on-error lets e2e run regardless of unit's outcome (see
       # above) but that also hides a unit failure from the job's own conclusion —
       # fail here explicitly so needs.test-server.result stays accurate for ci-gate.
@@ -475,12 +501,41 @@ jobs:
       - name: git-sync unit tests
         id: gitsync-unit
         continue-on-error: true
-        run: npm run --prefix server test:gitsync:unit
+        # Same tests as before (--group=gitsync); coverage flags added so the ci-gate can
+        # compute git-sync patch coverage. Instrumentation doesn't change pass/fail.
+        run: >-
+          npm run --prefix server test:gitsync:unit --
+          --coverage --coverageReporters=lcovonly --coverageDirectory=coverage-gitsync-unit
       # No `if:` — runs regardless of the unit outcome (unit's continue-on-error keeps the job
       # alive), so both suites always get a full run; the fail-guard below sets the conclusion.
       - name: git-sync e2e tests
         id: gitsync-e2e
         run: npm run --prefix server test:gitsync:e2e
+      # Patch coverage (git-sync suite): diffs inside server/ee (checked out with the
+      # token in this job) and intersects with the git-sync unit coverage. PR events
+      # only; informational — never gates.
+      # v1: unit coverage only — git-sync lines exercised solely by the e2e suite read
+      # as uncovered here (wiring e2e coverage in is a documented follow-up).
+      - name: Patch coverage (git-sync)
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p /tmp/patchcov
+          git fetch --no-tags --depth=1 origin "$BASE_SHA" || true
+          node scripts/compute-patch-coverage.mjs \
+            --lcov server/coverage-gitsync-unit/lcov.info \
+            --suite gitsync --base "$BASE_SHA" \
+            --out /tmp/patchcov/gitsync.json
+      - name: Upload git-sync patch coverage
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: patch-coverage-gitsync
+          path: /tmp/patchcov/gitsync.json
+          if-no-files-found: ignore
+          retention-days: 1
       - name: Fail job if unit or e2e failed
         if: ${{ steps.gitsync-unit.outcome == 'failure' || steps.gitsync-e2e.outcome == 'failure' }}
         run: exit 1
@@ -809,6 +864,31 @@ jobs:
           name: coverage-summary
           path: /tmp/ci-results/coverage
 
+      # Patch coverage is computed in the test jobs (they have the checked-out
+      # submodules + token needed to diff server/ee); here we just collect the
+      # small per-suite JSONs and render them.
+      - name: Download server patch coverage
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: patch-coverage-server
+          path: /tmp/ci-results/patchcov
+
+      - name: Download git-sync patch coverage
+        if: >-
+          github.event_name == 'pull_request'
+          && steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: patch-coverage-gitsync
+          path: /tmp/ci-results/patchcov
+
       - name: Render PR comment
         if: >-
           github.event_name == 'pull_request'
@@ -824,6 +904,7 @@ jobs:
           UNIT_JSON: /tmp/ci-results/tj-unit-results.json
           E2E_JSON_DIR: /tmp/ci-results/tj-e2e-json
           COVERAGE_SUMMARY: /tmp/ci-results/coverage/coverage-summary.json
+          PATCH_COV_INPUTS: /tmp/ci-results/patchcov/server.json,/tmp/ci-results/patchcov/gitsync.json
           RESULT_BUILD_SERVER: ${{ needs.build-server.result }}
           RESULT_BUILD_PLUGINS: ${{ needs.build-plugins.result }}
           RESULT_BUILD_FRONTEND: ${{ needs.build-frontend.result }}
