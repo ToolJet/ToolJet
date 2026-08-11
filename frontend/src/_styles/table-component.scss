@@ -1387,10 +1387,17 @@
     background-color: var(--cc-surface1-surface) !important;
     
 
+    // Tags columns render react-select's built-in Option rather than .option-wrapper below
+    .react-select__option.react-select__option--is-focused {
+      background: var(--interactive-overlays-fill-hover) !important;
+      border-radius: 6px;
+    }
+
     .option-wrapper {
       align-items: center;
       padding: 12px 8px;
 
+      &.option-focused,
       &:hover {
         background: var(--interactive-overlays-fill-hover) !important;
         border-radius: 6px;
