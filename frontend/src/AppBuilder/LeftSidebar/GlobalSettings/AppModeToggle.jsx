@@ -16,7 +16,7 @@ const AppModeToggle = ({ darkMode, isModuleEditor = false }) => {
   const { onAppModeChange, appMode } = useAppDarkMode();
   const { t } = useTranslation();
 
-  const setResolvedGlobals = useStore((state) => state.setResolvedGlobals);
+  const updateExposedTheme = useStore((state) => state.updateExposedTheme);
 
   return (
     <div className="canvas-settings-row">
@@ -34,7 +34,7 @@ const AppModeToggle = ({ darkMode, isModuleEditor = false }) => {
                 exposedTheme = darkMode ? 'dark' : 'light';
               }
               onAppModeChange({ appMode: value });
-              setResolvedGlobals('theme', { name: exposedTheme });
+              updateExposedTheme(exposedTheme);
             }}
             defaultValue={appMode}
           >
