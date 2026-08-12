@@ -1,4 +1,4 @@
-import { resolveDynamicValues, registerResetter } from '../utils';
+import { resolveDynamicValues, registerResetter, resolveThemeForMode, baseTheme } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
@@ -160,6 +160,19 @@ export const createResolvedSlice = (set, get) => {
       );
       get().updateDependencyValues(`globals.${objKey}`, moduleId);
     },
+
+    updateExposedTheme: (mode, moduleId = 'canvas') => {
+      const state = get();
+      const hasThemeAccess = state.isLicenseValid() && state.isFeatureAccessible('customThemes');
+      const theme = (hasThemeAccess && state.globalSettings?.theme) || baseTheme;
+      const resolvedTheme = resolveThemeForMode(theme.definition, mode);
+      state.setResolvedGlobals(
+        'theme',
+        { name: mode, themeName: theme.name, isBasic: theme.isBasic, isDefault: theme.isDefault, ...resolvedTheme },
+        moduleId
+      );
+    },
+
     setResolvedConstants: (constants = {}, moduleId = 'canvas') => {
       set(
         (state) => {
