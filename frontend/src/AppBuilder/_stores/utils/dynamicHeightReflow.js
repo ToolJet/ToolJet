@@ -737,7 +737,12 @@ export const resolveContainerHeight = ({
     let flowHeight = 0;
     if (layoutEntry?.inFlow) {
       flowHeight = effectiveLayout.height ?? 0;
-      if (typeof calculateMoveableBoxHeightWithId === 'function') {
+      // Floor at the calc-bumped canonical ONLY for children that never wrote a temp height.
+      // A child that HAS a temp already reflects its real rendered height via its own reflow pass,
+      // including a legitimate shrink BELOW canonical (an Accordion collapsing to header-only).
+      // Flooring those at canonical would pin the container at the pre-collapse height and block the shrink from propagating.
+      const childHasTemp = temporaryLayouts?.[getDynamicLayoutKey(childId, childContext)]?.height != null;
+      if (!childHasTemp && typeof calculateMoveableBoxHeightWithId === 'function') {
         const childDefinition = getComponentDefinition?.(childId);
         const childStylesDefinition = childDefinition?.component?.definition?.styles;
         const bumpedHeight = calculateMoveableBoxHeightWithId(childId, currentLayout, childStylesDefinition);
@@ -796,7 +801,6 @@ export const resolveContainerHeight = ({
 //   - Hidden: keep the existing stored height so the last known size is preserved.
 export const resolveWidgetMeasuredHeight = ({
   componentId,
-  componentType,
   currentLayout,
   currentPageComponents,
   temporaryLayouts,
