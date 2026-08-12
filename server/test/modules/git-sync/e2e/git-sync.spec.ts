@@ -12,6 +12,7 @@ import {
   restoreLicensePlan,
   createApplication,
   createApplicationVersion,
+  createFolder,
 } from 'test-helper';
 import * as request from 'supertest';
 import { WorkspaceBranchService } from '@ee/workspace-branches/service';
@@ -439,6 +440,142 @@ describe('GitSyncController', () => {
         expect(appsResp.body.apps).toEqual([]);
         expect(appsResp.body.meta.total_count).toBe(0);
         expect(appsResp.body.meta.folder_count).toBe(0);
+      });
+    });
+
+    // ---------------------------------------------------------------------------
+    // Regression: folder-app relations created while Git Sync is OFF must survive
+    // enabling Git Sync. Before branch_id was made mandatory on folder_apps, adding
+    // an app/module to a folder with git off wrote branch_id = NULL; turning git on
+    // then filtered listings by the (default) branch id, so the NULL rows vanished and
+    // the folder looked empty ("relation lost"). The add now resolves the org's default
+    // branch up front, so the same default-branch listing keeps them after git is on.
+    // ---------------------------------------------------------------------------
+    describe('Folder-app relations added while Git Sync is OFF survive enabling Git Sync', () => {
+      it('keeps app and module folder memberships on the default branch after git sync is enabled', async () => {
+        // Brand-new workspace — Git Sync is OFF (no provider configured yet). createUser
+        // seeds the default 'main' branch at org creation, mirroring prod.
+        const email = 'gitsync-folder-preserve@tooljet.io';
+        const { organization: org, user } = await createUser(app, {
+          email,
+          firstName: 'folder',
+          lastName: 'preserve',
+        });
+        const { tokenCookie: cookie } = await login(app, email, 'password', org.id);
+        const agent = () => request.agent(app.getHttpServer());
+
+        const branchesBefore = await agent()
+          .get('/api/workspace-branches')
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .expect(200);
+        const mainBranchId = branchesBefore.body.branches.find((b: any) => b.isDefault)?.id;
+        expect(mainBranchId).toBeDefined();
+
+        // A front-end app and a module, each with a version on the default branch.
+        const frontApp = await createApplication(app, { user, name: 'off-git-app', type: 'front-end' }, true);
+        await createApplicationVersion(app, frontApp as any, { name: 'v1' });
+        const moduleApp = await createApplication(app, { user, name: 'off-git-module', type: 'module' }, true);
+        await createApplicationVersion(app, moduleApp as any, { name: 'v1' });
+
+        // Folders are org-scoped (not branch-scoped).
+        const frontFolder = await createFolder(app, {
+          name: 'off-git-front-folder',
+          type: 'front-end',
+          organizationId: org.id,
+        });
+        const moduleFolder = await createFolder(app, {
+          name: 'off-git-module-folder',
+          type: 'module',
+          organizationId: org.id,
+        });
+
+        // Add app -> front folder and module -> module folder while Git Sync is OFF.
+        // No branch_id param — the service resolves the org's default branch, so the rows
+        // are written with branch_id = mainBranchId (never NULL).
+        await agent()
+          .post('/api/folder-apps')
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .send({ folder_id: frontFolder.id, app_id: frontApp.id })
+          .expect(201);
+        await agent()
+          .post('/api/folder-apps')
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .send({ folder_id: moduleFolder.id, app_id: moduleApp.id })
+          .expect(201);
+
+        // While still OFF the folder already lists the app on the default branch, and the
+        // row carries branch_id = mainBranchId (the bug would have stored NULL here).
+        const frontListOff = await agent()
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .expect(200);
+        const frontFolderOff = frontListOff.body.folders.find((f: any) => f.id === frontFolder.id);
+        expect(frontFolderOff.count).toBe(1);
+        expect(frontFolderOff.folder_apps[0]).toMatchObject({
+          folder_id: frontFolder.id,
+          app_id: frontApp.id,
+          branch_id: mainBranchId,
+        });
+
+        // Enable Git Sync for this workspace.
+        await agent()
+          .post('/api/git-sync/configs')
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+
+        // Enabling git sync reuses the pre-existing default branch (same id) — the folder
+        // relations must remain visible on it, not vanish.
+        const branchesAfter = await agent()
+          .get('/api/workspace-branches')
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .expect(200);
+        expect(branchesAfter.body.branches.find((b: any) => b.isDefault)?.id).toBe(mainBranchId);
+
+        // Front-end folder still holds the app on the default branch.
+        const frontListOn = await agent()
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+        const frontFolderOn = frontListOn.body.folders.find((f: any) => f.id === frontFolder.id);
+        expect(frontFolderOn).toBeDefined();
+        expect(frontFolderOn.count).toBe(1);
+        expect(frontFolderOn.folder_apps.map((fa: any) => fa.app_id)).toEqual([frontApp.id]);
+
+        // Module folder still holds the module on the default branch.
+        const moduleListOn = await agent()
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'module' })
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+        const moduleFolderOn = moduleListOn.body.folders.find((f: any) => f.id === moduleFolder.id);
+        expect(moduleFolderOn).toBeDefined();
+        expect(moduleFolderOn.count).toBe(1);
+        expect(moduleFolderOn.folder_apps.map((fa: any) => fa.app_id)).toEqual([moduleApp.id]);
+
+        // The dashboard apps-in-folder listing also still returns the app on the default branch.
+        const appsInFolder = await agent()
+          .get('/api/apps')
+          .query({ page: 1, folder: frontFolder.id, searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', org.id)
+          .expect(200);
+        expect(appsInFolder.body.apps.map((a: any) => a.id)).toContain(frontApp.id);
+        expect(appsInFolder.body.meta.folder_count).toBe(1);
+
+        await logout(app, cookie, org.id).catch(() => undefined);
       });
     });
 

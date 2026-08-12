@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
-import { App } from '../../entities/app.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
-import { EntityManager, Equal, In, IsNull, Or } from 'typeorm';
+import { EntityManager, Equal, IsNull, Or } from 'typeorm';
 import { decamelizeKeys } from 'humps';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from './util.service';
@@ -62,19 +61,19 @@ export class FolderAppsService implements IFolderAppsService {
     });
   }
 
-  // When branchId is absent (non-workflow apps), we resolve the org's default branch so writes
-  // land on the same branch_id as the read path. isDefaultFallback flags that resolution so
-  // callers also match pre-existing branch_id=NULL rows for this app — otherwise those legacy
-  // rows are invisible to the (app_id, defaultBranchId) lookup and get orphaned.
+  // branch_id is mandatory on folder_apps for every app type (workflows included — they are
+  // pinned to the org's default branch). When the caller doesn't pass an explicit branch, resolve
+  // the org's default branch so writes land on the same branch_id as the read path.
+  // isDefaultFallback flags that resolution so callers also match any pre-existing branch_id=NULL
+  // rows for this app — otherwise those legacy rows are invisible to the (app_id, defaultBranchId)
+  // lookup and get orphaned. (The backfill migration converts historical NULL rows, so in steady
+  // state there are none; the fallback stays as a belt-and-braces guard.)
   private async resolveEffectiveBranchId(
     appId: string,
     branchId?: string,
     organizationId?: string
   ): Promise<{ branchId?: string; isDefaultFallback: boolean }> {
     if (branchId || !organizationId || !appId) return { branchId, isDefaultFallback: false };
-    const manager = getConnectionInstance().manager;
-    const app = await manager.findOne(App, { where: { id: appId }, select: ['type'] });
-    if (!app || app.type === APP_TYPES.WORKFLOW) return { branchId: undefined, isDefaultFallback: false };
     const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
     return { branchId: options.defaultBranch?.id, isDefaultFallback: !!options.defaultBranch?.id };
   }
@@ -85,11 +84,6 @@ export class FolderAppsService implements IFolderAppsService {
     organizationId?: string
   ): Promise<{ branchId?: string; isDefaultFallback: boolean }> {
     if (branchId || !organizationId || !appIds.length) return { branchId, isDefaultFallback: false };
-    const manager = getConnectionInstance().manager;
-    // Check first app's type — bulk operations come from a single-type list in practice (the
-    // frontend always sends either all FRONT_END/MODULE apps or all workflows in one call).
-    const app = await manager.findOne(App, { where: { id: In(appIds) }, select: ['type'] });
-    if (!app || app.type === APP_TYPES.WORKFLOW) return { branchId: undefined, isDefaultFallback: false };
     const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
     return { branchId: options.defaultBranch?.id, isDefaultFallback: !!options.defaultBranch?.id };
   }
@@ -111,7 +105,9 @@ export class FolderAppsService implements IFolderAppsService {
     const manager = getConnectionInstance().manager;
     const type = query.type;
     const searchKey = query.searchKey;
-    // workflows are not git-synced; their folder_apps rows always have branch_id = NULL
+    // Workflows are not branched by the user, but their folder_apps rows now live on the org's
+    // default branch (not NULL). Null out any client-supplied branchId for them so the default
+    // branch is resolved below and the listing matches those rows.
     let branchId = type === APP_TYPES.WORKFLOW ? undefined : query.branchId;
 
     // AppsSubscriber.afterLoad would otherwise fire one AppVersion query per loaded App
@@ -119,12 +115,11 @@ export class FolderAppsService implements IFolderAppsService {
     // internally by abilityService.resourceActionsPermission. The list response doesn't
     // need editingVersion hydration, so opt out for the duration of this read.
     return skipAppEditingVersionHydration.run(true, async () => {
-      // End users without branch switcher fall back to the org default branch so folders
-      // reflect only default-branch apps. Applies to both front-end apps and modules.
-      // getDetails always resolves options.defaultBranch (every org has one), so this
-      // scopes to the default branch on gitsync-off workspaces too — matching the
-      // backfilled branch_id on their version rows.
-      if (!branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE)) {
+      // Resolve the org's default branch whenever no branch is in scope — front-end apps and
+      // modules without a branch switcher, and workflows (nulled out above). getDetails always
+      // resolves options.defaultBranch (every org has one), so this scopes to the default branch
+      // on gitsync-off workspaces too, matching the backfilled branch_id on folder_apps rows.
+      if (!branchId) {
         const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         branchId = options.defaultBranch?.id;
       }

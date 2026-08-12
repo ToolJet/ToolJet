@@ -21,9 +21,9 @@ export class FolderAppsController {
   @Get()
   async index(@User() user: UserEntity, @Query() query, @UserPermissionsDecorator() userPermissions: UserPermissions) {
     user.roleGroup = userPermissions.isEndUser ? USER_ROLE.END_USER : undefined;
-    // NULL-convention consumer: read the raw branch_id query param (NOT the default-filled
-    // user.branchId). Absent for non-git orgs and workflows, whose folder_apps rows are
-    // stored with branch_id = NULL.
+    // Read the raw branch_id query param (NOT the default-filled user.branchId). Absent for
+    // non-git orgs and workflows; getFolders resolves the org's default branch in that case,
+    // since folder_apps.branch_id is now mandatory (no NULL rows).
     return await this.folderAppsService.getFolders(user, { ...query, branchId: query.branch_id });
   }
 
@@ -31,9 +31,9 @@ export class FolderAppsController {
   @Post()
   async create(
     @Body() createBody: { folder_id: string; app_id?: string; app_ids?: string[] },
-    // NULL-convention consumer: raw branch_id query param, absent (NULL) for workflows.
-    // Non-git-workspace FRONT_END/MODULE apps also arrive without branch_id; service resolves
-    // to the org's default branch so they never land on the NULL key.
+    // Raw branch_id query param, absent for workflows and non-git-workspace FRONT_END/MODULE
+    // apps. The service resolves the org's default branch when absent so every row gets a
+    // non-null branch_id.
     @Query('branch_id') branchId?: string,
     @User() user?: UserEntity
   ) {
@@ -51,7 +51,8 @@ export class FolderAppsController {
   async remove(
     @Body('app_id') appId: string,
     @Param('folderId') folderId: string,
-    // NULL-convention consumer: raw branch_id query param, absent (NULL) for workflows.
+    // Raw branch_id query param, absent for workflows / non-git orgs; the service resolves the
+    // org's default branch when absent.
     @Query('branch_id') branchId?: string,
     @User() user?: UserEntity
   ) {

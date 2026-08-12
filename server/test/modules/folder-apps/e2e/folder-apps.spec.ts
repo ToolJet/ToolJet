@@ -220,9 +220,12 @@ describe('FolderAppsController', () => {
           false
         );
 
-        // Seed apps in source folder directly (branchId=null, no git-sync context).
-        await saveEntity(FolderApp, { folderId: sourceFolder.id, appId: app1.id } as any);
-        await saveEntity(FolderApp, { folderId: sourceFolder.id, appId: app2.id } as any);
+        // Seed apps in source folder on the org's default branch. folder_apps.branch_id is
+        // mandatory now; the bulkCreate API resolves the same default branch, so the move finds
+        // and relocates these rows.
+        const defaultBranch = await resolveOrSeedDefaultBranch(adminUser.organizationId);
+        await saveEntity(FolderApp, { folderId: sourceFolder.id, appId: app1.id, branchId: defaultBranch.id } as any);
+        await saveEntity(FolderApp, { folderId: sourceFolder.id, appId: app2.id, branchId: defaultBranch.id } as any);
 
         const response = await request(nestApp.getHttpServer())
           .post('/api/folder-apps')
@@ -247,8 +250,13 @@ describe('FolderAppsController', () => {
 
         // create a new folder
         const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
-        // add app to folder
-        const folderApp = await saveEntity(FolderApp, { folderId: folder.id, appId: app.id } as any);
+        // add app to folder on the org's default branch (folder_apps.branch_id is mandatory)
+        const defaultBranch = await resolveOrSeedDefaultBranch(adminUser.organizationId);
+        const folderApp = await saveEntity(FolderApp, {
+          folderId: folder.id,
+          appId: app.id,
+          branchId: defaultBranch.id,
+        } as any);
         const response = await request(nestApp.getHttpServer())
           .put(`/api/folder-apps/${folderApp.folderId}`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
@@ -262,8 +270,13 @@ describe('FolderAppsController', () => {
         const { adminUser, app } = await setupOrganization(nestApp);
         // create a new folder
         const folder = await saveEntity(Folder, { name: 'folder', organizationId: adminUser.organizationId } as any);
-        // add app to folder
-        const folderApp = await saveEntity(FolderApp, { folderId: folder.id, appId: app.id } as any);
+        // add app to folder on the org's default branch (folder_apps.branch_id is mandatory)
+        const defaultBranch = await resolveOrSeedDefaultBranch(adminUser.organizationId);
+        const folderApp = await saveEntity(FolderApp, {
+          folderId: folder.id,
+          appId: app.id,
+          branchId: defaultBranch.id,
+        } as any);
 
         //super admin
         const superAdminUserData = await createUser(nestApp, {
@@ -363,7 +376,7 @@ describe('FolderAppsController', () => {
           organizationId: adminUser.organizationId,
         });
 
-        // Seed FolderApp rows with explicit branchIds — the API sets branchId=null.
+        // Seed FolderApp rows with explicit branchIds — the API would resolve the org's default branch.
         await saveEntity(FolderApp, {
           folderId: moduleFolder.id,
           appId: moduleA.id,
@@ -439,9 +452,9 @@ describe('FolderAppsController', () => {
           organizationId: adminUser.organizationId,
         });
 
-        // Seed the folder-app with the explicit branchId so the branch filter is meaningful.
-        // addAppToFolder goes through the API and sets branchId=null; a null entry
-        // would return 0 for *any* branch query, making the assertion vacuously true.
+        // Seed the folder-app with the explicit feature branchId so the branch filter is meaningful.
+        // The API would resolve the org's default branch here, which wouldn't match branchA and
+        // would make the "no modules on branchC" assertion vacuously true.
         await saveEntity(FolderApp, {
           folderId: moduleFolder.id,
           appId: moduleA.id,
@@ -816,7 +829,7 @@ describe('FolderAppsController', () => {
             organizationId: adminUser.organizationId,
           });
           // Seed FolderApp rows with explicit branchIds so the branch filter hits.
-          // addAppToFolder goes through the API and sets branchId=null; direct seed is required here.
+          // Direct seed is used here to control the exact branch per row.
           await saveEntity(FolderApp, {
             folderId: moduleFolder.id,
             appId: moduleOnDefault.id,
