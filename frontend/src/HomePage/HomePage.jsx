@@ -38,6 +38,7 @@ import { LicenseTooltip } from '@/LicenseTooltip';
 import ModalBase from '@/_ui/Modal';
 import FolderFilter from './FolderFilter';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { getFolderGroupPermissions, appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
@@ -62,13 +63,12 @@ import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { whenBranchResolved } from '@/_helpers/active-branch';
 import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { TriangleAlert } from 'lucide-react';
-
-import { appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
 
 const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
 class HomePageComponent extends React.Component {
@@ -959,6 +959,16 @@ class HomePageComponent extends React.Component {
     return !!(isBranchingEnabled && isDefault);
   };
 
+  // Git sync is configured but the workspace's license no longer covers it (expired/invalid, or the
+  // current plan simply doesn't include git sync). This is the exact case the dashboard
+  // WorkspaceLockedBanner surfaces ("...disable git sync to continue"): the workspace is read-locked
+  // until git sync is disabled, so creating apps/modules must be blocked too.
+  isGitSyncLicenseLocked = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return !!(state.isGitSyncConfigured && isGitSyncLicenseInvalid(this.state.featureAccess));
+  };
+
   isOnFeatureBranch = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
@@ -1818,9 +1828,9 @@ class HomePageComponent extends React.Component {
 
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
-        return !moduleEnabled;
+        return !moduleEnabled || this.isGitSyncLicenseLocked();
       } else if (this.props.appType === 'front-end') {
-        return appsLimit?.percentage >= 100;
+        return appsLimit?.percentage >= 100 || this.isGitSyncLicenseLocked();
       } else {
         return this.hasWorkflowLimitReached();
       }
@@ -2101,8 +2111,8 @@ class HomePageComponent extends React.Component {
                   this.props.appType === 'workflow'
                     ? 'homePage.deleteWorkflowAndData'
                     : this.props.appType === 'front-end'
-                      ? 'homePage.deleteAppAndData'
-                      : deleteModuleText,
+                    ? 'homePage.deleteAppAndData'
+                    : deleteModuleText,
                   { appName: appToBeDeleted?.name }
                 )
               )
@@ -2326,11 +2336,9 @@ class HomePageComponent extends React.Component {
                         const currentSession = authenticationService.currentSessionValue;
                         if (currentSession?.super_admin || currentSession?.admin) return true;
 
-                        // Builders have admin-level access to module folders
-                        if (this.props.appType === 'module' && currentSession?.role?.name === 'builder') return true;
-
-                        // Check if user has edit permissions for the folder
-                        const folderPermissions = currentSession?.user_permissions?.folder;
+                        // Check if user has edit permissions for the folder — resolved per
+                        // appType (front-end/module/workflow each have their own granular bucket).
+                        const folderPermissions = getFolderGroupPermissions(currentSession, this.props.appType);
                         if (folderPermissions?.is_all_editable) return true;
                         if (folderPermissions?.editable_folders_id?.includes(folder.id)) return true;
 
@@ -2436,8 +2444,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                          ? 'modules'
-                          : 'apps'
+                        ? 'modules'
+                        : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -2458,8 +2466,8 @@ class HomePageComponent extends React.Component {
                             this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                                ? 'modules'
-                                : 'apps'
+                              ? 'modules'
+                              : 'apps'
                           }-button`}
                         >
                           <>
@@ -2660,6 +2668,7 @@ class HomePageComponent extends React.Component {
                       viewTemplateLibraryModal={this.showTemplateLibraryModal}
                       hideTemplateLibraryModal={this.hideTemplateLibraryModal}
                       appType={this.props.appType}
+                      gitSyncLicenseLocked={this.isGitSyncLicenseLocked()}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
                         100 > workflowInstanceLevelLimit.percentage >= 90 ||
@@ -2687,7 +2696,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={!moduleEnabled || !this.canCreateApp()}
+                        disabled={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={() => {
@@ -2702,10 +2711,12 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={!moduleEnabled || !this.canCreateApp()}
+                          show={!moduleEnabled || !this.canCreateApp() || this.isGitSyncLicenseLocked()}
                           message={
                             !moduleEnabled
                               ? 'Modules are not available on your current plan.'
+                              : this.isGitSyncLicenseLocked()
+                              ? 'Git sync is not enabled as per your current plan. Disable git sync to continue.'
                               : "You don't have permission to create a module."
                           }
                           placement="bottom"
@@ -2723,8 +2734,8 @@ class HomePageComponent extends React.Component {
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
                         : this.props.appType === 'module'
-                          ? this.props.t('homePage.noModuleFound', 'No Modules found')
-                          : this.props.t('homePage.noApplicationFound', 'No Applications found')}
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
+                        : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
                 )}

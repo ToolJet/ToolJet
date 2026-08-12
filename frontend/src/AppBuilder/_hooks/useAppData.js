@@ -41,7 +41,7 @@ const useAppData = (
   moduleId,
   darkMode,
   mode = 'edit',
-  { environmentId, versionId, componentName } = {},
+  { environmentId, environmentName, versionId, componentName } = {},
   moduleMode = false,
   isModuleEditor = false,
   appSlug
@@ -377,8 +377,8 @@ const useAppData = (
           if (moduleMode) {
             // A module's own is_public is always false, so PublicAppEnvironmentGuard 401s
             // on the module's slug. ModuleViewer already resolved the parent's environment
-            // into environmentId — reuse it instead of re-resolving.
-            editorEnvironment = { id: environmentId };
+            // id/name — reuse them instead of re-resolving.
+            editorEnvironment = { id: environmentId, name: environmentName };
           } else {
             try {
               const queryParams = { slug: slug };
@@ -461,8 +461,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -932,8 +932,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,

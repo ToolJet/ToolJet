@@ -1805,8 +1805,8 @@ describeGitLab('GitSyncController — GitLab', () => {
         folderOnMain.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
 
         step(49, 'hydration failure: invalid repo URL surfaces hydration_error on GET /apps/:id');
-        // 47. Force the lazy re-hydration path (a non-stub draft whose
-        //     remote_updated_at is newer than pulled_at), repoint the workspace
+        // 47. Force the re-hydration path (a non-stub draft whose stored
+        //     git_tree_sha no longer matches git's current tree SHA), repoint the workspace
         //     git config at a non-existent repo, and confirm GET /apps/:id stays
         //     200 while surfacing is_hydration_tried=true, hydration_status='failed'
         //     and a client-safe hydration_error. DB state is restored afterwards.
@@ -1825,10 +1825,18 @@ describeGitLab('GitSyncController — GitLab', () => {
         expect(app4HydrateResp.body.is_hydration_tried).toBe(true);
         expect(app4HydrateResp.body.hydration_status).toBe('success');
 
-        // Trigger the lazy re-hydration check: remote_updated_at strictly after pulled_at.
+        // Capture the materialized tree SHA so we can restore it after the failure test.
+        const [{ git_tree_sha: app4OriginalTreeSha }] = await dataSource.query(
+          `SELECT git_tree_sha FROM app_versions
+           WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
+          [mainApp4.id, mainBranchId]
+        );
+
+        // Trigger the re-hydration check: force git_tree_sha to a value that can't match
+        // git's current tree SHA, so the open path re-clones and re-imports.
         await dataSource.query(
           `UPDATE app_versions
-             SET remote_updated_at = now() + interval '1 day'
+             SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
            WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
           [mainApp4.id, mainBranchId]
         );
@@ -1872,9 +1880,9 @@ describeGitLab('GitSyncController — GitLab', () => {
         );
         await dataSource.query(
           `UPDATE app_versions
-             SET remote_updated_at = NULL
+             SET git_tree_sha = $3
            WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
-          [mainApp4.id, mainBranchId]
+          [mainApp4.id, mainBranchId, app4OriginalTreeSha]
         );
 
         // Sanity: with state restored, the next open skips hydration cleanly.
@@ -3234,11 +3242,11 @@ describeGitLab('GitSyncController — GitLab', () => {
         const orphanSyncedAppId: string = orphanSyncedAppResp.body.id;
 
         // Move the version onto main as a previously-pulled, synced default-branch row
-        // (is_synced=true + pulled_at set — the orphan sweep only considers rows that
-        // were actually pulled from git). It was never pushed, so its co_relation_id is
+        // (is_synced=true + git_tree_sha set — the orphan sweep only considers rows that
+        // came from git). It was never pushed, so its co_relation_id is
         // absent from main's appMeta → an orphan.
         await dataSource.query(
-          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, pulled_at = now() WHERE app_id = $2`,
+          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, git_tree_sha = 'orphan-synced-tree-sha-000000000000000000000000' WHERE app_id = $2`,
           [mainBranchId, orphanSyncedAppId]
         );
         // Faked orphan (git HEAD unchanged) — clear this branch's git-sync skip
@@ -3355,7 +3363,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         const orphanSyncedModId: string = orphanSyncedModResp.body.id;
 
         await dataSource.query(
-          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, pulled_at = now() WHERE app_id = $2`,
+          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, git_tree_sha = 'orphan-synced-tree-sha-000000000000000000000000' WHERE app_id = $2`,
           [mainBranchId, orphanSyncedModId]
         );
 
@@ -7317,14 +7325,13 @@ describeGitLab('GitSyncController — GitLab', () => {
         expect(await componentNames(d2Id)).toEqual(['comp_A', 'comp_B']);
         expect(await queryNames(d2Id)).toEqual(['query_A', 'query_B']);
 
-        // Stamp non-null staleness columns on BOTH the draft being replaced (d2) and the source
-        // saved version (v1). The replaced draft must come out never-pulled (remote_updated_at /
-        // pulled_at = NULL) so a later `pull latest` treats it as outdated and refreshes it — the
-        // pull skips a draft whose pulled_at >= the remote commit, and lazy hydration only fires
-        // when remote_updated_at is set and newer than pulled_at. If the new draft inherited either
-        // column from the replaced draft or the source version, pull would wrongly skip it.
+        // Stamp a non-null git_tree_sha on BOTH the draft being replaced (d2) and the source
+        // saved version (v1). The replaced draft must come out never-pulled (git_tree_sha = NULL)
+        // so both a later `pull latest` and the next app open treat it as outdated and refresh it:
+        // change detection compares git_tree_sha against git's tree SHA, so a stale non-null value
+        // inherited from the replaced draft or the source version would make pull/open wrongly skip.
         await patchDataSource.query(
-          `UPDATE app_versions SET remote_updated_at = now(), pulled_at = now() WHERE id = ANY($1)`,
+          `UPDATE app_versions SET git_tree_sha = 'inherited-tree-sha-0000000000000000000000000000' WHERE id = ANY($1)`,
           [[d2Id, v1Id]]
         );
 
@@ -7332,14 +7339,10 @@ describeGitLab('GitSyncController — GitLab', () => {
         const d3Resp = await createDraftFrom(appId, v1Id, v1Ctx.envId, true);
         const d3Id: string = d3Resp.body.id;
         expect(d3Id).not.toBe(d2Id);
-        // The replaced draft is never-pulled: both staleness columns are NULL so `pull latest`
+        // The replaced draft is never-pulled: git_tree_sha is NULL so `pull latest` / the next open
         // will refresh it rather than skip.
-        const d3Staleness = await patchDataSource.query(
-          `SELECT remote_updated_at, pulled_at FROM app_versions WHERE id = $1`,
-          [d3Id]
-        );
-        expect(d3Staleness[0].remote_updated_at).toBeNull();
-        expect(d3Staleness[0].pulled_at).toBeNull();
+        const d3Staleness = await patchDataSource.query(`SELECT git_tree_sha FROM app_versions WHERE id = $1`, [d3Id]);
+        expect(d3Staleness[0].git_tree_sha).toBeNull();
         // d2 is gone (replaced) — exactly one non-branch DRAFT remains on the default branch, and it's d3.
         const d2After = await patchDataSource.query(`SELECT id FROM app_versions WHERE id = $1`, [d2Id]);
         expect(d2After).toHaveLength(0);
@@ -8736,7 +8739,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         const orphanBranchId = await branchIdByName('feat-skip-orphan', mainBranchId);
         const orphanAppId = await createApp('ps-orphan-app', orphanBranchId);
         await psDataSource.query(
-          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, pulled_at = now() WHERE app_id = $2`,
+          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, git_tree_sha = 'orphan-synced-tree-sha-000000000000000000000000' WHERE app_id = $2`,
           [mainBranchId, orphanAppId]
         );
 
@@ -9001,11 +9004,11 @@ describeGitLab('GitSyncController — GitLab', () => {
     // Part 9 — Push serialization must not leak DB timestamps into git.
     //
     // The pull-side tree-SHA skip only works if a resource's serialized bytes are
-    // stable across no-op pushes. DB-internal timestamps (created_at / updated_at /
-    // remote_updated_at) change on every save, so if they were written into the
-    // pushed files the app's git tree SHA would flip on an otherwise-unchanged push
-    // and the skip would never fire. This test pushes an app and asserts none of its
-    // committed version files carry those fields. Runs against the real Gitea simulator.
+    // stable across no-op pushes. DB-internal fields (created_at / updated_at change on
+    // every save; git_tree_sha is itself the change token) would flip the app's git tree
+    // SHA on an otherwise-unchanged push if written into the pushed files, so the skip
+    // would never fire. This test pushes an app and asserts none of its committed version
+    // files carry those fields. Runs against the real Gitea simulator.
     // ────────────────────────────────────────────────────────────────────────────
     describe('push serialization — no DB timestamps in pushed resource files (git tree SHAs)', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -9032,7 +9035,7 @@ describeGitLab('GitSyncController — GitLab', () => {
         );
       });
 
-      it('omits created_at / updated_at / remote_updated_at from pushed app version files', async () => {
+      it('omits created_at / updated_at / git_tree_sha from pushed app version files', async () => {
         const { randomUUID } = await import('crypto');
         const step = (n: number, label: string) =>
           process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
@@ -9201,14 +9204,7 @@ describeGitLab('GitSyncController — GitLab', () => {
 
         for (const { path: relPath, text } of versionFiles) {
           const json = JSON.parse(text);
-          const forbidden = [
-            'createdAt',
-            'updatedAt',
-            'remoteUpdatedAt',
-            'created_at',
-            'updated_at',
-            'remote_updated_at',
-          ];
+          const forbidden = ['createdAt', 'updatedAt', 'gitTreeSha', 'created_at', 'updated_at', 'git_tree_sha'];
           for (const key of forbidden) {
             expect({ file: relPath, key, present: key in json }).toEqual({
               file: relPath,
@@ -9217,7 +9213,7 @@ describeGitLab('GitSyncController — GitLab', () => {
             });
           }
           // Belt-and-suspenders: the raw bytes don't mention the snake_case columns either.
-          expect(text).not.toContain('remote_updated_at');
+          expect(text).not.toContain('git_tree_sha');
           expect(text).not.toContain('updated_at');
         }
       }, 600000);

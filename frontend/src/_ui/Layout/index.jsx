@@ -8,6 +8,7 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import './styles.scss';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
 import { shallow } from 'zustand/shallow';
 import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 import '../../_styles/left-sidebar.scss';
@@ -92,9 +93,12 @@ function Layout({
   // case the workspace must be frozen (and the user prompted to turn git off). featureAccess.gitSync
   // is false on an expired plan, so we can't gate solely on it.
   useEffect(() => {
-    const licenseInvalid =
-      featureAccess?.licenseStatus?.isExpired || featureAccess?.licenseStatus?.isLicenseValid === false;
-    if (featureAccess?.gitSync || licenseInvalid) {
+    // Initialize whenever git sync may be CONFIGURED but not fully covered by the license: expired,
+    // invalid, OR a valid plan that simply doesn't include git sync (featureAccess.gitSync === false).
+    // In every one of these the workspace must be frozen and the user prompted to turn git off — which
+    // needs the branch store (orgGitConfig / isGitSyncConfigured) loaded to detect a connected provider.
+    // isGitSyncLicenseInvalid covers all three; gitSync truthy is the normal licensed path.
+    if (featureAccess?.gitSync || isGitSyncLicenseInvalid(featureAccess)) {
       const currentSession = authenticationService?.currentSessionValue;
       const isAdminOrBuilder = currentSession?.admin || currentSession?.user_permissions?.is_builder;
       const workspaceId = currentSession?.current_organization_id;

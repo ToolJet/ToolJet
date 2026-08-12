@@ -12,6 +12,19 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
 import { AppVersionType } from '@entities/app_version.entity';
 
+// Permission resource that gates each app type's visibility. Mirrors
+// getResourceTypefromAppType in folder-apps/service.ts — keep both in sync.
+export function getPermissionResourceForAppType(type: APP_TYPES): MODULES {
+  switch (type) {
+    case APP_TYPES.WORKFLOW:
+      return MODULES.WORKFLOWS;
+    case APP_TYPES.MODULE:
+      return MODULES.MODULES;
+    default:
+      return MODULES.APP;
+  }
+}
+
 export function applyAppPermissionFilter(
   query: SelectQueryBuilder<FolderApp>,
   userAppPermissions: UserAppsPermissions
@@ -216,17 +229,16 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     const folderApps = await folderAppsQuery.getMany();
 
+    // Modules resolve via their own MODULES.MODULES bucket (folder-level module grants
+    // live there, not under MODULES.APP) — same mapping as getResourceTypefromAppType
+    // in folder-apps/service.ts. Requesting MODULES.APP unconditionally left module
+    // folder-only permissions unresolved, hiding modules the "all modules" list showed.
+    const resourceType = getPermissionResourceForAppType(type);
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.APP }],
+      resources: [{ resource: resourceType }],
       organizationId: user.organizationId,
     });
-    const userAppPermissions = userPermission?.[MODULES.APP];
-
-    // Builders have admin-level access to modules — skip app-level permission filtering.
-    const isModuleBuilderAccess = type === APP_TYPES.MODULE && (userPermission?.isBuilder || userPermission?.isAdmin);
-    const effectiveAppPermissions = isModuleBuilderAccess
-      ? { ...userAppPermissions, isAllEditable: true }
-      : userAppPermissions;
+    const userAppPermissions = userPermission?.[resourceType];
 
     const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
     if (folderAppIds.length == 0) {
@@ -237,7 +249,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     }
 
     const viewableAppsInFolder = this.getBaseAppsQuery(manager, searchKey, branchId);
-    this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
+    this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
 
     // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
     // (appVersions.branchId = :branchId). No secondary filter needed.

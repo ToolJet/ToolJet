@@ -699,7 +699,7 @@ class BaseManageGroupPermissionResources extends React.Component {
             class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
             data-cy="folder-create-helper-text"
           >
-            Create new folders in this workspace
+            Create new app folders in this workspace
           </span>
         </label>
         <label className="form-check form-check-inline">
@@ -1483,7 +1483,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   <div data-cy="resource-folders">
                                     {this.props.t(
                                       'header.organization.menus.manageGroups.permissionResources.folder',
-                                      'Folder'
+                                      'App folder'
                                     )}
                                   </div>
                                   <div className="text-muted">
@@ -1697,8 +1697,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     selectedAdminUsers.length !== 0
                                       ? '#ffffff'
                                       : this.props.darkMode
-                                        ? '#131620'
-                                        : '#C1C8CD'
+                                      ? '#131620'
+                                      : '#C1C8CD'
                                   }
                                   iconWidth="16"
                                   className="add-users-button"

@@ -57,6 +57,37 @@ class FakeRedisClient {
     if (had) this.ops.push(`release:${key}`);
     return had ? 1 : 0;
   }
+
+  // Set ops backing the pending-app-deletion tracking in GitSyncQueueService.
+  sets = new Map<string, Set<string>>();
+  async sadd(key: string, ...members: string[]): Promise<number> {
+    const s = this.sets.get(key) ?? new Set<string>();
+    let added = 0;
+    for (const m of members) {
+      if (!s.has(m)) {
+        s.add(m);
+        added++;
+      }
+    }
+    this.sets.set(key, s);
+    return added;
+  }
+  async smembers(key: string): Promise<string[]> {
+    return [...(this.sets.get(key) ?? [])];
+  }
+  async srem(key: string, ...members: string[]): Promise<number> {
+    const s = this.sets.get(key);
+    if (!s) return 0;
+    let removed = 0;
+    for (const m of members) if (s.delete(m)) removed++;
+    return removed;
+  }
+  async scard(key: string): Promise<number> {
+    return this.sets.get(key)?.size ?? 0;
+  }
+  async expire(_key: string, _ttl: number): Promise<number> {
+    return 1;
+  }
 }
 
 class FakeRedisService {
@@ -101,9 +132,11 @@ describe('GitSyncQueueService (enqueue side)', () => {
   beforeEach(() => {
     queue = new FakeQueue();
     notify = jest.fn().mockResolvedValue(undefined);
+    const redisClient = new FakeRedisClient();
     svc = new GitSyncQueueService(
       queue as unknown as ConstructorParameters<typeof GitSyncQueueService>[0],
-      { notify } as unknown as ConstructorParameters<typeof GitSyncQueueService>[1]
+      { notify } as unknown as ConstructorParameters<typeof GitSyncQueueService>[1],
+      { getClient: () => redisClient } as unknown as ConstructorParameters<typeof GitSyncQueueService>[2]
     );
   });
 
@@ -235,8 +268,8 @@ describe('GitSyncQueueService (enqueue side)', () => {
   });
 
   it('should enqueue git-push-app-deletion with a coalescing delay', async () => {
-    // The worker diffs DB vs git meta, so one delayed job sweeps every app
-    // deleted in a burst — jobId dedup + delay make the coalescing window.
+    // One delayed job sweeps every app deleted in a burst — jobId dedup + delay make the
+    // coalescing window; the exact apps to remove come from the pending-deletion set (below).
     await svc.enqueuePushAppDeletion({ organizationId: 'org1', branchId: 'branch-uuid', userId: 'u' });
 
     expect(queue.added[0]).toMatchObject({
@@ -247,6 +280,38 @@ describe('GitSyncQueueService (enqueue side)', () => {
       },
     });
     expect(queue.added[0].opts.delay).toBeGreaterThan(0);
+  });
+
+  it('should accumulate deleted co_relation_ids across a burst (coalesced, none dropped)', async () => {
+    // Every deletion in the burst records its id; the coalesced worker reads all of them so a
+    // single push removes exactly the deleted apps — never a DB-vs-git diff.
+    await svc.recordPendingAppDeletion('org1', 'branch-uuid', 'app-A');
+    await svc.recordPendingAppDeletion('org1', 'branch-uuid', 'app-B');
+    await svc.recordPendingAppDeletion('org1', 'branch-uuid', 'app-A'); // dup — set semantics
+
+    const pending = await svc.getPendingAppDeletions('org1', 'branch-uuid');
+    expect(pending.sort()).toEqual(['app-A', 'app-B']);
+  });
+
+  it('should ignore an empty co_relation_id and scope the set per org+branch', async () => {
+    await svc.recordPendingAppDeletion('org1', 'branch-uuid', undefined);
+    await svc.recordPendingAppDeletion('org1', 'other-branch', 'app-Z');
+
+    expect(await svc.getPendingAppDeletions('org1', 'branch-uuid')).toEqual([]);
+    expect(await svc.getPendingAppDeletions('org1', 'other-branch')).toEqual(['app-Z']);
+  });
+
+  it('clearPendingAppDeletions should SREM only the consumed ids and report the remainder', async () => {
+    // A deletion recorded WHILE the push ran must survive the clear so a follow-up sweep catches it.
+    await svc.recordPendingAppDeletion('org1', 'branch-uuid', 'app-A');
+    await svc.recordPendingAppDeletion('org1', 'branch-uuid', 'app-B');
+
+    const consumed = await svc.getPendingAppDeletions('org1', 'branch-uuid'); // [A, B]
+    await svc.recordPendingAppDeletion('org1', 'branch-uuid', 'app-C'); // arrives mid-push
+
+    const remaining = await svc.clearPendingAppDeletions('org1', 'branch-uuid', consumed);
+    expect(remaining).toBe(1);
+    expect(await svc.getPendingAppDeletions('org1', 'branch-uuid')).toEqual(['app-C']);
   });
 
   it('should produce the same jobId for the same inputs (dedup key)', async () => {

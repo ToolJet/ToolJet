@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { getFolderGroupPermissions } from './helper';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 
 export const AppMenu = function AppMenu({
   appId,
@@ -44,11 +45,15 @@ export const AppMenu = function AppMenu({
   // ─── App-level edit access ────────────────────────────────────────────────────
   // Backend resolves folder-derived permissions into editable_apps_id/editable_workflows_id,
   // so canEditApp already covers apps/workflows in folders owned by or explicitly shared
-  // with the user. Workflows have their own permission surface, separate from apps.
+  // with the user. Workflows and modules each have their own permission surface, separate
+  // from apps — modules delegate to canEditModule so this stays in sync with HomePage's
+  // canUserPerform and the module editor's own read-only gate.
   const canEditApp =
     appType === 'workflow'
       ? currentSession?.workflow_group_permissions?.is_all_editable ||
         currentSession?.workflow_group_permissions?.editable_workflows_id?.includes(appId)
+      : appType === 'module'
+      ? canEditModule(currentSession, appId, appUserId)
       : currentSession?.app_group_permissions?.is_all_editable ||
         currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
 
@@ -161,8 +166,8 @@ export const AppMenu = function AppMenu({
                       appType === 'workflow'
                         ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
                         : appType === 'front-end'
-                          ? t('homePage.appCard.deleteApp', 'Delete app')
-                          : 'Delete module'
+                        ? t('homePage.appCard.deleteApp', 'Delete app')
+                        : 'Delete module'
                     }
                     customClass="field__danger"
                     onClick={deleteApp}
