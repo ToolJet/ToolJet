@@ -45,9 +45,6 @@ export class DataSourceVersion {
   @Column({ name: 'branch_id', nullable: true })
   branchId: string;
 
-  @Column({ name: 'pulled_at', type: 'timestamp', nullable: true, default: null })
-  pulledAt: Date;
-
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
