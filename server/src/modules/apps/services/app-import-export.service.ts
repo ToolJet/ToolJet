@@ -3360,11 +3360,9 @@ export class AppImportExportService {
     let currentEnvironmentId: string;
 
     // Check if git sync is fully enabled for the workspace (license + provider + branch).
-    const {
-      isEnabled: isGitSyncConfigured,
-      isMultiBranchingEnabled,
-      options: gitSyncOptions,
-    } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
+    const { isEnabled: isGitSyncConfigured, options: gitSyncOptions } = await this.gitSyncConfigsUtilService.getDetails(
+      user?.organizationId
+    );
     const importDefaultBranchId = gitSyncOptions.defaultBranch?.id ?? null;
     // Workflows are branch-agnostic — they are not synced to git and must not be
     // scoped to a branch or use the BRANCH version type, otherwise the versions
@@ -3510,10 +3508,15 @@ export class AppImportExportService {
             isWorkflow || versionStatus !== AppVersionStatus.DRAFT
               ? importDefaultBranchId
               : (branchId ?? importDefaultBranchId),
-          // Single-branching: git sync is enabled but multi-branching is off. Imported apps
-          // must be marked synced so they participate in the default-branch git flow
-          // (unsynced rows are treated as new/uncommitted content and can't be pushed).
-          isSynced: isGitSyncConfigured && !isMultiBranchingEnabled ? true : undefined,
+          // Imported apps and modules must be marked synced whenever git sync is enabled —
+          // regardless of single- vs multi-branch mode, and regardless of whether this version
+          // ends up DRAFT or PUBLISHED (e.g. a 0-draft export collapses to a single PUBLISHED
+          // version) — so they participate in the default-branch git flow (unsynced rows are
+          // treated as new/uncommitted content and can't be pushed). Workflows are excluded —
+          // they don't sync via git. Sub-branch (feature-branch) imports are also excluded:
+          // that's genuinely new, unpushed content on that branch, so the push flow still
+          // needs to pick it up.
+          isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {

@@ -62,9 +62,21 @@ export const EditorHeader = ({ darkMode, appType }) => {
       workspaceActiveBranch.isDefault ||
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
-  const isAppSyncedToGit = developmentVersions?.some(
-    (v) => v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  const hasDraftVersionRow = developmentVersions?.some(
+    (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
   );
+  const isAppSyncedToGit =
+    developmentVersions?.some(
+      (v) =>
+        v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+    ) ||
+    (!hasDraftVersionRow &&
+      developmentVersions?.some(
+        (v) =>
+          v.isSynced === true &&
+          v.status === 'PUBLISHED' &&
+          (v.versionType === 'version' || v.version_type === 'version')
+      ));
   const showSyncButton =
     featureAccess?.gitSync && isGitSyncConfigured && workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 

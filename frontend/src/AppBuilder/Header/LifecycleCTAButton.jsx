@@ -10,7 +10,6 @@ import { toast } from 'react-hot-toast';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
 import { gitSyncService } from '@/_services';
-import { appendBranchName } from '@/_helpers/active-branch';
 
 /**
  * LifecycleCTAButton - Dynamic button that shows git operations based on branch type
@@ -48,6 +47,7 @@ const LifecycleCTAButton = () => {
   );
 
   const developmentVersions = useStore((state) => state.developmentVersions);
+  const fetchDevelopmentVersions = useStore((state) => state.fetchDevelopmentVersions);
   const draftVersion = developmentVersions?.find((v) => v.status === 'DRAFT');
 
   const [showPushModal, setShowPushModal] = useState(false);
@@ -83,9 +83,26 @@ const LifecycleCTAButton = () => {
   // (versionType=branch) — getVersionsByEnvironment has no branchId filter, so feature-branch
   // drafts with isSynced=true (set on push) would otherwise falsely mark the app as synced
   // on main before it has ever been pulled there.
-  const isAppSyncedToGit = developmentVersions?.some(
-    (v) => v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  //
+  // Special case: a 0-draft import collapses to a single synced PUBLISHED row (see
+  // AppImportExportService.createAppVersionsForImportedApp) — no DRAFT row ever exists to
+  // satisfy the check above. Only take this branch when no DRAFT row exists at all, so it
+  // never overrides the normal DRAFT-based check once a real draft shows up.
+  const hasDraftVersionRow = developmentVersions?.some(
+    (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
   );
+  const isAppSyncedToGit =
+    developmentVersions?.some(
+      (v) =>
+        v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+    ) ||
+    (!hasDraftVersionRow &&
+      developmentVersions?.some(
+        (v) =>
+          v.isSynced === true &&
+          v.status === 'PUBLISHED' &&
+          (v.versionType === 'version' || v.version_type === 'version')
+      ));
   const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
   // Only show the button on the development environment — not on staging/production.
@@ -189,13 +206,8 @@ const LifecycleCTAButton = () => {
           resourceType={appType === 'module' ? 'module' : 'app'}
           onSuccess={() => {
             setShowPushModal(false);
-            setTimeout(() => {
-              // switchBranch() already stamped `?branch=<target>` onto the current URL — carry it
-              // into the redirect so the reloaded editor resolves the target branch, not the
-              // default branch (which doesn't have this app's draft yet and hangs the loader).
-              const pathParts = window.location.pathname.split('/');
-              window.location.href = appendBranchName(`/${pathParts[1]}/apps/${appId}`);
-            }, 1500);
+
+            fetchDevelopmentVersions?.(appId);
           }}
         />
       )}
