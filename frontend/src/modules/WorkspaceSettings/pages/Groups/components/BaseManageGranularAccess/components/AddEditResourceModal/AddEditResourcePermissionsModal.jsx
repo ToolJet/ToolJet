@@ -53,7 +53,7 @@ function AddEditResourcePermissionsModal({
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'This will select all data sources in the workspace including any new connections created';
       case RESOURCE_TYPE.FOLDERS:
-        return 'This will select all folders in the workspace including any new folders created';
+        return 'This will select all app folders in the workspace including any new app folders created';
       case RESOURCE_TYPE.WORKFLOW_FOLDERS:
         return 'This will select all workflow folders in the workspace including any new workflow folders created';
       case RESOURCE_TYPE.MODULE_FOLDERS:
@@ -66,7 +66,7 @@ function AddEditResourcePermissionsModal({
     [RESOURCE_TYPE.WORKFLOWS]: 'workflows',
     [RESOURCE_TYPE.MODULES]: 'modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'data sources',
-    [RESOURCE_TYPE.FOLDERS]: 'folders',
+    [RESOURCE_TYPE.FOLDERS]: 'app folders',
     [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'workflow folders',
     [RESOURCE_TYPE.MODULE_FOLDERS]: 'module folders',
   };
@@ -82,7 +82,7 @@ function AddEditResourcePermissionsModal({
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'All data sources';
       case RESOURCE_TYPE.FOLDERS:
-        return 'All folders';
+        return 'All app folders';
       case RESOURCE_TYPE.WORKFLOW_FOLDERS:
         return 'All workflow folders';
       case RESOURCE_TYPE.MODULE_FOLDERS:
