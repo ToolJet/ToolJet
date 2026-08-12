@@ -43,6 +43,7 @@ export type InvitedUserType = Partial<User> & {
   invitedOrganizationId?: string;
   organizationStatus?: string;
   organizationUserSource?: string;
+  orgUserInvitationTokenExpiry?: Date | null;
 };
 
 export type RoleUpdate = {

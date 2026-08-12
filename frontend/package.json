@@ -99,6 +99,7 @@
     "posthog-js": "^1.255.1",
     "process": "^0.11.10",
     "psl": "^1.9.0",
+    "qrcode": "^1.5.4",
     "query-string": "^8.1.0",
     "rc-slider": "^10.1.1",
     "react": "^18.2.0",

@@ -233,6 +233,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
+      const isCloud = getTooljetEdition() === 'cloud';
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+      const invitationTokenExpiry = (isCloud && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0)
+        ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+        : null;
 
       return await this.userRepository.createOrUpdate(
         {
@@ -245,6 +250,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           status,
           userType,
           invitationToken: uuid.v4(),
+          ...(isCloud && { invitationTokenExpiry }),
           defaultOrganizationId: defaultOrganizationId || null,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -282,6 +288,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT)
         .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
+      ...(orgUser.invitationTokenExpiry ? { invitationTokenExpiry: orgUser.invitationTokenExpiry } : {}),
       ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
         ? { accountSetupToken: orgUser.user.invitationToken }
         : {}),
@@ -316,6 +323,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           organizationId: organizationUser.organizationId,
           organizationName: organization.name,
           sender: inviterName,
+          invitationTokenExpiry: organizationUser.invitationTokenExpiry,
         },
       });
     } else {
@@ -328,6 +336,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           invitationtoken: organizationUser.invitationToken,
           organizationName: organization.name,
           organizationId: organizationUser.organizationId,
+          invitationTokenExpiry: organizationUser.invitationTokenExpiry,
         },
       });
     }
@@ -338,6 +347,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       await manager.update(OrganizationUser, organizationUser.id, {
         status: WORKSPACE_USER_STATUS.ACTIVE,
         invitationToken: null,
+        invitationTokenExpiry: null,
       });
     }, manager);
   }
@@ -602,6 +612,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     user.invitedOrganizationId = organizationUser.organizationId;
     user.organizationStatus = organizationUser.status;
     user.organizationUserSource = organizationUser.source;
+    user.orgUserInvitationTokenExpiry = organizationUser.invitationTokenExpiry;
     return user;
   }
 
