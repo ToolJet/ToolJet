@@ -129,7 +129,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else {
+    } else if (componentMeta?.properties[key]?.section !== 'deprecatedStyles') {
       properties.push(key);
     }
   }

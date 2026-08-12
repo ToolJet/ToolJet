@@ -794,6 +794,10 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
     return null;
   }
 
+  const deprecatedStyleProperties = Object.entries(componentMeta.properties ?? {})
+    .filter(([, property]) => property.section === 'deprecatedStyles')
+    .map(([key]) => key);
+
   const isRevamped = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
   // Universal styles (e.g. the "Advanced" group holding `cssClass`) are spread first in
   // combineProperties, so without this they'd render at the top. Pin "Advanced" last.
@@ -803,7 +807,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
         .sort((a, b) => (a === 'Advanced' ? 1 : b === 'Advanced' ? -1 : 0))
     : Object.keys(componentMeta.styles).filter((key) => key !== 'cssClass' || hasCustomStyling);
 
-  return orderedStyleKeys.map((style) => {
+  const styleAccordions = orderedStyleKeys.map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 
@@ -857,6 +861,37 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
       );
     }
   });
+
+  if (deprecatedStyleProperties.length === 0) {
+    return styleAccordions;
+  }
+
+  return [
+    ...styleAccordions,
+    <Accordion
+      key="deprecated-styles"
+      isTitleCase={false}
+      items={[
+        {
+          title: 'Deprecated styles',
+          isOpen: true,
+          isDeprecated: true,
+          children: deprecatedStyleProperties.map((property) =>
+            renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              property,
+              'properties',
+              currentState,
+              allComponents
+            )
+          ),
+        },
+      ]}
+    />,
+  ];
 };
 
 const resolveConditionalStyle = (definition, condition, currentState) => {
