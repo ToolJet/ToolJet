@@ -28,6 +28,8 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'Image',
   'Statistics',
   'Link',
+  'RadioButtonV2',
+  'Tags',
 ];
 
 const WidgetWrapper = memo(
@@ -155,7 +157,8 @@ const WidgetWrapper = memo(
     let newLayoutData = layoutData;
 
     if (isGridLayout && componentType === 'ModuleContainer' && mode === 'view') {
-      newLayoutData = { ...layoutData, top: 0, left: 0, width: NO_OF_GRIDS };
+      const isEmbeddedModule = moduleId !== 'canvas';
+      newLayoutData = { ...layoutData, top: 0, left: 0, width: isEmbeddedModule ? NO_OF_GRIDS : layoutData.width };
     }
 
     const gridWidthPx = gridWidth * newLayoutData?.width;
