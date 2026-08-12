@@ -154,7 +154,7 @@ function buildGlobalHints(storeState, moduleId) {
 
   if (Object.keys(globals).length > 0) {
     hints.push({ hint: 'globals', type: 'Object' });
-    hints.push(...traverseObjectToHints(globals, 'globals', 3));
+    hints.push(...traverseObjectToHints(globals, 'globals', 4));
   }
 
   return hints;

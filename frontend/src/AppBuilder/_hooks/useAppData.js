@@ -74,6 +74,7 @@ const useAppData = (
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals);
+  const updateExposedTheme = useStore((state) => state.updateExposedTheme);
   const setResolvedPageConstants = useStore((state) => state.setResolvedPageConstants);
   const updateFeatureAccess = useStore((state) => state.updateFeatureAccess);
   const computePageSettings = useStore((state) => state.computePageSettings);
@@ -229,8 +230,8 @@ const useAppData = (
   useEffect(() => {
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
-    setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
-  }, [appMode, darkMode, moduleId]);
+    updateExposedTheme(exposedTheme, moduleId);
+  }, [appMode, darkMode, moduleId, selectedTheme, themeAccess]);
 
   useEffect(() => {
     if (!currentSession) {
@@ -832,7 +833,7 @@ const useAppData = (
         try {
           const exposedTheme =
             appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
-          setResolvedGlobals('theme', { name: exposedTheme });
+          updateExposedTheme(exposedTheme);
         } catch (error) {
           console.log('error', error);
         }
