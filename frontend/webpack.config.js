@@ -429,7 +429,7 @@ module.exports = {
       WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.com/signup',
       TJ_SELFHOST_CREDITS_APP:
         process.env.TJ_SELFHOST_CREDITS_APP ||
-        'https://app.tooljet.com/applications/c1ec8a6c-ee9a-4a7d-ba9b-3590bbeaf6b9',
+        'https://app.tooljet.ai/applications/credits-portal',
       ENABLE_PASSWORD_COMPLEXITY_RULES: process.env.ENABLE_PASSWORD_COMPLEXITY_RULES || false,
     }),
   },
