@@ -75,4 +75,9 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
   async get(@User() user, @Param('id') id: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
+  @Delete(':id')
+  async deleteLibrary(@User() user, @Param('id') id: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }

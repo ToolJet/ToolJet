@@ -6,4 +6,5 @@ export interface ICustomComponentLibrariesController {
   createToken(user: any, body: { name: string; organizationId?: string; expiresInDays?: number | null }): Promise<any>;
   listTokens(user: any): Promise<any>;
   deleteToken(user: any, id: string): Promise<void>;
+  deleteLibrary(user: any, id: string): Promise<void>;
 }

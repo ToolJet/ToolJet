@@ -15,8 +15,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
-    // v1: no role restriction on library ops (DECISIONS locked #6 / scope cut) — any workspace
     // member can use the CLI endpoints; token management likewise until RBAC lands.
-    can(Object.values(FEATURE_KEY), CustomComponentLibrary);
+    const { superAdmin, isAdmin } = UserAllPermissions;
+    const everyoneKeys = Object.values(FEATURE_KEY).filter((key) => key !== FEATURE_KEY.DELETE_LIBRARY);
+    can(everyoneKeys, CustomComponentLibrary);
+    // DELETE_LIBRARY is the one destructive admin-page op — backend matches the AdminRoute UI.
+    if (isAdmin || superAdmin) {
+      can([FEATURE_KEY.DELETE_LIBRARY], CustomComponentLibrary);
+    }
   }
 }
