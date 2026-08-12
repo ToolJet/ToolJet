@@ -1,3 +1,0 @@
-export enum FEATURE_KEY {
-  GET_METADATA = 'GET_METADATA',
-}

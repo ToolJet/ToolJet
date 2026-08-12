@@ -1,1 +1,0 @@
-export { TreeSelect } from './TreeSelect';
