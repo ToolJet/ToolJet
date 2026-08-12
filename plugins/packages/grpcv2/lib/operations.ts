@@ -147,7 +147,7 @@ export const buildFilesystemClient = async (sourceOptions: SourceOptions, servic
     let packageDefinition: protoLoader.PackageDefinition;
 
     // Try to use the mapping from last discovery to load only the specific file
-    const protoFile = lastServiceToFileMap.get(serviceName);
+    const protoFile = serviceFileMaps.get(serviceFileMapKey(directory, protoFilePattern))?.get(serviceName);
 
     if (protoFile && fs.existsSync(protoFile)) {
       // Load only the specific file containing this service
@@ -380,8 +380,14 @@ export const discoverServicesUsingProtoUrl = async (sourceOptions: SourceOptions
   }
 };
 
-// Module-level storage for service-to-file mapping (not cached with TTL, just per-discovery)
-let lastServiceToFileMap = new Map<string, string>();
+// Service-to-file mappings keyed by directory+pattern so data sources
+// pointing at different proto directories don't clobber each other
+const serviceFileMaps = new Map<string, Map<string, string>>();
+
+const serviceFileMapKey = (directory: string, pattern: string): string => `${directory}::${pattern}`;
+
+// Yield between files so long sweeps don't starve the event loop (health probes, other requests)
+const yieldEventLoop = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
 
 /**
  * Lightweight service name discovery using protobufjs.parse().
@@ -435,10 +441,12 @@ export const discoverServiceNamesFromFilesystem = async (
       const fileName = path.basename(protoFile);
       failures.push({ file: fileName, error: err.message });
     }
+
+    await yieldEventLoop();
   }
 
   // Store mapping for use in buildFilesystemClient
-  lastServiceToFileMap = serviceToFileMap;
+  serviceFileMaps.set(serviceFileMapKey(directory, pattern), serviceToFileMap);
 
   return { serviceNames, serviceToFileMap, failures };
 };
@@ -452,15 +460,16 @@ export const discoverMethodsForSelectedServices = async (
   pattern: string,
   selectedServiceNames: string[]
 ): Promise<{ services: GrpcService[]; failures: Array<{ file: string; error: string }> }> => {
-  // If we don't have a mapping yet, discover service names first to build it
-  if (lastServiceToFileMap.size === 0) {
-    await discoverServiceNamesFromFilesystem(directory, pattern);
+  // If we don't have a mapping for this directory yet, discover service names first to build it
+  let fileMap = serviceFileMaps.get(serviceFileMapKey(directory, pattern));
+  if (!fileMap || fileMap.size === 0) {
+    ({ serviceToFileMap: fileMap } = await discoverServiceNamesFromFilesystem(directory, pattern));
   }
 
   // Find the proto files for requested services, de-duplicate
   const filesToParse = new Set<string>();
   for (const serviceName of selectedServiceNames) {
-    const file = lastServiceToFileMap.get(serviceName);
+    const file = fileMap.get(serviceName);
     if (file) {
       filesToParse.add(file);
     }

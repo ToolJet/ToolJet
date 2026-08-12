@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { RedisService } from '@modules/redis/service';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
@@ -28,8 +29,17 @@ import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 
+// gRPC filesystem service discovery sweeps the whole proto directory; cache it
+const GRPC_DISCOVERY_CACHE_PREFIX = 'grpc_service_discovery:';
+const GRPC_DISCOVERY_CACHE_TTL_SECONDS = 300;
+const CACHEABLE_INVOKE_METHODS: Record<string, string[]> = { grpcv2: ['listServices'] };
+
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
+  // Property injection: keeps the constructor signature stable for the EE subclass
+  @Inject(RedisService)
+  protected readonly redisService: RedisService;
+
   constructor(
     protected readonly dataSourcesRepository: DataSourcesRepository,
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
@@ -376,6 +386,12 @@ export class DataSourcesService implements IDataSourcesService {
       effectiveBranchId
     );
 
+    const cacheKey = this.invokeMethodCacheKey(dataSource, methodName, dataSourceOptions);
+    if (cacheKey) {
+      const cached = await this.getCachedInvokeResult(cacheKey);
+      if (cached) return cached;
+    }
+
     const sourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
       dataSourceOptions.options,
       user.organizationId,
@@ -409,7 +425,9 @@ export class DataSourcesService implements IDataSourcesService {
         sourceOptions,
         resolvedArgs
       );
-      return { status: 'ok', data: result };
+      const queryResult: QueryResult = { status: 'ok', data: result };
+      if (cacheKey) await this.cacheInvokeResult(cacheKey, queryResult);
+      return queryResult;
     } catch (error) {
       if (error.constructor.name === 'OAuthUnauthorizedClientError') {
         const currentUserToken = sourceOptions['refresh_token']
@@ -496,4 +514,36 @@ export class DataSourcesService implements IDataSourcesService {
       return tokenData;
     }
   };
+
+  // options updatedAt is part of the key, so saving the data source naturally invalidates
+  protected invokeMethodCacheKey(
+    dataSource: DataSource,
+    methodName: string,
+    dataSourceOptions: { environmentId?: string; updatedAt?: Date }
+  ): string | null {
+    if (!CACHEABLE_INVOKE_METHODS[dataSource.kind]?.includes(methodName)) return null;
+    const version = dataSourceOptions?.updatedAt ? new Date(dataSourceOptions.updatedAt).getTime() : 0;
+    return `${GRPC_DISCOVERY_CACHE_PREFIX}${dataSource.id}:${dataSourceOptions?.environmentId}:${methodName}:${version}`;
+  }
+
+  protected async getCachedInvokeResult(cacheKey: string): Promise<QueryResult | null> {
+    try {
+      const cached = await this.redisService.getClient().get(cacheKey);
+      return cached ? (JSON.parse(cached) as QueryResult) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  protected async cacheInvokeResult(cacheKey: string, result: QueryResult): Promise<void> {
+    // listServices returns [] when the directory is invalid; don't cache failures
+    if (Array.isArray(result.data) && result.data.length === 0) return;
+    try {
+      await this.redisService
+        .getClient()
+        .set(cacheKey, JSON.stringify(result), 'EX', GRPC_DISCOVERY_CACHE_TTL_SECONDS);
+    } catch {
+      // cache write failure is non-fatal
+    }
+  }
 }
