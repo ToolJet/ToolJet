@@ -15988,7 +15988,12 @@ section.ai-message-prompt-input-wrapper {
     /* Elevations/300 */
     box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
       0px 4px 8px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1));
-    z-index: 2;
+
+    /* Above `.conversation-wrapper` (2) AND the phase collapsible (10) that sits directly on top of
+       this input. Both this rule and `position: relative` make the input a stacking context, which
+       traps the "@" suggestions popup inside it (CodeMirror's .cm-tooltip, z-index 500) — the popup
+       opens upwards into the phase panel, so the input itself has to outrank that panel. */
+    z-index: 20;
   }
 
   div.input {
