@@ -71,7 +71,7 @@ export const createResolvedSlice = (set, get) => {
   let _implicitDepPaths = [];
   let _implicitScheduled = false;
 
-  const flushImplicit = (actionName) => {
+  const flushImplicit = () => {
     if (_implicitDepPaths.length === 0) return;
     _implicitScheduled = false;
     const depPaths = _implicitDepPaths;
