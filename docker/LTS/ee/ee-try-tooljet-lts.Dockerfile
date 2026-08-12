@@ -14,10 +14,7 @@ RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
 
-# Install Redis 7.x from official Redis repository (Debian's bundled package is stale)
-RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
-    && apt-get update && apt-get install -y curl redis-server
+RUN apt update && apt -y install redis
 
 # Create appuser home & ensure permission for supervisord and services
 RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql /var/lib/redis && \
