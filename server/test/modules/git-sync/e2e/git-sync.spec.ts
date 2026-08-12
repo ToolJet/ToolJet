@@ -5459,7 +5459,11 @@ describe('GitSyncController', () => {
         step(3, 'gitpush app + module, workspace-push the data source (all to the default branch)');
         await gitpush(appId, appCtx.versionId, 'sb-app', defaultBranchId).expect(201);
         await gitpush(moduleId, moduleCtx.versionId, 'sb-module', defaultBranchId).expect(201);
-        await pushWorkspace(defaultBranchId, 'push sb data source', 'datasource', true).expect(201);
+        // Single-branch mode auto-marks a newly-created DS is_synced=true (hides the sync
+        // indicator), so it belongs to the SYNCED set. Push it via the synced path (omit
+        // onlyUnsynced) — mirrors the delete push below. onlyUnsynced=true would serialize the
+        // is_synced=false set and skip this DS entirely.
+        await pushWorkspace(defaultBranchId, 'push sb data source', 'datasource').expect(201);
 
         // ── 4. assert all three resources landed in git on the default branch ────────────
         step(4, 'clone the default branch → apps/, modules/, and the DS file are present');
@@ -8807,7 +8811,13 @@ describe('GitSyncController', () => {
         expect(tokens.apps_git_tree_sha).toBeTruthy();
         expect(tokens.data_sources_git_tree_sha).toBeTruthy();
 
-        // Per-app: at least one app_version on main carries the app-folder tree SHA.
+        // Per-app tree SHA is stamped on MATERIALIZATION, not on the pull that merely flags an
+        // app 'outdated'. skipAppId was normalized onto main as a stale non-stub, so the pull
+        // leaves its git_tree_sha null (the "needs re-hydration" signal); opening the app hydrates
+        // it from git and stamps the app-folder tree SHA. Open it, then assert.
+        await auth(agent().get(`/api/apps/${skipAppId}`))
+          .query({ branch_id: mainBranchId })
+          .expect(200);
         const appVersionSha = await psDataSource.query(
           `SELECT git_tree_sha FROM app_versions WHERE app_id = $1 AND branch_id = $2 AND git_tree_sha IS NOT NULL`,
           [skipAppId, mainBranchId]

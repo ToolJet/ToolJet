@@ -278,18 +278,18 @@ create/publish/replace — so it runs against the protected-`main` repo.
 | Save v1 | Publish the app version (`PUT status=PUBLISHED`, name `v1`) | v1 has `[comp_A]` / `[query_A]`; publishing seeds a **synced** continuity draft (single-branch apps are synced-on-create) |
 | New draft | Create draft from `v1` (`replace:true`) → `d2` | `d2` is a clean copy of v1 (`[comp_A]` / `[query_A]`); it's the editing version. **`replace:true` is required** — the synced continuity draft means `replace:false` would hit the single-draft rule (400 "Only one draft version is allowed when branching is enabled") |
 | Edit draft | Add `comp_B` + `query_B` to `d2` | `d2` = `[comp_A, comp_B]` / `[query_A, query_B]` |
-| Stamp staleness | Set `remote_updated_at` + `pulled_at` to `now()` on both `d2` (draft being replaced) and `v1` (source version) | — |
-| **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version; `d3.remote_updated_at` and `d3.pulled_at` are **NULL** (never-pulled) so a later `pull latest` refreshes it instead of skipping |
+| Stamp staleness | Set `git_tree_sha` to a non-null value on both `d2` (draft being replaced) and `v1` (source version) | — |
+| **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version; `d3.git_tree_sha` is **NULL** (never-materialized) so a later `pull latest` / app-open refreshes it instead of skipping |
 | Save v2 | Add `comp_C` + `query_C` to `d3`, publish as `v2` | `v2` = `[comp_A, comp_C]` |
 | **Patch from first version** | Create draft from `v1` again (`replace:true`) → `d4` | `d4` mirrors **v1** (`[comp_A]` / `[query_A]`), **not** v2 (no `comp_C`/`query_C`); `d4` is the editing version |
 
 Component/query assertions read the DB keyed by the version id resolved from `GET /apps/:id`
 (`editing_version`), so they're deterministic. Backend: `replaceDraftVersion` deletes the existing
 default-branch draft and clones the chosen published version in one transaction, preserving the
-replaced draft's sync state. It also forces the new draft's `remote_updated_at` / `pulled_at` to
-`NULL` — the pull staleness logic skips a draft whose `pulled_at >= remote commit` and only
-lazy-hydrates when `remote_updated_at` is set and newer than `pulled_at`, so a patched draft must
-look never-pulled to guarantee the next `pull latest` refreshes it.
+replaced draft's sync state. It also forces the new draft's `git_tree_sha` to `NULL` — change
+detection compares `git_tree_sha` against git's current tree SHA (both on `pull latest` and on the
+next app-open), so a stale non-null value would make them skip the draft; forcing it NULL makes the
+patched draft look never-materialized and guarantees the next pull/open refreshes it.
 
 ---
 
@@ -492,12 +492,17 @@ content hashes (a tree SHA changes iff something beneath it changed):
 - **category** — tree SHA of `apps/` · `modules/` · `data-sources/` vs `*_git_tree_sha` on the branch row
 - **per-resource** — tree SHA of `apps/<app>/` · `data-sources/<ds>/` vs `app_versions`/`data_source_versions.git_tree_sha`
 
-All tokens are **READ from git and STORED on PULL only** (push never stamps them). The observable
-effect of a skip is that the pull's orphan sweep — which marks `is_synced=false` any default-branch DB
-resource absent from git — does NOT run for the skipped scope, so a manufactured orphan survives as
-`is_synced=true`. The orphan sweep is gated to the DEFAULT branch, so these tests operate on `main`
-(content lands via admin `/merge`). This test asserts the tokens get stored on pull and that a second
-pull with an unchanged remote HEAD skips the whole pull (a manufactured orphan stays `is_synced=true`).
+The branch-level tokens (`last_synced_commit`, the category `*_git_tree_sha`) are read from git and
+stored on **pull**. A version's per-resource `git_tree_sha` is stamped when the version is
+**materialized** — a pull that imports a fresh stub, or an app-open hydration — and by **push** (so
+just-pushed content reads as in-sync and isn't re-hydrated); a changed-but-unopened app therefore keeps
+a null/stale `git_tree_sha` until it's opened, so this test opens the app before asserting its per-app
+token. The observable effect of a skip is that the pull's orphan sweep — which marks `is_synced=false`
+any default-branch DB resource absent from git — does NOT run for the skipped scope, so a manufactured
+orphan survives as `is_synced=true`. The orphan sweep is gated to the DEFAULT branch, so these tests
+operate on `main` (content lands via admin `/merge`). This test asserts the tokens get stored on pull
+and that a second pull with an unchanged remote HEAD skips the whole pull (a manufactured orphan stays
+`is_synced=true`).
 
 ## 11. Pull skip — category-level skip (`it: skips the datasource category when data-sources/ tree SHA is unchanged despite a moved HEAD`)
 
@@ -508,13 +513,13 @@ is byte-identical → `pullDataSources` returns early → the datasource orphan 
 manufactured DS orphan survives. Clearing only the DS token then forces the sweep, isolating the
 category skip as the cause.
 
-## 12. Push serialization — no DB timestamps in pushed files (`it: omits created_at / updated_at / remote_updated_at from pushed app version files`)
+## 12. Push serialization — no DB internals in pushed files (`it: omits created_at / updated_at / git_tree_sha from pushed app version files`)
 
 Dedicated isolated org. The pull-side tree-SHA skip only works if a resource's serialized bytes are
-stable across no-op pushes. DB-internal timestamps (`created_at` / `updated_at` / `remote_updated_at`)
-change on every save, so if they leaked into pushed files the app's tree SHA would flip on an
-otherwise-unchanged push and the skip would never fire. This test pushes an app and asserts none of its
-committed version files carry those fields.
+stable across no-op pushes. DB-internal fields (`created_at` / `updated_at` change on every save, and
+`git_tree_sha` is itself the change token) would flip the app's tree SHA on an otherwise-unchanged push
+if they leaked into pushed files, so the skip would never fire. This test pushes an app and asserts none
+of its committed version files carry those fields.
 
 ## 13. Multi-version import respects git sync (`describe: POST /api/v2/resources/import | multi-version import respects git sync`)
 
