@@ -158,7 +158,7 @@ End-to-end single test; each step depends on the previous. Steps:
 | 29 | Switch to `main` & list apps → still pre-pull name `testing-app-1` |
 | 30 | `check-updates` on `main` → `hasUpdates` true (merge commit ahead) |
 | 31 | Pull `main` |
-| 32 | List apps on `main` → name `testing-app-2` (slug still stub uuid) |
+| 32 | Pull `main` → dashboard list reflects **all** user-facing metadata refreshed by the pull: name `testing-app-2`, slug `testing-app-2-slug`, icon `sentfast`, `is_public=true` (previously the pull updated only `app_name`; slug/icon/is_public now land straight from the pull, not just after a later ensure-draft) |
 | 33 | Pull-from-builder + `ensure-draft` → new draft version id |
 | 34 | GET draft version → name + slug + icon + is_public propagated |
 | 35 | GET published v1 → editing_version PUBLISHED + inherits main draft name/slug |
@@ -718,6 +718,40 @@ Tag creation is now a **side-effect of the publish**, verified by check-tag `exi
 resolving the ref (no explicit tag call). Since the standalone endpoint is gone, single-branch tags via the
 same save path (the gate is git-enabled, not multi-branch-only).
 **Mirrored in `git-sync-gitlab.spec.ts`** (exercises the GitLab provider's `createGitTag` / `checkTagExists`).
+
+## 25. Per-app import — slug collision swaps to a fresh UUID (`it: imports an app whose slug is already taken by another workspace → slug swapped to a fresh UUID (no conflict)`)
+
+Lives in the `per-app import from git (createGitApp)` describe (alongside §22/§23). Unlike the workspace
+pull (§6), the per-app import (`POST /api/app-git/gitpull/app` → `createGitApp`) has **no slug pre-flight**.
+But slug uniqueness is **instance-wide** (`enforce_app_versions_*_slug_unique`, no org scope), so importing an
+app whose slug is already owned by another workspace on the same repo must **swap the slug to a fresh UUID and
+still succeed** — never a 409/500. Uses fresh, isolated SRC/DST orgs so the §22/§23 imports don't pollute it.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset repo; **SRC** configures git (`single-branch-main`), creates + `gitpush`es `slug-clash-app`; read the slug it wrote to git (`srcSlug`) | 201 |
+| 2 | **DST** (separate org, same repo) configures git, then `POST /api/app-git/gitpull/app` `{ gitAppName, gitBranchName, workspaceBranchId }` (**no `gitAppId`** → skips the "already exists" guard) | **200/201** — a taken slug must NOT fail the import |
+| 3 | DST's imported non-stub version slug | **≠ `srcSlug`** and matches the UUID pattern (swapped to a fresh placeholder for later rename) |
+
+The slug collision is caught at the instance-wide resolver (`app-import-export.service.ts` /
+`app-git-operations.util.ts`), not a pre-flight — so this asserts the **silent-UUID** behavior that
+distinguishes app-level pull from workspace pull. **Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
+
+## 26. Branch create — slug conflict pre-check (`it: surfaces a 409 slug conflict when the source branch has two apps sharing a slug`)
+
+Dedicated isolated org. `createBranch` runs a **synchronous** conflict pre-check
+(`preCheckCreateBranchConflicts` → `detectPullConflicts(branchId=null)` → intra-incoming collisions) and
+re-throws a **409** so the frontend modal opens. This drives the same slug guard as the workspace pull (§6)
+through the **branch-create entry point** — a gap §6 (workspace pull) and §22/§23 (per-app import) didn't cover.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset repo; configure git (multi-branch) so `main` exists on the remote | 201 |
+| 2 | Inject **two** apps onto `main` via the admin `/files` endpoint — **different names + co_relation_ids, SAME slug** (different names so a name conflict doesn't mask the slug one) | — |
+| 3 | `POST /api/workspace-branches { name }` (branch off `main`) → the sync pre-check clones `main` and detects the shared slug | **409**; `conflictGroups` has a `{ type: 'app', conflictField: 'slug' }` group listing **both** injected co_relation_ids |
+| 4 | Neutralize the injected files (`{}`) in `finally` | repo left clean for later specs |
+
+**Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
 
 ## 21. Inbound webhooks → auto-sync (`test/modules/git-sync-webhooks/`)
 

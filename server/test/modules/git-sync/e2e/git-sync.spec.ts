@@ -1317,7 +1317,7 @@ describe('GitSyncController', () => {
           .send({ branchId: mainBranchId })
           .expect(201);
 
-        step(32, 'list apps on main → name testing-app-2 (slug still stub uuid)');
+        step(32, 'list apps on main → name/slug/icon/is_public ALL refreshed by the pull');
         const appsAfterPull = await request
           .agent(app.getHttpServer())
           .get('/api/apps')
@@ -1333,7 +1333,14 @@ describe('GitSyncController', () => {
           .expect(200);
         expect(appsAfterPull.body.apps).toHaveLength(1);
         const renamedApp = appsAfterPull.body.apps[0];
+        // The workspace pull now refreshes ALL user-facing metadata onto the branch version
+        // (name, slug, icon, is_public) — previously only app_name was updated on pull, so the
+        // slug used to stay the stub UUID until a later ensure-draft/edit. Assert all four land
+        // straight from the pull. (Dashboard list is decamelized → is_public.)
         expect(renamedApp.name).toBe('testing-app-2');
+        expect(renamedApp.slug).toBe('testing-app-2-slug');
+        expect(renamedApp.icon).toBe('sentfast');
+        expect(renamedApp.is_public).toBe(true);
 
         step(33, 'pull-from-builder + ensure-draft → new draft version id');
         const builderPull = await request
@@ -5929,6 +5936,247 @@ describe('GitSyncController', () => {
           newAppIds,
         ]);
         expect(published.length).toBeGreaterThan(0);
+      }, 300000);
+
+      // Per-app import (createGitApp) has NO slug pre-flight (unlike workspace pull, §6). But slug
+      // uniqueness is instance-wide, so SRC — a different workspace on the SAME repo — already owns
+      // the git app's slug on its default branch. Importing into DST must therefore SWAP the slug to
+      // a fresh UUID placeholder and STILL SUCCEED (no 409/500), leaving the user to rename later.
+      it('imports an app whose slug is already taken by another workspace → slug swapped to a fresh UUID (no conflict)', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const { randomUUID } = await import('crypto');
+        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+        // Fresh, isolated SRC/DST orgs so the imports in the two tests above don't pollute this one.
+        const src = await createUser(app, { email: 'git-slug-src@tooljet.io', firstName: 'slug', lastName: 'src' });
+        const dst = await createUser(app, { email: 'git-slug-dst@tooljet.io', firstName: 'slug', lastName: 'dst' });
+        const srcOrg = src.organization.id;
+        const dstOrg = dst.organization.id;
+        const srcCk = (await login(app, 'git-slug-src@tooljet.io')).tokenCookie;
+        const dstCk = (await login(app, 'git-slug-dst@tooljet.io')).tokenCookie;
+        await ensureAppEnvironments(app, srcOrg);
+        await ensureAppEnvironments(app, dstOrg);
+        await seedDefaultBranch(srcOrg);
+        await seedDefaultBranch(dstOrg);
+        const authSrc = authAs(srcCk, srcOrg);
+        const authDst = authAs(dstCk, dstOrg);
+
+        const configureGit = (a: (r: request.Test) => request.Test, org: string) =>
+          (async () => {
+            await a(agent().post('/api/git-sync/configs'))
+              .send({ ...GITHUB_HTTPS_PAYLOAD, branchName: IMP_BRANCH, useEnvConfig: false })
+              .expect(201);
+            const orgGitId: string = (await a(agent().get(`/api/git-sync/${org}`)).expect(200)).body.organization_git
+              .id;
+            await a(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+              .send({ isBranchingEnabled: false })
+              .expect(200);
+            return (await a(agent().get('/api/workspace-branches')).expect(200)).body.activeBranchId as string;
+          })();
+
+        // ── 1. SRC configures git + pushes an app to the (unprotected) single-branch default ──
+        step(1, 'reset gitea; SRC pushes an app (its slug lands in git)');
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        const srcBranchId = await configureGit(authSrc, srcOrg);
+        await authSrc(agent().post('/api/workspace-branches/pull'))
+          .query({ branch_id: srcBranchId })
+          .send({ branchId: srcBranchId })
+          .expect(201);
+        const srcAppId: string = (
+          await authSrc(agent().post('/api/apps'))
+            .query({ branch_id: srcBranchId })
+            .send({ icon: 'home', name: 'slug-clash-app', type: 'front-end', branchId: srcBranchId })
+            .expect(201)
+        ).body.id;
+        const srcCtx = await editingVersionOf(authSrc, srcAppId, srcBranchId);
+        const btnId = randomUUID();
+        await authSrc(agent().post(`/api/v2/apps/${srcAppId}/versions/${srcCtx.versionId}/components`))
+          .query({ branch_id: srcBranchId })
+          .send({
+            is_user_switched_version: false,
+            pageId: srcCtx.pageId,
+            diff: {
+              [btnId]: {
+                name: `button_${btnId.slice(0, 6)}`,
+                layouts: {
+                  desktop: { top: 80, left: 15, width: 4, height: 40 },
+                  mobile: { top: 80, left: 15, width: 4, height: 40 },
+                },
+                type: 'Button',
+                general: {},
+                generalStyles: {},
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: { text: { value: 'Button' } },
+                styles: {},
+              },
+            },
+          })
+          .expect(201);
+        await authSrc(agent().post(`/api/app-git/gitpush/${srcAppId}/${srcCtx.versionId}`))
+          .query({ branch_id: srcBranchId })
+          .send({
+            gitAppName: 'slug-clash-app',
+            versionId: srcCtx.versionId,
+            lastCommitMessage: 'push slug-clash-app',
+            gitVersionName: IMP_BRANCH,
+            sourceBranch: IMP_BRANCH,
+          })
+          .expect(201);
+
+        // The slug SRC wrote to git — the value DST's import would otherwise collide on.
+        const [{ slug: srcSlug }] = await impDs.query(
+          `SELECT slug FROM app_versions WHERE app_id = $1 AND is_stub = false LIMIT 1`,
+          [srcAppId]
+        );
+        expect(srcSlug).toBeTruthy();
+
+        // ── 2. DST (separate workspace, SAME repo) imports the app by name — no gitAppId, so
+        //       createGitApp's "already exists" guard is skipped and the import runs ──
+        step(2, 'DST configures git (same repo) and imports the app via /gitpull/app');
+        const dstBranchId = await configureGit(authDst, dstOrg);
+        const importRes = await authDst(agent().post('/api/app-git/gitpull/app')).send({
+          gitAppName: 'slug-clash-app',
+          gitBranchName: IMP_BRANCH,
+          workspaceBranchId: dstBranchId,
+        });
+        // The crux: a taken slug must NOT fail the per-app import — it swaps to a UUID and succeeds.
+        if (importRes.status !== 201 && importRes.status !== 200) {
+          throw new Error(
+            `slug-collision import should succeed, got ${importRes.status} ${JSON.stringify(importRes.body)}`
+          );
+        }
+
+        // ── 3. DST's imported version carries a fresh UUID slug — NOT SRC's (taken) slug ──
+        step(3, 'imported version slug is a fresh UUID, not the taken git slug');
+        const imported = (
+          await impDs.query(
+            `SELECT av.slug AS slug
+             FROM apps a JOIN app_versions av ON av.app_id = a.id AND av.is_stub = false
+             WHERE a.organization_id = $1`,
+            [dstOrg]
+          )
+        )[0];
+        expect(imported).toBeDefined();
+        expect(imported.slug).not.toBe(srcSlug); // swapped away from the taken slug
+        expect(imported.slug).toMatch(UUID_RE); // to a fresh UUID placeholder
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Branch create — slug conflict pre-check. createBranch runs a SYNCHRONOUS pre-check
+    // (preCheckCreateBranchConflicts → detectPullConflicts with branchId=null → intra-incoming
+    // collisions) and re-throws a 409 so the frontend modal opens. Two apps on the source branch
+    // that share a slug (different co_relation_ids) must surface a 409 with a `slug` conflict
+    // group — the same slug guard the workspace pull enforces (§6), exercised through the
+    // branch-create entry point. Against the real Gitea (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('branch create — slug conflict pre-check', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      const FILES_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/files`;
+      const BR = 'main';
+      const agent = () => request.agent(app.getHttpServer());
+
+      let bcOrgId: string;
+      let bcCookie: string[];
+      let bcDs: DataSource;
+
+      const auth = (r: request.Test) => r.set('Cookie', bcCookie).set('tj-workspace-id', bcOrgId);
+
+      // Write a single file onto `main` via the admin /files endpoint (same mechanism as §55-59).
+      const writeGitFile = async (repoRelPath: string, content: any, message: string): Promise<void> => {
+        const resp = await fetch(FILES_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: JSON.stringify({ ref: BR, path: repoRelPath, content: JSON.stringify(content, null, 2), message }),
+        });
+        if (!resp.ok)
+          throw new Error(`writeGitFile(${repoRelPath}) ${resp.status} ${await resp.text().catch(() => '')}`);
+      };
+
+      const parseConflictGroups = (body: any): any[] | null => {
+        if (typeof body?.message !== 'string') return null;
+        try {
+          const parsed = JSON.parse(body.message);
+          return Array.isArray(parsed?.conflictGroups) ? parsed.conflictGroups : null;
+        } catch {
+          return null;
+        }
+      };
+
+      beforeAll(async () => {
+        const u = await createUser(app, { email: 'git-branch-slug@tooljet.io', firstName: 'branch', lastName: 'slug' });
+        bcOrgId = u.organization.id;
+        bcCookie = (await login(app, 'git-branch-slug@tooljet.io')).tokenCookie;
+        await ensureAppEnvironments(app, bcOrgId);
+        bcDs = app.get<DataSource>(getDataSourceToken('default'));
+        await bcDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, $2, true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [bcOrgId, BR]
+        );
+      });
+
+      it('surfaces a 409 slug conflict when the source branch has two apps sharing a slug', async () => {
+        const { randomUUID } = await import('crypto');
+
+        // reset + configure git (multi-branch so createBranch is a normal op). Configuring first
+        // makes `main` exist on the remote (auto-created on the test-connection existence check),
+        // so the /files writes below land on it.
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITHUB_HTTPS_PAYLOAD, branchName: BR, useEnvConfig: false })
+          .expect(201);
+        const orgGitId: string = (await auth(agent().get(`/api/git-sync/${bcOrgId}`)).expect(200)).body.organization_git
+          .id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+
+        // Inject two apps onto `main`: DIFFERENT names + co_relation_ids, SAME slug → a pure slug
+        // collision (different names avoid a name conflict masking it).
+        const sharedSlug = `branch-shared-slug-${randomUUID().slice(0, 8)}`;
+        const coA = randomUUID();
+        const coB = randomUUID();
+        const pathA = 'apps/e2e-bc-a/branch-slug-a/app/app.json';
+        const pathB = 'apps/e2e-bc-b/branch-slug-b/app/app.json';
+        await writeGitFile(
+          pathA,
+          { id: coA, name: 'branch-slug-a', type: 'front-end', slug: sharedSlug, updatedAt: new Date().toISOString() },
+          'inject branch-slug-a'
+        );
+        await writeGitFile(
+          pathB,
+          { id: coB, name: 'branch-slug-b', type: 'front-end', slug: sharedSlug, updatedAt: new Date().toISOString() },
+          'inject branch-slug-b'
+        );
+
+        try {
+          // Create a branch off `main` → the sync pre-check clones `main`, sees two apps sharing a
+          // slug, and re-throws a 409 with the conflict groups.
+          const resp = await auth(agent().post('/api/workspace-branches'))
+            .send({ name: `feat-branch-slug-${randomUUID().slice(0, 6)}` })
+            .expect(409);
+          const groups = parseConflictGroups(resp.body);
+          expect(groups).not.toBeNull();
+          const slugGroup = groups!.find((g: any) => g.type === 'app' && g.conflictField === 'slug');
+          expect(slugGroup).toBeDefined();
+          const ids = slugGroup.conflicts.map((c: any) => c.coRelationId);
+          expect(ids).toEqual(expect.arrayContaining([coA, coB]));
+        } finally {
+          // Neutralize the injected files so the shared repo is left clean for later specs
+          // (listGitResources skips app.json without an `id`).
+          await writeGitFile(pathA, {}, 'restore: neutralize branch-slug-a');
+          await writeGitFile(pathB, {}, 'restore: neutralize branch-slug-b');
+        }
       }, 300000);
     });
 
