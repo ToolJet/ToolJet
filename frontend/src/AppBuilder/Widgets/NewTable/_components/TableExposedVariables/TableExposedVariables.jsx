@@ -289,14 +289,6 @@ export const TableExposedVariables = ({
   ]);
 
   useEffect(() => {
-    // onRowClicked event will be fired when a row is clicked
-    // it should be triggered even when allowSelection is false which is handled in the handleRowClick()
-    if (allowSelection && Object.keys(lastClickedRow).length > 0) {
-      fireEvent('onRowClicked');
-    }
-  }, [lastClickedRow, fireEvent, allowSelection]);
-
-  useEffect(() => {
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
       const item = index !== -1 ? data[index] : null;
