@@ -32,7 +32,6 @@ import { EntityManager } from 'typeorm';
 // gRPC filesystem service discovery sweeps the whole proto directory; cache it
 const GRPC_DISCOVERY_CACHE_PREFIX = 'grpc_service_discovery:';
 const GRPC_DISCOVERY_CACHE_TTL_SECONDS = 300;
-const CACHEABLE_INVOKE_METHODS: Record<string, string[]> = { grpcv2: ['listServices'] };
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -515,20 +514,23 @@ export class DataSourcesService implements IDataSourcesService {
     }
   };
 
-  // options updatedAt is part of the key, so saving the data source naturally invalidates
+  // options row id + updatedAt in the key, so branch switches and saves naturally invalidate
   protected invokeMethodCacheKey(
     dataSource: DataSource,
     methodName: string,
-    dataSourceOptions: { environmentId?: string; updatedAt?: Date }
+    dataSourceOptions: { id?: string; environmentId?: string; updatedAt?: Date }
   ): string | null {
-    if (!CACHEABLE_INVOKE_METHODS[dataSource.kind]?.includes(methodName)) return null;
+    if (dataSource.kind !== 'grpcv2' || methodName !== 'listServices') return null;
     const version = dataSourceOptions?.updatedAt ? new Date(dataSourceOptions.updatedAt).getTime() : 0;
-    return `${GRPC_DISCOVERY_CACHE_PREFIX}${dataSource.id}:${dataSourceOptions?.environmentId}:${methodName}:${version}`;
+    return `${GRPC_DISCOVERY_CACHE_PREFIX}${dataSource.id}:${dataSourceOptions?.environmentId}:${dataSourceOptions?.id}:${methodName}:${version}`;
   }
 
   protected async getCachedInvokeResult(cacheKey: string): Promise<QueryResult | null> {
     try {
-      const cached = await this.redisService.getClient().get(cacheKey);
+      const client = this.redisService.getClient();
+      // skip when Redis is down — ioredis offline queue would stall the request for seconds
+      if (client.status !== 'ready') return null;
+      const cached = await client.get(cacheKey);
       return cached ? (JSON.parse(cached) as QueryResult) : null;
     } catch {
       return null;
@@ -539,9 +541,9 @@ export class DataSourcesService implements IDataSourcesService {
     // listServices returns [] when the directory is invalid; don't cache failures
     if (Array.isArray(result.data) && result.data.length === 0) return;
     try {
-      await this.redisService
-        .getClient()
-        .set(cacheKey, JSON.stringify(result), 'EX', GRPC_DISCOVERY_CACHE_TTL_SECONDS);
+      const client = this.redisService.getClient();
+      if (client.status !== 'ready') return;
+      await client.set(cacheKey, JSON.stringify(result), 'EX', GRPC_DISCOVERY_CACHE_TTL_SECONDS);
     } catch {
       // cache write failure is non-fatal
     }

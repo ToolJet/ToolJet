@@ -24,6 +24,16 @@ const getDefaultProtoDirectory = (): string => {
   return path.join(os.homedir(), 'protos');
 };
 
+// Single source of truth for directory/pattern defaults — discovery writers and
+// client readers must derive identical serviceFileMaps keys
+export const resolveFilesystemConfig = (sourceOptions: SourceOptions): { directory: string; pattern: string } => {
+  const directory = isEmpty(sourceOptions.proto_files_directory)
+    ? getDefaultProtoDirectory()
+    : sourceOptions.proto_files_directory;
+  const pattern = isEmpty(sourceOptions.proto_files_pattern) ? '**/*.proto' : sourceOptions.proto_files_pattern;
+  return { directory, pattern };
+};
+
 export const validateFilesystemAccess = (directory: string): string => {
   // Expand ~ to home directory if needed
   const expandedDir = expandPath(directory);
@@ -134,15 +144,7 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
 
 export const buildFilesystemClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const directory =
-      isEmpty(sourceOptions.proto_files_directory) ?
-        getDefaultProtoDirectory() :
-        sourceOptions.proto_files_directory;
-
-    const protoFilePattern =
-      isEmpty(sourceOptions.proto_files_pattern) ?
-        '**/*.proto' :
-        sourceOptions.proto_files_pattern;
+    const { directory, pattern: protoFilePattern } = resolveFilesystemConfig(sourceOptions);
 
     let packageDefinition: protoLoader.PackageDefinition;
 
