@@ -166,7 +166,6 @@
 }
 
 .custom-library-version-picker {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -175,28 +174,28 @@
     background: transparent;
     cursor: pointer;
   }
+}
 
-  .custom-library-version-menu {
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
-    z-index: 100;
-    width: 208px;
-    max-height: 240px; /* long revision histories scroll instead of overflowing the panel */
-    overflow-y: auto;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    background: var(--surfaces-surface-01);
-    border: 1px solid var(--border-weak);
-    border-radius: 8px;
-    box-shadow: var(--elevation-300-box-shadow);
-  }
+
+.custom-library-version-menu {
+  z-index: 2000; /* portaled under body — must clear the right sidebar's stacking context */
+  width: 208px;
+  max-height: min(240px, var(--radix-dropdown-menu-content-available-height));
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  background: var(--surfaces-surface-01);
+  border: 1px solid var(--border-weak);
+  border-radius: 9px;
+  box-shadow: var(--elevation-300-box-shadow);
 
   .version-menu-row {
     display: flex;
     align-items: flex-start;
+    justify-content: space-between; /* [check+text] group left, New badge right */
+    flex-shrink: 0; /* same overflow-squash protection as the divider */
     gap: 10px;
     padding: 6px 8px;
     border-radius: 6px;
@@ -207,8 +206,15 @@
     }
   }
 
+  .version-menu-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0; /* long emails/subtitles truncate instead of pushing the badge out */
+  }
+
   .version-menu-check {
-    width: 16px;
+    width: 24px;
     flex-shrink: 0;
     color: var(--text-default);
   }
@@ -223,24 +229,28 @@
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 18px;
     color: var(--text-default);
   }
 
   .version-menu-subtitle {
-    font-size: 11px;
+    font-size: 12px;
     line-height: 18px;
     color: var(--text-placeholder);
   }
 
   .version-menu-new-badge {
-    padding: 1px 5px;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1px 6px;
+    border-radius: 100px;
     font-size: 11px;
     font-weight: 500;
     color: var(--primary-accent-strong);
-    background: var(--interactive-overlays-fill-hover, rgba(67, 104, 227, 0.1));
+    background: var(--background-accent-weak, #ecf0fe);
+    flex-shrink: 0;
   }
 
   .version-menu-live-dot {
@@ -252,6 +262,7 @@
 
   .version-menu-divider {
     height: 1px;
+    flex-shrink: 0; /* flex column + overflow squashes 1px children to sub-pixel = invisible */
     margin: 4px 0;
     background: var(--border-weak);
   }

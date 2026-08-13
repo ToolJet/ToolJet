@@ -1,16 +1,27 @@
 import React, { useEffect, useState } from 'react';
+import { KeyRound } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import moment from 'moment';
-import toast from 'react-hot-toast';
-import ModalBase from '@/_ui/Modal';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+
+import { cn } from '@/lib/utils';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
 import { organizationService } from '@/_services';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { Button } from '@/components/ui/Button/Button';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+} from '@/components/ui/Rocket/Select/Select';
+import Dialog from '@/components/ui/Dialog';
+
 import './resources/styles/access-tokens-card.styles.scss';
 
 const EXPIRY_OPTIONS = [
-  { label: 'No expiry', value: '' },
+  { label: 'No expiry', value: 'no expiry' },
   { label: '7 days', value: '7' },
   { label: '30 days', value: '30' },
   { label: '60 days', value: '60' },
@@ -28,7 +39,7 @@ export const AccessTokensCard = ({ darkMode }) => {
   const [name, setName] = useState('');
   const [nameTouched, setNameTouched] = useState(false); // frame 08: blur-without-value validation
   const [organizationId, setOrganizationId] = useState('');
-  const [expiresInDays, setExpiresInDays] = useState('');
+  const [expiresInDays, setExpiresInDays] = useState(EXPIRY_OPTIONS[4].value);
   const [createInProgress, setCreateInProgress] = useState(false);
 
   const [createdToken, setCreatedToken] = useState(null); // raw token — shown exactly once (frame 07)
@@ -87,7 +98,7 @@ export const AccessTokensCard = ({ darkMode }) => {
       const created = await customComponentLibrariesService.createToken({
         name: name.trim(),
         organizationId,
-        expiresInDays: expiresInDays ? Number(expiresInDays) : null,
+        expiresInDays: expiresInDays === 'no expiry' ? null : Number(expiresInDays),
       });
       setCreatedToken(created.token);
       fetchTokens();
@@ -136,16 +147,16 @@ export const AccessTokensCard = ({ darkMode }) => {
           </h3>
           <p className="access-tokens-subtitle">Authenticate the ToolJet CLI from your machine or a CI pipeline.</p>
         </div>
-        <ButtonSolid
+
+        <Button
+          isLucid
           variant="primary"
-          leftIcon="plus"
-          fill="#fff"
-          iconWidth="16"
+          leadingIcon="plus"
           onClick={() => setShowCreateModal(true)}
-          data-cy="create-token-button"
+          data-cy="create-new-token-button"
         >
           Create new token
-        </ButtonSolid>
+        </Button>
       </div>
 
       {/* list: users-table pattern, full-bleed rows (design 52:7680-7702) */}
@@ -159,12 +170,7 @@ export const AccessTokensCard = ({ darkMode }) => {
           </p>
         </div>
       ) : tokens.length === 0 ? (
-        <div className="access-tokens-empty" data-cy="access-tokens-empty">
-          <p className="access-tokens-empty-title">No access tokens yet</p>
-          <p className="access-tokens-empty-subtitle">
-            Tokens let the ToolJet CLI deploy custom component libraries to your workspaces.
-          </p>
-        </div>
+        <AccessTokensEmptyState onCreate={() => setShowCreateModal(true)} />
       ) : (
         <div className="access-tokens-list" data-cy="access-tokens-table">
           <div className="access-tokens-list-header">
@@ -189,44 +195,60 @@ export const AccessTokensCard = ({ darkMode }) => {
                 )}
               </div>
               <div className="access-tokens-cell access-tokens-cell-actions">
-                <button
-                  type="button"
+                <Button
+                  size="medium"
+                  variant="dangerPrimary"
                   className="access-token-revoke-btn"
                   onClick={() => setRevokeTarget(token)}
                   data-cy={`revoke-token-${token.name}`}
                 >
-                  <SolidIcon name="trash" width="14" fill="var(--text-placeholder)" />
-                </button>
+                  Revoke
+                </Button>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Create flow — dialog 444px/rounded-8, centered heading px-24 py-16, body p-24 (frames 03–07) */}
-      <ModalBase
-        show={showCreateModal}
-        handleClose={closeCreateModal}
-        darkMode={darkMode}
-        title={createdToken ? 'Token created' : 'Create personal access token'}
-        className="access-token-modal"
-        showFooter={false}
+      <Dialog
+        open={showCreateModal}
+        title={createdToken ? '' : 'Create personal access token'}
+        cancelBtnProps={{ 'data-cy': 'cancel-button', disabled: createInProgress, onClick: closeCreateModal }}
+        submitActions={[
+          {
+            label: 'Create token',
+            isLoading: createInProgress,
+            'data-cy': 'submit-button',
+            onClick: handleCreate,
+          },
+        ]}
+        classes={{ dialogContent: 'tw-max-w-md' }}
       >
         {createdToken ? (
-          <div className="access-token-created" data-cy="token-created-view">
-            <p className="access-token-created-warning">
-              Copy your token now — <strong>it will not be shown again.</strong>
+          <div className="tw-flex tw-flex-col tw-gap-0.5">
+            <h6 data-cy="modal-header" className="tw-text-text-default tw-font-medium tw-text-xl">
+              Token created
+            </h6>
+
+            <p data-cy="modal-description" className="tw-text-text-default tw-text-base tw-mb-4">
+              Copy this token now. It won&apos;t be shown again. If you lose it, revoke this token and create another.
             </p>
-            <div className="access-token-created-row">
-              <code className="access-token-created-value">{createdToken}</code>
-              <ButtonSolid variant="secondary" size="sm" onClick={handleCopy} data-cy="copy-token-button">
-                Copy
-              </ButtonSolid>
-            </div>
-            <div className="access-token-modal-footer">
-              <ButtonSolid variant="primary" size="sm" onClick={closeCreateModal} data-cy="token-done-button">
-                Done
-              </ButtonSolid>
+
+            <div className="tw-flex tw-items-center tw-gap-4 tw-rounded-md tw-p-3 tw-border tw-border-solid tw-border-border-weak">
+              <div className="tw-min-w-0 tw-flex-1">
+                <p className="tw-mb-1 tw-font-medium tw-text-text-placeholder tw-text-base">Token</p>
+                <p className="tw-mb-0 tw-font-medium tw-text-text-default tw-text-base tw-truncate">{createdToken}</p>
+              </div>
+
+              <Button
+                isLucid
+                iconOnly
+                variant="ghost"
+                leadingIcon="copy"
+                className="tw-shrink-0"
+                fill="var(--icon-strong)"
+                onClick={handleCopy}
+              />
             </div>
           </div>
         ) : (
@@ -242,86 +264,124 @@ export const AccessTokensCard = ({ darkMode }) => {
                 onBlur={() => setNameTouched(true)}
                 data-cy="token-name-input"
               />
-              {nameTouched && !name.trim() && <div className="access-token-field-error">Name is required</div>}
+              {nameTouched && !name.trim() && (
+                <div className="access-token-field-error">Enter a name so you can identify this token later.</div>
+              )}
             </div>
             <div className="access-token-field">
               <label className="access-token-field-label">Workspace</label>
-              <select
-                className="access-token-field-input"
-                value={organizationId}
-                onChange={(e) => setOrganizationId(e.target.value)}
-                data-cy="token-workspace-select"
-              >
-                {organizations.map((org) => (
-                  <option key={org.id} value={org.id}>
-                    {org.name}
-                  </option>
-                ))}
-              </select>
+
+              <Dropdown
+                options={organizations?.map((org) => ({ label: org.name, value: org.id })) ?? []}
+                selectedOption={organizationId ?? null}
+                onChangeSelectedOption={setOrganizationId}
+                darkMode={darkMode}
+              />
             </div>
             <div className="access-token-field">
               <label className="access-token-field-label">Expiration</label>
-              <select
-                className="access-token-field-input"
-                value={expiresInDays}
-                onChange={(e) => setExpiresInDays(e.target.value)}
-                data-cy="token-expiry-select"
-              >
-                {EXPIRY_OPTIONS.map((opt) => (
-                  <option key={opt.label} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="access-token-modal-footer">
-              <ButtonSolid variant="tertiary" size="sm" onClick={closeCreateModal} data-cy="token-cancel-button">
-                Cancel
-              </ButtonSolid>
-              <ButtonSolid
-                variant="primary"
-                size="sm"
-                onClick={handleCreate}
-                isLoading={createInProgress}
-                data-cy="token-create-button"
-              >
-                Create token
-              </ButtonSolid>
+
+              <Dropdown
+                options={EXPIRY_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value })) ?? []}
+                selectedOption={expiresInDays ?? null}
+                onChangeSelectedOption={setExpiresInDays}
+                darkMode={darkMode}
+              />
             </div>
           </div>
         )}
-      </ModalBase>
+      </Dialog>
 
-      {/* Revoke confirm (frame 09) */}
-      <ModalBase
-        show={!!revokeTarget}
-        handleClose={() => setRevokeTarget(null)}
-        darkMode={darkMode}
-        title="Revoke token"
-        className="access-token-modal"
-        showFooter={false}
+      <Dialog
+        open={!!revokeTarget}
+        cancelBtnProps={{
+          'data-cy': 'cancel-button',
+          disabled: revokeInProgress,
+          onClick: () => setRevokeTarget(null),
+        }}
+        submitActions={[
+          {
+            label: 'Revoke token',
+            variant: 'dangerPrimary',
+            isLoading: revokeInProgress,
+            'data-cy': 'revoke-confirm',
+            onClick: handleRevoke,
+          },
+        ]}
+        classes={{ dialogBody: 'tw-pb-0', dialogContent: 'tw-max-w-md' }}
       >
-        <div className="access-token-revoke-confirm">
-          <p>
-            Revoke <strong>{revokeTarget?.name}</strong>? Any CLI logged in with this token will stop working
-            immediately. This cannot be undone.
+        <div className="tw-flex tw-flex-col tw-gap-0.5">
+          <h6 data-cy="modal-header" className="tw-text-text-default tw-font-medium tw-text-xl">
+            Revoke token?
+          </h6>
+
+          <p data-cy="modal-description" className="tw-text-text-default tw-text-base tw-mb-0">
+            Revoke
+            <span className="tw-font-semibold">
+              {revokeTarget?.name} in {revokeTarget?.organizationName}
+            </span>
+            ? Any CLI session or pipeline using this token stops working immediately.
+            <br /> <br />
+            <span className="tw-text-text-placeholder">
+              This can&apos;t be undone. To restore access you&apos;ll need to create a new token and update wherever
+              it&apos;s used.
+            </span>
           </p>
-          <div className="access-token-modal-footer">
-            <ButtonSolid variant="tertiary" size="sm" onClick={() => setRevokeTarget(null)} data-cy="revoke-cancel">
-              Cancel
-            </ButtonSolid>
-            <ButtonSolid
-              variant="dangerPrimary"
-              size="sm"
-              onClick={handleRevoke}
-              isLoading={revokeInProgress}
-              data-cy="revoke-confirm"
-            >
-              Revoke token
-            </ButtonSolid>
-          </div>
         </div>
-      </ModalBase>
+      </Dialog>
     </div>
   );
 };
+
+function AccessTokensEmptyState({ onCreate }) {
+  return (
+    <div className="tw-flex tw-flex-col tw-items-center tw-px-4 tw-py-10" data-cy="access-tokens-empty">
+      <div className="tw-flex tw-justify-center tw-items-center tw-size-8 tw-rounded-lg tw-bg-background-surface-layer-02 tw-mb-2">
+        <KeyRound size="20" color="var(--icon-default)" />
+      </div>
+
+      <p className="tw-font-medium tw-text-base tw-mb-0">No personal access tokens</p>
+
+      <p className="tw-text-base tw-text-text-placeholder tw-mb-7 tw-text-center">
+        Create a token to sign in to the ToolJet CLI from your machine,
+        <br /> or to let a CI pipeline deploy on yourbehalf.
+      </p>
+
+      <Button isLucid variant="outline" leadingIcon="plus" onClick={onCreate} data-cy="create-token-button">
+        Create token
+      </Button>
+    </div>
+  );
+}
+
+function Dropdown({ darkMode, options, selectedOption, onChangeSelectedOption }) {
+  return (
+    <Select value={selectedOption} onValueChange={onChangeSelectedOption}>
+      <SelectTrigger
+        showArrow={false}
+        className="tw-shadow-none tw-gap-1.5 tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-selected"
+      >
+        <SelectValue />
+      </SelectTrigger>
+
+      <SelectContent
+        align="end"
+        className={cn('tw-border tw-border-solid tw-border-border-weak', {
+          'dark-theme theme-dark': darkMode,
+        })}
+      >
+        <SelectGroup className="tw-h-56 tw-overflow-y-auto tw-hide-scrollbar">
+          {options.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              className="tw-font-body-default tw-text-text-default tw-justify-between tw-gap-2"
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}

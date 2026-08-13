@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -11,13 +11,15 @@ import { customComponentLibrariesService } from '@/_services/customComponentLibr
 import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
 import { normalizePin, pinKey } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Container } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/Rocket/shadcn/dropdown-menu';
 
-// F4a: the widget panel's "Custom" tab (design 38-4040) — lists deployed custom
-// component libraries; each component is draggable and drops a LibraryComponent
-// instance pre-filled via libraryComponentInfo (see useCanvasDropHandler).
-
-// "CurrencyInput" → "CI", "Heatmap" → "HE" (capitals first, first-two fallback)
 const initials = (name = '') => (name.match(/[A-Z]/g) || []).slice(0, 2).join('') || name.slice(0, 2).toUpperCase();
 
 const CustomComponentCard = ({ libraryId, revisionId, name, displayName, description, props }) => {
@@ -28,16 +30,10 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
   );
   const { handleDrop } = useCanvasDropHandler() || noop;
 
-  // The drag item mirrors DragLayer's shape; libraryComponentInfo is the payload
-  // addNewWidgetToTheEditor stamps into the new instance's properties.
   const dragComponent = useMemo(
     () => ({
       component: 'LibraryComponent',
       displayName: name,
-      // The canvas drag-ghost sizes itself from component.defaultSize (Container.jsx).
-      // NOTE: manifest defaultWidth/Height are NOT consumed yet — their units are
-      // undefined until C2 is agreed with the CLI (hello-world ships 6×5, which as px
-      // meant a 5px-tall widget). `defaultSize` prop resumes flowing once C2 lands.
       defaultSize: { width: 12, height: 200 },
       libraryComponentInfo: { libraryId, componentName: name, revisionId, props },
     }),
@@ -52,8 +48,6 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
       end: (item) => {
         const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
         handleDrop(item, currentDragCanvasId);
-        // F5: first drop of a library into this app sets the app-level pin to the
-        // latest revision (all future instances of this library follow the pin).
         const { globalSettings, globalSettingsChanged } = useStore.getState();
         const pins = globalSettings?.customComponentLibraries ?? {};
         if (!normalizePin(pins[pinKey(libraryId)] ?? pins[libraryId])) {
@@ -86,14 +80,7 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
   );
 };
 
-// F5: the version picker on the library header (design 38-4040 frames 02/03).
-// Picking a REVISION writes the app-level pin (globalSettings.customComponentLibraries)
-// — every instance of the library in this app moves together (LLD §5.7), autosaved.
-// Picking a DEV bundle sets a session-local preview override — never persisted.
 const VersionPicker = ({ library }) => {
-  const [open, setOpen] = useState(false);
-  const pickerRef = useRef(null);
-
   const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
   const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
   const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[library.id]);
@@ -105,92 +92,96 @@ const VersionPicker = ({ library }) => {
   const current = devPreview ?? pin ?? latest;
   const hasUpdate = Boolean(pin && pin !== latest);
 
-  // Always write FLAT-STRING values keyed by DASHLESS uuid, migrating any legacy
-  // rows (object values / dashed keys) on every write — see libraryComponentRevision.js
-  // for why (deep camelize/decamelize transforms in the app-load paths).
   const normalizedPins = () =>
     Object.fromEntries(Object.entries(pins ?? {}).map(([libId, value]) => [pinKey(libId), normalizePin(value)]));
-
-  useEffect(() => {
-    if (!open) return;
-    const onClickOutside = (e) => {
-      if (!pickerRef.current?.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, [open]);
 
   const selectRevision = (version) => {
     clearDevPreview(library.id);
     globalSettingsChanged({
       customComponentLibraries: { ...normalizedPins(), [pinKey(library.id)]: version },
     });
-    setOpen(false);
   };
 
-  const selectDevPreview = (userId) => {
-    setDevPreview(library.id, `dev:${userId}`);
-    setOpen(false);
+  const selectDevPreview = (userId, userEmail) => {
+    setDevPreview(library.id, `dev:${userId}`, userEmail);
   };
 
   return (
-    <div className="custom-library-version-picker" ref={pickerRef} onClick={(e) => e.stopPropagation()}>
+    <div className="custom-library-version-picker" onClick={(e) => e.stopPropagation()}>
       {hasUpdate && (
         <TablerIcon
           iconName="IconRefresh"
           title="New revision available"
-          style={{ width: 16, height: 16, color: 'var(--text-placeholder)' }}
+          style={{ width: 16, height: 16, color: 'var(--primary-accent-strong)' }}
           stroke={1.5}
         />
       )}
-      <button
-        type="button"
-        className="custom-library-version-chip"
-        onClick={() => setOpen((prev) => !prev)}
-        data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
-      >
-        {devPreview ? 'dev' : current}
-      </button>
-      {open && (
-        <div className="custom-library-version-menu">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="custom-library-version-chip"
+            data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
+          >
+            {devPreview ? 'dev' : current}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="custom-library-version-menu" onClick={(e) => e.stopPropagation()}>
           {library.revisions.map(({ id, version, createdAt }) => (
-            <div key={id} className="version-menu-row" onClick={() => selectRevision(version)}>
-              <span className="version-menu-check">
-                {version === current && (
-                  <TablerIcon iconName="IconCheck" style={{ width: 16, height: 16 }} stroke={1.5} />
-                )}
-              </span>
-              <span className="version-menu-text">
-                <span className="version-menu-title">
-                  {version}
-                  {version === latest && hasUpdate && <span className="version-menu-new-badge">New</span>}
+            <DropdownMenuItem key={id} className="version-menu-row" onSelect={() => selectRevision(version)}>
+              {/* row = space-between: [check + title/subtitle] group left, New badge right */}
+              <span className="version-menu-main">
+                <span className="version-menu-check">
+                  {version === current && (
+                    <TablerIcon
+                      iconName="IconCheck"
+                      color="var(--primary-accent-strong)"
+                      style={{ width: 24, height: 24 }}
+                      stroke={1.5}
+                    />
+                  )}
                 </span>
-                <span className="version-menu-subtitle">
-                  {moment(createdAt).format('MMM D')}
-                  {version === pin ? ' · current' : version === latest ? ' · latest' : ''}
+                <span className="version-menu-text">
+                  <span className="version-menu-title">{version}</span>
+                  <span className="version-menu-subtitle">
+                    {moment(createdAt).format('MMM D')}
+                    {version === pin ? ' · current' : version === latest ? ' · latest' : ''}
+                  </span>
                 </span>
               </span>
-            </div>
+              {version === latest && hasUpdate && <span className="version-menu-new-badge">New</span>}
+            </DropdownMenuItem>
           ))}
-          {library.devBundles.length > 0 && <div className="version-menu-divider" />}
-          {library.devBundles.map(({ userId, userEmail }) => (
-            <div key={userId} className="version-menu-row" onClick={() => selectDevPreview(userId)}>
-              <span className="version-menu-check">
-                {devPreview === `dev:${userId}` && (
-                  <TablerIcon iconName="IconCheck" style={{ width: 16, height: 16 }} stroke={1.5} />
-                )}
-              </span>
-              <span className="version-menu-text">
-                <span className="version-menu-title">
-                  Dev preview
-                  <span className="version-menu-live-dot" />
+          {library?.devBundles?.length > 0 && <DropdownMenuSeparator className="version-menu-divider" />}
+          {library?.devBundles?.map(({ userId, userEmail }) => (
+            <DropdownMenuItem
+              key={userId}
+              className="version-menu-row"
+              onSelect={() => selectDevPreview(userId, userEmail)}
+            >
+              <span className="version-menu-main">
+                <span className="version-menu-check">
+                  {devPreview === `dev:${userId}` && (
+                    <TablerIcon
+                      iconName="IconCheck"
+                      color="var(--primary-accent-strong)"
+                      style={{ width: 24, height: 24 }}
+                      stroke={1.5}
+                    />
+                  )}
                 </span>
-                <span className="version-menu-subtitle">@{userEmail ?? userId} · preview only</span>
+                <span className="version-menu-text">
+                  <span className="version-menu-title">
+                    Dev preview
+                    <span className="version-menu-live-dot" />
+                  </span>
+                  <span className="version-menu-subtitle">@{userEmail ?? userId} · preview only</span>
+                </span>
               </span>
-            </div>
+            </DropdownMenuItem>
           ))}
-        </div>
-      )}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
@@ -272,7 +263,7 @@ export const CustomComponentsTab = ({ searchQuery = '' }) => {
   if (filtered.length === 0) {
     return (
       <div className="custom-components-empty">
-        <SolidIcon name="apps" width="24" fill="var(--text-placeholder)" />
+        <Container size={24} color="var(--text-placeholder)" strokeWidth={1.5} />
         <p className="custom-components-empty-title">{searchQuery ? 'No results found' : 'No custom libraries yet'}</p>
         <p className="custom-components-empty-subtitle">
           {searchQuery

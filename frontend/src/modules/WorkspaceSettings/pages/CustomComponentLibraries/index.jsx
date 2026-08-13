@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import Popover from 'react-bootstrap/Popover';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+
 import ModalBase from '@/_ui/Modal';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import TablerIcon from '@/_ui/Icon/TablerIcon';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/Rocket/shadcn/dropdown-menu';
+import { Button } from '@/components/ui/Button/Button';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
+
 import './custom-component-libraries.styles.scss';
 
 export default function CustomComponentLibraries({ darkMode }) {
@@ -17,6 +14,7 @@ export default function CustomComponentLibraries({ darkMode }) {
   const [loadFailed, setLoadFailed] = useState(false); // failed fetch ≠ empty list
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const [popoverToOpenId, setPopoverToOpenId] = useState(null);
 
   const fetchLibraries = () => {
     setLoadFailed(false);
@@ -50,16 +48,23 @@ export default function CustomComponentLibraries({ darkMode }) {
     setDeleteInProgress(false);
   };
 
+  const handleOpenDeleteDialog = (library) => () => {
+    setDeleteTarget(library);
+    setPopoverToOpenId(null);
+  };
+
   return (
     <div className="custom-component-libraries-page" data-cy="custom-component-libraries-page">
-      <div className="libraries-count" data-cy="libraries-count">
-        {libraries === null ? '' : `${libraries.length} ${libraries.length === 1 ? 'library' : 'libraries'}`}
+      <div className="tw-h-8 tw-flex tw-items-center tw-justify-between">
+        <p className="libraries-count" data-cy="libraries-count">
+          {libraries === null ? '' : `${libraries.length} ${libraries.length <= 1 ? 'library' : 'libraries'}`}
+        </p>
       </div>
 
       <div className="libraries-card">
         <div className="libraries-table-header">
-          <div className="col-name">Name</div>
-          <div className="col-version">Latest version</div>
+          <div className="col-name tw-text-text-placeholder">Name</div>
+          <div className="col-version tw-text-text-placeholder">Latest version</div>
         </div>
 
         {libraries === null ? null : loadFailed ? (
@@ -82,22 +87,41 @@ export default function CustomComponentLibraries({ darkMode }) {
               <div className="libraries-row" key={library.id} data-cy={`library-row-${library.name}`}>
                 <div className="col-name">{library.name}</div>
                 <div className="col-version">{library.revisions[0]?.version ?? '—'}</div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button type="button" className="library-kebab-btn" data-cy={`library-menu-${library.name}`}>
-                      <TablerIcon iconName="IconDotsVertical" style={{ width: 12, height: 12 }} stroke={1.5} />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="library-kebab-menu">
-                    <DropdownMenuItem
-                      className="library-kebab-delete"
-                      onSelect={() => setDeleteTarget(library)}
-                      data-cy={`delete-library-${library.name}`}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+
+                <OverlayTrigger
+                  rootClose
+                  show={popoverToOpenId === library.id}
+                  trigger="click"
+                  placement="bottom-end"
+                  overlay={
+                    <Popover id="popover-ccl-menu" className={darkMode && 'dark-theme'} style={{ transition: 'none' }}>
+                      <Popover.Body bsPrefix="popover-body">
+                        <Button
+                          isLucid
+                          size="medium"
+                          variant="ghost"
+                          fill="#E54D2E"
+                          leadingIcon="trash-2"
+                          className="tw-text-[#E54D2E]"
+                          onClick={handleOpenDeleteDialog(library)}
+                          data-cy={`delete-library-${library.name}`}
+                        >
+                          Delete library
+                        </Button>
+                      </Popover.Body>
+                    </Popover>
+                  }
+                >
+                  <Button
+                    isLucid
+                    iconOnly
+                    size="small"
+                    variant="outline"
+                    onClick={() => setPopoverToOpenId(popoverToOpenId === library.id ? null : library.id)}
+                    className="tw-rounded-sm"
+                    leadingIcon="ellipsis-vertical"
+                  />
+                </OverlayTrigger>
               </div>
             ))}
           </div>
@@ -117,19 +141,20 @@ export default function CustomComponentLibraries({ darkMode }) {
             Delete <strong>{deleteTarget?.name}</strong>? All published versions and dev uploads will be permanently
             removed. This cannot be undone.
           </p>
+
           <div className="library-delete-modal-footer">
-            <ButtonSolid variant="tertiary" size="sm" onClick={() => setDeleteTarget(null)} data-cy="delete-cancel">
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} data-cy="delete-cancel">
               Cancel
-            </ButtonSolid>
-            <ButtonSolid
+            </Button>
+
+            <Button
               variant="dangerPrimary"
-              size="sm"
               onClick={handleDelete}
               isLoading={deleteInProgress}
               data-cy="delete-confirm"
             >
               Delete library
-            </ButtonSolid>
+            </Button>
           </div>
         </div>
       </ModalBase>

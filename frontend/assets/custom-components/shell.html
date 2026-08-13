@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <!--
-      Custom component shell (F2). Static — same file for every component
+      Custom component shell. Static — same file for every component
       instance, heavily cacheable. Loaded as the iframe src by
-      LibraryComponentRunner (F3), same-origin with the ToolJet app.
+      LibraryComponentRunner , same-origin with the ToolJet app.
 
-      Protocol (parent <-> shell), per LLD §5.2:
+      Protocol (parent <-> shell)
         shell  -> parent : { type: 'ready' }
         parent -> shell  : { type: 'load', bundleUrl, componentName, cssUrl? }
         parent -> shell  : { type: 'props', data }
-        shell  -> parent : { type: 'stateChange', key, value }   (via SDK, F3)
-        shell  -> parent : { type: 'event', name }               (via SDK, F3)
+        shell  -> parent : { type: 'stateChange', key, value }   (via SDK)
+        shell  -> parent : { type: 'event', name }               (via SDK)
         shell  -> parent : { type: 'error', message }
     -->
     <style>
@@ -64,20 +64,42 @@
       // useStateX({ name, initialValue }): two-way bound state.
       //   in : parent-sent props win — when currentProps[name] changes, adopt it
       //        (setState-during-render, React's documented derived-state pattern).
-      //   out: every value change posts stateChange → parent setExposedVariable.
+      //   out: setter posts stateChange SYNCHRONOUSLY — "write before fire": events post
+      //        immediately (useEventCallback below), so if state posted from a useEffect
+      //        (post-render) an event fired in the same handler would always overtake it
+      //        and the parent would execute the event against the previous value
+      //        (stale-by-one; parent-side flushing can't help — the value hasn't crossed
+      //        the iframe yet). Posting inside the setter restores causal order.
       const makeStateHook = () =>
         function useTjState({ name, initialValue } = {}) {
           const external = currentProps[name];
           const [value, setValue] = React.useState(external !== undefined ? external : initialValue);
+          const valueRef = React.useRef(value); // sync-readable current value (function-updater support)
           const lastExternal = React.useRef(external);
           if (lastExternal.current !== external) {
             lastExternal.current = external;
-            if (external !== undefined && external !== value) setValue(external);
+            if (external !== undefined && external !== value) {
+              valueRef.current = external; // parent sent it — no post-back needed
+              setValue(external);
+            }
           }
+          // Mount: post the initial value so the exposed variable exists before any interaction.
+          // The setter and the adoption branch above are the ONLY writers, and adoption never
+          // needs a post-back — so no other sync path exists.
           React.useEffect(() => {
-            post({ type: 'stateChange', key: name, value });
-          }, [name, value]);
-          return [value, setValue];
+            post({ type: 'stateChange', key: name, value: valueRef.current });
+          }, [name]);
+          const setAndSync = React.useCallback(
+            (next) => {
+              const resolved = typeof next === 'function' ? next(valueRef.current) : next;
+              valueRef.current = resolved;
+              // Crosses the iframe NOW — before the author's next line can fire an event.
+              post({ type: 'stateChange', key: name, value: resolved });
+              setValue(resolved);
+            },
+            [name]
+          );
+          return [value, setAndSync];
         };
 
       window.__tj_ToolJet = {

@@ -1,20 +1,46 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useEffectiveLibraryRevision, libraryFileUrl } from './libraryComponentRevision';
+import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
 
-// Keys in `properties` that configure WHICH component renders — everything else
-// is forwarded into the iframe as the component's own props.
+const DevBadge = ({ label }) => (
+  <div
+    style={{
+      position: 'absolute',
+      left: 0,
+      bottom: -22,
+      height: 20,
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '2px 4px',
+      borderRadius: '6px',
+      background: 'var(--background-success-strong, #1e823b)',
+      color: '#fff',
+      fontSize: '11px',
+      fontWeight: 500,
+      whiteSpace: 'nowrap',
+      pointerEvents: 'none',
+      zIndex: 1,
+    }}
+  >
+    dev: {label}
+  </div>
+);
+
 const META_KEYS = new Set(['libraryId', 'componentName', 'revisionId']);
 
-// F3: LibraryComponentRunner (LLD §5.2). Renders the static shell in a
-// same-origin iframe and speaks the postMessage protocol:
-//   shell → ready → we send load {bundleUrl, cssUrl, componentName}
-//   props change → we send props
-//   shell → stateChange/event → setExposedVariable / fireEvent
-export const LibraryComponent = ({ properties = {}, height, setExposedVariable, fireEvent, dataCy }) => {
+/*same-origin iframe and speaks the postMessage protocol:
+   shell → ready → we send load {bundleUrl, cssUrl, componentName}
+   props change → we send props
+   shell → stateChange/event → setExposedVariable / fireEvent 
+*/
+export const LibraryComponent = ({ properties = {}, styles = {}, height, setExposedVariable, fireEvent, dataCy }) => {
   const { libraryId, componentName, revisionId } = properties;
+  const safeHeight = Math.max(height ?? 0, 0);
 
-  // F5: dev preview > app-level pin > instance property (shared rule with the Inspector).
-  // Changing the pin/preview changes this value → iframe remounts via key → clean reload.
+  const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[libraryId]);
+  const devEmail = useCustomComponentPreviewStore((state) => state.devPreviewEmails?.[libraryId]);
+  const devBadge = devPreview ? <DevBadge label={devEmail ?? devPreview.replace('dev:', '')} /> : null;
+
   const effectiveRevision = useEffectiveLibraryRevision(libraryId, revisionId);
   const configured = Boolean(libraryId && componentName && effectiveRevision);
 
@@ -41,15 +67,6 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
     cssUrl: configured ? fileUrl('index.css') : null,
   };
 
-  // iframe → parent. One listener per instance; e.source check keeps instances
-  // (and unrelated windows) from crossing wires.
-  //
-  // `ready` is THE load trigger — not an effect. Browsers RELOAD an iframe
-  // whenever its DOM node moves (canvas drag/overlap re-parents nodes); React
-  // state survives that, the shell's content doesn't. A fresh shell always
-  // posts `ready`, so answering every `ready` with load+props makes the widget
-  // self-heal from any reload. Config changes remount the iframe via key=,
-  // which also ends in a fresh `ready` — one trigger covers every path.
   useEffect(() => {
     const onMessage = (e) => {
       if (e.source !== iframeRef.current?.contentWindow) return;
@@ -74,8 +91,6 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
     return () => window.removeEventListener('message', onMessage);
   }, [setExposedVariable, fireEvent]);
 
-  // Identity change remounts the iframe (see key=) — the fresh shell must
-  // handshake from scratch, so ready-state resets with it.
   useEffect(() => {
     setShellReady(false);
   }, [libraryId, effectiveRevision, componentName]);
@@ -92,7 +107,8 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
       <div
         data-cy={dataCy}
         style={{
-          height,
+          position: 'relative', // anchors the dev badge
+          height: safeHeight,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -104,18 +120,22 @@ export const LibraryComponent = ({ properties = {}, height, setExposedVariable, 
         }}
       >
         Slot
+        {devBadge}
       </div>
     );
   }
 
   return (
-    <iframe
-      key={`${libraryId}|${effectiveRevision}|${componentName}`}
-      ref={iframeRef}
-      src="/assets/custom-components/shell.html"
-      title={componentName}
-      data-cy={dataCy}
-      style={{ width: '100%', height, border: 'none', display: 'block' }}
-    />
+    <div style={{ position: 'relative', width: '100%', height: safeHeight }}>
+      <iframe
+        key={`${libraryId}|${effectiveRevision}|${componentName}`}
+        ref={iframeRef}
+        src="/assets/custom-components/shell.html"
+        title={componentName}
+        data-cy={dataCy}
+        style={{ width: '100%', height: '100%', border: 'none', display: 'block', boxShadow: styles.boxShadow }}
+      />
+      {devBadge}
+    </div>
   );
 };
