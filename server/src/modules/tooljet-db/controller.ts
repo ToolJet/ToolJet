@@ -68,7 +68,8 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.VIEW_TABLES)
   @Get('/organizations/:organizationId/tables')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async tables(@Param('organizationId') organizationId) {
+  async tables(@Req() req) {
+    const organizationId = req.user.organizationId;
     const result = await this.tableOperationsService.perform(organizationId, 'view_tables');
     return decamelizeKeys({ result });
   }
@@ -76,7 +77,8 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.VIEW_TABLES)
   @Get('/tables/limits/:organizationId')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async getTablesLimit(@Param('organizationId') organizationId) {
+  async getTablesLimit(@Req() req) {
+    const organizationId = req.user.organizationId;
     const data = await this.tableOperationsService.getTablesLimit(organizationId);
     return data;
   }
@@ -84,7 +86,8 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.VIEW_TABLE)
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async table(@Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
+  async table(@Req() req, @Body() body, @Param('tableName') tableName) {
+    const organizationId = req.user.organizationId;
     const result = await this.tableOperationsService.perform(organizationId, 'view_table', { table_name: tableName });
     const decamelizedResult = decamelizeKeys({ result });
     decamelizedResult['result']['configurations'] = result.configurations || {};
@@ -94,7 +97,8 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.CREATE_TABLE)
   @Post('/organizations/:organizationId/table')
   @UseGuards(JwtAuthGuard, TableCountGuard, FeatureAbilityGuard)
-  async createTable(@Body() createTableDto: CreatePostgrestTableDto, @Param('organizationId') organizationId) {
+  async createTable(@Req() req, @Body() createTableDto: CreatePostgrestTableDto) {
+    const organizationId = req.user.organizationId;
     const result = await this.tableOperationsService.perform(organizationId, 'create_table', createTableDto);
     return decamelizeKeys({ result });
   }
@@ -102,7 +106,8 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.RENAME_TABLE)
   @Patch('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async editTable(@Body() editTableBody: EditTableDto, @Param('organizationId') organizationId) {
+  async editTable(@Req() req, @Body() editTableBody: EditTableDto) {
+    const organizationId = req.user.organizationId;
     const result = await this.tableOperationsService.perform(organizationId, 'edit_table', editTableBody);
     return decamelizeKeys({ result });
   }
@@ -110,7 +115,8 @@ export class TooljetDbController {
   @InitFeature(FEATURE_KEY.DROP_TABLE)
   @Delete('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async dropTable(@Param('organizationId') organizationId, @Param('tableName') tableName) {
+  async dropTable(@Req() req, @Param('tableName') tableName) {
+    const organizationId = req.user.organizationId;
     const result = await this.tableOperationsService.perform(organizationId, 'drop_table', { table_name: tableName });
     return decamelizeKeys({ result });
   }
@@ -119,10 +125,11 @@ export class TooljetDbController {
   @Post('/organizations/:organizationId/table/:tableName/column')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async addColumn(
-    @Param('organizationId') organizationId,
+    @Req() req,
     @Param('tableName') tableName,
     @Body() addColumnBody: AddColumnDto
   ) {
+    const organizationId = req.user.organizationId;
     const params = {
       table_name: tableName,
       column: addColumnBody.column,
@@ -136,10 +143,11 @@ export class TooljetDbController {
   @Delete('/organizations/:organizationId/table/:tableName/column/:columnName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async dropColumn(
-    @Param('organizationId') organizationId,
+    @Req() req,
     @Param('tableName') tableName,
     @Param('columnName') columnName
   ) {
+    const organizationId = req.user.organizationId;
     const params = {
       table_name: tableName,
       column: { column_name: columnName },
@@ -153,7 +161,8 @@ export class TooljetDbController {
   @UseInterceptors(FileInterceptor('file'))
   @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  async bulkUpload(@Param('organizationId') organizationId, @Param('tableName') tableName, @UploadedFile() file: any) {
+  async bulkUpload(@Req() req, @Param('tableName') tableName, @UploadedFile() file: any) {
+    const organizationId = req.user.organizationId;
     if (file?.size > this.MAX_CSV_FILE_SIZE) {
       throw new BadRequestException(`File size cannot be greater than ${this.MAX_CSV_FILE_SIZE / (1024 * 1024)}MB`);
     }
@@ -166,7 +175,8 @@ export class TooljetDbController {
   @Post('/organizations/:organizationId/join')
   @UseFilters(new TooljetDbJoinExceptionFilter())
   @UseGuards(OrganizationAuthGuard, FeatureAbilityGuard)
-  async joinTables(@Req() req, @Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
+  async joinTables(@Req() req, @Body() tooljetDbJoinDto: TooljetDbJoinDto) {
+    const organizationId = req.user.organizationId;
     const params = {
       joinQueryJson: { ...tooljetDbJoinDto },
       dataQuery: req.dataQuery,
@@ -181,11 +191,12 @@ export class TooljetDbController {
   @Patch('/organizations/:organizationId/table/:tableName/column')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async editColumn(
+    @Req() req,
     @Body('column') columnDto: EditColumnTableDto,
-    @Param('organizationId') organizationId,
     @Param('tableName') tableName,
     @Body('foreignKeyIdToDelete') foreignKeyIdToDelete?: string
   ) {
+    const organizationId = req.user.organizationId;
     const params = {
       table_name: tableName,
       column: columnDto,
@@ -199,10 +210,11 @@ export class TooljetDbController {
   @Post('/organizations/:organizationId/table/:tableName/foreignkey')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async createForeignKey(
-    @Param('organizationId') organizationId,
+    @Req() req,
     @Param('tableName') tableName,
     @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
   ) {
+    const organizationId = req.user.organizationId;
     const params = {
       table_name: tableName,
       foreign_keys: foreign_keys,
@@ -216,11 +228,12 @@ export class TooljetDbController {
   @Put('/organizations/:organizationId/table/:tableName/foreignkey')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async updateForeignKey(
-    @Param('organizationId') organizationId,
+    @Req() req,
     @Param('tableName') tableName,
     @Body('foreign_key_id') foreign_key_id: string,
     @Body('foreign_keys') foreign_keys: Array<PostgrestForeignKeyDto>
   ) {
+    const organizationId = req.user.organizationId;
     const params = {
       table_name: tableName,
       foreign_key_id: foreign_key_id,
@@ -234,10 +247,11 @@ export class TooljetDbController {
   @Delete('/organizations/:organizationId/table/:tableName/foreignkey/:foreignKeyId')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async deleteForeignKey(
-    @Param('organizationId') organizationId,
+    @Req() req,
     @Param('tableName') tableName,
     @Param('foreignKeyId') foreignKeyId: string
   ) {
+    const organizationId = req.user.organizationId;
     const params = {
       table_name: tableName,
       foreign_key_id: foreignKeyId,
