@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18.18.2
+          node-version: 20.20.0
 
       - name: Install dependencies
         working-directory: docs
@@ -39,5 +39,5 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
-          npm install -g netlify-cli
+          npm install -g netlify-cli@26
           netlify deploy --prod --dir=docs/build --site=${{ secrets.NETLIFY_SITE_ID }}
