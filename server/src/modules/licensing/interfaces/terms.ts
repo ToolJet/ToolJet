@@ -33,6 +33,7 @@ export interface Terms {
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
     scim?: boolean;
+    mfa?: boolean;
     customDomains?: boolean;
     google?: boolean;
     github?: boolean;
