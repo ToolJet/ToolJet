@@ -251,6 +251,14 @@ export const createAppSlice = (set, get) => ({
       console.error('Error updating page:', error);
     }
   },
+  // Single source of truth for "which theme is active": licensed orgs use their selected
+  // theme (if it actually has a definition), everyone else falls back to baseTheme
+  getActiveTheme: () => {
+    const state = get();
+    const hasThemeAccess = state.isLicenseValid() && state.isFeatureAccessible('customThemes');
+    const selectedTheme = state.globalSettings?.theme;
+    return hasThemeAccess && selectedTheme?.definition ? selectedTheme : baseTheme;
+  },
   switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas', isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
 
