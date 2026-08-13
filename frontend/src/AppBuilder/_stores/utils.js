@@ -704,8 +704,6 @@ export const parsePropertyPath = (property) => {
 
 export const baseTheme = {
   name: 'ToolJet',
-  isDefault: true,
-  isBasic: true,
   definition: {
     brand: {
       colors: {
@@ -801,7 +799,7 @@ export const resolveThemeForMode = (definition = {}, mode) => {
       return node[mode];
     }
     return Object.keys(node).reduce((resolved, key) => {
-      resolved[key] = resolveNode(node[key]);
+      resolved[_.camelCase(key)] = resolveNode(node[key]);
       return resolved;
     }, {});
   };
