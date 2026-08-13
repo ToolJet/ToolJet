@@ -342,6 +342,9 @@ export const PagesSidebarNavigation = ({
       ? styles.pillSelectedBackgroundColor.value
       : 'var(--cc-appBackground-surface, #F6F6F6)',
     '--nav-item-pill-radius': `${styles.pillRadius.value}px`,
+    '--app-title-color': !styles.appTitleColor?.isDefault
+      ? styles.appTitleColor?.value
+      : 'var(--cc-primary-text, #1B1F24)',
   };
 
   const handleSidebarClick = (e) => {
@@ -499,6 +502,9 @@ export const PagesSidebarNavigation = ({
           height: currentMode === 'edit' ? '100%' : `calc(100% - var(--preview-header-height, 0px))`,
           bottom: '0px',
           background: !styles?.backgroundColor?.isDefault && styles?.backgroundColor?.value,
+          '--app-title-color': !styles?.appTitleColor?.isDefault
+            ? styles?.appTitleColor?.value
+            : 'var(--cc-primary-text, #1B1F24)',
           borderRight: (() => {
             if (position !== 'side' || shouldShowBlueBorder) return 'none';
             if (styles?.borderColor?.isDefault) {
