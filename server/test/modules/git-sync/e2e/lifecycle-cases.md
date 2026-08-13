@@ -579,6 +579,7 @@ Dedicated isolated org, multi-branch. Two related gaps about a data source **del
 | 1 | app push does NOT commit a data source deleted on the branch (`serializeLinkedDataSourcesForApp`) | app links a DS via a query, the DS's DSV is soft-deleted, then `gitpush` the (unsynced, front-end) app → the DS file is **absent** from the commit |
 | 2 | a `scope=datasource` push REMOVES the file of a DS deleted after being pushed | create DS → push (file present) → delete (soft) → `scope=datasource` push → file **removed** |
 | 3 | a `scope=datasource` push removes a DS whose DSV was **hard-deleted** (single-branch delete shape) | create DS → push → **hard-delete the DSV row** (what a single-branch default-branch delete does) → `scope=datasource` push → file **removed** via the orphan sweep |
+| 4 | a `scope=datasource` push with **no `onlyUnsynced` flag** (the app-builder default) commits a newly created data source | create DS on a feature branch (multi-branch ⇒ **unsynced**) → `scope=datasource` push **without** `onlyUnsyncedDatasources` → file **present** in git |
 
 Fixes (`ee/git-sync/workspace-git-sync-adapter.ts`):
 - `serializeLinkedDataSourcesForApp` DSV lookup now filters `is_active: true` + the app version's
@@ -586,6 +587,15 @@ Fixes (`ee/git-sync/workspace-git-sync-adapter.ts`):
 - `serializeDataSources` (`scope='datasource'`, which skips `ensureCleanDir`) now runs an **orphan
   sweep** after serialization: removes any `data-sources/<name>/` git file whose DS has no ACTIVE DSV on
   the branch — covering both soft-delete (inactive DSV) and single-branch hard-delete (absent DSV).
+- `serializeDataSources` `scope='datasource'` now applies the `isSynced=false` narrowing **only** when
+  `onlyUnsyncedDatasources` is explicitly set; the no-flag case (the app-builder's "push data sources")
+  serializes **every active DSV** on the branch instead of synced-only — so a freshly created, still-unsynced
+  data source is committed by the default push (case 4) instead of being silently dropped and lost on merge.
+
+Related fix (`src/modules/data-sources/util.service.ts`): a branch DSV is marked `is_synced=true` on
+create **only in single-branch** mode; multi-branch feature-branch data sources stay **unsynced** so they
+remain pushable (mirrors the unsynced-on-create rule for apps/modules). This is what makes cases 2–4
+land the new DS in git and keeps the sync indicator honest.
 
 ## 18. Single-branch lifecycle — push/pull apps, modules, data sources (`it: pushes and pulls apps, modules, and data sources directly on the (unprotected) single-branch default`)
 
@@ -752,6 +762,40 @@ through the **branch-create entry point** — a gap §6 (workspace pull) and §2
 | 4 | Neutralize the injected files (`{}`) in `finally` | repo left clean for later specs |
 
 **Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
+
+## 27. Cross-branch app push carries connected data sources + modules (`describe: cross-branch app push carries connected data sources and modules (regression)`)
+
+Dedicated isolated org, multi-branch. Pushing an app to a feature branch must carry its dependencies,
+and opening the app fresh on that branch must re-hydrate them from git.
+
+| # | `it` | Expected |
+|---|------|----------|
+| 1 | carries a connected global data source into the feature branch on app push, and re-hydrates it on open | create app + global DS on a feature branch, link the DS via a query, `gitpush` the app → `data-sources/<name>/data-source.json` is committed (id = DS `co_relation_id`); then delete the branch DSV + force a re-hydrate (`GET /apps/:id` with a bogus `git_tree_sha`) → the branch DSV is **re-created from git** (`deserializeWorkspaceResources`), not left as an "Undefined data source" dummy |
+| 2 | carries a referenced module into the feature branch on app push, and re-creates its stub from git on host open | push a module + a host app with a `ModuleViewer` referencing it → the module is present under `modules/`; then hard-delete the module's DB rows + force a host re-hydrate → the module stub is **re-created from git** and appears in the host's `modules` (exercises `hydrateStubApp` sparse-checking out `modules/` for a front-end app) |
+
+Fixes: `hydrateStubApp` (`ee/platform-git-sync/pull.service.ts`) now `sparse-checkout add modules` for a
+front-end app so `hydrateReferencedModuleStubs → pullModules(repoPath)` can stub a referenced module that
+has no App row yet; `serializeLinkedDataSourcesForApp` (`ee/git-sync/workspace-git-sync-adapter.ts`) now
+serializes a linked DS when it's missing on the target branch (resolving the app-branch DSV, else the
+default-branch active DSV) regardless of `is_synced`, so an already-synced app's cross-branch push is
+self-contained. **Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
+
+## 28. Slug update — git-sync branch rules (`describe: slug update — git-sync branch rules (regression)`)
+
+Dedicated isolated org. Exercises the git-enabled slug-update gates in `AppsService.update` /
+`AppsUtilService.update` (uniqueness is instance-wide, per `apps.type`, case-insensitive — enforced by
+the `app_versions` slug triggers).
+
+| # | `it` | Expected |
+|---|------|----------|
+| 1 | single-branch: allows a slug edit on the default (working) branch | git single-branch; create app on the default branch; `PUT /apps/:id { slug }` → **200**; the version's slug is updated |
+| 2 | multi-branch: blocks a slug edit targeting the default branch | git multi-branch; create app on a feature branch; `PUT /apps/:id { slug, branch_id: <default> }` → **400** ("… feature branch …") |
+| 3 | multi-branch: allows a slug edit on a feature branch and persists it | `PUT /apps/:id { slug, branch_id: <feature> }` → **200**; the feature-branch version's slug is updated |
+| 4 | multi-branch: rejects a feature-branch slug already taken by another app of the same type | app1 takes a slug on the feature branch, app2 tries the same on the same branch → **400** ("… already taken") |
+
+Git-**off** slug rules (uniqueness reject, case-insensitivity, app↔module namespace, delete-frees-slug) are a
+separate host-free spec: `test/modules/apps/e2e/slug-update.e2e-spec.ts`. **Mirrored in
+`git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
 
 ## 21. Inbound webhooks → auto-sync (`test/modules/git-sync-webhooks/`)
 

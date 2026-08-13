@@ -5408,6 +5408,558 @@ describeGitLab('GitSyncController — GitLab', () => {
         await pushWorkspace(featBranchId, 'remove harddel ds', 'datasource').expect(201);
         expect(await readGitFile(FEAT, dsPath)).toBeNull();
       }, 300000);
+
+      // Product-path push: the app builder's "push data sources" sends scope='datasource' with
+      // NO onlyUnsyncedDatasources flag. A freshly created (still-unsynced) data source must be
+      // committed by that push — regressed when serializeDataSources narrowed the no-flag case to
+      // isSynced=true (synced-only), silently dropping new data sources so they never reached git.
+      it('a scope=datasource push with no onlyUnsynced flag (product default) commits a newly created data source', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-ds-default-push';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a global data source on the feature branch (multi-branch ⇒ starts unsynced)');
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'default-push-ds',
+              kind: 'restapi',
+              options: dsOptions('http://default-push.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        const dsName = await dsvName(dsId, featBranchId);
+        expect(await dsvActive(dsId, featBranchId)).toBe(true);
+
+        step(3, "scope='datasource' push WITHOUT onlyUnsynced (mirrors the app builder) → the new DS is committed");
+        await pushWorkspace(featBranchId, 'commit new ds via default push', 'datasource').expect(201);
+        expect(await readGitFile(FEAT, `data-sources/${dsName}/data-source.json`)).not.toBeNull();
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Cross-branch app sync carries its dependencies (connected data sources + modules),
+    // and opening the app fresh on the target branch re-hydrates them from git.
+    //
+    // The reported flow: multi-branching on, push an app to a selected feature branch, then
+    // open it fresh on that branch. Two gaps this covers:
+    //   1) DATA SOURCES — an app push now co-commits every connected global data source that
+    //      isn't already on the target branch (serializeLinkedDataSourcesForApp, no longer
+    //      gated on is_synced; falls back to the default-branch DSV for a DS the feature
+    //      branch never got a version of). On open, deserializeWorkspaceResources recreates
+    //      the branch DSV from that file instead of leaving an "Undefined data source" dummy.
+    //   2) MODULES — hydrateStubApp now sparse-checks out modules/ for a front-end app, so a
+    //      referenced module with no App row yet is stubbed from git during the app's open
+    //      (hydrateReferencedModuleStubs → pullModules reads modules/ off disk).
+    // Against the real Gitea (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('cross-branch app push carries connected data sources and modules (regression)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+
+      let depOrgId: string;
+      let depCookie: string[];
+      let depDs: DataSource;
+
+      const agent = () => request.agent(app.getHttpServer());
+      const auth = (r: request.Test) => r.set('Cookie', depCookie).set('tj-workspace-id', depOrgId);
+
+      const pull = (branchId: string) =>
+        auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+      const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+        (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === name)?.id;
+      const editingVersionId = async (appId: string, branchId: string): Promise<string> => {
+        const d = await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: branchId })
+          .expect(200);
+        const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+        return ev.id;
+      };
+      const gitpushApp = (appId: string, versionId: string, gitAppName: string, featName: string, branchId: string) =>
+        auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
+          .query({ branch_id: branchId })
+          .send({
+            gitAppName,
+            versionId,
+            lastCommitMessage: `push ${gitAppName}`,
+            gitVersionName: featName,
+            sourceBranch: featName,
+          });
+      const dsvName = async (dsId: string, branchId: string): Promise<string> =>
+        (
+          await depDs.query(`SELECT name FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+            dsId,
+            branchId,
+          ])
+        )[0]?.name;
+      const dsvCount = async (dsId: string, branchId: string): Promise<number> =>
+        (
+          await depDs.query(
+            `SELECT COUNT(*)::int AS c FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+            [dsId, branchId]
+          )
+        )[0].c;
+      const dsCoRelId = async (dsId: string): Promise<string> =>
+        (await depDs.query(`SELECT co_relation_id FROM data_sources WHERE id = $1`, [dsId]))[0]?.co_relation_id;
+
+      const dsOptions = (url: string) => [
+        { key: 'url', value: url },
+        { key: 'auth_type', value: 'none' },
+        { key: 'headers', value: [['', '']] },
+        { key: 'ssl_certificate', value: 'none', encrypted: false },
+      ];
+
+      // Shallow-clone a branch and read a repo-relative file (null if absent).
+      const readGitFile = async (branch: string, relPath: string): Promise<string | null> => {
+        const simpleGit = (await import('simple-git')).default;
+        const fs = await import('fs');
+        const path = await import('path');
+        const os = await import('os');
+        const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-dep-file-'));
+        try {
+          const git = simpleGit({
+            baseDir: tmpDir,
+            timeout: { block: 30000 },
+            unsafe: { allowUnsafeCredentialHelper: true },
+          });
+          await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
+            '--branch',
+            branch,
+            '--depth',
+            '1',
+            '--single-branch',
+          ]);
+          const filePath = path.join(tmpDir, relPath);
+          return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : null;
+        } finally {
+          await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+        }
+      };
+
+      // Shallow-clone a branch and check whether any <resourceFolder>/**/app/app.json carries
+      // the given co_relation_id — robust to the folder-name layout (apps/<name>/…, modules/<name>/…).
+      const gitResourceHasCoRel = async (branch: string, resourceFolder: string, coRel: string): Promise<boolean> => {
+        const simpleGit = (await import('simple-git')).default;
+        const fs = await import('fs');
+        const path = await import('path');
+        const os = await import('os');
+        const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-dep-res-'));
+        try {
+          const git = simpleGit({
+            baseDir: tmpDir,
+            timeout: { block: 30000 },
+            unsafe: { allowUnsafeCredentialHelper: true },
+          });
+          await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
+            '--branch',
+            branch,
+            '--depth',
+            '1',
+            '--single-branch',
+          ]);
+          const root = path.join(tmpDir, resourceFolder);
+          if (!fs.existsSync(root)) return false;
+          const stack = [root];
+          while (stack.length) {
+            const dir = stack.pop() as string;
+            for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+              const full = path.join(dir, ent.name);
+              if (ent.isDirectory()) {
+                stack.push(full);
+              } else if (ent.name === 'app.json') {
+                try {
+                  const j = JSON.parse(fs.readFileSync(full, 'utf-8'));
+                  if (j?.id === coRel) return true;
+                } catch {
+                  /* skip malformed */
+                }
+              }
+            }
+          }
+          return false;
+        } finally {
+          await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+        }
+      };
+
+      const enableGitAndFeatureBranch = async (
+        featName: string
+      ): Promise<{ mainBranchId: string; featBranchId: string }> => {
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${depOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+        await pull(mainBranchId).expect(201);
+        await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: featName, sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await branchIdByName(featName, mainBranchId);
+        expect(featBranchId).toBeDefined();
+        return { mainBranchId, featBranchId };
+      };
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-dep-carry-gl@tooljet.io',
+          firstName: 'git',
+          lastName: 'depcarry',
+        });
+        depOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-dep-carry-gl@tooljet.io');
+        depCookie = tokenCookie;
+        await ensureAppEnvironments(app, depOrgId);
+        depDs = app.get<DataSource>(getDataSourceToken('default'));
+        await depDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [depOrgId]
+        );
+      });
+
+      it('carries a connected global data source into the feature branch on app push, and re-hydrates it on open', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-dep-ds';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create front-end app + global data source on the feature branch, link the DS via a query');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'dep-ds-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const versionId = await editingVersionId(appId, featBranchId);
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'dep-carry-ds',
+              kind: 'restapi',
+              options: dsOptions('http://dep-carry.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            kind: 'restapi',
+            name: 'q_dep_carry',
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          })
+          .expect(201);
+        const dsName = await dsvName(dsId, featBranchId);
+
+        step(3, 'gitpush the app to the feature branch → its connected DS rides into the same commit');
+        await gitpushApp(appId, versionId, 'dep-ds-app', FEAT, featBranchId).expect(201);
+
+        step(4, 'the connected data source is present in git on the feature branch');
+        const dsFile = await readGitFile(FEAT, `data-sources/${dsName}/data-source.json`);
+        expect(dsFile).not.toBeNull();
+        const dsJson = JSON.parse(dsFile as string);
+        expect(dsJson.id).toBe(await dsCoRelId(dsId));
+        expect(dsJson.kind).toBe('restapi');
+
+        step(5, 'drop the branch DSV, then force a fresh open → hydrate re-creates it from git (no dummy)');
+        // Simulate the target-branch state where the DS row isn't populated yet. Deleting the
+        // DSV (+ its options) mirrors "connected DS missing on the branch"; the open must
+        // repopulate it from the committed data-source.json rather than substituting a dummy.
+        await depDs.query(
+          `DELETE FROM data_source_version_options
+             WHERE data_source_version_id IN (
+               SELECT id FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2)`,
+          [dsId, featBranchId]
+        );
+        await depDs.query(`DELETE FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+          dsId,
+          featBranchId,
+        ]);
+        expect(await dsvCount(dsId, featBranchId)).toBe(0);
+
+        // Force the open-path re-hydrate: a git_tree_sha mismatch makes GET /apps/:id re-import.
+        await depDs.query(
+          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
+             WHERE app_id = $1 AND branch_id = $2`,
+          [appId, featBranchId]
+        );
+
+        const hydrateResp = await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: featBranchId })
+          .expect(200);
+        expect(hydrateResp.body.is_hydration_tried).toBe(true);
+        expect(hydrateResp.body.hydration_status).toBe('success');
+
+        step(6, 'the branch DSV is back — the connected data source populated on open');
+        expect(await dsvCount(dsId, featBranchId)).toBeGreaterThan(0);
+      }, 300000);
+
+      it('carries a referenced module into the feature branch on app push, and re-creates its stub from git on host open', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const { randomUUID } = await import('crypto');
+        const FEAT = 'feat-dep-mod';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a module on the feature branch and push it');
+        const moduleAppId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'dep-carry-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleVersionId = await editingVersionId(moduleAppId, featBranchId);
+        await gitpushApp(moduleAppId, moduleVersionId, 'dep-carry-module', FEAT, featBranchId).expect(201);
+
+        step(3, "capture the module's co_relation_id (set on push) — the ModuleViewer ref");
+        const moduleInList = (
+          await auth(agent().get('/api/apps'))
+            .query({ page: 1, folder: '', searchKey: '', type: 'module', branch_id: featBranchId })
+            .expect(200)
+        ).body.apps.find((m: any) => m.name === 'dep-carry-module');
+        expect(moduleInList).toBeDefined();
+        const moduleCoRel: string = moduleInList.co_relation_id || moduleInList.coRelationId;
+        expect(moduleCoRel).toBeTruthy();
+
+        step(4, 'create a host front-end app on the feature branch that references the module');
+        const hostAppId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'dep-host-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const hostDetail = await auth(agent().get(`/api/apps/${hostAppId}`))
+          .query({ branch_id: featBranchId })
+          .expect(200);
+        const hostEv =
+          hostDetail.body?.editing_version || hostDetail.body?.editingVersion || hostDetail.body?.app?.editing_version;
+        const hostVersionId: string = hostEv.id;
+        const hostPageId: string =
+          hostEv.home_page_id || hostEv.homePageId || hostEv.pages?.[0]?.id || hostDetail.body?.pages?.[0]?.id;
+        expect(hostPageId).toBeDefined();
+
+        const moduleViewerId = randomUUID();
+        const moduleViewerDiff = {
+          [moduleViewerId]: {
+            name: 'moduleviewer1',
+            layouts: {
+              desktop: { top: 70, left: 5, width: 38, height: 400 },
+              mobile: { top: 70, left: 5, width: 38, height: 400 },
+            },
+            type: 'ModuleViewer',
+            general: {},
+            generalStyles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+            others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+            properties: {
+              moduleAppId: { value: moduleCoRel },
+              moduleVersionId: { value: '' },
+              visibility: { value: true },
+            },
+            styles: { backgroundColor: { value: '#fff' }, padding: { value: 'default' } },
+            parent: null,
+          },
+        };
+        const mvResp = await auth(agent().post(`/api/v2/apps/${hostAppId}/versions/${hostVersionId}/components`))
+          .query({ branch_id: featBranchId })
+          .send({ is_user_switched_version: false, pageId: hostPageId, diff: moduleViewerDiff });
+        if (mvResp.status !== 201) {
+          throw new Error(`POST host components failed: ${mvResp.status} ${JSON.stringify(mvResp.body)}`);
+        }
+
+        step(5, 'gitpush the host app → the referenced module rides into modules/ on the feature branch');
+        await gitpushApp(hostAppId, hostVersionId, 'dep-host-app', FEAT, featBranchId).expect(201);
+        expect(await gitResourceHasCoRel(FEAT, 'modules', moduleCoRel)).toBe(true);
+
+        step(6, "hard-delete the module's DB rows so the host ref resolves to nothing, then force host re-hydrate");
+        // Full delete (cascades to app_versions + children) via SQL — the API delete is blocked
+        // while the module is referenced by the host. This makes the module genuinely absent, so
+        // the host's open must re-stub it from git via hydrateReferencedModuleStubs → pullModules,
+        // which only works because hydrateStubApp now sparse-checks out modules/ for a front-end
+        // app. Pre-fix, modules/ was absent from the hydrate clone and the stub was never created,
+        // leaving the ModuleViewer empty. A full delete (vs re-keying co_relation_id) avoids an
+        // app_name-on-branch collision between the stale row and the re-created stub.
+        await depDs.query(`DELETE FROM apps WHERE id = $1`, [moduleAppId]);
+        await depDs.query(
+          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
+             WHERE app_id = $1 AND branch_id = $2`,
+          [hostAppId, featBranchId]
+        );
+
+        const hostHydrateResp = await auth(agent().get(`/api/apps/${hostAppId}`))
+          .query({ branch_id: featBranchId })
+          .expect(200);
+        expect(hostHydrateResp.body.is_hydration_tried).toBe(true);
+        expect(hostHydrateResp.body.hydration_status).toBe('success');
+
+        step(7, 'the module stub was re-created from git and the host exposes it in `modules`');
+        const [recreatedModule] = await depDs.query(
+          `SELECT id FROM apps WHERE co_relation_id = $1 AND type = 'module' AND organization_id = $2`,
+          [moduleCoRel, depOrgId]
+        );
+        expect(recreatedModule?.id).toBeTruthy();
+
+        const hostModules = hostHydrateResp.body?.modules || [];
+        const linked = hostModules.find((m: any) => (m.co_relation_id || m.coRelationId) === moduleCoRel);
+        expect(linked).toBeDefined();
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Slug-update branch rules under git sync (regression). Complements the git-off
+    // slug matrix in apps/e2e/slug-update.e2e-spec.ts by covering the two git-enabled
+    // gates in AppsService.update / AppsUtilService.update:
+    //   - SINGLE branch: the default branch IS the working branch → slug edits allowed.
+    //   - MULTI branch: slug edits on the default branch are blocked for synced apps
+    //     (must be done on a feature branch); feature-branch edits are allowed and still
+    //     subject to the instance-wide, per-apps.type, case-insensitive uniqueness rule.
+    // No git push is involved in a slug rename, so these don't touch the protected `main`
+    // branch on the simulator. Against the real Gitea (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('slug update — git-sync branch rules (regression)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+
+      let sgOrgId: string;
+      let sgCookie: string[];
+      let sgDs: DataSource;
+
+      const agent = () => request.agent(app.getHttpServer());
+      const auth = (r: request.Test) => r.set('Cookie', sgCookie).set('tj-workspace-id', sgOrgId);
+
+      const pull = (branchId: string) =>
+        auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+      const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+        (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === name)?.id;
+
+      // Configure git for this org and set the branching mode. Resets the repo so each test
+      // starts clean. Returns the (default) main branch id.
+      const configureGit = async (multiBranch: boolean): Promise<string> => {
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITLAB_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${sgOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        // Set branching explicitly (both directions) — the org is reused across tests.
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: multiBranch })
+          .expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+        await pull(mainBranchId).expect(201);
+        return mainBranchId;
+      };
+
+      const createFeatureBranch = async (name: string, mainBranchId: string): Promise<string> => {
+        await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name, sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await branchIdByName(name, mainBranchId);
+        expect(featBranchId).toBeDefined();
+        return featBranchId;
+      };
+
+      const createApp = async (name: string, branchId: string): Promise<string> =>
+        (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: branchId })
+            .send({ icon: 'home', name, type: 'front-end', branchId })
+            .expect(201)
+        ).body.id;
+
+      const putSlug = (appId: string, slug: string, branchId: string) =>
+        auth(agent().put(`/api/apps/${appId}`)).send({ app: { slug, branch_id: branchId } });
+
+      const appVersionSlug = async (appId: string, branchId: string): Promise<string> =>
+        (await sgDs.query(`SELECT slug FROM app_versions WHERE app_id = $1 AND branch_id = $2`, [appId, branchId]))[0]
+          ?.slug;
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-slug-rules-gl@tooljet.io',
+          firstName: 'git',
+          lastName: 'slugrules',
+        });
+        sgOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-slug-rules-gl@tooljet.io');
+        sgCookie = tokenCookie;
+        await ensureAppEnvironments(app, sgOrgId);
+        sgDs = app.get<DataSource>(getDataSourceToken('default'));
+        await sgDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [sgOrgId]
+        );
+      });
+
+      it('single-branch: allows a slug edit on the default (working) branch', async () => {
+        const mainBranchId = await configureGit(false);
+        const appId = await createApp('sb-slug-app', mainBranchId);
+
+        await putSlug(appId, 'sb-custom-slug', mainBranchId).expect(200);
+        expect(await appVersionSlug(appId, mainBranchId)).toBe('sb-custom-slug');
+      }, 300000);
+
+      it('multi-branch: blocks a slug edit targeting the default branch', async () => {
+        const mainBranchId = await configureGit(true);
+        // Under multi-branching apps are created on a feature branch (creating on the
+        // default branch is itself blocked). Editing metadata against the default branch
+        // must then be rejected — it has to be done on the feature branch and merged.
+        const featBranchId = await createFeatureBranch('feat-slug-block', mainBranchId);
+        const appId = await createApp('mb-block-app', featBranchId);
+
+        const res = await putSlug(appId, 'mb-block-slug', mainBranchId);
+        expect(res.status).toBe(400);
+        expect(res.body.message).toMatch(/feature branch/i);
+      }, 300000);
+
+      it('multi-branch: allows a slug edit on a feature branch and persists it', async () => {
+        const mainBranchId = await configureGit(true);
+        const featBranchId = await createFeatureBranch('feat-slug-edit', mainBranchId);
+        const appId = await createApp('mb-feat-app', featBranchId);
+
+        await putSlug(appId, 'mb-feat-slug', featBranchId).expect(200);
+        expect(await appVersionSlug(appId, featBranchId)).toBe('mb-feat-slug');
+      }, 300000);
+
+      it('multi-branch: rejects a feature-branch slug already taken by another app of the same type', async () => {
+        const mainBranchId = await configureGit(true);
+        const featBranchId = await createFeatureBranch('feat-slug-dup', mainBranchId);
+
+        const app1 = await createApp('mb-dup-holder', featBranchId);
+        await putSlug(app1, 'mb-dup-slug', featBranchId).expect(200);
+
+        const app2 = await createApp('mb-dup-taker', featBranchId);
+        const res = await putSlug(app2, 'mb-dup-slug', featBranchId);
+        expect(res.status).toBe(400);
+        expect(res.body.message).toMatch(/already taken/i);
+      }, 300000);
     });
 
     // ────────────────────────────────────────────────────────────────────────────
