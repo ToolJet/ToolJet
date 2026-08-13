@@ -130,7 +130,7 @@ class AppComponent extends React.Component {
         showBanner: false, // show banner when required for ee or cloud
       });
     }
-    setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+    this.metadataRefreshInterval = setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
     let counter = 0;
     let interval;
@@ -146,6 +146,14 @@ class AppComponent extends React.Component {
       }
     }, 1000);
   }
+
+  componentWillUnmount() {
+    // Without this the hourly metadata refresh keeps running after the
+    // component unmounts (e.g. on logout) and on remount a second interval
+    // is added, so authenticated fetchMetadata calls accumulate.
+    clearInterval(this.metadataRefreshInterval);
+  }
+
   // check if its getting routed from editor
   checkPreviousRoute = (route) => {
     if (route.includes('/apps')) {
