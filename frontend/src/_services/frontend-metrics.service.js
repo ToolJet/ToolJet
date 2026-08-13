@@ -3,8 +3,18 @@ import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 import { authHeader } from '@/_helpers/auth-header';
 import { authenticationService } from '@/_services';
 
-const FLUSH_INTERVAL_MS = 30_000;
+const DEFAULT_FLUSH_INTERVAL_S = 30;
+const MIN_FLUSH_INTERVAL_S = 5;
+const MAX_FLUSH_INTERVAL_S = 600;
 const MAX_UNIQUE_ERRORS = 50;
+
+// OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS, clamped. Too low floods ingest, too high loses a
+// tab's events to the buffer cap; a bad value falls back rather than breaking the timer.
+function getFlushIntervalMs() {
+  const raw = Number(window.public_config?.OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS);
+  if (!Number.isFinite(raw) || raw <= 0) return DEFAULT_FLUSH_INTERVAL_S * 1000;
+  return Math.min(Math.max(raw, MIN_FLUSH_INTERVAL_S), MAX_FLUSH_INTERVAL_S) * 1000;
+}
 
 let eventMap = new Map();
 let flushTimer = null;
@@ -169,7 +179,7 @@ export function initFrontendMetrics() {
   initialized = true;
 
   if (window.__tjMetricsTimer) clearInterval(window.__tjMetricsTimer);
-  flushTimer = setInterval(flush, FLUSH_INTERVAL_MS);
+  flushTimer = setInterval(flush, getFlushIntervalMs());
   window.__tjMetricsTimer = flushTimer;
 
   // Register vitals before our own visibilitychange listener — the lib reports

@@ -377,7 +377,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       return result;
     } catch (queryError) {
-      abortCtrl.cleanup();
+      // Null if we threw before it was built. Unguarded, that TypeError masked the real error.
+      abortCtrl?.cleanup();
       queryStatus.setFailure({
         message: queryError?.message,
         description: queryError?.description,
@@ -386,7 +387,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       });
       throw queryError;
     } finally {
-      abortCtrl.cleanup();
+      abortCtrl?.cleanup();
       if (user) {
         // Get metadata from queryStatus
         const queryMetadata = queryStatus.getMetaData();

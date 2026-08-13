@@ -159,7 +159,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             trackUserActivity({
               workspaceId: user.organizationId,
               userId: user.id,
-              sessionId: payload.sessionId,
               /* App-scoped requests only; PAT sessions carry the app id on the token itself */
               appId: extractAppIdFromPath(req.originalUrl || req.url) || payload.appId,
             });
@@ -224,7 +223,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         trackUserActivity({
           workspaceId: user.organizationId,
           userId: user.id,
-          sessionId: user.sessionId,
           appId: extractAppIdFromPath(req.originalUrl || req.url),
         });
       } catch (error) {

@@ -6,6 +6,7 @@ import {
   DiagLogLevel,
   diag,
   metrics,
+  Meter,
   ObservableGauge,
   ObservableResult,
 } from '@opentelemetry/api';
@@ -22,13 +23,10 @@ import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
 import { PeriodicExportingMetricReader, AggregationTemporality } from '@opentelemetry/sdk-metrics';
-import {
-  ATTR_SERVICE_NAME,
-  ATTR_SERVICE_VERSION,
-  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
-} from '@opentelemetry/semantic-conventions';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { getTooljetEdition } from '../helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '../modules/app/constants';
+import { ATTR, ATTR_DEPLOYMENT_ENVIRONMENT_NAME, METRIC, deploymentEnvironmentName } from './semconv';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
@@ -82,7 +80,7 @@ function createSDK(): NodeSDK {
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
     [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
-    [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
+    [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: deploymentEnvironmentName(),
   });
 
   return new NodeSDK({
@@ -155,17 +153,9 @@ function createSDK(): NodeSDK {
 }
 
 // Custom metrics
-let meter: any;
-let apiHitCounter: any;
-let apiDurationHistogram: any;
-let concurrentUsersCounter: any;
-let concurrentUsersGauge: any;
+let meter: Meter;
 let appActiveUsersGauge: ObservableGauge;
-let workspaceSeatsGauge: ObservableGauge;
-
-// Track active users per workspace with last activity timestamp
-// Key format: "workspaceId:userId", Value: { lastSeen: timestamp, role: string }
-const activeUsersByWorkspace = new Map<string, { lastSeen: number; role?: string; sessionId?: string }>();
+let organizationSeatsGauge: ObservableGauge;
 
 // Track active users per app with last activity timestamp
 // Key format: "workspaceId:appId:userId", Value: { lastSeen: timestamp, role: string }
@@ -264,21 +254,7 @@ const cleanupInactiveUsers = () => {
     const cutoffTime = now - ACTIVE_USER_WINDOW_MS * 2; // Inactive for 2x the window
     let cleanedUsers = 0;
 
-    // Cleanup users: Collect entries to delete (don't modify during iteration)
-    const usersToDelete: string[] = [];
-    for (const [key, data] of activeUsersByWorkspace.entries()) {
-      if (data.lastSeen < cutoffTime) {
-        usersToDelete.push(key);
-      }
-    }
-
-    // Delete collected user entries
-    for (const key of usersToDelete) {
-      activeUsersByWorkspace.delete(key);
-      cleanedUsers++;
-    }
-
-    // Cleanup per-app users
+    // Cleanup per-app users: collect entries to delete (don't modify during iteration)
     const appUsersToDelete: string[] = [];
     for (const [key, data] of activeUsersByApp.entries()) {
       if (data.lastSeen < cutoffTime) {
@@ -297,7 +273,7 @@ const cleanupInactiveUsers = () => {
 
     // Log memory stats if debug enabled
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      const totalUsers = activeUsersByWorkspace.size;
+      const totalUsers = activeUsersByApp.size;
       const memoryEstimateMB = ((totalUsers * 100) / (1024 * 1024)).toFixed(2);
       console.log(
         `[OTEL] Active tracking: ${totalUsers} users (~${memoryEstimateMB} MB), window: ${ACTIVITY_WINDOW_MINUTES}min`
@@ -414,79 +390,8 @@ const pollWorkspaceSeats = async (): Promise<void> => {
 const initializeCustomMetrics = () => {
   meter = metrics.getMeter('tooljet-custom-metrics');
 
-  // Counter for API hits
-  apiHitCounter = meter.createCounter('api.hits', {
-    description: 'Number of times an API endpoint is hit',
-    unit: '1',
-  });
-
-  // UpDownCounter for concurrent users (login/logout based)
-  concurrentUsersCounter = meter.createUpDownCounter('users.concurrent', {
-    description: 'Number of concurrent users by workspace (login/logout based)',
-    unit: '{users}',
-  });
-
-  // ObservableGauge for request-based concurrent users
-  concurrentUsersGauge = meter.createObservableGauge('users.concurrent.active', {
-    description: 'Number of concurrent users by workspace based on request activity in last 5 minutes',
-    unit: '{users}',
-  });
-
-  concurrentUsersGauge.addCallback((observableResult: any) => {
-    try {
-      const now = Date.now();
-      const cutoffTime = now - ACTIVE_USER_WINDOW_MS;
-
-      // Group active users by workspace
-      const usersByWorkspace = new Map<string, Set<string>>();
-      const entriesToDelete: string[] = [];
-
-      // First pass: collect inactive entries and group active ones (don't modify during iteration)
-      for (const [key, data] of activeUsersByWorkspace.entries()) {
-        if (data.lastSeen < cutoffTime) {
-          entriesToDelete.push(key);
-        } else {
-          const [workspaceId, userId] = key.split(':');
-          if (!usersByWorkspace.has(workspaceId)) {
-            usersByWorkspace.set(workspaceId, new Set());
-          }
-          usersByWorkspace.get(workspaceId)!.add(userId);
-        }
-      }
-
-      // Second pass: delete inactive entries
-      for (const key of entriesToDelete) {
-        activeUsersByWorkspace.delete(key);
-      }
-
-      // Report metrics for each workspace
-      for (const [workspaceId, users] of usersByWorkspace.entries()) {
-        // Report workspace-level aggregate
-        // No per-user observations — user.id as a label is one series per active user
-        // with nothing consuming it; workspace_total already carries the count
-        observableResult.observe(users.size, {
-          'workspace.id': workspaceId,
-          metric_type: 'workspace_total',
-        });
-      }
-
-      // Also report total active users across all workspaces
-      const totalUniqueUsers = new Set<string>();
-      for (const key of activeUsersByWorkspace.keys()) {
-        const userId = key.split(':')[1];
-        if (userId) totalUniqueUsers.add(userId);
-      }
-      observableResult.observe(totalUniqueUsers.size, {
-        'workspace.id': 'all',
-        metric_type: 'workspace_total',
-      });
-    } catch (error) {
-      console.error('[OTEL] Error in concurrentUsersGauge callback:', error);
-    }
-  });
-
   // ObservableGauge for per-app active users by role
-  appActiveUsersGauge = meter.createObservableGauge('tooljet.app.active_users', {
+  appActiveUsersGauge = meter.createObservableGauge(METRIC.APP_ACTIVE_USERS, {
     description: 'Number of active users per app by role based on app-scoped request activity in last 5 minutes',
     unit: '{users}',
   });
@@ -528,13 +433,16 @@ const initializeCustomMetrics = () => {
         observations.push({
           value: users.size,
           attrs: {
-            'organization.id': getWorkspaceLabel(workspaceId),
-            'organization.name': getWorkspaceNameLabel(workspaceId, namesByOrg.get(workspaceId) || UNKNOWN_ORG_NAME),
-            'app.id': appId,
+            [ATTR.ORGANIZATION_ID]: getWorkspaceLabel(workspaceId),
+            [ATTR.ORGANIZATION_NAME]: getWorkspaceNameLabel(
+              workspaceId,
+              namesByOrg.get(workspaceId) || UNKNOWN_ORG_NAME
+            ),
+            [ATTR.APP_ID]: appId,
             // Name rides alongside the id rather than replacing it: the id is what drilldown links
             // key on, the name is what a human reads. One name per id, so no extra series.
-            'app.name': namesByApp.get(appId) || UNKNOWN_APP_NAME,
-            role: role,
+            [ATTR.APP_NAME]: namesByApp.get(appId) || UNKNOWN_APP_NAME,
+            [ATTR.USER_ROLE]: role,
           },
         });
       }
@@ -548,20 +456,20 @@ const initializeCustomMetrics = () => {
   });
 
   // ObservableGauge for registered seats per workspace by role (DB-polled snapshot)
-  workspaceSeatsGauge = meter.createObservableGauge('tooljet.workspace.seats', {
+  organizationSeatsGauge = meter.createObservableGauge(METRIC.ORGANIZATION_SEATS, {
     description: 'Number of registered users per workspace by role',
     unit: '{users}',
   });
 
-  workspaceSeatsGauge.addCallback((observableResult: ObservableResult) => {
+  organizationSeatsGauge.addCallback((observableResult: ObservableResult) => {
     try {
       const observations: Observation[] = seatSnapshot.counts.map(
         ({ organizationId, organizationName, role, seats }) => ({
           value: seats,
           attrs: {
-            'organization.id': getWorkspaceLabel(organizationId),
-            'organization.name': getWorkspaceNameLabel(organizationId, organizationName),
-            role: role,
+            [ATTR.ORGANIZATION_ID]: getWorkspaceLabel(organizationId),
+            [ATTR.ORGANIZATION_NAME]: getWorkspaceNameLabel(organizationId, organizationName),
+            [ATTR.USER_ROLE]: role,
           },
         })
       );
@@ -570,30 +478,10 @@ const initializeCustomMetrics = () => {
         observableResult.observe(value, attrs);
       }
     } catch (error) {
-      console.error('[OTEL] Error in workspaceSeatsGauge callback:', error);
+      console.error('[OTEL] Error in organizationSeatsGauge callback:', error);
     }
   });
-
-  // Histogram for API duration
-  apiDurationHistogram = meter.createHistogram('api.duration', {
-    description: 'API request duration in milliseconds',
-    unit: 'ms',
-  });
 };
-
-export function recordApiHit(attrs: { route: string; method: string }) {
-  apiHitCounter.add(1, attrs);
-}
-export function recordApiDuration(
-  duration: number,
-  attrs: {
-    route: string;
-    method: string;
-    status_code: number | string;
-  }
-) {
-  apiDurationHistogram.record(duration, attrs);
-}
 
 process.on('SIGTERM', () => {
   // Clear cleanup interval
@@ -655,9 +543,7 @@ export const startOpenTelemetry = async (): Promise<void> => {
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
       console.log('OpenTelemetry instrumentation initialized');
-      console.log(
-        'Custom metrics initialized: api.hits, api.duration, users.concurrent, users.concurrent.active'
-      );
+      console.log(`Custom metrics initialized: ${METRIC.APP_ACTIVE_USERS}, ${METRIC.ORGANIZATION_SEATS}`);
       console.log(`Active user tracking window: ${ACTIVITY_WINDOW_MINUTES} minutes`);
     }
   } catch (error) {
@@ -666,13 +552,10 @@ export const startOpenTelemetry = async (): Promise<void> => {
   }
 };
 
-// Export audit metrics function for use in services
-export { recordAuditLogMetric } from './audit-metrics';
 // Helper function to track user activity on each authenticated request
 export const trackUserActivity = (attributes: {
   workspaceId: string;
   userId: string;
-  sessionId?: string;
   userRole?: string;
   appId?: string;
 }) => {
@@ -688,29 +571,8 @@ export const trackUserActivity = (attributes: {
     // Sanitize and limit lengths to prevent memory issues
     const workspaceId = String(attributes.workspaceId).slice(0, 100);
     const userId = String(attributes.userId).slice(0, 100);
-    const sessionId = attributes.sessionId ? String(attributes.sessionId).slice(0, 100) : undefined;
 
     const now = Date.now();
-
-    // Track unique users (workspaceId:userId)
-    const userKey = `${workspaceId}:${userId}`;
-
-    // Safety cap to prevent unbounded memory growth for users
-    if (activeUsersByWorkspace.size >= MAX_TRACKED_USERS && !activeUsersByWorkspace.has(userKey)) {
-      const oldestKey = activeUsersByWorkspace.keys().next().value;
-      if (oldestKey) {
-        activeUsersByWorkspace.delete(oldestKey);
-        if (process.env.OTEL_LOG_LEVEL === 'debug') {
-          console.warn('[OTEL] Max tracked users reached, removed oldest entry');
-        }
-      }
-    }
-
-    activeUsersByWorkspace.set(userKey, {
-      lastSeen: now,
-      role: attributes.userRole,
-      sessionId: sessionId,
-    });
 
     // Track per-app activity only for app-scoped requests
     if (attributes.appId) {
@@ -738,27 +600,6 @@ export const trackUserActivity = (attributes: {
       console.error('[OTEL] Error tracking user activity:', error);
     }
     // Don't throw - metric collection should never break the app
-  }
-};
-
-// Helper functions for user metrics tracking
-export const incrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
-  if (concurrentUsersCounter) {
-    const metricAttributes: any = {};
-    if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
-    if (attributes.userRole) metricAttributes['user.role'] = attributes.userRole;
-
-    concurrentUsersCounter.add(1, metricAttributes);
-  }
-};
-
-export const decrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
-  if (concurrentUsersCounter) {
-    const metricAttributes: any = {};
-    if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
-    if (attributes.userRole) metricAttributes['user.role'] = attributes.userRole;
-
-    concurrentUsersCounter.add(-1, metricAttributes);
   }
 };
 
