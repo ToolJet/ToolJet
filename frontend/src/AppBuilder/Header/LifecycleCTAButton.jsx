@@ -207,10 +207,9 @@ const LifecycleCTAButton = () => {
           versionId={draftVersion?.id ?? selectedVersion?.id}
           appName={appName}
           resourceType={appType === 'module' ? 'module' : 'app'}
+          fromEditor
           onSuccess={() => {
             setShowPushModal(false);
-
-            fetchDevelopmentVersions?.(appId);
           }}
         />
       )}
