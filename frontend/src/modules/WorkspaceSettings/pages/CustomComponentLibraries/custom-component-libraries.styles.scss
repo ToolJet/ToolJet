@@ -1,12 +1,13 @@
 
 .custom-component-libraries-page {
-  max-width: 848px;
+  max-width: 55rem;
+  width: 100%;
   margin: 0 auto;
   padding: 24px 0;
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 
   .libraries-count {
     font-size: 14px;
@@ -14,6 +15,7 @@
     line-height: 20px;
     color: var(--text-default, #11181c);
     min-height: 20px; // keeps the card from jumping while the count loads
+    margin-bottom: 0;
   }
 
   .libraries-card {
@@ -21,8 +23,8 @@
     min-height: 0; // design's card fills the content area; body scrolls inside
     display: flex;
     flex-direction: column;
-    background: var(--base, #fff);
-    border: 1px solid var(--border-weak, #eceef0);
+    background: var(--surfaces-surface-01);
+    border: 1px solid var(--border-weak);
     border-radius: 6px;
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
     overflow: hidden;
@@ -56,7 +58,10 @@
     display: flex;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid var(--border-weak, #eceef0);
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--border-weak, #eceef0);
+    }
 
     .col-name {
       width: 180px;
@@ -138,7 +143,7 @@
 
 .library-delete-modal {
   .library-delete-confirm p {
-    margin: 0 0 16px;
+    margin: 0 0 1.5rem;
     font-size: 14px;
     line-height: 20px;
     color: var(--text-default, #11181c);
@@ -146,7 +151,16 @@
 
   .library-delete-modal-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 8px;
+  }
+}
+
+#popover-ccl-menu {
+  border: 1px solid var(--border-weak, #eceef0);
+
+  .popover-body {
+    padding: 0.25rem;
   }
 }

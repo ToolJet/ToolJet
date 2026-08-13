@@ -3,6 +3,7 @@
   border: 1px solid var(--border-weak, #e4e7eb);
   border-radius: 12px;
   padding: 0; // rows are full-bleed; header carries its own p-16
+  margin-bottom: 3rem;
 
   .access-tokens-header {
     display: flex;
@@ -62,10 +63,14 @@
       border-bottom: none;
     }
 
+    &:hover {
+      background-color: var(--interactive-default, rgba(136, 144, 153, 0.08))
+    }
+
     /* frame 02: revoke action appears on row hover */
     .access-token-revoke-btn {
       opacity: 0;
-      transition: opacity 0.1s ease;
+      transition: opacity 0.3s ease;
     }
 
     &:hover .access-token-revoke-btn {
@@ -82,6 +87,9 @@
     padding: 0 16px;
     font-size: 12px;
     color: var(--text-default, #1b1f24);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .access-token-name {
@@ -99,18 +107,6 @@
     font-weight: 500;
     color: var(--text-danger, #d72d39);
     background: var(--background-error-weak, #fceeef);
-  }
-
-  .access-token-revoke-btn {
-    border: none;
-    background: transparent;
-    padding: 4px;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.1));
-    }
   }
 
   .access-tokens-empty {
