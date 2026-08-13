@@ -214,15 +214,19 @@ export const AccessTokensCard = ({ darkMode }) => {
         open={showCreateModal}
         title={createdToken ? '' : 'Create personal access token'}
         cancelBtnProps={{ 'data-cy': 'cancel-button', disabled: createInProgress, onClick: closeCreateModal }}
+        showCancelButton={!createdToken}
         submitActions={[
           {
-            label: 'Create token',
+            label: createdToken ? 'Done' : 'Create token',
             isLoading: createInProgress,
             'data-cy': 'submit-button',
-            onClick: handleCreate,
+            onClick: createdToken ? closeCreateModal : handleCreate,
           },
         ]}
-        classes={{ dialogContent: 'tw-max-w-md' }}
+        classes={{
+          dialogContent: 'tw-max-w-md',
+          ...(createdToken ? { dialogFooter: 'tw-justify-end', dialogBody: 'tw-pb-0' } : {}),
+        }}
       >
         {createdToken ? (
           <div className="tw-flex tw-flex-col tw-gap-0.5">
@@ -238,6 +242,23 @@ export const AccessTokensCard = ({ darkMode }) => {
               <div className="tw-min-w-0 tw-flex-1">
                 <p className="tw-mb-1 tw-font-medium tw-text-text-placeholder tw-text-base">Token</p>
                 <p className="tw-mb-0 tw-font-medium tw-text-text-default tw-text-base tw-truncate">{createdToken}</p>
+              </div>
+
+              <Button
+                isLucid
+                iconOnly
+                variant="ghost"
+                leadingIcon="copy"
+                className="tw-shrink-0"
+                fill="var(--icon-strong)"
+                onClick={handleCopy}
+              />
+            </div>
+
+            <div className="tw-flex tw-items-center tw-gap-4 tw-rounded-md tw-p-3 tw-border tw-border-solid tw-border-border-weak tw-mt-4">
+              <div className="tw-min-w-0 tw-flex-1">
+                <p className="tw-mb-1 tw-font-medium tw-text-text-placeholder tw-text-base">Workspace ID</p>
+                <p className="tw-mb-0 tw-font-medium tw-text-text-default tw-text-base tw-truncate">{organizationId}</p>
               </div>
 
               <Button
@@ -316,7 +337,7 @@ export const AccessTokensCard = ({ darkMode }) => {
           </h6>
 
           <p data-cy="modal-description" className="tw-text-text-default tw-text-base tw-mb-0">
-            Revoke
+            Revoke{' '}
             <span className="tw-font-semibold">
               {revokeTarget?.name} in {revokeTarget?.organizationName}
             </span>
