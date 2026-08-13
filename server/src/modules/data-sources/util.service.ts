@@ -128,13 +128,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           manager
         );
 
-        // In single-branch git sync mode, mark the newly created DSV as synced so
-        // the sync indicator doesn't show for data sources that were just created.
-        // Multi-branch is unaffected: default-branch DSVs arrive via pull (already
-        // isSynced=true) and feature-branch creates are blocked on the default branch.
-        const { isEnabled: isGitConfigured, isMultiBranchingEnabled: isMBEnabled } =
-          await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-        if (isGitConfigured && !isMBEnabled) {
+        const { isEnabled: isGitConfigured } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        if (isGitConfigured) {
           await manager.update(DataSourceVersion, { dataSourceId: dataSource.id, branchId }, { isSynced: true });
         }
       } else {
