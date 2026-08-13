@@ -11,9 +11,6 @@ export const libraryComponentConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  // Mirror of the frontend config — keep in sync (see frontend widgets/libraryComponent.js).
-  // Identity is definition-only (stamped on drop); schema stays empty so no generic
-  // path ever renders raw id inputs.
   properties: {},
   events: {},
   styles: {
@@ -21,6 +18,14 @@ export const libraryComponentConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
     },
   },
   exposedVariables: {},
@@ -37,6 +42,7 @@ export const libraryComponentConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

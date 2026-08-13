@@ -37,5 +37,9 @@ export function parseUploadFiles(fields: MulterFields, bundleLimit: number): Upl
     throw new BadRequestException('Manifest is not valid JSON');
   }
 
+  if (Object.keys(parsedManifest?.components ?? {}).length === 0) {
+    throw new BadRequestException('Library must contain at least one component to be uploaded');
+  }
+
   return { bundle: bundle.buffer, css: css?.buffer, manifest: parsedManifest };
 }
