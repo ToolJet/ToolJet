@@ -31,7 +31,7 @@ Role Required: **Admin** <br/>
     - **Enable group sync**: Syncs the user's groups from your directory on every login. Enabled by default.
     - **SSL**: Toggle this option to enable the SSL. After enabling you can select the type of SSL: **None** or **Certificates**. If you choose Certificates, you'll need to provide the **Client Key**, **Client Certificate**, and **Server Certificate**.
 
-    <img className="screenshot-full img-m" src="/img/sso/ldap/fields-v3.png" alt="SSO :LDAP"/>
+    <img className="screenshot-full img-m" src="/img/sso/ldap/fields-v4.png" alt="SSO :LDAP"/>
 
 4. After making the necessary configurations, click the **Save Changes** button located at the bottom.
 
@@ -55,7 +55,7 @@ ToolJet supports syncing user groups from your LDAP directory.
 - When enabled, users are automatically added to matching ToolJet groups during login.
 - Group sync can be turned off using the *Enable group sync* toggle in the LDAP configuration.
 
-<img className="screenshot-full img-m" src="/img/sso/ldap/fields-v3-group-sync.png" alt="SSO :LDAP"/>
+<img className="screenshot-full img-m" src="/img/sso/ldap/fields-v4-group-sync.png" alt="SSO :LDAP"/>
 
 If disabled, users will still be authenticated via LDAP, but no group memberships will be synced.
 
