@@ -71,6 +71,38 @@ export class NotificationService implements INotificationService {
     }
   }
 
+  /**
+   * Same as notifyOrgAdmins but also includes builders — for events builders
+   * actively working in the app need to know about (e.g. auto-sync updating
+   * or deleting the branch they have open), not just org admins.
+   */
+  async notifyOrgAdminsAndBuilders(params: NotifyOrgAdminsParams): Promise<void> {
+    const userIds = await this.repository.getOrgAdminAndBuilderUserIds(params.organizationId);
+    if (!userIds.length) return;
+
+    const persisted = await this.repository.createForUsers({
+      organizationId: params.organizationId,
+      userIds,
+      type: params.type,
+      title: params.title,
+      body: params.body,
+      link: params.link,
+      metadata: params.metadata,
+      dedupeKey: params.dedupeKey,
+    });
+    if (!persisted) return; // fully deduped — everyone already has this notification
+
+    const enabled = params.channels ?? DEFAULT_CHANNELS;
+    for (const recipient of persisted.recipients) {
+      for (const channel of this.channels) {
+        if (!enabled.includes(channel.key)) continue;
+        await channel
+          .deliver(persisted.notification, recipient, { toast: params.toast })
+          .catch((e) => this.logger.error(`channel ${channel.key} failed for user ${recipient.userId}: ${e?.message}`));
+      }
+    }
+  }
+
   async list(
     userId: string,
     organizationId: string,

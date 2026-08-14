@@ -256,4 +256,25 @@ export class NotificationRepository extends Repository<Notification> {
     );
     return rows.map((r) => r.user_id);
   }
+
+  /**
+   * Returns user IDs of all active admins AND builders in an organization.
+   * Same join pattern as getOrgAdminUserIds, widened to the 'builder' default group —
+   * used where builders actively working in the app need to know about a change too
+   * (e.g. auto-sync), not just org admins.
+   */
+  async getOrgAdminAndBuilderUserIds(organizationId: string): Promise<string[]> {
+    const rows: { user_id: string }[] = await this.manager.query(
+      `SELECT DISTINCT gu.user_id
+         FROM group_users gu
+         JOIN permission_groups pg ON pg.id = gu.group_id
+         JOIN organization_users ou ON ou.user_id = gu.user_id AND ou.organization_id = $1
+        WHERE pg.organization_id = $1
+          AND pg.type = 'default'
+          AND pg.name IN ('admin', 'builder')
+          AND ou.status != 'archived'`,
+      [organizationId]
+    );
+    return rows.map((r) => r.user_id);
+  }
 }
