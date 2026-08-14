@@ -18,6 +18,12 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
       auditLogsKey: 'USER_PASSWORD_UPDATE',
     },
+    // Same treatment as UPDATE: a user editing their own profile needs no further
+    // permission check, and the change is recorded against their profile.
+    [FEATURE_KEY.UPDATE_PREFERENCES]: {
+      isPublic: true,
+      auditLogsKey: 'USER_PROFILE_UPDATE',
+    },
     [FEATURE_KEY.MFA_SETUP]: {
       license: LICENSE_FIELD.MFA,
     },
