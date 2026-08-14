@@ -45,6 +45,10 @@ If your instance uses an [HTTP proxy](/docs/setup/http-proxy), make sure these d
 
 Credits are pooled at the **instance level** for self-hosted deployments. See [Understanding AI Credits](/docs/build-with-ai/ai-credits#credit-allocation) for details.
 
+## Switching the AI Provider
+
+With this setup, each user can pick which LLM provider powers their own AI chats. See [Selecting an AI Model](/docs/build-with-ai/model-selection) for details.
+
 ## Switching to a Different Setup
 
 - To use your own LLM API key while continuing to route requests through ToolJet Managed AI Server, see [Setup ToolJet Cloud AI (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key).

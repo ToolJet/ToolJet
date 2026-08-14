@@ -43,12 +43,21 @@ To use Google Gemini as your LLM provider, Vertex AI service account credentials
 To configure the Google Gemini via environment variables, you will need to generate a base64 string for your JSON.
 :::
 
+### Grok
+
+To use Grok as your LLM provider, a Grok API key is required. You can generate one from the [xAI console](https://console.x.ai).
+
+### OpenRouter
+
+To use OpenRouter as your LLM provider, an OpenRouter API key is required. You can generate one from [openrouter.ai/keys](https://openrouter.ai/keys). Unlike the other providers, OpenRouter also lets you pick the exact model to use, see [Selecting an Exact Model](/docs/build-with-ai/model-selection#selecting-an-exact-model).
+
 ## Configuring Your API Key via UI
 
 1. Navigate to **Workspace Settings → LLM Key** in your ToolJet workspace.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/llm-key-v2.png" alt="llm key" />
 2. Select the provider you want to use. By default "ToolJet managed" will be selected which utilizes the ToolJet AI Credits.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/select.png" alt="llm key" />
+    If you select **OpenRouter**, a second dropdown appears listing the available models, select the exact model you want to use.
 3. After that, enter your API key from your LLM provider (e.g., your Anthropic API key from [console.anthropic.com](https://console.anthropic.com)).
 4. Click **Save changes**.
 
@@ -71,7 +80,11 @@ ToolJet will use your key to authenticate requests sent to your LLM provider.
 
 ## Supported Providers
 
-**Currently, only Anthropic and Google Gemini (Vertex AI) are supported.** Support for additional LLM providers is planned for future releases.
+**Currently, Anthropic, Google Gemini (Vertex AI), Grok, and OpenRouter are supported.** Support for additional LLM providers is planned for future releases.
+
+:::info
+OpenRouter offers a large number of models, but not all of them have been tested or are fully compatible with ToolJet. If a model you pick behaves unexpectedly, try switching to a different one.
+:::
 
 ## Frequently Asked Questions
 
@@ -103,4 +116,10 @@ Yes. You can remove your API key from **Workspace Settings → LLM Key** at any 
 <summary>**What happens if my API key is invalid or expires?**</summary>
 
 AI-powered features will fail to execute until a valid key is provided. You will need to update the key in **Workspace Settings → LLM Key**.
+</details>
+
+<details id="tj-dropdown">
+<summary>**Can users switch the AI provider or model when BYOK is configured?**</summary>
+
+No. With BYOK, the LLM provider (and model, if using OpenRouter) is configured by the admin for the entire workspace and cannot be changed per-user. Per-user provider switching is only available with [ToolJet Managed AI Server](/docs/build-with-ai/model-selection).
 </details>
