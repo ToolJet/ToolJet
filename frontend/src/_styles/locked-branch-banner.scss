@@ -80,10 +80,15 @@
   }
 }
 
-// Dark mode support — scoped to the warning (git-sync license expired/invalid) variant only.
-// The default/locked-branch variant already uses theme-aware vars (--background-surface-layer-03,
-// --text-default) above, so it needs no override here.
 .dark-theme {
+  .locked-branch-banner {
+    background-color: var(--background-surface-layer-03, #2c3138);
+
+    .locked-branch-banner-message {
+      color: var(--slate12, #f1f5f9);
+    }
+  }
+
   .locked-branch-banner--warning {
     background: linear-gradient(90deg, #451a03 0%, #78350f 100%);
     border-bottom-color: #92400e;
