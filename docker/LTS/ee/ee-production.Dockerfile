@@ -135,7 +135,6 @@ RUN apt-get update && \
     xz-utils \
     tar \
     postgresql-client \
-    redis \
     libaio1t64 \
     libxml2 \
     git \
@@ -150,6 +149,11 @@ RUN apt-get update && \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Redis 7.x from official Redis repository (Debian's bundled package is stale)
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb trixie main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y redis-server
 
 # Oracle Instant Client needs libaio.so.1; trixie ships it as .so.1t64 (amd64 path).
 RUN ln -sf /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1

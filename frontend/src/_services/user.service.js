@@ -8,6 +8,7 @@ export const userService = {
   createUser,
   deleteUser,
   updateCurrentUser,
+  updateNotificationPreference,
   changePassword,
   getAvatar,
   updateAvatar,
@@ -73,6 +74,12 @@ function updateCurrentUser(firstName, lastName) {
   const body = { first_name: firstName, last_name: lastName };
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/profile`, requestOptions).then(handleResponse);
+}
+
+function updateNotificationPreference(enabled) {
+  const body = { ai_build_notifications_enabled: enabled };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/profile/preferences`, requestOptions).then(handleResponse);
 }
 
 function updateUserType(userUpdateBody) {
