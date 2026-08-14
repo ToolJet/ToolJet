@@ -90,7 +90,7 @@ You can use ToolJet Cloud for a fully managed solution. If you want to self-host
 | :------------- | :------------- |
 | Digital Ocean | [Link](https://docs.tooljet.com/docs/setup/digitalocean)  |
 | Docker  | [Link](https://docs.tooljet.com/docs/setup/docker)   |
-| AWS EC2 | [Link](https://docs.tooljet.com/docs/setup/ec2)  |
+| AWS EC2 | [Link](https://docs.tooljet.com/docs/3.0.0-LTS/setup/)  |
 | AWS ECS | [Link](https://docs.tooljet.com/docs/setup/ecs)   |
 | OpenShift | [Link](https://docs.tooljet.com/docs/setup/openshift)   |
 | Helm | [Link](https://docs.tooljet.com/docs/setup/helm)   |
@@ -99,7 +99,7 @@ You can use ToolJet Cloud for a fully managed solution. If you want to self-host
 | Azure AKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/setup/kubernetes-aks)   |
 | Azure Container | [Link](https://docs.tooljet.com/docs/setup/azure-container)   |
 | Google Cloud Run  | [Link](https://docs.tooljet.com/docs/setup/google-cloud-run)   |
-| Deploying ToolJet client  | [Link](https://docs.tooljet.com/docs/setup/client)   |
+| Deploying ToolJet client  | [Link](https://docs.tooljet.com/docs/3.0.0-LTS/setup/client/)   |
 | Deploying ToolJet on a Subpath  | [Link](https://docs.tooljet.com/docs/setup/tooljet-subpath/)   |
 
 ## Marketplace 
