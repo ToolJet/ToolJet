@@ -39,7 +39,12 @@ export class GetAllUsersQueryDto {
 
   @IsOptional()
   @Transform(({ value }) =>
-    typeof value === 'string' ? value.split(',').map((v) => v.trim()).filter((v) => v !== '') : value
+    typeof value === 'string'
+      ? value
+          .split(',')
+          .map((v) => v.trim())
+          .filter((v) => v !== '')
+      : value
   )
   @IsArray()
   @IsEnum(USER_STATUS, { each: true })
@@ -554,3 +559,58 @@ export class UnbanWorkspaceDto {
   slug?: string;
 }
 
+// --- AI builder external-API DTOs ---
+// `email` identifies which user the AI-builder action is performed as. This is the same
+// impersonation-capable pattern GeneratePATDto already uses (interim only — see
+// docs/my-docs plan for the PAT-based auth rework that will remove this param).
+
+export class CreateAiConversationDto {
+  @IsEmail()
+  email: string;
+
+  @IsUUID()
+  appId: string;
+
+  @IsOptional()
+  @IsString()
+  conversationType?: string;
+
+  @IsOptional()
+  @IsUUID()
+  currentConversationId?: string;
+}
+
+export class SendAiMessageDto {
+  @IsEmail()
+  email: string;
+
+  @IsUUID()
+  appId: string;
+
+  @IsUUID()
+  conversationId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  content: string;
+
+  @IsOptional()
+  @IsArray()
+  references?: any[];
+
+  @IsOptional()
+  @IsObject()
+  interruptConfig?: { type: string; content: any };
+}
+
+export class ListAiConversationsQueryDto {
+  @IsEmail()
+  email: string;
+
+  @IsUUID()
+  appId: string;
+
+  @IsOptional()
+  @IsString()
+  conversationType?: string;
+}

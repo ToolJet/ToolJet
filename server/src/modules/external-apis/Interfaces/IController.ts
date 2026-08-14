@@ -6,6 +6,8 @@ import {
   AppGitPullDto,
   AppGitPushDto,
   AppImportRequestDto,
+  CreateAiConversationDto,
+  SendAiMessageDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -33,6 +35,22 @@ export interface IExternalApisController {
 
   // Updates user role
   updateUserRole(workspaceId: string, editRoleDto: EditUserRoleDto): Promise<any>;
+}
+
+export interface IExternalApisAiController {
+  createConversation(dto: CreateAiConversationDto): Promise<any>;
+
+  sendMessage(dto: SendAiMessageDto, response: any): Promise<void>;
+
+  getConversation(email: string, conversationId: string): Promise<any>;
+
+  listConversations(email: string, appId: string, conversationType?: string): Promise<any>;
+
+  getTaggableDatasources(email: string, appId: string): Promise<any>;
+
+  getCreditsBalance(email: string, appId: string): Promise<any>;
+
+  getThreadTokenUsage(email: string, conversationId: string): Promise<any>;
 }
 
 export interface IExternalApisAppsController {

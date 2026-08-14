@@ -36,6 +36,13 @@ interface Features {
   [FEATURE_KEY.UNBAN_WORKSPACE]: FeatureConfig;
   [FEATURE_KEY.EXPORT_APP_ADMIN]: FeatureConfig;
   [FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS]: FeatureConfig;
+  [FEATURE_KEY.AI_CREATE_CONVERSATION]: FeatureConfig;
+  [FEATURE_KEY.AI_SEND_MESSAGE]: FeatureConfig;
+  [FEATURE_KEY.AI_GET_CONVERSATION]: FeatureConfig;
+  [FEATURE_KEY.AI_LIST_CONVERSATIONS]: FeatureConfig;
+  [FEATURE_KEY.AI_GET_TAGGABLE_DATASOURCES]: FeatureConfig;
+  [FEATURE_KEY.AI_GET_CREDITS_BALANCE]: FeatureConfig;
+  [FEATURE_KEY.AI_GET_TOKEN_USAGE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -67,9 +67,9 @@ export class AiModule extends SubModule {
         PageHelperService,
         AppsUtilService,
         AiCacheService,
-        ...(isMainImport ? [AiService, AiCacheService] : []),
+        AiService,
       ],
-      exports: [AiUtilService],
+      exports: [AiUtilService, AiService],
     };
   }
 }
