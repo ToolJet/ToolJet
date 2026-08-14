@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import '@/_styles/locked-branch-banner.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -16,7 +17,10 @@ const LockedBranchBanner = ({
   reason = 'merged',
   pageContext = '',
   variant = 'inline',
+  licenseLockMessage = '',
 }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   if (!isVisible) {
     return null;
   }
@@ -27,31 +31,33 @@ const LockedBranchBanner = ({
     reason === 'released'
       ? 'This branch has been released and is now read-only'
       : isLicenseLock
-        ? 'Your plan has expired. Renew your plan or disable git sync to continue.'
-        : reason === 'main_config_branch'
-          ? `Master is locked. Create a branch to add or ${pageContextText}.`
-          : 'This branch has been merged and is now read-only';
+      ? licenseLockMessage || 'Your plan has expired. Renew your plan or disable git sync to continue.'
+      : reason === 'main_config_branch'
+      ? `Master is locked. Create a branch to add or ${pageContextText}.`
+      : 'This branch has been merged and is now read-only';
 
   return (
-    <div
-      className={`locked-branch-banner locked-branch-banner--${variant}${
-        isLicenseLock ? ' locked-branch-banner--warning' : ''
-      }`}
-      data-cy="locked-branch-banner"
-    >
-      <div className="locked-branch-banner-content">
-        <SolidIcon
-          name={isLicenseLock ? 'warning' : variant === 'floating' ? 'information' : 'lock'}
-          fill={isLicenseLock ? 'var(--icon-warning, #BF4F03)' : 'var(--icon-default)'}
-          width="16"
-        />
-        <div className="locked-branch-banner-text">
-          <span className="locked-branch-banner-message">{reasonText}</span>
-          {/* {branchName && (
-            <span className="locked-branch-banner-branch">
-              Branch: <strong>{branchName}</strong>
-            </span>
-          )} */}
+    <div className={cx({ 'dark-theme': darkMode })}>
+      <div
+        className={`locked-branch-banner locked-branch-banner--${variant}${
+          isLicenseLock ? ' locked-branch-banner--warning' : ''
+        }`}
+        data-cy="locked-branch-banner"
+      >
+        <div className="locked-branch-banner-content">
+          <SolidIcon
+            name={isLicenseLock ? 'warning' : variant === 'floating' ? 'information' : 'lock'}
+            fill={isLicenseLock ? 'var(--icon-warning, #BF4F03)' : 'var(--icon-default)'}
+            width="16"
+          />
+          <div className="locked-branch-banner-text">
+            <span className="locked-branch-banner-message">{reasonText}</span>
+            {/* {branchName && (
+              <span className="locked-branch-banner-branch">
+                Branch: <strong>{branchName}</strong>
+              </span>
+            )} */}
+          </div>
         </div>
       </div>
     </div>

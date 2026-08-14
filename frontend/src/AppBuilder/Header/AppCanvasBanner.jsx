@@ -6,6 +6,8 @@ import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import LockedBranchBanner from '@/AppBuilder/Header/LockedBranchBanner';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { getGitSyncLicenseLockMessage } from '@/_helpers/gitSyncLicense';
 import { shallow } from 'zustand/shallow';
 
 const AppCanvasBanner = ({ appId = '' }) => {
@@ -31,6 +33,7 @@ const AppCanvasBanner = ({ appId = '' }) => {
     shallow
   );
   const { isGitSyncEnabled, isGitSyncLicenseLocked } = useGitSyncConfig();
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
 
   const isCurrentVersionLocked = !!(
     selectedVersion &&
@@ -51,7 +54,13 @@ const AppCanvasBanner = ({ appId = '' }) => {
     if (currentMode !== 'edit') return null;
     // Git configured but unlicensed freezes everything — take precedence over other banners.
     if (isGitSyncLicenseLocked) {
-      return <LockedBranchBanner isVisible reason="git_sync_license_off" />;
+      return (
+        <LockedBranchBanner
+          isVisible
+          reason="git_sync_license_off"
+          licenseLockMessage={getGitSyncLicenseLockMessage(featureAccess)}
+        />
+      );
     }
     if (isModuleEditor) {
       if (isGitSyncEnabled) {

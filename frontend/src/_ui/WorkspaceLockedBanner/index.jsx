@@ -2,7 +2,7 @@ import React from 'react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import LockedBranchBanner from '@/AppBuilder/Header/LockedBranchBanner';
-import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { isGitSyncLicenseInvalid, getGitSyncLicenseLockMessage } from '@/_helpers/gitSyncLicense';
 
 export function WorkspaceLockedBanner({ pageContext = '', variant = 'inline' }) {
   const { currentBranch, orgGitConfig, isInitialized, isGitSyncConfigured } = useWorkspaceBranchesStore((state) => ({
@@ -23,6 +23,7 @@ export function WorkspaceLockedBanner({ pageContext = '', variant = 'inline' }) 
         isVisible
         branchName={currentBranch?.name || ''}
         reason="git_sync_license_off"
+        licenseLockMessage={getGitSyncLicenseLockMessage(featureAccess)}
         pageContext={pageContext}
         variant={variant}
       />

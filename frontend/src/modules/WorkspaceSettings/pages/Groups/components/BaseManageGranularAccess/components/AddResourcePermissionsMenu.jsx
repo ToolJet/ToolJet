@@ -37,7 +37,7 @@ function AddResourcePermissionsMenu({
     [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
     [RESOURCE_TYPE.MODULES]: 'Modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
-    [RESOURCE_TYPE.FOLDERS]: 'Folders',
+    [RESOURCE_TYPE.FOLDERS]: 'App folders',
     [RESOURCE_TYPE.WORKFLOW_FOLDERS]: 'Workflow folders',
     [RESOURCE_TYPE.MODULE_FOLDERS]: 'Module folders',
   };

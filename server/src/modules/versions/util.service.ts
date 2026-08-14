@@ -416,13 +416,13 @@ export class VersionUtilService implements IVersionUtilService {
 
       const newDraft = await this.buildVersionFromParent(app, user, versionCreateDto, branchId, manager);
       if (newDraft?.id) {
-        // A patched draft must look NEVER-PULLED so the next `pull latest` treats it as outdated and
-        // refreshes it. The pull staleness checks key off these two columns:
-        //   - classifyEntry skips an entry when pulled_at >= the remote commit timestamp
-        //   - lazy hydration only fires when remote_updated_at is set and newer than pulled_at
-        // Leaving a stale remote_updated_at/pulled_at (inherited from the replaced draft or a future
-        // build path) would make the pull skip this draft. Force both empty to guarantee a refresh.
-        const updates: Partial<AppVersion> = { remoteUpdatedAt: null, pulledAt: null };
+        // A patched draft must look NEVER-PULLED so both the next `pull latest` and the
+        // next app open treat it as outdated and re-materialize it from git. Change
+        // detection keys off git_tree_sha now: classifyEntry marks a version outdated when
+        // its git_tree_sha differs from git's tree SHA, and the open path re-hydrates on the
+        // same mismatch. A stale git_tree_sha inherited from the replaced draft (or a build
+        // path) would make both wrongly skip this draft — force it null to guarantee a refresh.
+        const updates: Partial<AppVersion> = { gitTreeSha: null };
         // When replacing an existing draft, keep ITS sync state (a synced app stays synced) rather than
         // inheriting the source version's own flag — a saved version created before the app was synced
         // would otherwise mark the draft unsynced. With no draft to replace, buildVersionFromParent's
@@ -432,8 +432,7 @@ export class VersionUtilService implements IVersionUtilService {
           newDraft.is_synced = updates.isSynced;
         }
         await manager.update(AppVersion, { id: newDraft.id }, updates);
-        newDraft.remote_updated_at = null;
-        newDraft.pulled_at = null;
+        newDraft.git_tree_sha = null;
       }
       return newDraft;
     });

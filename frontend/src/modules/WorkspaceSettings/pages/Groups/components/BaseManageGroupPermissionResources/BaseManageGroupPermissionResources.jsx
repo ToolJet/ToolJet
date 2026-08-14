@@ -721,7 +721,7 @@ class BaseManageGroupPermissionResources extends React.Component {
             class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
             data-cy="folder-delete-helper-text"
           >
-            Delete any folders in this workspace
+            Delete any app folders in this workspace
           </span>
         </label>
       </>
@@ -1512,21 +1512,19 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     </div>
                                   </div>
                                 )}
-                                {isModulesEnabled && (
-                                  <div className="manage-groups-permission-apps">
-                                    <div data-cy="resource-module-folders">Module folder</div>
-                                    <div className="text-muted">
-                                      <div className="d-flex apps-permission-wrap flex-column">
-                                        {this.renderModuleFolderPermissions({
-                                          groupPermission,
-                                          isCE,
-                                          isBasicPlan,
-                                          disableNonPromoteReleasePermissions,
-                                        })}
-                                      </div>
+                                <div className="manage-groups-permission-apps">
+                                  <div data-cy="resource-module-folders">Module folder</div>
+                                  <div className="text-muted">
+                                    <div className="d-flex apps-permission-wrap flex-column">
+                                      {this.renderModuleFolderPermissions({
+                                        groupPermission,
+                                        isCE,
+                                        isBasicPlan,
+                                        disableNonPromoteReleasePermissions,
+                                      })}
                                     </div>
                                   </div>
-                                )}
+                                </div>
                                 <div className="manage-groups-permission-apps">
                                   <div data-cy="resource-workspace-variable">
                                     {this.props.t('globals.environmentVar', 'Workspace constant/variable')}

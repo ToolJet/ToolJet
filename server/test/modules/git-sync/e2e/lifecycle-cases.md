@@ -158,7 +158,7 @@ End-to-end single test; each step depends on the previous. Steps:
 | 29 | Switch to `main` & list apps → still pre-pull name `testing-app-1` |
 | 30 | `check-updates` on `main` → `hasUpdates` true (merge commit ahead) |
 | 31 | Pull `main` |
-| 32 | List apps on `main` → name `testing-app-2` (slug still stub uuid) |
+| 32 | Pull `main` → dashboard list reflects **all** user-facing metadata refreshed by the pull: name `testing-app-2`, slug `testing-app-2-slug`, icon `sentfast`, `is_public=true` (previously the pull updated only `app_name`; slug/icon/is_public now land straight from the pull, not just after a later ensure-draft) |
 | 33 | Pull-from-builder + `ensure-draft` → new draft version id |
 | 34 | GET draft version → name + slug + icon + is_public propagated |
 | 35 | GET published v1 → editing_version PUBLISHED + inherits main draft name/slug |
@@ -278,18 +278,18 @@ create/publish/replace — so it runs against the protected-`main` repo.
 | Save v1 | Publish the app version (`PUT status=PUBLISHED`, name `v1`) | v1 has `[comp_A]` / `[query_A]`; publishing seeds a **synced** continuity draft (single-branch apps are synced-on-create) |
 | New draft | Create draft from `v1` (`replace:true`) → `d2` | `d2` is a clean copy of v1 (`[comp_A]` / `[query_A]`); it's the editing version. **`replace:true` is required** — the synced continuity draft means `replace:false` would hit the single-draft rule (400 "Only one draft version is allowed when branching is enabled") |
 | Edit draft | Add `comp_B` + `query_B` to `d2` | `d2` = `[comp_A, comp_B]` / `[query_A, query_B]` |
-| Stamp staleness | Set `remote_updated_at` + `pulled_at` to `now()` on both `d2` (draft being replaced) and `v1` (source version) | — |
-| **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version; `d3.remote_updated_at` and `d3.pulled_at` are **NULL** (never-pulled) so a later `pull latest` refreshes it instead of skipping |
+| Stamp staleness | Set `git_tree_sha` to a non-null value on both `d2` (draft being replaced) and `v1` (source version) | — |
+| **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version; `d3.git_tree_sha` is **NULL** (never-materialized) so a later `pull latest` / app-open refreshes it instead of skipping |
 | Save v2 | Add `comp_C` + `query_C` to `d3`, publish as `v2` | `v2` = `[comp_A, comp_C]` |
 | **Patch from first version** | Create draft from `v1` again (`replace:true`) → `d4` | `d4` mirrors **v1** (`[comp_A]` / `[query_A]`), **not** v2 (no `comp_C`/`query_C`); `d4` is the editing version |
 
 Component/query assertions read the DB keyed by the version id resolved from `GET /apps/:id`
 (`editing_version`), so they're deterministic. Backend: `replaceDraftVersion` deletes the existing
 default-branch draft and clones the chosen published version in one transaction, preserving the
-replaced draft's sync state. It also forces the new draft's `remote_updated_at` / `pulled_at` to
-`NULL` — the pull staleness logic skips a draft whose `pulled_at >= remote commit` and only
-lazy-hydrates when `remote_updated_at` is set and newer than `pulled_at`, so a patched draft must
-look never-pulled to guarantee the next `pull latest` refreshes it.
+replaced draft's sync state. It also forces the new draft's `git_tree_sha` to `NULL` — change
+detection compares `git_tree_sha` against git's current tree SHA (both on `pull latest` and on the
+next app-open), so a stale non-null value would make them skip the draft; forcing it NULL makes the
+patched draft look never-materialized and guarantees the next pull/open refreshes it.
 
 ---
 
@@ -492,12 +492,17 @@ content hashes (a tree SHA changes iff something beneath it changed):
 - **category** — tree SHA of `apps/` · `modules/` · `data-sources/` vs `*_git_tree_sha` on the branch row
 - **per-resource** — tree SHA of `apps/<app>/` · `data-sources/<ds>/` vs `app_versions`/`data_source_versions.git_tree_sha`
 
-All tokens are **READ from git and STORED on PULL only** (push never stamps them). The observable
-effect of a skip is that the pull's orphan sweep — which marks `is_synced=false` any default-branch DB
-resource absent from git — does NOT run for the skipped scope, so a manufactured orphan survives as
-`is_synced=true`. The orphan sweep is gated to the DEFAULT branch, so these tests operate on `main`
-(content lands via admin `/merge`). This test asserts the tokens get stored on pull and that a second
-pull with an unchanged remote HEAD skips the whole pull (a manufactured orphan stays `is_synced=true`).
+The branch-level tokens (`last_synced_commit`, the category `*_git_tree_sha`) are read from git and
+stored on **pull**. A version's per-resource `git_tree_sha` is stamped when the version is
+**materialized** — a pull that imports a fresh stub, or an app-open hydration — and by **push** (so
+just-pushed content reads as in-sync and isn't re-hydrated); a changed-but-unopened app therefore keeps
+a null/stale `git_tree_sha` until it's opened, so this test opens the app before asserting its per-app
+token. The observable effect of a skip is that the pull's orphan sweep — which marks `is_synced=false`
+any default-branch DB resource absent from git — does NOT run for the skipped scope, so a manufactured
+orphan survives as `is_synced=true`. The orphan sweep is gated to the DEFAULT branch, so these tests
+operate on `main` (content lands via admin `/merge`). This test asserts the tokens get stored on pull
+and that a second pull with an unchanged remote HEAD skips the whole pull (a manufactured orphan stays
+`is_synced=true`).
 
 ## 11. Pull skip — category-level skip (`it: skips the datasource category when data-sources/ tree SHA is unchanged despite a moved HEAD`)
 
@@ -508,13 +513,13 @@ is byte-identical → `pullDataSources` returns early → the datasource orphan 
 manufactured DS orphan survives. Clearing only the DS token then forces the sweep, isolating the
 category skip as the cause.
 
-## 12. Push serialization — no DB timestamps in pushed files (`it: omits created_at / updated_at / remote_updated_at from pushed app version files`)
+## 12. Push serialization — no DB internals in pushed files (`it: omits created_at / updated_at / git_tree_sha from pushed app version files`)
 
 Dedicated isolated org. The pull-side tree-SHA skip only works if a resource's serialized bytes are
-stable across no-op pushes. DB-internal timestamps (`created_at` / `updated_at` / `remote_updated_at`)
-change on every save, so if they leaked into pushed files the app's tree SHA would flip on an
-otherwise-unchanged push and the skip would never fire. This test pushes an app and asserts none of its
-committed version files carry those fields.
+stable across no-op pushes. DB-internal fields (`created_at` / `updated_at` change on every save, and
+`git_tree_sha` is itself the change token) would flip the app's tree SHA on an otherwise-unchanged push
+if they leaked into pushed files, so the skip would never fire. This test pushes an app and asserts none
+of its committed version files carry those fields.
 
 ## 13. Multi-version import respects git sync (`describe: POST /api/v2/resources/import | multi-version import respects git sync`)
 
@@ -574,6 +579,7 @@ Dedicated isolated org, multi-branch. Two related gaps about a data source **del
 | 1 | app push does NOT commit a data source deleted on the branch (`serializeLinkedDataSourcesForApp`) | app links a DS via a query, the DS's DSV is soft-deleted, then `gitpush` the (unsynced, front-end) app → the DS file is **absent** from the commit |
 | 2 | a `scope=datasource` push REMOVES the file of a DS deleted after being pushed | create DS → push (file present) → delete (soft) → `scope=datasource` push → file **removed** |
 | 3 | a `scope=datasource` push removes a DS whose DSV was **hard-deleted** (single-branch delete shape) | create DS → push → **hard-delete the DSV row** (what a single-branch default-branch delete does) → `scope=datasource` push → file **removed** via the orphan sweep |
+| 4 | a `scope=datasource` push with **no `onlyUnsynced` flag** (the app-builder default) commits a newly created data source | create DS on a feature branch (multi-branch ⇒ **unsynced**) → `scope=datasource` push **without** `onlyUnsyncedDatasources` → file **present** in git |
 
 Fixes (`ee/git-sync/workspace-git-sync-adapter.ts`):
 - `serializeLinkedDataSourcesForApp` DSV lookup now filters `is_active: true` + the app version's
@@ -581,6 +587,15 @@ Fixes (`ee/git-sync/workspace-git-sync-adapter.ts`):
 - `serializeDataSources` (`scope='datasource'`, which skips `ensureCleanDir`) now runs an **orphan
   sweep** after serialization: removes any `data-sources/<name>/` git file whose DS has no ACTIVE DSV on
   the branch — covering both soft-delete (inactive DSV) and single-branch hard-delete (absent DSV).
+- `serializeDataSources` `scope='datasource'` now applies the `isSynced=false` narrowing **only** when
+  `onlyUnsyncedDatasources` is explicitly set; the no-flag case (the app-builder's "push data sources")
+  serializes **every active DSV** on the branch instead of synced-only — so a freshly created, still-unsynced
+  data source is committed by the default push (case 4) instead of being silently dropped and lost on merge.
+
+Related fix (`src/modules/data-sources/util.service.ts`): a branch DSV is marked `is_synced=true` on
+create **only in single-branch** mode; multi-branch feature-branch data sources stay **unsynced** so they
+remain pushable (mirrors the unsynced-on-create rule for apps/modules). This is what makes cases 2–4
+land the new DS in git and keeps the sync indicator honest.
 
 ## 18. Single-branch lifecycle — push/pull apps, modules, data sources (`it: pushes and pulls apps, modules, and data sources directly on the (unprotected) single-branch default`)
 
@@ -713,6 +728,74 @@ Tag creation is now a **side-effect of the publish**, verified by check-tag `exi
 resolving the ref (no explicit tag call). Since the standalone endpoint is gone, single-branch tags via the
 same save path (the gate is git-enabled, not multi-branch-only).
 **Mirrored in `git-sync-gitlab.spec.ts`** (exercises the GitLab provider's `createGitTag` / `checkTagExists`).
+
+## 25. Per-app import — slug collision swaps to a fresh UUID (`it: imports an app whose slug is already taken by another workspace → slug swapped to a fresh UUID (no conflict)`)
+
+Lives in the `per-app import from git (createGitApp)` describe (alongside §22/§23). Unlike the workspace
+pull (§6), the per-app import (`POST /api/app-git/gitpull/app` → `createGitApp`) has **no slug pre-flight**.
+But slug uniqueness is **instance-wide** (`enforce_app_versions_*_slug_unique`, no org scope), so importing an
+app whose slug is already owned by another workspace on the same repo must **swap the slug to a fresh UUID and
+still succeed** — never a 409/500. Uses fresh, isolated SRC/DST orgs so the §22/§23 imports don't pollute it.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset repo; **SRC** configures git (`single-branch-main`), creates + `gitpush`es `slug-clash-app`; read the slug it wrote to git (`srcSlug`) | 201 |
+| 2 | **DST** (separate org, same repo) configures git, then `POST /api/app-git/gitpull/app` `{ gitAppName, gitBranchName, workspaceBranchId }` (**no `gitAppId`** → skips the "already exists" guard) | **200/201** — a taken slug must NOT fail the import |
+| 3 | DST's imported non-stub version slug | **≠ `srcSlug`** and matches the UUID pattern (swapped to a fresh placeholder for later rename) |
+
+The slug collision is caught at the instance-wide resolver (`app-import-export.service.ts` /
+`app-git-operations.util.ts`), not a pre-flight — so this asserts the **silent-UUID** behavior that
+distinguishes app-level pull from workspace pull. **Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
+
+## 26. Branch create — slug conflict pre-check (`it: surfaces a 409 slug conflict when the source branch has two apps sharing a slug`)
+
+Dedicated isolated org. `createBranch` runs a **synchronous** conflict pre-check
+(`preCheckCreateBranchConflicts` → `detectPullConflicts(branchId=null)` → intra-incoming collisions) and
+re-throws a **409** so the frontend modal opens. This drives the same slug guard as the workspace pull (§6)
+through the **branch-create entry point** — a gap §6 (workspace pull) and §22/§23 (per-app import) didn't cover.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset repo; configure git (multi-branch) so `main` exists on the remote | 201 |
+| 2 | Inject **two** apps onto `main` via the admin `/files` endpoint — **different names + co_relation_ids, SAME slug** (different names so a name conflict doesn't mask the slug one) | — |
+| 3 | `POST /api/workspace-branches { name }` (branch off `main`) → the sync pre-check clones `main` and detects the shared slug | **409**; `conflictGroups` has a `{ type: 'app', conflictField: 'slug' }` group listing **both** injected co_relation_ids |
+| 4 | Neutralize the injected files (`{}`) in `finally` | repo left clean for later specs |
+
+**Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
+
+## 27. Cross-branch app push carries connected data sources + modules (`describe: cross-branch app push carries connected data sources and modules (regression)`)
+
+Dedicated isolated org, multi-branch. Pushing an app to a feature branch must carry its dependencies,
+and opening the app fresh on that branch must re-hydrate them from git.
+
+| # | `it` | Expected |
+|---|------|----------|
+| 1 | carries a connected global data source into the feature branch on app push, and re-hydrates it on open | create app + global DS on a feature branch, link the DS via a query, `gitpush` the app → `data-sources/<name>/data-source.json` is committed (id = DS `co_relation_id`); then delete the branch DSV + force a re-hydrate (`GET /apps/:id` with a bogus `git_tree_sha`) → the branch DSV is **re-created from git** (`deserializeWorkspaceResources`), not left as an "Undefined data source" dummy |
+| 2 | carries a referenced module into the feature branch on app push, and re-creates its stub from git on host open | push a module + a host app with a `ModuleViewer` referencing it → the module is present under `modules/`; then hard-delete the module's DB rows + force a host re-hydrate → the module stub is **re-created from git** and appears in the host's `modules` (exercises `hydrateStubApp` sparse-checking out `modules/` for a front-end app) |
+
+Fixes: `hydrateStubApp` (`ee/platform-git-sync/pull.service.ts`) now `sparse-checkout add modules` for a
+front-end app so `hydrateReferencedModuleStubs → pullModules(repoPath)` can stub a referenced module that
+has no App row yet; `serializeLinkedDataSourcesForApp` (`ee/git-sync/workspace-git-sync-adapter.ts`) now
+serializes a linked DS when it's missing on the target branch (resolving the app-branch DSV, else the
+default-branch active DSV) regardless of `is_synced`, so an already-synced app's cross-branch push is
+self-contained. **Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
+
+## 28. Slug update — git-sync branch rules (`describe: slug update — git-sync branch rules (regression)`)
+
+Dedicated isolated org. Exercises the git-enabled slug-update gates in `AppsService.update` /
+`AppsUtilService.update` (uniqueness is instance-wide, per `apps.type`, case-insensitive — enforced by
+the `app_versions` slug triggers).
+
+| # | `it` | Expected |
+|---|------|----------|
+| 1 | single-branch: allows a slug edit on the default (working) branch | git single-branch; create app on the default branch; `PUT /apps/:id { slug }` → **200**; the version's slug is updated |
+| 2 | multi-branch: blocks a slug edit targeting the default branch | git multi-branch; create app on a feature branch; `PUT /apps/:id { slug, branch_id: <default> }` → **400** ("… feature branch …") |
+| 3 | multi-branch: allows a slug edit on a feature branch and persists it | `PUT /apps/:id { slug, branch_id: <feature> }` → **200**; the feature-branch version's slug is updated |
+| 4 | multi-branch: rejects a feature-branch slug already taken by another app of the same type | app1 takes a slug on the feature branch, app2 tries the same on the same branch → **400** ("… already taken") |
+
+Git-**off** slug rules (uniqueness reject, case-insensitivity, app↔module namespace, delete-frees-slug) are a
+separate host-free spec: `test/modules/apps/e2e/slug-update.e2e-spec.ts`. **Mirrored in
+`git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
 
 ## 21. Inbound webhooks → auto-sync (`test/modules/git-sync-webhooks/`)
 
