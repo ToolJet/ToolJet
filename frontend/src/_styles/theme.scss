@@ -4324,6 +4324,22 @@ input[type="text"] {
   }
 }
 
+// Overrides the percentage offsets below, which tied the popup's saved coordinates to document height.
+.resize-modal-portal.modal-portal-wrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  transform: none;
+  pointer-events: none;
+
+  .resize-modal {
+    pointer-events: auto;
+  }
+}
+
 .modal-portal-wrapper {
   justify-content: center;
   align-items: center;
