@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { blobToDataURL } from '@/AppBuilder/_stores/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
@@ -7,6 +8,12 @@ import { Footer } from './Footer';
 import './camera.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { mapCameraDevices, hasFrontAndBackCameras, isMobileBrowser } from './cameraDevices';
+import {
+  FULLSCREEN_CHANGE_EVENTS,
+  getFullscreenElement,
+  shouldUseCssFullscreenFallback,
+  toggleNativeFullscreen,
+} from './cameraFullscreen';
 
 // Mobile cameras are selected by facing direction, not deviceId: iOS lists several
 // rear lenses ("Back Ultra Wide Camera", "Back Dual Wide Camera") whose ids are not
@@ -20,6 +27,34 @@ const debugAlert = (headline, details = '') => {
   if (alertedMessages.has(message)) return;
   alertedMessages.add(message);
   window.alert(message);
+};
+
+// Canvas ancestors use transform (widget translate + translateZ(0)), which makes
+// position:fixed relative to the widget instead of the viewport. Keep a stable
+// portal node and reparent it to document.body so the video element never remounts.
+const useReparentablePortal = (attachToBody) => {
+  const slotRef = useRef(null);
+  const [portalNode] = useState(() => {
+    if (typeof document === 'undefined') return null;
+    const node = document.createElement('div');
+    node.className = 'camera-portal-root';
+    return node;
+  });
+
+  useLayoutEffect(() => {
+    if (!portalNode) return undefined;
+    const parent = attachToBody ? document.body : slotRef.current;
+    if (!parent) return undefined;
+    if (portalNode.parentNode !== parent) {
+      parent.appendChild(portalNode);
+    }
+    portalNode.classList.toggle('camera-portal-root--fullscreen', attachToBody);
+    return undefined;
+  }, [attachToBody, portalNode]);
+
+  useEffect(() => () => portalNode?.remove(), [portalNode]);
+
+  return { slotRef, portalNode };
 };
 
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
@@ -36,7 +71,8 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const [permissionError, setPermissionError] = useState(null);
   const [recordingResult, setRecordingResult] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
+  const [isCssFullscreen, setIsCssFullscreen] = useState(false);
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isVisible: visibility,
     isDisabled: disabledState,
@@ -48,6 +84,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const capturedImageRef = useRef(null);
   const savedImageUrlRef = useRef(null);
   const mediaStreamRef = useRef(null);
+  const { slotRef, portalNode } = useReparentablePortal(isCssFullscreen);
 
   // Media recorder setup
   const recorderOptions = useMemo(
@@ -242,18 +279,24 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   };
 
   const handleFullscreenToggle = async () => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    try {
-      if (document.fullscreenElement === element) {
-        await document.exitFullscreen?.();
-      } else {
-        await element.requestFullscreen?.();
-      }
-    } catch (error) {
-      console.error('Failed to toggle fullscreen', error);
+    if (isCssFullscreen) {
+      setIsCssFullscreen(false);
+      return;
     }
+
+    if (!shouldUseCssFullscreenFallback()) {
+      const element = containerRef.current;
+      if (element) {
+        try {
+          const usedNative = await toggleNativeFullscreen(element);
+          if (usedNative) return;
+        } catch (error) {
+          console.error('Failed to toggle fullscreen', error);
+        }
+      }
+    }
+
+    setIsCssFullscreen(true);
   };
 
   // Exposed variables sync
@@ -456,25 +499,64 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   useEffect(() => {
     const element = containerRef.current;
     const handleFullscreenChange = () => {
-      setIsFullscreen(document.fullscreenElement === element);
+      setIsNativeFullscreen(getFullscreenElement() === element);
     };
 
-    const events = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
-    events.forEach((event) => document.addEventListener(event, handleFullscreenChange));
+    FULLSCREEN_CHANGE_EVENTS.forEach((event) => document.addEventListener(event, handleFullscreenChange));
 
     return () => {
-      events.forEach((event) => document.removeEventListener(event, handleFullscreenChange));
-      if (document.fullscreenElement === element) {
-        document.exitFullscreen?.();
+      FULLSCREEN_CHANGE_EVENTS.forEach((event) => document.removeEventListener(event, handleFullscreenChange));
+      if (getFullscreenElement() === element) {
+        toggleNativeFullscreen(element).catch(() => {});
       }
     };
   }, []);
 
   useEffect(() => {
-    if (!visibility && document.fullscreenElement === containerRef.current) {
-      document.exitFullscreen?.();
+    if (visibility) return;
+    if (getFullscreenElement() === containerRef.current) {
+      toggleNativeFullscreen(containerRef.current).catch(() => {});
     }
-  }, [visibility]);
+    if (isCssFullscreen) setIsCssFullscreen(false);
+  }, [visibility, isCssFullscreen]);
+
+  useEffect(() => {
+    if (!isCssFullscreen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsCssFullscreen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isCssFullscreen]);
+
+  useLayoutEffect(() => {
+    if (!isCssFullscreen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const previousOverscroll = document.body.style.overscrollBehavior;
+    document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousOverscroll;
+    };
+  }, [isCssFullscreen]);
+
+  // iOS can detach a live <video> srcObject when its ancestor is moved in the DOM.
+  useLayoutEffect(() => {
+    const videoElement = videoElementRef.current;
+    const stream = mediaStreamRef.current;
+    if (!videoElement || !stream) return;
+    if (videoElement.srcObject !== stream) {
+      videoElement.srcObject = stream;
+    }
+    const playPromise = videoElement.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {});
+    }
+  }, [isCssFullscreen]);
 
   /* eslint-enable react-hooks/exhaustive-deps */
 
@@ -483,8 +565,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const hasPendingCapture = contentType === 'image' && !!capturedImage;
   const deviceSelectDisabled = status === 'recording' || isBusy;
   const canFlipCamera = isMobile && !deviceSelectDisabled;
-  const fullscreenSupported = document.fullscreenEnabled ?? true;
-  const fullscreenDisabled = !fullscreenSupported || permissionError === 'unsupported';
+  const isFullscreen = isNativeFullscreen || isCssFullscreen;
 
   // Inline styles
   const containerStyle = {
@@ -503,7 +584,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   };
 
   // Render
-  return (
+  const camera = (
     <div
       ref={containerRef}
       className={`camera-container${isFullscreen ? ' camera-container--fullscreen' : ''}`}
@@ -536,7 +617,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         captureDisabled={captureDisabled}
         deviceSelectDisabled={deviceSelectDisabled}
         onFullscreenToggle={handleFullscreenToggle}
-        fullscreenDisabled={fullscreenDisabled}
+        fullscreenDisabled={false}
         isFullscreen={isFullscreen}
         recorderError={recorderError}
         permissionError={permissionError}
@@ -545,5 +626,14 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         accentColor={accentColor}
       />
     </div>
+  );
+
+  if (!portalNode) return camera;
+
+  return (
+    <>
+      <div ref={slotRef} className="camera-slot" />
+      {createPortal(camera, portalNode)}
+    </>
   );
 };
