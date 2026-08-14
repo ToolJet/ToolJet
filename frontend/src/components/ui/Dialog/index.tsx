@@ -56,6 +56,7 @@ interface ActionDialogClasses {
 }
 
 interface ActionDialogProps extends Omit<React.ComponentPropsWithoutRef<'div'>, 'title'> {
+  showCancelButton?: boolean;
   open: boolean;
   handleOpenChange: (open: boolean) => void;
   cancelBtnProps?: CancelBtnProps;
@@ -77,6 +78,7 @@ export default function ActionDialog({
   classes = null,
   modality = true,
   hasFooter = true,
+  showCancelButton = true,
   ...dialogBodyProps
 }: ActionDialogProps) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -115,9 +117,11 @@ export default function ActionDialog({
           <TypedDialogFooter
             className={cn('tw-p-6 tw-border-0 sm:tw-justify-between sm:tw-items-center', classes?.dialogFooter)}
           >
-            <TypedButton variant="outline" size="default" {...cancelBtnPropsRest}>
-              {cancelBtnLabel ?? 'Cancel'}
-            </TypedButton>
+            {showCancelButton && (
+              <TypedButton variant="outline" size="default" {...cancelBtnPropsRest}>
+                {cancelBtnLabel ?? 'Cancel'}
+              </TypedButton>
+            )}
 
             <SubmitActions actions={submitActions} />
           </TypedDialogFooter>

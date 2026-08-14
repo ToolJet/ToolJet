@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { VectorSquare } from 'lucide-react';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
-import ModalBase from '@/_ui/Modal';
+import Dialog from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button/Button';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
 
@@ -77,10 +78,7 @@ export default function CustomComponentLibraries({ darkMode }) {
             </p>
           </div>
         ) : libraries.length === 0 ? (
-          <div className="libraries-empty" data-cy="libraries-empty">
-            <p className="libraries-empty-title">No custom component libraries yet</p>
-            <p className="libraries-empty-subtitle">Publish one to this workspace with the ToolJet CLI.</p>
-          </div>
+          <CustomComponentLibraryEmptyState />
         ) : (
           <div className="libraries-table-body" data-cy="libraries-table">
             {libraries.map((library) => (
@@ -128,36 +126,51 @@ export default function CustomComponentLibraries({ darkMode }) {
         )}
       </div>
 
-      <ModalBase
-        show={!!deleteTarget}
-        handleClose={() => setDeleteTarget(null)}
-        darkMode={darkMode}
-        title="Delete library"
-        className="library-delete-modal"
-        showFooter={false}
+      <Dialog
+        open={!!deleteTarget}
+        cancelBtnProps={{
+          'data-cy': 'cancel-button',
+          disabled: deleteInProgress,
+          onClick: () => setDeleteTarget(null),
+        }}
+        submitActions={[
+          {
+            label: 'Delete library',
+            variant: 'dangerPrimary',
+            isLoading: deleteInProgress,
+            'data-cy': 'delete-confirm',
+            onClick: handleDelete,
+          },
+        ]}
+        classes={{ dialogBody: 'tw-pb-0', dialogContent: 'tw-max-w-md' }}
       >
-        <div className="library-delete-confirm">
-          <p>
-            Delete <strong>{deleteTarget?.name}</strong>? All published versions and dev uploads will be permanently
-            removed. This cannot be undone.
+        <div className="tw-flex tw-flex-col tw-gap-0.5">
+          <h6 data-cy="modal-header" className="tw-text-text-default tw-font-medium tw-text-xl">
+            Delete library?
+          </h6>
+
+          <p data-cy="modal-description" className="tw-text-text-default tw-text-base tw-mb-0">
+            Delete <span className="tw-font-semibold">{deleteTarget?.name}</span>? All published versions and dev
+            uploads will be permanently removed. This cannot be undone.
           </p>
-
-          <div className="library-delete-modal-footer">
-            <Button variant="outline" onClick={() => setDeleteTarget(null)} data-cy="delete-cancel">
-              Cancel
-            </Button>
-
-            <Button
-              variant="dangerPrimary"
-              onClick={handleDelete}
-              isLoading={deleteInProgress}
-              data-cy="delete-confirm"
-            >
-              Delete library
-            </Button>
-          </div>
         </div>
-      </ModalBase>
+      </Dialog>
+    </div>
+  );
+}
+
+function CustomComponentLibraryEmptyState() {
+  return (
+    <div className="tw-flex tw-flex-col tw-items-center tw-px-4 tw-py-10" data-cy="custom-component-library-empty">
+      <div className="tw-flex tw-justify-center tw-items-center tw-size-8 tw-rounded-lg tw-bg-background-surface-layer-02 tw-mb-2">
+        <VectorSquare size="20" color="var(--icon-default)" />
+      </div>
+
+      <p className="tw-font-medium tw-text-base tw-mb-0">No custom component library yet</p>
+
+      <p className="tw-text-base tw-text-text-placeholder tw-mb-7 tw-text-center">
+        Publish one to this workspace with the ToolJet CLI.
+      </p>
     </div>
   );
 }

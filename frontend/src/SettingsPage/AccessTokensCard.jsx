@@ -16,16 +16,16 @@ import {
   SelectGroup,
   SelectItem,
 } from '@/components/ui/Rocket/Select/Select';
+import { Field, FieldLabel, FieldDescription } from '@/components/ui/Rocket/Field/Field';
 import Dialog from '@/components/ui/Dialog';
 
 import './resources/styles/access-tokens-card.styles.scss';
 
 const EXPIRY_OPTIONS = [
-  { label: 'No expiry', value: 'no expiry' },
-  { label: '7 days', value: '7' },
   { label: '30 days', value: '30' },
   { label: '60 days', value: '60' },
   { label: '90 days', value: '90' },
+  { label: '365 days', value: '365' },
 ];
 
 const isExpired = (token) => token.expiresAt && new Date(token.expiresAt) < new Date();
@@ -39,7 +39,7 @@ export const AccessTokensCard = ({ darkMode }) => {
   const [name, setName] = useState('');
   const [nameTouched, setNameTouched] = useState(false); // frame 08: blur-without-value validation
   const [organizationId, setOrganizationId] = useState('');
-  const [expiresInDays, setExpiresInDays] = useState(EXPIRY_OPTIONS[4].value);
+  const [expiresInDays, setExpiresInDays] = useState(EXPIRY_OPTIONS[0].value ?? '');
   const [createInProgress, setCreateInProgress] = useState(false);
 
   const [createdToken, setCreatedToken] = useState(null); // raw token — shown exactly once (frame 07)
@@ -74,6 +74,10 @@ export const AccessTokensCard = ({ darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (showCreateModal) setExpiresInDays(EXPIRY_OPTIONS[0].value ?? '');
+  }, [showCreateModal]);
+
   if (edition === 'ce') return null;
 
   const resetCreateForm = () => {
@@ -98,7 +102,7 @@ export const AccessTokensCard = ({ darkMode }) => {
       const created = await customComponentLibrariesService.createToken({
         name: name.trim(),
         organizationId,
-        expiresInDays: expiresInDays === 'no expiry' ? null : Number(expiresInDays),
+        expiresInDays: Number(expiresInDays),
       });
       setCreatedToken(created.token);
       fetchTokens();
@@ -214,15 +218,20 @@ export const AccessTokensCard = ({ darkMode }) => {
         open={showCreateModal}
         title={createdToken ? '' : 'Create personal access token'}
         cancelBtnProps={{ 'data-cy': 'cancel-button', disabled: createInProgress, onClick: closeCreateModal }}
+        showCancelButton={!createdToken}
         submitActions={[
           {
-            label: 'Create token',
+            label: createdToken ? 'Done' : 'Create token',
             isLoading: createInProgress,
+            disabled: !createdToken && (!name.trim() || !organizationId || !expiresInDays),
             'data-cy': 'submit-button',
-            onClick: handleCreate,
+            onClick: createdToken ? closeCreateModal : handleCreate,
           },
         ]}
-        classes={{ dialogContent: 'tw-max-w-md' }}
+        classes={{
+          dialogContent: 'tw-max-w-md',
+          ...(createdToken ? { dialogFooter: 'tw-justify-end', dialogBody: 'tw-pb-0' } : {}),
+        }}
       >
         {createdToken ? (
           <div className="tw-flex tw-flex-col tw-gap-0.5">
@@ -238,6 +247,23 @@ export const AccessTokensCard = ({ darkMode }) => {
               <div className="tw-min-w-0 tw-flex-1">
                 <p className="tw-mb-1 tw-font-medium tw-text-text-placeholder tw-text-base">Token</p>
                 <p className="tw-mb-0 tw-font-medium tw-text-text-default tw-text-base tw-truncate">{createdToken}</p>
+              </div>
+
+              <Button
+                isLucid
+                iconOnly
+                variant="ghost"
+                leadingIcon="copy"
+                className="tw-shrink-0"
+                fill="var(--icon-strong)"
+                onClick={handleCopy}
+              />
+            </div>
+
+            <div className="tw-flex tw-items-center tw-gap-4 tw-rounded-md tw-p-3 tw-border tw-border-solid tw-border-border-weak tw-mt-4">
+              <div className="tw-min-w-0 tw-flex-1">
+                <p className="tw-mb-1 tw-font-medium tw-text-text-placeholder tw-text-base">Workspace ID</p>
+                <p className="tw-mb-0 tw-font-medium tw-text-text-default tw-text-base tw-truncate">{organizationId}</p>
               </div>
 
               <Button
@@ -272,20 +298,21 @@ export const AccessTokensCard = ({ darkMode }) => {
               <label className="access-token-field-label">Workspace</label>
 
               <Dropdown
-                options={organizations?.map((org) => ({ label: org.name, value: org.id })) ?? []}
+                darkMode={darkMode}
                 selectedOption={organizationId ?? null}
                 onChangeSelectedOption={setOrganizationId}
-                darkMode={darkMode}
+                options={organizations?.map((org) => ({ label: org.name, value: org.id })) ?? []}
               />
             </div>
             <div className="access-token-field">
               <label className="access-token-field-label">Expiration</label>
 
               <Dropdown
-                options={EXPIRY_OPTIONS.map((opt) => ({ label: opt.label, value: opt.value })) ?? []}
+                darkMode={darkMode}
+                options={EXPIRY_OPTIONS}
                 selectedOption={expiresInDays ?? null}
                 onChangeSelectedOption={setExpiresInDays}
-                darkMode={darkMode}
+                description={`Expires on ${moment().add(Number(expiresInDays), 'days').format('Do MMMM YYYY')}.`}
               />
             </div>
           </div>
@@ -316,7 +343,7 @@ export const AccessTokensCard = ({ darkMode }) => {
           </h6>
 
           <p data-cy="modal-description" className="tw-text-text-default tw-text-base tw-mb-0">
-            Revoke
+            Revoke{' '}
             <span className="tw-font-semibold">
               {revokeTarget?.name} in {revokeTarget?.organizationName}
             </span>
@@ -354,34 +381,40 @@ function AccessTokensEmptyState({ onCreate }) {
   );
 }
 
-function Dropdown({ darkMode, options, selectedOption, onChangeSelectedOption }) {
+function Dropdown({ darkMode, label, description, options, selectedOption, onChangeSelectedOption }) {
   return (
-    <Select value={selectedOption} onValueChange={onChangeSelectedOption}>
-      <SelectTrigger
-        showArrow={false}
-        className="tw-shadow-none tw-gap-1.5 tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-selected"
-      >
-        <SelectValue />
-      </SelectTrigger>
+    <Field>
+      <FieldLabel>{label}</FieldLabel>
 
-      <SelectContent
-        align="end"
-        className={cn('tw-border tw-border-solid tw-border-border-weak', {
-          'dark-theme theme-dark': darkMode,
-        })}
-      >
-        <SelectGroup className="tw-h-56 tw-overflow-y-auto tw-hide-scrollbar">
-          {options.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-              className="tw-font-body-default tw-text-text-default tw-justify-between tw-gap-2"
-            >
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+      <Select value={selectedOption} onValueChange={onChangeSelectedOption}>
+        <SelectTrigger
+          showArrow={false}
+          className="tw-shadow-none tw-gap-1.5 tw-px-2 tw-py-1 tw-text-text-default tw-font-title-default hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-selected"
+        >
+          <SelectValue />
+        </SelectTrigger>
+
+        <SelectContent
+          align="end"
+          className={cn('tw-border tw-border-solid tw-border-border-weak', {
+            'dark-theme theme-dark': darkMode,
+          })}
+        >
+          <SelectGroup className="tw-max-h-56 tw-overflow-y-auto tw-hide-scrollbar">
+            {options.map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className="tw-font-body-default tw-text-text-default tw-justify-between tw-gap-2"
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+
+      {description && <FieldDescription className="tw-mb-0">{description}</FieldDescription>}
+    </Field>
   );
 }
