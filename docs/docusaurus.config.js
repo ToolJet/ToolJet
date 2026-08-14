@@ -35,14 +35,14 @@ module.exports = {
       options: { securityLevel: 'loose' },
     },
     image: 'img/tooljet-ai-og-image.png',
-    announcementBar: {
-      id: 'support_us',
-      content:
-        'Star our repository on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> to stay updated with new features and contribute to our platform!',
-      backgroundColor: '#ECF0FE',
-      textColor: '#4368E3',
-      isCloseable: true,
-    },
+    // announcementBar: {
+    //   id: 'support_us',
+    //   content:
+    //     'Star our repository on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> to stay updated with new features and contribute to our platform!',
+    //   backgroundColor: '#ECF0FE',
+    //   textColor: '#4368E3',
+    //   isCloseable: true,
+    // },
     docs: {
       sidebar: {
         hideable: true,
