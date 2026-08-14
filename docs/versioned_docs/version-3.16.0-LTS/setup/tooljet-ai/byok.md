@@ -72,13 +72,21 @@ ToolJet will use your key to authenticate requests sent to your LLM provider.
         | `anthropic` | When you want to use Anthropic API Key |
         | `gemini` | When you want to use Gemini API Key |
         | `grok` | When you want to use Grok API Key |
+        | `openrouter` | When you want to use OpenRouter API Key |
         | `tooljet_managed` | When you want to use ToolJet Managed AI Credits. |
     2. Set the following variable according to which LLM Provider you are using:
         - `ANTHROPIC_API_KEY=<your-api-key>`: If you are using Anthropic.
         - `GEMINI_API_KEY=<base64-string-of-your-JSON>`: If you are using Gemini.
-        - `XAI_API_KEY=<your-api-key>`: If you are using Grok.
+        - `GROK_API_KEY=<your-api-key>`: If you are using Grok.
+        - `OPENROUTER_API_KEY=<your-api-key>`: If you are using Open Router.
 2. Once you have configured the above variables, navigate to **Workspace Settings → LLM Key** in your ToolJet workspace and turn on the "Apply configuration from environment variable" toggle.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/env-var-v3.jpg" alt="llm key" />
+
+:::note
+When configuring OpenRouter using environment variables, model selection is currently not available. It will default to **GPT-5**.
+
+Support for selecting the model through environment variables is on our roadmap and will be available in a future update.
+:::
 
 ## Supported Providers
 
