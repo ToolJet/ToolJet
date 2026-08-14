@@ -23,11 +23,11 @@ export default class ComponentDeploy extends Command {
     const { flags } = await this.parse(ComponentDeploy);
     const { message } = flags;
 
-    const { workspaceId, apiToken } = Auth.resolveOrExit();
+    const { workspaceId, apiToken, url } = Auth.resolveOrExit();
     const config = this.readConfigOrExit();
 
     const currentDir = process.cwd();
-    const client = new ApiClient(apiToken);
+    const client = new ApiClient(url, apiToken);
 
     try {
       await client.verifyLibrary(config.libraryId);

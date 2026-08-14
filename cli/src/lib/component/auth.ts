@@ -9,12 +9,13 @@ const CREDENTIALS_PATH = path.join(os.homedir(), '.tooljet', 'credentials.json')
 export interface ResolvedAuth {
   workspaceId: string;
   apiToken: string;
+  url: string;
 }
 
 export class Auth {
-  static save(workspaceId: string, apiToken: string, email: string): void {
+  static save(workspaceId: string, url: string, apiToken: string, email: string): void {
     const creds = Auth.readOrEmpty();
-    creds.workspaces[workspaceId] = { apiToken, email };
+    creds.workspaces[workspaceId] = { url, apiToken, email };
     creds.default = workspaceId;
 
     fs.mkdirSync(path.dirname(CREDENTIALS_PATH), { recursive: true });
@@ -25,7 +26,11 @@ export class Auth {
     const creds = Auth.readDefault();
     if (!creds) throw new Error('Not authenticated. Run: tooljet login');
 
-    return { workspaceId: creds.workspaceId, apiToken: creds.apiToken };
+    return {
+      workspaceId: creds.workspaceId,
+      apiToken: creds.apiToken,
+      url: flags.url ?? creds.url,
+    };
   }
 
   // Same as resolve(), but prints the standard CLI error message and exits
@@ -47,12 +52,14 @@ export class Auth {
     }
   }
 
-  private static readDefault(): { workspaceId: string; apiToken: string } | null {
+  private static readDefault(): { workspaceId: string; apiToken: string; url: string } | null {
     const creds = Auth.readOrEmpty();
     const workspaceId = creds.default;
 
     if (!workspaceId || !creds.workspaces[workspaceId]) return null;
 
-    return { workspaceId, apiToken: creds.workspaces[workspaceId].apiToken };
+    const { apiToken, url } = creds.workspaces[workspaceId];
+
+    return { workspaceId, apiToken, url };
   }
 }
