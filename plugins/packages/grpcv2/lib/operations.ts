@@ -24,8 +24,7 @@ const getDefaultProtoDirectory = (): string => {
   return path.join(os.homedir(), 'protos');
 };
 
-// Single source of truth for directory/pattern defaults — discovery writers and
-// client readers must derive identical discoveryCache keys
+// writers and readers must derive identical discoveryCache keys
 export const resolveFilesystemConfig = (sourceOptions: SourceOptions): { directory: string; pattern: string } => {
   const directory = isEmpty(sourceOptions.proto_files_directory)
     ? getDefaultProtoDirectory()
@@ -388,21 +387,19 @@ type FilesystemDiscovery = {
   failures: Array<{ file: string; error: string }>;
 };
 
-// Discovery results keyed by directory+pattern so data sources pointing at
-// different proto directories don't clobber each other. The proto directory is
-// the source of truth, so entries are only reused while its fingerprint holds.
+// keyed by dir+pattern; reused only while the dir fingerprint holds
 const discoveryCache = new Map<string, { fingerprint: string; result: FilesystemDiscovery }>();
 
 const discoveryCacheKey = (directory: string, pattern: string): string => `${directory}::${pattern}`;
 
-// Paths + mtimes: the glob is cheap, the per-file parse it guards is not
+// glob is cheap, the per-file parse it guards is not
 const fingerprintProtoFiles = (entries: Array<{ path: string; stats?: fs.Stats }>): string =>
   entries
     .map((entry) => `${entry.path}:${entry.stats?.mtimeMs ?? 0}`)
     .sort()
     .join('|');
 
-// Lookup only — no glob, so the query path stays free of filesystem work
+// lookup only — keeps the query path off the filesystem
 const cachedProtoFileForService = (directory: string, pattern: string, serviceName: string): string | undefined =>
   discoveryCache.get(discoveryCacheKey(directory, pattern))?.result.serviceToFileMap.get(serviceName);
 
@@ -490,7 +487,6 @@ export const discoverMethodsForSelectedServices = async (
   pattern: string,
   selectedServiceNames: string[]
 ): Promise<{ services: GrpcService[]; failures: Array<{ file: string; error: string }> }> => {
-  // Cheap when the directory is unchanged — the cache short-circuits the re-parse
   const { serviceToFileMap: fileMap } = await discoverServiceNamesFromFilesystem(directory, pattern);
 
   // Find the proto files for requested services, de-duplicate
