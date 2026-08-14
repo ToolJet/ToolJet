@@ -4,10 +4,12 @@ import FormData = require('form-data');
 import { buildUploadFormData } from './upload-form';
 import { parseApiErrorMessage } from '../api-error';
 
-const BASE_URL = 'http://localhost:3000';
-
 export class ApiClient {
-  constructor(private readonly apiToken: string) {}
+  private readonly baseUrl: string;
+
+  constructor(baseUrl: string, private readonly apiToken: string) {
+    this.baseUrl = baseUrl.replace(/\/+$/, '');
+  }
 
   private async handleResponse<T>(res: import('node-fetch').Response): Promise<T> {
     if (!res.ok) {
@@ -19,7 +21,7 @@ export class ApiClient {
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const res = await fetch(`${BASE_URL}/api${path}`, {
+    const res = await fetch(`${this.baseUrl}/api${path}`, {
       method,
       headers: {
         Authorization:  `Bearer ${this.apiToken}`,
@@ -38,7 +40,7 @@ export class ApiClient {
     return new Promise<T>((resolve, reject) => {
       form.once('error', (err: unknown) => reject(err instanceof Error ? err : new Error(String(err))));
 
-      fetch(`${BASE_URL}/api${path}`, {
+      fetch(`${this.baseUrl}/api${path}`, {
         method,
         headers: { Authorization: `Bearer ${this.apiToken}`, ...form.getHeaders() },
         body: form,

@@ -57,7 +57,7 @@ export default class ComponentInit extends Command {
 
     const displayName = answers.display_name.trim();
 
-    const { workspaceId, apiToken } = Auth.resolveOrExit();
+    const { workspaceId, apiToken, url } = Auth.resolveOrExit();
 
     // Scaffold locally first: this makes no remote calls, so any failure here
     // leaves nothing to clean up on the server.
@@ -69,7 +69,7 @@ export default class ComponentInit extends Command {
       process.exit(1);
     }
 
-    const client = new ApiClient(apiToken);
+    const client = new ApiClient(url, apiToken);
 
     let library: { id: string; name: string };
     try {
