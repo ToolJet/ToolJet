@@ -5396,6 +5396,37 @@ describe('GitSyncController', () => {
         await pushWorkspace(featBranchId, 'remove harddel ds', 'datasource').expect(201);
         expect(await readGitFile(FEAT, dsPath)).toBeNull();
       }, 300000);
+
+      // Product-path push: the app builder's "push data sources" sends scope='datasource' with
+      // NO onlyUnsyncedDatasources flag. A freshly created (still-unsynced) data source must be
+      // committed by that push — regressed when serializeDataSources narrowed the no-flag case to
+      // isSynced=true (synced-only), silently dropping new data sources so they never reached git.
+      it('a scope=datasource push with no onlyUnsynced flag (product default) commits a newly created data source', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-ds-default-push';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a global data source on the feature branch (multi-branch ⇒ starts unsynced)');
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'default-push-ds',
+              kind: 'restapi',
+              options: dsOptions('http://default-push.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        const dsName = await dsvName(dsId, featBranchId);
+        expect(await dsvActive(dsId, featBranchId)).toBe(true);
+
+        step(3, "scope='datasource' push WITHOUT onlyUnsynced (mirrors the app builder) → the new DS is committed");
+        await pushWorkspace(featBranchId, 'commit new ds via default push', 'datasource').expect(201);
+        expect(await readGitFile(FEAT, `data-sources/${dsName}/data-source.json`)).not.toBeNull();
+      }, 300000);
     });
 
     // ────────────────────────────────────────────────────────────────────────────
