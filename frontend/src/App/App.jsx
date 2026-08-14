@@ -130,7 +130,7 @@ class AppComponent extends React.Component {
         showBanner: false, // show banner when required for ee or cloud
       });
     }
-    setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+    this._metadataInterval = setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
     let counter = 0;
     let interval;
@@ -153,6 +153,10 @@ class AppComponent extends React.Component {
     }
     return false;
   };
+
+  componentWillUnmount() {
+    clearInterval(this._metadataInterval);
+  }
 
   componentDidUpdate(prevProps, prevState) {
     // Check if the current location is the dashboard (homepage)
