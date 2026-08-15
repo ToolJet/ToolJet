@@ -9,13 +9,28 @@ const Avatar = ({ text, image, avatarId, title = '', borderShape, indexId = 0, c
   const [avatar, setAvatar] = React.useState();
 
   React.useEffect(() => {
+    let objectUrl;
+    let ignore = false;
+
     async function fetchAvatar() {
       const blob = await userService.getAvatar(avatarId);
-      setAvatar(URL.createObjectURL(blob));
+      // avatarId can change while this request is in flight, which happens as
+      // rows are recycled in the virtualized user list. Without this the slower
+      // response wins and the row shows someone else's picture.
+      if (ignore) return;
+      objectUrl = URL.createObjectURL(blob);
+      setAvatar(objectUrl);
     }
     if (avatarId) fetchAvatar();
 
-    () => avatar && URL.revokeObjectURL(avatar);
+    return () => {
+      ignore = true;
+      // Drop the reference before revoking it. The next render happens with
+      // the new avatarId but the old url still in state, so revoking without
+      // clearing would paint a url that has just been invalidated.
+      setAvatar(undefined);
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatarId]);
 
