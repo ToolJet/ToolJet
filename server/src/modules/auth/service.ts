@@ -126,7 +126,9 @@ export class AuthService implements IAuthService {
               this.instanceSettingsUtilService
             ))
           ) {
-            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+            throw new UnauthorizedException(
+              `This login method is not available for your domain. Please contact admin or try another method.`
+            );
           }
         }
       } else {
@@ -153,7 +155,9 @@ export class AuthService implements IAuthService {
               this.instanceSettingsUtilService
             ))
           ) {
-            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+            throw new UnauthorizedException(
+              `This login method is not available for your domain. Please contact admin or try another method.`
+            );
           }
         }
       }

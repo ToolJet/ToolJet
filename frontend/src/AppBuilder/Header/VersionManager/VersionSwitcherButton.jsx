@@ -12,7 +12,10 @@ const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionI
 
   const isDraft = version?.status === 'DRAFT';
   const isReleased = version?.id === releasedVersionId;
-  const displayName = isDraft && isGitSyncEnabled ? 'Draft' : version?.name;
+  // Synced apps in a git workspace have exactly one draft with a fixed git name —
+  // show "Draft" as the canonical label. Unsynced apps can have multiple drafts
+  // with distinct names, so show the actual version name instead.
+  const displayName = isDraft && isGitSyncEnabled && version?.isSynced ? 'Draft' : version?.name;
 
   const capitalizeFirstLetter = (str) => {
     if (!str) return 'Development';

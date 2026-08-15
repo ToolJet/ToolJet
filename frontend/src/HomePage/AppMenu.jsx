@@ -22,6 +22,7 @@ export const AppMenu = function AppMenu({
   setMenuOpen,
   appType,
   ownedFolders,
+  isUnsynced,
 }) {
   const { t } = useTranslation();
 
@@ -34,7 +35,8 @@ export const AppMenu = function AppMenu({
       ? orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled
       : false;
   const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
-  const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch);
+  // Unsynced apps are always mutable, even on master
+  const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch) && !isUnsynced;
 
   // ─── Ownership ────────────────────────────────────────────────────────────────
   const isAppOwner = !!(appUserId && currentUserId && appUserId === currentUserId);
@@ -164,8 +166,8 @@ export const AppMenu = function AppMenu({
                       appType === 'workflow'
                         ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
                         : appType === 'front-end'
-                        ? t('homePage.appCard.deleteApp', 'Delete app')
-                        : 'Delete module'
+                          ? t('homePage.appCard.deleteApp', 'Delete app')
+                          : 'Delete module'
                     }
                     customClass="field__danger"
                     onClick={deleteApp}

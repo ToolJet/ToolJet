@@ -88,6 +88,8 @@ describe('AppImportExportService (EE) — assertModuleCreatePermission', () => {
     ).rejects.toThrow(ForbiddenException);
     await expect(
       service.assertModuleCreatePermission(user, 'org-1', new Set(['mod-1', 'mod-missing']))
-    ).rejects.toThrow("This app requires creating modules, but you don't have permission to create modules. Contact admin.");
+    ).rejects.toThrow(
+      "This app requires creating modules, but you don't have permission to create modules. Contact admin."
+    );
   });
 });

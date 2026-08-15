@@ -35,8 +35,6 @@ export interface CreateAppsPermissionsObject extends CreateBaseAppsPermissionsOb
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.APP>;
 }
 
-export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {}
-
 export interface CreateWorkflowPermissionsObject extends CreateBaseAppsPermissionsObject {
   resourcesToAdd?: GranularPermissionAddResourceItems<ResourceType.WORKFLOWS>;
 }
@@ -77,9 +75,9 @@ interface BaseAppsPermissionAddResourceItem {
   appId: string;
 }
 
-export interface AppsPermissionAddResourceItem extends BaseAppsPermissionAddResourceItem {}
+export type AppsPermissionAddResourceItem = BaseAppsPermissionAddResourceItem;
 
-export interface WorkflowsPermissionAddResourceItem extends BaseAppsPermissionAddResourceItem {}
+export type WorkflowsPermissionAddResourceItem = BaseAppsPermissionAddResourceItem;
 
 interface BaseAppsGroupPermissionsActions {
   canEdit: boolean;
@@ -106,7 +104,7 @@ export interface AppsGroupPermissionsActions extends BaseAppsGroupPermissionsAct
   canAccessReleased?: boolean;
 }
 
-export interface WorkflowsGroupPermissionsActions extends BaseAppsGroupPermissionsActions {}
+export type WorkflowsGroupPermissionsActions = BaseAppsGroupPermissionsActions;
 
 export interface FoldersGroupPermissionsActions {
   canEditFolder: boolean;

@@ -492,8 +492,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     manager?: EntityManager
   ) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { granularPermissions, actions, resourcesToDelete, resourcesToAdd, group } =
-        updateResourceGroupPermissionsObject;
+      const { granularPermissions, actions, resourcesToDelete, resourcesToAdd } = updateResourceGroupPermissionsObject;
 
       // Validate end-user constraints
       if (actions && (actions.canEditFolder || actions.canEditApps)) {

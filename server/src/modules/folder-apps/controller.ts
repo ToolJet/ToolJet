@@ -1,4 +1,4 @@
-import { Controller, Param, Post, Put, UseGuards, Get, Query, Body, Headers } from '@nestjs/common';
+import { Controller, Param, Post, Put, UseGuards, Get, Query, Body } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FolderAppsService } from './service';
@@ -22,18 +22,21 @@ export class FolderAppsController {
   async index(
     @User() user: UserEntity,
     @Query() query,
-    @UserPermissionsDecorator() userPermissions: UserPermissions,
-    @Headers('x-branch-id') branchId?: string // absent for non-git orgs and workflows
+    @UserPermissionsDecorator() userPermissions: UserPermissions
   ) {
     user.roleGroup = userPermissions.isEndUser ? USER_ROLE.END_USER : undefined;
-    return await this.folderAppsService.getFolders(user, { ...query, branchId });
+    // NULL-convention consumer: read the raw branch_id query param (NOT the default-filled
+    // user.branchId). Absent for non-git orgs and workflows, whose folder_apps rows are
+    // stored with branch_id = NULL.
+    return await this.folderAppsService.getFolders(user, { ...query, branchId: query.branch_id });
   }
 
   @InitFeature(FEATURE_KEY.CREATE_FOLDER_APP)
   @Post()
   async create(
     @Body() createBody: { folder_id: string; app_id?: string; app_ids?: string[] },
-    @Headers('x-branch-id') branchId?: string
+    // NULL-convention consumer: raw branch_id query param, absent (NULL) for non-git orgs / workflows.
+    @Query('branch_id') branchId?: string
   ) {
     const { folder_id: folderId, app_id: appId, app_ids: appIds } = createBody;
 
@@ -49,7 +52,8 @@ export class FolderAppsController {
   async remove(
     @Body('app_id') appId: string,
     @Param('folderId') folderId: string,
-    @Headers('x-branch-id') branchId?: string
+    // NULL-convention consumer: raw branch_id query param, absent (NULL) for non-git orgs / workflows.
+    @Query('branch_id') branchId?: string
   ) {
     await this.folderAppsService.remove(folderId, appId, branchId);
   }

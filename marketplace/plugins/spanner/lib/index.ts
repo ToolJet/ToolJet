@@ -1,11 +1,6 @@
-import {
-  QueryError,
-  QueryResult,
-  QueryService,
-  ConnectionTestResult,
-} from "@tooljet-marketplace/common";
-import { SourceOptions, QueryOptions, Dialect, QueryMode } from "./types";
-import { Database, Spanner as GoogleSpanner, Instance } from "@google-cloud/spanner";
+import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
+import { SourceOptions, QueryOptions, Dialect, QueryMode } from './types';
+import { Database, Spanner as GoogleSpanner, Instance } from '@google-cloud/spanner';
 
 export default class Spanner implements QueryService {
   private parsePrivateKey(key?: string): {
@@ -19,7 +14,7 @@ export default class Spanner implements QueryService {
       return JSON.parse(key);
     } catch (error) {
       throw new QueryError(
-        "Query could not be completed",
+        'Query could not be completed',
         `Invalid JSON in private key configuration: ${error.message}`,
         { cause: error }
       );
@@ -30,22 +25,13 @@ export default class Spanner implements QueryService {
     const parsedKey = this.parsePrivateKey(sourceOptions?.private_key);
     const { instance_id } = sourceOptions;
 
-    if (
-      !parsedKey?.project_id ||
-      !parsedKey?.client_email ||
-      !parsedKey?.private_key ||
-      !instance_id
-    ) {
-      throw new QueryError(
-        "Query could not be completed",
-        "Required Spanner credentials are missing",
-        {
-          project_id: !!parsedKey?.project_id,
-          client_email: !!parsedKey?.client_email,
-          private_key: !!parsedKey?.private_key,
-          instance_id: !!instance_id,
-        }
-      );
+    if (!parsedKey?.project_id || !parsedKey?.client_email || !parsedKey?.private_key || !instance_id) {
+      throw new QueryError('Query could not be completed', 'Required Spanner credentials are missing', {
+        project_id: !!parsedKey?.project_id,
+        client_email: !!parsedKey?.client_email,
+        private_key: !!parsedKey?.private_key,
+        instance_id: !!instance_id,
+      });
     }
   }
 
@@ -72,11 +58,7 @@ export default class Spanner implements QueryService {
     const instance = spanner.instance(instanceId);
 
     if (!instance) {
-      throw new QueryError(
-        "Query could not be completed",
-        "Spanner instance not found",
-        { instanceId }
-      );
+      throw new QueryError('Query could not be completed', 'Spanner instance not found', { instanceId });
     }
 
     return { spanner, instance };
@@ -86,11 +68,7 @@ export default class Spanner implements QueryService {
     const database = instance.database(databaseId);
 
     if (!database) {
-      throw new QueryError(
-        "Query could not be completed",
-        `Database with ID ${databaseId} not found`,
-        { databaseId }
-      );
+      throw new QueryError('Query could not be completed', `Database with ID ${databaseId} not found`, { databaseId });
     }
 
     return database;
@@ -99,56 +77,49 @@ export default class Spanner implements QueryService {
   private validateQueryOptions(queryOptions: QueryOptions) {
     const { sql, dialect, database_id, query_mode } = queryOptions;
 
-    if (!database_id || typeof database_id !== "string") {
-      throw new QueryError(
-        "Query could not be completed",
-        "Database ID must be a non-empty string",
-        { database_id, type: typeof database_id }
-      );
+    if (!database_id || typeof database_id !== 'string') {
+      throw new QueryError('Query could not be completed', 'Database ID must be a non-empty string', {
+        database_id,
+        type: typeof database_id,
+      });
     }
 
-    if (!sql || typeof sql !== "string") {
-      throw new QueryError(
-        "Query could not be completed",
-        "SQL query must be a non-empty string",
-        { sql, type: typeof sql }
-      );
+    if (!sql || typeof sql !== 'string') {
+      throw new QueryError('Query could not be completed', 'SQL query must be a non-empty string', {
+        sql,
+        type: typeof sql,
+      });
     }
 
     if (!dialect || !Object.values(Dialect).includes(dialect)) {
-      throw new QueryError(
-        "Query could not be completed",
-        "Invalid dialect. Must be 'Standard' or 'Postgres'",
-        { dialect, allowedValues: Object.values(Dialect) }
-      );
+      throw new QueryError('Query could not be completed', "Invalid dialect. Must be 'Standard' or 'Postgres'", {
+        dialect,
+        allowedValues: Object.values(Dialect),
+      });
     }
 
     if (query_mode && !Object.values(QueryMode).includes(query_mode)) {
-      throw new QueryError(
-        "Query could not be completed",
-        "Invalid query mode. Must be 'read', 'write', or 'schema'",
-        { query_mode, allowedValues: Object.values(QueryMode) }
-      );
+      throw new QueryError('Query could not be completed', "Invalid query mode. Must be 'read', 'write', or 'schema'", {
+        query_mode,
+        allowedValues: Object.values(QueryMode),
+      });
     }
 
     return queryOptions;
   }
 
-  private async executeQuery(
-    database: Database,
-    runOptions: any,
-    queryMode: QueryMode = QueryMode.Read
-  ): Promise<any> {
+  private async executeQuery(database: Database, runOptions: any, queryMode: QueryMode = QueryMode.Read): Promise<any> {
     switch (queryMode) {
-      case QueryMode.Read:
+      case QueryMode.Read: {
         // Read-only queries - no transaction needed
         const [rows] = await database.run(runOptions);
 
         return {
           type: 'READ',
-          rows: rows.map(row => row.toJSON()),
-          rowCount: rows.length
+          rows: rows.map((row) => row.toJSON()),
+          rowCount: rows.length,
         };
+      }
 
       case QueryMode.Write:
         // DML queries - require transaction for consistency
@@ -159,50 +130,41 @@ export default class Spanner implements QueryService {
           return {
             type: 'WRITE',
             rowCount,
-            affectedRows: rowCount
+            affectedRows: rowCount,
           };
         });
 
       case QueryMode.Schema:
         // DDL queries
-        await database.updateSchema([runOptions.sql])
+        await database.updateSchema([runOptions.sql]);
 
         return {
           type: 'SCHEMA',
           success: true,
-          message: 'Schema operation completed successfully'
+          message: 'Schema operation completed successfully',
         };
 
       default:
-        throw new QueryError(
-          "Query could not be completed",
-          `Unsupported query mode: ${queryMode}`,
-          { queryMode }
-        );
+        throw new QueryError('Query could not be completed', `Unsupported query mode: ${queryMode}`, { queryMode });
     }
   }
 
-  async run(
-    sourceOptions: SourceOptions,
-    queryOptions: QueryOptions
-  ): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     try {
       this.validateSourceOptions(sourceOptions);
       this.validateQueryOptions(queryOptions);
 
       const { instance_id } = sourceOptions;
-      const { project_id, client_email, private_key } = this.parsePrivateKey(
-        sourceOptions?.private_key
-      );
+      const { project_id, client_email, private_key } = this.parsePrivateKey(sourceOptions?.private_key);
 
-      const { 
-        sql, 
-        query_params, 
-        database_id, 
-        param_types, 
-        dialect, 
+      const {
+        sql,
+        query_params,
+        database_id,
+        param_types,
+        dialect,
         options,
-        query_mode = QueryMode.Read // Default to read mode
+        query_mode = QueryMode.Read, // Default to read mode
       } = queryOptions;
 
       const { instance } = this.getSpannerClient({
@@ -221,11 +183,9 @@ export default class Spanner implements QueryService {
       try {
         if (options) parsedOptions = JSON.parse(options);
       } catch (parseError) {
-        throw new QueryError(
-          "Query could not be completed",
-          "Invalid JSON in options",
-          { message: parseError.message }
-        );
+        throw new QueryError('Query could not be completed', 'Invalid JSON in options', {
+          message: parseError.message,
+        });
       }
 
       const params: Record<string, any> = {};
@@ -267,14 +227,14 @@ export default class Spanner implements QueryService {
 
       // Spread supported props from parsedOptions
       const supportedFields = [
-        "queryOptions",
-        "requestOptions",
-        "gaxOptions",
-        "timestampBounds",
-        "json",
-        "maxResumeRetries",
-        "partitionToken",
-        "seqno",
+        'queryOptions',
+        'requestOptions',
+        'gaxOptions',
+        'timestampBounds',
+        'json',
+        'maxResumeRetries',
+        'partitionToken',
+        'seqno',
       ];
 
       for (const key of supportedFields) {
@@ -286,7 +246,7 @@ export default class Spanner implements QueryService {
       // Execute query based on the selected mode
       const result = await this.executeQuery(database, runOptions, query_mode);
 
-      return { status: "ok", data: result };
+      return { status: 'ok', data: result };
     } catch (err) {
       // If it's already a QueryError, re-throw it
       if (err instanceof QueryError) {
@@ -294,7 +254,7 @@ export default class Spanner implements QueryService {
       }
 
       // Handle other errors (like Spanner library errors)
-      const errorMessage = err.message || "An unknown error occurred";
+      const errorMessage = err.message || 'An unknown error occurred';
       const errorDetails: any = {};
 
       if (err instanceof Error) {
@@ -305,35 +265,23 @@ export default class Spanner implements QueryService {
         errorDetails.requestID = spannerError.requestID ?? null;
         errorDetails.note = spannerError.note ?? null;
 
-        if (
-          Array.isArray(spannerError.statusDetails) &&
-          spannerError.statusDetails.length
-        ) {
-          errorDetails.localizedMessage =
-            spannerError.statusDetails[0]?.message;
+        if (Array.isArray(spannerError.statusDetails) && spannerError.statusDetails.length) {
+          errorDetails.localizedMessage = spannerError.statusDetails[0]?.message;
         }
       }
 
-      throw new QueryError(
-        "Query could not be completed",
-        errorMessage,
-        errorDetails
-      );
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 
-  async testConnection(
-    sourceOptions: SourceOptions
-  ): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     // For testConnection, we'll catch QueryErrors and convert them to regular errors
     // so they show proper error messages in the config page
     try {
       this.validateSourceOptions(sourceOptions);
-      
+
       const { instance_id } = sourceOptions;
-      const { project_id, client_email, private_key } = this.parsePrivateKey(
-        sourceOptions?.private_key
-      );
+      const { project_id, client_email, private_key } = this.parsePrivateKey(sourceOptions?.private_key);
 
       const { instance } = this.getSpannerClient({
         projectId: project_id,
@@ -347,12 +295,10 @@ export default class Spanner implements QueryService {
       const exists = await instance.exists();
 
       if (!exists[0]) {
-        throw new Error(
-          `Instance with ID ${instance_id} does not exist or is not accessible`
-        );
+        throw new Error(`Instance with ID ${instance_id} does not exist or is not accessible`);
       }
 
-      return { status: "ok" };
+      return { status: 'ok' };
     } catch (err) {
       // Convert QueryError to regular Error for better UX in config page
       if (err instanceof QueryError) {
@@ -363,6 +309,6 @@ export default class Spanner implements QueryService {
   }
 
   private sanitizePrivateKey(key: string) {
-    return key.replace(/\\n/g, "\n");
+    return key.replace(/\\n/g, '\n');
   }
 }

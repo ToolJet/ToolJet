@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
@@ -55,10 +56,22 @@ export class TemplatesService {
   async createSampleOnboardApp(currentUser: User) {
     const name = 'Product inventory';
     const sampleAppDef = JSON.parse(readFileSync(`templates/onboard_sample_app.json`, 'utf-8'));
+    // Give each instance a fresh co_relation_id so the onboarding app is not
+    // treated as the same git entity across workspaces (the template JSON has a
+    // hardcoded appV2.id that createImportedAppForUser would otherwise copy verbatim).
+    if (sampleAppDef?.app?.[0]?.definition?.appV2) {
+      sampleAppDef.app[0].definition.appV2.id = uuidv4();
+    }
     return this.importTemplate(currentUser, sampleAppDef, name);
   }
 
-  async importTemplate(currentUser: User, templateDefinition: any, appName: string, identifier?: string, branchId?: string) {
+  async importTemplate(
+    currentUser: User,
+    templateDefinition: any,
+    appName: string,
+    identifier?: string,
+    branchId?: string
+  ) {
     const importDto = new ImportResourcesDto();
     importDto.organization_id = currentUser.organizationId;
     importDto.app = templateDefinition.app || templateDefinition.appV2;
@@ -145,9 +158,8 @@ export class TemplatesService {
         dataSourcesUsedInApps.push(dataSource);
       });
     });
-    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } = await this.pluginsService.checkIfPluginsToBeInstalled(
-      dataSourcesUsedInApps
-    );
+    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } =
+      await this.pluginsService.checkIfPluginsToBeInstalled(dataSourcesUsedInApps);
     return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
   }
 }

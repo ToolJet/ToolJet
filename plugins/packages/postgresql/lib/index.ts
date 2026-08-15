@@ -364,7 +364,7 @@ export default class PostgresqlQueryService implements QueryService {
 
         const [{ rows }, { rows: countRows }] = await Promise.all([
           knexInstance.raw(query, params),
-          knexInstance.raw(countQuery, [schema, searchPattern]),
+          knexInstance.raw(countQuery, countParams),
         ]);
 
         const totalCount = parseInt(countRows[0]?.total ?? '0', 10);
@@ -803,6 +803,9 @@ export default class PostgresqlQueryService implements QueryService {
     if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
       const parsedUrl = new URL(sourceOptions.connection_string);
 
+      /* eslint-disable @typescript-eslint/no-unused-vars --
+         TODO: parsed connection-string values are never applied; UI values below
+         unconditionally win. Either wire these up as fallbacks or drop the parsing. */
       const connUser = decodeURIComponent(parsedUrl.username || '');
       const connPass = decodeURIComponent(parsedUrl.password || '');
       const connHost = parsedUrl.hostname || '';
@@ -817,6 +820,7 @@ export default class PostgresqlQueryService implements QueryService {
       } else if (sslmode === 'disable' || sslmode === 'false') {
         connSslEnabled = false;
       }
+      /* eslint-enable @typescript-eslint/no-unused-vars */
       // Explicit UI values override connection string values
       resolvedUser = sourceOptions.username;
       resolvedPass = sourceOptions.password;

@@ -38,8 +38,8 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
                   resolvedValue = decryptSecretValue
                     ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
                     : value.value
-                    ? secretValue
-                    : '';
+                      ? secretValue
+                      : '';
                 } else {
                   resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
                     organizationId,

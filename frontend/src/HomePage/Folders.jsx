@@ -4,6 +4,7 @@ import { folderService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
+import { FolderHasAppsModal } from './FolderHasAppsModal';
 import { ConfirmDialog, ToolTip } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -13,6 +14,8 @@ import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
 import { validateName, handleHttpErrorMessages, getWorkspaceId, hasBuilderRole } from '@/_helpers/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getBranchNameFromUrl, getResolvedBranchName } from '@/_helpers/active-branch';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -31,7 +34,7 @@ export const Folders = function Folders({
   canCreateApp,
   darkMode,
   appType,
-  isGitSyncEnabled,
+  isWorkspaceBranchLocked,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
   const [showInput, setShowInput] = useState(false);
@@ -47,11 +50,16 @@ export const Folders = function Folders({
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
   const [filteredData, setFilteredData] = useState(folders);
   const [errorText, setErrorText] = useState('');
+  const [folderHasAppsBranches, setFolderHasAppsBranches] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  // Whether git sync is configured for this org at all — distinct from isWorkspaceBranchLocked,
+  // which is only true while viewing the locked default branch. Needed so the emptiness gate
+  // below applies on git-synced feature branches but not in plain (non-git) workspaces.
+  const isGitSyncEnabled = !!useWorkspaceBranchesStore((state) => state.orgGitConfig);
 
   // Get folder granular permissions from session
   const currentSession = authenticationService.currentSessionValue;
@@ -74,11 +82,20 @@ export const Folders = function Folders({
   // Determine if user can update/delete a specific folder
   // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
   // Delete: requires master Delete OR ownership
+  // Git gate: folder mutations are blocked ONLY when the workspace branch is locked — i.e. multi-branch
+  // is enabled AND we're on the (read-only) default branch. Single-branch (branching off) and
+  // multi-branch feature branches are the working branches, so rename/delete stay allowed there.
   const canUpdateSpecificFolder = (folderId, folder) =>
-    !isGitSyncEnabled &&
+    !isWorkspaceBranchLocked &&
     (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
+  // With git sync on, only show delete when the folder has 0 apps on the currently active
+  // branch (folder.count). If it still has apps on some other branch, the backend blocks the
+  // delete and FolderHasAppsModal reports which branch(es) — this is a defense-in-depth
+  // fallback, not the primary gate.
   const canDeleteSpecificFolder = (folderId, folder) =>
-    !isGitSyncEnabled && (canDeleteFolder || isOwnerOfFolder(folder));
+    !isWorkspaceBranchLocked &&
+    (!isGitSyncEnabled || folder?.count === 0) &&
+    (canDeleteFolder || isOwnerOfFolder(folder));
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
@@ -154,13 +171,19 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    const search = `${name ? `?folder=${name}` : ''}`;
+    // Preserve the active Git branch (?branch=<name>) — apps/modules folders are branch-scoped, so
+    // rebuilding the query from scratch would drop it. Workflows are branch-agnostic (no branch).
+    const params = new URLSearchParams();
+    if (name) params.set('folder', name);
+    const branchName = getBranchNameFromUrl() || getResolvedBranchName();
+    if (branchName && appType !== 'workflow') params.set('branch', branchName);
+    const query = params.toString();
     navigate(
       {
         pathname: `/${getWorkspaceId()}${
           appType === 'workflow' ? '/workflows' : appType === 'module' ? '/modules' : ''
         }`,
-        search,
+        search: query ? `?${query}` : '',
       },
       { replace: true }
     );
@@ -189,9 +212,22 @@ export const Folders = function Folders({
         handleFolderChange({});
       })
       .catch(({ error }) => {
-        toast.error(error);
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
+        // The global exception filter collapses error responses down to { message, ... },
+        // so the branch list is JSON-encoded inside the message string on the backend
+        // (see FoldersService.deleteFolder) — parse it back out here.
+        let branches;
+        try {
+          branches = JSON.parse(error)?.branches;
+        } catch {
+          // error is a plain string message, not JSON — fall through to the toast below
+        }
+        if (branches?.length) {
+          setFolderHasAppsBranches(branches);
+        } else {
+          toast.error(error);
+        }
       });
   }
 
@@ -272,6 +308,14 @@ export const Folders = function Folders({
         onConfirm={() => executeDeletion()}
         onCancel={() => cancelDeleteDialog()}
         darkMode={darkMode}
+      />
+
+      <FolderHasAppsModal
+        show={!!folderHasAppsBranches}
+        branches={folderHasAppsBranches || []}
+        onClose={() => setFolderHasAppsBranches(null)}
+        darkMode={darkMode}
+        appType={appType}
       />
 
       <div className="d-flex justify-content-between" data-cy="folder-info" style={{ marginBottom: '8px' }}>

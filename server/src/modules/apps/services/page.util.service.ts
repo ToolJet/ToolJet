@@ -2,7 +2,7 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { Injectable } from '@nestjs/common';
 import { EventsService } from './event.service';
 import { Page } from 'src/entities/page.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap, getDBConnection } from 'src/helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { CreatePageDto } from '../dto/page';
 import { IPageHelperService } from '../interfaces/services/IPageUtilService';
@@ -15,26 +15,14 @@ export class PageHelperService implements IPageHelperService {
   ) {}
 
   public async fetchPages(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
-    let allPages = [];
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      allPages = await manager.find(Page, {
-        where: {
-          appVersionId,
-          isPageGroup: false,
-        },
-        order: {
-          index: 'ASC',
-        },
-      });
-
-      return allPages;
-    }, manager);
+    const m = manager ?? getDBConnection();
+    return m.find(Page, {
+      where: { appVersionId, isPageGroup: false },
+      order: { index: 'ASC' },
+    });
   }
 
-  public async findFirstPagesByVersionIds(
-    versionIds: string[],
-    manager: EntityManager
-  ): Promise<Map<string, Page>> {
+  public async findFirstPagesByVersionIds(versionIds: string[], manager: EntityManager): Promise<Map<string, Page>> {
     if (versionIds.length === 0) return new Map();
 
     const pages = await manager
@@ -50,7 +38,7 @@ export class PageHelperService implements IPageHelperService {
   }
 
   public async reorderPages(udpateObject, appVersionId: string, organizationId: string): Promise<void> {
-    await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       const updateArr = [];
       const diff = udpateObject.diff;
       Object.keys(diff).forEach((pageId) => {
@@ -58,7 +46,7 @@ export class PageHelperService implements IPageHelperService {
         updateArr.push(manager.update(Page, pageId, { index }));
       });
       await Promise.all(updateArr);
-    }, appVersionId);
+    });
   }
 
   public async rearrangePagesOrderPostDeletion(

@@ -25,7 +25,7 @@ export class StepsV2Migration1742369436314 implements MigrationInterface {
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 
   private async processUpdates(entityManager, components) {
     for (const component of components) {
