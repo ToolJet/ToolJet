@@ -9,13 +9,25 @@ const Avatar = ({ text, image, avatarId, title = '', borderShape, indexId = 0, c
   const [avatar, setAvatar] = React.useState();
 
   React.useEffect(() => {
+    // #17526: the cleanup was constructed but never returned, so blob URLs
+    // were never revoked. The stale-response guard prevents a late fetch for
+    // a previous avatarId from overwriting the current one when the
+    // virtualized list recycles this component.
+    let stale = false;
     async function fetchAvatar() {
-      const blob = await userService.getAvatar(avatarId);
-      setAvatar(URL.createObjectURL(blob));
+      try {
+        const blob = await userService.getAvatar(avatarId);
+        if (!stale) setAvatar(URL.createObjectURL(blob));
+      } catch {
+        // Avatar fetch failures leave the fallback text visible; not an error state.
+      }
     }
     if (avatarId) fetchAvatar();
 
-    () => avatar && URL.revokeObjectURL(avatar);
+    return () => {
+      stale = true;
+      if (avatar) URL.revokeObjectURL(avatar);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatarId]);
 
