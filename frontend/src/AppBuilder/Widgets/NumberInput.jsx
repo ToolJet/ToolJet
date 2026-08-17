@@ -1,12 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NumberInput = (props) => {
-  const inputRef = useRef(null);
-
   const inputLogic = useInput({
     ...props,
     properties: {
@@ -93,9 +91,9 @@ export const NumberInput = (props) => {
   );
 
   useEffect(() => {
-    if (!disableStepControls || !inputRef.current) return;
+    if (!disableStepControls || !inputLogic.inputRef.current) return;
 
-    const el = inputRef.current;
+    const el = inputLogic.inputRef.current;
 
     // undefined = not yet searched, null = searched but no scrollable ancestor found
     let scrollableParent = undefined;
@@ -133,6 +131,7 @@ export const NumberInput = (props) => {
     el.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => el.removeEventListener('wheel', handleWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disableStepControls]);
 
   useEffect(() => {
@@ -148,7 +147,6 @@ export const NumberInput = (props) => {
       inputType="number"
       handleChange={handleChange}
       handleBlur={handleBlur}
-      inputRef={inputRef}
       additionalInputProps={{
         min: props.validation?.minValue ?? null,
         max: props.validation?.maxValue ?? null,
