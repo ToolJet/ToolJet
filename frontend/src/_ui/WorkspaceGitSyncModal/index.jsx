@@ -451,7 +451,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
 
   // ---- Push section content ----
   const renderPushSection = () => (
-    <form noValidate>
+    <form noValidate onSubmit={(e) => e.preventDefault()}>
       <div className="push-section mb-2">
         <div className="d-flex flex-column w-100 align-items-start">
           <div className="form-group mb-2 w-100">
