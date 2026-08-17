@@ -10,7 +10,7 @@ ToolJet propose un large éventail de sources de données. Si besoin, vous pouve
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/overview/datasources-overview.png" alt="Data Sources: Overview" />
 
-## Connexion des sources de données
+## Connexion des sources de données {#connecting-data-sources}
 
 1. **Créez une nouvelle application** depuis le dashboard, puis cliquez sur le bouton **+** du panneau de requêtes.
     <img className="screenshot-full img-full" src="/img/datasource-reference/overview/query-panel.png" alt="Data Sources: Overview" />

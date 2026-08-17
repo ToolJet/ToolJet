@@ -14,7 +14,7 @@ Ce guide présente les différentes façons de générer un formulaire dans Tool
 - [Component Specific Actions (CSAs) and Exposed Variables](/docs/widgets/form/csa)
 - [Custom Schema](/docs/widgets/form/schema)
 
-## Générer un formulaire
+## Générer un formulaire {#generating-form}
 
 Dans ToolJet, vous pouvez générer un **Form** de l'une des façons suivantes :
 
@@ -24,7 +24,7 @@ Dans ToolJet, vous pouvez générer un **Form** de l'une des façons suivantes :
 - [En utilisant le panneau de propriétés du formulaire](#using-form-property-panel)
 - [En faisant glisser des composants dans le formulaire](#by-dragging-components-into-the-form)
 
-### En utilisant un schéma JSON
+### En utilisant un schéma JSON {#using-json-schema}
 
 En utilisant un schéma JSON, vous pouvez créer des formulaires dynamiques qui mettent automatiquement à jour leur structure (champs, styles, etc.) en fonction de différentes conditions.
 
@@ -56,7 +56,7 @@ Consultez le guide [Custom Schema](/docs/widgets/form/schema) pour des exemples 
 
 <img className="screenshot-full img-full" src="/img/widgets/form/json-schema-dropdown.png" alt="Component Event Handler" />
 
-### En utilisant du JSON brut
+### En utilisant du JSON brut {#using-raw-json}
 
 Avec du JSON brut, vous pouvez générer un formulaire simplement en fournissant un objet JSON avec des paires clé-valeur. ToolJet détecte automatiquement les types de champs et génère les composants de saisie correspondants.
 
@@ -83,7 +83,7 @@ Pour utiliser du JSON brut, sélectionnez **Raw JSON** dans le menu déroulant *
 
 <img className="screenshot-full img-full" src="/img/widgets/form/raw-json-dropdown.png" alt="Component Event Handler" />
 
-### En utilisant la sortie d'une requête
+### En utilisant la sortie d'une requête {#using-query-output}
 
 Vous pouvez générer un formulaire à l'aide de la sortie d'une requête (par exemple, en récupérant les détails d'un utilisateur depuis une API ou une base de données). ToolJet lit la structure de la réponse de la requête et crée automatiquement des champs de saisie en fonction des paires clé-valeur renvoyées.
 
@@ -101,7 +101,7 @@ Après avoir sélectionné la requête, une fenêtre modale apparaît et associe
 
 Une fois le formulaire généré, vous pouvez gérer davantage chaque champ de saisie depuis le panneau de propriétés du formulaire, y compris changer le type de saisie, le label, le placeholder, la valeur par défaut, et plus encore.
 
-### En utilisant le panneau de propriétés du formulaire
+### En utilisant le panneau de propriétés du formulaire {#using-form-property-panel}
 
 Vous pouvez générer un formulaire à l'aide du panneau de propriétés du composant **Form**. Cliquez sur l'icône **+** à côté de la section Fields du panneau. Une fenêtre modale s'ouvre où vous pouvez sélectionner le type de composant de saisie, définir le label, le placeholder, la valeur par défaut, et marquer le champ comme obligatoire.
 
@@ -111,7 +111,7 @@ Après avoir configuré les propriétés, cliquez sur le bouton **+ Add Field** 
 
 Une fois le formulaire généré, vous pouvez gérer davantage chaque champ de saisie depuis le panneau de propriétés du formulaire, y compris changer le type de saisie, le label, le placeholder, la valeur par défaut, et plus encore.
 
-### En faisant glisser des composants dans le formulaire
+### En faisant glisser des composants dans le formulaire {#by-dragging-components-into-the-form}
 
 Vous pouvez faire glisser et déposer des composants depuis la bibliothèque de composants directement dans le composant **Form** pour créer un formulaire. Une fois le formulaire créé, vous pouvez gérer chaque champ de saisie depuis le panneau de propriétés du formulaire, y compris changer le type de saisie, le label, le placeholder, la valeur par défaut, et plus encore.
 

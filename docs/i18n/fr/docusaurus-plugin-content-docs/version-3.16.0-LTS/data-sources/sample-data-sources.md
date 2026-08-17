@@ -50,7 +50,7 @@ Cette méthode permet de créer une application d'exemple avec une connexion pr�
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/sample-app-v3.png" alt=" Create Sample App " />
 
-## Schéma de la source de données d'exemple
+## Schéma de la source de données d'exemple {#sample-data-source-schema}
 
 La source de données d'exemple contient plusieurs tables avec différents types de données.
 

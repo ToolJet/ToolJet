@@ -172,7 +172,7 @@ As a next step, you can refer to our documentation to see a step-by-step guide t
 
 </details>
 
-## Paramètres avancés
+## Paramètres avancés {#advanced-parameters}
 
 | Paramètre| Description |
 |----------|-------------|

@@ -39,7 +39,7 @@ Dans la capture d'écran ci-dessus, `username` est la clé et sa valeur est `{{g
 await actions.switchPage('<page-handle>');
 ```
 
-### Changer de page avec des paramètres de requête
+### Changer de page avec des paramètres de requête {#switch-page-with-query-params}
 
 ```js
 actions.switchPage('<pageHandle>', [

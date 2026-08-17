@@ -10,9 +10,9 @@ Les admins peuvent archiver des utilisateurs dans un espace de travail, ce qui s
 2. Il doit y avoir au moins un admin actif ; tous les admins d'un espace de travail ne peuvent pas être archivés.
 :::
 
-## Étapes pour archiver un utilisateur
+## Étapes pour archiver un utilisateur {#steps-to-archive-user}
 
-### Niveau instance
+### Niveau instance {#instance-level}
 
 Lorsqu'un utilisateur est archivé au niveau instance, il sera automatiquement archivé de tous les espaces de travail et ne pourra être invité à aucun nouvel espace de travail. Suivez ces étapes pour archiver un utilisateur au niveau instance :
 
@@ -50,9 +50,9 @@ Rôle requis : **Admin** <br/>
 5. Le statut de l'utilisateur sera mis à jour en archivé.
     <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/archived-user.png" alt="Workspace Level Permissions" />
 
-## Étapes pour désarchiver un utilisateur
+## Étapes pour désarchiver un utilisateur {#steps-to-unarchive-user}
 
-### Niveau instance
+### Niveau instance {#instance-level-1}
 
 Lorsqu'un utilisateur est désarchivé au niveau instance, les admins devront ensuite le désarchiver ou l'inviter à nouveau dans chaque espace de travail individuel.
 

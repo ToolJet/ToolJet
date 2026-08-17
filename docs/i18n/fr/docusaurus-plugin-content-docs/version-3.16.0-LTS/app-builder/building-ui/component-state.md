@@ -13,7 +13,7 @@ Les états des composants peuvent être utilisés dans toute l'application pour 
 - Dans les queries — pour envoyer les saisies utilisateur ou les valeurs de composants en tant que paramètres.
 - Dans d'autres composants — pour afficher, mettre à jour ou interagir conditionnellement avec des composants.
 
-## États de composants disponibles
+## États de composants disponibles {#available-component-states}
 
 Dans l'App-Builder, vous pouvez visualiser tous les états de composants disponibles à l'aide de l'Inspector situé dans la barre latérale gauche. Pour plus de détails, consultez le guide [Inspector](/docs/app-builder/debugging/inspector).
 

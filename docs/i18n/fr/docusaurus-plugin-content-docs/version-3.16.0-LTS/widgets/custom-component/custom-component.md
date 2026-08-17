@@ -75,7 +75,7 @@ Bien que les imports nommés depuis `@material-ui/core/+esm` puissent fonctionne
 
 <img className="screenshot-full" src="/img/widgets/custom-component/data-prop.png" alt="Custom Component Data Property" />
 
-### Fonction Update Data
+### Fonction Update Data {#update-data-function}
 
 Pour mettre à jour les données dans l'objet data, vous pouvez utiliser la fonction intégrée `updateData`.
 
@@ -107,7 +107,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 
 <img className="screenshot-full" src="/img/widgets/custom-component/update-data.png" alt="Custom Component Data Property" />
 
-### Fonction Run Query
+### Fonction Run Query {#run-query-function}
 
 Le **Custom Component** dans ToolJet peut être utilisé pour déclencher des requêtes. Vous pouvez spécifier le nom de la requête dans le champ [data](#data). Utilisez la fonction intégrée `runQuery` pour exécuter la requête dynamiquement depuis l'intérieur du **Custom Component**.
 

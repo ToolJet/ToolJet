@@ -15,7 +15,7 @@ ToolJet propose les types de connexion suivants pour se connecter à votre base 
 - **[Chaîne de connexion](#connection-string)**
 - **[Connexion dynamique](#dynamic-connection)**
 
-### Connexion manuelle
+### Connexion manuelle {#manual-connection}
 
 Pour vous connecter à PostgreSQL en utilisant les paramètres de connexion manuelle, sélectionnez **Manual connection** comme type de connexion et fournissez les détails suivants :
 
@@ -30,7 +30,7 @@ Pour vous connecter à PostgreSQL en utilisant les paramètres de connexion manu
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/postgresql/manual-conn-ux-v5.png" alt="PG connection-manual"/>
 
-### Chaîne de connexion
+### Chaîne de connexion {#connection-string}
 
 Pour vous connecter à PostgreSQL en utilisant une chaîne de connexion, sélectionnez **Connection String** comme type de connexion et fournissez les détails suivants :
 
@@ -132,7 +132,7 @@ PostgreSQL propose des fonctions dynamiques qui fournissent des informations en 
 | `inet_server_port()` | Renvoie le port du serveur                                               | `5432`                                      |
 | `pg_backend_pid()`   | Renvoie l'identifiant du processus du backend actuel                         | `56789`                                     |
 
-### Connexion dynamique
+### Connexion dynamique {#dynamic-connection}
 
 ToolJet permet de remplacer les paramètres de connexion PostgreSQL tels que l'hôte et la base de données directement à **l'exécution de la requête** lorsque les paramètres de connexion dynamique sont activés. Cela permet à une seule source de données de prendre en charge plusieurs environnements ou locataires sans nécessiter de configurations distinctes.
 

@@ -36,7 +36,7 @@ Avant de suivre ce guide, il est supposé que vous avez déjà terminé la proc�
 Les résultats des requêtes peuvent être transformés à l'aide de transformations. Consultez notre [documentation sur les transformations](/docs/app-builder/custom-code/transform-data).
 :::
 
-## Opérations prises en charge
+## Opérations prises en charge {#supported-operations}
 
 Vous pouvez créer une requête pour la source de données Supabase afin d'effectuer plusieurs opérations telles que :
 

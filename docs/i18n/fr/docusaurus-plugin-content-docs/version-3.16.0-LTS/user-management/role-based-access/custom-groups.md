@@ -9,7 +9,7 @@ ToolJet vous permet de créer des groupes personnalisés pour gérer efficacemen
 
 Par exemple, si vous avez des apps construites pour deux équipes, RH et Ventes, et que vous souhaitez que les membres de chaque équipe n'aient accès qu'aux apps pertinentes pour leur équipe, vous pouvez alors créer deux groupes personnalisés nommés RH et Ventes, puis sélectionner les apps souhaitées en configurant les **[permissions d'accès granulaire](/docs/user-management/role-based-access/access-control#granular-access-control)**.
 
-## Création de groupes personnalisés
+## Création de groupes personnalisés {#creating-custom-groups}
 
 Rôle requis : **Admin** <br/>
 

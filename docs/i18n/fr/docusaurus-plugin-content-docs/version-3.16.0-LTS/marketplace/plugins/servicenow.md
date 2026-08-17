@@ -39,7 +39,7 @@ Pour vous connecter à votre instance ServiceNow, les informations suivantes son
 Pour utiliser OAuth 2.0, créez un **Application Registry** dans ServiceNow (**System OAuth > Application Registry > New > Create an OAuth API endpoint for external clients**) et définissez son **Redirect URL** sur l'URL de rappel affichée sur la page de configuration de la source de données de ToolJet.
 :::
 
-### Paramètres optionnels
+### Paramètres optionnels {#optional-settings}
 
 Ces champs sont uniquement requis si vous prévoyez d'utiliser les opérations liées aux workflows :
 

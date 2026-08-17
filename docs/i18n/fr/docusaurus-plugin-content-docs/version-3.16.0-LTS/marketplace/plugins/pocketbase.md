@@ -9,7 +9,7 @@ ToolJet se connecte à votre base de données PocketBase, vous permettant d'inte
 Avant de suivre ce guide, il est supposé que vous avez déjà terminé la procédure d'[utilisation des plugins Marketplace](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
-## Connexion
+## Connexion {#connection}
 
 - Pour vous connecter à PocketBase, vous avez besoin de l'**Host URL**, de l'**Email** et du **Password**. L'Host URL est l'URL de votre instance PocketBase. L'email et le mot de passe sont les identifiants de l'utilisateur ayant accès à l'instance PocketBase.
 
@@ -21,7 +21,7 @@ Avant de suivre ce guide, il est supposé que vous avez déjà terminé la proc�
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/connection.png" alt="PocketBase datasource configuration" />
 
-## Interroger PocketBase
+## Interroger PocketBase {#querying-pocketbase}
 
 - Pour effectuer des requêtes sur PocketBase dans ToolJet, cliquez sur le bouton **+Add** dans le [gestionnaire de requêtes](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) situé dans le panneau inférieur de l'éditeur.
 - Sélectionnez la source de données PocketBase configurée précédemment.
@@ -33,7 +33,7 @@ Avant de suivre ce guide, il est supposé que vous avez déjà terminé la proc�
 Les résultats des requêtes peuvent être transformés à l'aide de transformations. Consultez notre [documentation sur les transformations](/docs/app-builder/custom-code/transform-data).
 :::
 
-## Opérations prises en charge
+## Opérations prises en charge {#supported-operations}
 
 Vous pouvez créer une requête pour la source de données PocketBase afin d'effectuer plusieurs opérations, telles que :
 
@@ -43,13 +43,13 @@ Vous pouvez créer une requête pour la source de données PocketBase afin d'eff
 4. **[Mettre à jour un enregistrement dans une collection](#update-record-to-collection)**
 5. **[Supprimer un enregistrement](#delete-record)**
 
-### Lister les enregistrements
+### Lister les enregistrements {#list-records}
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters}
 
 - **Collection Name** - nom de la collection dans la base de données.
 
-#### Paramètres optionnels
+#### Paramètres optionnels {#optional-parameters}
 
 - **Limit** - nombre d'enregistrements à récupérer.
 - **Sort** - trie les enregistrements selon une règle de tri. Ajoutez `-` / `+` (par défaut) devant l'attribut pour un ordre DESC / ASC.
@@ -57,18 +57,18 @@ Vous pouvez créer une requête pour la source de données PocketBase afin d'eff
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/listrec-query.png" alt="List Records" />
 
-### Obtenir un enregistrement
+### Obtenir un enregistrement {#get-record}
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters-1}
 
 - **Collection Name** - nom de la collection dans la base de données.
 - **Record ID** - ID de l'enregistrement à récupérer.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/getrec-query.png" alt="Get Record" />
 
-### Ajouter un enregistrement à une collection
+### Ajouter un enregistrement à une collection {#add-record-to-collection}
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters-2}
 
 - **Collection Name** - nom de la collection dans la base de données.
 - **Body** - données à ajouter à la collection. Elles doivent être dans un format JSON valide.
@@ -84,9 +84,9 @@ Vous pouvez créer une requête pour la source de données PocketBase afin d'eff
 ```
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/addrec-query.png" alt="Add a Record" />
 
-### Mettre à jour un enregistrement dans une collection
+### Mettre à jour un enregistrement dans une collection {#update-record-to-collection}
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters-3}
 
 - **Collection Name** - nom de la collection dans la base de données.
 - **Record ID** - ID de l'enregistrement à mettre à jour.
@@ -94,9 +94,9 @@ Vous pouvez créer une requête pour la source de données PocketBase afin d'eff
 
  <img className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/updaterec-query.png" alt="Update Record" />
 
-### Supprimer un enregistrement
+### Supprimer un enregistrement {#delete-record}
 
-#### Paramètres requis :
+#### Paramètres requis : {#required-parameters-4}
 
 - **Collection Name** - nom de la collection dans la base de données.
 - **Record ID** - ID de l'enregistrement à supprimer.

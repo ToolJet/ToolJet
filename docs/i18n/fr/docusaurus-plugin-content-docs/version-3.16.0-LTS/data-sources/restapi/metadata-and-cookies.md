@@ -3,7 +3,7 @@ id: metadata-and-cookies
 title: Metadata and Cookies
 ---
 
-## Métadonnées
+## Métadonnées {#metadata}
 
 Les métadonnées sont des informations supplémentaires sur les données renvoyées par la REST API. Ces informations incluent l'URL de la requête, la méthode, les en-têtes, ainsi que le code de statut, les en-têtes et le corps de la réponse. Les métadonnées peuvent être consultées dans les requêtes et les composants en utilisant la syntaxe `{{queries.<queryname>.metadata}}`.
 

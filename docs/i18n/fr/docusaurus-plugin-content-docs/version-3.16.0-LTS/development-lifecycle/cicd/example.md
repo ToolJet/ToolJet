@@ -55,7 +55,7 @@ Remplacez `$DEV_ACCESS_TOKEN` par le jeton d'accès généré pour l'environneme
 3. Ajoutez de nouveaux identifiants pour chaque instance ToolJet, tels que BASE_URL, TOOLJET_ACCESS_TOKEN et GITHUB_ACCESS_TOKEN.
 4. Enregistrez les identifiants.
 
-## 3. Configuration du pipeline Jenkins avec les opérations Git Sync
+## 3. Configuration du pipeline Jenkins avec les opérations Git Sync {#3-jenkins-pipeline-setup-with-git-sync-operations}
 
 Pour notre exemple, une approche possible consiste à créer un **[pipeline Jenkins](https://www.jenkins.io/doc/book/pipeline/) unique et réutilisable** capable d'exécuter différentes actions CI/CD de git sync.
 

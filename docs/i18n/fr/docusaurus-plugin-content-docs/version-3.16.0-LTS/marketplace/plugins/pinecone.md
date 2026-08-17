@@ -9,7 +9,7 @@ ToolJet s'intègre avec Pinecone pour exploiter ses capacités de base de donné
 Avant de suivre ce guide, il est supposé que vous avez déjà terminé la procédure d'[utilisation des plugins Marketplace](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
-## Connexion
+## Connexion {#connection}
 
 Pour se connecter à Pinecone, l'identifiant suivant est requis :
 
@@ -17,7 +17,7 @@ Pour se connecter à Pinecone, l'identifiant suivant est requis :
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/connection.png" alt="Configuring Pinecone in ToolJet" />
 
-## Opérations prises en charge
+## Opérations prises en charge {#supported-operations}
 
 - **[Obtenir les statistiques d'un index](#get-index-stats)**
 - **[Lister les ID de vecteurs](#list-vector-ids)**
@@ -27,11 +27,11 @@ Pour se connecter à Pinecone, l'identifiant suivant est requis :
 - **[Supprimer des vecteurs](#delete-vectors)**
 - **[Interroger des vecteurs](#query-vectors)**
 
-### Obtenir les statistiques d'un index
+### Obtenir les statistiques d'un index {#get-index-stats}
 
 Cette opération récupère les statistiques d'un index spécifique de votre base de données Pinecone.
 
-#### Paramètre requis
+#### Paramètre requis {#required-parameter}
 
 - **Index** : le nom de l'index dont on souhaite obtenir les statistiques.
 
@@ -52,15 +52,15 @@ Cette opération récupère les statistiques d'un index spécifique de votre bas
 
 </details>
 
-### Lister les ID de vecteurs
+### Lister les ID de vecteurs {#list-vector-ids}
 
 Cette opération récupère une liste d'ID de vecteurs à partir d'un index spécifié.
 
-#### Paramètre requis
+#### Paramètre requis {#required-parameter-1}
 
 - **Index** : le nom de l'index depuis lequel lister les ID de vecteurs.
 
-#### Paramètres optionnels
+#### Paramètres optionnels {#optional-parameters}
 
 - **Prefix** : filtre les ID de vecteurs par préfixe.
 - **Limit** : nombre maximal d'ID de vecteurs à retourner.
@@ -95,16 +95,16 @@ Cette opération récupère une liste d'ID de vecteurs à partir d'un index spé
 
 </details>
 
-### Récupérer des vecteurs
+### Récupérer des vecteurs {#fetch-vectors}
 
 Cette opération récupère des vecteurs spécifiques par leur ID à partir d'un index.
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters}
 
 - **Index** : le nom de l'index depuis lequel récupérer les vecteurs.
 - **IDs** : tableau des ID de vecteurs à récupérer.
 
-#### Paramètre optionnel
+#### Paramètre optionnel {#optional-parameter}
 
 - **Namespace** : espace de noms spécifique depuis lequel récupérer les vecteurs.
 
@@ -119,16 +119,16 @@ Cette opération récupère des vecteurs spécifiques par leur ID à partir d'un
 
 </details>
 
-### Upsert de vecteurs
+### Upsert de vecteurs {#upsert-vectors}
 
 Cette opération insère ou met à jour des vecteurs dans un index.
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters-1}
 
 - **Index** : le nom de l'index dans lequel effectuer l'upsert des vecteurs.
 - **Vectors** : tableau de vecteurs à upserter, incluant les ID et les valeurs.
 
-#### Paramètre optionnel
+#### Paramètre optionnel {#optional-parameter-1}
 
 - **Namespace** : espace de noms spécifique dans lequel upserter les vecteurs
 
@@ -147,16 +147,16 @@ Upsert Successful
 
 </details>
 
-### Mettre à jour un vecteur
+### Mettre à jour un vecteur {#update-a-vector}
 
 Cette opération met à jour les valeurs ou les métadonnées d'un vecteur unique.
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters-2}
 
 - **Index** : le nom de l'index contenant le vecteur.
 - **ID** : ID du vecteur à mettre à jour.
 
-#### Paramètres optionnels
+#### Paramètres optionnels {#optional-parameters-1}
 
 - **Values** : valeurs mises à jour du vecteur, sous forme de tableau.
 - **Sparse Vector** : représentation du vecteur creux (sparse).
@@ -174,15 +174,15 @@ Update Successful
 
 </details>
 
-### Supprimer des vecteurs
+### Supprimer des vecteurs {#delete-vectors}
 
 Cette opération supprime des vecteurs d'un index.
 
-#### Paramètre requis
+#### Paramètre requis {#required-parameter-2}
 
 - **Index** : le nom de l'index depuis lequel supprimer les vecteurs.
 
-#### Paramètres optionnels
+#### Paramètres optionnels {#optional-parameters-2}
 
 - **IDs** : tableau des ID de vecteurs à supprimer.
 - **Delete All** : indicateur booléen pour supprimer tous les vecteurs.
@@ -200,17 +200,17 @@ Delete Successful
 
 </details>
 
-### Interroger des vecteurs
+### Interroger des vecteurs {#query-vectors}
 
 Cette opération interroge les vecteurs d'un index en fonction de leur similarité.
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters-3}
 
 - **Index** : le nom de l'index à interroger.
 - **Vectors** : valeurs du vecteur de requête.
 - **Top K** : nombre de vecteurs les plus similaires à retourner.
 
-#### Paramètres optionnels
+#### Paramètres optionnels {#optional-parameters-3}
 
 - **Namespace** : espace de noms spécifique à interroger.
 - **Filter** : condition de filtrage pour la requête.

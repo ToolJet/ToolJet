@@ -21,7 +21,7 @@ Les instances aident à :
 
 Consultez le [guide d'installation](/docs/setup/) pour découvrir les différentes options disponibles pour déployer ToolJet sur votre infrastructure.
 
-## Choisir la configuration de votre instance
+## Choisir la configuration de votre instance {#choosing-your-instance-setup}
 
 - **Instance unique :** idéale pour les équipes recherchant une installation rapide avec conformité des données, confidentialité et surcharge minimale.
 - **Instances multiples :** adaptées si votre organisation souhaite :

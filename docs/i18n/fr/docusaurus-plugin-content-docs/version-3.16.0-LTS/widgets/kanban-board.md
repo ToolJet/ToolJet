@@ -77,7 +77,7 @@ Consultez les **[Actions spécifiques au composant](#component-specific-actions-
 | lastUpdatedCard | La variable `lastUpdatedCard` contient les valeurs `id`, `title`, `description` et `columnId` de la dernière carte mise à jour (via une action spécifique au composant). | Obtenez les valeurs en utilisant `{{components.kanban1.lastUpdatedCard.columnId}}`. |
 | lastCardUpdate | La variable `lastCardUpdate` contient les anciennes et nouvelles valeurs de la propriété qui a été modifiée dans la carte (via une action spécifique au composant). | Obtenez les valeurs en utilisant `{{components.kanban1.lastCardUpdate[0].title.oldValue}}`. |
 
-## Actions spécifiques au composant (CSA)
+## Actions spécifiques au composant (CSA) {#component-specific-actions-csa}
 
 Les actions suivantes du composant Kanban peuvent être contrôlées à l'aide des actions spécifiques au composant (CSA) :
 

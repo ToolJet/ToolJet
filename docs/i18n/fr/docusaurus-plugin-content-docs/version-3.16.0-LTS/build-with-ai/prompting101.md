@@ -129,7 +129,7 @@ Décrivez comment les utilisateurs interagiront avec l'outil à travers des work
 - Parcours de gestion de pipeline - Faire avancer les transactions à travers les étapes, mettre à jour les probabilités, enregistrer les interactions
 - Parcours de reporting - Générer des rapports de pipeline hebdomadaires, suivre les métriques de conversion, analyser les sources de prospects
 
-## Utilisation efficace des crédits
+## Utilisation efficace des crédits {#efficient-utilization-of-credits}
 
 ### À faire
 - **Rédigez des invites précises avec un contexte détaillé** <br/>

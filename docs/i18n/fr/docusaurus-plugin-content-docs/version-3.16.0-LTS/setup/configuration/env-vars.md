@@ -46,7 +46,7 @@ Remplacez `username`, `password`, `hostname`, `port` et `database_name` par les 
 
 - `PG_DB_OWNER=false` : par défaut, ToolJet tente de créer une base de données en fonction de la variable `PG_DB` définie, et peut également essayer de créer des extensions PostgreSQL. Cela nécessite que l'utilisateur PostgreSQL dispose de la permission `CREATEDB`. Si cette permission ne peut pas être accordée, vous pouvez désactiver ce comportement en définissant `PG_DB_OWNER` sur `false`, et vous devrez alors les exécuter manuellement.
 
-#### Base de données ToolJet
+#### Base de données ToolJet {#tooljet-database}
 
 - `TOOLJET_DB` : nom de la base de données par défaut (`tooljet_db`)
 - `TOOLJET_DB_HOST` : hôte de la base de données
@@ -189,7 +189,7 @@ Par défaut, le serveur accepte une taille JSON maximale de 50 Mo. Pour augmente
 
 - `MAX_JSON_SIZE = "150mb"`
 
-#### Personnalisation de la configuration des workflows
+#### Personnalisation de la configuration des workflows {#customizing-workflow-configuration}
 
 Vous pouvez contrôler le comportement d'exécution des workflows à l'aide des variables d'environnement suivantes :
 
@@ -228,7 +228,7 @@ Vous pouvez configurer OIDC en utilisant un identifiant autre que l'e-mail pour 
 
 Pour en savoir plus, consultez [cette section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
 
-#### Configurer des règles de validation de mot de passe plus strictes
+#### Configurer des règles de validation de mot de passe plus strictes {#configure-stronger-password-validation-rules}
 
 ToolJet vous permet d'imposer une règle de complexité de mot de passe plus stricte. Par défaut, le mot de passe de connexion doit comporter au moins 5 caractères et tout caractère peut être utilisé. Pour imposer une validation de mot de passe plus stricte, utilisez la variable d'environnement suivante :
 
@@ -302,7 +302,7 @@ Pour connecter ToolJet aux services Google tels que Google Sheets, créez des id
 - `GOOGLE_CLIENT_ID` : ID client OAuth Google
 - `GOOGLE_CLIENT_SECRET` : secret client OAuth Google
 
-#### API Google Maps
+#### API Google Maps {#google-maps-api}
 
 Pour utiliser le widget Maps dans ToolJet, créez une clé API Google Maps et définissez :
 

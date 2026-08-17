@@ -7,7 +7,7 @@ Une **Bounded Box** est un composant d'annotation d'image infiniment personnalis
 
 <img className="screenshot-full" src="/img/widgets/bounded-box/bounded-box.png" alt="Bounded Box" />
 
-## Propriétés
+## Propriétés {#properties}
 
 <img className="screenshot-full" src="/img/widgets/bounded-box/propnew.png" alt="Bounded Box"/>
 

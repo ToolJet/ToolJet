@@ -5,7 +5,7 @@ title: Sign-Up
 
 Dans ToolJet, la fonctionnalité d'inscription permet aux admins d'activer l'enregistrement direct des utilisateurs via une URL d'inscription, éliminant ainsi le besoin d'invitations. Pour la version auto-hébergée, l'activation de l'inscription peut se faire à la fois au niveau instance et au niveau espace de travail.
 
-## Activer l'inscription au niveau instance
+## Activer l'inscription au niveau instance {#enable-sign-up-at-instance-level}
 
 Rôle requis : **Super Admin** <br/>
 
@@ -38,7 +38,7 @@ Si vous ne saisissez aucun domaine autorisé, alors toute personne disposant de 
 
     <img className="screenshot-full" src="/img/user-management/onboard-user/self-signup/instance-signup.png" alt="Workspace Level Permissions" />
 
-## Activer l'inscription au niveau espace de travail
+## Activer l'inscription au niveau espace de travail {#enable-sign-up-at-workspace-level}
 
 Rôle requis : **Admin** <br/>
 

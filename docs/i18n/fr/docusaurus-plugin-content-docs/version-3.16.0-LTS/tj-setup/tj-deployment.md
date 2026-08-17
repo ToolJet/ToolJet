@@ -7,7 +7,7 @@ ToolJet propose deux options de déploiement — **Self-Hosted** et **Cloud** �
 
 <div style={{paddingTop:'24px'}}>
 
-## ToolJet Self-Hosted
+## ToolJet Self-Hosted {#self-hosted-tooljet}
 
 Avec l'option auto-hébergée, ToolJet peut être déployé sur votre propre infrastructure (sur site ou cloud privé). Cela offre un plus grand contrôle sur les données, la personnalisation et les intégrations, ce qui en fait un choix idéal pour les organisations recherchant un contrôle total sur leur environnement de développement d'applications afin de répondre aux exigences de conformité, de sécurité et opérationnelles.
 

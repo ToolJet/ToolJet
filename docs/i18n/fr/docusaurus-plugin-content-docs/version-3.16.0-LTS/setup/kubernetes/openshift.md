@@ -207,7 +207,7 @@ REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-se
 
 **Remarque :** Assurez-vous que ces variables d'environnement sont ajoutées à votre configuration de déploiement Kubernetes (par exemple, dans votre fichier deployment.yaml ou un secret Kubernetes). **Pour des variables d'environnement supplémentaires, consultez notre [documentation sur les variables d'environnement](/docs/setup/env-vars).**
 
-## Mise à niveau vers la dernière version LTS
+## Mise à niveau vers la dernière version LTS {#upgrading-to-the-latest-lts-version}
 
 :::info
 S'il s'agit d'une nouvelle installation de l'application, vous pouvez commencer directement avec la dernière version. Ce guide de mise à niveau concerne uniquement les installations existantes.

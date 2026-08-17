@@ -36,7 +36,7 @@ ToolJet AI peut être utilisé pour générer rapidement des modules, qui peuven
 
 Actuellement, les modules générés par l'IA se concentrent uniquement sur la génération de l'interface. Les sources de données, les queries et les configurations d'entrée/sortie ne sont pas incluses dans le flux de génération par l'IA et doivent être configurées manuellement.
 
-## Générer une query
+## Générer une query {#generate-query}
 
 ToolJet AI peut générer des queries complètes et entièrement configurées directement depuis le chat IA. Il crée une véritable query dans votre panneau des queries — avec les paramètres et la configuration déjà en place.
 
@@ -68,7 +68,7 @@ ToolJet vous permet de générer des extraits de code JavaScript et Python direc
 3. Vérifiez le code généré et insérez-le directement, ou cliquez sur Regenerate pour essayer une version différente. <br/>
     <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/tooljet-ai/gen-code/results.png" alt="tooljet generate apps" />
 
-## Tri automatique des queries
+## Tri automatique des queries {#auto-sort-queries}
 
 À mesure que les applications se développent, les queries peuvent s'accumuler sans organisation claire. La fonctionnalité Auto-sort regroupe automatiquement vos queries dans des dossiers en fonction de leur nom.
 

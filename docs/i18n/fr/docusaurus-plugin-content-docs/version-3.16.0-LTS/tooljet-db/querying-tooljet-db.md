@@ -5,7 +5,7 @@ title: Interroger les données
 
 Interroger la base de données ToolJet est aussi simple que d'interroger n'importe quelle autre source de données dans ToolJet. Vous pouvez utiliser soit l'interface graphique, soit l'éditeur SQL pour interagir avec vos données.
 
-## Mode GUI
+## Mode GUI {#gui-mode}
 
 1. Accédez au **panneau des requêtes**, et cliquez sur le bouton **+Add** pour ajouter une nouvelle requête, puis sélectionnez **ToolJet Database**.
    <img style={{ marginTop: '15px' }} className="screenshot-full" src="/img/v2-beta/database/newui/qtjdb.png" alt="Éditeur de la base de données ToolJet" />
@@ -88,7 +88,7 @@ Cette opération peut être utilisée pour upserter plusieurs lignes à l'aide d
 
 <img className="screenshot-full" src="/img/tjdb/query/bulk-upsert.png" alt="Éditeur de la base de données ToolJet" />
 
-## Éditeur SQL
+## Éditeur SQL {#sql-editor}
 
 L'**éditeur SQL** de ToolJet vous permet d'interroger la base de données ToolJet en écrivant des requêtes SQL, prenant en charge spécifiquement la syntaxe SQL standard pour les commandes **Data Manipulation Language (DML)**. Cette fonctionnalité est disponible uniquement sur la version [auto-hébergée](/docs/tj-setup/tj-deployment#self-hosted-tooljet) de ToolJet.
 

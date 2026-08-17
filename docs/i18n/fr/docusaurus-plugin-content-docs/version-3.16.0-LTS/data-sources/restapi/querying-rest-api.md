@@ -113,7 +113,7 @@ Consultez le guide sur le **[chargement de données base64](/docs/widgets/image/
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/image-comp-query.png" alt=" REST API image component mapping" />
 
-## Réessayer en cas d'erreurs réseau
+## Réessayer en cas d'erreurs réseau {#retry-on-network-errors}
 
 ToolJet propose une option permettant de réessayer automatiquement les requêtes REST API en cas de certaines erreurs réseau ou de codes de statut HTTP spécifiques. Par défaut, cette fonctionnalité est activée et réessaiera la requête jusqu'à 3 fois en cas d'échec. Cette fonctionnalité peut être activée ou désactivée à la fois au niveau de la source de données et au niveau de la requête individuelle. Lorsqu'elle est activée, les nouvelles tentatives se produiront dans les scénarios suivants :
 

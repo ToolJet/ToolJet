@@ -103,7 +103,7 @@ Les crédits mensuels sont des crédits récurrents inclus dans votre licence ac
 
 Les crédits complémentaires peuvent être achetés en plus de vos crédits mensuels et constituent un achat unique qui ne se renouvelle pas chaque mois. Ces crédits ne peuvent être achetés que par multiples de 100 et sont valables un an à partir de la date d'achat. Si vous achetez des crédits supplémentaires après un premier achat, la validité de l'ensemble du pool de crédits est prolongée en fonction de la date d'achat la plus récente. Consultez la page [tarifs](https://www.tooljet.com/pricing) pour plus d'informations.
 
-## Acheter des crédits complémentaires
+## Acheter des crédits complémentaires {#buy-add-on-credits}
 
 ### Déploiement self-hosted
 
@@ -129,7 +129,7 @@ Suivez ces étapes pour acheter des crédits complémentaires sur ToolJet Cloud 
    <img className="screenshot-full img-full" style={{marginTop:"15px"}} src="/img/tooljet-ai/credits/cloud-modal.png" alt="AI Credits" />
 4. Vous serez ensuite redirigé vers la passerelle de paiement. Une fois le paiement réussi, les crédits seront ajoutés à votre workspace.
 
-## Allocation des crédits
+## Allocation des crédits {#credit-allocation}
 
 Les crédits ToolJet AI sont alloués par builder et par mois selon la licence achetée. Le total des crédits de tous les builders, ainsi que tout crédit complémentaire acheté, sont regroupés et mis à disposition collectivement.
 

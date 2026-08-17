@@ -15,7 +15,7 @@ La fonctionnalité **Run JavaScript Code** de ToolJet permet d'exécuter du code
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-connection-v3.png" alt="Run JavaScript code" />
 
-## Paramètres dans Run JavaScript Code
+## Paramètres dans Run JavaScript Code {#parameters-in-run-javascript-code}
 
 Les paramètres permettent un contrôle dynamique sur l'exécution du code JavaScript sans modifier le script principal. Cela offre une flexibilité permettant au même code de s'exécuter avec des entrées différentes.
 
@@ -79,7 +79,7 @@ Les paramètres peuvent également être utilisés pour déclencher d'autres req
 
 Avec cette configuration, la requête _multiply_ peut être appelée depuis d'autres requêtes, comme _callMultiply_, en fournissant des valeurs de paramètres personnalisées. Cela vous permet de réutiliser la requête _multiply_ avec des entrées différentes et d'afficher les résultats en conséquence.
 
-### Fonctions de rappel (Callback)
+### Fonctions de rappel (Callback) {#callback-functions}
 
 Dans ToolJet, lors du déclenchement d'une requête à l'aide de `queries.<queryName>.run()`, vous pouvez transmettre des **gestionnaires de rappel** pour gérer de manière programmatique les états d'exécution de la requête et effectuer des actions personnalisées lorsque la requête réussit ou échoue.
 
@@ -110,7 +110,7 @@ queries.getUsers.run(
 );
 ```
 
-## Exemples de requêtes RunJS
+## Exemples de requêtes RunJS {#runjs-example-queries}
 
 ### Générer un nombre aléatoire
 

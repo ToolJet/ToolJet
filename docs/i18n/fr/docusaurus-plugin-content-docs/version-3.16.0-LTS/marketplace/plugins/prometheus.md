@@ -29,7 +29,7 @@ Une fois connecté, vous pouvez commencer à utiliser des requêtes instantanée
 - [Requête instantanée avec PromQL](#instant-query-with-promql)
 - [Requête sur intervalle avec PromQL](#range-query-with-promql)
 
-### Requête instantanée avec PromQL
+### Requête instantanée avec PromQL {#instant-query-with-promql}
 
 Récupère la valeur actuelle d'une métrique à un instant donné.
 
@@ -55,7 +55,7 @@ status : "success"
 ```
 </details>
 
-### Requête sur intervalle avec PromQL
+### Requête sur intervalle avec PromQL {#range-query-with-promql}
 
 Récupère les données de métrique sur une plage de temps spécifiée.
 

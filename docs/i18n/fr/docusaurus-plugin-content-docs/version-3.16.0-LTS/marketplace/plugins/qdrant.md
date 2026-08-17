@@ -11,13 +11,13 @@ Qdrant est une base de données vectorielle qui peut être intégrée à ToolJet
 Avant de suivre ce guide, il est supposé que vous avez déjà terminé la procédure d'[utilisation des plugins Marketplace](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
-## Connexion
+## Connexion {#connection}
 
 Pour vous connecter à Qdrant, vous aurez besoin de l'URL Qdrant et d'une clé API, qui peut être générée depuis le [Qdrant Cloud Dashboard](https://qdrant.to/cloud).
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/connection-v2.png" alt="Qdrant Configuration" />
 
-## Opérations prises en charge
+## Opérations prises en charge {#supported-operations}
 
 1. **[Obtenir les infos d'une collection](#get-collection-info)**
 2. **[Lister les collections](#list-collections)**
@@ -29,7 +29,7 @@ Pour vous connecter à Qdrant, vous aurez besoin de l'URL Qdrant et d'une clé A
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/listops.png" alt="Qdrant supported operations" />
 
 
-### Obtenir les infos d'une collection
+### Obtenir les infos d'une collection {#get-collection-info}
 
 Utilisez cette opération pour récupérer les métadonnées et les détails de configuration d'une collection spécifique dans Qdrant.
 
@@ -113,13 +113,13 @@ Utilisez cette opération pour récupérer les métadonnées et les détails de 
 ```
 </details>
 
-### Lister les collections
+### Lister les collections {#list-collections}
 
 Utilisez cette opération pour récupérer toutes les collections disponibles dans l'instance Qdrant connectée.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/list-collection-query.png" alt="List Collection" />
 
-### Obtenir des points
+### Obtenir des points {#get-points}
 
 Utilisez cette opération pour récupérer des points de données spécifiques d'une collection à l'aide de leurs identifiants uniques.
 
@@ -148,7 +148,7 @@ Utilisez cette opération pour récupérer des points de données spécifiques d
 ```
 </details>
 
-### Upsert de points
+### Upsert de points {#upsert-points}
 
 Utilisez cette opération pour ajouter de nouveaux points de données ou mettre à jour ceux qui existent déjà dans une collection, en fonction de leurs identifiants uniques.
 
@@ -195,7 +195,7 @@ Voici l'**Sample Input** (exemple d'entrée) pour l'opération Upsert.
 ```
 <img style={{ marginTop:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/upsert-points-query.png" alt="Upsert Points" />
 
-### Supprimer des points
+### Supprimer des points {#delete-points}
 
 Utilisez cette opération pour supprimer des points de données spécifiques d'une collection à l'aide de leurs identifiants uniques.
 
@@ -210,7 +210,7 @@ Utilisez cette opération pour supprimer des points de données spécifiques d'u
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/delete-points-query.png" alt="Delete Points" />
 
-### Interroger des points
+### Interroger des points {#query-points}
 
 Utilisez cette opération pour rechercher des points de données dans une collection à l'aide d'une requête, généralement basée sur la similarité vectorielle ou des conditions de filtrage.
 

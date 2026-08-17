@@ -83,7 +83,7 @@ Suffix: \n
 ```
 </details>
 
-### Générer des image(s) IA
+### Générer des image(s) IA {#generate-ai-images}
 
 Cette opération génère des images IA à partir du prompt fourni.
 
@@ -128,7 +128,7 @@ Size(in pixels): 1024x1024
 ```
 </details>
 
-### Générer un embedding
+### Générer un embedding {#generate-embedding}
 
 Cette opération est utilisée pour générer des embeddings vectoriels à partir du texte fourni, qui peuvent être utilisés pour créer des applications d'IA.
 

@@ -5,7 +5,7 @@ title: Google Sheets
 
 ToolJet a la capacité d'établir une connexion avec Google Sheets à la fois pour la lecture et l'écriture de données. En utilisant OAuth 2.0, ToolJet peut établir une connexion sécurisée avec Google Sheets, garantissant que l'accès de l'application au compte d'un utilisateur est restreint et limité de manière appropriée.
 
-## Configuration en auto-hébergement
+## Configuration en auto-hébergement {#self-hosted-configuration}
 
 Si vous décidez d'auto-héberger ToolJet, il y a quelques étapes supplémentaires à suivre :
 
@@ -16,11 +16,11 @@ Si vous décidez d'auto-héberger ToolJet, il y a quelques étapes supplémentai
    - **TOOLJET_HOST**
 3. Activez l'API Google Sheets dans la console Google Cloud Platform (GCP).
 
-## Connexion
+## Connexion {#connection}
 
 Pour établir une connexion avec la source de données Google Sheets, vous pouvez soit cliquer sur le bouton **+ Add new Data source** situé sur le panneau de requêtes, soit naviguer vers la page **[Data Sources](/docs/data-sources/overview)** via le tableau de bord ToolJet.
 
-### Types d'authentification
+### Types d'authentification {#authentication-types}
 
 ToolJet vous permet de sélectionner les méthodes d'authentification avec Google Sheets et d'autoriser l'accès selon vos exigences de sécurité et d'accès.
 
@@ -29,7 +29,7 @@ ToolJet vous permet de sélectionner les méthodes d'authentification avec Googl
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/google-sheets/gs-connection.png" alt="Google Sheets Connection " />
 
-### Portées d'autorisation
+### Portées d'autorisation {#authorization-scopes}
 
 Lors de la connexion à une source de données Google Sheets, vous pouvez choisir entre deux portées d'autorisation :
 
@@ -38,7 +38,7 @@ Lors de la connexion à une source de données Google Sheets, vous pouvez choisi
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/google-sheets/sheetconnect-v3.png" alt="Google Sheet" />
 
-## Interroger Google Sheets
+## Interroger Google Sheets {#querying-google-sheet}
 
 1. Cliquez sur le bouton **+ Add** dans le gestionnaire de requêtes situé dans le panneau inférieur de l'éditeur.
 2. Sélectionnez la source de données **Google Sheet** dans la section des sources de données.
@@ -61,51 +61,51 @@ En utilisant la source de données Google Sheets, vous pouvez effectuer plusieur
 L'**ID de la feuille de calcul** peut être obtenu à partir de l'URL de la feuille de calcul. Par exemple, dans l'URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=0`, `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` représente l'ID de la feuille de calcul.
 :::
 
-### Créer une feuille de calcul
+### Créer une feuille de calcul {#create-a-spreadsheet}
 
 Cette opération permet de créer une nouvelle feuille de calcul.
 
-#### Paramètre requis
+#### Paramètre requis {#required-parameter}
 - **Title**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/create-sheet-v2.png" alt="create a spreadsheet" />
 
-### Lister toutes les feuilles d'une feuille de calcul
+### Lister toutes les feuilles d'une feuille de calcul {#list-all-sheets-of-a-spreadsheet}
 
 Cette opération permet de lister toutes les feuilles d'une feuille de calcul.
 
-#### Paramètre requis
+#### Paramètre requis {#required-parameter-1}
 - **Spreadsheet ID**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/list-all-sheets-v2.png" alt="create a spreadsheet" style={{marginBottom:'15px'}} />
 
-### Lire les données d'une feuille de calcul
+### Lire les données d'une feuille de calcul {#read-data-from-a-spreadsheet}
 
 Cette opération vous permet de récupérer les données du tableau d'une feuille de calcul sous forme d'objet JSON.
 
-#### Paramètre requis
+#### Paramètre requis {#required-parameter-2}
 - **Spreadsheet ID**
 
-#### Paramètres optionnels
+#### Paramètres optionnels {#optional-parameter}
 - **Range**
 - **Sheet**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/read-data-op-v3.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
 
-### Ajouter des données à une feuille de calcul
+### Ajouter des données à une feuille de calcul {#append-data-to-a-spreadsheet}
 
 Ajoutez des lignes supplémentaires à un tableau en utilisant l'opération d'ajout.
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameter-3}
 - **Spreadsheet ID**
 - **Rows**
 
-#### Paramètre optionnel
+#### Paramètre optionnel {#optional-parameter-1}
 - **Sheet**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/append-data-op-v3.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
 
-#### Exemple
+#### Exemple {#example}
 ```yaml
 [
   {
@@ -132,30 +132,30 @@ Ajoutez des lignes supplémentaires à un tableau en utilisant l'opération d'aj
 ]
 ```
 
-### Obtenir les informations de la feuille de calcul
+### Obtenir les informations de la feuille de calcul {#get-spreadsheet-info}
 
 Cette opération vous permet de récupérer des informations de base sur la feuille de calcul, y compris le nombre de feuilles, le thème, le fuseau horaire, le format et l'URL, entre autres.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/info-v3.png" alt="google sheets get info" style={{marginBottom:'15px'}} />
 
-### Mettre à jour une seule ligne d'une feuille de calcul
+### Mettre à jour une seule ligne d'une feuille de calcul {#update-single-row-of-a-spreadsheet}
 
 Cette opération vous permet de mettre à jour des données existantes dans une feuille.
 
-#### Paramètres requis
+#### Paramètres requis {#required-parameters}
 - **Spreadsheet ID**
 - **Where**
 - **Operator**
 - **Value**
 - **Body**
 
-#### Paramètres optionnels
+#### Paramètres optionnels {#optional-parameters}
 - **Range**
 - **Sheet**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/update-query.png" alt="Google Sheet Operations" />
 
-#### Exemple
+#### Exemple {#example-1}
 ```yaml
 {
   "name": "Hugo Lefevre",
@@ -166,15 +166,15 @@ Cette opération vous permet de mettre à jour des données existantes dans une 
 }
 ```
 
-### Supprimer une ligne d'une feuille de calcul
+### Supprimer une ligne d'une feuille de calcul {#delete-row-from-a-spreadsheet}
 
 Cette opération vous permet de supprimer une ligne spécifique de la feuille.
 
-#### Paramètre requis
+#### Paramètre requis {#required-parameter-4}
 - **Spreadsheet ID**
 - **Delete row number**
 
-#### Paramètre optionnel
+#### Paramètre optionnel {#optional-parameter-2}
 - **GID**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/del-v3.png" alt="google sheets delete" style={{marginBottom:'15px'}} />

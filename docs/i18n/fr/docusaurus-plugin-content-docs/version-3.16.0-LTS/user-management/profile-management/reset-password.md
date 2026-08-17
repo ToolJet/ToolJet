@@ -19,7 +19,7 @@ Lorsque la connexion par mot de passe est activée, il existe deux façons pour 
 
     <img className="screenshot-full" src="/img/user-management/profile-management/reset-password/mail.png" alt="General Settings: Reset Password" />
 
-## Réinitialisation du mot de passe par le Super Admin
+## Réinitialisation du mot de passe par le Super Admin {#super-admin-reset-password}
 
 Si un utilisateur oublie son mot de passe ou si celui-ci doit être mis à jour, le super admin peut facilement réinitialiser le mot de passe de n'importe quel utilisateur de l'instance en suivant ces étapes :
 

@@ -85,7 +85,7 @@ Pour obtenir des informations détaillées sur toutes les **Actions**, veuillez 
 
 Il n'existe actuellement aucune CSA (action spécifique au composant) implémentée pour réguler ou contrôler ce composant.
 
-## Variables exposées
+## Variables exposées {#exposed-variables}
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> Comment y accéder </div> |
 | :---------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
@@ -175,7 +175,7 @@ Utilisez `{{listItem.key}}` pour afficher les données sur les composants imbriq
 
 :::
 
-## Contrôler les composants enfants
+## Contrôler les composants enfants {#controlling-child-components}
 
 Tous les composants enfants du composant List View sont exposés via la variable `children`. Cette variable est un tableau d'objets, où chaque objet représente un enregistrement dans le listview et contient les données des composants enfants.
 

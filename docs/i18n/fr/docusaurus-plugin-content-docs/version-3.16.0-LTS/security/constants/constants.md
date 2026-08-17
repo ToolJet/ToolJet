@@ -36,7 +36,7 @@ Par exemple, vous pouvez configurer des clés API uniques pour chaque environnem
 
 <img className="screenshot-full" src="/img/security/constants/constants-secret/env-specific-const-v2.png" alt="Constantes spécifiques à l'environnement"/>
 
-## Créer des constantes d'espace de travail
+## Créer des constantes d'espace de travail {#creating-workspace-constants}
 
 La permission sur les constantes/variables d'espace de travail est nécessaire pour créer, mettre à jour ou supprimer des constantes d'espace de travail ; consultez le guide **[Contrôle d'accès](/docs/user-management/role-based-access/access-control)** pour plus d'informations. Une fois la permission requise obtenue, suivez ces étapes pour créer une constante d'espace de travail :
 
@@ -65,7 +65,7 @@ Une fois qu'une constante ou un secret est créé, son type ne peut pas être mo
 
 Les global constants peuvent être accédées via la syntaxe `{{constants.constant_name}}` et peuvent être utilisées dans l'[app builder](#in-app-builder), les sources de données, les requêtes de données et les workflows.
 
-#### Dans l'App Builder
+#### Dans l'App Builder {#in-app-builder}
 
 Dans l'App Builder, vous pouvez retrouver toutes les constantes dans l'élément inspecteur de la barre latérale gauche.
 

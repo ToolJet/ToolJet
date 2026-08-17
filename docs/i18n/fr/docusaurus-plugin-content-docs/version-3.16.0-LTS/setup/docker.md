@@ -265,7 +265,7 @@ REDIS_PASSWORD=
 
 </details>
 
-## Mise à niveau vers la dernière version LTS
+## Mise à niveau vers la dernière version LTS {#upgrading-to-the-latest-lts-version}
 
 :::info
 S'il s'agit d'une nouvelle installation de l'application, vous pouvez démarrer directement avec la dernière version. Ce guide de mise à niveau concerne uniquement les installations existantes.

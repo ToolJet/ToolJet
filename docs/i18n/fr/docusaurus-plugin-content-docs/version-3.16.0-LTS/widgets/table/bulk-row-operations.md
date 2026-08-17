@@ -93,7 +93,7 @@ Cela garantit que dès que le SQL est généré avec succès, la requête de sup
     <img className="screenshot-full img-full mt-5" src="/img/widgets/table/bulk-row-operations/deleteButton.png" alt="Delete Button" />
 - Vous pouvez également, en option, ajouter un état de chargement (Loading state) et une visibilité (Visibility).
 
-## Mise à jour en masse de lignes
+## Mise à jour en masse de lignes {#bulk-update-rows}
 
 ### Étape 1 : Rendre les colonnes modifiables
 Sous Table Columns, activez *Make editable* pour les colonnes requises.

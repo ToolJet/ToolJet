@@ -24,11 +24,11 @@ Il existe deux façons de fournir ces variables d'environnement :
 
 Les deux approches acceptent le même ensemble d'identifiants spécifiques au fournisseur, décrits ci-dessous.
 
-## Fournisseurs Git pris en charge
+## Fournisseurs Git pris en charge {#supported-git-providers}
 
 ToolJet prend en charge les fournisseurs suivants :
 
-#### GitHub (HTTPS)
+#### GitHub (HTTPS) {#github-https}
 
 | **Clé** | **Description** |
 | --- | --- |
@@ -45,7 +45,7 @@ Pour une instance GitHub Enterprise self-hosted, vous pouvez également inclure 
 | `GITHUB_ENTERPRISE_URL` | Le domaine de votre instance GitHub self-hosted. (par exemple `https://github.your-company.com`) |
 | `GITHUB_ENTERPRISE_API_URL` | Le point de terminaison API de votre instance GitHub self-hosted. (par exemple `https://api.github.your-company.com`) |
 
-#### GitLab
+#### GitLab {#gitlab}
 
 | **Clé** | **Description** |
 | --- | --- |
@@ -60,7 +60,7 @@ Pour une instance GitLab self-hosted, vous pouvez également inclure :
 | --- | --- |
 | `GITLAB_ENTERPRISE_URL` | Le domaine de votre instance GitLab self-hosted. (par exemple `https://gitlab.your-company.com`) |
 
-#### Git (SSH)
+#### Git (SSH) {#git-ssh}
 | **Clé**               | **Description**                                                                   |
 | --------------------- | --------------------------------------------------------------------------------- |
 | `GIT_SSH_URL`         | L'URL SSH de votre dépôt Git (par exemple `git@your-git-host.com:org/repo.git`).   |
@@ -73,11 +73,11 @@ Pour une instance GitLab self-hosted, vous pouvez également inclure :
 Un seul fournisseur peut être actif par workspace à la fois. Si une clé requise pour un fournisseur est manquante, ToolJet ignorera ce fournisseur. Vérifiez à nouveau votre liste de clés si la configuration ne s'active pas.
 :::
 
-## Option 1 : variable d'environnement unique
+## Option 1 : variable d'environnement unique {#option-1-single-environment-variable}
 
 Configurez Git Sync pour tous les workspaces à l'aide d'une seule variable d'environnement, `WORKSPACE_GIT_CONFIGS`.
 
-### 1. Définir la variable d'environnement
+### 1. Définir la variable d'environnement {#1-define-the-environment-variable}
 
 Définissez `WORKSPACE_GIT_CONFIGS` comme un objet JSON sous forme de chaîne. Chaque clé de premier niveau est un **slug** ou un **UUID** de workspace, et sa valeur est un objet contenant les clés spécifiques au fournisseur listées dans [Fournisseurs Git pris en charge](#supported-git-providers) (GitHub, GitLab ou Git SSH).
 
@@ -93,7 +93,7 @@ Pour configurer plusieurs workspaces, ajoutez d'autres clés à l'objet de premi
 WORKSPACE_GIT_CONFIGS='{"workspace-one":{...},"workspace-two":{...}}'
 ```
 
-### 2. Rendre la variable disponible pour le serveur
+### 2. Rendre la variable disponible pour le serveur {#2-make-the-variable-available-to-the-server}
 
 Ajoutez `WORKSPACE_GIT_CONFIGS` là où vous gérez les variables d'environnement de votre serveur, par exemple votre fichier `.env`, ou la section `environment` de votre fichier Docker Compose :
 
@@ -105,15 +105,15 @@ services:
       WORKSPACE_GIT_CONFIGS: '{"nexus-workspace":{"GITHUB_URL":"https://github.com/acme-corp/internal-tools.git","GITHUB_BRANCH":"master","GITHUB_APP_ID":"123456","GITHUB_INSTALLATION_ID":"98765432","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----"}}'
 ```
 
-### 3. Redémarrer le serveur
+### 3. Redémarrer le serveur {#3-restart-the-server}
 
 Redémarrez le serveur ToolJet pour que le changement prenne effet. Cette variable n'est lue qu'au démarrage — les changements effectués pendant que le serveur est en cours d'exécution ne prendront effet qu'après un redémarrage du serveur.
 
-## Option 2 : fichiers d'environnement par workspace
+## Option 2 : fichiers d'environnement par workspace {#option-2-per-workspace-environment-files}
 
 Au lieu d'une seule variable d'environnement, vous pouvez configurer Git Sync en utilisant un fichier de type dotenv par workspace.
 
-### 1. Créer le fichier d'environnement
+### 1. Créer le fichier d'environnement {#1-create-the-environment-file}
 
 Sur votre machine hôte, créez un fichier nommé `.tj_env.<workspace-slug-or-uuid>`. Ce fichier utilise le format dotenv standard (`KEY=VALUE`) et contient les identifiants Git pour un workspace spécifique.
 
@@ -126,15 +126,15 @@ Vous pouvez nommer le fichier en utilisant le **slug** ou l'**UUID** du workspac
 
 Vous pouvez placer plusieurs fichiers `.tj_env.*` dans le même répertoire, à raison d'un par workspace.
 
-### 2. Ajouter les identifiants de votre fournisseur Git
+### 2. Ajouter les identifiants de votre fournisseur Git {#2-add-your-git-provider-credentials}
 
 Renseignez le fichier avec les clés requises pour votre fournisseur Git, listées dans [Fournisseurs Git pris en charge](#supported-git-providers) ci-dessus.
 
-### 3. Rendre le fichier disponible pour le serveur
+### 3. Rendre le fichier disponible pour le serveur {#3-make-the-file-available-to-the-server}
 
 Le fichier `.tj_env.*` doit être accessible dans `/app/` à l'intérieur du conteneur au moment où le serveur démarre. La façon de l'y placer dépend de votre configuration de déploiement. Pour Docker Compose, consultez le [guide de configuration Docker Compose](#docker-compose-setup).
 
-### 4. Redémarrer le serveur
+### 4. Redémarrer le serveur {#4-restart-the-server}
 
 Une fois le fichier monté, redémarrez le serveur ToolJet.
 Au démarrage, ToolJet lit tous les fichiers `.tj_env.*` depuis `/app/` et les associe à leurs workspaces respectifs.
@@ -145,7 +145,7 @@ Si le fichier est supprimé, ToolJet désactivera automatiquement la configurati
 Les fichiers d'environnement ne sont lus qu'au démarrage. Tout changement effectué sur un fichier `.tj_env.*` pendant que le serveur est en cours d'exécution ne prendra effet qu'après un redémarrage du serveur.
 :::
 
-## Configuration Docker Compose
+## Configuration Docker Compose {#docker-compose-setup}
 
 Montez le fichier `.tj_env.*` depuis votre machine hôte dans le conteneur, à `/app/`. Vous pouvez monter des fichiers individuels ou un répertoire entier.
 
