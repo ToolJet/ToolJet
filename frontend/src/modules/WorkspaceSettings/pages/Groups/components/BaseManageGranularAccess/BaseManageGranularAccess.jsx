@@ -873,8 +873,8 @@ class BaseManageGranularAccess extends React.Component {
           { label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' },
         ];
 
-    // End-user groups cannot hold builder-level data source access; only query-run restriction
-    const isEndUserGroup = this.props?.groupPermission?.name === 'end-user';
+    // Groups with end-users cannot hold builder-level data source access; only query-run restriction
+    const isEndUserGroup = this.props?.groupPermission?.name === 'end-user' || hasEndUsers;
     this.setState((prevState) => ({
       modalTitle: `Add ${RESOURCE_NAME_MAPPING[resourceType].toLowerCase()} permissions`,
       resourceType,
