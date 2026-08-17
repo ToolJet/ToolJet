@@ -1,0 +1,82 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Confluence datasource",
+  "description": "A schema defining Confluence datasource",
+  "type": "api",
+  "source": {
+    "name": "Confluence",
+    "kind": "confluence",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": false,
+    "options": {
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "encrypted": true
+      },
+      "scopes": {
+        "type": "string"
+      },
+      "auth_url": {
+        "type": "string"
+      },
+      "access_token_url": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "allowed_auth_types": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "auth_url": {
+      "value": "https://auth.atlassian.com/authorize"
+    },
+    "access_token_url": {
+      "value": "https://auth.atlassian.com/oauth/token"
+    },
+    "add_token_to": {
+      "value": "header"
+    },
+    "header_prefix": {
+      "value": "Bearer "
+    },
+    "client_auth": {
+      "value": "body"
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "scopes": {
+      "value": "read:page:confluence write:page:confluence read:space:confluence write:space:confluence read:attachment:confluence write:attachment:confluence read:comment:confluence write:comment:confluence read:confluence-content.all read:confluence-space.summary read:confluence-user search:confluence offline_access"
+    }
+  },
+  "properties": {
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "A component for Confluence integration",
+      "oauth_configs": {
+        "allowed_field_groups": {
+          "authorization_code": ["client_id", "client_secret"]
+        },
+        "allowed_auth_types": ["oauth2"],
+        "allowed_grant_types": ["authorization_code"],
+        "allowed_scope_field": true,
+        "scopeHelperText": "Space-separated Atlassian scopes. These must also be added to your Atlassian app under Permissions. offline_access is appended automatically so tokens can be refreshed."
+      }
+    }
+  },
+  "required": ["client_id", "client_secret", "scopes"]
+}

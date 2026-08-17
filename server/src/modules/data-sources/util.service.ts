@@ -735,6 +735,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'bigquery',
         'databricks',
         'asana',
+        'confluence',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(

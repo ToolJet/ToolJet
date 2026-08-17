@@ -381,5 +381,15 @@
     "timestamp": "Mon, 08 Jun 2026 14:10:00 GMT",
     "repo": "",
     "tags": ["IT Service Management"]
+  },
+  {
+    "name": "Confluence",
+    "description": "Read and write Confluence Cloud pages, spaces, comments and attachments",
+    "version": "1.0.0",
+    "id": "confluence",
+    "author": "Tooljet",
+    "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
+    "repo": "",
+    "tags": ["Collaboration"]
   }
 ]
