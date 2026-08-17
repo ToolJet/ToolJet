@@ -31,6 +31,8 @@ export default class Grpcv2QueryService implements QueryService {
     _dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     try {
+      this.validateServiceConfigured(sourceOptions, queryOptions.service);
+
       const client = await this.createGrpcClient(sourceOptions, queryOptions.service);
 
       this.validateRequestData(queryOptions);
@@ -309,6 +311,23 @@ export default class Grpcv2QueryService implements QueryService {
 
       default:
         throw new GrpcOperationError(`Unsupported proto_files option: ${sourceOptions.proto_files}`);
+    }
+  }
+
+  private validateServiceConfigured(sourceOptions: SourceOptions, serviceName: string): void {
+    // #17537: every client builder validates the service against the LIVE
+    // source (reflection list, proto file, filesystem scan), so a service
+    // removed from the datasource configuration — but still exposed by the
+    // server or present in the proto files — kept executing. The
+    // configuration is the contract: when selected_services is set, a query
+    // may only target what it lists. An unset/empty selection is a legacy or
+    // unrestricted datasource and stays permissive.
+    const configured = sourceOptions.selected_services;
+    if (Array.isArray(configured) && configured.length > 0 && !configured.includes(serviceName)) {
+      throw new GrpcOperationError(
+        `Service ${serviceName} is no longer configured on this data source. ` +
+        `Update the query to use one of the configured services: ${configured.join(', ')}`
+      );
     }
   }
 
