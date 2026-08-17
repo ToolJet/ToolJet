@@ -119,16 +119,7 @@ export const Table = (props) => {
       ...componentMeta,
       properties: {
         ...componentMeta.properties,
-        defaultSortColumn: { type: 'select', displayName: 'Default sort column', options: defaultSortColumnOptions },
-        defaultSortDirection: {
-          type: 'select',
-          displayName: 'Default sort order',
-          options: [
-            { name: 'Ascending', value: 'asc' },
-            { name: 'Descending', value: 'desc' },
-            { name: 'Auto', value: 'auto' },
-          ],
-        },
+        defaultSortColumn: { ...componentMeta.properties?.defaultSortColumn, options: defaultSortColumnOptions },
       },
     }),
     [componentMeta, defaultSortColumnOptions]

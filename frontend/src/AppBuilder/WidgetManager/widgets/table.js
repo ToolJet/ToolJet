@@ -162,18 +162,21 @@ export const tableConfig = {
       type: 'select',
       displayName: 'Default sort column',
       options: [],
+      newLine: true,
+      fullWidth: true,
       validation: {
         schema: { type: 'string' },
         defaultValue: '',
       },
     },
     defaultSortDirection: {
-      type: 'select',
-      displayName: 'Default sort order',
+      type: 'switch',
+      displayName: 'Sort order',
+      isIcon: true,
       options: [
-        { name: 'Ascending', value: 'asc' },
-        { name: 'Descending', value: 'desc' },
-        { name: 'Auto', value: 'auto' },
+        { displayName: 'Ascending', value: 'asc', lucideIconName: 'sort-asc' },
+        { displayName: 'Descending', value: 'desc', lucideIconName: 'sort-desc' },
+        { displayName: 'Auto', value: 'auto', lucideIconName: 'refresh-ccw' },
       ],
       validation: {
         schema: { type: 'string' },
