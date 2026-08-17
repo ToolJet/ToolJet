@@ -48,6 +48,7 @@ import { FEATURES as SCIM_FEATURES } from '@modules/scim/constants/feature';
 import { FEATURES as WORKSPACE_BRANCHES_FEATURES } from '@modules/workspace-branches/constants/feature';
 import { FEATURES as CUSTOM_DOMAINS_FEATURES } from '@modules/custom-domains/constant/feature';
 import { FEATURES as DATA_QUERY_FOLDERS_FEATURES } from '@modules/data-query-folders/constants/features';
+import { FEATURES as FRONTEND_METRICS_FEATURES } from '@modules/frontend-metrics/constants/feature';
 
 const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
@@ -104,4 +105,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...WORKSPACE_BRANCHES_FEATURES,
   ...CUSTOM_DOMAINS_FEATURES,
   ...DATA_QUERY_FOLDERS_FEATURES,
+  ...FRONTEND_METRICS_FEATURES,
 };
