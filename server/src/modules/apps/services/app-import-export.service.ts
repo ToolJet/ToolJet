@@ -798,7 +798,14 @@ export class AppImportExportService {
     // and issues an extra app_versions query each, on a connection outside this transaction.
     const workflowApps = await manager
       .createQueryBuilder(App, 'app')
-      .select(['app.id AS id', 'app.name AS name'])
+      .select('app.id', 'id')
+      .addSelect(
+        `(SELECT av.app_name FROM app_versions av
+           WHERE av.app_id = app.id AND av.version_type = 'version'
+             AND av.is_stub = false AND av.app_name IS NOT NULL
+           ORDER BY av.is_synced DESC, av.updated_at DESC LIMIT 1)`,
+        'name'
+      )
       .where('app.id IN (:...ids)', { ids: workflowAppIds })
       // scoped: options.workflowId is untrusted JSON and may point at another workspace
       .andWhere('app.organization_id = :organizationId', { organizationId })
