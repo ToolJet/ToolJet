@@ -25,6 +25,12 @@ const ACCESSIBLE_RESOURCES_URL = `${ATLASSIAN_API_GATEWAY}/oauth/token/accessibl
 // request URL gets this prefix.
 const API_PATH_PREFIX = '/wiki/api/v2';
 
+// site hostname -> Atlassian cloud id. The mapping never changes for a given hostname (renaming a
+// site changes the hostname, and therefore the key), so entries do not need to expire. Shared
+// across datasources because it is keyed by hostname alone; a token that cannot reach the site is
+// still rejected by Atlassian on the request itself.
+const CLOUD_ID_CACHE = new Map<string, string>();
+
 export default class Confluence implements QueryService {
   // ---- option helpers ------------------------------------------------------
   // sourceOptions reaches this plugin in three shapes depending on the entry point:
@@ -45,24 +51,73 @@ export default class Confluence implements QueryService {
   }
 
   /**
-   * Base URL for a query: https://api.atlassian.com/ex/confluence/{cloudId}/wiki/api/v2.
-   * 3LO tokens are only valid against the Atlassian API gateway, addressed by cloud id — they
-   * never work against the site domain directly, which is why every query needs a site.
-   *
-   * The cloud id always comes from the datasource connection, never from the query itself: the
-   * site is a property of the connection, so pinning it once keeps every query on this datasource
-   * pointed at the same site and keeps queries portable.
+   * Hostname of the site this connection points at, from the `site_url` connection field.
+   * Accepts what the user has in their address bar in any of its usual shapes —
+   * `example.atlassian.net`, `https://example.atlassian.net`, `https://example.atlassian.net/wiki`.
    */
-  private baseUrl(sourceOptions: SourceOptions): string {
-    const cloudId = (this.option(sourceOptions, 'cloud_id') || '').trim();
-    if (!cloudId) {
+  private siteHostname(sourceOptions: SourceOptions): string {
+    const raw = (this.option(sourceOptions, 'site_url') || '').trim();
+    if (!raw) {
       throw new QueryError(
-        'Site not selected',
-        'Pick a site on the Confluence datasource ("Site" → "Get sites") so queries know which Confluence cloud id to call.',
-        { code: 'MISSING_CLOUD_ID' }
+        'Site not configured',
+        'Set the Site URL on the Confluence datasource (e.g. https://your-site.atlassian.net) so queries know which site to call.',
+        { code: 'MISSING_SITE_URL' }
       );
     }
-    return `${ATLASSIAN_API_GATEWAY}/ex/confluence/${encodeURIComponent(cloudId)}${API_PATH_PREFIX}`;
+
+    try {
+      // Bare hostnames have no scheme for the URL parser to work with, so give them one.
+      return new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).hostname.toLowerCase();
+    } catch {
+      throw new QueryError(
+        'Invalid Site URL',
+        `"${raw}" is not a valid Confluence site URL. Use the address of your site, e.g. https://your-site.atlassian.net.`,
+        { code: 'INVALID_SITE_URL' }
+      );
+    }
+  }
+
+  /**
+   * Base URL for a query: https://api.atlassian.com/ex/confluence/{cloudId}/wiki/api/v2.
+   *
+   * 3LO tokens are only valid against the Atlassian API gateway, addressed by cloud id — they never
+   * work against the site domain directly. The user configures the site by its URL (the value they
+   * actually know), so the hostname is translated to its cloud id here, against the sites the token
+   * can reach. The mapping is fixed for a given hostname, so it is cached per process.
+   */
+  private async baseUrl(sourceOptions: SourceOptions, accessToken: string): Promise<string> {
+    const hostname = this.siteHostname(sourceOptions);
+
+    const cached = CLOUD_ID_CACHE.get(hostname);
+    if (cached) return `${ATLASSIAN_API_GATEWAY}/ex/confluence/${encodeURIComponent(cached)}${API_PATH_PREFIX}`;
+
+    const sites = await this.fetchSites(accessToken);
+    const match = sites.find((site: any) => this.hostnameOf(site?.url) === hostname);
+
+    if (!match?.id) {
+      throw new QueryError(
+        'Site not accessible',
+        `The authorized Atlassian account cannot reach "${hostname}". ${
+          sites.length
+            ? `Sites it can reach: ${sites.map((site: any) => site.url).join(', ')}.`
+            : 'It has no accessible Confluence sites — check that the Confluence API is added to your Atlassian app.'
+        } Correct the Site URL, or authorize an account with access.`,
+        { code: 'SITE_NOT_ACCESSIBLE', hostname, accessibleSites: sites.map((site: any) => site.url) }
+      );
+    }
+
+    CLOUD_ID_CACHE.set(hostname, match.id);
+    return `${ATLASSIAN_API_GATEWAY}/ex/confluence/${encodeURIComponent(match.id)}${API_PATH_PREFIX}`;
+  }
+
+  /** Hostname of a site URL returned by Atlassian, for comparison against the configured one. */
+  private hostnameOf(url: string | undefined): string | undefined {
+    if (!url) return undefined;
+    try {
+      return new URL(url).hostname.toLowerCase();
+    } catch {
+      return undefined;
+    }
   }
 
   /** Access token for the current user, honouring multi-auth (per-user tokens). */
@@ -251,7 +306,7 @@ export default class Confluence implements QueryService {
       Accept: 'application/json',
     };
 
-    let url = `${this.baseUrl(sourceOptions)}${path}`;
+    let url = `${await this.baseUrl(sourceOptions, accessToken)}${path}`;
     for (const param of Object.keys(pathParams)) {
       url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
     }
@@ -482,7 +537,7 @@ export default class Confluence implements QueryService {
     };
   }
 
-  // ---- connection test & dynamic selectors ---------------------------------
+  // ---- connection test ------------------------------------------------------
 
   /**
    * The server resolves credentials before calling this, so a token is available once the
@@ -527,55 +582,28 @@ export default class Confluence implements QueryService {
     }
 
     // A grant covers whichever sites that account authorized, which is not necessarily the site
-    // this datasource is pinned to — most easily hit with per-user tokens, where each user's
-    // grant differs. Atlassian answers an unreachable cloud id with a bare 404, so name the
-    // mismatch here instead of letting every query fail opaquely.
-    const cloudId = (this.option(sourceOptions, 'cloud_id') || '').trim();
-    if (cloudId && !sites.some((site: any) => site?.id === cloudId)) {
+    // configured here — most easily hit with per-user tokens, where each user's grant differs.
+    // Atlassian answers an unreachable cloud id with a bare 404, so name the mismatch here
+    // instead of letting every query fail opaquely.
+    const hostname = this.siteHostname(sourceOptions);
+    if (!sites.some((site: any) => this.hostnameOf(site?.url) === hostname)) {
       throw new QueryError(
         'Connection could not be established',
-        `The authorized account cannot reach the site this datasource is pinned to. Sites it can reach: ${sites
+        `The authorized account cannot reach "${hostname}". Sites it can reach: ${sites
           .map((site: any) => `${site.name} (${site.url})`)
-          .join(', ')}. Pick one of those under "Site", or authorize an account with access.`,
-        { code: 'SITE_NOT_ACCESSIBLE', cloudId, accessibleSites: sites.map((site: any) => site.id) }
+          .join(', ')}. Correct the Site URL, or authorize an account with access.`,
+        { code: 'SITE_NOT_ACCESSIBLE', hostname, accessibleSites: sites.map((site: any) => site.url) }
       );
     }
 
     return { status: 'ok' };
   }
 
-  async invokeMethod(
-    methodName: string,
-    context: { user?: User; app?: App },
-    sourceOptions: SourceOptions,
-    _args?: any
-  ): Promise<any> {
-    if (methodName !== 'getSites') {
-      throw new QueryError('Method not found', `Method ${methodName} is not supported for the Confluence plugin`, {
-        availableMethods: ['getSites'],
-      });
-    }
-
-    const accessToken = this.accessToken(sourceOptions, context);
-    if (!accessToken) {
-      throw new QueryError('Authentication required', 'Authorize the Confluence datasource before fetching sites.', {
-        code: 'MISSING_ACCESS_TOKEN',
-      });
-    }
-
-    const sites = await this.fetchSites(accessToken);
-    return {
-      data: sites.map((site: any) => ({
-        key: site.id,
-        value: site.id,
-        label: `${site.name} (${site.url})`,
-        name: site.name,
-        url: site.url,
-      })),
-    };
-  }
-
-  /** The 3LO token is not tied to one site — this is how a token maps to its cloud ids. */
+  /**
+   * The 3LO token is not tied to one site — this is how a token maps to the sites it can reach,
+   * and to their cloud ids. Used to translate the configured Site URL into a cloud id, and to
+   * validate that mapping on a connection test.
+   */
   private async fetchSites(accessToken: string): Promise<any[]> {
     try {
       const response = await got(ACCESSIBLE_RESOURCES_URL, {

@@ -6,11 +6,12 @@ export interface SourceOptions {
   client_secret?: string;
   scopes?: string;
   /**
-   * Atlassian cloud id of the site this connection is pinned to, picked once on the datasource
-   * form by the `getSites` selector. A 3LO token is not tied to a site — the site is addressed
-   * in the URL — so one datasource means one site; connect a second datasource for a second site.
+   * Address of the Confluence site this connection points at, e.g. https://example.atlassian.net.
+   * Resolved to an Atlassian cloud id at query time, since 3LO tokens are only valid against the
+   * API gateway addressed by cloud id. One datasource means one site; connect a second datasource
+   * for a second site.
    */
-  cloud_id?: string;
+  site_url?: string;
   auth_url?: string;
   access_token_url?: string;
   grant_type?: string;

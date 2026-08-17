@@ -27,13 +27,16 @@ operations are out of scope for this plugin.
 
 OAuth 2.0 (3LO) only — client id/secret from an Atlassian developer app. Tokens are issued to an
 Atlassian account rather than to a site and are only valid against
-`https://api.atlassian.com/ex/confluence/{cloudId}`, so a cloud id is always needed. It is a
-**connection** setting, not a query one: pick **Site** on the data source after authorizing, and
-every query on that data source runs against it. *Get sites* lists the cloud ids the authorization
-covers via `/oauth/token/accessible-resources`. One data source means one site — connect a second
-data source to reach a second site.
+`https://api.atlassian.com/ex/confluence/{cloudId}`, so a cloud id is always needed.
 
-`testConnection()` also checks the pinned site is one the authorized account can actually reach,
+The site is a **connection** setting, not a query one: `site_url` on the data source, entered as the
+address the user already knows (`https://example.atlassian.net`). A cloud id is never asked for —
+Atlassian does not surface it in any UI — so `baseUrl()` translates the hostname to its cloud id by
+matching `/oauth/token/accessible-resources`, cached per hostname for the life of the process (the
+mapping is fixed; renaming a site changes the hostname and therefore the key). One data source means
+one site — connect a second data source to reach a second site.
+
+`testConnection()` checks the configured site is one the authorized account can actually reach,
 since a grant covers whichever sites that account consented to. This matters most with per-user
 tokens, where each user's grant differs; Atlassian answers an unreachable cloud id with a bare 404.
 

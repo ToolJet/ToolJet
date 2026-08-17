@@ -16,6 +16,7 @@ To connect to a Confluence data source in ToolJet, you can either click the **+ 
 Confluence authenticates through **OAuth 2.0 (3LO)**. Create an [OAuth 2.0 (3LO) app](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/) in the Atlassian developer console and add the Confluence API to it. Then provide:
 
 - **Client ID** and **Client secret** of the app
+- **Site URL**: the address of your Confluence site, e.g. `https://your-site.atlassian.net`
 - **Scope(s)**: space-separated scopes — see [Scopes](#scopes) below
 
 Copy the **Redirect URI** shown on the connection form and register it as the callback URL in your Atlassian app.
@@ -54,7 +55,7 @@ If you clear the field entirely, **Connect to Confluence** stops with *"Add at l
 
 The data source is authorized before it is saved:
 
-1. Fill in **Client ID**, **Client secret** and **Scope(s)**.
+1. Fill in **Client ID**, **Client secret**, **Site URL** and **Scope(s)**.
 2. Click **Connect to Confluence**. ToolJet opens the Atlassian consent screen in a new window.
 3. Approve the requested scopes. The window returns to ToolJet and the button changes to **Save data source**.
 4. Click **Save data source**. The authorization code is exchanged for tokens as part of the save, so the data source is only stored once the connection genuinely works.
@@ -66,7 +67,7 @@ Turn on **Authentication required for all users** if each ToolJet user should au
 Expired access tokens are refreshed automatically when queries run. If the refresh token is revoked, the next query re-opens the consent screen.
 
 :::info
-OAuth tokens are not tied to one site. Queries therefore need a **Site** selected in the query editor — see [Selecting a site](#selecting-a-site).
+OAuth tokens are not tied to one site, so the data source records which site it points at — see [Setting the site](#setting-the-site).
 :::
 
 ## Querying Confluence
@@ -81,14 +82,14 @@ Query results can be transformed using transformations. Refer to our transformat
 
 The plugin covers the v2 API: pages, blog posts, spaces, comments, labels, attachments, custom content, tasks, versions and content properties. Endpoints that exist only in the older v1 API — CQL search, user lookup, attachment upload and content restrictions — are not available; use a **[REST API](/docs/data-sources/restapi)** data source for those.
 
-### Selecting a site
+### Setting the site
 
-The site is set once on the data source, not per query. After authorizing, open the Confluence data source, click **Get sites** under **Site**, and choose a site — every query on that data source runs against it.
+The site is set once on the data source, not per query: enter it as **Site URL** on the connection form, and every query on that data source runs against it. Use the address you visit in the browser — `https://your-site.atlassian.net`. A bare hostname or a URL including `/wiki` works too.
 
-A site is always required: requests are addressed as `https://api.atlassian.com/ex/confluence/{cloudId}/...`, because an OAuth token is issued to an Atlassian account rather than to one site. **Get sites** only works after the data source has been authorized, so authorize first, then pick the site.
+A site is always required. Requests are addressed as `https://api.atlassian.com/ex/confluence/{cloudId}/...`, because an OAuth token is issued to an Atlassian account rather than to one site, so ToolJet translates the site URL into that cloud id using the authorized account's accessible sites. You never need to look the cloud id up yourself.
 
 :::info
-One data source connects to one site. To work with a second Confluence site, add a second Confluence data source and pick that site on it.
+One data source connects to one site. To work with a second Confluence site, add a second Confluence data source and set its **Site URL** accordingly.
 :::
 
 ### Filling in body fields
@@ -153,8 +154,9 @@ Returns attachment metadata, including a `downloadLink` for each file. Uploading
 
 | Message | Cause |
 | --- | --- |
-| *Site not selected* | No site is selected on the query. Click **Get sites** and pick one. |
-| *Authentication required* | **Get sites** was clicked on a data source that has not been connected. Re-open the data source and click **Connect to Confluence**. |
+| *Site not configured* | **Site URL** is empty on the data source. Set it to your site's address, e.g. `https://your-site.atlassian.net`. |
+| *Invalid Site URL* | **Site URL** is not a valid address. Use the form `https://your-site.atlassian.net`. |
+| *Site not accessible* | The authorized account cannot reach the site in **Site URL** — the error lists the sites it can reach. Correct the URL, or authorize an account with access. |
 | *The authorized Atlassian account has no accessible Confluence sites* | The app was authorized without the Confluence API added to it, or the account has no Confluence access. |
 | 401 / 403 | The token expired. ToolJet refreshes it automatically; if the refresh token was revoked, the next run re-opens the consent screen. |
 | *Missing OAuth scope* / *Unauthorized; scope does not match* | The token was issued without the scope this endpoint needs — the error names it. Add it to **Scope(s)** and to your Atlassian app, then **reconnect the data source**. Adding a scope does not upgrade a token that already exists, and refreshing keeps the original scopes. |
