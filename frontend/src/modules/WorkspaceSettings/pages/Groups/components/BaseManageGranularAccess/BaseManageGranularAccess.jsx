@@ -1051,11 +1051,22 @@ class BaseManageGranularAccess extends React.Component {
 
     const isRoleGroup = currentGroupPermission.name == 'admin';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
+    // Adding a data-source permission that grants nothing (no builder access, no restriction) is a no-op; block it.
+    // Edit left alone: legacy all-false end-user rows must stay editable (resource list).
+    const { canUse, canConfigure, canRunQuery } = this.state.initialPermissionStateDs;
+    const isEmptyDsPermission =
+      modalType === 'add' &&
+      resourceType === RESOURCE_TYPE.DATA_SOURCES &&
+      !canUse &&
+      !canConfigure &&
+      canRunQuery !== false;
     const addPermissionTooltipMessage = !newPermissionName
       ? 'Please input permissions name'
       : isCustom && this.getSelectedResources().length === 0
         ? 'Please select apps or select all apps option'
-        : '';
+        : isEmptyDsPermission
+          ? 'Select an access level or restrict query run'
+          : '';
     const isBasicPlan = this.props.isBasicPlan;
     const disableEditUpdate = currentGroupPermission.name == 'end-user' || isBasicPlan;
 
@@ -1142,7 +1153,8 @@ class BaseManageGranularAccess extends React.Component {
               disabled:
                 (modalType === 'add' && !newPermissionName) ||
                 (modalType === 'edit' && !hasChanges) ||
-                (isCustom && this.getSelectedResources().length === 0),
+                (isCustom && this.getSelectedResources().length === 0) ||
+                isEmptyDsPermission,
               tooltipMessage: addPermissionTooltipMessage,
             }}
             disableBuilderLevelUpdate={disableEditUpdate}
