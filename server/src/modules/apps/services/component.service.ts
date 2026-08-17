@@ -2,13 +2,15 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { Page } from 'src/entities/page.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
 import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
 import { CreateEventHandlerDto } from '../dto/event';
-import { LayoutDimensionUnits } from '../constants';
+import { APP_TYPES, LayoutDimensionUnits } from '../constants';
 import {
   IComponentsService,
   ComponentCreateContext,
@@ -156,6 +158,9 @@ export class ComponentsService implements IComponentsService {
         await this.assertNoParentCycle(parentWrites, appVersionId, manager);
       }
 
+      // For module apps, resolve ModuleContainer id to guard null parent writes
+      const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
+
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, {
           where: { id: componentId },
@@ -183,10 +188,18 @@ export class ComponentsService implements IComponentsService {
 
             await manager.update(Layout, { id: componentLayout.id }, layout);
           }
-          //Handle parent change cases. component.parent can be undefined if the element is moved form container to canvas
-          if (component) {
-            await manager.update(Component, { id: componentId }, { parent: component.parent });
+        }
+
+        //Handle parent change cases. component.parent can be undefined if the element is moved form container to canvas
+        if (component) {
+          let resolvedParent = component.parent;
+          if (moduleContainerId && !resolvedParent) {
+            const existing = await manager.findOne(Component, { where: { id: componentId }, select: ['id', 'type'] });
+            if (existing?.type !== 'ModuleContainer') {
+              resolvedParent = moduleContainerId;
+            }
           }
+          await manager.update(Component, { id: componentId }, { parent: resolvedParent });
         }
       }
     }, appVersionId);
@@ -292,6 +305,35 @@ export class ComponentsService implements IComponentsService {
     }
 
     return transformedComponents;
+  }
+
+  /**
+   * For module-type apps, resolves the ModuleContainer component id for the given version.
+   * Returns null for non-module apps or if no ModuleContainer exists.
+   */
+  protected async resolveModuleContainerId(
+    appVersionId: string,
+    manager: EntityManager
+  ): Promise<string | null> {
+    const appVersion = await manager.findOne(AppVersion, {
+      where: { id: appVersionId },
+      select: ['id', 'appId', 'homePageId'],
+      relations: ['app'],
+    });
+
+    if (!appVersion?.app || appVersion.app.type !== APP_TYPES.MODULE) {
+      return null;
+    }
+
+    const moduleContainer = await manager.findOne(Component, {
+      where: {
+        type: 'ModuleContainer',
+        pageId: appVersion.homePageId,
+      },
+      select: ['id'],
+    });
+
+    return moduleContainer?.id ?? null;
   }
 
   createComponentWithLayout(componentData: Component, layoutData: Layout[] = []) {
@@ -532,6 +574,17 @@ export class ComponentsService implements IComponentsService {
 
     const newComponents = this.transformComponentData(diff);
 
+    // For module apps, enforce that components are parented to the ModuleContainer
+    // instead of being placed on the root canvas (parent: null).
+    const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
+    if (moduleContainerId) {
+      for (const component of newComponents) {
+        if (!component.parent && component.type !== 'ModuleContainer') {
+          component.parent = moduleContainerId;
+        }
+      }
+    }
+
     // Validate the proposed graph BEFORE inserting. New components overlay the
     // existing tree so a cycle introduced by a buggy paste/import gets caught
     // at the DB boundary even if the client guard was bypassed.
@@ -573,7 +626,34 @@ export class ComponentsService implements IComponentsService {
       }
     });
 
-    await manager.save(Layout, componentLayouts);
+    // Upsert: check for existing layouts with the same (componentId, type) and update instead of insert
+    const layoutsToInsert: Layout[] = [];
+    for (const layout of componentLayouts) {
+      const componentId = layout.component?.id ?? layout.componentId;
+      if (componentId) {
+        const existing = await manager.findOne(Layout, {
+          where: { componentId, type: layout.type },
+        });
+        if (existing) {
+          await manager.update(Layout, { id: existing.id }, {
+            top: layout.top,
+            left: layout.left,
+            width: layout.width,
+            height: layout.height,
+            widthPx: layout.widthPx,
+            fillWidth: layout.fillWidth,
+            dimensionUnit: layout.dimensionUnit,
+          });
+        } else {
+          layoutsToInsert.push(layout);
+        }
+      } else {
+        layoutsToInsert.push(layout);
+      }
+    }
+    if (layoutsToInsert.length > 0) {
+      await manager.save(Layout, layoutsToInsert);
+    }
   }
 
   protected async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {
@@ -582,8 +662,11 @@ export class ComponentsService implements IComponentsService {
       await this.assertNoParentCycle(parentWrites, appVersionId, manager);
     }
 
+    // For module apps, resolve ModuleContainer id once for the entire batch
+    const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
+
     for (const componentId in diff) {
-      const { component } = diff[componentId];
+      let { component } = diff[componentId];
 
       const doesComponentExist = await manager.findAndCount(Component, {
         where: { id: componentId },
@@ -666,6 +749,12 @@ export class ComponentsService implements IComponentsService {
 
         await manager.update(Component, componentId, newComponentsData);
       } else {
+        // For module apps, prevent null parent (except for ModuleContainer itself)
+        if (moduleContainerId && Object.prototype.hasOwnProperty.call(component, 'parent') && !component.parent) {
+          if (componentData.type !== 'ModuleContainer') {
+            component = { ...component, parent: moduleContainerId };
+          }
+        }
         await manager.update(Component, componentId, component);
       }
     }
@@ -743,6 +832,7 @@ export class ComponentsService implements IComponentsService {
     manager: EntityManager
   ) {
     const parentWrites = this.collectParentWritesFromDiff(layoutDiff);
+    let moduleContainerId: string | null = null;
     if (Object.keys(parentWrites).length > 0) {
       // Signature doesn't carry appVersionId, so resolve it from the first
       // component's page. Single extra query — only fires when re-parenting.
@@ -753,6 +843,7 @@ export class ComponentsService implements IComponentsService {
       });
       if (sampleComponent?.page?.appVersionId) {
         await this.assertNoParentCycle(parentWrites, sampleComponent.page.appVersionId, manager);
+        moduleContainerId = await this.resolveModuleContainerId(sampleComponent.page.appVersionId, manager);
       }
     }
 
@@ -783,10 +874,18 @@ export class ComponentsService implements IComponentsService {
 
           await manager.update(Layout, { id: componentLayout.id }, layout);
         }
-        // Handle parent change cases. component.parent can be undefined if the element is moved from container to canvas
-        if (component) {
-          await manager.update(Component, { id: componentId }, { parent: component.parent });
+      }
+
+      // Handle parent change cases. component.parent can be undefined if the element is moved from container to canvas
+      if (component) {
+        let resolvedParent = component.parent;
+        if (moduleContainerId && !resolvedParent) {
+          const existing = await manager.findOne(Component, { where: { id: componentId }, select: ['id', 'type'] });
+          if (existing?.type !== 'ModuleContainer') {
+            resolvedParent = moduleContainerId;
+          }
         }
+        await manager.update(Component, { id: componentId }, { parent: resolvedParent });
       }
     }
   }
