@@ -48,13 +48,17 @@ export default class Confluence implements QueryService {
    * Base URL for a query: https://api.atlassian.com/ex/confluence/{cloudId}/wiki/api/v2.
    * 3LO tokens are only valid against the Atlassian API gateway, addressed by cloud id — they
    * never work against the site domain directly, which is why every query needs a site.
+   *
+   * The cloud id always comes from the datasource connection, never from the query itself: the
+   * site is a property of the connection, so pinning it once keeps every query on this datasource
+   * pointed at the same site and keeps queries portable.
    */
-  private baseUrl(queryOptions: QueryOptions): string {
-    const cloudId = (queryOptions.cloud_id || '').trim();
+  private baseUrl(sourceOptions: SourceOptions): string {
+    const cloudId = (this.option(sourceOptions, 'cloud_id') || '').trim();
     if (!cloudId) {
       throw new QueryError(
         'Site not selected',
-        'Pick a site in the query editor ("Get sites") so the query knows which Confluence cloud id to call.',
+        'Pick a site on the Confluence datasource ("Site" → "Get sites") so queries know which Confluence cloud id to call.',
         { code: 'MISSING_CLOUD_ID' }
       );
     }
@@ -247,7 +251,7 @@ export default class Confluence implements QueryService {
       Accept: 'application/json',
     };
 
-    let url = `${this.baseUrl(queryOptions)}${path}`;
+    let url = `${this.baseUrl(sourceOptions)}${path}`;
     for (const param of Object.keys(pathParams)) {
       url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
     }
@@ -519,6 +523,21 @@ export default class Confluence implements QueryService {
         'Connection could not be established',
         'The authorized Atlassian account has no accessible Confluence sites. Check that the Confluence API is added to your Atlassian app.',
         { code: 'NO_ACCESSIBLE_SITES' }
+      );
+    }
+
+    // A grant covers whichever sites that account authorized, which is not necessarily the site
+    // this datasource is pinned to — most easily hit with per-user tokens, where each user's
+    // grant differs. Atlassian answers an unreachable cloud id with a bare 404, so name the
+    // mismatch here instead of letting every query fail opaquely.
+    const cloudId = (this.option(sourceOptions, 'cloud_id') || '').trim();
+    if (cloudId && !sites.some((site: any) => site?.id === cloudId)) {
+      throw new QueryError(
+        'Connection could not be established',
+        `The authorized account cannot reach the site this datasource is pinned to. Sites it can reach: ${sites
+          .map((site: any) => `${site.name} (${site.url})`)
+          .join(', ')}. Pick one of those under "Site", or authorize an account with access.`,
+        { code: 'SITE_NOT_ACCESSIBLE', cloudId, accessibleSites: sites.map((site: any) => site.id) }
       );
     }
 

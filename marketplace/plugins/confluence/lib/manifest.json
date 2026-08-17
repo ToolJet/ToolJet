@@ -22,6 +22,9 @@
       "scopes": {
         "type": "string"
       },
+      "cloud_id": {
+        "type": "string"
+      },
       "auth_url": {
         "type": "string"
       },
@@ -75,6 +78,18 @@
         "allowed_grant_types": ["authorization_code"],
         "allowed_scope_field": true,
         "scopeHelperText": "Space-separated Atlassian scopes. These must also be added to your Atlassian app under Permissions. offline_access is appended automatically so tokens can be refreshed."
+      }
+    },
+    "cloud_id": {
+      "key": "cloud_id",
+      "label": "Site",
+      "type": "dynamic-selector",
+      "autoFetch": true,
+      "description": "The Confluence site this connection reads and writes. Authorize the datasource first, then pick a site — every query on this datasource runs against it. To use a second site, create a second Confluence datasource.",
+      "operation": {
+        "key": "get_sites",
+        "label": "Get sites",
+        "invokeMethod": "getSites"
       }
     }
   },

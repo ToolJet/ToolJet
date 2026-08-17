@@ -5,6 +5,12 @@ export interface SourceOptions {
   client_id?: string;
   client_secret?: string;
   scopes?: string;
+  /**
+   * Atlassian cloud id of the site this connection is pinned to, picked once on the datasource
+   * form by the `getSites` selector. A 3LO token is not tied to a site — the site is addressed
+   * in the URL — so one datasource means one site; connect a second datasource for a second site.
+   */
+  cloud_id?: string;
   auth_url?: string;
   access_token_url?: string;
   grant_type?: string;
@@ -30,6 +36,4 @@ export interface QueryOptions {
   };
   /** The spec's operation object, saved by the endpoint picker. */
   selectedOperation?: any;
-  /** Atlassian cloud id of the site to query, resolved by the `getSites` selector. */
-  cloud_id?: string;
 }
