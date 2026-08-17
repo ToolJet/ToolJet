@@ -81,6 +81,7 @@ module.exports = {
         {
           type: 'localeDropdown',
           position: 'right',
+          className: 'navbar-locale-dropdown',
         },
         {
           to: '/api',
@@ -89,20 +90,20 @@ module.exports = {
           activeBaseRegex: '^/api',
           className: 'navbar-api',
         },
-        {
-          href: 'https://www.tooljet.com/',
-          position: 'right',
-          label: 'Website',
-          className: 'navbar-signin',
-          'aria-label': 'Visit ToolJet Website',
-        },
-        {
-          href: 'https://www.tooljet.com/login',
-          position: 'right',
-          label: 'Sign in',
-          className: 'navbar-signin',
-          'aria-label': 'Signin to ToolJet',
-        },
+        // {
+        //   href: 'https://www.tooljet.com/',
+        //   position: 'right',
+        //   label: 'Website',
+        //   className: 'navbar-signin',
+        //   'aria-label': 'Visit ToolJet Website',
+        // },
+        // {
+        //   href: 'https://www.tooljet.com/login',
+        //   position: 'right',
+        //   label: 'Sign in',
+        //   className: 'navbar-signin',
+        //   'aria-label': 'Signin to ToolJet',
+        // },
         {
           href: 'https://www.tooljet.com/create-account',
           position: 'right',
