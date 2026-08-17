@@ -322,7 +322,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     folderId: string,
     appId: string,
     branchId?: string,
-    matchNullAsDefaultBranch = false
+    matchNullAsDefaultBranch = false,
+    manager?: EntityManager
   ): Promise<FolderApp> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const branchFilter = this.buildBranchFilter(branchId, matchNullAsDefaultBranch);
@@ -343,7 +344,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         branchId: branchId || null,
       });
       return await manager.save(FolderApp, newFolderApp);
-    });
+    }, manager);
   }
 
   protected addViewableFrontendFilter(

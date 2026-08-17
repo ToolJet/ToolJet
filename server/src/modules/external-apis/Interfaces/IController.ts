@@ -8,6 +8,8 @@ import {
   AppImportRequestDto,
   AutoDeployBodyDto,
   SaveVersionBodyDto,
+  CreateAppV2Dto,
+  RenameAppV2Dto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -59,4 +61,12 @@ export interface IExternalApisAppsController {
     appVersion: string,
     exportAllVersions: boolean
   ): Promise<any>;
+}
+
+export interface IExternalApisAppsControllerV2 {
+  // Creates a new app in the given workspace
+  createApp(workspaceIdentifier: string, dto: CreateAppV2Dto): Promise<any>;
+
+  // Renames/updates an app's name, slug, or folder within the given workspace
+  renameApp(workspaceIdentifier: string, appIdentifier: string, dto: RenameAppV2Dto): Promise<any>;
 }
