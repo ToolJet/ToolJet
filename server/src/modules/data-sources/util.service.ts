@@ -302,9 +302,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           refresh_token = tokenObj['refresh_token'] ?? null;
           await this.upsertUserTokenData(dataSourceOptionId, userId, access_token, refresh_token, manager);
         } else {
+          // Some plugins (e.g. salesforce) return extra fields alongside access_token/refresh_token
+          // (e.g. instance_url) that the plugin's run()/testConnection() also needs. Those aren't
+          // tokens, so they don't belong in datasource_user_token_data — push them back into options
+          // as regular encrypted fields, same as any other credential, so they keep flowing through
+          // the normal parseOptionsForUpdate -> CredentialsService save path.
           for (const [key, value] of accessDetails) {
             if (key === 'access_token') access_token = value;
-            if (key === 'refresh_token') refresh_token = value;
+            else if (key === 'refresh_token') refresh_token = value;
+            else options.push({ key, value, encrypted: true });
           }
           await this.upsertUserTokenData(dataSourceOptionId, null, access_token, refresh_token, manager);
         }
@@ -319,7 +325,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           manager
         );
 
-        // Strip OAuth flow keys and token keys from options
+        // Strip OAuth flow keys and token keys from options (any extra non-token fields pushed
+        // above, e.g. instance_url, are intentionally kept)
         options = options.filter(
           (option) =>
             !['provider', 'code', 'oauth2', 'tokenData', 'access_token', 'refresh_token'].includes(option['key'])
@@ -537,8 +544,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               });
               for (const env of allEnvs) {
                 let sourceOptions: any = {};
+                let defaultDsvo: DataSourceVersionOptions | null = null;
                 if (defaultDsv) {
-                  const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+                  defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
                     where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
                   });
                   sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
@@ -552,13 +560,18 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
                     sourceOptions[key] = { ...opt, credential_id: newCredential.id };
                   }
                 }
-                await manager.save(
+                const newDsvo = await manager.save(
                   manager.create(DataSourceVersionOptions, {
                     dataSourceVersionId: dsv.id,
                     environmentId: env.id,
                     options: sourceOptions,
                   })
                 );
+                // Clone OAuth token rows too — otherwise a datasource with an active OAuth
+                // connection appears disconnected on the newly created branch.
+                if (defaultDsvo) {
+                  await this.duplicateTokenData(defaultDsvo.id, newDsvo.id, manager);
+                }
               }
             }
             await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
@@ -604,8 +617,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             });
             for (const env of allEnvs) {
               let sourceOptions: any = {};
+              let defaultDsvo: DataSourceVersionOptions | null = null;
               if (defaultDsv) {
-                const defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
+                defaultDsvo = await manager.findOne(DataSourceVersionOptions, {
                   where: { dataSourceVersionId: defaultDsv.id, environmentId: env.id },
                 });
                 sourceOptions = defaultDsvo?.options ? JSON.parse(JSON.stringify(defaultDsvo.options)) : {};
@@ -619,13 +633,18 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
                   sourceOptions[key] = { ...opt, credential_id: newCredential.id };
                 }
               }
-              await manager.save(
+              const newDsvo = await manager.save(
                 manager.create(DataSourceVersionOptions, {
                   dataSourceVersionId: dsv.id,
                   environmentId: env.id,
                   options: sourceOptions,
                 })
               );
+              // Clone OAuth token rows too — otherwise a datasource with an active OAuth
+              // connection appears disconnected on the newly created branch.
+              if (defaultDsvo) {
+                await this.duplicateTokenData(defaultDsvo.id, newDsvo.id, manager);
+              }
             }
           }
 
@@ -756,7 +775,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (!options) return {};
 
     // Token data keys must not be saved to data_source_options — handled by upsertUserTokenData.
-    const TOKEN_KEYS = new Set(['access_token', 'refresh_token', 'tokenData', 'token_data']);
+    // Exception: intercom's `access_token` is a manually-typed personal access token, not an
+    // OAuth-managed field (intercom has no OAuth flow at all) — it must go through the normal
+    // credential-save path below, or a saved value would be silently discarded on every update.
+    const TOKEN_KEYS = new Set(
+      dataSource?.kind === 'intercom'
+        ? ['tokenData', 'token_data']
+        : ['access_token', 'refresh_token', 'tokenData', 'token_data']
+    );
 
     const resolvedOptions = [];
     for (const option of options) {
@@ -1089,6 +1115,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         isMultiAuthEnabled,
         userId
       );
+      // Extra fields alongside access_token/refresh_token (e.g. salesforce's instance_url) aren't
+      // tokens, so they don't belong in datasource_user_token_data — save them as regular encrypted
+      // options instead, same as any other credential, so run()/testConnection() can still see them.
+      const extraOptions: Array<{ key: string; value: any; encrypted: boolean }> = [];
+
       if (isMultiAuthEnabled) {
         // newTokenData is a plain object with user_id, access_token, refresh_token
         const tokenObj = newTokenData as Record<string, any>;
@@ -1099,8 +1130,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const tokenArr = newTokenData as Array<Record<string, any>>;
         for (const opt of tokenArr) {
           if (opt['key'] === 'access_token') accessToken = opt['value'];
-          if (opt['key'] === 'refresh_token') refreshToken = opt['value'];
+          else if (opt['key'] === 'refresh_token') refreshToken = opt['value'];
+          else extraOptions.push(opt as { key: string; value: any; encrypted: boolean });
         }
+      }
+
+      if (extraOptions.length) {
+        await this.updateOptions(dataSource.id, extraOptions, organizationId, environmentId);
       }
     } else {
       const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled, dataSource);
@@ -1375,7 +1411,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
     }
 
-    const parsedOptions = {};
+    const parsedOptions: Record<string, any> = {};
 
     for (const key of Object.keys(options)) {
       const option = options[key];
@@ -1396,24 +1432,28 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
     }
 
-    // Append OAuth tokens from datasource_user_token_data when dataSourceOptionId is provided
+    // Append OAuth tokens from datasource_user_token_data when dataSourceOptionId is provided.
+    // Not gated on guessing an "auth type" from options — plugin-native OAuth sources
+    // (googlesheetsv2, slack, salesforce, ...) don't use the auth_type/grant_type keys at all
+    // (those are REST-API-specific; plugin-native sources use authentication_type, or nothing
+    // for single-auth), so that heuristic silently skipped the lookup for them. A lookup for a
+    // non-OAuth datasource just finds no row via the indexed FK — harmless.
     if (dataSourceOptionId) {
-      const isOAuthSource =
-        parsedOptions['auth_type'] === 'oauth2' ||
-        parsedOptions['grant_type'] === 'authorization_code' ||
-        parsedOptions['multiple_auth_enabled'] === true;
-
-      if (isOAuthSource) {
-        const isMultiAuth = parsedOptions['multiple_auth_enabled'] === true;
-        if (isMultiAuth) {
-          const tokenRow = await this.getUserTokenData(dataSourceOptionId, user?.id);
-          parsedOptions['tokenData'] = tokenRow ? [{ user_id: user?.id, ...tokenRow }] : [];
-        } else {
-          const tokenRow = await this.getUserTokenData(dataSourceOptionId, null);
-          if (tokenRow) {
-            parsedOptions['access_token'] = tokenRow.access_token;
-            parsedOptions['refresh_token'] = tokenRow.refresh_token;
-          }
+      const isMultiAuth = parsedOptions['multiple_auth_enabled'] === true;
+      if (isMultiAuth) {
+        const tokenRow = await this.getUserTokenData(dataSourceOptionId, user?.id ?? null);
+        parsedOptions['tokenData'] = tokenRow ? [{ user_id: user?.id, ...tokenRow }] : [];
+      } else {
+        const tokenRow = await this.getUserTokenData(dataSourceOptionId, null);
+        if (tokenRow) {
+          parsedOptions['access_token'] = tokenRow.access_token;
+          parsedOptions['refresh_token'] = tokenRow.refresh_token;
+          // Some plugins (restapi, graphql, openapi, servicenow) don't read access_token/refresh_token
+          // directly — they go through the shared OAuth helper (plugins/*/common/lib/oauth.ts ->
+          // validateAndMaybeSetOAuthHeaders), which always reads `tokenData` regardless of multi-auth.
+          // For single-auth it expects tokenData to just BE the token object (see getCurrentToken in
+          // utils.helper.ts, single-auth branch: `return tokenData`). Populate both shapes.
+          parsedOptions['tokenData'] = { access_token: tokenRow.access_token, refresh_token: tokenRow.refresh_token };
         }
       }
     }
@@ -1568,6 +1608,29 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         `,
         [dataSourceVersionOptionId, encryptedAccessToken, encryptedRefreshToken]
       );
+    }
+  }
+
+  /**
+   * Copies all OAuth token rows from one DataSourceVersionOptions to another (decrypt + re-encrypt).
+   * Used whenever a new DSVO is cloned from an existing, already-connected one — e.g. auto-creating
+   * a git-sync branch DSV for a datasource that already existed — so the OAuth connection isn't
+   * silently lost on the new DSVO.
+   */
+  async duplicateTokenData(sourceDsvoId: string, targetDsvoId: string, manager: EntityManager): Promise<void> {
+    const tokenRows = await manager.find(DatasourceUserTokenData, {
+      where: { dataSourceVersionOptionId: sourceDsvoId },
+    });
+
+    for (const row of tokenRows) {
+      const accessToken = row.authToken
+        ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.authToken)
+        : null;
+      const refreshToken = row.refreshToken
+        ? await this.encryptionService.decryptColumnValue('credentials', 'value', row.refreshToken)
+        : null;
+
+      await this.upsertUserTokenData(targetDsvoId, row.userId ?? null, accessToken, refreshToken, manager);
     }
   }
 
