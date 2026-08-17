@@ -15,7 +15,7 @@ describe('Modules — Coarse Permissions: Custom Group Delete Override & Ownersh
 
   before(() => {
     cy.apiLogin();
-    cy.apiUpdateLicense('valid');
+    
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);

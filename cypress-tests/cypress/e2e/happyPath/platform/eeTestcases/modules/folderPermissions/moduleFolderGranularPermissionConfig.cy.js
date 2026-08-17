@@ -29,7 +29,7 @@ describe('Modules — Folder Granular Permission Configuration', { retries: 0 },
 
   before(() => {
     cy.apiLogin();
-    cy.apiUpdateLicense('valid');
+    
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);

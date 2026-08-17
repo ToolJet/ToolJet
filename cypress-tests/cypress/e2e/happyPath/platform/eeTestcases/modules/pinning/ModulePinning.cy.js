@@ -31,7 +31,7 @@ describe('Modules — ModuleViewer Pinning & Delete Guards', () => {
     consumerAppName = `Consume App ${shortId}`;
 
     cy.apiLogin();
-    cy.apiUpdateLicense('valid');
+    
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);

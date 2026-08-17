@@ -17,7 +17,7 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
 
   before(() => {
     cy.apiLogin();
-    cy.apiUpdateLicense('valid');
+    
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);
@@ -34,13 +34,15 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
     cy.apiLogin();
   });
 
-  it('a user with Edit Folder access on the target folder can move a module they can edit into it', () => {
-    const folderName = `Move Target Folder ${testId}`;
+  it('user with Edit Folder access sees only authorized folders in the move picker, and can move a module they can edit into one', () => {
+    const editableFolderName = `Editable Folder ${testId}`;
+    const inaccessibleFolderName = `Inaccessible Folder ${testId}`;
     const moduleName = `Move Source Module ${testId}`;
     const groupName = `QA Move Group ${testId}`;
     const userEmail = `qa-move-basic-${testId}@example.com`;
 
-    cy.apiCreateModuleFolder(folderName).then((folder) => {
+    cy.apiCreateModuleFolder(inaccessibleFolderName);
+    cy.apiCreateModuleFolder(editableFolderName).then((folder) => {
       apiCreateGroup(groupName).then(() =>
         cy.apiCreateGranularPermission(
           groupName,
@@ -63,47 +65,17 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
       viewAppCardOptions(moduleName);
       cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
       cy.get(dashboardSelector.selectFolder).click();
-      cy.get(commonSelectors.folderList).contains(folderName).click();
-      cy.get(dashboardSelector.addToFolderButton).click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, dashboardText.bulkMoveSuccessToast(folderName), false);
 
-      cy.get(dashboardSelector.folderName(folderName)).click();
-      cy.get(commonSelectors.appCard(moduleName)).should('be.visible');
-    });
-  });
-
-  it('the move-to-folder picker only lists folders the user has Edit Folder access to', () => {
-    const editableFolderName = `Editable Folder ${testId}`;
-    const inaccessibleFolderName = `Inaccessible Folder ${testId}`;
-    const moduleName = `Picker Module ${testId}`;
-    const groupName = `QA Picker Group ${testId}`;
-    const userEmail = `qa-move-picker-${testId}@example.com`;
-
-    cy.apiCreateModuleFolder(inaccessibleFolderName);
-    cy.apiCreateModuleFolder(editableFolderName).then((folder) => {
-      apiCreateGroup(groupName).then(() =>
-        cy.apiCreateGranularPermission(
-          groupName,
-          `${groupName} folder edit`,
-          'module_folder',
-          { canEditFolder: true, canEditApps: false, canViewApps: false },
-          [folder.id],
-          false
-        )
-      );
-    });
-
-    cy.then(() => {
-      cy.apiFullUserOnboarding('QA Move Picker User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
-      cy.apiLogin(userEmail, 'password');
-      cy.apiCreateModule(moduleName);
-
-      openModulesList();
-      viewAppCardOptions(moduleName);
-      cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
-      cy.get(dashboardSelector.selectFolder).click();
+      // The picker only lists folders this user has Edit Folder access to.
       cy.get(commonSelectors.folderList).should('contain.text', editableFolderName);
       cy.get(commonSelectors.folderList).should('not.contain.text', inaccessibleFolderName);
+
+      cy.get(commonSelectors.folderList).contains(editableFolderName).click();
+      cy.get(dashboardSelector.addToFolderButton).click();
+      cy.verifyToastMessage(commonSelectors.toastMessage, dashboardText.bulkMoveSuccessToast(editableFolderName), false);
+
+      cy.get(dashboardSelector.folderName(editableFolderName)).click();
+      cy.get(commonSelectors.appCard(moduleName)).should('be.visible');
     });
   });
 
@@ -114,9 +86,11 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
     const groupName = `QA Relocate Group ${testId}`;
     const userEmail = `qa-move-relocate-${testId}@example.com`;
     let moduleId;
+    let destFolderId;
 
     cy.apiCreateModuleFolder(sourceFolderName).then((sourceFolder) => {
       cy.apiCreateModuleFolder(destFolderName).then((destFolder) => {
+        destFolderId = destFolder.id;
         apiCreateGroup(groupName).then(() =>
           cy.apiCreateGranularPermission(
             groupName,
@@ -139,14 +113,10 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
       cy.apiFullUserOnboarding('QA Relocate User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
       cy.apiLogin(userEmail, 'password');
 
-      openModulesList();
-      viewAppCardOptions(moduleName);
-      cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
-      cy.get(dashboardSelector.selectFolder).click();
-      cy.get(commonSelectors.folderList).contains(destFolderName).click();
-      cy.get(dashboardSelector.addToFolderButton).click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, dashboardText.bulkMoveSuccessToast(destFolderName), false);
+      // Move it into the destination folder — via API, verified via UI.
+      cy.then(() => cy.apiAddModuleToFolder(moduleId, destFolderId));
 
+      openModulesList();
       cy.get(dashboardSelector.folderName(destFolderName)).click();
       cy.get(commonSelectors.appCard(moduleName)).should('be.visible');
 

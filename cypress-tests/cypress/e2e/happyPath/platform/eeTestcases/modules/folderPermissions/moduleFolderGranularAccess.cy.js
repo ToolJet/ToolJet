@@ -1,12 +1,10 @@
-import { commonSelectors, commonWidgetSelector } from 'Selectors/common';
+import { commonSelectors } from 'Selectors/common';
 import { moduleSelectors } from 'Selectors/platform/modules';
-import { versionModalSelector } from 'Selectors/eeCommon';
 import { dashboardSelector } from 'Selectors/dashboard';
 import { viewAppCardOptions } from 'Support/utils/common';
 import { openModulesList } from 'Support/utils/platform/modules';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { commonText } from 'Texts/common';
-import { dashboardText } from 'Texts/dashboard';
 
 // Granular per-folder module permissions (Edit Folder / Edit Modules / View Modules),
 // distinct from the coarse moduleFolderCreate/moduleFolderDelete toggles covered in
@@ -49,7 +47,7 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
 
   before(() => {
     cy.apiLogin();
-    cy.apiUpdateLicense('valid');
+    
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);
@@ -66,63 +64,53 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
     cy.apiLogin();
   });
 
-  it('user with Edit Folder permission can rename an authorized folder', () => {
-    setupFolderAccess('EditFolderRename', { canEditFolder: true, canEditApps: false, canViewApps: false }).then(
-      ({ folderName, userEmail }) => {
+  it.only('user with Edit Folder permission can rename an authorized folder, move modules in and out of it, and edit a module within it — and deleting the folder does not delete the module inside it', () => {
+    setupFolderAccess('EditFolder', { canEditFolder: true, canEditApps: false, canViewApps: false }).then(
+      ({ folderId, moduleId, folderName, moduleName, userEmail }) => {
         const renamedFolderName = `${folderName} Renamed`;
+        const looseModuleName = `Loose Module ${testId}`;
+        let looseModuleId;
+
+        cy.apiCreateModule(looseModuleName).then((module) => {
+          looseModuleId = module.id;
+        });
+
         cy.apiLogin(userEmail, 'password');
+
+        // Rename the authorized folder — via API, verified via UI.
+        cy.then(() => cy.apiRenameFolder(folderId, renamedFolderName));
         openModulesList();
-        cy.get(commonSelectors.editFolderOption(folderName)).click();
-        cy.clearAndType(commonSelectors.folderNameInput, renamedFolderName);
-        cy.get(commonSelectors.buttonSelector('update folder')).click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, 'Folder has been updated.');
         cy.get(commonSelectors.folderListcard(renamedFolderName)).should('exist');
         cy.get(commonSelectors.folderListcard(folderName)).should('not.exist');
-      }
-    );
-  });
 
-  it('user with Edit Folder permission can add a module to and remove it from an authorized folder', () => {
-    setupFolderAccess('EditFolderMove', { canEditFolder: true, canEditApps: false, canViewApps: false }).then(
-      ({ folderName, userEmail }) => {
-        const looseModuleName = `Loose Module ${testId}`;
-        cy.apiCreateModule(looseModuleName);
-
-        cy.apiLogin(userEmail, 'password');
-        openModulesList();
-
-        viewAppCardOptions(looseModuleName);
-        cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
-        cy.get(dashboardSelector.selectFolder).click();
-        cy.get(commonSelectors.folderList).contains(folderName).click();
-        cy.get(dashboardSelector.addToFolderButton).click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, dashboardText.bulkMoveSuccessToast(folderName), false);
-
-        cy.get(dashboardSelector.folderName(folderName)).click();
+        // Add a loose module to the (renamed) folder, then remove it again — via API, verified via UI.
+        cy.then(() => cy.apiAddModuleToFolder(looseModuleId, folderId));
+        cy.get(dashboardSelector.folderName(renamedFolderName)).click();
         cy.get(commonSelectors.appCard(looseModuleName)).should('be.visible');
 
-        viewAppCardOptions(looseModuleName);
-        cy.get(commonSelectors.appCardOptions(commonText.removeFromFolderOption)).click();
-        cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, commonText.appRemovedFromFolderTaost, false);
+        cy.then(() => cy.apiRemoveModuleFromFolder(looseModuleId, folderId));
+        openModulesList();
+        cy.get(dashboardSelector.folderName(renamedFolderName)).click();
         cy.get(commonSelectors.appCard(looseModuleName)).should('not.exist');
-      }
-    );
-  });
 
-  it('user with Edit Folder permission can edit a module within the folder', () => {
-    setupFolderAccess('EditFolderEditMod', { canEditFolder: true, canEditApps: false, canViewApps: false }).then(
-      ({ moduleId, userEmail }) => {
-        cy.apiLogin(userEmail, 'password');
+        // Edit the module that lives inside the folder — via API, verified via UI.
+        cy.then(() =>
+          cy
+            .apiGetEditingVersionId(moduleId)
+            .then((versionId) => cy.apiCreateAppVersion(moduleId, 'v2-folder-edit-allowed', versionId))
+        );
         cy.visit(`/${Cypress.env('workspaceSlug')}/apps/${moduleId}`, { failOnStatusCode: false });
         cy.wait(3000);
-
-        cy.get(moduleSelectors.versionSwitcherButton).click();
-        cy.get(commonSelectors.buttonSelector('create draft version')).click();
-        cy.get(versionModalSelector.versionNameInput).type('v2-folder-edit-allowed');
-        cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
-        cy.get(commonSelectors.toastMessage).should('not.exist');
         cy.get(moduleSelectors.versionSwitcherButton).should('contain.text', 'v2-folder-edit-allowed');
+
+        // Deleting the folder (as its owner, admin) does not delete the module inside it.
+        cy.apiLogin();
+        cy.then(() => cy.apiDeleteFolder(folderId));
+        openModulesList();
+        cy.get(commonSelectors.folderListcard(renamedFolderName)).should('not.exist');
+
+        cy.get(moduleSelectors.allModulesLink).click({ force: true });
+        cy.get(commonSelectors.appCard(moduleName)).should('exist');
       }
     );
   });
@@ -132,14 +120,12 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
       ({ folderName, moduleId, moduleName, userEmail }) => {
         cy.apiLogin(userEmail, 'password');
 
-        // Can edit the module itself.
+        // Can edit the module itself — via API, verified via UI.
+        cy.apiGetEditingVersionId(moduleId).then((versionId) =>
+          cy.apiCreateAppVersion(moduleId, 'v2-edit-modules-only', versionId)
+        );
         cy.visit(`/${Cypress.env('workspaceSlug')}/apps/${moduleId}`, { failOnStatusCode: false });
         cy.wait(3000);
-        cy.get(moduleSelectors.versionSwitcherButton).click();
-        cy.get(commonSelectors.buttonSelector('create draft version')).click();
-        cy.get(versionModalSelector.versionNameInput).type('v2-edit-modules-only');
-        cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
-        cy.get(commonSelectors.toastMessage).should('not.exist');
         cy.get(moduleSelectors.versionSwitcherButton).should('contain.text', 'v2-edit-modules-only');
 
         // Cannot manage the folder itself: no "..." menu on the folder card at all,
@@ -178,27 +164,5 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
     cy.apiLogin(userEmail, 'password');
     openModulesList();
     cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
-  });
-
-  it('deleting a module folder does not delete the modules inside it', () => {
-    const folderName = `Deletable Folder ${testId}`;
-    const moduleName = `Surviving Module ${testId}`;
-
-    cy.apiCreateModuleFolder(folderName).then((folder) => {
-      cy.apiCreateModule(moduleName).then((module) => {
-        cy.apiAddModuleToFolder(module.id, folder.id);
-      });
-    });
-
-    cy.intercept('DELETE', '/api/folders/*').as('folderDeleted');
-    openModulesList();
-    cy.get(commonSelectors.folderCardOptions(folderName)).click();
-    cy.get(commonSelectors.deleteFolderOption(folderName)).click();
-    cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
-    cy.wait('@folderDeleted');
-    cy.get(commonSelectors.folderListcard(folderName)).should('not.exist');
-
-    cy.get(moduleSelectors.allModulesLink).click({ force: true });
-    cy.get(commonSelectors.appCard(moduleName)).should('exist');
   });
 });

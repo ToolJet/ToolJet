@@ -829,10 +829,12 @@ Cypress.Commands.add(
         .task("dbConnection", {
           dbconfig: Cypress.env("app_db"),
           sql: `
-      SELECT ou.invitation_token 
+      SELECT ou.invitation_token
       FROM organization_users ou
       JOIN users u ON u.id = ou.user_id
       WHERE u.email='${email}'
+      AND ou.invitation_token IS NOT NULL
+      ORDER BY ou.created_at DESC
       LIMIT 1;`,
         })
         .then((resp) => {
@@ -1325,6 +1327,23 @@ Cypress.Commands.add("apiGetModuleFolderId", (folderName) => {
         const folder = response.body.folders.find((f) => f.name === folderName);
         if (!folder) throw new Error(`Module folder with name ${folderName} not found`);
         return folder.id;
+      });
+  });
+});
+
+Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/folders/${folderId}`,
+        headers,
+        body: { name: newName },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        return response.body;
       });
   });
 });
