@@ -83,9 +83,13 @@ The plugin covers the v2 API: pages, blog posts, spaces, comments, labels, attac
 
 ### Selecting a site
 
-Click **Get sites** in the query editor and choose the Confluence site to query. The selector lists every site the authorization covers and stores its Atlassian cloud id with the query.
+The site is set once on the data source, not per query. After authorizing, open the Confluence data source, click **Get sites** under **Site**, and choose a site — every query on that data source runs against it.
 
-Every query needs a site: requests are addressed as `https://api.atlassian.com/ex/confluence/{cloudId}/...`, because an OAuth token is issued to an Atlassian account rather than to one site. **Get sites** only works after the data source has been authorized.
+A site is always required: requests are addressed as `https://api.atlassian.com/ex/confluence/{cloudId}/...`, because an OAuth token is issued to an Atlassian account rather than to one site. **Get sites** only works after the data source has been authorized, so authorize first, then pick the site.
+
+:::info
+One data source connects to one site. To work with a second Confluence site, add a second Confluence data source and pick that site on it.
+:::
 
 ### Filling in body fields
 
