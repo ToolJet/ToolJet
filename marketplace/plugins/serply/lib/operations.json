@@ -1,0 +1,113 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Serply Operations",
+  "placeholder": "Operations supported by Serply plugin",
+  "type": "api",
+  "defaults": {
+    "operation": "search"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "placeholder": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "search",
+          "name": "Web Search"
+        },
+        {
+          "value": "news",
+          "name": "News Search"
+        },
+        {
+          "value": "reddit_post",
+          "name": "Reddit Post"
+        },
+        {
+          "value": "reddit_comments",
+          "name": "Reddit Comments"
+        }
+      ]
+    },
+    "search": {
+      "ws_query": {
+        "label": "Query",
+        "key": "ws_query",
+        "type": "codehinter",
+        "tooltip": "Search query string",
+        "placeholder": "coffee shops in brooklyn"
+      },
+      "ws_num": {
+        "label": "Number of results",
+        "key": "ws_num",
+        "type": "codehinter",
+        "tooltip": "How many results to return, between 10 and 100. Defaults to 10.",
+        "placeholder": "10"
+      }
+    },
+    "news": {
+      "ns_query": {
+        "label": "Query",
+        "key": "ns_query",
+        "type": "codehinter",
+        "tooltip": "News search query string",
+        "placeholder": "electric vehicles"
+      },
+      "ns_num": {
+        "label": "Number of results",
+        "key": "ns_num",
+        "type": "codehinter",
+        "tooltip": "How many results to return, between 10 and 100. Defaults to 10.",
+        "placeholder": "10"
+      }
+    },
+    "reddit_post": {
+      "rp_id": {
+        "label": "Post ID",
+        "key": "rp_id",
+        "type": "codehinter",
+        "tooltip": "Reddit post ID from the post URL",
+        "placeholder": "1vfemi1"
+      }
+    },
+    "reddit_comments": {
+      "rc_id": {
+        "label": "Post ID",
+        "key": "rc_id",
+        "type": "codehinter",
+        "tooltip": "Reddit post ID from the post URL",
+        "placeholder": "1vfemi1"
+      },
+      "rc_limit": {
+        "label": "Number of comments",
+        "key": "rc_limit",
+        "type": "codehinter",
+        "tooltip": "How many comments to return, between 1 and 100. Defaults to 25.",
+        "placeholder": "25"
+      },
+      "rc_sort": {
+        "label": "Sort",
+        "key": "rc_sort",
+        "type": "dropdown",
+        "description": "Select comment sort order",
+        "tooltip": "Order to return comments in",
+        "list": [
+          {
+            "value": "confidence",
+            "name": "Best"
+          },
+          {
+            "value": "top",
+            "name": "Top"
+          },
+          {
+            "value": "new",
+            "name": "New"
+          }
+        ]
+      }
+    }
+  }
+}
