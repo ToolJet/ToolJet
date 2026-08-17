@@ -441,7 +441,8 @@ const sidebars = {
                 'marketplace/plugins/marketplace-plugin-googlecalendar',
                 'marketplace/plugins/marketplace-plugin-ups',
                 'marketplace/plugins/marketplace-plugin-aftership',
-                'marketplace/plugins/marketplace-plugin-microsoft_graph'
+                'marketplace/plugins/marketplace-plugin-microsoft_graph',
+                'marketplace/plugins/marketplace-plugin-serply'
               ],
             },
           ],

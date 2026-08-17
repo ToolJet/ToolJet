@@ -1,3 +1,3 @@
 # Serply
 
-Documentation on: https://docs.serply.io
+Documentation on: https://serply.io/docs
