@@ -321,7 +321,12 @@ const useAppData = (
         });
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
-        if (!moduleMode && setConversation && setDocsConversation) {
+        // Modules go through the same AI init as apps: the server always returns an ai_conversation
+        // for every app/module (see server ee apps service), and getCreditBalance() sets
+        // aiFeaturesEnabled which gates the AI sidebar trigger. Gating this behind !moduleMode left
+        // modules without a conversation (crash on open) and without the credit fetch (trigger hidden
+        // unless the singleton store happened to be primed by the create-with-prompt flow).
+        if (setConversation && setDocsConversation) {
           setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs
@@ -405,15 +410,18 @@ const useAppData = (
 
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
-          const global_settings = mapKeys(
-            appData.editing_version?.global_settings || appData.global_settings,
-            (value, key) => camelCase(key)
-          );
-          if (!global_settings?.theme) {
-            global_settings.theme = baseTheme;
-          }
-          setGlobalSettings(global_settings);
         }
+        // Load global settings (app/module mode, theme, canvas styles) from the backend for BOTH apps
+        // and modules — the module editor's Canvas styles fields read these, so gating this to
+        // non-modules left module mode/theme unpopulated.
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings || appData.global_settings,
+          (value, key) => camelCase(key)
+        );
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
+        }
+        setGlobalSettings(global_settings);
         setPages(pages, moduleId);
         if (!moduleMode) {
           setPageSettings(
