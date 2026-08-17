@@ -6,7 +6,7 @@ title: User Lifecycle
 # User Lifecycle
 
 :::info
-Check Workspace docs [here](/docs/org-management/workspaces/workspace_overview).
+Check Workspace docs [here](/docs/3.0.0-LTS/org-management/workspaces/workspace_overview).
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -37,7 +37,7 @@ Check Workspace docs [here](/docs/org-management/workspaces/workspace_overview).
 
     </div>
 
-  - Invited user can onboard through SSO login,  without using an invitation link from the workspace [login page](/docs/user-authentication/general-settings#login-url)
+  - Invited user can onboard through SSO login,  without using an invitation link from the workspace [login page](/docs/3.0.0-LTS/user-authentication/general-settings#login-url)
 
     <div style={{textAlign: 'center'}}>
 
@@ -45,7 +45,7 @@ Check Workspace docs [here](/docs/org-management/workspaces/workspace_overview).
 
     </div>
 
-  - If `enable sign up` option in enabled in SSO [general settings](/docs/user-authentication/general-settings#enable-signup) for the workspace, user can setup account through SSO login without an invite from the workspace [login page](/docs/user-authentication/general-settings#login-url)
+  - If `enable sign up` option in enabled in SSO [general settings](/docs/3.0.0-LTS/user-authentication/general-settings#enable-signup) for the workspace, user can setup account through SSO login without an invite from the workspace [login page](/docs/3.0.0-LTS/user-authentication/general-settings#login-url)
 
     <div style={{textAlign: 'center'}}>
 

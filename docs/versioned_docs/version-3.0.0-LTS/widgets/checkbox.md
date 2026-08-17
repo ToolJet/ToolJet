@@ -30,7 +30,7 @@ The **Checkbox** component allows users to make a binary choice, such as selecti
 | On uncheck (deprecated)| Triggers whenever the checkbox input is unchecked. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

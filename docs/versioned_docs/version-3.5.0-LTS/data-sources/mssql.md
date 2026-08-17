@@ -136,7 +136,7 @@ GUI mode can be used to query MS SQL Server / Azure SQL Databases without writin
 <img className="screenshot-full" src="/img/datasource-reference/mssql/gui mode.png" alt="ToolJet mssql gui mode"/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/3.5.0-LTS/tutorial/transformations)
 :::
 
 </div>

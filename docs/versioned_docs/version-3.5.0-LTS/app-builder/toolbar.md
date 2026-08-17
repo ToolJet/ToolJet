@@ -75,7 +75,7 @@ Versioning is also helpful when working with **[multiple environments](/docs/dev
 ### Gitsync
 The `Gitsync` icon next to the versions dropdown allows you to sync your application with your GitHub repository.
 
-Read more about Gitsync **[here](/docs/gitsync)**. 
+Read more about Gitsync **[here](/docs/3.5.0-LTS/development-lifecycle/gitsync/overview)**. 
 ### Undo or Redo
 
 You can Undo or Redo any action performed on the canvas using the Undo and Redo buttons. 
@@ -91,7 +91,7 @@ You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to 
 The Share button allows you to share your applications with a unique URL generated automatically or edit the URL slug to personalize it. The share button will only be active when your application is released. 
 
 :::tip
-Learn more about **[Sharing](/docs/app-builder/share)** your ToolJet applications.
+Learn more about **[Sharing](/docs/3.5.0-LTS/app-builder/share)** your ToolJet applications.
 :::
 
 <div style={{textAlign: 'center'}}>

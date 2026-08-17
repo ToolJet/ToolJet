@@ -52,4 +52,4 @@ ToolJet supports generating queries with AI for the following data sources:
 - [Postgres](/docs/data-sources/postgresql/)
 - [MySQL](/docs/data-sources/mysql/)
 - [SQL Server](/docs/data-sources/mssql/)
-- [RunJS Queries](/docs/tooljet-concepts/run-js/)
+- [RunJS Queries](/docs/3.5.0-LTS/tooljet-concepts/run-js)

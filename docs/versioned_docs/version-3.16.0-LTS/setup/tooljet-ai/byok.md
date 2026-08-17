@@ -1,6 +1,7 @@
 ---
 id: bring-your-own-key
 title: Bring Your Own Key (BYOK)
+sidebar_label: Bring Your Own LLM Key
 ---
 
 <PlanBadge type="enterprise" />
@@ -9,10 +10,17 @@ Bring Your Own Key (BYOK) allows you to configure an API key from a supported LL
 
 This is useful when you want direct control over your AI usage and costs. Since the API key belongs to your LLM provider account, you get full visibility into consumption, can set your own rate limits and spending caps, and are billed directly by the provider, independently of your ToolJet subscription.
 
-BYOK does not require any infrastructure changes. Requests continue to be processed via ToolJet AI Cloud, with the only difference being the credentials used to authenticate them.
+BYOK does not require any infrastructure changes. Requests continue to be processed via ToolJet Managed AI Server, with the only difference being the credentials used to authenticate them.
+
+```mermaid
+flowchart LR
+    A["App Builder"] --> B["ToolJet"]
+    B --> C["ToolJet Managed<br/>AI Server"]
+    C --> D["LLM Provider<br/>(Your API key)"]
+```
 
 :::info
-AI requests still route through ToolJet AI Cloud when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/build-with-ai/tj-ai-enterprise).
+AI requests still route through ToolJet Managed AI Server when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/setup/tooljet-ai/tj-ai-enterprise).
 :::
 
 This means:
@@ -59,7 +67,7 @@ ToolJet will use your key to authenticate requests sent to your LLM provider.
         - `ANTHROPIC_API_KEY=<your-api-key>`: If you are using Anthropic.
         - `GEMINI_API_KEY=<base64-string-of-your-JSON>`: If you are using Gemini.
 2. Once you have configured the above variables, navigate to **Workspace Settings → LLM Key** in your ToolJet workspace and turn on the "Apply configuration from environment variable" toggle.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/env-var-v2.png" alt="llm key" />
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/env-var-v3.jpg" alt="llm key" />
 
 ## Supported Providers
 

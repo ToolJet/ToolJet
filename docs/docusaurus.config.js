@@ -24,16 +24,25 @@ module.exports = {
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+  trailingSlash: true,
   themeConfig: {
-    image: 'img/tooljet-ai-og-image.png',
-    announcementBar: {
-      id: 'support_us',
-      content:
-        'Star our repository on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> to stay updated with new features and contribute to our platform!',
-      backgroundColor: '#ECF0FE',
-      textColor: '#4368E3',
-      isCloseable: true,
+    mermaid: {
+      theme: { light: 'neutral', dark: 'dark' },
+      options: { securityLevel: 'loose' },
     },
+    image: 'img/tooljet-ai-og-image.png',
+    // announcementBar: {
+    //   id: 'support_us',
+    //   content:
+    //     'Star our repository on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> to stay updated with new features and contribute to our platform!',
+    //   backgroundColor: '#ECF0FE',
+    //   textColor: '#4368E3',
+    //   isCloseable: true,
+    // },
     docs: {
       sidebar: {
         hideable: true,
@@ -305,7 +314,7 @@ module.exports = {
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
           lastVersion: '3.16.0-LTS',
-          onlyIncludeVersions: process.env.linkCheck ? ['3.16.0-LTS'] : undefined,
+          onlyIncludeVersions: process.env.build_lts ? ['3.16.0-LTS'] : undefined,
           versions: {
             // Uncomment the following line to include the beta version in the sidebar
             // current: {
@@ -383,6 +392,14 @@ module.exports = {
           {
             from: '/docs/setup/cloud-v3-migration',
             to: '/docs/setup/upgrade-to-v3/',
+          },
+          {
+            from: '/docs/build-with-ai/bring-your-own-key',
+            to: '/docs/setup/tooljet-ai/bring-your-own-key',
+          },
+          {
+            from: '/docs/build-with-ai/tj-ai-enterprise',
+            to: '/docs/setup/tooljet-ai/tj-ai-enterprise',
           },
           {
             from: '/docs/tj-setup/observability-otel',

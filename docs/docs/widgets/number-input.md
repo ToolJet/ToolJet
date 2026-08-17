@@ -103,6 +103,7 @@ To add regex inside `Custom Validation`, you can use the below format:
 | Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your age here.` ).                       |
+| Disable step controls | Hides the increment/decrement arrows and prevents the value from changing on scroll or with the up/down arrow keys. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 

@@ -66,7 +66,7 @@ Available for line and bar charts, `Marker Color` defines the color of the line 
 | On double click     | Triggers whenever the user double clicks on the chart area.    |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get detailed information about all the **Actions**.
 :::
 
 ## Devices

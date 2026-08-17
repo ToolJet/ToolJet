@@ -18,7 +18,7 @@ If the builder attempts to add any of the aforementioned components inside the M
 
 ## Add Widgets to Modal
 
-To add widgets to the Modals please refer to **[Tutorial - Adding widgets to a modal](/docs/tutorial/adding-widget#adding-widgets-to-modal)**
+To add widgets to the Modals please refer to **[Tutorial - Adding widgets to a modal](/docs/3.0.0-LTS/tutorial/adding-widget#adding-widgets-to-modal)**
 
 </div>
 
@@ -48,7 +48,7 @@ Modal supports the following two events:
 - **On close**
 
 :::info
-Just like any other event on ToolJet, you can set multiple handlers for the events supported by Modal. Check all the [actions here](/docs/category/actions-reference).
+Just like any other event on ToolJet, you can set multiple handlers for the events supported by Modal. Check all the [actions here](/docs/3.0.0-LTS/tutorial/actions).
 :::
 
 </div>
@@ -84,7 +84,7 @@ There are currently no exposed variables for the component.
 | Trigger button label | It can be used to set the label of the trigger button. |
 
 :::info
-A modal can be triggered using the default trigger button, [action](/docs/actions/show-modal) or via [JavaScript](/docs/how-to/run-actions-from-runjs#show-modal).
+A modal can be triggered using the default trigger button, [action](/docs/actions/show-modal) or via [JavaScript](/docs/3.0.0-LTS/how-to/run-actions-from-runjs#show-modal).
 :::
 
 </div>

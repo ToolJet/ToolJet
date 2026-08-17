@@ -53,7 +53,7 @@ The table component supports the following column types:
 - **[Radio](#radio-deprecated)** - Deprecated
 - **[Badge](#badge-deprecated)** - Deprecated
 - **[Multiple Badges](#multiple-badges-deprecated)** - Deprecated
-- **[Tags](#tags-deprecated-1)** - Deprecated
+- **[Tags](#tags-deprecated)** - Deprecated
 
 ### String
 

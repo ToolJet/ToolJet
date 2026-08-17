@@ -20,7 +20,7 @@ Components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**
 | Use custom schema | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
 
 :::info
-If you need a step-by-step guide on using a **Form** component, you can checkout **[this](/docs/how-to/use-form-component)** guide.  
+If you need a step-by-step guide on using a **Form** component, you can checkout **[this](/docs/3.0.0-LTS/how-to/use-form-component)** guide.  
 :::
 
 </div>
@@ -155,7 +155,7 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
 
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.0.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

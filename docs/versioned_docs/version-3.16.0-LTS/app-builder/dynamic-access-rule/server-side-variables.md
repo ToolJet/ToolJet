@@ -99,7 +99,7 @@ Because `globals.currentUser` is resolved in the browser, a user can modify its 
 ## Related
 
 - [Setup Row Level Security](/docs/app-builder/dynamic-access-rule/row-level-security)
-- [Workspace Constants](/docs/security/constants/constants)
+- [Workspace Constants](/docs/security/constants)
 - [User Metadata](/docs/user-management/onboard-users/user-metadata)
 - [Accessing Current User's Properties](/docs/app-builder/custom-code/access-currentuser)
 

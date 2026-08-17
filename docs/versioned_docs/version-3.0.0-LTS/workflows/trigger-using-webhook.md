@@ -35,7 +35,7 @@ To create a workflow follow the following steps:
     
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/trigger-section.png" alt="Webhook option on the left panel" />
 
-5. Click on **Webhooks**. By default, the webhook trigger is disabled. Toggle the switch to **enable** the webhook trigger. Refer to the [trigger documentation](/docs/workflows/workflow-triggers#webhooks) for more information.
+5. Click on **Webhooks**. By default, the webhook trigger is disabled. Toggle the switch to **enable** the webhook trigger. Refer to the [trigger documentation](/docs/3.0.0-LTS/workflows/workflow-triggers#webhooks) for more information.
     
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/enable-webhook.png" alt="Enable Webhook" />
 
@@ -79,4 +79,4 @@ Let's take a look at an example of triggering a webhook using Postman.
 
 This was a basic example of how you can trigger workflows using webhooks. You can use webhooks to connect ToolJet to external applications and services for advanced use-cases and event-driven automation. 
 
-If you want to learn how to trigger workflows withing ToolJet, refer to **[this guide](/docs/workflows/trigger-workflow-from-app)**.
+If you want to learn how to trigger workflows withing ToolJet, refer to **[this guide](/docs/3.0.0-LTS/workflows/trigger-workflow-from-app)**.
