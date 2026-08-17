@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { UserPersonalAccessToken } from '@entities/user_personal_access_tokens.entity';
 import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
-import * as bcrypt from 'bcrypt';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 const defaultPatExpiry = 10; //in days

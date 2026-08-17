@@ -13,6 +13,9 @@ export class UserPersonalAccessToken extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  @Column({ name: 'user_id', type: 'uuid' })
+  userId: string;
+
   @ManyToOne(() => App, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'app_id' })
   app: App | null;
