@@ -85,7 +85,11 @@ export class VersionModule extends SubModule {
         ValidModuleByCorrelationGuard,
         GitSyncEditGuard,
       ],
-      exports: [VersionUtilService],
+      // VersionService is exported so the app-git module can inject it to run the git-aware
+      // save/delete flows (call update()/deleteVersion() for the DB work, then create/delete the
+      // git tag). Direction is app-git → versions (app-git imports VersionModule), which replaces
+      // the old versions → app-git moduleRef.get(AppGitService) hack.
+      exports: [VersionUtilService, VersionService],
     });
   }
 }

@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from './dto';
+import {
+  CreateUserDto,
+  GetWorkspaceUsersByGroupsDto,
+  UpdateGivenWorkspaceDto,
+  UpdateUserDto,
+  WorkspaceDto,
+} from './dto';
 import { ListGroupsQueryDto, UpdateGroupExternalDto } from './dto/groups.dto';
 import { IExternalApisService } from './Interfaces/IService';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
@@ -36,6 +42,9 @@ export class ExternalApisService implements IExternalApisService {
     throw new Error('Method not implemented.');
   }
   async deleteGroup(_workspaceId: string, _groupId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  async getWorkspaceUsersByGroups(_workspaceId: string, _body: GetWorkspaceUsersByGroupsDto): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

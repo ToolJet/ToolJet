@@ -33,8 +33,8 @@ export class OrganizationGitSync extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ name: 'is_branching_enabled', nullable: false, default: true })
-  isBranchingEnabled: boolean;
+  @Column({ name: 'is_branching_enabled', nullable: false, default: false })
+  isBranchingEnabled: boolean = false;
 
   @Column({ name: 'schema_version', nullable: false, default: '1.0.0' })
   schemaVersion: string;

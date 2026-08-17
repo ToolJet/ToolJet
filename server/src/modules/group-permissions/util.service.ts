@@ -74,7 +74,10 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       if (granularPerm.type === ResourceType.APP || granularPerm.type === ResourceType.WORKFLOWS) {
         if (granularPerm.appsGroupPermissions?.canEdit) return true;
       }
-      if (granularPerm.type === ResourceType.FOLDER) {
+      // Workflow folders follow the same edit-tier rule as plain FOLDER — view-only stays
+      // end-user-safe. Module folders are stricter (see checkIfBuilderLevelResourcesPermissions:
+      // modules aren't end-user-visible at all, so ANY module-folder grant counts there instead).
+      if (granularPerm.type === ResourceType.FOLDER || granularPerm.type === ResourceType.WORKFLOW_FOLDER) {
         const fp = granularPerm.foldersGroupPermissions;
         if (fp?.canEditFolder || fp?.canEditApps) return true;
       }

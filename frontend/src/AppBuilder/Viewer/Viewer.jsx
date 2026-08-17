@@ -23,6 +23,7 @@ export const Viewer = ({
   moduleId = 'canvas',
   switchDarkMode,
   environmentId,
+  environmentName,
   versionId,
   moduleMode = false,
   isHydrating = false,
@@ -36,7 +37,7 @@ export const Viewer = ({
     moduleId,
     darkMode,
     'view',
-    { environmentId, versionId, componentName },
+    { environmentId, environmentName, versionId, componentName },
     moduleMode,
     false,
     appSlug
@@ -197,8 +198,8 @@ export const Viewer = ({
                                 isPagesSidebarHidden || currentLayout === 'mobile'
                                   ? 'auto'
                                   : position === 'top'
-                                    ? '0px'
-                                    : '256px',
+                                  ? '0px'
+                                  : '256px',
                             }}
                           >
                             <div

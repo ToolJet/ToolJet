@@ -29,6 +29,7 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
@@ -640,17 +641,14 @@ export class AppImportExportService {
             const byCoRelId = await manager.findOne(AppVersion, {
               where: { co_relation_id: moduleAppId.versionIdentifier, appId: resolvedId },
             });
-            versionDbId = byCoRelId?.id;
-
-            if (!versionDbId) {
-              const byRefId = await manager.findOne(AppVersion, {
+            let resolvedVersion = byCoRelId;
+            if (!resolvedVersion) {
+              resolvedVersion = await manager.findOne(AppVersion, {
                 where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
               });
-              versionDbId = byRefId?.id;
             }
-            // Only a resolved pin counts — an unresolvable pin (e.g. cross-workspace import)
-            // falls through to branch-local resolution below and must be treated as unpinned.
-            isPinnedToVersion = Boolean(versionDbId);
+            versionDbId = resolvedVersion?.id;
+            isPinnedToVersion = Boolean(versionDbId) && Boolean(resolvedVersion?.isSynced);
           }
 
           // Fall through to branch-local resolution when:
@@ -1628,16 +1626,21 @@ export class AppImportExportService {
     //     ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
     //     : importingAppVersions;
 
+    // Whether git sync is enabled for the workspace. In a git-enabled workspace every
+    // branch (including the default) carries a single editable version — the one-version-
+    // per-branch git contract — so a file import must collapse to a single version. A
+    // non-git workspace keeps full version history, so all versions are imported.
+    const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
+
     // When importing multiple versions, select the right versions to import based on context:
     // - Cloning on a sub-branch (cloning=true, branchId provided): prefer non-stub BRANCH-type
     //   versions matching the source branchId. Fall back to VERSION-type if none found.
     // - Git hydrate (isGitApp + branchId): pass all (pull.service.ts re-parents).
-    // - File import onto a sub-branch (!isGitApp + !cloning + branchId): keep ONLY
-    //   the latest version. Sub-branches have a single editable BRANCH-type DRAFT —
-    //   importing history would create rows the sub-branch can't represent. Older
-    //   versions in the JSON are dropped.
-    // - All other cases (file import without branch): skip BRANCH-type versions,
-    //   only import VERSION-type.
+    // - File import into a git-enabled workspace (!isGitApp + !cloning + git ON): keep ONLY
+    //   the latest version — the one-version-per-branch contract. Older versions in the JSON
+    //   are dropped.
+    // - File import into a non-git workspace (git OFF): import ALL versions, skipping only
+    //   BRANCH-type rows (keep VERSION-type).
     // - Single version: allow through as-is (will be adapted in createAppVersionsForImportedApp).
     let filteredAppVersions: any[];
     if (importingAppVersions.length > 1) {
@@ -1657,9 +1660,9 @@ export class AppImportExportService {
         // (the original cross-workspace-import rule) leaves zero versions and crashes
         // hydration with "No versions found after import".
         filteredAppVersions = importingAppVersions;
-      } else if (!isGitApp && !cloning && branchId) {
-        // File import onto a sub-branch — keep only the latest version. Older
-        // versions are dropped (sub-branches carry one editable DRAFT, no history).
+      } else if (!isGitApp && !cloning && isGitSyncEnabled) {
+        // File import into a git-enabled workspace — keep only the latest version.
+        // Older versions are dropped (one editable version per branch, no history).
         const latest = this.pickLatestVersionFromImport(importingAppVersions);
         filteredAppVersions = latest ? [latest] : [];
       } else {
@@ -2418,8 +2421,10 @@ export class AppImportExportService {
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
+            // Deduplicate layouts by type to prevent duplicate layout rows on import
+            const uniqueLayouts = deduplicateLayoutsByType(componentLayout);
             await Promise.all(
-              componentLayout.map(async (layout) => {
+              uniqueLayouts.map(async (layout) => {
                 const newLayout = new Layout();
                 newLayout.type = layout.type;
                 newLayout.top = layout.top;
@@ -3355,11 +3360,9 @@ export class AppImportExportService {
     let currentEnvironmentId: string;
 
     // Check if git sync is fully enabled for the workspace (license + provider + branch).
-    const {
-      isEnabled: isGitSyncConfigured,
-      isMultiBranchingEnabled,
-      options: gitSyncOptions,
-    } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
+    const { isEnabled: isGitSyncConfigured, options: gitSyncOptions } = await this.gitSyncConfigsUtilService.getDetails(
+      user?.organizationId
+    );
     const importDefaultBranchId = gitSyncOptions.defaultBranch?.id ?? null;
     // Workflows are branch-agnostic — they are not synced to git and must not be
     // scoped to a branch or use the BRANCH version type, otherwise the versions
@@ -3450,13 +3453,14 @@ export class AppImportExportService {
 
         // chk_app_versions_branch_metadata requires app_name AND slug to be non-null
         // whenever branch_id IS NOT NULL. Imports may carry NULL metadata (e.g. hydrate
-        // temp apps, partial exports) — fall back to a random UUID placeholder for the
-        // slug so the INSERT doesn't violate the CHECK. Workflows are exempt from the
-        // CHECK itself (branch_id is always NULL for them) but still get real metadata
-        // here now. importMeta?.slug carries the exported slug (see createImportedAppForUser)
-        // for every type. If there's a real candidate slug (not the random fallback),
-        // reuse it unless it's already taken — that lets a deleted app's slug be reclaimed
-        // on re-import instead of always minting a fresh one.
+        // temp apps, partial exports) — fall back to the freshly imported app's own id
+        // (guaranteed unique, matches the AppsUtilService.create() placeholder convention)
+        // so the INSERT doesn't violate the CHECK. Workflows are exempt from the CHECK
+        // itself (branch_id is always NULL for them) but still get real metadata here now.
+        // importMeta?.slug carries the exported slug (see createImportedAppForUser) for
+        // every type. If there's a real candidate slug (not the fallback), reuse it unless
+        // it's already taken — that lets a deleted app's slug be reclaimed on re-import
+        // instead of always minting a fresh one.
         //
         // Slug uniqueness is enforced by enforce_app_versions_default_branch_slug_unique which
         // is GLOBAL (no org scope). Use the transaction manager so we also see slugs already
@@ -3475,13 +3479,13 @@ export class AppImportExportService {
             .andWhere('av.app_id != :appId', { appId: importedApp.id })
             .getCount();
           if (slugTakenByOther > 0) {
-            resolvedSlug = uuid();
+            resolvedSlug = importedApp.id;
           } else {
             resolvedSlug = rawSlug;
             assignedSlugsThisImport.add(rawSlug);
           }
         } else {
-          resolvedSlug = uuid();
+          resolvedSlug = importedApp.id;
         }
         const resolvedAppName = appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id;
 
@@ -3504,10 +3508,15 @@ export class AppImportExportService {
             isWorkflow || versionStatus !== AppVersionStatus.DRAFT
               ? importDefaultBranchId
               : (branchId ?? importDefaultBranchId),
-          // Single-branching: git sync is enabled but multi-branching is off. Imported apps
-          // must be marked synced so they participate in the default-branch git flow
-          // (unsynced rows are treated as new/uncommitted content and can't be pushed).
-          isSynced: isGitSyncConfigured && !isMultiBranchingEnabled ? true : undefined,
+          // Imported apps and modules must be marked synced whenever git sync is enabled —
+          // regardless of single- vs multi-branch mode, and regardless of whether this version
+          // ends up DRAFT or PUBLISHED (e.g. a 0-draft export collapses to a single PUBLISHED
+          // version) — so they participate in the default-branch git flow (unsynced rows are
+          // treated as new/uncommitted content and can't be pushed). Workflows are excluded —
+          // they don't sync via git. Sub-branch (feature-branch) imports are also excluded:
+          // that's genuinely new, unpushed content on that branch, so the push flow still
+          // needs to pick it up.
+          isSynced: isGitSyncConfigured && !isWorkflow && !isSubBranch ? true : undefined,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
@@ -3759,7 +3768,7 @@ export class AppImportExportService {
       updatedAt: new Date(),
       ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
       ...(importMeta && {
-        slug: uuid(),
+        slug: importedApp.id,
         appName: importMeta.appName,
         icon: importMeta.icon,
         isPublic: importMeta.isPublic,
@@ -4092,6 +4101,13 @@ export class AppImportExportService {
 
       if (eventDefinition?.actionId == 'set-table-page' && oldComponentToNewComponentMapping[eventDefinition.table]) {
         eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
+      }
+
+      if (
+        eventDefinition?.actionId === 'scroll-component-into-view' &&
+        oldComponentToNewComponentMapping[eventDefinition.componentId]
+      ) {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
       }
 
       event.event = eventDefinition;

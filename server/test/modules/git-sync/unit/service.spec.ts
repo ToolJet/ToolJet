@@ -1,3 +1,4 @@
+/** @group gitsync */
 import { GitSyncService } from '@ee/git-sync/service';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 

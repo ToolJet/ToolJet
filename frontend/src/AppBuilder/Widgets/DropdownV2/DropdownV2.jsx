@@ -23,7 +23,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -332,6 +332,8 @@ export const DropdownV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  useFormClear(() => setInputValue(null));
+
   const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
 
   const menuContentWidth = useMemo(() => {
@@ -411,8 +413,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-            ? 'var(--text-disabled)'
-            : 'var(--text-primary)',
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),

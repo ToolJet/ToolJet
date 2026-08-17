@@ -16,6 +16,7 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
+  AiSources,
 } from '../../../common/components/DataSourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
@@ -128,7 +129,8 @@ class DataSourceManagerComponent extends React.Component {
     pluginsService
       .findAll()
       .then(({ data = [] }) => {
-        this.setState({ plugins: data, pluginsLoaded: true });
+        const sortedPlugins = [...data].sort((a, b) => a.name.localeCompare(b.name));
+        this.setState({ plugins: sortedPlugins, pluginsLoaded: true });
       })
       .catch((error) => {
         this.setState({ pluginsLoaded: true });
@@ -645,6 +647,7 @@ class DataSourceManagerComponent extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      ais: AiSources,
       plugins: this.state.plugins,
       filteredDatasources: this.state.filteredDatasources,
     };
@@ -677,6 +680,12 @@ class DataSourceManagerComponent extends React.Component {
         key: '#cloudstorage',
         list: allDataSourcesList.cloudStorages,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+      },
+      {
+        type: 'AI',
+        key: '#ai',
+        list: allDataSourcesList.ais,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.ais, 'AI'),
       },
       {
         type: 'Plugins',
@@ -1067,8 +1076,8 @@ class DataSourceManagerComponent extends React.Component {
       const activeKey = Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, key)
         ? key
         : Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, camelize(key))
-          ? camelize(key)
-          : key;
+        ? camelize(key)
+        : key;
       if (normalizedSavedOptions[activeKey] === undefined) normalizedSavedOptions[activeKey] = { value: '' };
       if (normalizedCurrentOptions[activeKey] === undefined) normalizedCurrentOptions[activeKey] = { value: '' };
     });
@@ -1085,8 +1094,8 @@ class DataSourceManagerComponent extends React.Component {
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const OAuthDs = [
       'slack',
       'zendesk',
@@ -1241,17 +1250,6 @@ class DataSourceManagerComponent extends React.Component {
                       </span>
                     </ToolTip>
                   )}
-                  {this.props.tags &&
-                    this.props.tags.map((tag) => {
-                      if (tag === 'AI') {
-                        return (
-                          <div key={tag} className="tag-container">
-                            <SolidIcon name="AI-tag" />
-                            <span>{tag}</span>
-                          </div>
-                        );
-                      }
-                    })}
                 </div>
               </div>
               {!isSampleDb && (

@@ -46,6 +46,11 @@ const LicenseTooltip = ({
           `${feature} is not included in your
           current plan`
         }`;
+      case feature === 'GitSync' &&
+        isExpired &&
+        (!isAvailable || limits?.[paidFeatures?.[feature]] === false) &&
+        !allowedFeaturesOnExpiry.includes(feature):
+        return `${customMessage ?? 'Your plan has expired. Renew your plan or disable git sync to continue.'}`;
       case (!isLicenseValid || isExpired) &&
         (!isAvailable || limits?.[paidFeatures?.[feature]] === false) &&
         !allowedFeaturesOnExpiry.includes(feature):

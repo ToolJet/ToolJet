@@ -52,7 +52,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
         const appTags = data?.meta_data?.tags || [];
         setTags(
           appTags.map((tag) => {
-            const [, version] = tag.name.split('/');
+            const version = tag.name.split('/').slice(1).join('/');
             return {
               label: version || tag.name,
               commitSha: tag.commit?.sha,
@@ -104,6 +104,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   const localVersionOptions = developmentVersions
     .filter((version) => (version.versionType || version.version_type) === 'version')
     .filter((version) => !isSourcedFromBranch(version))
+    .filter((version) => version.status !== 'DRAFT')
     .map((version) => ({
       label: version.name,
       commitSha: null,
@@ -115,7 +116,13 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       // same signal VersionDropdownItem.jsx uses.
       isReleased: version.id === releasedVersionId,
     }));
-  const dropdownOptions = [LATEST_MAIN_OPTION, ...localVersionOptions, ...tags];
+
+  // Git tags that share a label with a local released version are redundant — the local
+  // version entry is richer (it carries a versionId for DB-level branching). Drop the
+  // duplicate tag so each version name appears exactly once in the dropdown.
+  const localVersionLabels = new Set(localVersionOptions.map((v) => v.label));
+  const uniqueTags = tags.filter((t) => !localVersionLabels.has(t.label));
+  const dropdownOptions = [LATEST_MAIN_OPTION, ...localVersionOptions, ...uniqueTags];
   const isLoadingOptions = isLoadingTags || isLoadingVersions;
 
   const validateBranchName = (name) => {
@@ -147,11 +154,10 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
 
     setIsCreating(true);
     try {
-      // Find the default (main) branch ID to use as source
       const defaultBranch = workspaceBranches.find((b) => b.is_default || b.isDefault);
       const sourceBranchId = defaultBranch?.id || null;
 
-      const newBranch = await workspaceActions.createBranch(
+      await workspaceActions.createBranch(
         branchName.trim(),
         sourceBranchId,
         selectedOption.commitSha || undefined,
@@ -159,23 +165,8 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
         selectedOption.isLocalVersion ? selectedOption.versionId : undefined
       );
 
-      toast.success('Branch was created successfully');
-
-      // Switch to the new branch using the backend API to get resolvedAppId
-      const switchResult = await workspaceBranchesService.switchBranch(newBranch.id, appId);
-      workspaceActions.switchBranch(newBranch.id);
-
+      toast.success('Creating branch. It will show up in the list once ready.', { style: { maxWidth: '640px' } });
       onClose();
-
-      // Navigate based on whether app exists on the new branch
-      const pathParts = window.location.pathname.split('/');
-      const resolvedAppId = switchResult?.resolvedAppId;
-      if (resolvedAppId) {
-        window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
-      } else {
-        sessionStorage.setItem('git_sync_toast', 'This app does not exist for this branch on ToolJet');
-        window.location.href = `/${pathParts[1]}`;
-      }
     } catch (error) {
       console.error('Error creating branch:', error);
       if (error?.statusCode === 409) {

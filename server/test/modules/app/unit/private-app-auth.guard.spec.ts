@@ -65,13 +65,7 @@ describe('PrivateAppAuthGuard', () => {
       const ctx = makeContext('my-app', { 'tj-workspace-id': 'org-uuid-1' });
       await guard.canActivate(ctx);
 
-      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith(
-        'my-app',
-        'org-uuid-1',
-        undefined,
-        undefined,
-        undefined
-      );
+      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app', 'org-uuid-1', undefined, undefined);
       expect(mockAppRepository.findAppBySlug).not.toHaveBeenCalled();
     });
 
@@ -83,13 +77,7 @@ describe('PrivateAppAuthGuard', () => {
       const ctx = makeContext('my-app', { 'tj-workspace-id': 'org-uuid-1' }, { branch_id: 'branch-uuid-1' });
       await guard.canActivate(ctx);
 
-      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith(
-        'my-app',
-        'org-uuid-1',
-        undefined,
-        undefined,
-        'branch-uuid-1'
-      );
+      expect(mockAppRepository.findBySlug).toHaveBeenCalledWith('my-app', 'org-uuid-1', undefined, 'branch-uuid-1');
       expect(mockAppRepository.findAppBySlug).not.toHaveBeenCalled();
     });
 

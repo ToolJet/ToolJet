@@ -38,7 +38,6 @@ describe("Data source Rest API", () => {
     cy.visit("/");
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    
 
     cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,

@@ -71,6 +71,26 @@ TOOLJET_DB_NAME="${TOOLJET_DB:-tooljet_db_test}"
 
 export PGPASSWORD="$PG_PASS"
 
+# ---------------------------------------------------------------------------
+# Per-run git repo path (git-sync e2e)
+# ---------------------------------------------------------------------------
+# The git-sync e2e specs default to the static repos gsmithun4/e2e (GitHub) and
+# gsmithun4/gitlab-e2e (GitLab). Static paths mean two concurrent runs — or a
+# previous run that died mid-way and left stale refs — collide on the shared
+# simulator. Instead, mint ONE fresh run id here and hand every shard the same
+# run-ci/<uuid> repo path via the environment. Generated once (not per shard, not
+# per spec) so a single `npm run test:gitsync` touches exactly one repo; the
+# simulator's reset endpoint auto-creates it as an empty bare repo on first use.
+#
+# GitHub and GitLab get sibling paths under the same run id (…-gitlab) because the
+# two suites must not share a repo on the simulator. Respect a caller-provided
+# TEST_GIT_REPO_PATH / TEST_GITLAB_REPO_PATH so a specific repo can still be pinned.
+RUN_REPO_ID="$(uuidgen 2>/dev/null || cat /proc/sys/kernel/random/uuid 2>/dev/null)"
+RUN_REPO_ID="$(printf '%s' "$RUN_REPO_ID" | tr '[:upper:]' '[:lower:]')"
+export TEST_GIT_REPO_PATH="${TEST_GIT_REPO_PATH:-run-ci/${RUN_REPO_ID}}"
+export TEST_GITLAB_REPO_PATH="${TEST_GITLAB_REPO_PATH:-run-ci/${RUN_REPO_ID}-gitlab}"
+printf "\033[2mgit-sync e2e repo: %s (gitlab: %s)\033[0m\n" "$TEST_GIT_REPO_PATH" "$TEST_GITLAB_REPO_PATH"
+
 psql_cmd() {
   psql -h "$PG_HOST" -p "$PG_PORT" -U "$PG_USER" -v ON_ERROR_STOP=1 "$@" 2>&1
 }

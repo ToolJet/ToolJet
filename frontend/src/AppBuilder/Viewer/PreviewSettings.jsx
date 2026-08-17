@@ -46,7 +46,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
         <span className="preview-settings-text" data-cy="preview-settings-text">
           Preview settings
         </span>
-        {editingVersion && appType !== 'module' && (
+        {editingVersion && (
           <Suspense
             fallback={
               <div className="d-flex justify-content-center" style={{ width: '304px' }}>
@@ -107,17 +107,15 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           </Offcanvas.Header>
           {previewNavbar && (
             <Offcanvas.Body>
-              {appType !== 'module' && (
-                <Suspense fallback={null}>
-                  <span style={{ marginTop: '4px' }}>
-                    <AppEnvironments darkMode={darkMode} />
-                  </span>
-                  <hr className="m-0" />
-                  <span>
-                    <AppVersionsManager darkMode={darkMode} />
-                  </span>
-                </Suspense>
-              )}
+              <Suspense fallback={null}>
+                <span style={{ marginTop: '4px' }}>
+                  <AppEnvironments darkMode={darkMode} />
+                </span>
+                <hr className="m-0" />
+                <span>
+                  <AppVersionsManager darkMode={darkMode} />
+                </span>
+              </Suspense>
 
               <div
                 className={classNames('d-flex px-2 pb-2 align-items-center width-100', {

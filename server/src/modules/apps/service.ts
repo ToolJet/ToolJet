@@ -21,6 +21,7 @@ import {
 import { APP_TYPES, APPS_PAGE_SIZE, FEATURE_KEY } from './constants';
 import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
+import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
 import { App } from '@entities/app.entity';
 import { AppBase } from '@entities/app_base.entity';
 import { AppsUtilService } from './util.service';
@@ -322,7 +323,9 @@ export class AppsService implements IAppsService {
 
   validateReleasedApp(ability: AppAbility, app: App): { id: string; slug: string } {
     if (!app.currentVersionId) {
-      const editPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
+      // ability is undefined for unauthenticated visitors on a public app - the guard
+      // lets them through without computing one. No ability means no edit permission.
+      const editPermission = ability?.can(FEATURE_KEY.UPDATE, App, app.id) ?? false;
       const errorResponse = {
         statusCode: HttpStatus.NOT_IMPLEMENTED,
         error: 'App is not released yet',
@@ -862,7 +865,6 @@ export class AppsService implements IAppsService {
     await this.appsUtilService.overlayAppMetadata(app, branchId);
     const response = decamelizeKeys(app);
 
-    const seralizedQueries = [];
     const dataQueriesForVersion = app.editingVersion
       ? await this.versionRepository.findDataQueriesForVersion(app.editingVersion.id)
       : [];
@@ -872,14 +874,7 @@ export class AppsService implements IAppsService {
       ? await this.eventService.findEventsForVersion(app.editingVersion.id)
       : [];
 
-    // serialize queries
-    for (const query of dataQueriesForVersion) {
-      const decamelizedQuery = decamelizeKeys(query);
-      decamelizedQuery['options'] = query.options;
-      seralizedQueries.push(decamelizedQuery);
-    }
-
-    response['data_queries'] = seralizedQueries;
+    response['data_queries'] = serializeDataQueries(dataQueriesForVersion);
     response['definition'] = app.editingVersion?.definition;
     response['pages'] = this.appsUtilService.mergeDefaultComponentData(pagesForVersion);
     response['events'] = eventsForVersion;
@@ -1029,7 +1024,7 @@ export class AppsService implements IAppsService {
       return {
         id: app.id,
         current_version_id: app['currentVersionId'],
-        data_queries: versionToLoad?.dataQueries,
+        data_queries: serializeDataQueries(versionToLoad?.dataQueries),
         definition: versionToLoad?.definition,
         is_public: app.isPublic,
         is_maintenance_on: app.isMaintenanceOn,

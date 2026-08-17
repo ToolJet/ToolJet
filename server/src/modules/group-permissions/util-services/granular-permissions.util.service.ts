@@ -406,6 +406,14 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     moduleFolderGroupPermissions.canEditApps = false;
     moduleFolderGroupPermissions.canViewApps = false;
 
+    // Workflow folders follow the plain FOLDER visibility rule (all roles), unlike module folders.
+    const workflowFolderGranularPermission = new GranularPermissions();
+    const workflowFolderGroupPermissions = new FoldersGroupPermissions();
+    workflowFolderGranularPermission.foldersGroupPermissions = workflowFolderGroupPermissions;
+    workflowFolderGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.WORKFLOW_FOLDER];
+    workflowFolderGranularPermission.isAll = true;
+    workflowFolderGranularPermission.type = ResourceType.WORKFLOW_FOLDER;
+
     switch (role) {
       case USER_ROLE.ADMIN:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -424,7 +432,15 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         folderGroupPermissions.canEditApps = false;
         folderGroupPermissions.canViewApps = false;
 
-        return [appGranularPermission, folderGranularPermission, moduleFolderGranularPermission];
+        workflowFolderGroupPermissions.canEditApps = false;
+        workflowFolderGroupPermissions.canViewApps = false;
+
+        return [
+          appGranularPermission,
+          folderGranularPermission,
+          moduleFolderGranularPermission,
+          workflowFolderGranularPermission,
+        ];
 
       case USER_ROLE.BUILDER:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -446,7 +462,16 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         folderGroupPermissions.canEditApps = false;
         folderGroupPermissions.canViewApps = false;
 
-        return [appGranularPermission, folderGranularPermission, moduleFolderGranularPermission];
+        workflowFolderGroupPermissions.canEditFolder = true;
+        workflowFolderGroupPermissions.canEditApps = false;
+        workflowFolderGroupPermissions.canViewApps = false;
+
+        return [
+          appGranularPermission,
+          folderGranularPermission,
+          moduleFolderGranularPermission,
+          workflowFolderGranularPermission,
+        ];
 
       case USER_ROLE.END_USER:
         appGranularPermission.name = DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP];
@@ -465,7 +490,11 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         folderGroupPermissions.canEditApps = false;
         folderGroupPermissions.canViewApps = true;
 
-        return [appGranularPermission, folderGranularPermission];
+        workflowFolderGroupPermissions.canEditFolder = false;
+        workflowFolderGroupPermissions.canEditApps = false;
+        workflowFolderGroupPermissions.canViewApps = true;
+
+        return [appGranularPermission, folderGranularPermission, workflowFolderGranularPermission];
 
       default:
         return [];

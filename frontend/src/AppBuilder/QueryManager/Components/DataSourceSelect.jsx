@@ -7,7 +7,12 @@ import { defaultSources, workflowDefaultSources } from '../constants';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { Virtuoso } from 'react-virtuoso';
-import { DataBaseSources, ApiSources, CloudStorageSources } from '@/modules/common/components/DataSourceComponents';
+import {
+  DataBaseSources,
+  ApiSources,
+  CloudStorageSources,
+  AiSources,
+} from '@/modules/common/components/DataSourceComponents';
 import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
@@ -100,7 +105,7 @@ function DataSourceSelect({
       Boolean
     );
     setUserDefinedSources(allDataSources);
-    const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
+    const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...AiSources];
     allDataSources.forEach(({ plugin }) => {
       if (isEmpty(plugin)) return;
       dataSourceKindsList.push({ name: plugin.name, kind: plugin.pluginId });
@@ -446,8 +451,8 @@ function DataSourceSelect({
           item.type === 'group-item' || item.type === 'sample-item'
             ? item.source.id
             : item.type === 'group-end'
-              ? item.key
-              : `${item.type}-${item.kind ?? 'defaults'}`
+            ? item.key
+            : `${item.type}-${item.kind ?? 'defaults'}`
         }
         itemContent={(_, item) => renderItem(item)}
       />

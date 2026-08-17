@@ -264,10 +264,10 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, 
 
   const handlePull = async () => {
     try {
+      // Pull hydrates in the background — reloading now would only show stale data
       await actions.pullWorkspace();
-      toast.success('Commit pulled successfully!');
+      toast.success('Pulling latest changes.');
       onClose();
-      window.location.reload();
     } catch (error) {
       if (error?.statusCode === 409) {
         try {

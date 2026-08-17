@@ -10,6 +10,7 @@ import {
   getLabelFontSize,
   getLabelWidthOfInput,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const RadioButtonV2 = ({
   properties,
@@ -193,6 +194,8 @@ export const RadioButtonV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useFormClear(() => onSelect(null));
+
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
   const computedLayoutStyles = {
@@ -274,8 +277,8 @@ export const RadioButtonV2 = ({
                         optionsTextColor !== '#1B1F24'
                           ? optionsTextColor
                           : isDisabled || isLoading
-                            ? 'var(--text-disabled)'
-                            : 'var(--text-primary)',
+                          ? 'var(--text-disabled)'
+                          : 'var(--text-primary)',
                     }}
                   >
                     {String(option.label)}

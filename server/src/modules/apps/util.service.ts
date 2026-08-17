@@ -75,14 +75,6 @@ export class AppsUtilService implements IAppsUtilService {
     icon?: string
   ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isWorkflow = type === APP_TYPES.WORKFLOW;
-
-      // Non-workflow slug placeholder — a fresh UUID, never app.id (mirrors the
-      // co_relation_id convention below). The user renames it later; using a random
-      // value avoids leaking the app id and avoids self-collisions when a row's
-      // app_id changes (e.g. git hydrate re-parent).
-      const slug = uuidv4();
-
       // Non-workflows store the user-facing name on app_versions.app_name. apps.name
       // is NULL for them so the table-level APP_NAME_UNIQUE constraint doesn't fire.
       //
@@ -154,11 +146,10 @@ export class AppsUtilService implements IAppsUtilService {
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
 
-      // Workflows keep their historical slug placeholder (app.id, matching the
-      // pre-migration apps.subscriber.ts auto-fill and Task 1's backfill); every other
-      // type keeps the existing random-UUID placeholder (`slug`, declared above at
-      // line 84) — unchanged from before this task.
-      const versionSlug = isWorkflow ? app.id : slug;
+      // Slug placeholder is always the app's own id — guaranteed unique per app
+      // (every app has a distinct id, so it never collides) and stable across
+      // renames. User can still rename it later via the update endpoint.
+      const versionSlug = app.id;
 
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
 
@@ -187,8 +178,8 @@ export class AppsUtilService implements IAppsUtilService {
         //   - app_versions_app_name_branch_id_unique (app_name, branch_id, type)
         //     WHERE version_type='branch' — sub-branch name clash within same type.
         //   - app_versions_slug_branch_id_unique (slug, branch_id, type) WHERE same —
-        //     sub-branch slug clash. Created with a random UUID placeholder so it's
-        //     unlikely but guard anyway in case a colliding row exists.
+        //     sub-branch slug clash. Placeholder is app.id, so this is effectively
+        //     unreachable, but the guard stays as a defensive backstop.
         const branchVersion = await catchDbException(
           async () =>
             await manager.save(
@@ -215,8 +206,7 @@ export class AppsUtilService implements IAppsUtilService {
                 updatedAt: new Date(),
                 ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
                 // Every type carries slug/appName/icon/isPublic on app_versions.
-                // slug defaults to a random UUID placeholder (or app.id for workflows,
-                // see versionSlug above); user can rename later.
+                // slug defaults to app.id (see versionSlug above); user can rename later.
                 appName: name,
                 slug: versionSlug,
                 icon: icon ?? null,
@@ -399,8 +389,7 @@ export class AppsUtilService implements IAppsUtilService {
         }
 
         // Every type carries slug/appName/icon/isPublic on app_versions.
-        // slug defaults to a random UUID placeholder (or app.id for workflows,
-        // see versionSlug above); user can rename later.
+        // slug defaults to app.id (see versionSlug above); user can rename later.
         appVersion.appName = name;
         appVersion.slug = versionSlug;
         appVersion.icon = icon ?? null;
@@ -907,9 +896,22 @@ export class AppsUtilService implements IAppsUtilService {
   async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
     if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
     const rows: { app_id: string }[] = await this.appRepository.manager.query(
-      `SELECT DISTINCT app_id FROM app_versions
-       WHERE app_id = ANY($1::uuid[]) AND branch_id = $2::uuid AND is_synced = true
-         AND status = 'DRAFT' AND version_type = 'version'`,
+      `SELECT DISTINCT av.app_id FROM app_versions av
+       WHERE av.app_id = ANY($1::uuid[]) AND av.branch_id = $2::uuid AND av.is_synced = true
+         AND av.version_type = 'version'
+         AND (
+           av.status = 'DRAFT'
+           -- Special case: a 0-draft import collapses to a single synced PUBLISHED row
+           -- (see AppImportExportService.createAppVersionsForImportedApp) — no DRAFT row
+           -- ever exists to satisfy the normal check above. Only take this branch when no
+           -- DRAFT row exists at all for the app on this branch, so it never overrides the
+           -- normal DRAFT-based check once a real draft shows up.
+           OR NOT EXISTS (
+             SELECT 1 FROM app_versions av_draft
+             WHERE av_draft.app_id = av.app_id AND av_draft.branch_id = $2::uuid
+               AND av_draft.status = 'DRAFT' AND av_draft.version_type = 'version'
+           )
+         )`,
       [apps.map((a) => a.id), branchId]
     );
     const syncedIds = new Set(rows.map((r) => r.app_id));

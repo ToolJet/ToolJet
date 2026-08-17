@@ -399,7 +399,7 @@ export default function AppCard({
                     </ToolTip>
                   ) : (
                     <div visible={focused ? true : undefined}>
-                      {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && !isGitLicenseLocked && (
+                      {(canDeleteApp(app) || canUpdateApp(app)) && !isGitLicenseLocked && (
                         <AppMenu
                           appId={app?.id}
                           appUserId={app?.user_id}
@@ -448,7 +448,7 @@ export default function AppCard({
               )}
             </div>
             <div className="appcard-buttons-wrap">
-              {(canUpdate || appType === 'module') && (
+              {canUpdate && (
                 <div>
                   <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                     <Link
@@ -474,9 +474,16 @@ export default function AppCard({
                 <div>
                   <ToolTip message="Open in app builder">
                     <Link
-                      to={getPrivateRoute('editor', {
-                        slug: isValidSlug(app.slug) ? app.slug : app.id,
-                      })}
+                      // reloadDocument forces a hard navigation, discarding the in-memory active-branch
+                      // cache — carry the branch in the URL itself (same fix as handleEditClick) so the
+                      // module resolves on the branch its current version actually lives on, not just
+                      // the default branch.
+                      to={appendBranchName(
+                        getPrivateRoute('editor', {
+                          slug: isValidSlug(app.slug) ? app.slug : app.id,
+                        }),
+                        wsCurrentBranch?.name
+                      )}
                       reloadDocument
                     >
                       <button
@@ -507,13 +514,14 @@ export default function AppCard({
           appName={app.name}
           appGitId={app.id}
           versionId={
-            app.app_versions?.find((v) => v.status === 'DRAFT' || v.status === 'draft')?.id ?? app.editing_version?.id
+            app.app_versions?.find(
+              (v) =>
+                (v.status === 'DRAFT' || v.status === 'draft') &&
+                (v.versionType === 'version' || v.version_type === 'version')
+            )?.id ?? app.editing_version?.id
           }
           onSuccess={() => {
             setPushModalOpen(false);
-            // The dashboard's in-memory app list doesn't know is_app_synced flipped
-            // server-side — reload so the card's unsynced icon clears immediately.
-            window.location.reload();
           }}
         />
       )}

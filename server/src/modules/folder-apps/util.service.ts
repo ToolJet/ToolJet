@@ -12,6 +12,19 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
 import { AppVersionType } from '@entities/app_version.entity';
 
+// Permission resource that gates each app type's visibility. Mirrors
+// getResourceTypefromAppType in folder-apps/service.ts — keep both in sync.
+export function getPermissionResourceForAppType(type: APP_TYPES): MODULES {
+  switch (type) {
+    case APP_TYPES.WORKFLOW:
+      return MODULES.WORKFLOWS;
+    case APP_TYPES.MODULE:
+      return MODULES.MODULES;
+    default:
+      return MODULES.APP;
+  }
+}
+
 export function applyAppPermissionFilter(
   query: SelectQueryBuilder<FolderApp>,
   userAppPermissions: UserAppsPermissions
@@ -216,17 +229,16 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     const folderApps = await folderAppsQuery.getMany();
 
+    // Modules resolve via their own MODULES.MODULES bucket (folder-level module grants
+    // live there, not under MODULES.APP) — same mapping as getResourceTypefromAppType
+    // in folder-apps/service.ts. Requesting MODULES.APP unconditionally left module
+    // folder-only permissions unresolved, hiding modules the "all modules" list showed.
+    const resourceType = getPermissionResourceForAppType(type);
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
-      resources: [{ resource: MODULES.APP }],
+      resources: [{ resource: resourceType }],
       organizationId: user.organizationId,
     });
-    const userAppPermissions = userPermission?.[MODULES.APP];
-
-    // Builders have admin-level access to modules — skip app-level permission filtering.
-    const isModuleBuilderAccess = type === APP_TYPES.MODULE && (userPermission?.isBuilder || userPermission?.isAdmin);
-    const effectiveAppPermissions = isModuleBuilderAccess
-      ? { ...userAppPermissions, isAllEditable: true }
-      : userAppPermissions;
+    const userAppPermissions = userPermission?.[resourceType];
 
     const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
     if (folderAppIds.length == 0) {
@@ -237,7 +249,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     }
 
     const viewableAppsInFolder = this.getBaseAppsQuery(manager, searchKey, branchId);
-    this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
+    this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
 
     // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
     // (appVersions.branchId = :branchId). No secondary filter needed.
@@ -272,18 +284,14 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     };
   }
 
+  // matchNullAsDefaultBranch: branchId was resolved from the org's default branch rather than
+  // passed explicitly, so also match legacy branch_id=NULL rows for this app — they predate
+  // branch_id being mandatory and would otherwise look like a different row.
   private buildBranchFilter(branchId?: string, matchNullAsDefaultBranch = false) {
     if (!branchId) return { branchId: IsNull() };
     return { branchId: matchNullAsDefaultBranch ? Or(Equal(branchId), IsNull()) : branchId };
   }
 
-  // matchNullAsDefaultBranch: true when `branchId` is itself a default-branch fallback (the
-  // caller passed no explicit branch — see FolderAppsService.resolveEffectiveBranchId(s)). In
-  // that case, legacy rows written before every org had a default branch still carry
-  // branch_id=NULL — they mean the same thing as "on the default branch" and must be treated
-  // as the same row, or moves/lookups silently miss them and leave an orphaned NULL-branch row
-  // behind. Never set this for an explicitly-requested branchId: a real git-sync branch must
-  // stay isolated from NULL (pre-branch) rows.
   async bulkCreate(
     folderId: string,
     appIds: string[],
