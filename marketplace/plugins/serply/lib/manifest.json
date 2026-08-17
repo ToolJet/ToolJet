@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Serply datasource",
+  "description": "A schema defining Serply datasource",
+  "type": "api",
+  "source": {
+    "name": "Serply",
+    "kind": "serply",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      },
+      "proxy_location": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Serply API Key",
+      "helpText": "For generating API Key, visit: <a href='https://serply.io' target='_blank' rel='noreferrer'>Serply</a>"
+    },
+    "proxy_location": {
+      "label": "Proxy location",
+      "key": "proxy_location",
+      "type": "text",
+      "description": "US",
+      "helpText": "Optional. Region to route searches through, for example US, EU, or GB"
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
+}

@@ -342,5 +342,13 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "Serply",
+    "description": "Plugin to fetch Google web and news search results and Reddit posts and comments through the Serply API",
+    "version": "1.0.0",
+    "id": "serply",
+    "author": "Serply",
+    "timestamp": "Mon, 17 Aug 2026 21:32:25 GMT"
   }
 ]
