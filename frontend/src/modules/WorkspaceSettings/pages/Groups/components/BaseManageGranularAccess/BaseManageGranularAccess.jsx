@@ -57,7 +57,7 @@ class BaseManageGranularAccess extends React.Component {
       deletingPermissions: false,
       initialPermissionStateDs: {
         canUse: false,
-        canView: false,
+        canConfigure: false,
         canRunQuery: true,
       },
       initialPermissionStateFolder: {
@@ -965,7 +965,7 @@ class BaseManageGranularAccess extends React.Component {
     const permissionStateChanged =
       type === RESOURCE_TYPE.DATA_SOURCES
         ? this.state.initialState.initialPermissionStateDs?.canUse !== newPermissionState?.canUse ||
-          this.state.initialPermissionStateDs?.canConfigure !== newPermissionState?.canConfigure ||
+          this.state.initialState.initialPermissionStateDs?.canConfigure !== newPermissionState?.canConfigure ||
           (this.state.initialState.initialPermissionStateDs?.canRunQuery ?? true) !==
             (newPermissionState?.canRunQuery ?? true)
         : this.state.initialState.initialPermissionState?.canEdit !== newPermissionState?.canEdit ||
