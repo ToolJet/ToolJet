@@ -15,6 +15,11 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
+// tj-403 = data-source query-run permission denied; toast in every mode, unlike ordinary query failures
+const toastIfQueryRunRestricted = (errorData) => {
+  if (errorData?.data?.type === 'tj-403') toast.error(errorData.data.responseObject?.responseBody);
+};
+
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
@@ -587,6 +592,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       // Handler for query failures
       const handleFailure = (errorData) => {
+        toastIfQueryRunRestricted(errorData);
         if (shouldSetPreviewData) {
           setPreviewLoading(false);
           setPreviewData(errorData);
@@ -1135,6 +1141,7 @@ export const createQueryPanelSlice = (set, get) => ({
                     break;
                 }
 
+                toastIfQueryRunRestricted(errorData);
                 onEvent('onDataQueryFailure', queryEvents);
                 if (callbackFns?.onFailure) {
                   const failureData = { status: data.status, data: finalData };
