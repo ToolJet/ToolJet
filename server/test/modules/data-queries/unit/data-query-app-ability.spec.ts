@@ -70,9 +70,9 @@ describe('defineDataQueryAppAbility', () => {
     });
   });
 
-  describe('module-builder bypass', () => {
-    it('grants full CRUD + run actions to a builder when the app is a MODULE', () => {
-      const perms = buildPermissions({ isBuilder: true });
+  describe('module permissions (MODULES.MODULES bucket)', () => {
+    it('grants full edit+run bucket when isAllEditable is true for a MODULE app', () => {
+      const perms = buildPermissions({ userPermission: { [MODULES.MODULES]: { isAllEditable: true } } as any });
       const { can, build } = makeBuilder();
       defineDataQueryAppAbility(can, perms, makeApp({ type: APP_TYPES.MODULE }));
       const ability = build();
@@ -80,10 +80,28 @@ describe('defineDataQueryAppAbility', () => {
       expectFeatures(ability, App, { allowed: EDIT_ACTIONS });
     });
 
-    it('does not extend the module-builder bypass to a non-module (front-end) app', () => {
+    it('grants full edit+run bucket when the user has global moduleCreate, even on an unrelated module', () => {
+      const perms = buildPermissions({ userPermission: { moduleCreate: true } as any });
+      const { can, build } = makeBuilder();
+      defineDataQueryAppAbility(can, perms, makeApp({ type: APP_TYPES.MODULE }));
+      const ability = build();
+
+      expectFeatures(ability, App, { allowed: EDIT_ACTIONS });
+    });
+
+    it('does not grant module edit actions from a plain isBuilder flag with no granular module permissions', () => {
       const perms = buildPermissions({ isBuilder: true });
       const { can, build } = makeBuilder();
-      defineDataQueryAppAbility(can, perms, makeApp({ type: APP_TYPES.FRONT_END }));
+      defineDataQueryAppAbility(can, perms, makeApp({ type: APP_TYPES.MODULE }));
+      const ability = build();
+
+      expectFeatures(ability, App, { denied: EDIT_ACTIONS });
+    });
+
+    it('resolves a MODULE app against MODULES.MODULES, not MODULES.APP — an APP-bucket grant does not apply', () => {
+      const perms = buildPermissions({ userPermission: { [MODULES.APP]: { isAllEditable: true } } as any });
+      const { can, build } = makeBuilder();
+      defineDataQueryAppAbility(can, perms, makeApp({ type: APP_TYPES.MODULE }));
       const ability = build();
 
       expectFeatures(ability, App, { denied: EDIT_ACTIONS });

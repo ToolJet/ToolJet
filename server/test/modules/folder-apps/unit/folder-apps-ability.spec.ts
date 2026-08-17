@@ -69,29 +69,6 @@ describe('folder-apps FeatureAbilityFactory', () => {
     });
   });
 
-  describe('module-builder bypass — requires BOTH tj_app_is_module AND userPermission.isBuilder', () => {
-    it('grants both mutating actions when the folder-app is a module and userPermission.isBuilder is true', async () => {
-      const ability = await build({ userPermission: { isBuilder: true } as any }, { tj_app_is_module: true });
-      expectFeatures(ability, FolderApp, { allowed: MUTATE_ACTIONS });
-    });
-
-    it('denies both when tj_app_is_module is true but userPermission.isBuilder is false', async () => {
-      const ability = await build({ userPermission: { isBuilder: false } as any }, { tj_app_is_module: true });
-      expectFeatures(ability, FolderApp, { denied: MUTATE_ACTIONS });
-    });
-
-    it('denies both when userPermission.isBuilder is true but tj_app_is_module is false', async () => {
-      // Note: reads userPermission.isBuilder specifically, not the top-level UserAllPermissions.isBuilder flag —
-      // in production both are always populated from the same resolved value, but a unit test targeting this
-      // function must set userPermission.isBuilder, not just the top-level flag, to exercise this branch.
-      const ability = await build(
-        { isBuilder: true, userPermission: { isBuilder: false } as any },
-        { tj_app_is_module: false }
-      );
-      expectFeatures(ability, FolderApp, { denied: MUTATE_ACTIONS });
-    });
-  });
-
   describe('granular folder permissions — resolved per folder type (default / workflow / module)', () => {
     it('grants both mutating actions on a default folder when isAllEditable is true', async () => {
       const ability = await build({ userPermission: { [MODULES.FOLDER]: { isAllEditable: true } } as any });

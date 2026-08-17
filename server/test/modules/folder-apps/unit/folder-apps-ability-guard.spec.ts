@@ -70,7 +70,6 @@ describe('folder-apps FeatureAbilityGuard', () => {
     });
     expect(request.tj_allow_owner_folder_app_create).toBe(true);
     expect(request.tj_allow_owner_folder_app_delete).toBe(true);
-    expect(request.tj_app_is_module).toBe(false);
     expect(request.tj_folder_app_type_mismatch).toBe(false);
   });
 
@@ -103,7 +102,6 @@ describe('folder-apps FeatureAbilityGuard', () => {
     await guard.canActivate(makeExecutionContext({ request }));
 
     expect(request.tj_folder_app_type_mismatch).toBe(true);
-    expect(request.tj_app_is_module).toBe(true);
   });
 
   it('does not scope create/delete to a specific app on the bulk app_ids path — folder ownership alone is sufficient', async () => {
@@ -118,7 +116,6 @@ describe('folder-apps FeatureAbilityGuard', () => {
 
     expect(dataSource.manager.findOne).toHaveBeenCalledTimes(1);
     expect(request.tj_allow_owner_folder_app_create).toBe(true);
-    expect(request.tj_app_is_module).toBe(true);
   });
 
   it('does not flag ownership when the folder is not found in the requesting org (cross-tenant)', async () => {
