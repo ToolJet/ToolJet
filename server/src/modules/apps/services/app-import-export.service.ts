@@ -562,7 +562,6 @@ export class AppImportExportService {
         };
       });
 
-      // Added orderBy for layouts as well to maintain consistency -> in the exported file and avoid merge conflicts
       await this.stampWorkflowNames(manager, queriesWithPermissionGroups, appToExport.organizationId);
 
       // Remove updatedAt to avoid unnecessary conflicts during merge in Git Sync
@@ -570,6 +569,7 @@ export class AppImportExportService {
         delete query.updatedAt;
       }
 
+      // Added orderBy for layouts as well to maintain consistency -> in the exported file and avoid merge conflicts
       const components =
         pages.length > 0
           ? await manager
