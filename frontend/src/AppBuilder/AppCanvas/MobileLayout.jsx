@@ -1,7 +1,10 @@
 import React, { Suspense, useRef, lazy } from 'react';
 import cx from 'classnames';
+import { shallow } from 'zustand/shallow';
 
+import useStore from '@/AppBuilder/_stores/store';
 import { CANVAS_WIDTHS, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
+import { computeViewerBackgroundColor } from './appCanvasUtils';
 import MobileNavigationHeader from './PageMenu/MobileNavigationHeader';
 import { CanvasContentTail } from './CanvasContentTail';
 
@@ -30,6 +33,12 @@ export const MobileLayout = ({
 }) => {
   const mobileCanvasFrameRef = useRef(null);
   const mobileNavSheetContainerRef = useRef(null);
+
+  // Mirrors Container.jsx's canvas background. Diverge from it and a seam appears around the canvas.
+  const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', isAppDarkMode), shallow);
+  const frameBgColor =
+    currentMode === 'view' ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor) : canvasBgColor;
+
   return (
     <div
       key={pageKey}
@@ -93,17 +102,23 @@ export const MobileLayout = ({
               flex: 1,
               minHeight: 0,
               overflow: 'hidden auto',
-              // Top/sides only: the bottom gap already lives in the canvas height.
+              // Containing block for Moveable's control boxes; drop it and resize handles drift by scrollTop.
+              position: 'relative',
+              // Padding belongs here, not on the canvas: widget widths derive from the canvas's own width.
               padding: '16px 16px 0',
               boxSizing: 'border-box',
-              backgroundColor: 'var(--surfaces-app-bg-default)',
+              backgroundColor: frameBgColor,
             }}
           >
             {mainCanvasContainer}
+            {/* Must stay inside the scroll port: Moveable's control boxes detach from widgets otherwise. */}
+            {gridContent}
           </div>
         ) : (
-          // Match the editor's mobile gutter so preview and the published app frame the canvas identically.
-          <div style={{ padding: '16px 16px 0', boxSizing: 'border-box' }}>{mainCanvasContainer}</div>
+          // Matches the editor gutter so preview and the published app frame the canvas identically.
+          <div style={{ padding: '16px 16px 0', boxSizing: 'border-box', backgroundColor: frameBgColor }}>
+            {mainCanvasContainer}
+          </div>
         )}
       </CanvasContentTail>
       <Suspense fallback={null}>
@@ -113,7 +128,7 @@ export const MobileLayout = ({
           currentMode={currentMode}
         />
       </Suspense>
-      {gridContent}
+      {currentMode !== 'edit' && gridContent}
     </div>
   );
 };

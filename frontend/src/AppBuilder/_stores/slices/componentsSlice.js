@@ -29,6 +29,8 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
+// calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
+const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
 import {
   TOP_ALIGNMENT_HEIGHT_INCREMENT,
   ROW_SCOPED_WIDGET_TYPES,
@@ -625,6 +627,7 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponentByProperty,
       getAllExposedValues,
       getCustomResolvables,
+      getCustomResolvableReference,
       findNearestSubcontainerAncestor,
       getComponentDefinition,
       getBaseParentId,
@@ -681,6 +684,19 @@ export const createComponentsSlice = (set, get) => ({
     // Get the innermost (immediate parent) ListView's customResolvables
     const innermostListview = listviewAncestors[listviewAncestors.length - 1];
     const baseCustomResolvables = getCustomResolvables(innermostListview, null, moduleId, []);
+
+    // No rows announced yet, so the per-row walk below would drop the value. Write it flat instead;
+    // updateChildComponentsLength seeds the rows from it.
+    if (!baseCustomResolvables || Object.keys(baseCustomResolvables).length === 0) {
+      // Row-referencing values resolve to nothing without rows, and seeding every row from that
+      // garbage is worse than waiting: the listItem announcement rewrites them per row.
+      if (shouldResolve && getCustomResolvableReference(unResolvedValue, parentId, moduleId).length > 0) return;
+      const resolvedValue = shouldResolve
+        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
+        : value;
+      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
+      return;
+    }
 
     // Helper function to recursively iterate through all index combinations
     const iterateNestedIndices = (resolvables, currentIndices, depth) => {
@@ -3180,7 +3196,7 @@ export const createComponentsSlice = (set, get) => ({
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (![...INPUT_COMPONENTS_FOR_FORM].includes(componentType)) {
+    if (!INPUT_COMPONENTS_FOR_FORM_SET.has(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, auto = { value: null } } = stylesDefinition ?? {};

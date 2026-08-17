@@ -31,17 +31,30 @@ export function computeAutoMobileLayout(currentPageComponents) {
   const isVisibleOnMobile = (id) =>
     getResolvedValue(currentPageComponents[id]?.component?.definition?.others?.showOnMobile?.value);
 
+  // Stack against the rendered height but store the unbumped one, or WidgetWrapper's re-applied
+  // 20px label bump doubles and overlaps the next sibling.
+  const calculateMoveableBoxHeightWithId = useStore.getState().calculateMoveableBoxHeightWithId;
+  const labelBumpById = {};
+  const renderedHeight = (id, desktop) => {
+    const base = desktop.height ?? 0;
+    const rendered =
+      calculateMoveableBoxHeightWithId(id, 'desktop', currentPageComponents[id]?.component?.definition?.styles) ?? base;
+    labelBumpById[id] = rendered - base;
+    return rendered;
+  };
+
   // Stack a parent's direct children into one full-width column (children recursed first).
   const stackGroup = (parentKey) => {
     const layouts = (childrenByParent[parentKey] || []).filter(isVisibleOnMobile).map((id) => {
       const desktop = currentPageComponents[id]?.layouts?.desktop || {};
       const nestedExtent = stackContainer(id);
+      const height = renderedHeight(id, desktop);
       return {
         i: id,
         top: desktop.top ?? 0,
         left: 0,
         width: MOBILE_GRID_COLUMNS,
-        height: nestedExtent != null ? Math.max(desktop.height ?? 0, nestedExtent) : desktop.height ?? 0,
+        height: nestedExtent != null ? Math.max(height, nestedExtent) : height,
       };
     });
 
@@ -53,7 +66,8 @@ export function computeAutoMobileLayout(currentPageComponents) {
       .sort((a, b) => a.top - b.top)
       .forEach((l, idx) => {
         const top = l.top + idx * MOBILE_STACK_GAP_PX;
-        updatedBoxes[l.i] = { left: l.left, top, width: l.width, height: l.height };
+        // Spacing uses the rendered height; the stored height drops the bump the renderer re-adds.
+        updatedBoxes[l.i] = { left: l.left, top, width: l.width, height: l.height - (labelBumpById[l.i] ?? 0) };
         extent = Math.max(extent, top + l.height);
       });
     return extent;

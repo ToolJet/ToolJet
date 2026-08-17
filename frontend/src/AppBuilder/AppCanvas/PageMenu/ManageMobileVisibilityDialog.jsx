@@ -54,6 +54,8 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
   const setComponentPropertyByComponentIds = useStore((state) => state.setComponentPropertyByComponentIds, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const clearTemporaryLayouts = useStore((state) => state.clearTemporaryLayouts, shallow);
+  // The dialog can outlive the version becoming locked, so re-check rather than trust the entry point.
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -100,6 +102,7 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
   };
 
   const handleUpdate = () => {
+    if (shouldFreeze) return;
     // Batched: setComponentProperty per component fires one autosave request each.
     const componentDiffs = {};
     selected.forEach((id) => {
@@ -131,7 +134,7 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
       >
         <DialogHeader className="!tw-px-4">
           <div className="tw-flex tw-items-center tw-gap-2">
-            <DialogTitle>Manage component visibility on mobile</DialogTitle>
+            <DialogTitle>Manage components on mobile</DialogTitle>
           </div>
         </DialogHeader>
         {/* search icon, left of the auto-rendered close button */}
@@ -182,7 +185,7 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
                   <TableHead className="tw-w-[28.6%] tw-px-2 tw-text-[11px]">Type</TableHead>
                   <TableHead className="tw-w-[13%] tw-pl-0 !tw-pr-4 tw-text-[11px]">
                     <span className="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-whitespace-nowrap">
-                      Visibility
+                      Add
                       <Checkbox checked={allFilteredSelected} onCheckedChange={toggleAll} aria-label="Select all" />
                     </span>
                   </TableHead>
@@ -216,10 +219,10 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
           <Button
             variant="primary"
             onClick={handleUpdate}
-            disabled={selected.size === 0}
+            disabled={selected.size === 0 || shouldFreeze}
             data-cy="manage-mobile-visibility-update"
           >
-            Make visible on mobile
+            Add to mobile
           </Button>
         </DialogFooter>
       </DialogContent>
