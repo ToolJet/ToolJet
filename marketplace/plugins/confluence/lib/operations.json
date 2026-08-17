@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Confluence datasource",
+  "description": "A schema defining Confluence datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "cloud_id": {
+      "key": "cloud_id",
+      "label": "Site",
+      "type": "dynamic-selector",
+      "description": "Select the Confluence site to query. Click 'Get sites' to fetch the sites your authorization covers.",
+      "operation": {
+        "key": "get_sites",
+        "label": "Get sites",
+        "invokeMethod": "getSites"
+      },
+      "fxEnabled": true
+    },
+    "operation": {
+      "label": "",
+      "key": "confluence_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": "@spec/confluence/confluence_v2"
+    }
+  }
+}

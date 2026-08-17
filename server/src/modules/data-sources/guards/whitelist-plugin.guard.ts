@@ -6,6 +6,7 @@ export class WhitelistPluginGuard implements CanActivate {
   private readonly allowedKinds = new Set([
     'grpcv2',
     'xero',
+    'confluence',
     'googlesheetsv2',
     'mssql',
     'mysql',
