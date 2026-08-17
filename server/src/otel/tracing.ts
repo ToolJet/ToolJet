@@ -284,14 +284,12 @@ const cleanupInactiveUsers = () => {
 type SeatRow = { organization_id: string; organization_name: string; user_id: string; role: string };
 
 type AppNameRow = { id: string; name: string };
-// The name lives on the version row, not on apps — apps.name is only populated for workflows.
-// Same source the query metrics read (dataQuery.appVersion.appName), so both agree on what an
-// app is called. Latest version wins, so a rename shows up without waiting for a release.
+// lts-3.16: no branch-aware app_versions.app_name column; apps.name is the source of truth here.
+// Same source the query metrics read (appToUse.name), so both agree on what an app is called.
 const APP_NAME_QUERY = `
-  SELECT DISTINCT ON (app_id) app_id AS id, app_name AS name
-  FROM app_versions
-  WHERE app_id = ANY($1::uuid[]) AND app_name IS NOT NULL
-  ORDER BY app_id, updated_at DESC
+  SELECT id, name
+  FROM apps
+  WHERE id = ANY($1::uuid[]) AND name IS NOT NULL
 `;
 // The ::uuid[] cast throws on a malformed id, and that throw would abort the whole seat poll —
 // leaving seats and roles frozen at their last snapshot. Filter before the query, not after.
@@ -349,9 +347,14 @@ const pollWorkspaceSeats = async (): Promise<void> => {
       UUID_SHAPE.test(id)
     );
     if (trackedAppIds.length) {
-      const appRows: AppNameRow[] = await getConnectionInstance().query(APP_NAME_QUERY, [trackedAppIds]);
-      for (const row of appRows) {
-        if (row.name) namesByApp.set(row.id, row.name);
+      // Optional label source — never let it take down the seat/role/org-name snapshot.
+      try {
+        const appRows: AppNameRow[] = await getConnectionInstance().query(APP_NAME_QUERY, [trackedAppIds]);
+        for (const row of appRows) {
+          if (row.name) namesByApp.set(row.id, row.name);
+        }
+      } catch (error) {
+        console.error('[OTEL] app name lookup failed:', error instanceof Error ? error.message : error);
       }
     }
 
