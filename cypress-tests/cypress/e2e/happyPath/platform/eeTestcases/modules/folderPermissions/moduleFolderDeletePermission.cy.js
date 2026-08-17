@@ -1,21 +1,18 @@
 import { commonSelectors } from 'Selectors/common';
-import { groupsSelector } from 'Selectors/manageGroups';
-import { navigateToManageGroups, viewFolderCardOptions, deleteFolder } from 'Support/utils/common';
-import { createGroupsAndAddUserInGroup } from 'Support/utils/manageGroups';
+import { viewFolderCardOptions, deleteFolder } from 'Support/utils/common';
+import { apiCreateGroup, apiAddUserToGroup } from 'Support/utils/manageGroups';
 import { openModulesList } from 'Support/utils/platform/modules';
-import { uiCreateFolder, uiVerifyFolderCreated } from 'Support/utils/uiPermissions';
-import { groupsText } from 'Texts/manageGroups';
+import { uiVerifyFolderCreated } from 'Support/utils/uiPermissions';
 
 describe('Modules — Folder Permissions: Custom Group Delete Override & Ownership', { retries: 0 }, () => {
   const testId = Date.now();
-  const wsName = `modules-folder-delete-${testId}`;
+  const wsName = `folder-delete-${testId}`;
   const wsSlug = wsName;
 
   let workspaceId;
 
   before(() => {
     cy.apiLogin();
-    cy.apiUpdateLicense('valid');
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);
@@ -37,59 +34,48 @@ describe('Modules — Folder Permissions: Custom Group Delete Override & Ownersh
     cy.intercept('DELETE', '/api/folders/*').as('folderDeleted');
   });
 
-  it("non-owner without moduleFolderDelete cannot delete another user's module folder", () => {
-    const folderName = `Admin Owned Module Folder ${testId}-blocked`;
-    const userEmail = `qa-folder-delete-blocked-${testId}@example.com`;
-
+  const createFolder = (folderName) => {
+    cy.apiCreateModuleFolder(folderName);
     openModulesList();
-    uiCreateFolder(folderName);
     uiVerifyFolderCreated(folderName);
+  };
 
-    cy.apiFullUserOnboarding('QA Folder Delete Blocked User', userEmail, 'builder', 'password', wsName);
+  it("non-owner is blocked, ownership overrides it, and a custom group grant then unlocks deleting another user's module folder", () => {
+    const adminFolderName = `Admin Owned Module Folder ${testId}`;
+    const builderFolderName = `Builder Own Module Folder ${testId}`;
+    const groupName = `QA Module Folder Delete Group ${testId}`;
+    const userEmail = `qa-folder-delete-${testId}@example.com`;
 
+    // Admin creates a folder the builder does not own.
+    createFolder(adminFolderName);
+    cy.apiFullUserOnboarding('QA', userEmail, 'builder', 'password', wsName);
+
+    // Non-owner without moduleFolderDelete cannot delete the admin's folder.
+    openModulesList();
+    viewFolderCardOptions(adminFolderName);
+    cy.get(commonSelectors.deleteFolderOption(adminFolderName)).should('not.exist');
+
+    // Owner can always delete their own folder regardless of moduleFolderDelete.
+    createFolder(builderFolderName);
+    deleteFolder(builderFolderName);
+    cy.get(commonSelectors.folderListcard(builderFolderName)).should('not.exist');
+
+    cy.apiLogout();
+    cy.apiLogin();
+
+    // Grant delete access to the admin's folder via a custom group — set up
+    // entirely via API, no Manage Groups UI involved.
+    apiCreateGroup(groupName).then((groupId) => {
+      apiAddUserToGroup(groupId, userEmail);
+    });
+    cy.apiUpdateGroupPermission(groupName, { moduleFolderDelete: true });
+
+    cy.apiLogout();
     cy.apiLogin(userEmail, 'password');
+
+    // Custom group with moduleFolderDelete ON allows deleting another user's folder.
     openModulesList();
-    viewFolderCardOptions(folderName);
-    cy.get(commonSelectors.deleteFolderOption(folderName)).should('not.exist');
-  });
-
-  it('owner can always delete their own module folder regardless of moduleFolderDelete', () => {
-    const folderName = `Own Module Folder ${testId}`;
-    const userEmail = `qa-folder-delete-owner-${testId}@example.com`;
-
-    cy.apiFullUserOnboarding('QA Folder Delete Owner User', userEmail, 'builder', 'password', wsName);
-    cy.apiLogin(userEmail, 'password');
-
-    openModulesList();
-    uiCreateFolder(folderName);
-    uiVerifyFolderCreated(folderName);
-
-    deleteFolder(folderName);
-    cy.get(commonSelectors.folderListcard(folderName)).should('not.exist');
-  });
-
-  it("custom group with moduleFolderDelete ON allows deleting another user's module folder", () => {
-    const folderName = `Admin Owned Module Folder ${testId}-allowed`;
-    const groupName = `QA Module Folder Delete Allowed Group ${testId}`;
-    const userEmail = `qa-folder-delete-allowed-${testId}@example.com`;
-
-    openModulesList();
-    uiCreateFolder(folderName);
-    uiVerifyFolderCreated(folderName);
-
-    cy.apiFullUserOnboarding('QA Folder Delete Allowed User', userEmail, 'builder', 'password', wsName);
-    cy.visit(`/${wsSlug}`);
-    navigateToManageGroups();
-    createGroupsAndAddUserInGroup(groupName, userEmail);
-
-    cy.get(groupsSelector.groupLink(groupName)).click();
-    cy.get(groupsSelector.permissionsLink).click();
-    cy.get(groupsSelector.moduleFolderDeleteCheck).check();
-    cy.verifyToastMessage(commonSelectors.toastMessage, groupsText.permissionUpdatedToast);
-
-    cy.apiLogin(userEmail, 'password');
-    openModulesList();
-    deleteFolder(folderName);
-    cy.get(commonSelectors.folderListcard(folderName)).should('not.exist');
+    deleteFolder(adminFolderName);
+    cy.get(commonSelectors.folderListcard(adminFolderName)).should('not.exist');
   });
 });
