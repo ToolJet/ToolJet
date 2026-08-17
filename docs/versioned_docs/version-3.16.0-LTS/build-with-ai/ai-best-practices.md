@@ -11,7 +11,9 @@ Every AI conversation in ToolJet has a **context window** — the total amount o
 
 ToolJet AI shows a small indicator in the chat interface that tells you how much of the current session's context has been used. The limit per chat is **200,000 tokens**.
 
-<img className="screenshot-full img-s"  src="/img/tooljet-ai/best-practice/context.png" alt="tooljet ai doc assistant" />
+This same panel also shows your available credits and, if your workspace uses ToolJet Managed AI Server, lets you switch the LLM provider. See [Selecting an AI Model](/docs/build-with-ai/model-selection).
+
+<img className="screenshot-full img-m"  src="/img/tooljet-ai/best-practice/context-v2.png" alt="tooljet ai doc assistant" />
 
 ### What Is a Token?
 

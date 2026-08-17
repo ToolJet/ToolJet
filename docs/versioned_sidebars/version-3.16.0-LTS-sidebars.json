@@ -196,6 +196,7 @@
               "label": "Concepts & References",
               "items": [
                 "build-with-ai/ai-credits",
+                "build-with-ai/model-selection",
                 "build-with-ai/prompting101",
                 "build-with-ai/ai-best-practices"
               ]
