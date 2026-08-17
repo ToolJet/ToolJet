@@ -40,8 +40,10 @@ export const GlobalDataSourcesPage = (props) => {
   const initialUrlSelectionHandled = useRef(false);
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
+  const lastPullAt = useWorkspaceBranchesStore((state) => state.lastPullAt);
   const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
+  const prevLastPullAtRef = useRef(lastPullAt);
 
   // Refetch datasources when the active branch changes (without hard reload)
   useEffect(() => {
@@ -54,6 +56,15 @@ export const GlobalDataSourcesPage = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBranchId, environments]);
+
+  // Refetch datasources after a workspace pull (branch stays the same but content changes)
+  useEffect(() => {
+    if (prevLastPullAtRef.current !== lastPullAt && lastPullAt) {
+      prevLastPullAtRef.current = lastPullAt;
+      fetchDataSources(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastPullAt]);
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Commonly used');
