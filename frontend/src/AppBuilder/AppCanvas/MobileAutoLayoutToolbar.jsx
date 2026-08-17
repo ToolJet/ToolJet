@@ -149,13 +149,12 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <div className="tw-h-[17.5px] tw-w-px tw-bg-border-weak" />
+        {/* Nothing hidden: drop the divider with the text, or it reads as a trailing empty section. */}
+        {hiddenCount > 0 && (
+          <>
+            <div className="tw-h-[17.5px] tw-w-px tw-bg-border-weak" />
 
-        <div className="tw-flex tw-items-center tw-gap-2">
-          {hiddenCount === 0 ? (
-            <span className="tw-text-xs tw-text-text-placeholder">No hidden components</span>
-          ) : (
-            <>
+            <div className="tw-flex tw-items-center tw-gap-2">
               <span className="tw-text-xs tw-text-text-default">{hiddenCount} components not on mobile</span>
               <Button
                 variant="outline"
@@ -166,9 +165,9 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
               >
                 manage
               </Button>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       <AlertDialog open={!!confirm} onOpenChange={(next) => !next && setConfirm(null)}>
