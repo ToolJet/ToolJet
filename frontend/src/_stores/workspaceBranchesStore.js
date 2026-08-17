@@ -12,6 +12,7 @@ const initialState = {
   orgGitConfig: null,
   isPushing: false,
   isPulling: false,
+  lastPullAt: null,
   pullingModuleComponentId: null,
   remoteBranches: [],
   visibleCount: 10,
@@ -245,7 +246,7 @@ export const useWorkspaceBranchesStore = create(
           try {
             const branchId = targetBranchId || get().activeBranchId;
             const result = await workspaceBranchesService.pullWorkspace(sourceBranch, branchId);
-            set({ isPulling: false });
+            set({ isPulling: false, lastPullAt: Date.now() });
             return result;
           } catch (error) {
             set({ isPulling: false });
