@@ -392,6 +392,12 @@ export const Table = (props) => {
     [component.component.definition.properties.useDynamicColumn?.value]
   );
 
+  const autogenerateColumns = useMemo(
+    () => resolveReferences(component.component.definition.properties.autogenerateColumns?.value) ?? true,
+    [component.component.definition.properties.autogenerateColumns?.value]
+  );
+  const isColumnSchemaLocked = !autogenerateColumns;
+
   const allowSelection = useMemo(() => {
     const allowSelectionValue = component.component.definition.properties?.allowSelection?.value;
     if (allowSelectionValue) {
@@ -602,7 +608,34 @@ export const Table = (props) => {
                       {t('widget.Table.addNewColumn', ' Add new column')}
                     </AddNewButton>
                   </div>
-                  {!useDynamicColumn && <div className="py-2">{renderCustomElement('lockColumnSchema')}</div>}
+                  {!useDynamicColumn && (
+                    <div className="py-2">
+                      <ProgramaticallyHandleProperties
+                        label="Lock column schema"
+                        currentState={currentState}
+                        darkMode={darkMode}
+                        callbackFunction={(_index, _property, lockOn) =>
+                          paramUpdated(
+                            { name: 'autogenerateColumns' },
+                            'value',
+                            !resolveReferences(lockOn),
+                            'properties'
+                          )
+                        }
+                        property="lockColumnSchema"
+                        props={{
+                          lockColumnSchema: `{{${isColumnSchemaLocked}}}`,
+                        }}
+                        component={component}
+                        paramMeta={{
+                          type: 'toggle',
+                          displayName: 'Lock column schema',
+                          isFxNotRequired: true,
+                        }}
+                        paramType="properties"
+                      />
+                    </div>
+                  )}
                   <ProgramaticallyHandleProperties
                     label="Make all columns editable"
                     currentState={currentState}
@@ -749,6 +782,7 @@ export const Table = (props) => {
       darkMode,
       renderCustomElement,
       useDynamicColumn,
+      isColumnSchemaLocked,
       handleDragEnd,
       filteredColumns,
       isRootCloseEnabled,

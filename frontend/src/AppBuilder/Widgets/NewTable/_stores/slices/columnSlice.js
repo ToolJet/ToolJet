@@ -15,7 +15,6 @@ export const createColumnSlice = (set, get) => ({
     autogenerateColumnsFlag,
     columnDeletionHistory,
     shouldAutogenerateColumns,
-    lockColumnSchema,
     moduleId = 'canvas'
   ) => {
     set(
@@ -28,18 +27,20 @@ export const createColumnSlice = (set, get) => ({
           state.components[id].columnDetails.useDynamicColumn = false;
         }
         /*
-          Locked schema: use the configured columns as-is so a change in the data shape can neither
-          add nor drop columns. Dynamic columns own the schema outright, and an empty schema is still
-          allowed to generate once so the table cannot be locked into a permanently blank state.
+          Locked schema: autogenerateColumns.value false means keep configured columns as-is so a
+          change in the data shape can neither add nor drop columns. Dynamic columns own the schema
+          outright, and an empty schema is still allowed to generate once so the table cannot be
+          locked into a permanently blank state. generateColumns is forced on whenever this skip
+          does not fire so the inner flag cannot return undefined.
         */
-        const isSchemaLocked = lockColumnSchema && !isDynamicColumnSelected && !isEmpty(columns);
+        const isSchemaLocked = !autogenerateColumnsFlag && !isDynamicColumnSelected && !isEmpty(columns);
         if (shouldAutogenerateColumns && !isSchemaLocked) {
           const columnProperties = get().generateColumns(
             id,
             columns,
             firstRowOfTable,
             isDynamicColumnSelected,
-            autogenerateColumnsFlag,
+            true,
             columnDeletionHistory,
             columnData,
             moduleId
