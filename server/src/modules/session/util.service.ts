@@ -398,6 +398,7 @@ export class SessionUtilService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        aiBuildNotificationsEnabled: user.aiBuildNotificationsEnabled,
         noWorkspaceAttachedInTheSession,
         isAllWorkspacesArchived,
         currentOrganizationId,

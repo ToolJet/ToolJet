@@ -25,6 +25,15 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'Text',
   'Table',
   'ModuleViewer',
+  'Image',
+  'Statistics',
+  'Link',
+  'RadioButtonV2',
+  'Tags',
+  'Timeline',
+  'FilePicker',
+  'ReorderableList',
+  'ButtonGroupV2',
 ];
 
 const WidgetWrapper = memo(
@@ -74,6 +83,15 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
     );
+    const resolvedAlignment = useStore(
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.styles?.alignment
+    );
+    const resolvedLegacyInputSize = useStore(
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.legacyInputSize
+    );
+    const resolvedLabel = useStore(
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.label
+    );
     const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
     const temporaryLayouts = useStore((state) => {
       const layoutContext = indices ?? subContainerIndex;
@@ -97,10 +115,6 @@ const WidgetWrapper = memo(
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
-    // Dont remove this is being used to re-render the height calculations
-    const _label = useStore(
-      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.label
-    );
     // Dont remove - used to re-render height calculations when textSize changes (ProgressBar)
     // eslint-disable-next-line no-unused-vars
     const textSize = useStore(
@@ -157,7 +171,15 @@ const WidgetWrapper = memo(
     }
 
     const gridWidthPx = gridWidth * newLayoutData?.width;
-    const gridHeight = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition, moduleId);
+    const gridHeight = calculateMoveableBoxHeightWithId(
+      id,
+      currentLayout,
+      stylesDefinition,
+      moduleId,
+      resolvedAlignment,
+      resolvedLegacyInputSize,
+      resolvedLabel
+    );
 
     // Calculate the final height based on visibility and temporary layouts.
     // Hidden widgets collapse to 0 in both edit and view modes — in edit mode
