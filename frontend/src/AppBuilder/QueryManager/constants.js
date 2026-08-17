@@ -161,4 +161,5 @@ export const AI_QUERY_SUPPORTED_KINDS = [
   'servicenow',
   'quickbooks',
   'hubspot',
+  'confluence',
 ];
