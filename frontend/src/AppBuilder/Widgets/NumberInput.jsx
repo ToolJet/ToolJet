@@ -38,7 +38,7 @@ export const NumberInput = (props) => {
 
   const handleIncrement = (e) => {
     e.preventDefault();
-    const newValue = (inputLogic.value || 0) + 1;
+    const newValue = Number(((inputLogic.value || 0) + 1).toFixed(props.properties.decimalPlaces));
     inputLogic.setInputValue(newValue);
     inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
@@ -48,7 +48,7 @@ export const NumberInput = (props) => {
 
   const handleDecrement = (e) => {
     e.preventDefault();
-    const newValue = (inputLogic.value || 0) - 1;
+    const newValue = Number(((inputLogic.value || 0) - 1).toFixed(props.properties.decimalPlaces));
     inputLogic.setInputValue(newValue);
     inputLogic.setShowValidationError(true);
     if (!isNaN(newValue)) {
