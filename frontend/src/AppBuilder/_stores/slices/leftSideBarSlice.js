@@ -3,9 +3,9 @@ const storedIsSidebarPinned = localStorage.getItem('isLeftSideBarPinned') === 't
 const storedSelectedSidebarItem = !storedIsSidebarPinned
   ? null
   : localStorage.getItem('selectedSidebarItem') &&
-      validSidebarItems.includes(localStorage.getItem('selectedSidebarItem'))
-    ? localStorage.getItem('selectedSidebarItem')
-    : 'page';
+    validSidebarItems.includes(localStorage.getItem('selectedSidebarItem'))
+  ? localStorage.getItem('selectedSidebarItem')
+  : 'page';
 
 const initialState = {
   isLeftSideBarPinned: storedIsSidebarPinned,

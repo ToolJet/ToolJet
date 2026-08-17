@@ -42,7 +42,7 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
   const parentType = parentId ? allComponents?.[parentId]?.component?.component : null;
   const isFlexChild = parentType === 'FlexContainer';
 
-  const layoutData = isFlexChild ? (allComponents?.[selectedComponentId]?.layouts?.[currentLayout] ?? {}) : {};
+  const layoutData = isFlexChild ? allComponents?.[selectedComponentId]?.layouts?.[currentLayout] ?? {} : {};
 
   const containerWidthPx = (parentId && subContainerWidths?.[parentId]) || subContainerWidths?.canvas;
   const gridCellWidthPx = containerWidthPx / NO_OF_GRIDS;

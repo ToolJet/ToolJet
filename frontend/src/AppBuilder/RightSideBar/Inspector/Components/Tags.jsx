@@ -201,8 +201,8 @@ export const Tags = ({
       item?.iconVisibility?.value !== undefined
         ? getResolvedValue(item?.iconVisibility?.value)
         : item?.iconVisibility !== undefined
-          ? item?.iconVisibility
-          : false;
+        ? item?.iconVisibility
+        : false;
 
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>

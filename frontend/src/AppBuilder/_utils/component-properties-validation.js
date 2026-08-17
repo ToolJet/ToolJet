@@ -124,8 +124,8 @@ export const validateProperties = (resolvedProperties, propertyDefinitions, type
       const defaultValue = validationDefinition?.defaultValue
         ? validationDefinition?.defaultValue
         : validationDefinition
-          ? findDefault(validationDefinition, value)
-          : undefined;
+        ? findDefault(validationDefinition, value)
+        : undefined;
 
       const schema = _.isUndefined(validationDefinition)
         ? any()

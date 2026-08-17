@@ -163,9 +163,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
       ? setShowOnboarding(true)
       : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
-          (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
-        ? setShowJoinWorkspace(true)
-        : setUpAccount(e);
+        (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
+      ? setShowJoinWorkspace(true)
+      : setUpAccount(e);
   };
 
   return (
@@ -247,8 +247,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                                       ? '#D1D5DB'
                                       : '#656565'
                                     : password?.length
-                                      ? '#384151'
-                                      : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                                 }
                               />
                             ) : (
@@ -259,8 +259,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                                       ? '#D1D5DB'
                                       : '#656565'
                                     : password?.length
-                                      ? '#384151'
-                                      : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                                 }
                               />
                             )}
