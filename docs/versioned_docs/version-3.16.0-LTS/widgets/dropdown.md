@@ -30,15 +30,18 @@ Allows you to add options to the dropdown field. You can click on `Add new optio
       {
         label: "option1",
         value: 1,
+        caption: "First option",
         disable: false,
         visible: true,
         default: true,
       },
-      { label: "option2", value: 2, disable: false, visible: true },
-      { label: "option3", value: 3, disable: false, visible: true },
+      { label: "option2", value: 2, caption: null, disable: false, visible: true },
+      { label: "option3", value: 3, caption: null, disable: false, visible: true },
     ];
 }}
 ```
+
+`caption` is optional. When set, it displays additional descriptive text beneath the option label in the dropdown list. It does not appear in the selected value shown after an option is chosen. Default is `null`.
 
 2. Passing an array of objects with a default value from a **Table** component's selected row:
 
@@ -157,9 +160,9 @@ components.dropdown1.selectOption(2);
 | searchText | This variable is initially empty and holds the value whenever the user searches on the dropdown. | `{{components.dropdown1.searchText}}` |
 | label | Holds the label name of the dropdown. | `{{components.dropdown1.label}}` |
 | value | Holds the value selected by the user in the component. | `{{components.dropdown1.value}}` |
-| selectedOption | Holds the label and value of the selected option in array form. | `{{components.dropdown1.selectedOption.label}}` |
+| selectedOption | Holds the label, value, and caption of the selected option. | `{{components.dropdown1.selectedOption.label}}`, `{{components.dropdown1.selectedOption.caption}}` |
 | isValid | Indicates if the input meets validation criteria. | `{{components.dropdown1.isValid}}` |
-| options | Holds all the option values of the dropdown in array form. | `{{components.dropdown1.options}}` |
+| options | Holds all the option values of the dropdown. Each entry includes `label`, `value`, and `caption`. | `{{components.dropdown1.options}}` |
 | isVisible | Indicates if the component is visible. | `{{components.dropdown1.isVisible}}` |
 | isLoading | Indicates if the component is loading.  | `{{components.dropdown1.isLoading}}` |
 | isDisabled | Indicates if the component is disabled. | `{{components.dropdown1.isDisabled}}` |
@@ -207,6 +210,7 @@ components.dropdown1.selectOption(2);
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Text | Sets the text color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Placeholder text | Sets the color of the placeholder text displayed when no option is selected. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Accent | Sets the color of the border when the dropdown is opened. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Error text | Sets the text color of validation message that displays.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Icon | Allows you to select an icon for the component. | Enable the icon visibility, select icon and icon color |
@@ -217,3 +221,13 @@ components.dropdown1.selectOption(2);
 
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::

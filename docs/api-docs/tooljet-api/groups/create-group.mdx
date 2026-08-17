@@ -34,32 +34,32 @@ Creates a new user group in a workspace with optional workspace-level permission
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/workspace/{workspaceId}/groups" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "name": "Platform Engineers",
-  "permissions": {
-    "appCreate": true,
-    "appDelete": false
-  },
-  "granularPermissions": [
-    {
-      "type": "app",
-      "applyToAll": false,
-      "resources": [
-        "app-uuid-1"
-      ],
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/workspace/{workspaceId}/groups" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "name": "Platform Engineers",
       "permissions": {
-        "canEdit": true,
-        "hideFromDashboard": false,
-        "environments": [
-          "production"
-        ]
-      }
-    }
-  ]
-}'`} />
+        "appCreate": true,
+        "appDelete": false
+      },
+      "granularPermissions": [
+        {
+          "type": "app",
+          "applyToAll": false,
+          "resources": [
+            "app-uuid-1"
+          ],
+          "permissions": {
+            "canEdit": true,
+            "hideFromDashboard": false,
+            "environments": [
+              "production"
+            ]
+          }
+        }
+      ]
+    }'`} />
 
 <ResponseExample statusCode="201" body='{"message": "Group created successfully."}' />
 

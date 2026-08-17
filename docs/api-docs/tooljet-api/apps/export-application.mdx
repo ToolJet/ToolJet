@@ -24,9 +24,9 @@ Exports a ToolJet application, including pages, queries, data sources, environme
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/export/workspace/{workspaceId}/apps/{appId}?exportTJDB=<exportTJDB>&appVersion=<appVersion>&exportAllVersions=<exportAllVersions>" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json"`} />
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/export/workspace/{workspaceId}/apps/{appId}?exportTJDB=<exportTJDB>&appVersion=<appVersion>&exportAllVersions=<exportAllVersions>" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json"`} />
 
 <ResponseExample statusCode="200" body={`{
   "tooljet_version": "3.x.x",

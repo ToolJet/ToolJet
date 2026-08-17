@@ -5,8 +5,8 @@ title: Prometheus
 
 ToolJet integrates with Prometheus to help you fetch and display metrics in your app. You can use this plugin to run PromQL queries and show real-time or historical data from your Prometheus server. It’s useful for building internal dashboards to monitor systems and track performance.
 
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection

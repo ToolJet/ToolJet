@@ -5,8 +5,6 @@ title: Date Range Picker
 
 The **Range Picker** component enables users to select a range of dates. It can be used in booking platforms, report filtering, scheduling systems, etc.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Properties
 
 | Property           | Description                                                     | Expected Value                                                |
@@ -16,9 +14,9 @@ The **Range Picker** component enables users to select a range of dates. It can 
 | Default end date   | Set the end date to be selected by default in the component.    | Date in correct format (e.g., 10/04/2024).                    |
 | Format             | Defines the date format. Default date format is **DD/MM/YYYY**. | Date format in ISO 8601 defined formats (e.g., `MM/DD/YYYY`). |
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
+:::caution
+Click the **fx** button next to **Format** to enter a custom format string. ToolJet uses **[Moment.js](https://momentjs.com/docs/#/displaying/format/)** to parse and format dates, so the format string must use Moment.js tokens, and these tokens are case-sensitive — for example, `D` is the day of the month (`1`–`31`), while lowercase `d` is the day of the week (`0`–`6`, Sunday to Saturday). Also note that `YYYY` gives a 4-digit year, but lowercase `yyyy` isn't a valid Moment.js token and gets rendered as literal text. Use a format like `MMM D, YYYY` (e.g., `Jan 5, 2024`), not `MMM d, yyyy`.
+:::
 
 ## Events
 
@@ -31,10 +29,6 @@ The **Range Picker** component enables users to select a range of dates. It can 
 :::info
 Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -58,10 +52,6 @@ Following actions of component can be controlled using the Component Specific Ac
 | setLoading()                                 | Sets the loading state of the component.                      | `components.daterangepicker1.setLoading()`                     |
 | setDisable()                                 | Disables the component.                                       | `components.daterangepicker1.setDisable()`                     |
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Exposed Variables
 
 Following exposed variables can be dynamically accessed using the given JS query:
@@ -82,19 +72,15 @@ Following exposed variables can be dynamically accessed using the given JS query
 | isVisible         | Indicates if the component is visible.                            | `{{components.daterangepicker1.isVisible}}`         |
 | isDisabled        | Indicates if the component is disabled.                           | `{{components.daterangepicker1.isDisabled}}`        |
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Validation
 
-| <div style={{ width:"200px"}}> Validation Option </div> | <div style={{ width:"300px"}}> Description </div>                  | <div style={{width: "500px"}}> Expected Value </div>                                                                         |
-| :------------------------------------------------------ | :----------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Make this field mandatory                               | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Min Date                                                | Sets the minimum date allowed.                                     | Date in correct format (e.g. `01/01/2020`).                                                                                  |
-| Max Date                                                | Sets the maximum date allowed.                                     | Date in correct format (e.g. `31/12/2026`).                                                                                  |
-| Disabled dates                                          | Sets the dates that are not acceptable.                            | Date in correct format (e.g. `23/07/2024`).                                                                                  |
-| Custom validation                                       | Specifies a validation error message for specific conditions.      | Logical Expression                                                                                                           |
+| <div style={{ width:"200px"}}> Validation Option </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{width: "500px"}}> Expected Value </div> |
+| :------------------------------------------------------ | :------------------------------------------------ | :--------------------------------------------------- |
+| Make this field mandatory | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Min Date | Sets the minimum date allowed. | Date in correct format (e.g. `01/01/2020`). |
+| Max Date | Sets the maximum date allowed. | Date in correct format (e.g. `31/12/2026`). |
+| Disabled dates | Sets the dates that are not acceptable. | Date in correct format (e.g. `23/07/2024`). |
+| Custom validation | Specifies a validation error message for specific conditions. | Logical Expression |
 
 To add regex inside `Custom Validation`, you can use the below format:
 
@@ -113,33 +99,21 @@ To add regex inside `Custom Validation`, you can use the below format:
 }
 ```
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Additional Actions
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                            | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
-| :------------------------------------------- | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility                                   | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable                                      | Enables or disables the component.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip                                      | Provides additional information on hover.                                    | String (e.g., `Select your booking dates.` ).                                                                                |
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. | String (e.g., `Select your booking dates.` ). |
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                                              |
-| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Styles
 
@@ -172,8 +146,16 @@ To add regex inside `Custom Validation`, you can use the below format:
 | Box shadow    | Applies shadow styling to the input field.                               |
 | Padding       | Sets the internal spacing between the content and the input field edges. |
 
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
+
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
 :::
-
-</div>

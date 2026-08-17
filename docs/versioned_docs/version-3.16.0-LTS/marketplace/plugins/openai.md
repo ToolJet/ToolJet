@@ -5,8 +5,8 @@ title: OpenAI
 
 ToolJet integrates with OpenAI to utilize its AI capabilities. This integration enables ToolJet to generate text based on user prompts, facilitate chat interactions, create images tailored to specific inputs, and generate vector embeddings.
 
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
@@ -60,8 +60,6 @@ The function of this operation is to examine the user's input and generate a sui
 - **Stop sequence**: This Stop sequence/parameter is used to specify when the API should stop generating text completions. This parameter is optional and can be used to customize the length and quality of the generated text.
 - **Suffix**: The suffix that follows the inserted text completion.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/chat-v4.png" alt="Chat Operation" />
-
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
@@ -74,6 +72,8 @@ Stop sequence: END
 Suffix: \n
 ```
 </details>
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/chat-v4.png" alt="Chat Operation" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -102,8 +102,6 @@ This operation generates AI images based on the given prompt.
     - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
     - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/generate-image-v4.png" alt="Generate AI Images Operation" />
-
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
@@ -113,6 +111,8 @@ Prompt: A futuristic cityscape with flying cars and holographic billboards at su
 Size(in pixels): 1024x1024
 ```
 </details>
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/generate-image-v4.png" alt="Generate AI Images Operation" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -146,8 +146,6 @@ This operation is used to generate vector embeddings from the given text, which 
 - **Encoding format**: Specifies the output format of the vector embedding from the dropdown, float or base64.
 - **Dimensions**: Defines the number of values in the generated embedding vector, affecting its size and level of detail.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/generate-embed.png" alt="Generate Vector Embedding" />
-
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
@@ -158,6 +156,8 @@ Encoding format: Float
 Dimensions: 10
 ```
 </details>
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/generate-embed.png" alt="Generate Vector Embedding" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>

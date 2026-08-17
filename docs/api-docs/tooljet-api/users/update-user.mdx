@@ -26,14 +26,14 @@ Partially updates fields of a user. Returns 200 on success.
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{identifier}" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "name": "Jane Doe",
-  "email": "jane.doe@example.com",
-  "status": "active"
-}'`} />
+<RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{identifier}" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "name": "Jane Doe",
+      "email": "jane.doe@example.com",
+      "status": "active"
+    }'`} />
 
 **Response:** `200`
 

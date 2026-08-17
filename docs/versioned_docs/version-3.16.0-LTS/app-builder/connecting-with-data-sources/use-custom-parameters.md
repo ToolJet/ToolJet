@@ -67,3 +67,52 @@ In this example, we will demonstrate how to use custom parameters in a query by 
 **Note:** You can also use parameters in JavaScript queries. Learn more about [JS Query Parameter](/docs/data-sources/run-js/#parameters-in-run-javascript-code). 
 
 <img className="screenshot-full img-full" src="/img/how-to/custom-parameters/param-4.png" alt="How to: use custom parameters" />
+
+## Running Queries with Callbacks
+
+When running a query programmatically using `queries.<queryName>.run()`, you can pass an optional second argument with `onSuccess` and `onFailure` callbacks to handle the result inline — without wiring up separate event handlers.
+
+**Syntax:**
+
+```js
+queries.<queryName>.run(
+  { param1: value1, param2: value2 },  // parameters (first argument)
+  {                                     // options (second argument, optional)
+    onSuccess: (data) => {
+      // runs when the query completes successfully
+      // 'data' contains the query result
+    },
+    onFailure: (error) => {
+      // runs when the query fails
+      // 'error' contains error information
+    }
+  }
+)
+```
+
+Both `onSuccess` and `onFailure` are optional — include only the ones you need.
+
+**Example:**
+
+```js
+queries.submitOrder.run(
+  { orderId: components.orderTable.selectedRow.id },
+  {
+    onSuccess: (data) => {
+      actions.showAlert('success', `Order ${data.orderId} submitted`);
+      queries.refreshOrders.run();
+    },
+    onFailure: (error) => {
+      actions.showAlert('error', 'Submission failed — please try again');
+    }
+  }
+);
+```
+
+If no parameters are needed, pass an empty object or omit the first argument entirely and pass only the options:
+
+```js
+queries.fetchReport.run({}, {
+  onSuccess: (data) => components.reportViewer.setData(data)
+});
+```

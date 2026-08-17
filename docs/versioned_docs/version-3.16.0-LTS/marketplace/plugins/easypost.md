@@ -5,6 +5,10 @@ title: EasyPost
 
 Using the **EasyPost** plugin in your ToolJet application, you can simplify managing shipping and logistics operations such as purchasing labels, tracking shipments, verifying addresses, and more.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect **EasyPost** with ToolJet, you will need an EasyPost API Key. Follow this [guide](https://support.easypost.com/hc/en-us/articles/360004588571-API-Keys) to generate the required API key.

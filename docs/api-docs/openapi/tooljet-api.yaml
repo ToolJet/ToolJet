@@ -29,7 +29,7 @@ paths:
       summary: Get All Users
       description: >
         Retrieves a list of all users along with their workspace permissions and
-        group memberships. Optionally filter by group names.
+        group memberships. Optionally filter by group names and/or status.
       tags: [Users]
       parameters:
         - name: group_names
@@ -37,7 +37,14 @@ paths:
           required: false
           schema:
             type: string
-          description: Comma-separated list of group names to filter by (e.g. `admin,end-user`).
+          description: Comma-separated list of group names to filter by (e.g. `admin,end-user`), including custom groups.
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, invited, archived, verified]
+          description: Filter users by status. Accepted values are `active`, `invited`, `archived`, and `verified`.
       responses:
         "200":
           description: Array of user objects.

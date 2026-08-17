@@ -7,9 +7,24 @@ title: Group Admin Role
 The Group Admin Role is currently in beta and not recommended for production use.
 :::
 
-In large organizations, workspace resources like apps, data sources, and modules are often organized into custom groups by project or team. Managing who belongs to which group is typically separate from managing what those groups can access.
+In large organizations, workspace resources like apps, data sources, and modules are often organized into custom groups by project or team. Resource configuration — which apps and data sources a group can access — is typically managed by DevOps or IT teams. Day-to-day membership (who belongs to which group) is often delegated to team leads such as Engineering Managers or Product Managers. These two responsibilities are intentionally kept separate.
 
 The **Group Admin** role is designed for exactly this separation. A Group Admin can manage user membership within specific custom groups — adding or removing users as teams change — without having access to modify the group's permissions or any other workspace settings. This keeps user movement operational while resource control remains with workspace admins.
+
+## Workspace Admin vs Group Admin
+
+| Capability | Workspace Admin | Group Admin |
+|---|:---:|:---:|
+| Invite new users to the workspace | ✓ | ✗ |
+| Change a user's role | ✓ | ✗ |
+| Create, delete, or rename custom groups | ✓ | ✗ |
+| Manage group permissions | ✓ | ✗ |
+| Assign or remove Group Admins | ✓ | ✗ |
+| Add users to assigned custom groups | ✓ | ✓ |
+| Remove users from assigned custom groups | ✓ | ✓ |
+| View permissions tab of assigned groups | ✓ | Read-only |
+| View all custom groups | ✓ | Assigned groups only |
+| Access workspace settings | ✓ | Groups and Themes only |
 
 ## What a Group Admin Can Do
 

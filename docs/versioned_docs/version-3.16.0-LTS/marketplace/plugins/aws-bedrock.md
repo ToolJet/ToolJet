@@ -5,6 +5,10 @@ title: AWS Bedrock
 
 Use the AWS Bedrock plugin in ToolJet to list available foundation models and generate content using them, right from your ToolJet application. This makes it easy to build AI-powered features like text generation, summarization, and classification with minimal setup.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect AWS Bedrock with ToolJet, following credentials are required:
@@ -24,10 +28,12 @@ You can generate the required credentials from the AWS IAM Console, refer to [Ge
 Sends input to the selected foundation model and returns the generated output based on the model's capabilities (e.g., text generation or summarization).
 
 **Required Parameters**
+
 - **Model ID**: The identifier of the foundation model to be used for content generation.
 - **Request body**: The input payload sent to the selected model, containing the prompt or data for generation.
 
 **Optional Parameter**
+
 - **Content-Type**: Specifies the format of the request body, typically `application/json`.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/bedrock/generate-v2.png" alt="AWS Bedrock query"/>
@@ -36,7 +42,8 @@ Sends input to the selected foundation model and returns the generated output ba
 
 Fetches all available foundation models from your AWS Bedrock account, including model ID, provider, and supported input/output types.
 
-**Optional Parameter**
+**Optional Parameters**
+
 - **Provider**: Filter models by the model provider (e.g., Anthropic, Amazon, Cohere).
 - **Customization Type**: Filter by customization type such as fine-tuned or base models.
 - **Inference Type**: Filter models based on the inference mode, like on-demand or provisioned.

@@ -5,6 +5,10 @@ title: Hugging Face
 
 Hugging Face integration with ToolJet enables you to use advanced natural language processing capabilities. With Hugging Face's state-of-the-art models, you can generate high-quality content and summarize text seamlessly.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 This plugin leverages the Inference API from Hugging Face to ensure seamless integration with supported models. To confirm if a model is supported, refer to the Inference API section on its page on the **[Hugging Face](https://huggingface.co/models)**.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/huggingface/inference-api.png" alt="Hugging Face Configuration" />

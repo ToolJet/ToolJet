@@ -30,21 +30,21 @@ Replaces the entire userDetails (metadata) for a user in a workspace. This is a 
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/workspace/{workspaceIdentifier}/user/{userIdentifier}" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "userDetails": [
-    {
-      "key": "department",
-      "value": "Platform"
-    },
-    {
-      "key": "title",
-      "value": "Senior Engineer"
-    }
-  ]
-}'`} />
+<RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/workspace/{workspaceIdentifier}/user/{userIdentifier}" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "userDetails": [
+        {
+          "key": "department",
+          "value": "Platform"
+        },
+        {
+          "key": "title",
+          "value": "Senior Engineer"
+        }
+      ]
+    }'`} />
 
 **Response:** `200`
 

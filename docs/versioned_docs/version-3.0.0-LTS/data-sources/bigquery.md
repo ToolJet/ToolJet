@@ -58,7 +58,7 @@ How to get a Private key?
 </div>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/3.0.0-LTS/tutorial/transformations)
 :::
 
 </div>

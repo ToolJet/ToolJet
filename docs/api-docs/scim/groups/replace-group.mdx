@@ -22,10 +22,10 @@ Replaces all attributes of a group. Attributes not included in the request body 
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X PUT "https://{your-domain}/api/scim/v2/Groups/{id}" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{}'`} />
+<RequestExample code={`curl -X PUT "https://{your-domain}/api/scim/v2/Groups/{id}" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{}'`} />
 
 <ResponseExample statusCode="200" body={`{
   "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],

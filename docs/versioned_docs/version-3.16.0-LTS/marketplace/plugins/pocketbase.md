@@ -5,15 +5,18 @@ title: PocketBase
 
 ToolJet connects to your PocketBase database, allowing you to directly interact with your PocketBase backend from the convenience of your ToolJet application.
 
-:::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
 
-- To connect to PocketBase, you need the Host URL, email, and password. The Host URL is the URL of your PocketBase instance. Email and password are the credentials of the user who has access to the PocketBase instance.
+- To connect to PocketBase, you need the **Host URL**, **Email**, and **Password**. The Host URL is the URL of your PocketBase instance. Email and password are the credentials of the user who has access to the PocketBase instance.
+
 - Establish a connection to PocketBase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+
 - Enter your Host URL, email and password into their designated fields.
+
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/connection.png" alt="PocketBase datasource configuration" />

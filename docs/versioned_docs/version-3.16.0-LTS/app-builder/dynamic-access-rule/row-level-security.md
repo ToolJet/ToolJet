@@ -7,6 +7,21 @@ title: Row Level Security
 
 Row-level security in ToolJet lets you control which records a user can see or interact with, even when multiple users access the same table. This is useful when you want to restrict access to specific rows based on [custom groups](/docs/user-management/role-based-access/custom-groups/) or [default user roles](/docs/user-management/role-based-access/user-roles#default-user-roles). Row-level security is applied on the server side, ensuring the logic is secure and hidden from the client.
 
+Row-level security is built on [Server-Side Variables](/docs/app-builder/dynamic-access-rule/server-side-variables). You reference the current user's identity through `globals.server.currentUser`, and ToolJet resolves those values on the server before the query runs, so users cannot tamper with the filter from the browser.
+
+:::caution
+A filter written with the client-side `{{globals.currentUser.*}}` variable is resolved in the browser, so a user can modify its value (for example, through browser dev tools) to return another user's rows. Client-side filtering is a presentation convenience, not a security control.
+:::
+
+:::info
+Server-side variables (`{{globals.server.currentUser.*}}`) are resolved on the server from the authenticated session, so the filter cannot be bypassed. Always use them for data segregation that is a security or compliance requirement.
+:::
+
+## Prerequisites
+
+- Row-level security relies on server-side variables, which are available on **Enterprise** plans only.
+- Filtering is written inside the [Query Manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries), so it works with all data sources except RunJS and RunPy.
+
 ## Common Use Cases
 
 - **Department-specific data**: Restrict HR data to HR team, Sales data to Sales team.
@@ -19,13 +34,24 @@ Row-level security in ToolJet lets you control which records a user can see or i
 - When you need server-side data filtering that can't be bypassed by the client.
 - When building applications where data segregation is a compliance requirement.
 
-## Server-Side User Groups Syntax
+## Server-Side User Syntax
 
-The below syntax fetches the groups for the current user from the server side. Groups include both custom groups and default user roles like `admin` and `end-user`.
+You filter rows by referencing the current user's identity in your query. The most common approaches are filtering by group membership or by a user attribute such as email or ID.
+
+The syntax below fetches the groups for the current user from the server side. Groups include both custom groups and default user roles like `admin` and `end-user`, and the list always begins with `all_users`.
 
 ```bash
 {{globals.server.currentUser.groups}}
 ```
+
+To filter by a specific user attribute instead, reference it directly:
+
+```bash
+{{globals.server.currentUser.email}}
+{{globals.server.currentUser.id}}
+```
+
+For the full list of available attributes, see [Server-Side Variables](/docs/app-builder/dynamic-access-rule/server-side-variables).
 
 :::info
 The above syntax will work with all data sources except RunJS and RunPy.
@@ -75,7 +101,38 @@ Users assigned to the **Marketing** group will see:
 | 7  | Campaign budget approval delayed   | Pending  | Marketing  |
 | 8  | Social media calendar not updated  | Open     | Marketing  |
 
-This setup ensures that a shared internal tool remains secure, with minimal query changes and no duplication of logic or views—making it ideal for HR dashboards, ticketing systems, CRM tools, and more.
+## Example: Department-Specific View Using MySQL
+
+MySQL does not support the `ANY (...)` array operator used above, so you use the `FIND_IN_SET` function instead. It checks whether a value exists within a comma-separated string, which matches the format that `globals.server.currentUser.groups` resolves to.
+
+Using the same **issue_reports** table, the query becomes:
+
+```sql
+SELECT * FROM issue_reports
+WHERE FIND_IN_SET(department, '{{globals.server.currentUser.groups}}') > 0;
+```
+
+**How This Works:**
+- `{{globals.server.currentUser.groups}}` resolves to a comma-separated string of the user's groups, such as `all_users,Engineering,HR`.
+- `FIND_IN_SET(department, ...)` returns the position of `department` within that string, or `0` if it is not present.
+- `> 0` keeps only the rows whose department matches one of the user's groups.
+
+The filtered results are identical to the PostgreSQL example above.
+
+## Example: Restricting Rows to the Current User
+
+When rows belong to individual users rather than departments, filter on a unique attribute such as email or ID instead of groups. This ensures each user sees only their own records.
+
+Suppose an **orders** table stores an `owner_email` column identifying who created each order. To return only the current user's orders:
+
+```sql
+SELECT * FROM orders
+WHERE owner_email = '{{globals.server.currentUser.email}}';
+```
+
+Because `globals.server.currentUser.email` is resolved on the server, users cannot change the filter from the client to view another user's data.
+
+This setup ensures that a shared internal tool remains secure, with minimal query changes and no duplication of logic or views, making it ideal for HR dashboards, ticketing systems, CRM tools, and more.
 
 <br/>
 ---

@@ -3,16 +3,23 @@ id: copy-to-clipboard
 title: Copy to clipboard
 ---
 
-Use this action to copy the text to the clipboard.
+The **Copy to clipboard** action copies text to the user's clipboard.
 
-Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`
+## Configuration
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Content to copy | The text to copy to the clipboard | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
+
+<img className="screenshot-full img-s" src="/img/actions/copytoclipboard/copy-v3.png" alt="ToolJet - Action reference - Copy to clipboard" />
+
+## Triggering via RunJS
+
+```js
+actions.copyToClipboard('<contentToCopy>');
+```
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
 :::
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/copytoclipboard/copy2.png" alt="ToolJet - Action reference - Copy to clipboard" width="700" />
-
-</div>

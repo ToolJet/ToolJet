@@ -219,7 +219,7 @@ components.listview1.children[0].button1.disable(true) // disables the button1 c
 <br/>
 
 :::caution
-Currently, only those child components can be controlled using the javascript queries that have component specific actions implemented. To check if a component has component specific actions implemented, refer to the document of that **[specific component](/docs/widgets/overview)**.
+Currently, only those child components can be controlled using the javascript queries that have component specific actions implemented. To check if a component has component specific actions implemented, refer to the document of that **[specific component](/docs/3.5.0-LTS/widgets/overview)**.
 :::
 
 </div>

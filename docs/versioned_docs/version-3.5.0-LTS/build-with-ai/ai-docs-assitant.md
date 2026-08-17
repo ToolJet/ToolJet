@@ -34,7 +34,7 @@ You can access the AI Docs Assistant under the **Learn** tab in the Build with A
 </div>
 
 
- 2. Dynamic columns in [Table](/docs/widgets/table/table-properties/) component:
+ 2. Dynamic columns in [Table](/docs/3.5.0-LTS/widgets/table) component:
 
  **Prompt**: Can you explain dynamic columns in the Table component?
 

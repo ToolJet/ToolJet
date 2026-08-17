@@ -1,0 +1,81 @@
+---
+id: export-table
+title: "Export Table as CSV"
+---
+
+<EndpointHeader method="POST" path="/workspace/{workspaceId}/tooljet-db/tables/{tableName}/export" />
+
+<ApiColumns>
+<ApiLeft>
+
+Fetches rows from a ToolJet Database table and returns them as a downloadable CSV file. Supports column selection, multi-condition filtering, multi-column sorting, and offset-based pagination. Maximum 1,000 rows per request.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"UUID","required":true,"description":"The unique identifier of the workspace that owns the table. Must be a valid UUID.","in":"path"},{"name":"tableName","type":"string","required":true,"description":"Exact name of the ToolJet Database table to export. Case-sensitive.","in":"path"}]} />
+
+<ParamsTable title="Request Body" params={[{"name":"filters","type":"FilterCondition[]","required":false,"description":"Array of filter conditions. All conditions are combined with AND logic.","in":"body"},{"name":"sort","type":"SortCondition[]","required":false,"description":"Array of sort conditions applied in order.","in":"body"},{"name":"select","type":"string[]","required":false,"description":"Column names to include in the CSV output, in the order listed. Defaults to all columns.","in":"body"},{"name":"limit","type":"integer","required":false,"description":"Maximum rows to return. Must be between 1 and 1,000 inclusive. Defaults to 1,000.","in":"body"},{"name":"offset","type":"integer","required":false,"description":"Number of rows to skip before returning results. Must be ≥ 0. Defaults to 0. Use with limit to paginate.","in":"body"}]} />
+
+<ParamsTable title="FilterCondition" params={[{"name":"column","type":"string","required":true,"description":"Column name to filter on.","in":"body"},{"name":"operator","type":"string","required":true,"description":"Filter operator. One of: equals, not equal, greater than, greater than or equal, less than, less than or equal, like, ilike, match, imatch, in, is.","in":"body"},{"name":"value","type":"string | number | boolean | array","required":true,"description":"Filter value. The in operator requires a non-empty array. The is operator accepts null, true, false, or \"notNull\". All other operators accept a string, number, or boolean.","in":"body"}]} />
+
+<ParamsTable title="SortCondition" params={[{"name":"column","type":"string","required":true,"description":"Column name to sort on.","in":"body"},{"name":"direction","type":"string","required":true,"description":"Sort direction. Must be \"Ascending\" or \"Descending\" (case-sensitive).","in":"body"}]} />
+
+<ErrorsTable errors={[
+  {"status":"200","description":"CSV file returned. The first row is the header. An empty result set (no matching rows) returns the header row only — not an error."},
+  {"status":"400","description":"workspaceId is not a valid UUID."},
+  {"status":"400","description":"limit is not a positive integer, or exceeds 1,000."},
+  {"status":"400","description":"offset is negative or not an integer."},
+  {"status":"400","description":"operator is not a recognised value."},
+  {"status":"400","description":"in operator — value is empty or not an array."},
+  {"status":"400","description":"is operator — value is not null, true, false, or \"notNull\"."},
+  {"status":"400","description":"Other operators — value is not a string, number, or boolean."},
+  {"status":"400","description":"direction is not \"Ascending\" or \"Descending\"."},
+  {"status":"401","description":"Missing or invalid Authorization: Basic <token> header."},
+  {"status":"403","description":"ENABLE_EXTERNAL_API is not set to true, or workspace does not have an active EXTERNAL_API license."},
+  {"status":"404","description":"Table not found in the workspace, or endpoint not available on Community Edition."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/workspace/{workspaceId}/tooljet-db/tables/orders/export" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "select": ["id", "customer_name", "status", "total"],
+      "filters": [
+        {
+          "column": "status",
+          "operator": "equals",
+          "value": "shipped"
+        },
+        {
+          "column": "total",
+          "operator": "greater than",
+          "value": 100
+        }
+      ],
+      "sort": [
+        {
+          "column": "total",
+          "direction": "Descending"
+        }
+      ],
+      "limit": 500,
+      "offset": 0
+    }' \\
+    --output orders.csv`} />
+
+**Response: `200`**
+
+```
+Content-Type: text/csv
+Content-Disposition: attachment; filename="orders.csv"
+```
+
+```csv
+id,customer_name,status,total
+42,Jane Smith,shipped,320.00
+17,John Doe,shipped,210.50
+```
+
+</ApiRight>
+</ApiColumns>

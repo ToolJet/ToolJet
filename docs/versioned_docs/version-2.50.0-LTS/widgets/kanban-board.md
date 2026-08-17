@@ -66,7 +66,7 @@ To add an event, click on the component handle to open the component properties 
 Just like any other event on ToolJet, you can set multiple handlers for any of the above mentioned events.
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/2.50.0-LTS/tutorial/actions) docs to get the detailed information about all the **Actions**.
 
 Check the **[Component Specific Action](#component-specific-actions-csa)** available for Kanban.
 :::

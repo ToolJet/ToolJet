@@ -7,6 +7,9 @@ The Xero Plugin enables authenticated access to Xero’s APIs so you can perform
 
 The Xero Plugin uses OAuth 2.0 authentication and allows you to interact with multiple Xero service domains through a single data source configuration.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
 
 ### Generating Client ID and Client Secret
 

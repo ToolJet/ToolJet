@@ -1,0 +1,44 @@
+---
+id: release-app-version
+title: "Release App Version"
+---
+
+<EndpointHeader method="POST" path="/apps/{appIdOrSlug}/git-sync/release" />
+
+<ApiColumns>
+<ApiLeft>
+
+Sets a specific version as the live released version for an app. Target a version by its UUID or name, or omit both to release the latest version from the configured Git repository. If the latest git tag hasn't been pulled yet, it is pulled automatically before release.
+
+<ParamsTable title="Path Parameters" params={[{"name":"appIdOrSlug","type":"string","required":true,"description":"The app's UUID or slug.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"versionId","type":"string","required":false,"description":"UUID of the version to release. Must be a published (non-draft) version. If omitted, falls back to versionName or the latest git tag.","in":"body"},{"name":"versionName","type":"string","required":false,"description":"Name of the version to release. Must match a published (non-draft) version. If omitted, falls back to versionId or the latest git tag.","in":"body"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Supplied versionId is a draft, versionName has no matching published version, or latest git tag not found in app versions after pull."},
+  {"status":"404","description":"App not found by ID or slug, or supplied versionId not found in the app's version list."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps/{appIdOrSlug}/git-sync/release" \\
+    -H "Authorization: Bearer <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{"versionName": "v1.2.0"}'`} />
+
+<ResponseExample statusCode="201" body={`{
+  "id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "name": "My App",
+  "slug": "my-app",
+  "organizationId": "00112233-4455-6677-8899-aabbccddeeff",
+  "currentVersionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "isPublic": false,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-06-09T10:05:00.000Z"
+}`} />
+
+</ApiRight>
+</ApiColumns>

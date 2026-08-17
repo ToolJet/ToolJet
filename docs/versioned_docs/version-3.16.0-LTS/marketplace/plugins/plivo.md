@@ -5,8 +5,8 @@ title: Plivo
 
 You can integrate your ToolJet application with Plivo for SMS functionality.
 
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection

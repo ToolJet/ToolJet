@@ -5,6 +5,10 @@ title: HubSpot
 
 Integrating HubSpot with ToolJet allows you to access, manage, and automate your HubSpot CRM data within the ToolJet application.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect HubSpot with ToolJet, you need the following credentials:
@@ -175,7 +179,7 @@ To update an existing contact, use the endpoint:
 PATCH /crm/v3/objects/contacts/{contactId}
 ```
 
-Enter the Contact ID in the **contactId** field.
+Enter the Contact ID in the `contactId` field.
 
 Provide the request body in JSON format:
 

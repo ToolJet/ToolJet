@@ -69,6 +69,21 @@
             },
             {
               "type": "category",
+              "label": "Setup ToolJet AI",
+              "link": {
+                "type": "doc",
+                "id": "setup/tooljet-ai/overview"
+              },
+              "items": [
+                "setup/tooljet-ai/overview",
+                "setup/tooljet-ai/managed-with-cloud",
+                "setup/tooljet-ai/managed-with-self-hosted",
+                "setup/tooljet-ai/bring-your-own-key",
+                "setup/tooljet-ai/tj-ai-enterprise"
+              ]
+            },
+            {
+              "type": "category",
               "label": "Migrations & Upgrades",
               "items": [
                 "setup/migration/upgrade-to-lts",
@@ -141,7 +156,8 @@
                   "items": [
                     "setup/migration/upgrade-to-v3",
                     "setup/migration/upgrade-to-v3.16",
-                    "setup/migration/workflow-temporal-to-bullmq-migration"
+                    "setup/migration/workflow-temporal-to-bullmq-migration",
+                    "setup/migration/infra-level-rollback"
                   ]
                 }
               ]
@@ -158,15 +174,33 @@
       "collapsible": false,
       "items": [
         "build-with-ai/overview",
-        "build-with-ai/generate-applications",
-        "build-with-ai/referencing-app-resources",
-        "build-with-ai/integrating-data",
-        "build-with-ai/prompting101",
-        "build-with-ai/ai-docs-assistant",
-        "build-with-ai/debug-components",
-        "build-with-ai/bring-your-own-key",
-        "build-with-ai/tj-ai-enterprise",
-        "build-with-ai/ai-credits",
+        {
+              "type": "category",
+              "label": "Building Application",
+              "items": [
+                "build-with-ai/generate-applications",
+                "build-with-ai/integrating-data"
+              ]
+        },
+        {
+              "type": "category",
+              "label": "AI Assitance",
+              "items": [
+                "build-with-ai/referencing-app-resources",
+                "build-with-ai/debug-components",
+                "build-with-ai/ai-docs-assistant"
+              ]
+        },
+        {
+              "type": "category",
+              "label": "Concepts & References",
+              "items": [
+                "build-with-ai/ai-credits",
+                "build-with-ai/model-selection",
+                "build-with-ai/prompting101",
+                "build-with-ai/ai-best-practices"
+              ]
+        },
         "build-with-ai/tooljet-mcp",
         "build-with-ai/privacy"
       ]
@@ -261,6 +295,7 @@
                 "app-builder/dynamic-access-rule/component-level",
                 "app-builder/dynamic-access-rule/page-level",
                 "app-builder/dynamic-access-rule/query-level",
+                "app-builder/dynamic-access-rule/server-side-variables",
                 "app-builder/dynamic-access-rule/row-level-security"
               ]
             }
@@ -317,6 +352,7 @@
                 "widgets/button-group-v2",
                 "widgets/calendar",
                 "widgets/camera",
+                "widgets/cascader",
                 {
                   "type": "category",
                   "label": "Chart",
@@ -363,6 +399,7 @@
                 "widgets/file-picker",
                 "widgets/file-input",
                 "widgets/file-button",
+                "widgets/flex-container",
                 {
                   "type": "category",
                   "label": "Form",
@@ -409,6 +446,7 @@
                 "widgets/map",
                 "widgets/modal-v2",
                 "widgets/multiselect",
+                "widgets/navigation",
                 "widgets/number-input",
                 "widgets/password-input",
                 "widgets/pagination",
@@ -521,28 +559,65 @@
             {
               "type": "category",
               "label": "Actions Reference",
+              "link": {
+                "type": "doc",
+                "id": "actions/overview"
+              },
               "items": [
                 "actions/run-actions-from-runjs",
-                "actions/run-query",
-                "actions/reset-query",
-                "actions/show-alert",
-                "actions/control-component",
-                "actions/show-modal",
-                "actions/close-modal",
-                "actions/set-table-page",
-                "actions/switch-page",
-                "actions/go-to-app",
-                "actions/open-webpage",
-                "actions/set-page-variable",
-                "actions/unset-page-variable",
-                "actions/unset-all-page-var",
-                "actions/set-variable",
-                "actions/unset-variable",
-                "actions/unset-all-var",
-                "actions/logout",
-                "actions/generate-file",
-                "actions/set-localstorage",
-                "actions/copy-to-clipboard"
+                {
+                  "type": "category",
+                  "label": "Run Action",
+                  "items": [
+                    "actions/run-query",
+                    "actions/reset-query",
+                    "actions/abort-query",
+                    "actions/show-alert"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Control Component",
+                  "items": [
+                    "actions/control-component",
+                    "actions/show-modal",
+                    "actions/close-modal",
+                    "actions/set-table-page",
+                    "actions/scroll-component-into-view"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Navigation",
+                  "items": [
+                    "actions/switch-page",
+                    "actions/go-to-app",
+                    "actions/open-webpage"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Variable",
+                  "items": [
+                    "actions/set-page-variable",
+                    "actions/unset-page-variable",
+                    "actions/unset-all-page-var",
+                    "actions/set-variable",
+                    "actions/unset-variable",
+                    "actions/unset-all-var"
+                  ]
+                },
+                {
+                  "type": "category",
+                  "label": "Other",
+                  "items": [
+                    "actions/logout",
+                    "actions/generate-file",
+                    "actions/set-localstorage",
+                    "actions/copy-to-clipboard",
+                    "actions/toggle-app-mode"
+                  ]
+                }
               ]
             },
             "tutorial/keyboard-shortcuts"
@@ -607,6 +682,7 @@
             "data-sources/graphql",
             "data-sources/grpc",
             "data-sources/grpcv2",
+            "data-sources/ibmdb",
             "data-sources/influxdb",
             "data-sources/mailgun",
             "data-sources/mariadb",
@@ -690,6 +766,7 @@
               "items": [
                 "marketplace/plugins/marketplace-plugin-aftership",
                 "marketplace/plugins/marketplace-plugin-anthropic",
+                "marketplace/plugins/marketplace-plugin-asana",
                 "marketplace/plugins/marketplace-plugin-authorizenet",
                 "marketplace/plugins/marketplace-plugin-aws-bedrock",
                 "marketplace/plugins/marketplace-plugin-awsredshift",
@@ -722,7 +799,9 @@
                 "marketplace/plugins/marketplace-plugin-Presto",
                 "marketplace/plugins/marketplace-plugin-prometheus",
                 "marketplace/plugins/marketplace-plugin-qdrant",
+                "marketplace/plugins/marketplace-plugin-quickbooks",
                 "marketplace/plugins/marketplace-plugin-salesforce",
+                "marketplace/plugins/marketplace-plugin-servicenow",
                 "marketplace/plugins/marketplace-plugin-sharepoint",
                 "marketplace/plugins/marketplace-plugin-supabase",
                 "marketplace/plugins/marketplace-plugin-ups",
@@ -907,7 +986,9 @@
               "items": [
                 "user-management/authentication/self-hosted/overview",
                 "user-management/authentication/self-hosted/instance-login",
-                "user-management/authentication/self-hosted/workspace-login"
+                "user-management/authentication/self-hosted/workspace-login",
+                "user-management/authentication/self-hosted/super-admin-login",
+                "user-management/authentication/2fa"
               ]
             },
             "user-management/authentication/cloud-login"
@@ -1096,14 +1177,20 @@
         },
         {
           "type": "category",
+          "label": "Automation Testing",
+          "items": [
+            "development-lifecycle/testing/overview",
+            "development-lifecycle/testing/cypress-guide"
+          ]
+        },
+        {
+          "type": "category",
           "label": "Backup",
           "link": {
             "type": "doc",
             "id": "development-lifecycle/backup/gitsync-backup"
           },
-          "items": [
-            "development-lifecycle/backup/gitsync-backup"
-          ]
+          "items": ["development-lifecycle/backup/gitsync-backup"]
         },
         {
           "type": "category",

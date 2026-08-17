@@ -31,7 +31,7 @@ Once you have connected to the REST API data source, you can easily write querie
 6. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-You can also transform the query results using the **[Transformations](/docs/tutorial/transformations)** feature.
+You can also transform the query results using the **[Transformations](/docs/3.0.0-LTS/tutorial/transformations)** feature.
 :::
 
 **API Endpoint URL Example:** `http://www.dneonline.com/calculator.asmx`

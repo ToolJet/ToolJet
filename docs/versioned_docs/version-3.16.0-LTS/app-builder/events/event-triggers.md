@@ -5,7 +5,7 @@ title: Setting Up Events
 
 Events define how your app should respond when a user interacts with a component or when a specific system condition is met. Whether it's clicking a **Button** component, selecting an item from a **Dropdown**, or completing a query, events let you tie in logic that makes your app interactive and reactive.
 
-You can use event triggers to run queries, update variables, show alerts, navigate to different pages, and more. Each event can be configured to trigger one or more actions in sequence, allowing you to build complex logic flows easily. Refer to the individual [component guide](/docs/app-builder/building-ui/component-library) to see the full list of supported events, and check out the [Action Reference](/docs/actions/run-query) for all available actions.
+You can use event triggers to run queries, update variables, show alerts, navigate to different pages, and more. Each event can be configured to trigger one or more actions in sequence, allowing you to build complex logic flows easily. Refer to the individual [component guide](/docs/app-builder/building-ui/component-library) to see the full list of supported events, and check out the [Actions Reference](/docs/actions/overview) for all available actions.
 
 ## Configuring an Event Handler
 
@@ -40,3 +40,13 @@ This setup ensures that the _fetchData_ query is triggered automatically when th
 <img className="screenshot-full img-full" src="/img/app-builder/events/event-handler/query-dig.png" alt="Events Architecture Diagram"/>
 
 Whether it's submitting a form, running a query, or updating your UI, events and actions let you define dynamic, logic-driven behavior without writing backend code.
+
+## Managing Event Handlers
+
+Each event handler has two additional controls accessible by expanding it in the Events panel:
+
+**Enable event**: A toggle that turns the handler on or off without deleting it. When disabled, the handler is skipped at runtime — useful for testing or debugging without losing the handler configuration.
+
+**Event name**: A free-text field for assigning a custom label to the handler. Use this to distinguish between multiple handlers on the same event — for example, naming one `"log to console"` and another `"trigger refresh"` when both fire on **On click**.
+
+<img className="screenshot-full img-l" src="/img/app-builder/events/event-handler/manage.png" alt="Event handler enable toggle and name field"/>

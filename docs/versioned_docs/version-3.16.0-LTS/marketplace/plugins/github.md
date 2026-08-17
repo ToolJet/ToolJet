@@ -5,6 +5,10 @@ title: GitHub
 
 ToolJet offers seamless integration with GitHub. This connection allows you to directly interact with GitHub repositories and data.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect to GitHub, you need the following credential:

@@ -15,6 +15,39 @@ Under the `Title` property, you can enter a title that displays at the top of th
 
 To activate the Plotly JSON Schema, switch on the `Use Plotly JSON Schema` toggle. Additionally, for dynamic configuration, click on **fx** to input a logical expression that enables or disables it as needed.
 
+When using Plotly JSON schema mode, the `shapes` array inside the `layout` object is fully supported. Shapes are rendered on top of the chart and can be used to draw circles, rectangles, lines, or paths — useful for highlighting regions or annotating data.
+
+**Example:**
+
+```json
+{
+  "data": [
+    { "x": [1.5, 3.5], "y": [0.75, 2.5], "mode": "text", "type": "scatter" }
+  ],
+  "layout": {
+    "shapes": [
+      {
+        "type": "circle",
+        "xref": "x",
+        "yref": "y",
+        "x0": 1, "y0": 1, "x1": 3, "y1": 3,
+        "line": { "color": "rgba(50, 171, 96, 1)" }
+      },
+      {
+        "type": "circle",
+        "xref": "x",
+        "yref": "y",
+        "fillcolor": "rgba(50, 171, 96, 0.7)",
+        "x0": 3, "y0": 3, "x1": 4, "y1": 4,
+        "line": { "color": "rgba(50, 171, 96, 1)" }
+      }
+    ]
+  }
+}
+```
+
+Refer to the [Plotly shapes documentation](https://plotly.com/javascript/shapes/) for the full list of supported shape types and properties.
+
 ## Component specific actions (CSA)
 
 There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
@@ -81,7 +114,7 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
-# Styles
+## Styles
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div>                                               | <div style={{ width:"250px"}}> Configuration Options </div>                                                                        |
 | :--------------------------------------------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
@@ -91,3 +124,13 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | Border radius                                        | Modifies the border radius of the component.                                                    | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.                                  |
 | Visibility                                           | Sets the visibility of the component.                                                           | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disables                                             | Allows you to enable/disable a component. The component is not interactive when it is disabled. | Enable/disable using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::

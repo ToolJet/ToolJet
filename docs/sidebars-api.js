@@ -47,6 +47,7 @@ const sidebars = {
           items: [
             'tooljet-api/apps/export-application',
             'tooljet-api/apps/import-application',
+            'tooljet-api/apps/save-app-version',
           ],
         },
         {
@@ -69,6 +70,13 @@ const sidebars = {
             { type: 'doc', id: 'tooljet-api/groups/delete-group', className: 'sidebar-badge-beta' },
           ],
         },
+        {
+          type: 'category',
+          label: 'ToolJet Database',
+          items: [
+            'tooljet-api/tooljet-db/export-table',
+          ],
+        },
       ],
     },
     {
@@ -84,6 +92,7 @@ const sidebars = {
         'gitsync-api/create-app-from-git',
         'gitsync-api/sync-pull-app',
         'gitsync-api/auto-promote-app',
+        'gitsync-api/release-app-version',
       ],
     },
     {

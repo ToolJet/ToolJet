@@ -13,7 +13,7 @@ You should setup a PostgreSQL database manually to be used by ToolJet. We recomm
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 ## Deploy using CloudFormation
@@ -51,6 +51,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
    - Select your target region and click **Copy AMI**
 
    **Option B: Using AWS CLI**
+
    ```bash
    aws ec2 copy-image \
      --source-region us-west-1 \
@@ -58,6 +59,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
      --region <your-preferred-region> \
      --name "ToolJet-<version>"
    ```
+
    The copy process takes 2-5 minutes. Once complete, the AMI will be available in your selected region.
 
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
@@ -114,6 +116,10 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
    PGRST_LOG_LEVEL=info
    PGRST_JWT_SECRET=            # Generate: openssl rand -hex 32
    PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+
+   # PostgreSQL SSL Configuration
+   PGSSLMODE=require
+   NODE_EXTRA_CA_CERTS=/home/ubuntu/certs/global-bundle.pem
    ```
 
    :::warning Critical
@@ -131,28 +137,6 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
    - **Separate PostgreSQL instances** (optional, for scale): Host each database on different PostgreSQL servers based on your performance and isolation requirements
    </details>
 
-   #### SSL Configuration for AWS RDS PostgreSQL
-
-   :::warning Important
-   When connecting to PostgreSQL 16.9 on AWS RDS with SSL enabled, you need to configure SSL certificates. The `NODE_EXTRA_CA_CERTS` environment variable is critical for resolving SSL certificate chain issues and for connecting to self-signed HTTPS endpoints.
-   :::
-   For AWS RDS PostgreSQL connections, first download the certificate bundle:
-
-   ```bash
-   # Create directory and download certificate
-   sudo mkdir -p /home/ubuntu/certs/
-   cd /home/ubuntu/certs/
-   sudo wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-   sudo chmod 644 /home/ubuntu/certs/global-bundle.pem
-   ```
-
-   Then add these variables to your `.env` file:
-
-   ```bash
-   PG_HOST=your-rds-endpoint.region.rds.amazonaws.com
-   PGSSLMODE=require
-   NODE_EXTRA_CA_CERTS=/home/ubuntu/certs/global-bundle.pem
-   ```
 
 8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use. <br/>
    Examples: <br/>

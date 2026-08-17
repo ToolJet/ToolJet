@@ -202,7 +202,7 @@ When Server-side pagination is enabled, you'll be able to set three other Table 
 - **Total records server side**: Set a numerical value to display particular number of records.
 
 :::tip
-Check this how-to guide to learn more about **[server-side pagination](/docs/how-to/use-server-side-pagination)**.
+Check this how-to guide to learn more about **[server-side pagination](/docs/3.0.0-LTS/how-to/use-server-side-pagination)**.
 :::
 
 ## Additional actions

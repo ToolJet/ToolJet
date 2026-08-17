@@ -5,25 +5,35 @@ title: Salesforce
 
 ToolJet connects to your Salesforce account, allowing you to directly interact with your Salesforce connected app from within your ToolJet application.
 
-:::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
 
 - To connect to Salesforce, you need to have the following credentials:
+
   - **Client ID** - The consumer key of your Salesforce connected app.
+
   - **Client Secret** - The consumer secret of your Salesforce connected app.
+
   <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/consumer-creds-sf.png" alt="Salesforce Connected App API Settings" />
+
 - Establish a connection to Salesforce by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+
 - Select the API version from the dropdown, enter your Client ID and Client Secret into their designated fields.
+
 - Copy the **Redirect URL** and paste it into the OAuth **Callback URL** field in your Salesforce connected app settings.
+
 - Click the **Connect to salesforce** button to authenticate your Salesforce account.
+
 - Once authenticated, click **Save data source** to store the data source.
 
 You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own Google Calendar account securely.
 
-Note: After completing the OAuth flow, the query must be triggered again to load the data.
+:::note
+After completing the OAuth flow, the query must be triggered again to load the data.
+:::
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/connection-v4.png" alt="Salesforece datasource configuration" />
 

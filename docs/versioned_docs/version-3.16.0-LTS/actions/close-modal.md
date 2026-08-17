@@ -3,16 +3,23 @@ id: close-modal
 title: Close modal
 ---
 
-Use this action to close the modal that is already shown.
+The **Close modal** action closes a Modal component that is currently open.
 
-Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`
+## Configuration
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| Modal | The Modal component to close | — |
+| Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
+
+<img className="screenshot-full img-s" src="/img/actions/closemodal/closemodal-v2.png" alt="ToolJet - Action reference - Close modal"/>
+
+## Triggering via RunJS
+
+```js
+actions.closeModal('<modalName>');
+```
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
+For a full quick-reference of all actions' RunJS syntax, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
 :::
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/actions/closemodal/closemodal2.png" alt="ToolJet - Action reference - Close modal" width="700" />
-
-</div>

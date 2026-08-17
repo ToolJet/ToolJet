@@ -5,17 +5,21 @@ title: Authorize.net
 
 ToolJet supports the Authorize.net plugin to help you securely accept payments, manage customer profiles, and run end-to-end payment lifecycles directly from your applications. You can charge cards, save payment methods, handle refunds and voids, and manage tokenized customer profiles without writing backend code.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Configuration
 
 To configure the Authorize.net plugin in ToolJet, you will need the following credentials from your Authorize.net account:
-- API Login ID
-- Transaction Key
+- **API Login ID**
+- **Transaction Key**
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/authorizenet/config.png" alt="Authorize.net data source connection" style={{ marginBottom:'15px' }} />
 
 You can generate these from the Authorize.net `Merchant Interface → Settings → API Credentials & Keys section`.
 
-## Supported Operation
+## Supported Operations
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/authorizenet/listops.png" alt="Authorize.net supported operations"  style={{ marginBottom:'15px' }} />
 

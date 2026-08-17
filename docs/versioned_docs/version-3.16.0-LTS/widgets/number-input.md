@@ -106,10 +106,21 @@ To add regex inside `Custom Validation`, you can use the below format:
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Text | Sets the color of the number entered in the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Placeholder text | Sets the color of the placeholder text displayed when the field is empty. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Error text | Sets the text color of validation message that displays. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Icon | Allows you to select an icon for the component. | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using **fx**. |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
+
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
+:::
 
 ## Container
 

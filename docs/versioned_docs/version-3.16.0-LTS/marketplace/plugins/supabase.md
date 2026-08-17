@@ -5,17 +5,22 @@ title: Supabase
 
 ToolJet connects to your Supabase database, allowing you to directly interact with your Supabase back-end from within your ToolJet application.
 
-:::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
 
-- To connect to Supabase you need to have the Project URL and Service Role Secret. You can find these credentials in your API Settings on the Supabase dashboard. Make sure to copy the Service Role Secret key. This key has the ability to bypass Row Level Security.
+- To connect to Supabase you need to have the **Project URL** and **Service Role Secret**. You can find these credentials in your API Settings on the Supabase dashboard. Make sure to copy the Service Role Secret key. This key has the ability to bypass Row Level Security.
+
   <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/api_settings.png" alt="Supabase API Settings" />
+
 - Establish a connection to Supabase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+
 - Enter your Project URL and Service Role Secret into their designated fields.
+
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
+
   <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/connection.png" alt="Supabase datasource configuration" />
 
 ## Querying Supabase
