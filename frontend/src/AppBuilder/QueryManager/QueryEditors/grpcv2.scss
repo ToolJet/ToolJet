@@ -54,10 +54,8 @@
   .grpcv2-dropdown {
     position: relative;
     width: 100%;
-    // contain the overlay/arrow/menu z-indexes — they escape over the preview panel
     isolation: isolate;
 
-    // open menu must clear the body editor (.cm-scroller) and preview panel (z-index 1)
     &:has(.grpcv2-dropdown__button--open) {
       z-index: 2;
     }
