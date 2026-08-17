@@ -31,23 +31,6 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
       WHERE branch_id IS NOT NULL
     `);
 
-    // ── 1b. Flag backfill for SAVED versions ──────────────────────────────────────
-
-    await queryRunner.query(`
-      UPDATE app_versions av
-      SET is_synced = true
-      WHERE av.version_type = 'version'
-        AND av.status = 'PUBLISHED'
-        AND av.is_synced = false
-        AND av.is_stub = false
-        AND EXISTS (
-          SELECT 1 FROM app_versions synced
-          WHERE synced.app_id = av.app_id
-            AND synced.version_type = 'version'
-            AND synced.is_synced = true
-        )
-    `);
-
     // ── 2. Drop the name/slug triggers + functions and the gating CHECK ──────────
     // Triggers are dropped before the backfill so the one-time branch_id assignment
     // is not re-validated by stale rules; the new rules are installed in step 4.
