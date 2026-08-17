@@ -1,8 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { shallow } from 'zustand/shallow';
-// eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
-import { isEmpty } from 'lodash';
 import cx from 'classnames';
 import { TriangleAlert } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
@@ -36,12 +33,14 @@ const CONFIRM_COPY = {
     action: 'Turn on auto layout',
   },
   off: {
-    title: 'Turn off auto stacking?',
+    title: 'Turn off auto layout?',
     description:
-      'Position components freely on the mobile canvas. Desktop changes will stop syncing to mobile, and turning auto stacking back on later resets manual positions.',
+      'Position components freely on the mobile canvas. Desktop changes will stop syncing to mobile, and turning auto layout back on later resets manual positions.',
     action: 'Turn off auto layout',
   },
 };
+
+const LAYOUT_KEYS = ['top', 'left', 'width', 'height'];
 
 // Mobile-layout bottom toolbar: auto-stacking toggle + manage hidden components; hosts the compute effect.
 export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, moduleId = 'canvas' }) {
@@ -52,7 +51,8 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const turnOnAutoComputeLayout = useStore((state) => state.turnOnAutoComputeLayout, shallow);
   const turnOffAutoComputeLayout = useStore((state) => state.turnOffAutoComputeLayout, shallow);
-  const lastComputedRef = useRef();
+  // Both controls write, so a locked or released version has to freeze them like the rest of the editor.
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
   const [confirm, setConfirm] = useState(null); // 'on' | 'off' | null
   const [manageOpen, setManageOpen] = useState(false);
@@ -61,8 +61,14 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
   useEffect(() => {
     if (currentLayout !== 'mobile' || !isAutoMobileLayout) return;
     const updatedBoxes = computeAutoMobileLayout(currentPageComponents);
-    if (isEmpty(diff(lastComputedRef.current, updatedBoxes))) return;
-    lastComputedRef.current = updatedBoxes;
+    // Compared against the stored layout, not a render-scoped memo: the memo is empty on every mount,
+    // so entering mobile view would autosave an identical layout each time.
+    const changed = Object.entries(updatedBoxes).some(([id, box]) => {
+      const stored = currentPageComponents[id]?.layouts?.mobile;
+      return !stored || LAYOUT_KEYS.some((key) => stored[key] !== box[key]);
+    });
+    if (!changed) return;
+    // Persisted, so export/release/git-sync read the same layout the canvas shows.
     setComponentLayout(updatedBoxes, undefined, moduleId, { skipUndoRedo: true });
     // Recompute canvas bottom height from the freshly stacked layout (setComponentLayout doesn't).
     incrementCanvasUpdater();
@@ -83,6 +89,9 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
   const handleToggle = (next) => setConfirm(next ? 'on' : 'off');
 
   const handleConfirm = () => {
+    if (shouldFreeze) return;
+    // Turning off only flips the flag: the stacked layout is already persisted, and it stays as-is
+    // for the user to edit by hand.
     if (confirm === 'on') turnOnAutoComputeLayout(moduleId);
     else if (confirm === 'off') turnOffAutoComputeLayout(moduleId);
     setConfirm(null);
@@ -121,9 +130,10 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
                 <Switch
                   checked={isAutoMobileLayout}
                   onCheckedChange={handleToggle}
+                  disabled={shouldFreeze}
                   data-cy="enable-auto-layout-toggle"
                 />
-                <span className="tw-text-xs tw-text-text-default">Enable auto layout</span>
+                <span className="tw-text-xs tw-text-text-default">Auto layout</span>
               </div>
             </TooltipTrigger>
             {/* offsets align it to the toolbar's left edge and lift it above the toolbar */}
@@ -146,11 +156,12 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
             <span className="tw-text-xs tw-text-text-placeholder">No hidden components</span>
           ) : (
             <>
-              <span className="tw-text-xs tw-text-text-default">{hiddenCount} hidden components</span>
+              <span className="tw-text-xs tw-text-text-default">{hiddenCount} components not on mobile</span>
               <Button
                 variant="outline"
                 size="medium"
                 onClick={() => setManageOpen(true)}
+                disabled={shouldFreeze}
                 data-cy="manage-hidden-components-button"
               >
                 manage
