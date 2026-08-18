@@ -9,6 +9,7 @@ import { getSubpath } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
+import { LottieLoader } from '@/_ui/LottieLoader';
 import { SignupForm } from '../SignupPage/components';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
@@ -116,13 +117,7 @@ const AppSignupPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="load" style={{ display: 'flex' }}>
-        <div className="one"></div>
-        <div className="two"></div>
-        <div className="three"></div>
-      </div>
-    );
+    return <LottieLoader />;
   }
 
   if (error || !appConfig || !ssoConfigs) {

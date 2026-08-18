@@ -9,6 +9,7 @@ import { getSubpath } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { SSOAuthModule } from '@/modules/common/components';
+import { LottieLoader } from '@/_ui/LottieLoader';
 import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { LoginForm } from '../LoginPage/components';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
@@ -149,13 +150,7 @@ const AppLoginPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="load" style={{ display: 'flex' }}>
-        <div className="one"></div>
-        <div className="two"></div>
-        <div className="three"></div>
-      </div>
-    );
+    return <LottieLoader />;
   }
 
   if (error || !appConfig || !ssoConfigs) {
