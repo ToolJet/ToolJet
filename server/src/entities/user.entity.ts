@@ -142,6 +142,9 @@ export class User extends BaseEntity {
   @Column({ name: 'mfa_setup_completed_at', type: 'timestamptz', nullable: true })
   mfaSetupCompletedAt: Date | null;
 
+  @Column({ name: 'ai_build_notifications_enabled', default: true })
+  aiBuildNotificationsEnabled: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

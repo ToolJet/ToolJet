@@ -142,6 +142,12 @@ export const filepickerConfig = {
       ],
       accordian: 'Data',
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Show loading state',
@@ -159,6 +165,12 @@ export const filepickerConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
     },
     disabledState: {
       type: 'toggle',
@@ -372,6 +384,8 @@ export const filepickerConfig = {
       delimiter: { value: ',' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },

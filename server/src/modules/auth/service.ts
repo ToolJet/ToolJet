@@ -226,6 +226,7 @@ export class AuthService implements IAuthService {
             firstName: user.firstName,
             lastName: user.lastName,
             avatarId: user.avatarId,
+            aiBuildNotificationsEnabled: user.aiBuildNotificationsEnabled,
             ssoUserInfo: permissionData.ssoUserInfo,
             metadata: permissionData.metadata,
             createdAt: user.createdAt,

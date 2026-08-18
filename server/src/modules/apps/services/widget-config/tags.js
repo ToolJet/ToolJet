@@ -41,6 +41,12 @@ export const tagsConfig = {
       accordian: 'Options',
       isFxNotRequired: true,
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -52,6 +58,12 @@ export const tagsConfig = {
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
 
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     disabledState: {
@@ -209,8 +221,10 @@ export const tagsConfig = {
       },
       overflow: { value: 'wrap' },
       visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       tooltip: { value: '' },
       tooltipFormat: { value: 'plainText' },
     },
