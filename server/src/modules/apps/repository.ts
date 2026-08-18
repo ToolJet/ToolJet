@@ -372,13 +372,21 @@ export class AppsRepository extends Repository<App> {
 
     return await qb.orderBy('app.updated_at', 'DESC').getRawMany();
   }
-  async findAllOrganizationWorkflows(organizationId: string): Promise<{ id: string; name: string }[]> {
+  async findAllOrganizationWorkflows(
+    organizationId: string,
+    workflowIds?: string[]
+  ): Promise<{ id: string; name: string }[]> {
+    if (workflowIds && !workflowIds.length) return [];
+
     const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
     const qb = this.createQueryBuilder('app')
       .select(['app.id AS id'])
       .addSelect('COALESCE(av_meta.app_name, app.name) AS name')
       .where('app.organizationId = :organizationId', { organizationId })
       .andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW });
+    if (workflowIds) {
+      qb.andWhere('app.id IN (:...workflowIds)', { workflowIds });
+    }
     qb.leftJoin(
       'app_versions',
       'av_meta',
