@@ -28,3 +28,7 @@ export const initializeOtelLogs = () => {
 };
 
 export const getFrontendErrorLogger = (): Logger | undefined => provider?.getLogger('tooljet-frontend-errors');
+
+// Same module-local provider, different logger name — server logs land in the same
+// place as frontend error logs, distinguishable in Loki by the logger/service name.
+export const getServerLogger = (): Logger | undefined => provider?.getLogger('tooljet-server');
