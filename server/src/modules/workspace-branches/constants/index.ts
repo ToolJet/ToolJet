@@ -13,3 +13,14 @@ export enum FEATURE_KEY {
   PULL_MODULE = 'PULL_MODULE',
   GET_ENTITY_TAGS = 'GET_ENTITY_TAGS',
 }
+
+// Git-sync background queue. Lives in src so module registration (CE + EE)
+// can reference it; the EE service/processor implement the actual jobs.
+export const GIT_SYNC_QUEUE = 'git-sync-queue';
+
+export const GIT_SYNC_JOBS = {
+  CREATE_BRANCH: 'git-create-branch',
+  PULL_BRANCH: 'git-pull-branch',
+  DELETE_BRANCH: 'git-delete-branch',
+  PUSH_APP_DELETION: 'git-push-app-deletion',
+} as const;

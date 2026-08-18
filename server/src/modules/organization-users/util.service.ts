@@ -10,7 +10,7 @@ import {
   WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Organization } from '@entities/organization.entity';
 import { InviteNewUserDto } from '@modules/organization-users/dto/invite-new-user.dto';
 import { OrganizationUser } from '@entities/organization_user.entity';
@@ -37,6 +37,7 @@ import * as uuid from 'uuid';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/constants';
@@ -59,7 +60,8 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly sessionUtilsService: SessionUtilService,
-    protected readonly licenseOrganizationService: LicenseOrganizationService
+    protected readonly licenseOrganizationService: LicenseOrganizationService,
+    protected readonly userBanListRepository: UserBanListRepository
   ) {}
 
   updateUserMetadata(manager: EntityManager, userId: string, organizationId: string, userMetadata: any) {
@@ -231,6 +233,11 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
+      const isCloud = getTooljetEdition() === 'cloud';
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+      const invitationTokenExpiry = (isCloud && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0)
+        ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+        : null;
 
       return await this.userRepository.createOrUpdate(
         {
@@ -243,6 +250,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           status,
           userType,
           invitationToken: uuid.v4(),
+          ...(isCloud && { invitationTokenExpiry }),
           defaultOrganizationId: defaultOrganizationId || null,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -280,6 +288,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT)
         .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
+      ...(orgUser.invitationTokenExpiry ? { invitationTokenExpiry: orgUser.invitationTokenExpiry } : {}),
       ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
         ? { accountSetupToken: orgUser.user.invitationToken }
         : {}),
@@ -314,6 +323,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           organizationId: organizationUser.organizationId,
           organizationName: organization.name,
           sender: inviterName,
+          invitationTokenExpiry: organizationUser.invitationTokenExpiry,
         },
       });
     } else {
@@ -326,6 +336,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           invitationtoken: organizationUser.invitationToken,
           organizationName: organization.name,
           organizationId: organizationUser.organizationId,
+          invitationTokenExpiry: organizationUser.invitationTokenExpiry,
         },
       });
     }
@@ -336,6 +347,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       await manager.update(OrganizationUser, organizationUser.id, {
         status: WORKSPACE_USER_STATUS.ACTIVE,
         invitationToken: null,
+        invitationTokenExpiry: null,
       });
     }, manager);
   }
@@ -442,6 +454,12 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userParams = this.prepareUserParams(inviteNewUserDto);
+
+      const bannedUser = await this.userBanListRepository.findByEmail(userParams.email);
+      if (bannedUser) {
+        throw new ForbiddenException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
+      }
+
       const user = await this.validateInvitingUser(userParams.email, currentUser.organizationId, manager);
 
       if (user?.invitationToken) {
@@ -594,6 +612,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     user.invitedOrganizationId = organizationUser.organizationId;
     user.organizationStatus = organizationUser.status;
     user.organizationUserSource = organizationUser.source;
+    user.orgUserInvitationTokenExpiry = organizationUser.invitationTokenExpiry;
     return user;
   }
 

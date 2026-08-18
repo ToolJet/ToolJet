@@ -24,12 +24,27 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
   INVITED = 'invited',
+}
+
+export class GetAllUsersQueryDto {
+  @IsOptional()
+  @IsString()
+  group_names?: string;
+
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',').map((v) => v.trim()).filter((v) => v !== '') : value
+  )
+  @IsArray()
+  @IsEnum(USER_STATUS, { each: true })
+  status?: USER_STATUS[];
 }
 
 export class GroupDto {
@@ -189,10 +204,19 @@ export class GithubHttpsConfigDTO extends OrganizationGitCreateDto {
 
 export class AppGitPullDto {
   @IsString()
-  appId: string;
+  organizationId: string;
 
   @IsString()
-  organizationId: string;
+  @IsOptional()
+  gitAppId?: string;
+
+  @IsString()
+  @IsOptional()
+  gitAppName?: string;
+
+  @IsString()
+  @IsOptional()
+  gitBranchName?: string;
 }
 
 export class AppGitPushDto {
@@ -394,6 +418,26 @@ export class UpdateUserMetadataDto {
   userDetails: UserDetailKeyValueDto[];
 }
 
+export enum GroupMatchMode {
+  ALL = 'all',
+  ANY = 'any',
+}
+
+export class GetWorkspaceUsersByGroupsDto {
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  group_names: string[];
+
+  @IsEnum(GroupMatchMode)
+  @IsOptional()
+  match?: GroupMatchMode = GroupMatchMode.ALL;
+
+  @IsEnum(Status)
+  @IsOptional()
+  status?: Status;
+}
+
 export enum TjdbFilterOperator {
   EQUALS = 'equals',
   GREATER_THAN = 'greater than',
@@ -503,3 +547,41 @@ export class ExportTjdbTableAsCsvDto {
   @Min(0)
   offset?: number;
 }
+
+export class BanUserDto {
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class BanWorkspaceDto {
+  @ValidateIf((o) => !o.slug)
+  @IsNotEmpty()
+  @IsUUID()
+  workspaceId?: string;
+
+  @ValidateIf((o) => !o.workspaceId)
+  @IsNotEmpty()
+  @IsString()
+  slug?: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class UnbanWorkspaceDto {
+  @ValidateIf((o) => !o.slug)
+  @IsNotEmpty()
+  @IsUUID()
+  workspaceId?: string;
+
+  @ValidateIf((o) => !o.workspaceId)
+  @IsNotEmpty()
+  @IsString()
+  slug?: string;
+}
+

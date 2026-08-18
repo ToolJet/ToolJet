@@ -16,9 +16,9 @@ export class FeatureAbilityGuard extends AbilityGuard {
     moduleRef: ModuleRef,
     licenseTermsService: LicenseTermsService,
     transactionLogger: TransactionLogger,
-    private readonly dataSource: DataSource
+    dataSource: DataSource
   ) {
-    super(reflector, moduleRef, licenseTermsService, transactionLogger);
+    super(reflector, moduleRef, licenseTermsService, transactionLogger, dataSource);
   }
 
   protected getAbilityFactory() {

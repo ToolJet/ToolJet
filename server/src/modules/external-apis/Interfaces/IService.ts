@@ -1,10 +1,22 @@
-import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto';
+import {
+  CreateUserDto,
+  GetWorkspaceUsersByGroupsDto,
+  UpdateGivenWorkspaceDto,
+  UpdateUserDto,
+  WorkspaceDto,
+} from '../dto';
 import { ListGroupsQueryDto, UpdateGroupExternalDto } from '../dto/groups.dto';
 import { EntityManager } from 'typeorm';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 
 export interface IExternalApisService {
   // Gets all users when no ID is passed, filters by ID when ID is passed
-  getAllUsers(lookupKey?: string, groupNamesString?: string, manager?: EntityManager): Promise<any>;
+  getAllUsers(
+    lookupKey?: string,
+    groupNamesString?: string,
+    statuses?: USER_STATUS[],
+    manager?: EntityManager
+  ): Promise<any>;
 
   // Creates a new user with the provided user data
   createUser(userDto: CreateUserDto): Promise<any>;
@@ -36,4 +48,7 @@ export interface IExternalApisService {
 
   // Deletes a custom group by id
   deleteGroup(workspaceId: string, groupId: string): Promise<void>;
+
+  // Gets users in a workspace filtered by group membership
+  getWorkspaceUsersByGroups(workspaceId: string, body: GetWorkspaceUsersByGroupsDto): Promise<any>;
 }
