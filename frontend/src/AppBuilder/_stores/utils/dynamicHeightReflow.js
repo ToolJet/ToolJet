@@ -694,7 +694,12 @@ export const resolveContainerHeight = ({
     let flowHeight = 0;
     if (layoutEntry?.inFlow) {
       flowHeight = effectiveLayout.height ?? 0;
-      if (typeof calculateMoveableBoxHeightWithId === 'function') {
+      // Floor at the calc-bumped canonical ONLY for children that never wrote a temp height.
+      // A child that HAS a temp already reflects its real rendered height via its own reflow pass,
+      // including a legitimate shrink BELOW canonical (an Accordion collapsing to header-only).
+      // Flooring those at canonical would pin the container at the pre-collapse height and block the shrink from propagating.
+      const childHasTemp = temporaryLayouts?.[getDynamicLayoutKey(childId, childContext)]?.height != null;
+      if (!childHasTemp && typeof calculateMoveableBoxHeightWithId === 'function') {
         const childDefinition = getComponentDefinition?.(childId);
         const childStylesDefinition = childDefinition?.component?.definition?.styles;
         const bumpedHeight = calculateMoveableBoxHeightWithId(childId, currentLayout, childStylesDefinition);
@@ -748,17 +753,20 @@ export const resolveContainerHeight = ({
 };
 
 // The changed widget's target height:
-//   - Container-like widget: delegate to `containerHeight` (already computed).
+//   - Container-like widget (incl. the Listview widget itself): delegate to the
+//     already-computed `containerHeight`. For the Listview widget this is the
+//     row-sum (resolveListviewHeightFromRows), which reflects the row heights the
+//     reflow just wrote. We must NOT fall back to the DOM `offsetHeight` for the
+//     Listview widget: the reflow runs inside a requestAnimationFrame before React
+//     re-renders the new row heights, so offsetHeight is one frame stale — which
+//     makes any sibling positioned below the listview lag by one operation.
 //   - Leaf widget: DOM `offsetHeight`, falling back to the last temp height,
 //     then canonical, then zero.
 //   - Hidden: return the existing stored height so the widget's last known
 //     size is preserved (needed for show-restore and for container height
 //     calculations that skip 0-flow children).
-// Note: Listview widget (no row context) is always treated as a container;
-// Listview in a row context is treated as a leaf from this function's POV.
 export const resolveWidgetMeasuredHeight = ({
   componentId,
-  componentType,
   currentLayout,
   currentPageComponents,
   temporaryLayouts,
@@ -768,7 +776,7 @@ export const resolveWidgetMeasuredHeight = ({
   containerHeight,
   calculateMoveableBoxHeightWithId,
 }) => {
-  if (isContainer && (componentType !== 'Listview' || normalizeLayoutContext(contextIndices))) {
+  if (isContainer) {
     return containerHeight;
   }
 

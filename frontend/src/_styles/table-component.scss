@@ -260,7 +260,20 @@
           border: 0;
           height: 100%;
           outline: none;
-          -webkit-user-modify: read-write-plaintext-only;
+
+          // -webkit-user-modify used to imply an I-beam here. 
+          // Now that it only applies while the cell is genuinely contenteditable, 
+          // set the cursor explicitly so an idle editable cell still reads as editable.
+          cursor: text;
+
+          // -webkit-user-modify makes an element focusable AND editable on its own, with no contenteditable attribute. 
+          // Applying it unconditionally let keystrokes land in cells React had not put into edit mode,
+          // those cells carry no focus/blur handlers, so the typed text sat in the DOM looking saved but
+          // was never committed to the store, and was silently discarded on the next re-render. 
+          // Scope it to cells that really are contenteditable, which is every other renderer using this class.
+          &[contenteditable='true'] {
+            -webkit-user-modify: read-write-plaintext-only;
+          }
         }
 
         textarea {
@@ -1381,10 +1394,17 @@
     background-color: var(--cc-surface1-surface) !important;
     
 
+    // Tags columns render react-select's built-in Option rather than .option-wrapper below
+    .react-select__option.react-select__option--is-focused {
+      background: var(--interactive-overlays-fill-hover) !important;
+      border-radius: 6px;
+    }
+
     .option-wrapper {
       align-items: center;
       padding: 12px 8px;
 
+      &.option-focused,
       &:hover {
         background: var(--interactive-overlays-fill-hover) !important;
         border-radius: 6px;
@@ -1667,6 +1687,13 @@
 .table-add-new-row {
   .long-text-input {
     max-height: max-content !important;
+
+    // An empty cell renders no children at all, so its max-content height is 0 and 
+    // the cap above collapses the box leaving nothing to click, though Tab can still reach it. 
+    // So drop the cap when there is no content and let the element fill the cell, same as table body.
+    &:empty {
+      max-height: none !important;
+    }
   }
 }
 

@@ -171,7 +171,25 @@ export const BaseLeftSidebar = ({
     );
   };
 
-  const renderLeftSidebarItems = () => {
+  const renderSettingsItem = (isModuleEditor) => (
+    <SidebarItem
+      icon="settings"
+      selectedSidebarItem={selectedSidebarItem}
+      darkMode={darkMode}
+      // eslint-disable-next-line no-unused-vars
+      onClick={(e) => handleSelectedSidebarItem('settings')}
+      className={`left-sidebar-item  left-sidebar-layout`}
+      badge={true}
+      tip="Settings"
+      ref={setSideBarBtnRefs('settings')}
+      isModuleEditor={isModuleEditor}
+      data-cy="left-sidebar-settings-button"
+    >
+      <Bolt width="16" height="16" className="tw-text-icon-strong" />
+    </SidebarItem>
+  );
+
+  const renderLeftSidebarItems = (isModuleEditor) => {
     if (isModuleEditor) {
       return (
         <>
@@ -182,6 +200,7 @@ export const BaseLeftSidebar = ({
             handleSelectedSidebarItem,
           })}
           {renderCommonItems()}
+          {renderSettingsItem(isModuleEditor)}
         </>
       );
     }
@@ -211,21 +230,7 @@ export const BaseLeftSidebar = ({
             setSideBarBtnRefs={setSideBarBtnRefs}
           />
         )}
-        <SidebarItem
-          icon="settings"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('settings')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          tip="Settings"
-          ref={setSideBarBtnRefs('settings')}
-          isModuleEditor={isModuleEditor}
-          data-cy="left-sidebar-settings-button"
-        >
-          <Bolt width="16" height="16" className="tw-text-icon-strong" />
-        </SidebarItem>
+        {renderSettingsItem(isModuleEditor)}
       </>
     );
   };
@@ -236,7 +241,7 @@ export const BaseLeftSidebar = ({
       data-cy="left-sidebar-inspector"
       style={{ zIndex: 9999, maxWidth: '304px' }}
     >
-      {renderLeftSidebarItems()}
+      {renderLeftSidebarItems(isModuleEditor)}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
