@@ -71,7 +71,7 @@ The following actions of the component can be controlled using the component-spe
 | Close on escape key | Closes the modal when escape key is pressed. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Close on clicking outside | Closes the modal when clicked outside the modal. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Hide close button | Hides close button from the modal header. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip | Provides additional information on hover. | String (e.g., `Enter your password here.` ). |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Enter your password here.` ). |
 
 ## Devices
 

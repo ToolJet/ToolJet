@@ -62,7 +62,7 @@ Exposed variables can be used to get data from the component.
 
 ### Tooltip
 
-A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
+A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text. You can enter the content as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field.
 
 ## Devices
 

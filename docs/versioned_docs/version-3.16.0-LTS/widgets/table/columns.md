@@ -431,7 +431,7 @@ Click the **+ Add button** option inside a Button column to add buttons. Use the
 | Property              | Description                                                                                                                          | Expected Value |
 | :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------- | :------------- |
 | Button label          | Sets the text displayed on the button. Supports **fx** for dynamic values.                                                           | String or **fx** expression (e.g., `{{rowData.status === 'active' ? 'Deactivate' : 'Activate'}}`). |
-| Tooltip               | Shows a tooltip when the user hovers over the button. Supports **fx**.                                                               | String or **fx** expression. |
+| Tooltip | Shows a tooltip when the user hovers over the button. Supports **fx**. Supports **Plain text**, **Markdown**, and **HTML** formats. | String or **fx** expression. |
 | Loading state         | Shows a loading spinner on the button. Supports **fx** for programmatic control (e.g., bind to a query's `isLoading` property).      | Toggle or **fx** expression. |
 | Visibility            | Controls whether the button is visible. Use **fx** to conditionally show or hide based on row data.                                  | Toggle or **fx** expression (e.g., `{{rowData.role === 'admin'}}`). |
 | Disable action button | Disables the button when the expression is `true`.                                                                                   | Toggle or **fx** expression (e.g., `{{rowData.status === 'locked'}}`). |

@@ -66,7 +66,7 @@ Following actions of Button component can be controlled using the component spec
 ## General
 ### Tooltip
 
-A tooltip provides additional information when the user hovers over the component. Under the **General** settings, you can set the tooltip text in string format. Hovering over the component will display the string as the tooltip.
+A tooltip provides additional information when the user hovers over the component. Under the **General** settings, you can set the tooltip text as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field. Hovering over the component will display the tooltip.
 
 </div>
 

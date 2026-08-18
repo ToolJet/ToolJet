@@ -40,7 +40,7 @@ There are currently no exposed variables for the component.
 
 ### Tooltip
 
-To display instructional text when a user hovers over the PDF component, add some text under the Tooltip property.
+To display instructional text when a user hovers over the PDF component, add some text under the Tooltip property. You can enter the content as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field.
 
 ## Devices
 

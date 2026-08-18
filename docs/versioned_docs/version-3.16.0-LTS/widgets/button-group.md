@@ -41,7 +41,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 #### Tooltip
 
-A Tooltip is often used to display additional information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
+A Tooltip is often used to display additional information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text. You can enter the content as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field.
 
 <img className="screenshot-full" src="/img/widgets/button-group/grouptooltip.png" alt="Button group layout" />
 

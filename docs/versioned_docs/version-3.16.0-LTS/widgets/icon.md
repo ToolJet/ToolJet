@@ -48,7 +48,7 @@ The following actions of the component can be controlled using the component-spe
 | Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
 | Visibility                                   | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
 | Disable                                      | Enables or disables the component.                                           | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
-| Tooltip                                      | Provides additional information on hover. Set a display string.              | String                                                                                                                    |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String                                                                                                                    |
 
 ## Devices
 

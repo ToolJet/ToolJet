@@ -60,7 +60,7 @@ There are currently no exposed variables for the Timeline component.
 ## General
 ### Tooltip
 
-A Tooltip provides additional information when users hover over the component. Set the tooltip content under the **General** accordion in the component's properties.
+A Tooltip provides additional information when users hover over the component. Set the tooltip content under the **General** accordion in the component's properties, choosing **Plain text**, **Markdown**, or **HTML** from the toggle above the field.
 
 </div>
 
