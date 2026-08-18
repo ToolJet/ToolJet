@@ -8,6 +8,7 @@ import { userService } from '@/_services/user.service';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { TwoFactorAuthCard } from './TwoFactorAuthCard';
+import ProfileNotificationsCard from '@/modules/AiBuilder/components/ProfileNotificationsCard';
 
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
@@ -173,7 +174,11 @@ function SettingsPage(props) {
     <>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
-          <div style={{ height: `calc(100vh - 2.5rem - 48px)`, overflowY: 'auto' }}>
+          {/* The 1px of top padding is load-bearing: the page's 40px of spacing sits on the
+              wrapper outside this scroller, so the first card starts flush at the scroll
+              edge and the top 1px of its border gets shaved off the moment the user
+              scrolls even slightly. */}
+          <div style={{ height: `calc(100vh - 2.5rem - 48px)`, overflowY: 'auto', paddingTop: '1px' }}>
             <div className="container-xl">
               <div className="card profile-page-card">
                 <div className="card-header">
@@ -333,6 +338,7 @@ function SettingsPage(props) {
                 </div>
               </div>
               <TwoFactorAuthCard darkMode={props.darkMode} />
+              <ProfileNotificationsCard />
             </div>
           </div>
         </div>

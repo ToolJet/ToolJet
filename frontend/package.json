@@ -163,6 +163,7 @@
     "sonner": "^2.0.7",
     "string-hash": "^1.1.3",
     "superstruct": "^1.0.3",
+    "tabbable": "^6.4.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tinycolor2": "^1.6.0",
