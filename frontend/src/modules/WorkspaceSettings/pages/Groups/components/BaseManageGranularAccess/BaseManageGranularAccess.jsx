@@ -115,7 +115,7 @@ class BaseManageGranularAccess extends React.Component {
 
   componentDidMount() {
     this.fetchAppsCanBeAdded();
-    this.fetchGranularPermissions(this.props.groupPermissionId);
+    this.fetchGranularPermissions(this.props.groupPermissionId, { showLoader: true });
   }
   componentDidUpdate(prevProps) {
     if (prevProps.addableDs !== this.props.addableDs) {
@@ -186,10 +186,9 @@ class BaseManageGranularAccess extends React.Component {
         toast.error(err.error);
       });
   };
-  fetchGranularPermissions = (groupPermissionId) => {
-    this.setState({
-      isLoading: true,
-    });
+  // Spinner only on first load; refetches after inline/modal updates keep the list mounted (no flash)
+  fetchGranularPermissions = (groupPermissionId, { showLoader = false } = {}) => {
+    if (showLoader) this.setState({ isLoading: true });
     groupPermissionV2Service.fetchGranularPermissions(groupPermissionId).then((data) => {
       this.setState({
         granularPermissions: data,
@@ -552,7 +551,7 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   renderResourcePermissions = (props) => {
-    const { permissions, currentGroupPermission, isEditable, index } = props;
+    const { permissions, currentGroupPermission, isEditable } = props;
     const { type } = permissions;
 
     switch (type) {
@@ -564,7 +563,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.DATA_SOURCES:
@@ -575,7 +574,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.WORKFLOWS:
@@ -586,7 +585,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.FOLDERS:
@@ -597,7 +596,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.MODULES:
@@ -608,7 +607,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.WORKFLOW_FOLDERS:
@@ -619,7 +618,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.MODULE_FOLDERS:
@@ -630,7 +629,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       default:
@@ -1238,12 +1237,11 @@ class BaseManageGranularAccess extends React.Component {
                       ];
                       return order.indexOf(a.type) - order.indexOf(b.type);
                     })
-                    .map((permissions, index) => {
+                    .map((permissions) => {
                       return this.renderResourcePermissions({
                         permissions,
                         currentGroupPermission,
                         isEditable: this.getIsEditable(isBasicPlan, this.props.isFeatureEnabled),
-                        index,
                       });
                     })}
                 </>
