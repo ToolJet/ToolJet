@@ -22,6 +22,9 @@
       "sp_tenant_id": {
         "type": "string"
       },
+      "sp_site_url": {
+        "type": "string"
+      },
       "redirect_url": {
         "type": "string"
       },
@@ -51,5 +54,7 @@
       "description": "A component for sharepoint"
     }
   },
-  "required": []
+  "required": [
+    "sp_site_url"
+  ]
 }
