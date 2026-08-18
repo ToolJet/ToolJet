@@ -37,9 +37,11 @@
       background-color: #1E2226;
     }
 
+    /* The animation is authored at 1920x1080 and scales to fit its box, so halving
+       the box halves the animation and flex keeps it centred on the backdrop. */
     .tj-app-loader .loader-animation {
-      width: 100%;
-      height: 100%;
+      width: 50%;
+      height: 50%;
     }
 
     /* roboto-100 - latin */
