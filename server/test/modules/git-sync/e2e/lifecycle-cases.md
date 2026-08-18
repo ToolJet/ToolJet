@@ -797,6 +797,56 @@ Git-**off** slug rules (uniqueness reject, case-insensitivity, app↔module name
 separate host-free spec: `test/modules/apps/e2e/slug-update.e2e-spec.ts`. **Mirrored in
 `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`).
 
+## 29. `is_synced` lifecycle invariant (`describe: is_synced lifecycle invariant (in git ⇔ is_synced=true)`)
+
+The single invariant the sync indicator is derived from: **a resource is `is_synced=true` iff it currently
+exists in git.** Each `it` uses a FRESH isolated org (config mode differs per case) and, for git-on cases,
+resets the shared repo + configures git inside the test (mirrors §14/§18). `is_synced` is read straight
+from the DB (`app_versions.is_synced` / `data_source_versions.is_synced`). **GitHub spec only** (no GitLab
+mirror). Cases 4 and 5 are **TDD-RED** — no flip-`is_synced=false`-on-edit hook exists yet, so they fail on
+the post-edit assertion until that lands; the surrounding steps document the full intended sequence.
+
+| # | `it` | Expected | Status |
+|---|------|----------|--------|
+| 1 | git-off: created app + module + data source | all `is_synced=false` (nothing is in git) | GREEN |
+| 2 | multi-branch: feature-branch resource unsynced on create, synced after `gitpush`, still synced after merge→main + pull | `false` → `true` → `true` | GREEN |
+| 3 | single-branch: resource unsynced on create, synced after a direct push to the (unprotected `single-branch-main`) default | `false` → `true` | GREEN |
+| 4 | single-branch: **editing** a synced resource flips `is_synced=false`, then a pull (still in git) restores `true` | edit → `false`; pull → `true` | **RED** (flip-on-edit not implemented) |
+| 5 | multi-branch: **editing** a synced resource on a feature branch flips `is_synced=false`, then a pull restores `true` | edit → `false`; pull → `true` | **RED** (same gap) |
+| 6 | a synced app carries its connected data source (linked via a query) + referenced module (via a ModuleViewer) into git on push | host version, linked DSV, and module version all `is_synced=true` | GREEN |
+
+Reuses: §18 single-branch config + `gitpush` + component-add; §14 reconcile-on-pull; the ModuleViewer
+`moduleAppId = <module co_relation_id>` reference and the query-linking pattern from §19/§27.
+
+## 30. Delete-on-pull + `in_use` conflict guard (`describe: pull deletes synced resources removed from git (with in_use guard)`)
+
+**TARGET behavior — mostly TDD-RED.** Today a synced default-branch resource absent from git is only marked
+`is_synced=false` on pull (`removeOrphanedResources`, `pull.service.ts:649`; the CURRENT behavior asserted by
+§61–63). These tests pin the intended behavior: a **synced** resource removed from git (merged to the default
+branch) is **deleted** on the next pull; an **unsynced** never-pushed local resource is **kept**; and if a
+to-be-deleted resource is still referenced/connected, the whole pull **aborts with a 409 `in_use`** and
+nothing is deleted. Orphans are manufactured with the §61 SQL technique (create on a feature branch, move the
+version/DSV onto the default branch as `is_synced=true` + a fake `git_tree_sha`, clear the branch pull-skip
+tokens) so the resource is a synced default-branch row absent from git's (empty, post-reset) meta. FRESH org
+per `it`. **GitHub spec only.**
+
+| # | `it` | Expected (target) | Status |
+|---|------|-------------------|--------|
+| 1 | a synced app removed from git → pull `main` | `apps` + `app_versions` rows **deleted**; `GET /api/apps/:id` → 404 | **RED** (today: kept, `is_synced=false`) |
+| 2 | a synced module and a synced data source removed from git → pull | module rows + data source rows **deleted** | **RED** |
+| 3 | an unsynced (never-pushed) local resource absent from git → pull | **kept**; still `is_synced=false` (delete applies only to `is_synced=true`) | GREEN |
+| 4 | a synced module removed from git but still referenced by another app's ModuleViewer → pull | **409**; `conflictGroups` contains `{ type: 'module', conflictField: 'in_use' }`; module NOT deleted (whole pull aborts) | **RED** |
+| 5 | a synced data source removed from git but still connected to an app via a query → pull | **409**; `conflictGroups` contains `{ type: 'datasource', conflictField: 'in_use' }`; data source NOT deleted | **RED** |
+| 6 | after deleting the referencing app, clear tokens, re-pull | first pull **409**; re-pull **201** and the now-unreferenced module is **deleted** | **RED** |
+
+The `in_use` reference is wired the canonical way the future guard will read it: a ModuleViewer whose
+`properties.moduleAppId.value` is the orphan module's `co_relation_id` (matching
+`src/modules/data-queries/repository.ts:75`), and a data query whose `data_source_id` points at the orphan
+data source. The consumer app is kept as an unsynced local row on `main` so it survives the pull and its
+reference stays live. Tests assert behavior (status + `conflictGroups` shape), not internals, so they remain
+valid regardless of how the delete/guard code lands. Existing reusable detector for the eventual
+implementation: `checkModuleVersionInUse` (`src/modules/versions/util.service.ts:628`).
+
 ## 21. Inbound webhooks → auto-sync (`test/modules/git-sync-webhooks/`)
 
 The inbound webhook feature (`POST /api/v2/git-sync/webhooks/:provider/:organizationId` → verify

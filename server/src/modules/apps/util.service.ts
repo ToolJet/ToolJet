@@ -1767,18 +1767,30 @@ export class AppsUtilService implements IAppsUtilService {
       if (!defaultBranchId) return;
 
       const versionRepo = manager.getRepository(AppVersion);
+      const isWorkflow = app.type === APP_TYPES.WORKFLOW;
 
       // App metadata is the default-branch canonical row (instance-level identity),
       // regardless of which branch is being edited. is_synced=true sorts first (the
       // authoritative row when git is on); git-off falls back to the latest such row.
       // This mirrors the DB metadata trigger's own canonical-row selection.
-      let source = await versionRepo
+      //
+      // The status=DRAFT requirement holds for regular apps (a published/released snapshot
+      // must never shadow the current draft's metadata), but workflows aren't git-synced and
+      // can be imported with every version PUBLISHED and no DRAFT at all (e.g. a workflow that
+      // was released and never re-edited in its source workspace) — requiring DRAFT there would
+      // leave name/slug/icon permanently blank. Workflows have only one branch's worth of
+      // versions, so there's no published-shadowing-a-draft risk to guard against; match any
+      // non-stub VERSION-type row regardless of status.
+      const qb = versionRepo
         .createQueryBuilder('av')
         .where('av.app_id = :appId', { appId: app.id })
         .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
         .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
-        .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
-        .andWhere('av.is_stub = false')
+        .andWhere('av.is_stub = false');
+      if (!isWorkflow) {
+        qb.andWhere('av.status = :status', { status: AppVersionStatus.DRAFT });
+      }
+      let source = await qb
         .orderBy('av.is_synced', 'DESC')
         .addOrderBy('av.updated_at', 'DESC')
         .select(['av.id', 'av.appName', 'av.slug', 'av.icon', 'av.isPublic'])

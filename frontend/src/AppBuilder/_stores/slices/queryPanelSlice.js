@@ -9,11 +9,16 @@ import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
-import { ABORT_UNSUPPORTED_KINDS, defaultSources } from '@/AppBuilder/QueryManager/constants';
+import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+
+// tj-403 = data-source query-run permission denied; toast in every mode, unlike ordinary query failures
+const toastIfQueryRunRestricted = (errorData) => {
+  if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
+};
 
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
@@ -587,6 +592,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       // Handler for query failures
       const handleFailure = (errorData) => {
+        toastIfQueryRunRestricted(errorData);
         if (shouldSetPreviewData) {
           setPreviewLoading(false);
           setPreviewData(errorData);
@@ -600,7 +606,7 @@ export const createQueryPanelSlice = (set, get) => ({
           message: errorData?.description,
           errorTarget: 'Queries',
           error:
-            query.kind === 'restapi' && errorData?.data?.type !== 'tj-401'
+            query.kind === 'restapi' && errorData?.data?.type !== TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
               ? {
                   substitutedVariables: options,
                   request: errorData?.data?.requestObject,
@@ -614,7 +620,7 @@ export const createQueryPanelSlice = (set, get) => ({
           queryId,
           {
             isLoading: false,
-            ...(errorData?.data?.type === 'tj-401'
+            ...(errorData?.data?.type === TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
               ? {
                   metadata: errorData?.metadata,
                   response: errorData?.data?.responseObject,
@@ -739,7 +745,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // Currently async query resolution is applicable only to workflows
             // Change this conditional to async query type check for other
             // async queries in the future
-            if (query.kind === 'workflows' && data?.data?.type !== 'tj-401') {
+            if (query.kind === 'workflows' && data?.data?.type !== TJ_QUERY_ERROR_TYPE.UNAUTHORIZED) {
               if (data.status === 'failed') {
                 const errorData = handleFailure({ status: 'failed', message: data.message });
                 resolve(errorData);
@@ -834,7 +840,10 @@ export const createQueryPanelSlice = (set, get) => ({
               }
 
               errorData =
-                (query.kind === 'runpy' || query.kind === 'runjs') && data?.data?.type !== 'tj-401' ? data?.data : data;
+                (query.kind === 'runpy' || query.kind === 'runjs') &&
+                data?.data?.type !== TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
+                  ? data?.data
+                  : data;
               const result = handleFailure(errorData);
               resolve(result);
               return;
@@ -1150,6 +1159,7 @@ export const createQueryPanelSlice = (set, get) => ({
                     break;
                 }
 
+                toastIfQueryRunRestricted(errorData);
                 onEvent('onDataQueryFailure', queryEvents);
                 if (callbackFns?.onFailure) {
                   const failureData = { status: data.status, data: finalData };
@@ -1257,7 +1267,7 @@ export const createQueryPanelSlice = (set, get) => ({
           message: 'Query could not be completed',
           description: 'Response code 401 (Unauthorized)',
           data: {
-            type: 'tj-401',
+            type: TJ_QUERY_ERROR_TYPE.UNAUTHORIZED,
             responseObject: {
               statusCode: 401,
               responseBody: 'Unauthorized Access',
@@ -1562,7 +1572,7 @@ export const createQueryPanelSlice = (set, get) => ({
           message: 'Query could not be completed',
           description: 'Response code 401 (Unauthorized)',
           data: {
-            type: 'tj-401',
+            type: TJ_QUERY_ERROR_TYPE.UNAUTHORIZED,
             responseObject: {
               statusCode: 401,
               responseBody: 'Unauthorized Access',
@@ -1658,7 +1668,7 @@ export const createQueryPanelSlice = (set, get) => ({
           message: 'Query could not be completed',
           description: 'Response code 401 (Unauthorized)',
           data: {
-            type: 'tj-401',
+            type: TJ_QUERY_ERROR_TYPE.UNAUTHORIZED,
             responseObject: {
               statusCode: 401,
               responseBody: 'Unauthorized Access',
