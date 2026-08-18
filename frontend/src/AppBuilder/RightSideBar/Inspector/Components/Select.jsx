@@ -128,7 +128,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       value,
       label,
       ...(isCaptionEnabled ? { caption: null } : {}),
-      ...(isIconImageEnabled ? { icon: { value: '' }, iconVisibility: false } : {}),
+      ...(isIconImageEnabled ? { icon: { value: 'IconHome2' }, iconVisibility: false } : {}),
       visible: { value: '{{true}}' },
       disable: { value: '{{false}}' },
       default: { value: '{{false}}' },
@@ -221,7 +221,18 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const handleIconVisibilityChange = (value, index) => {
     const isVisible = getResolvedValue(value);
-    const _options = options.map((option, i) => (i === index ? { ...option, iconVisibility: isVisible } : option));
+    const _options = options.map((option, i) =>
+      i === index
+        ? {
+            ...option,
+            iconVisibility: isVisible,
+            // Legacy/empty options: stamp the default the moment visibility turns on, so the
+            // stored value matches what the picker displays (its IconHome2 is a render-time
+            // fallback only — without this stamp the widget sees '' and shows nothing).
+            ...(isVisible && !option?.icon?.value ? { icon: { ...option?.icon, value: 'IconHome2' } } : {}),
+          }
+        : option
+    );
     updateOptions(_options);
   };
 
