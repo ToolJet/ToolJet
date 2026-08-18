@@ -19,7 +19,7 @@ const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
   // eslint-disable-next-line no-constant-binary-expression
-  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : (95 ?? 70),
+  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
   previewPanelHeight: 0,
   selectedDataSource: null,
@@ -620,15 +620,15 @@ export const createQueryPanelSlice = (set, get) => ({
                   response: errorData?.data?.responseObject,
                 }
               : query.kind === 'restapi'
-                ? {
-                    metadata: errorData?.metadata,
-                    request: errorData?.data?.requestObject,
-                    response: errorData?.data?.responseObject,
-                    responseHeaders: errorData?.data?.responseHeaders,
-                  }
-                : query.kind === 'workflows'
-                  ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
-                  : {}),
+              ? {
+                  metadata: errorData?.metadata,
+                  request: errorData?.data?.requestObject,
+                  response: errorData?.data?.responseObject,
+                  responseHeaders: errorData?.data?.responseHeaders,
+                }
+              : query.kind === 'workflows'
+              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
+              : {}),
           },
           moduleId
         );
@@ -740,6 +740,12 @@ export const createQueryPanelSlice = (set, get) => ({
             // Change this conditional to async query type check for other
             // async queries in the future
             if (query.kind === 'workflows' && data?.data?.type !== 'tj-401') {
+              if (data.status === 'failed') {
+                const errorData = handleFailure({ status: 'failed', message: data.message });
+                resolve(errorData);
+                return;
+              }
+
               // Handle sync execution response — no SSE needed
               if (data?.data?.syncExecution) {
                 const executionStatus = data.data.executionStatus;
@@ -775,7 +781,8 @@ export const createQueryPanelSlice = (set, get) => ({
               });
 
               if (error) {
-                resolve({ status: 'failed', message: error });
+                const errorData = handleFailure({ status: 'failed', message: error });
+                resolve(errorData);
                 return;
               }
 
@@ -792,7 +799,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // Handle synchronous queries (original code)
 
             let queryStatusCode = data?.status ?? null;
-            const promiseStatus = query.kind === 'runpy' ? (data?.data?.status ?? 'ok') : data.status;
+            const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
             // Note: Need to move away from statusText -> statusCode
             if (
               promiseStatus === 'failed' ||
@@ -1002,6 +1009,14 @@ export const createQueryPanelSlice = (set, get) => ({
             // Change this conditional to async query type check for other
             // async queries in the future
             if (query.kind === 'workflows') {
+              if (data.status === 'failed') {
+                setPreviewLoading(false);
+                setIsPreviewQueryLoading(false);
+                if (!calledFromQuery) setPreviewData(data);
+                resolve({ status: 'failed', data });
+                return;
+              }
+
               // Handle sync execution response — no SSE needed
               if (data?.data?.syncExecution) {
                 const executionStatus = data.data.executionStatus;
@@ -1103,7 +1118,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
             let finalData = data.data;
             let queryStatusCode = data?.status ?? null;
-            const queryStatus = query.kind === 'runpy' ? (data?.data?.status ?? 'ok') : data.status;
+            const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
             switch (true) {
               case queryStatus === 'Bad Request' ||
                 queryStatus === 'Not Found' ||
@@ -1573,7 +1588,11 @@ export const createQueryPanelSlice = (set, get) => ({
         );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
-        return { data: e?.message, status: 'failed' };
+        return {
+          data: undefined,
+          status: 'failed',
+          message: e?.error || e?.data?.message || e?.message || 'Workflow execution failed',
+        };
       }
     },
 
