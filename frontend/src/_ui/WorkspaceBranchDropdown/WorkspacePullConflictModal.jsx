@@ -20,6 +20,10 @@ const CONFLICT_SECTION_HEADER_MAP = {
   'module-slug': 'Module slug',
   'folder-folder': 'Folder name',
   'datasource-name': 'Data source name',
+  // Deleted/deactivated by git but still referenced locally — pull can't proceed
+  // until the reference is removed, so these are always manual-resolution only.
+  'module-in_use': 'Module in use',
+  'datasource-in_use': 'Data source in use',
 };
 
 const LOCAL_STATUSES = ['existing', 'local'];
@@ -134,26 +138,38 @@ function ConflictRow({
 
       {isExpanded && (
         <div className="conflict-section-body">
-          {group.conflicts.map((item, itemIdx) => {
-            const badge = getConflictItemBadge(item, group);
-            return (
-              <div key={itemIdx} className="conflict-item">
-                <SolidIcon name={TYPE_ICON_MAP[group.type] || 'apps'} width="16" fill="var(--slate9)" />
+          {group.conflictField === 'in_use'
+            ? // In-use conflicts list *consuming apps*, not local/remote copies of the
+              // same resource — spell out the relationship directly instead of the
+              // generic name + Local/Remote badge used for name/slug conflicts.
+              group.conflicts.map((item, itemIdx) => (
+                <div key={itemIdx} className="conflict-item">
+                  <SolidIcon name="apps" width="16" fill="var(--slate9)" />
+                  <span className="conflict-item-name">
+                    Used in <strong>{item.name}</strong>
+                  </span>
+                </div>
+              ))
+            : group.conflicts.map((item, itemIdx) => {
+                const badge = getConflictItemBadge(item, group);
+                return (
+                  <div key={itemIdx} className="conflict-item">
+                    <SolidIcon name={TYPE_ICON_MAP[group.type] || 'apps'} width="16" fill="var(--slate9)" />
 
-                <span className="conflict-item-name">
-                  {group.conflictField === 'slug'
-                    ? item.name
-                    : item.coRelationId
-                      ? `#${item.coRelationId.slice(0, 8)}`
-                      : item.name}
-                </span>
+                    <span className="conflict-item-name">
+                      {group.conflictField === 'slug'
+                        ? item.name
+                        : item.coRelationId
+                        ? `#${item.coRelationId.slice(0, 8)}`
+                        : item.name}
+                    </span>
 
-                {!hideBadges && (
-                  <span className={`conflict-badge conflict-badge--${badge.variant}`}>{badge.label}</span>
-                )}
-              </div>
-            );
-          })}
+                    {!hideBadges && (
+                      <span className={`conflict-badge conflict-badge--${badge.variant}`}>{badge.label}</span>
+                    )}
+                  </div>
+                );
+              })}
         </div>
       )}
     </div>
@@ -219,6 +235,12 @@ export function PullConflictModal({
 
   const manualGroups = isSyncEligible ? conflictGroups.filter((g) => !isSyncableGroup(g)) : conflictGroups;
   const syncableGroups = isSyncEligible ? conflictGroups.filter(isSyncableGroup) : [];
+  // 'in_use' conflicts aren't a duplicate-name/slug issue — they're an existing
+  // module/datasource that git no longer has but a local app still references.
+  // Split them out of the generic "duplicate data" manual bucket so the section
+  // title/subtext stays accurate for both kinds.
+  const manualDuplicateGroups = manualGroups.filter((g) => g.conflictField !== 'in_use');
+  const manualInUseGroups = manualGroups.filter((g) => g.conflictField === 'in_use');
 
   const toggleInSet = (setState, idx) => {
     setState((prev) => {
@@ -280,10 +302,16 @@ export function PullConflictModal({
                 branch. There are resources with more or less than one draft version.
               </li>
             )}
-            {conflictGroups.length > 0 && (
+            {(manualDuplicateGroups.length > 0 || syncableGroups.length > 0) && (
               <li>
                 There are resources with the <strong>duplicate data</strong> on this branch. ToolJet requires unique
                 names &amp; slug for apps, data sources, modules, and folders within a branch.
+              </li>
+            )}
+            {manualInUseGroups.length > 0 && (
+              <li>
+                Some modules/data sources removed from git are <strong>still in use</strong> locally. Remove the
+                reference before pulling, or they&apos;ll be kept as-is.
               </li>
             )}
           </ul>
@@ -291,24 +319,56 @@ export function PullConflictModal({
           <div className="conflict-categories-list">
             {multiDraftResources.length > 0 && <MultiDraftSection resources={multiDraftResources} />}
 
-            {manualGroups.length > 0 && (
+            {manualDuplicateGroups.length > 0 && (
               <div className="conflict-category">
                 <div className="conflict-category-header">
                   <span className="conflict-category-title">Duplicate data: Requires manual resolution</span>
-                  <span className="conflict-count-badge conflict-count-badge--danger">{manualGroups.length}</span>
+                  <span className="conflict-count-badge conflict-count-badge--danger">
+                    {manualDuplicateGroups.length}
+                  </span>
                 </div>
                 <p className="conflict-category-subtext">Read docs to resolve the conflict before trying again</p>
                 <div className="conflict-list-card">
-                  {manualGroups.map((group, idx) => (
-                    <ConflictRow
-                      key={idx}
-                      group={group}
-                      isExpanded={expandedManual.has(idx)}
-                      isSyncable={false}
-                      hideBadges={hideBadges}
-                      onToggleExpanded={() => toggleInSet(setExpandedManual, idx)}
-                    />
-                  ))}
+                  {manualDuplicateGroups.map((group) => {
+                    const idx = manualGroups.indexOf(group);
+                    return (
+                      <ConflictRow
+                        key={idx}
+                        group={group}
+                        isExpanded={expandedManual.has(idx)}
+                        isSyncable={false}
+                        hideBadges={hideBadges}
+                        onToggleExpanded={() => toggleInSet(setExpandedManual, idx)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {manualInUseGroups.length > 0 && (
+              <div className="conflict-category">
+                <div className="conflict-category-header">
+                  <span className="conflict-category-title">Still in use: Requires manual resolution</span>
+                  <span className="conflict-count-badge conflict-count-badge--danger">{manualInUseGroups.length}</span>
+                </div>
+                <p className="conflict-category-subtext">
+                  Remove the reference from the local app(s) listed below, then try again
+                </p>
+                <div className="conflict-list-card">
+                  {manualInUseGroups.map((group) => {
+                    const idx = manualGroups.indexOf(group);
+                    return (
+                      <ConflictRow
+                        key={idx}
+                        group={group}
+                        isExpanded={expandedManual.has(idx)}
+                        isSyncable={false}
+                        hideBadges={hideBadges}
+                        onToggleExpanded={() => toggleInSet(setExpandedManual, idx)}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             )}

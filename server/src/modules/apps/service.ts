@@ -138,24 +138,9 @@ export class AppsService implements IAppsService {
       // follow-up update call needed.
       const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId, icon);
 
-      // In single-branch git sync mode, the workspace commit is the only sync mechanism.
-      // Apps created here have never had a chance to be committed, so their initial
-      // AppVersion starts with isSynced=false and the sync indicator always shows.
-      // Mark it synced at creation so the icon only appears after the user edits the app
-      // (which doesn't yet flip isSynced back to false — workspace push handles that).
-      // Multi-branch is unaffected: feature-branch creates use BRANCH-type versions,
-      // and default-branch apps arrive via pull (which already sets isSynced=true).
-      if (type !== APP_TYPES.WORKFLOW) {
-        const { isEnabled: isGitConfigured, isMultiBranchingEnabled: isMBEnabled } =
-          await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-        if (isGitConfigured && !isMBEnabled) {
-          await manager.update(
-            AppVersion,
-            { appId: app.id, status: AppVersionStatus.DRAFT, versionType: AppVersionType.VERSION },
-            { isSynced: true }
-          );
-        }
-      }
+      // A brand-new app/module has never been committed, so it must stay
+      // isSynced=false regardless of git being enabled — same as every other
+      // creation path (feature-branch, datasource).
 
       // Mirror the metadata onto the in-memory App so the response carries the values
       // just written to app_versions. app.slug is already correct for every type —
