@@ -162,4 +162,5 @@ export const AI_QUERY_SUPPORTED_KINDS = [
   'quickbooks',
   'hubspot',
   'confluence',
+  'sharepoint',
 ];
