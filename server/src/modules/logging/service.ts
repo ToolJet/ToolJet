@@ -1,70 +1,17 @@
 import { Injectable, LoggerService } from '@nestjs/common';
 import { RequestContext } from '@modules/request-context/service';
-import pino, { Logger as PinoBaseLogger } from 'pino';
-import { ConfigService } from '@nestjs/config';
+import { Logger as PinoBaseLogger } from 'pino';
 import { ignoreLogPaths } from '../logging/constant';
-import { OtelLogStream } from './otel-log-stream';
-
-// Decision: server logs ride the same ENABLE_OTEL flag as everything else — no separate
-// toggle. Ship info/warn/error to OTLP; stdout's own verbosity (ORM_LOGGING-driven) is untouched.
-const OTEL_STREAM_LEVEL = 'info';
+import { redactSensitiveKeys } from '@helpers/log-redaction.helper';
+import { buildBaseLogger } from './base-logger';
 
 @Injectable()
 export class TransactionLogger implements LoggerService {
-  private static baseLogger: PinoBaseLogger;
-
-  constructor(private readonly configService: ConfigService) {
-    // Initialize only once
-    if (!TransactionLogger.baseLogger) {
-      const env = this.configService.get<string>('NODE_ENV', 'development');
-      // Level follows ORM_LOGGING outside dev/test so one env var drives all log verbosity
-      const level =
-        env === 'development'
-          ? 'trace'
-          : env === 'test'
-            ? 'error'
-            : ({ all: 'debug', warn: 'warn', error: 'error' } as Record<string, string>)[
-                this.configService.get('ORM_LOGGING') ?? ''
-              ] || 'warn';
-
-      const otelLoggingEnabled = this.configService.get<string>('ENABLE_OTEL') === 'true';
-
-      // pino's own `level` option is a hard floor beneath which NOTHING reaches ANY stream —
-      // if ORM_LOGGING left it at 'warn'/'error', info-level lines never even get dispatched
-      // for the OTLP stream to see. Lower the floor only when OTEL logging is actually on;
-      // stdout keeps its original verbosity via its own per-stream level below.
-      const effectiveLevel =
-        otelLoggingEnabled && pino.levels.values[level] > pino.levels.values[OTEL_STREAM_LEVEL]
-          ? OTEL_STREAM_LEVEL
-          : level;
-
-      const consoleStream =
-        env !== 'production' && env !== 'test'
-          ? pino.transport({
-              target: 'pino-pretty',
-              options: { colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z' },
-            })
-          : process.stdout;
-
-      // Unchanged single destination when OTEL is off — byte-identical to today's output.
-      const destination = otelLoggingEnabled
-        ? pino.multistream([
-            { stream: consoleStream, level },
-            { stream: new OtelLogStream(), level: OTEL_STREAM_LEVEL },
-          ])
-        : consoleStream;
-
-      TransactionLogger.baseLogger = pino(
-        {
-          level: effectiveLevel,
-          // Numeric levels (30/40/50) are opaque in production JSON — a self-hosted admin
-          // tailing `docker logs` has no way to know 30 means info. String labels cost nothing.
-          formatters: { level: (label) => ({ level: label }) },
-        },
-        destination
-      );
-    }
-  }
+  // Shared with nestjs-pino's HTTP/bootstrap logger (loader.ts) — buildBaseLogger() is
+  // memoized at module scope, so both consumers resolve to the exact same pino instance
+  // regardless of which one happens to call it first. TransactionLogger's only job here is
+  // route/transactionId enrichment on top of it, not owning construction.
+  private readonly logger: PinoBaseLogger = buildBaseLogger();
 
   private enrichLogData(
     message: any,
@@ -78,8 +25,12 @@ export class TransactionLogger implements LoggerService {
     const transactionId = RequestContext.getTransactionId();
     const route = RequestContext.getRoute();
     const startTime = RequestContext.getStartTime();
+    // Redact BEFORE stringify, not after — once an object param is flattened into the
+    // message string, there's no structure left for any path-based redactor (pino's own
+    // `redact` included) to match against. This is the only point in the pipeline where
+    // the original object shape still exists.
     const formattedParams = optionalParams
-      .map((param) => (typeof param === 'object' ? JSON.stringify(param) : param))
+      .map((param) => (typeof param === 'object' ? JSON.stringify(redactSensitiveKeys(param)) : param))
       .join(' ')
       .trim();
 
@@ -115,21 +66,21 @@ export class TransactionLogger implements LoggerService {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.info(...this.processData(message, ...optionalParams));
+    this.logger.info(...this.processData(message, ...optionalParams));
   }
 
   error(message: any, ...optionalParams: any[]) {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.error(...this.processData(message, ...optionalParams));
+    this.logger.error(...this.processData(message, ...optionalParams));
   }
 
   warn(message: any, ...optionalParams: any[]) {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.warn(...this.processData(message, ...optionalParams));
+    this.logger.warn(...this.processData(message, ...optionalParams));
   }
 
   // Use for detailed debug level logs
@@ -137,7 +88,7 @@ export class TransactionLogger implements LoggerService {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.debug(...this.processData(message, ...optionalParams));
+    this.logger.debug(...this.processData(message, ...optionalParams));
   }
 
   // Use for detailed trace level logs
@@ -145,6 +96,6 @@ export class TransactionLogger implements LoggerService {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.trace(...this.processData(message, ...optionalParams));
+    this.logger.trace(...this.processData(message, ...optionalParams));
   }
 }

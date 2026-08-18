@@ -32,3 +32,16 @@ export const getFrontendErrorLogger = (): Logger | undefined => provider?.getLog
 // Same module-local provider, different logger name — server logs land in the same
 // place as frontend error logs, distinguishable in Loki by the logger/service name.
 export const getServerLogger = (): Logger | undefined => provider?.getLogger('tooljet-server');
+
+// BatchLogRecordProcessor holds up to 5s (or 2048 records) in memory before it flushes on
+// its own schedule. Both process shutdown paths (tracing.ts's SIGTERM handler, main.ts's
+// gracefulShutdown) call process.exit() without ever draining that queue — exactly the
+// incident-explaining tail this feature exists to capture, lost on every restart. Await
+// this before either exit call. Bounded so a dead/unreachable collector can't hang shutdown.
+export const shutdownOtelLogs = async (timeoutMs = 3000): Promise<void> => {
+  if (!provider) return;
+  await Promise.race([
+    provider.shutdown().catch(() => undefined),
+    new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+};

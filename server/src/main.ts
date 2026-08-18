@@ -17,6 +17,7 @@ import { GuardValidator } from '@modules/app/validators/feature-guard.validator'
 import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-info-updated.interceptor';
+import { shutdownOtelLogs, initializeOtelLogs } from '@otel/logs';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -37,6 +38,13 @@ import {
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
+  // M6: called here, before NestFactory even starts building the module graph — not in
+  // FrontendMetricsModule.onModuleInit(), which fires late enough that any TransactionLogger
+  // call from an earlier provider's constructor/init hook would silently miss the OTLP
+  // stream for that one line (still fine on stdout, just absent from Loki). Idempotent —
+  // that later call becomes a harmless no-op once this one has already run.
+  initializeOtelLogs();
+
   const logger = createLogger('Bootstrap');
   logger.log('🚀 Starting ToolJet application bootstrap...');
 
@@ -155,14 +163,19 @@ async function bootstrap() {
 function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   const gracefulShutdown = async (signal: string) => {
     logShutdownInfo(signal, logger);
+    let exitCode = 0;
     try {
       await app.close();
       logger.log('✅ Application closed successfully');
-      process.exit(0);
     } catch (error) {
       logger.error('❌ Error during application shutdown:', error);
-      process.exit(1);
+      exitCode = 1;
     }
+    // Flush the OTel log queue regardless of how app.close() went — tracing.ts's own
+    // SIGTERM handler shuts down traces/metrics independently of this one, and neither
+    // used to wait for the log processor's own up-to-5s batch to drain before exiting.
+    await shutdownOtelLogs();
+    process.exit(exitCode);
   };
 
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));

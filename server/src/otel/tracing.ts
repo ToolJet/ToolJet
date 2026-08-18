@@ -27,6 +27,7 @@ import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic
 import { getTooljetEdition } from '../helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '../modules/app/constants';
 import { ATTR, ATTR_DEPLOYMENT_ENVIRONMENT_NAME, METRIC, deploymentEnvironmentName } from './semconv';
+import { shutdownOtelLogs } from './logs';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
@@ -499,19 +500,17 @@ process.on('SIGTERM', () => {
     seatPollTimeout = null;
   }
 
-  if (sdk) {
-    sdk
-      .shutdown()
-      .then(() => {
-        if (process.env.OTEL_LOG_LEVEL === 'debug') {
-          console.log('OpenTelemetry instrumentation shutdown successfully');
-        }
-      })
-      .catch((err) => console.error('Error shutting down OpenTelemetry instrumentation', err))
-      .finally(() => process.exit(0));
-  } else {
-    process.exit(0);
-  }
+  // Traces/metrics (sdk) and logs (module-local provider, see otel/logs.ts) shut down
+  // independently — flush both before exiting, or the log queue's up-to-5s backlog is
+  // lost on every restart, silently, on the exact lines an incident needs most.
+  Promise.all([sdk ? sdk.shutdown() : Promise.resolve(), shutdownOtelLogs()])
+    .then(() => {
+      if (process.env.OTEL_LOG_LEVEL === 'debug') {
+        console.log('OpenTelemetry instrumentation shutdown successfully');
+      }
+    })
+    .catch((err) => console.error('Error shutting down OpenTelemetry instrumentation', err))
+    .finally(() => process.exit(0));
 });
 
 export const startOpenTelemetry = async (): Promise<void> => {

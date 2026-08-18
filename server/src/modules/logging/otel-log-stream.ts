@@ -1,3 +1,4 @@
+import pino from 'pino';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { getServerLogger } from '@otel/logs';
 
@@ -20,29 +21,40 @@ const SEVERITY_BY_LEVEL: Record<string, SeverityNumber> = {
  */
 export class OtelLogStream {
   write(chunk: string): void {
-    const logger = getServerLogger();
-    if (!logger) return;
-
-    let record: Record<string, unknown>;
+    // The whole body is guarded, not just JSON.parse — this stream sits in the same
+    // synchronous multistream fan-out as stdout, and TransactionLogger IS Nest's app
+    // logger. Anything thrown here (a malformed record, or the SDK's own emit()
+    // raising) would otherwise surface at the original this.logger.log(...) call site —
+    // turning an ordinary log call into a request failure. Observability must never
+    // break the app it's observing.
     try {
-      record = JSON.parse(chunk);
+      const logger = getServerLogger();
+      if (!logger) return;
+
+      const record = JSON.parse(chunk);
+      // trace_id/span_id/trace_flags are named here only to keep them OUT of attributes —
+      // emit() already reads the active span from context and fills the record's native
+      // spanContext (traceId/spanId/traceFlags), which is what Grafana's trace-to-logs link
+      // actually follows. Re-adding them as attributes was a redundant second copy; trace_flags
+      // wasn't even named before, so it leaked through into attributes by accident.
+      const { level, msg, time, pid, hostname, trace_id, span_id, trace_flags, ...attributes } =
+        record as Record<string, any>;
+      // typeof level === 'string' holds today only because service.ts's formatters.level
+      // hook guarantees it — an implicit coupling with no test tying the two files together.
+      // Fall back through pino's own label table first, so this file stays correct even if
+      // that formatter is ever reverted elsewhere.
+      const levelName =
+        typeof level === 'string' ? level : typeof level === 'number' ? pino.levels.labels[level] || 'info' : 'info';
+
+      logger.emit({
+        severityNumber: SEVERITY_BY_LEVEL[levelName] ?? SeverityNumber.INFO,
+        severityText: levelName.toUpperCase(),
+        body: msg,
+        timestamp: typeof time === 'number' ? time : Date.now(),
+        attributes,
+      });
     } catch {
-      return; // never let a malformed line break the write path
+      // never let a broken line, or a misbehaving SDK, break the write path
     }
-
-    const { level, msg, time, pid, hostname, trace_id, span_id, ...attributes } = record as Record<string, any>;
-    const levelName = typeof level === 'string' ? level : 'info';
-
-    logger.emit({
-      severityNumber: SEVERITY_BY_LEVEL[levelName] ?? SeverityNumber.INFO,
-      severityText: levelName.toUpperCase(),
-      body: msg,
-      timestamp: typeof time === 'number' ? time : Date.now(),
-      attributes: {
-        ...attributes,
-        ...(trace_id ? { trace_id } : {}),
-        ...(span_id ? { span_id } : {}),
-      },
-    });
   }
 }

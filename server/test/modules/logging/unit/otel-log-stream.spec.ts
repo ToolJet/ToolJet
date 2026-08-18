@@ -55,7 +55,11 @@ describe('OtelLogStream', () => {
       );
     });
 
-    it('strips pid/hostname/time/level/msg out of attributes but keeps trace_id/span_id', () => {
+    it('strips pid/hostname/time/level/msg/trace_id/span_id/trace_flags out of attributes', () => {
+      // M1: trace_id/span_id/trace_flags must NOT end up in attributes — emit() already
+      // reads the active span from context and fills the record's native spanContext with
+      // them, which is what Grafana's trace-to-logs link actually follows. A copy in
+      // attributes would just be redundant bytes in Loki for data the link never reads.
       stream.write(
         JSON.stringify({
           level: 'error',
@@ -65,12 +69,14 @@ describe('OtelLogStream', () => {
           hostname: 'h',
           trace_id: 'abc123',
           span_id: 'def456',
+          trace_flags: 1,
+          route: '/api/apps',
         })
       );
 
       expect(emit).toHaveBeenCalledWith(
         expect.objectContaining({
-          attributes: { trace_id: 'abc123', span_id: 'def456' },
+          attributes: { route: '/api/apps' },
         })
       );
     });
@@ -93,6 +99,17 @@ describe('OtelLogStream', () => {
 
       expect(emit).toHaveBeenCalledWith(
         expect.objectContaining({ severityNumber: SeverityNumber.INFO, severityText: 'INFO' })
+      );
+    });
+
+    it('still resolves the correct severity from a bare numeric level (M2 — not dependent on service.ts\'s formatter)', () => {
+      // service.ts's formatters.level hook normally guarantees level is always a string —
+      // but this file shouldn't silently misreport severity if that formatter is ever
+      // reverted elsewhere. 50 is pino's own numeric code for "error".
+      stream.write(JSON.stringify({ level: 50, msg: 'boom' }));
+
+      expect(emit).toHaveBeenCalledWith(
+        expect.objectContaining({ severityNumber: SeverityNumber.ERROR, severityText: 'ERROR' })
       );
     });
   });

@@ -14,6 +14,7 @@ import { join } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
 import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
+import { buildBaseLogger } from '@modules/logging/base-logger';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 
@@ -76,12 +77,6 @@ export class AppModuleLoader {
       }),
       LoggerModule.forRoot({
         pinoHttp: (() => {
-          const level = (() => {
-            if (process.env.NODE_ENV === 'development') return 'debug';
-            if (process.env.NODE_ENV === 'test') return 'silent';
-            return { all: 'debug', warn: 'warn', error: 'error' }[process.env.ORM_LOGGING] || 'warn';
-          })();
-
           const autoLogging =
             process.env.NODE_ENV === 'test'
               ? false
@@ -89,15 +84,16 @@ export class AppModuleLoader {
                   ignore: (req) => req.url === '/api/health' || req.url === '/api/metrics',
                 };
 
-          const transport =
-            process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
-              ? { target: 'pino-pretty', options: { colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z' } }
-              : undefined;
-
           return {
-            level,
+            // Shared with TransactionLogger (service.ts) — buildBaseLogger() is memoized,
+            // so this resolves to the exact same pino instance either way. Previously built
+            // twice here, with its own independent copy of the level-mapping logic that had
+            // already drifted from service.ts's ('debug' vs 'trace' for the same
+            // NODE_ENV=development case) — one construction site now, so HTTP request logs
+            // and bootstrap lines get the OTLP stream identically to appLogger.* calls,
+            // instead of never reaching it at all.
+            logger: buildBaseLogger(),
             autoLogging,
-            transport,
             redact: {
               paths: [
                 'req.headers.authorization',
