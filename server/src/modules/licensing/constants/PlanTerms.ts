@@ -30,6 +30,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     scim: false,
     mfa: false,
     observability: false,
+    automaticSsoLogin: false,
   },
   domains: [],
   workflows: {
@@ -52,6 +53,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     pages: {
       enabled: false,
       count: '',
+      groupCount: '',
       features: {
         appHeaderAndLogo: false,
         addNavGroup: false,
@@ -69,6 +71,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       release: false,
       history: false,
       jsLibraries: false,
+      appPublic: false,
     },
   },
   modules: {
@@ -103,6 +106,10 @@ export const BASIC_PLAN_SETTINGS = {
   },
   ENABLE_COMMENTS: {
     value: 'false',
+  },
+  AUTOMATIC_SSO_LOGIN: {
+    value: 'false',
+    feature: LICENSE_FIELD.AUTOMATIC_SSO_LOGIN,
   },
 };
 

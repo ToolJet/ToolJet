@@ -124,6 +124,7 @@ export enum LICENSE_FIELD {
   AI_PLAN = 'aiPlan',
   EXTERNAL_API = 'externalApiEnabled',
   APP_HISTORY = 'appHistoryEnabled',
+  APP_PUBLIC = 'appPublicEnabled',
   APP_JS_LIBRARIES = 'appJsLibrariesEnabled',
   SCIM = 'scimEnabled',
   MFA = 'mfaEnabled',
@@ -140,11 +141,14 @@ export enum LICENSE_FIELD {
   APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
   CUSTOM_DOMAINS = 'customDomainsEnabled',
   APP_PAGES_LIMIT = 'appPagesLimit',
+  APP_PAGE_GROUPS_LIMIT = 'appPageGroupsLimit',
   GOOGLE = 'googleEnabled',
   GITHUB = 'githubEnabled',
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
   MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
   QUERY_FOLDERS = 'queryFoldersEnabled',
+  AUTOMATIC_SSO_LOGIN = 'automaticSsoLoginEnabled',
+  RELEASE = 'releaseEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -158,6 +162,8 @@ export enum LICENSE_LIMITS_LABEL {
   //Apps
   APPS = 'Apps',
   WORKFLOWS = 'Workflows',
+  PAGES = 'pages',
+  PAGE_GROUPS = 'page groups',
 
   //Workspaces
   WORKSPACES = 'Workspaces',
@@ -185,6 +191,7 @@ export enum FEATURE_KEY {
   GET_TERMS = 'get_terms',
   UPDATE_LICENSE = 'update_license',
   GET_APP_LIMITS = 'get_app_limits',
+  GET_PAGE_LIMITS = 'get_page_limits',
   CHECK_AUDIT_LOGS_LICENSE = 'check_audit_logs_license',
   GET_AUDIT_LOGS_MAX_DURATION = 'get_audit_logs_max_duration',
   GET_ORGANIZATION_LIMITS = 'get_organization_limits',
