@@ -441,6 +441,15 @@ module.exports = {
               // static dir / deploy assets copy at runtime — never resolve them at
               // build time (Rspack 2 tries to by default; v1/webpack passed through).
               url: { filter: (url) => !url.startsWith('/') },
+              // css-loader 7 defaults *.module.css to named exports only; the app
+              // imports CSS modules as a default export (`import styles from ...`).
+              // `auto` must be set explicitly: passing `modules` as an object leaves
+              // it undefined, which turns EVERY stylesheet into a CSS module and
+              // hashes the class names of the global styles.
+              // `exportLocalsConvention` also has to be pinned: with `namedExport`
+              // off, css-loader 7 defaults it to 'camel-case-only', which lowercases
+              // PascalCase class names (`styles.Wrapper` -> undefined).
+              modules: { auto: true, namedExport: false, exportLocalsConvention: 'as-is' },
             },
           },
         ],
@@ -457,6 +466,15 @@ module.exports = {
               // static dir / deploy assets copy at runtime — never resolve them at
               // build time (Rspack 2 tries to by default; v1/webpack passed through).
               url: { filter: (url) => !url.startsWith('/') },
+              // css-loader 7 defaults *.module.css to named exports only; the app
+              // imports CSS modules as a default export (`import styles from ...`).
+              // `auto` must be set explicitly: passing `modules` as an object leaves
+              // it undefined, which turns EVERY stylesheet into a CSS module and
+              // hashes the class names of the global styles.
+              // `exportLocalsConvention` also has to be pinned: with `namedExport`
+              // off, css-loader 7 defaults it to 'camel-case-only', which lowercases
+              // PascalCase class names (`styles.Wrapper` -> undefined).
+              modules: { auto: true, namedExport: false, exportLocalsConvention: 'as-is' },
             },
           },
           { loader: 'postcss-loader' },
