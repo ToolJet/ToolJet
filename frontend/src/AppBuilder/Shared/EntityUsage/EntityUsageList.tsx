@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { decodeEntities } from '@/_helpers/utils';
 import { SearchBox as RawSearchBox } from '@/_components/SearchBox';
 import useEntityNavigation, { KIND_LABELS, NAVIGABLE_KINDS } from './useEntityNavigation';
+import { activateOnEnterOrSpace } from './keyboard';
 import type { UsageEntry } from '@/AppBuilder/_utils/entityUsage';
 import './entityUsage.scss';
 
@@ -89,7 +90,9 @@ export const EntityUsageList = ({
                 key={`${entry.kind}-${entry.id ?? entry.name}`}
                 className={`entity-usage-row ${navigable ? 'navigable' : ''}`}
                 onClick={navigable ? () => handleEntryClick(entry) : undefined}
+                onKeyDown={navigable ? activateOnEnterOrSpace(() => handleEntryClick(entry)) : undefined}
                 role={navigable ? 'button' : undefined}
+                tabIndex={navigable ? 0 : undefined}
                 data-cy={`entity-usage-row-${entry.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <div className="entity-usage-row-main">

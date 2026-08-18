@@ -11,6 +11,7 @@ import { buildDeleteDialogCopy, nestedChildNote, usedByLabel } from './deleteDia
 import type { DeleteSubject, UsageEntry } from '@/AppBuilder/_utils/entityUsage';
 import type { ComponentsById, QueriesById } from '@/AppBuilder/LeftSidebar/Dependencies/types';
 import type { DeleteDialogSubject } from './deleteDialogCopy';
+import { activateOnEnterOrSpace } from '@/AppBuilder/Shared/EntityUsage/keyboard';
 // The dependent rows are the Dependencies panel's rows; pull in their styles so the
 // dialog does not depend on that panel having been mounted first.
 import '@/AppBuilder/LeftSidebar/Dependencies/styles.scss';
@@ -73,7 +74,9 @@ const BlockerCard = ({ subject, collapsible, defaultExpanded, queriesById, compo
       <div
         className={`entity-delete-card-header ${collapsible ? 'clickable' : ''}`}
         onClick={collapsible ? () => setExpanded((prev) => !prev) : undefined}
+        onKeyDown={collapsible ? activateOnEnterOrSpace(() => setExpanded((prev) => !prev)) : undefined}
         role={collapsible ? 'button' : undefined}
+        tabIndex={collapsible ? 0 : undefined}
         aria-expanded={collapsible ? isOpen : undefined}
       >
         <span className="entity-delete-card-subject">
@@ -173,7 +176,7 @@ export const EntityDeleteDialog = ({
       <Modal.Body className="entity-delete-body">
         {blocked && (
           <div className="entity-delete-warning-icon">
-            <SolidIcon name="warning" width="40px" fill="var(--icon-warning, #e54d2e)" />
+            <SolidIcon name="warning" width="40px" fill="var(--icon-warning)" />
           </div>
         )}
         <div className="entity-delete-heading">

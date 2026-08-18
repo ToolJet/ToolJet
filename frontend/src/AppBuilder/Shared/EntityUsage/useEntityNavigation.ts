@@ -1,5 +1,6 @@
 import useStore from '@/AppBuilder/_stores/store';
 import type { UsageEntryKind } from '@/AppBuilder/_utils/entityUsage';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const NAVIGABLE_KINDS = new Set<string>(['component', 'query', 'variable', 'pageVariable', 'global', 'constant']);
 
@@ -55,6 +56,7 @@ export const inspectorPathFor = (entry?: NavigableEntry | null): string | null =
 };
 
 const useEntityNavigation = (): NavigateToEntity => {
+  const { moduleId } = useModuleContext();
   const setSelectedComponents = useStore((state: any) => state.setSelectedComponents);
   const setSelectedQuery = useStore((state: any) => state.queryPanel.setSelectedQuery);
   const setIsQueryPaneExpanded = useStore((state: any) => state.queryPanel.setIsQueryPaneExpanded);
@@ -76,7 +78,7 @@ const useEntityNavigation = (): NavigateToEntity => {
         return true;
       }
       case 'query': {
-        setSelectedQuery(entry.id);
+        setSelectedQuery(entry.id, moduleId);
         setIsQueryPaneExpanded(true);
         return true;
       }

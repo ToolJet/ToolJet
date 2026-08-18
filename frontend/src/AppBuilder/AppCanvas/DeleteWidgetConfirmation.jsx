@@ -46,7 +46,7 @@ export const DeleteWidgetConfirmation = ({ darkMode }) => {
       componentsById={componentsById}
       queriesById={queriesById}
       onCancel={close}
-      onConfirm={() => deleteComponents(componentIds)}
+      onConfirm={() => deleteComponents(componentIds, moduleId)}
       darkMode={darkMode}
     />
   );

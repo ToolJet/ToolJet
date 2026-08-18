@@ -47,6 +47,48 @@ const propName = (node: any): string | null => {
   return null;
 };
 
+const isPageVariables = (node: any): boolean =>
+  node?.type === 'MemberExpression' &&
+  node.object?.type === 'Identifier' &&
+  node.object.name === 'page' &&
+  propName(node) === 'variables';
+
+const rootBucket = (
+  init: any
+): 'componentRefs' | 'queryRefs' | 'variableReads' | 'pageVariableReads' | null => {
+  if (!init) return null;
+  if (init.type === 'Identifier') {
+    if (init.name === 'components') return 'componentRefs';
+    if (init.name === 'queries') return 'queryRefs';
+    if (init.name === 'variables') return 'variableReads';
+    return null;
+  }
+  if (isPageVariables(init)) return 'pageVariableReads';
+  return null;
+};
+
+// `const { textinput1 } = components` — MemberExpression never fires for this.
+// Computed keys (`const { [x]: y } = components`) cannot be resolved statically.
+const collectDestructure = (
+  pattern: any,
+  init: any,
+  buckets: Record<string, Set<string>>,
+  result: ScriptAnalysis
+) => {
+  if (pattern?.type !== 'ObjectPattern') return;
+  const bucket = rootBucket(init);
+  if (!bucket) return;
+  pattern.properties.forEach((prop: any) => {
+    if (prop.type !== 'Property') return;
+    if (prop.computed) {
+      result.dynamicVariableOps = bucket === 'variableReads' || bucket === 'pageVariableReads';
+      return;
+    }
+    const name = prop.key?.type === 'Identifier' ? prop.key.name : typeof prop.key?.value === 'string' ? prop.key.value : null;
+    if (name) buckets[bucket].add(name);
+  });
+};
+
 export function analyzeScript(code: string): ScriptAnalysis {
   const result: ScriptAnalysis = {
     componentRefs: [],
@@ -108,6 +150,12 @@ export function analyzeScript(code: string): ScriptAnalysis {
           const name = propName(node);
           if (name) buckets.pageVariableReads.add(name);
         }
+      },
+      VariableDeclarator(node: any) {
+        collectDestructure(node.id, node.init, buckets, result);
+      },
+      AssignmentExpression(node: any) {
+        collectDestructure(node.left, node.right, buckets, result);
       },
       CallExpression(node: any) {
         const callee = node.callee;

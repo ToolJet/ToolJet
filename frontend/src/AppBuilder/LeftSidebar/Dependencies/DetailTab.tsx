@@ -11,6 +11,7 @@ import {
   formatPropertyLabel,
   getComponentDisplayName,
 } from './relationshipLabels';
+import { activateOnEnterOrSpace } from '@/AppBuilder/Shared/EntityUsage/keyboard';
 import type {
   DependencyEntry,
   DependencyEntryKind,
@@ -54,7 +55,13 @@ export const DetailHeader = ({
 }: DetailHeaderProps) => (
   <div className="dependency-breadcrumb-bar">
     <div className="dependency-breadcrumb">
-      <span className="dependency-breadcrumb-root" role="button" onClick={onNavigateRoot}>
+      <span
+        className="dependency-breadcrumb-root"
+        role="button"
+        tabIndex={0}
+        onClick={onNavigateRoot}
+        onKeyDown={activateOnEnterOrSpace(onNavigateRoot)}
+      >
         {breadcrumbRoot}
       </span>
       <ChevronRightIcon size={12} className="dependency-breadcrumb-separator" />
@@ -231,10 +238,15 @@ const DetailMenu = ({ items, darkMode }: DetailMenuProps) => {
               key={item.label}
               className="dependency-detail-menu-item"
               role="button"
+              tabIndex={0}
               onClick={() => {
                 setOpen(false);
                 item.onClick();
               }}
+              onKeyDown={activateOnEnterOrSpace(() => {
+                setOpen(false);
+                item.onClick();
+              })}
               data-cy={`dependency-detail-menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
               <span className="dependency-detail-menu-icon">{item.icon}</span>

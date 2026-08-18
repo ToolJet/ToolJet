@@ -1,15 +1,29 @@
 import React from 'react';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
-import type { OverlayTriggerProps } from 'react-bootstrap';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/Rocket/shadcn/tooltip';
 import type { TooltipBinding } from './types';
+
+type TooltipSide = 'top' | 'right' | 'bottom' | 'left';
 
 export type BindingTooltipProps = {
   id?: string;
   title?: string;
   bindings?: TooltipBinding[];
-  placement?: OverlayTriggerProps['placement'];
-  /** A single element, not ReactNode — OverlayTrigger needs something it can clone. */
+  placement?: TooltipSide | `${TooltipSide}-start` | `${TooltipSide}-end`;
+  /** A single element — TooltipTrigger clones it via asChild. */
   children: React.ReactElement;
+};
+
+const sideOf = (placement: BindingTooltipProps['placement']): TooltipSide => {
+  if (!placement) return 'right';
+  if (placement.startsWith('top')) return 'top';
+  if (placement.startsWith('bottom')) return 'bottom';
+  if (placement.startsWith('left')) return 'left';
+  return 'right';
 };
 
 /**
@@ -28,13 +42,16 @@ export const BindingTooltip = ({
   if (!title || resolved.length === 0) return children;
 
   return (
-    <OverlayTrigger
-      placement={placement}
-      trigger={['hover', 'focus']}
-      delay={{ show: 200, hide: 100 }}
-      overlay={
-        <Popover id={id} className="dependency-binding-popover">
-          <Popover.Body bsPrefix="dependency-binding-popover-body">
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent
+          id={id}
+          side={sideOf(placement)}
+          sideOffset={8}
+          className="dependency-binding-tooltip tw-bg-transparent tw-p-0 tw-shadow-none tw-overflow-visible tw-text-inherit"
+        >
+          <div className="dependency-binding-card">
             <div className="dependency-binding-title">{title}</div>
             <div className="dependency-binding-body">
               {resolved.map((binding) => (
@@ -44,12 +61,10 @@ export const BindingTooltip = ({
                 </div>
               ))}
             </div>
-          </Popover.Body>
-        </Popover>
-      }
-    >
-      {children}
-    </OverlayTrigger>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

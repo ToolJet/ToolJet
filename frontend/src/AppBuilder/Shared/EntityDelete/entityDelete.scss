@@ -5,7 +5,7 @@
 .entity-delete-modal {
   border-radius: 8px;
   border: none;
-  background: var(--base, #fff);
+  background: var(--base);
 
   .entity-delete-body {
     display: flex;
@@ -30,13 +30,13 @@
     font-size: 16px;
     font-weight: 500;
     line-height: 24px;
-    color: var(--text-default, #1b1f24);
+    color: var(--text-default);
   }
 
   .entity-delete-subtitle {
     font-size: 12px;
     line-height: 18px;
-    color: var(--text-placeholder, #6a727c);
+    color: var(--text-placeholder);
   }
 
   // The blocked list is the only part that grows; cap it so a heavily referenced
@@ -50,7 +50,7 @@
   }
 
   .entity-delete-card {
-    border: 1px solid var(--border-weak, #e4e7eb);
+    border: 1px solid var(--border-weak);
     border-radius: 8px;
     overflow: hidden;
   }
@@ -61,8 +61,8 @@
     justify-content: space-between;
     gap: 8px;
     padding: 12px;
-    background: var(--interactive-default, rgba(136, 144, 153, 0.08));
-    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+    background: var(--interactive-default);
+    border-bottom: 1px solid var(--border-weak);
 
     &.clickable {
       cursor: pointer;
@@ -80,7 +80,7 @@
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
-    color: var(--text-default, #1b1f24);
+    color: var(--text-default);
   }
 
   .entity-delete-card-count {
@@ -90,11 +90,11 @@
     flex-shrink: 0;
     font-size: 12px;
     line-height: 18px;
-    color: var(--text-default, #1b1f24);
+    color: var(--text-default);
   }
 
   .entity-delete-card-chevron {
-    color: var(--icon-default, #6a727c);
+    color: var(--icon-default);
   }
 
   .entity-delete-card-body {
@@ -104,11 +104,11 @@
   .entity-delete-nested-note {
     margin: 0 0 2px;
     padding: 8px 10px;
-    border: 1px dashed var(--border-strong, #acb2b9);
+    border: 1px dashed var(--border-strong);
     border-radius: 6px;
     font-size: 12px;
     line-height: 18px;
-    color: var(--text-placeholder, #6a727c);
+    color: var(--text-placeholder);
   }
 
   .entity-delete-footer {
@@ -119,9 +119,9 @@
 }
 
 .entity-delete-modal.dark-theme {
-  background: var(--base, #1f2936);
+  background: var(--base);
 
   .entity-delete-card-header {
-    background: var(--interactive-default, rgba(136, 144, 153, 0.12));
+    background: var(--interactive-default);
   }
 }

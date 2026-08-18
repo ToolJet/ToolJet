@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { activateOnEnterOrSpace } from '@/AppBuilder/Shared/EntityUsage/keyboard';
 
 /**
  * Top-level collapsible section of the Dependencies main tab
@@ -38,7 +39,9 @@ export const DependencySection = ({
       <div
         className="dependency-section-header"
         onClick={() => setExpanded((prev) => !prev)}
+        onKeyDown={activateOnEnterOrSpace(() => setExpanded((prev) => !prev))}
         role="button"
+        tabIndex={0}
         aria-expanded={isOpen}
         data-cy={dataCy ?? `dependency-section-${title.toLowerCase().replace(/\s+/g, '-')}`}
       >

@@ -9,7 +9,7 @@
 }
 
 .entity-usage-empty {
-  color: var(--text-placeholder, #6a727c);
+  color: var(--text-placeholder);
   font-size: 12px;
   padding: 4px 0;
 }
@@ -20,7 +20,7 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-    color: var(--text-placeholder, #6a727c);
+    color: var(--text-placeholder);
     margin-bottom: 4px;
   }
 }
@@ -33,7 +33,7 @@
     cursor: pointer;
 
     &:hover {
-      background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.1));
+      background: var(--interactive-overlays-fill-hover);
     }
   }
 
@@ -50,23 +50,23 @@
     line-height: 16px;
     padding: 0 6px;
     border-radius: 4px;
-    background: var(--surfaces-surface-03, #e4e7eb);
-    color: var(--text-secondary, #6a727c);
+    background: var(--surfaces-surface-03);
+    color: var(--text-secondary);
   }
 
   .entity-usage-kind-unknown {
-    background: var(--tomato3, #ffe5e5);
-    color: var(--tomato9, #e54d2e);
+    background: var(--tomato3);
+    color: var(--tomato9);
   }
 
   .entity-usage-name {
     font-size: 12px;
-    color: var(--text-default, #1b1f24);
+    color: var(--text-default);
   }
 
   .entity-usage-details {
     font-size: 11px;
-    color: var(--text-placeholder, #6a727c);
+    color: var(--text-placeholder);
     margin-top: 1px;
     padding-left: 2px;
   }
@@ -74,7 +74,7 @@
 
 .dark-theme {
   .entity-usage-row .entity-usage-kind {
-    background: var(--surfaces-surface-03, #2b3036);
-    color: var(--text-secondary, #9ba1a6);
+    background: var(--surfaces-surface-03);
+    color: var(--text-secondary);
   }
 }

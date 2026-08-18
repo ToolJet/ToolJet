@@ -1,5 +1,6 @@
 import React from 'react';
 import { decodeEntities } from '@/_helpers/utils';
+import { activateOnEnterOrSpace } from '@/AppBuilder/Shared/EntityUsage/keyboard';
 import BindingTooltip from './BindingTooltip';
 import type { RowTooltip } from './types';
 
@@ -63,7 +64,9 @@ export const DependencyEntityRow = ({
         selected ? 'selected' : ''
       }`}
       onClick={onClick}
+      onKeyDown={activateOnEnterOrSpace(onClick)}
       role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
       data-cy={dataCy}
     >
       <span className="dependency-row-icon">{icon}</span>
