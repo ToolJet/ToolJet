@@ -9,11 +9,10 @@ ToolJet gives you control over how the platform looks, feels, and is delivered t
 - **White Labeling** - control the platform's branding elements (logo, favicon, title, login page).
 - **App Themes** - control the design system (colors, tokens) that your apps are built with.
 - **Custom Styles** - control the fine-grained CSS of individual components, beyond what themes expose.
-- **Embedding ToolJet Apps** - control where and how your apps are delivered to end-users.
 
 ## Custom Domain
 
-A [custom domain](/docs/tj-setup/org-branding/custom-domain) lets you access ToolJet through your own URL (e.g., `tools.yourcompany.com`) instead of the default ToolJet URL. This is usually the first step in branding a deployment, since every other customization - white labeling, themes, embedded apps - is still served from whatever domain you configure here.
+A [custom domain](/docs/tj-setup/org-branding/custom-domain) lets you access ToolJet through your own URL (e.g., `tools.yourcompany.com`) instead of the default ToolJet URL. This is usually the first step in branding a deployment, since every other customization - white labeling, themes, custom styles - is still served from whatever domain you configure here.
 
 - **Self-hosted**: configured by setting the `TOOLJET_HOST` environment variable to your domain and restarting the deployment. This requires a registered domain and a DNS record pointing to your ToolJet server.
 - **ToolJet Cloud** (Team plan and above): configured per workspace, so different workspaces (e.g., Finance, Operations) can each have their own domain. This involves creating a CNAME record pointing to `app.tooljet.com`, then adding the domain under **Settings > Custom Domain** in the workspace.
@@ -54,7 +53,7 @@ Because components reference theme tokens rather than fixed colors, changing the
 
 ```css
 ._tooljet-Button button {
-    background-color: #152A65 !important;
+    font-family: 'Georgia', serif !important;
 }
 ```
 
@@ -66,17 +65,3 @@ Custom Styles can be applied two ways:
 You can also target a component directly, without relying on its auto-generated class: most components expose a **CSS class** field (in their **Style** tab) where you can add one or more custom class names to that specific instance, then reference those class names from the Custom Styles page.
 
 Use the browser inspector to find the exact sub-class or HTML tag to target. Think of Custom Styles as the escape hatch below App Themes: themes give you a consistent, tokenized design system for the common cases, while Custom Styles give you full CSS control for anything more specific.
-
-## Embedding ToolJet Apps
-
-[Embedding](/docs/app-builder/embed-app/overview) delivers a finished ToolJet app directly inside another website or internal portal via an iframe, instead of sending users to a separate ToolJet URL. Combined with the customizations above, an embedded app, served from your custom domain, stripped of ToolJet branding, styled with your theme and CSS, is visually indistinguishable from a native part of your product.
-
-Common use cases include customer-facing dashboards, partner/vendor portals, and internal widgets embedded in intranets, wikis, or CRMs. ToolJet supports two embed modes:
-
-| | Public Embed | Private Embed |
-| :--- | :--- | :--- |
-| **Access** | Anyone with the embed link or iframe can view | Restricted to authorized users only |
-| **Authentication** | Not required | Required (follows the host application's SSO) |
-| **Granularity** | Not applicable | Tokens can be scoped to individual user and application |
-| **Use cases** | Marketing dashboards, open forms, customer-facing widgets | Internal dashboards, partner portals, sensitive data applications |
-| **Setup guide** | [Public Application](/docs/app-builder/embed-app/public-app) | [Private Application](/docs/app-builder/embed-app/private-app) |
