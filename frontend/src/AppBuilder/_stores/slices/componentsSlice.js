@@ -2156,7 +2156,7 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+  persistComponentDefinition: (componentId, moduleId = 'canvas') => {
     const { getCurrentPageIndex, getCurrentMode, saveComponentChanges } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const currentMode = getCurrentMode(moduleId);
@@ -2173,8 +2173,21 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
+  },
+
+  saveComponentPropertyChanges: (componentId, property, value, paramType, attr, moduleId = 'canvas') => {
+    get().persistComponentDefinition(componentId, moduleId);
 
     get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+  },
+
+  // One save and one broadcast for properties that must be applied together
+  saveComponentPropertyChangesBatch: (componentId, updates, moduleId = 'canvas') => {
+    if (!updates?.length) return;
+
+    get().persistComponentDefinition(componentId, moduleId);
+
+    get().multiplayer.broadcastUpdates({ componentId, updates }, 'components', 'update');
   },
 
   setComponentProperty: (

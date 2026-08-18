@@ -18,7 +18,7 @@ import useStore from '@/AppBuilder/_stores/store';
  * @param {Object} params.config.defaultItemProps - Additional default properties for new items
  * @param {Function} params.config.onPropertyChange - Callback before property change (item, property, value) => modifiedItem
  * @param {Function} params.config.onRemove - Callback after item removal (removedItems, index) => Promise
- * @param {Function} params.config.onRemoveUpdates - Properties to save with the removal (removedItems, index) => [{ name, value }]
+ * @param {Function} params.config.onRemoveUpdates - Properties saved with the removal (removedItems, index) => [{ name, value }]
  */
 export const useListItemManager = ({ component, paramUpdated, currentState, config }) => {
   const {
@@ -33,6 +33,7 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
   } = config;
 
   const setComponentProperty = useStore((state) => state.setComponentProperty);
+  const saveComponentPropertyChangesBatch = useStore((state) => state.saveComponentPropertyChangesBatch);
   const [isAllEditable, setIsAllEditable] = useState(false);
 
   // Get items from component definition - wrapped in useMemo to avoid dependency issues
@@ -84,13 +85,21 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
         const bookkeepingUpdates = onRemoveUpdates?.(removedItems, index) ?? [];
 
         if (bookkeepingUpdates.length > 0) {
-          // Save skipped here so both properties go in one request - separate saves can be applied out of order
-          setComponentProperty(component.id, propertyName, newValue, 'properties', 'value', false, 'canvas', {
-            saveAfterAction: false,
-          });
-          for (const { name, value } of bookkeepingUpdates) {
-            await paramUpdated({ name }, 'value', value, 'properties', true);
+          // Saved and broadcast as one unit - separate ones can be applied out of order
+          const batch = [{ name: propertyName, value: newValue }, ...bookkeepingUpdates].map(({ name, value }) => ({
+            property: name,
+            value,
+            paramType: 'properties',
+            attr: 'value',
+          }));
+
+          for (const { property, value, paramType, attr } of batch) {
+            setComponentProperty(component.id, property, value, paramType, attr, false, 'canvas', {
+              saveAfterAction: false,
+            });
           }
+
+          saveComponentPropertyChangesBatch(component.id, batch);
         } else {
           await paramUpdated({ name: propertyName }, 'value', newValue, 'properties', true);
         }
@@ -103,7 +112,16 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
         console.error(`Error removing ${propertyName}:`, error);
       }
     },
-    [items, paramUpdated, propertyName, onRemove, onRemoveUpdates, setComponentProperty, component.id]
+    [
+      items,
+      paramUpdated,
+      propertyName,
+      onRemove,
+      onRemoveUpdates,
+      setComponentProperty,
+      saveComponentPropertyChangesBatch,
+      component.id,
+    ]
   );
 
   // Duplicate item by index
