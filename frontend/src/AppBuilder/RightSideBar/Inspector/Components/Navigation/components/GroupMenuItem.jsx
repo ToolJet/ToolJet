@@ -5,7 +5,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import NavItemPopover from './NavItemPopover';
-import { isClickInsidePortaledOverlay } from '../../../Utils';
+import { isClickInsidePortaledOverlay } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 
 export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemChange, getResolvedValue }) => {
   const [showActionsPopover, setShowActionsPopover] = useState(false);

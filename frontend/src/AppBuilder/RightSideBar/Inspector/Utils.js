@@ -264,7 +264,7 @@ export function renderElement(
 const PORTALED_OVERLAY_SELECTOR = [
   '[data-radix-popper-content-wrapper]', // Radix Popover/Select content
   '[data-slot="combobox-content"]', // Base UI Combobox content
-  '.cm-completionListIncompleteBottom', // CodeMirror autocomplete list
+  '.cm-tooltip-autocomplete', // CodeMirror autocomplete list
 ].join(', ');
 
 // Radix Select can also make a click's real target unresolvable: it briefly disables page-wide
