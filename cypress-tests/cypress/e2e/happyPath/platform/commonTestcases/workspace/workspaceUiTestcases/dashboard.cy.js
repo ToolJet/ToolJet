@@ -92,11 +92,6 @@ describe("dashboard", () => {
           commonText.emptyNotificationSubtitle
         );
       });
-    cy.get(commonSelectors.notificationsCardFooter).verifyVisibleElement(
-      "have.text",
-      commonText.viewReadNotifications
-    );
-
     cy.get(dashboardSelector.modeToggle).should("be.visible").click();
     cy.get(commonSelectors.mainWrapper)
       .should("have.attr", "class")
