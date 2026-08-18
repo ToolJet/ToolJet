@@ -151,6 +151,14 @@ By default, an account is locked after 5 failed login attempts. You can control 
 - `DISABLE_PASSWORD_RETRY_LIMIT=true`: Disables the retry limit.
 - `PASSWORD_RETRY_LIMIT=<number>`: Sets a custom retry limit (default is 5).
 
+#### Invite Link Expiry
+
+- `LINK_EXPIRY_MINUTES`: Controls how long workspace invite, forgot password, and email verification links remain valid (in minutes). Default: **1440 minutes (24 hours)**.
+
+#### Password Expiry
+
+- `PASSWORD_EXPIRY_DAYS`: Controls how long a password remains valid before the user is required to reset it (in days). Default: **30 days**. Set to `0` to disable password expiry.
+
 #### Hide Account Setup Link
 
 - `HIDE_ACCOUNT_SETUP_LINK`: Set to `true` to hide the account setup link from the admin in the manage user page. Ensure SMTP is configured to send welcome emails.
