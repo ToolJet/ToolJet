@@ -42,6 +42,7 @@ export const useInput = ({
   fireEvent,
   inputType,
   width,
+  beforeSetInputValue,
 }) => {
   const isInitialRender = useRef(true);
   const inputRef = useRef();
@@ -250,8 +251,14 @@ export const useInput = ({
     isInitialRender.current = false;
   }, []);
 
-  // Generic value setter shared by all input types
+  // Generic value setter shared by all input types.
+  // `beforeSetInputValue`, when passed to useInput(), lets a specific widget transform
+  // the value before it's stored/exposed/validated —
+  // every path that already goes through setInputValue picks this up for free.
   const setInputValue = (value) => {
+    if (typeof beforeSetInputValue === 'function') {
+      value = beforeSetInputValue(value);
+    }
     setValue(value);
     setExposedVariable('value', value);
     const validationStatus = validateRef.current(value);

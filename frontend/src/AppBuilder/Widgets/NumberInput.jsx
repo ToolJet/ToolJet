@@ -5,12 +5,18 @@ import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NumberInput = (props) => {
+  const beforeSetInputValue = (value) => {
+    if (value === '' || value === null || value === undefined) return value;
+    return Number(parseFloat(value).toFixed(props.properties.decimalPlaces));
+  };
+
   const inputLogic = useInput({
     ...props,
     properties: {
       ...props.properties,
-      value: Number(parseFloat(props.properties.value).toFixed(props.properties.decimalPlaces)),
+      value: beforeSetInputValue(props.properties.value),
     },
+    beforeSetInputValue,
   });
 
   const { showClearBtn, disableStepControls } = props.properties;
@@ -29,8 +35,7 @@ export const NumberInput = (props) => {
   };
 
   const handleBlur = (e) => {
-    const value = Number(parseFloat(e.target.value).toFixed(props.properties.decimalPlaces));
-    inputLogic.setInputValue(value);
+    inputLogic.setInputValue(e.target.value);
     inputLogic.handleBlur(e);
   };
 
