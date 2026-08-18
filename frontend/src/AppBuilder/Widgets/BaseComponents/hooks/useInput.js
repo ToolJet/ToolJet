@@ -49,6 +49,9 @@ export const useInput = ({
   const validateRef = useRef(validate);
   validateRef.current = validate;
 
+  const beforeSetInputValueRef = useRef(beforeSetInputValue);
+  beforeSetInputValueRef.current = beforeSetInputValue;
+
   const { loadingState, disabledState, label, visibility: initialVisibility } = properties;
   const isResizing = useGridStore((state) => state.resizingComponentId === id);
 
@@ -242,8 +245,8 @@ export const useInput = ({
   // the value before it's stored/exposed/validated —
   // every path that already goes through setInputValue picks this up for free.
   const setInputValue = (value) => {
-    if (typeof beforeSetInputValue === 'function') {
-      value = beforeSetInputValue(value);
+    if (typeof beforeSetInputValueRef.current === 'function') {
+      value = beforeSetInputValueRef.current(value);
     }
     setValue(value);
     setExposedVariable('value', value);
