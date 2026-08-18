@@ -10342,5 +10342,886 @@ describe('GitSyncController', () => {
         }
       }, 600000);
     });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // is_synced lifecycle invariant — "a resource is is_synced=true IFF it is in git".
+    // Consolidates the sync-flag contract across every git/branching state into one
+    // place and asserts the flip semantics the sync indicator relies on:
+    //   • git-off create → is_synced=false (nothing is in git)
+    //   • push → is_synced=true; merge+pull keep it true
+    //   • edit a synced resource → is_synced=false (local divergence from git)
+    //   • pull (resource still in git) → is_synced=true again (reconcile)
+    //   • a synced app carries every connected resource (data source + module) into git
+    // Each `it` uses a FRESH isolated org (config mode differs per case) and resets the
+    // shared repo, mirroring §14/§18. The two edit→false flip cases are TDD-RED: no
+    // flip-on-edit hook exists yet, so they fail on the post-edit assertion until the
+    // implementation lands. Against the real Gitea (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('is_synced lifecycle invariant (in git ⇔ is_synced=true)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      const MERGE_URL = `${GIT_BASE_URL}/admin/merge`;
+
+      let invDs: DataSource;
+
+      beforeAll(() => {
+        invDs = app.get<DataSource>(getDataSourceToken('default'));
+      });
+
+      const dsOptions = (url: string) => [
+        { key: 'url', value: url },
+        { key: 'auth_type', value: 'none' },
+        { key: 'headers', value: [['', '']] },
+        { key: 'ssl_certificate', value: 'none', encrypted: false },
+      ];
+
+      // Build a fresh isolated workspace + its helper set. `branchName`/`branching`
+      // control how git is configured; `configureGit` resets the shared repo, seeds the
+      // default branch row under `branchName`, saves the provider config, sets branching,
+      // and pulls — returning the default branch id.
+      const makeCtx = async (email: string) => {
+        const { organization } = await createUser(app, { email, firstName: 'inv', lastName: 'sync' });
+        const orgId = organization.id;
+        const { tokenCookie } = await login(app, email);
+        const cookie = tokenCookie;
+        await ensureAppEnvironments(app, orgId);
+
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', cookie).set('tj-workspace-id', orgId);
+
+        const pull = (branchId: string) =>
+          auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+        const pushWorkspace = (branchId: string, commitMessage: string, scope?: string) =>
+          auth(agent().post('/api/workspace-branches/push'))
+            .query({ branch_id: branchId })
+            .send({ commitMessage, branchId, ...(scope && { scope }) });
+        const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+          (
+            await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+          ).body.branches.find((b: any) => b.name === name)?.id;
+        const editingVersionOf = async (appId: string, branchId: string) => {
+          const d = await auth(agent().get(`/api/apps/${appId}`))
+            .query({ branch_id: branchId })
+            .expect(200);
+          const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+          const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || d.body?.pages?.[0]?.id;
+          return { versionId: ev.id as string, pageId: pageId as string };
+        };
+        const gitpush = (
+          appId: string,
+          versionId: string,
+          gitAppName: string,
+          gitBranchName: string,
+          xBranchId: string
+        ) =>
+          auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
+            .query({ branch_id: xBranchId })
+            .send({
+              gitAppName,
+              versionId,
+              lastCommitMessage: `push ${gitAppName}`,
+              gitVersionName: gitBranchName,
+              sourceBranch: gitBranchName,
+            });
+        const addButton = async (appId: string, versionId: string, pageId: string, xBranchId: string) => {
+          const { randomUUID } = await import('crypto');
+          const btnId = randomUUID();
+          return auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+            .query({ branch_id: xBranchId })
+            .send({
+              is_user_switched_version: false,
+              pageId,
+              diff: {
+                [btnId]: {
+                  name: `button_${btnId.slice(0, 6)}`,
+                  layouts: {
+                    desktop: { top: 80, left: 15, width: 4, height: 40 },
+                    mobile: { top: 80, left: 15, width: 4, height: 40 },
+                  },
+                  type: 'Button',
+                  general: {},
+                  generalStyles: {},
+                  others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                  properties: { text: { value: 'Button' } },
+                  styles: {},
+                },
+              },
+            });
+        };
+        const merge = async (source: string, target: string) => {
+          const resp = await fetch(MERGE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+            body: JSON.stringify({
+              owner: GIT_REPO_OWNER,
+              repo: `${GIT_REPO_NAME}.git`,
+              source,
+              target,
+              message: `Land ${source}`,
+            }),
+          });
+          const body = await resp.json().catch(() => ({}));
+          expect(body.ok).toBe(true);
+        };
+
+        // DB reads for the sync flag (the source of truth the indicator is derived from).
+        const versionSynced = async (versionId: string): Promise<boolean> =>
+          (await invDs.query(`SELECT is_synced FROM app_versions WHERE id = $1`, [versionId]))[0]?.is_synced;
+        const appSyncedByAppId = async (appId: string, branchId?: string): Promise<boolean> =>
+          (
+            await invDs.query(
+              `SELECT bool_and(is_synced) AS synced FROM app_versions WHERE app_id = $1${
+                branchId ? ' AND branch_id = $2' : ''
+              }`,
+              branchId ? [appId, branchId] : [appId]
+            )
+          )[0]?.synced;
+        const dsvSynced = async (dsId: string, branchId?: string): Promise<boolean> =>
+          (
+            await invDs.query(
+              `SELECT bool_and(is_synced) AS synced FROM data_source_versions WHERE data_source_id = $1${
+                branchId ? ' AND branch_id = $2' : ''
+              }`,
+              branchId ? [dsId, branchId] : [dsId]
+            )
+          )[0]?.synced;
+
+        const configureGit = async (branchName: string, branching: boolean) => {
+          await fetch(RESET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+            body: '{}',
+          });
+          await invDs.query(
+            `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+             VALUES ($1, $2, true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+            [orgId, branchName]
+          );
+          await auth(agent().post('/api/git-sync/configs'))
+            .send({ ...GITHUB_HTTPS_PAYLOAD, branchName, useEnvConfig: false })
+            .expect(201);
+          const orgGitId: string = (await auth(agent().get(`/api/git-sync/${orgId}`)).expect(200)).body.organization_git
+            .id;
+          await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+            .send({ isBranchingEnabled: branching })
+            .expect(200);
+          const defaultBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+            .activeBranchId;
+          await pull(defaultBranchId).expect(201);
+          return defaultBranchId;
+        };
+
+        return {
+          orgId,
+          agent,
+          auth,
+          pull,
+          pushWorkspace,
+          branchIdByName,
+          editingVersionOf,
+          gitpush,
+          addButton,
+          merge,
+          versionSynced,
+          appSyncedByAppId,
+          dsvSynced,
+          configureGit,
+        };
+      };
+
+      const step = (n: number, label: string) =>
+        process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+
+      // CASE 1 (GREEN) — nothing is in git, so create leaves every resource unsynced.
+      it('git-off: a created app, module and data source are is_synced=false', async () => {
+        const ctx = await makeCtx('inv-gitoff@tooljet.io');
+        step(1, 'git-off: create app + module + data source (no git configured)');
+        const appId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/apps'))
+            .send({ icon: 'home', name: 'inv-off-app', type: 'front-end' })
+            .expect(201)
+        ).body.id;
+        const moduleId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/modules'))
+            .send({ icon: 'folderupload', name: 'inv-off-module', type: 'module' })
+            .expect(201)
+        ).body.id;
+        const dsId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/data-sources'))
+            .send({
+              name: 'inv-off-ds',
+              kind: 'restapi',
+              options: dsOptions('http://inv-off.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+
+        step(2, 'assert all three are is_synced=false');
+        expect(await ctx.appSyncedByAppId(appId)).toBe(false);
+        expect(await ctx.appSyncedByAppId(moduleId)).toBe(false);
+        expect(await ctx.dsvSynced(dsId)).toBe(false);
+      }, 300000);
+
+      // CASE 2 (GREEN) — multi-branch: unsynced on create, synced after push, and the
+      // flag survives a merge into main + a main pull.
+      it('multi-branch: a feature-branch resource is unsynced on create, synced after push, and stays synced after merge+pull', async () => {
+        const ctx = await makeCtx('inv-mb@tooljet.io');
+        step(1, 'configure git (default main) + branching ON, pull main');
+        const mainBranchId = await ctx.configureGit('main', true);
+
+        step(2, 'create a feature branch and an app on it → app is unsynced');
+        await ctx
+          .auth(ctx.agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-inv-mb', sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await ctx.branchIdByName('feat-inv-mb', mainBranchId);
+        const appId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'inv-mb-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const featCtx = await ctx.editingVersionOf(appId, featBranchId);
+        await ctx.addButton(appId, featCtx.versionId, featCtx.pageId, featBranchId).expect(201);
+        expect(await ctx.versionSynced(featCtx.versionId)).toBe(false);
+
+        step(3, 'gitpush the app onto the feature branch → is_synced=true');
+        await ctx.gitpush(appId, featCtx.versionId, 'inv-mb-app', 'feat-inv-mb', featBranchId).expect(201);
+        expect(await ctx.versionSynced(featCtx.versionId)).toBe(true);
+
+        step(4, 'merge feat-inv-mb → main, pull main → the default-branch version is synced');
+        await ctx.merge('feat-inv-mb', 'main');
+        await ctx.pull(mainBranchId).expect(201);
+        expect(await ctx.appSyncedByAppId(appId, mainBranchId)).toBe(true);
+      }, 300000);
+
+      // CASE 3 (GREEN) — single-branch: git-off-style unsynced on create, synced after a
+      // direct push to the (unprotected, non-main) default branch.
+      it('single-branch: a resource is unsynced on create and is_synced=true after a push to the default branch', async () => {
+        const ctx = await makeCtx('inv-sb@tooljet.io');
+        step(1, 'configure git (default single-branch-main) + branching OFF, pull');
+        const defaultBranchId = await ctx.configureGit('single-branch-main', false);
+
+        step(2, 'create app (+component) on the default branch → unsynced');
+        const appId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/apps'))
+            .query({ branch_id: defaultBranchId })
+            .send({ icon: 'home', name: 'inv-sb-app', type: 'front-end', branchId: defaultBranchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await ctx.editingVersionOf(appId, defaultBranchId);
+        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId).expect(201);
+        expect(await ctx.versionSynced(appCtx.versionId)).toBe(false);
+
+        step(3, 'gitpush directly to the default branch → is_synced=true');
+        await ctx.gitpush(appId, appCtx.versionId, 'inv-sb-app', 'single-branch-main', defaultBranchId).expect(201);
+        expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
+      }, 300000);
+
+      // CASE 4 (TDD-RED) — single-branch flip. Editing a synced resource must flip
+      // is_synced=false (it now diverges from git); a subsequent pull (still in git)
+      // restores is_synced=true. The post-edit assertion is RED: no flip-on-edit hook
+      // exists yet, so is_synced stays true after the edit until the code lands.
+      it('single-branch: editing a synced resource flips is_synced=false, and a pull restores is_synced=true', async () => {
+        const ctx = await makeCtx('inv-sb-flip@tooljet.io');
+        step(1, 'configure git (single-branch), create + push an app → synced');
+        const defaultBranchId = await ctx.configureGit('single-branch-main', false);
+        const appId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/apps'))
+            .query({ branch_id: defaultBranchId })
+            .send({ icon: 'home', name: 'inv-sbf-app', type: 'front-end', branchId: defaultBranchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await ctx.editingVersionOf(appId, defaultBranchId);
+        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId).expect(201);
+        await ctx.gitpush(appId, appCtx.versionId, 'inv-sbf-app', 'single-branch-main', defaultBranchId).expect(201);
+        expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
+
+        step(2, 'edit the synced resource (add a component) → is_synced flips to false');
+        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId).expect(201);
+        expect(await ctx.versionSynced(appCtx.versionId)).toBe(false);
+
+        step(3, 'pull the default branch → the resource is still in git → is_synced restored to true');
+        await ctx.pull(defaultBranchId).expect(201);
+        expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
+      }, 300000);
+
+      // CASE 5 (TDD-RED) — same flip on a multi-branch feature branch (feature-branch
+      // edits are allowed). Post-edit assertion is RED for the same missing hook.
+      it('multi-branch: editing a synced resource on a feature branch flips is_synced=false, and a pull restores it', async () => {
+        const ctx = await makeCtx('inv-mb-flip@tooljet.io');
+        step(1, 'configure git + branching, feature branch, create + push an app → synced');
+        const mainBranchId = await ctx.configureGit('main', true);
+        await ctx
+          .auth(ctx.agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-inv-flip', sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await ctx.branchIdByName('feat-inv-flip', mainBranchId);
+        const appId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'inv-mbf-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const featCtx = await ctx.editingVersionOf(appId, featBranchId);
+        await ctx.addButton(appId, featCtx.versionId, featCtx.pageId, featBranchId).expect(201);
+        await ctx.gitpush(appId, featCtx.versionId, 'inv-mbf-app', 'feat-inv-flip', featBranchId).expect(201);
+        expect(await ctx.versionSynced(featCtx.versionId)).toBe(true);
+
+        step(2, 'edit the synced feature-branch resource → is_synced flips to false');
+        await ctx.addButton(appId, featCtx.versionId, featCtx.pageId, featBranchId).expect(201);
+        expect(await ctx.versionSynced(featCtx.versionId)).toBe(false);
+
+        step(3, 'pull the feature branch → resource still in git → is_synced restored to true');
+        await ctx.pull(featBranchId).expect(201);
+        expect(await ctx.versionSynced(featCtx.versionId)).toBe(true);
+      }, 300000);
+
+      // CASE 6 (GREEN) — a synced app carries EVERY connected resource into git: a linked
+      // global data source (via a query) and a referenced module (via a ModuleViewer)
+      // ride into the push, so both read is_synced=true afterwards.
+      it('a synced app carries its connected data source and module into git (all become is_synced=true)', async () => {
+        const { randomUUID } = await import('crypto');
+        const ctx = await makeCtx('inv-connected@tooljet.io');
+        step(1, 'configure git + branching, create a feature branch');
+        const mainBranchId = await ctx.configureGit('main', true);
+        await ctx
+          .auth(ctx.agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-inv-conn', sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await ctx.branchIdByName('feat-inv-conn', mainBranchId);
+
+        step(2, 'create a module, a global data source, and a host app referencing both');
+        const moduleId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'inv-conn-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleCoRel: string = (await invDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [moduleId]))[0]
+          ?.co_relation_id;
+        expect(moduleCoRel).toBeTruthy();
+        const dsId: string = (
+          await ctx
+            .auth(ctx.agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'inv-conn-ds',
+              kind: 'restapi',
+              options: dsOptions('http://inv-conn.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        const appId: string = (
+          await ctx
+            .auth(ctx.agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'inv-conn-host', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await ctx.editingVersionOf(appId, featBranchId);
+
+        step(3, 'link the data source to the host via a query and wire a ModuleViewer to the module');
+        await ctx
+          .auth(ctx.agent().post(`/api/data-queries/data-sources/${dsId}/versions/${appCtx.versionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            kind: 'restapi',
+            name: 'q_inv_conn',
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          })
+          .expect(201);
+        const moduleViewerId = randomUUID();
+        await ctx
+          .auth(ctx.agent().post(`/api/v2/apps/${appId}/versions/${appCtx.versionId}/components`))
+          .query({ branch_id: featBranchId })
+          .send({
+            is_user_switched_version: false,
+            pageId: appCtx.pageId,
+            diff: {
+              [moduleViewerId]: {
+                name: 'moduleviewer_conn',
+                layouts: {
+                  desktop: { top: 70, left: 5, width: 38, height: 400 },
+                  mobile: { top: 70, left: 5, width: 38, height: 400 },
+                },
+                type: 'ModuleViewer',
+                general: {},
+                generalStyles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: {
+                  moduleAppId: { value: moduleCoRel },
+                  moduleVersionId: { value: '' },
+                  visibility: { value: true },
+                },
+                styles: { backgroundColor: { value: '#fff' }, padding: { value: 'default' } },
+                parent: null,
+              },
+            },
+          })
+          .expect(201);
+
+        step(4, 'gitpush the host app + module → the connected resources ride into git and become synced');
+        const moduleCtx = await ctx.editingVersionOf(moduleId, featBranchId);
+        await ctx.gitpush(moduleId, moduleCtx.versionId, 'inv-conn-module', 'feat-inv-conn', featBranchId).expect(201);
+        await ctx.gitpush(appId, appCtx.versionId, 'inv-conn-host', 'feat-inv-conn', featBranchId).expect(201);
+
+        step(5, 'assert the host, its linked data source and its referenced module are all is_synced=true');
+        expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
+        expect(await ctx.versionSynced(moduleCtx.versionId)).toBe(true);
+        expect(await ctx.dsvSynced(dsId, featBranchId)).toBe(true);
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Delete-on-pull + in_use conflict guard (TARGET behavior; mostly TDD-RED).
+    //
+    // Today a synced default-branch resource that is absent from git is only marked
+    // is_synced=false on pull (removeOrphanedResources, pull.service.ts:649 — asserted
+    // as the CURRENT behavior by §61-63). The TARGET behavior these tests pin:
+    //   • a SYNCED resource removed from git (merged to the default branch) is DELETED
+    //     on the next pull — not just unsynced;
+    //   • an UNSYNCED, never-pushed local resource absent from git is KEPT (delete
+    //     applies only to is_synced=true rows) — this case is GREEN today;
+    //   • if a resource that would be deleted is still referenced/connected by another
+    //     app or module, the whole pull ABORTS with a 409 in_use conflict and nothing
+    //     is deleted; once the reference is removed a re-pull succeeds and deletes it.
+    //
+    // Orphans are manufactured with the §61 SQL technique (create on a feature branch,
+    // move the version/DSV onto the default branch as is_synced=true + a fake
+    // git_tree_sha, then clear the branch skip tokens) so the resource is a synced
+    // default-branch row absent from git's (empty, post-reset) meta. Each `it` uses a
+    // FRESH org. Against the real Gitea (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('pull deletes synced resources removed from git (with in_use guard)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      const FAKE_TREE_SHA = 'delete-on-pull-tree-sha-000000000000000000000000';
+
+      let delDs: DataSource;
+      beforeAll(() => {
+        delDs = app.get<DataSource>(getDataSourceToken('default'));
+      });
+
+      const step = (n: number, label: string) =>
+        process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+
+      const makeCtx = async (email: string) => {
+        const { organization } = await createUser(app, { email, firstName: 'del', lastName: 'pull' });
+        const orgId = organization.id;
+        const { tokenCookie } = await login(app, email);
+        const cookie = tokenCookie;
+        await ensureAppEnvironments(app, orgId);
+
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', cookie).set('tj-workspace-id', orgId);
+        const pull = (branchId: string) =>
+          auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+        const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+          (
+            await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+          ).body.branches.find((b: any) => b.name === name)?.id;
+        const editingVersionOf = async (appId: string, branchId: string) => {
+          const d = await auth(agent().get(`/api/apps/${appId}`))
+            .query({ branch_id: branchId })
+            .expect(200);
+          const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+          const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || d.body?.pages?.[0]?.id;
+          return { versionId: ev.id as string, pageId: pageId as string };
+        };
+
+        const configureGitMultiBranch = async () => {
+          await fetch(RESET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+            body: '{}',
+          });
+          await delDs.query(
+            `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+             VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+            [orgId]
+          );
+          await auth(agent().post('/api/git-sync/configs'))
+            .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false })
+            .expect(201);
+          const orgGitId: string = (await auth(agent().get(`/api/git-sync/${orgId}`)).expect(200)).body.organization_git
+            .id;
+          await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+            .send({ isBranchingEnabled: true })
+            .expect(200);
+          const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+            .activeBranchId;
+          await pull(mainBranchId).expect(201);
+          return mainBranchId;
+        };
+
+        const createFeatureBranch = async (name: string, mainBranchId: string) => {
+          await auth(agent().post('/api/workspace-branches'))
+            .query({ branch_id: mainBranchId })
+            .send({ name, sourceBranchId: mainBranchId })
+            .expect(201);
+          return branchIdByName(name, mainBranchId);
+        };
+
+        const createApp = async (name: string, type: 'front-end' | 'module', branchId: string): Promise<string> =>
+          (
+            await auth(agent().post(type === 'module' ? '/api/modules' : '/api/apps'))
+              .query({ branch_id: branchId })
+              .send({ icon: 'home', name, type, branchId })
+              .expect(201)
+          ).body.id;
+
+        const coRelOf = async (appId: string): Promise<string> =>
+          (await delDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [appId]))[0]?.co_relation_id;
+
+        // Move an app/module version onto the default branch as a synced default-branch
+        // row (is_synced=true + a git_tree_sha), so it looks pulled-from-git but its
+        // co_relation_id is absent from the (empty) git meta → a synced orphan.
+        const makeSyncedOrphanApp = async (name: string, type: 'front-end' | 'module', mainBranchId: string) => {
+          const featBranchId = await createFeatureBranch(`feat-${name}`, mainBranchId);
+          const appId = await createApp(name, type, featBranchId);
+          await delDs.query(
+            `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, git_tree_sha = $2
+               WHERE app_id = $3`,
+            [mainBranchId, FAKE_TREE_SHA, appId]
+          );
+          return { appId, coRel: await coRelOf(appId) };
+        };
+
+        // Same shape but is_synced=false + no git_tree_sha → a never-pushed local row
+        // (not a git orphan). Must be KEPT by the pull.
+        const makeUnsyncedLocalApp = async (name: string, mainBranchId: string) => {
+          const featBranchId = await createFeatureBranch(`feat-${name}`, mainBranchId);
+          const appId = await createApp(name, 'front-end', featBranchId);
+          await delDs.query(
+            `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = false, git_tree_sha = NULL
+               WHERE app_id = $2`,
+            [mainBranchId, appId]
+          );
+          return appId;
+        };
+
+        const makeSyncedOrphanDataSource = async (name: string, mainBranchId: string) => {
+          const featBranchId = await createFeatureBranch(`feat-${name}`, mainBranchId);
+          const dsId: string = (
+            await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+              .send({
+                name,
+                kind: 'restapi',
+                options: [
+                  { key: 'url', value: `http://${name}.example.com` },
+                  { key: 'auth_type', value: 'none' },
+                  { key: 'headers', value: [['', '']] },
+                  { key: 'ssl_certificate', value: 'none', encrypted: false },
+                ],
+                scope: 'global',
+              })
+              .expect(201)
+          ).body.id;
+          await delDs.query(
+            `UPDATE data_source_versions SET branch_id = $1, is_synced = true, git_tree_sha = $2
+               WHERE data_source_id = $3`,
+            [mainBranchId, FAKE_TREE_SHA, dsId]
+          );
+          return dsId;
+        };
+
+        // Clear the branch's pull-skip tokens so the next pull fully re-examines git
+        // (the fake orphan left the remote HEAD unchanged).
+        const clearSkipTokens = (mainBranchId: string) =>
+          delDs.query(
+            `UPDATE organization_git_sync_branches
+               SET last_synced_commit = NULL, apps_git_tree_sha = NULL, modules_git_tree_sha = NULL, data_sources_git_tree_sha = NULL
+             WHERE id = $1`,
+            [mainBranchId]
+          );
+
+        const appVersionRows = (appId: string): Promise<any[]> =>
+          delDs.query(`SELECT id, is_synced FROM app_versions WHERE app_id = $1`, [appId]);
+        const appRowCount = async (appId: string): Promise<number> =>
+          Number((await delDs.query(`SELECT count(*)::int AS c FROM apps WHERE id = $1`, [appId]))[0]?.c);
+        const dataSourceRowCount = async (dsId: string): Promise<number> =>
+          Number((await delDs.query(`SELECT count(*)::int AS c FROM data_sources WHERE id = $1`, [dsId]))[0]?.c);
+
+        return {
+          orgId,
+          agent,
+          auth,
+          pull,
+          editingVersionOf,
+          configureGitMultiBranch,
+          createFeatureBranch,
+          createApp,
+          coRelOf,
+          makeSyncedOrphanApp,
+          makeUnsyncedLocalApp,
+          makeSyncedOrphanDataSource,
+          clearSkipTokens,
+          appVersionRows,
+          appRowCount,
+          dataSourceRowCount,
+        };
+      };
+
+      // CASE 1 (TDD-RED) — a synced app removed from git is DELETED on pull (today: kept, unsynced).
+      it('deletes a synced app that was removed from git after a merge to main', async () => {
+        const ctx = await makeCtx('del-app@tooljet.io');
+        step(1, 'configure git + branching, pull main');
+        const mainBranchId = await ctx.configureGitMultiBranch();
+
+        step(2, 'manufacture a synced app orphan on main (absent from git), clear skip tokens');
+        const { appId } = await ctx.makeSyncedOrphanApp('del-synced-app', 'front-end', mainBranchId);
+        await ctx.clearSkipTokens(mainBranchId);
+        expect(await ctx.appRowCount(appId)).toBe(1);
+
+        step(3, 'pull main → the synced-but-removed-from-git app is DELETED');
+        await ctx.pull(mainBranchId).expect(201);
+        // TARGET: the row is gone (not merely is_synced=false). RED until delete-on-pull lands.
+        expect(await ctx.appVersionRows(appId)).toHaveLength(0);
+        expect(await ctx.appRowCount(appId)).toBe(0);
+        await ctx
+          .auth(ctx.agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: mainBranchId })
+          .expect(404);
+      }, 300000);
+
+      // CASE 2 (TDD-RED) — a synced module and a synced data source removed from git are deleted on pull.
+      it('deletes a synced module and a synced data source removed from git', async () => {
+        const ctx = await makeCtx('del-mod-ds@tooljet.io');
+        step(1, 'configure git + branching, pull main');
+        const mainBranchId = await ctx.configureGitMultiBranch();
+
+        step(2, 'manufacture a synced module orphan and a synced data source orphan, clear skip tokens');
+        const { appId: moduleId } = await ctx.makeSyncedOrphanApp('del-synced-mod', 'module', mainBranchId);
+        const dsId = await ctx.makeSyncedOrphanDataSource('del-synced-ds', mainBranchId);
+        await ctx.clearSkipTokens(mainBranchId);
+
+        step(3, 'pull main → both the module and the data source are DELETED');
+        await ctx.pull(mainBranchId).expect(201);
+        // TARGET: both rows removed (module app + its versions; data source + its DSVs). RED today.
+        expect(await ctx.appVersionRows(moduleId)).toHaveLength(0);
+        expect(await ctx.appRowCount(moduleId)).toBe(0);
+        expect(await ctx.dataSourceRowCount(dsId)).toBe(0);
+      }, 300000);
+
+      // CASE 3 (GREEN) — an unsynced, never-pushed local resource absent from git is KEPT.
+      it('keeps an unsynced (never-pushed) local resource that is absent from git', async () => {
+        const ctx = await makeCtx('del-keep-local@tooljet.io');
+        step(1, 'configure git + branching, pull main');
+        const mainBranchId = await ctx.configureGitMultiBranch();
+
+        step(2, 'manufacture an UNSYNCED local app on main (is_synced=false, no git_tree_sha), clear skip tokens');
+        const appId = await ctx.makeUnsyncedLocalApp('del-local-app', mainBranchId);
+        await ctx.clearSkipTokens(mainBranchId);
+
+        step(3, 'pull main → the local app survives (delete applies only to is_synced=true rows)');
+        await ctx.pull(mainBranchId).expect(201);
+        expect(await ctx.appRowCount(appId)).toBe(1);
+        const rows = await ctx.appVersionRows(appId);
+        expect(rows.length).toBeGreaterThan(0);
+        expect(rows.every((r: any) => r.is_synced === false)).toBe(true);
+      }, 300000);
+
+      // CASE 4 (TDD-RED) — a synced module removed from git but still referenced by another
+      // app's ModuleViewer → pull ABORTS with a 409 in_use conflict; nothing is deleted.
+      it('blocks the pull with a 409 in_use conflict when a to-be-deleted module is still referenced by an app', async () => {
+        const { randomUUID } = await import('crypto');
+        const ctx = await makeCtx('del-mod-inuse@tooljet.io');
+        step(1, 'configure git + branching, pull main');
+        const mainBranchId = await ctx.configureGitMultiBranch();
+
+        step(2, 'manufacture a synced module orphan');
+        const { appId: moduleId, coRel: moduleCoRel } = await ctx.makeSyncedOrphanApp(
+          'inuse-module',
+          'module',
+          mainBranchId
+        );
+        expect(moduleCoRel).toBeTruthy();
+
+        step(
+          3,
+          'create a consumer app that references the module via a ModuleViewer, keep it as a local (kept) row on main'
+        );
+        const consumerFeat = await ctx.createFeatureBranch('feat-inuse-consumer', mainBranchId);
+        const consumerId = await ctx.createApp('inuse-consumer', 'front-end', consumerFeat);
+        const consumerCtx = await ctx.editingVersionOf(consumerId, consumerFeat);
+        const mvId = randomUUID();
+        await ctx
+          .auth(ctx.agent().post(`/api/v2/apps/${consumerId}/versions/${consumerCtx.versionId}/components`))
+          .query({ branch_id: consumerFeat })
+          .send({
+            is_user_switched_version: false,
+            pageId: consumerCtx.pageId,
+            diff: {
+              [mvId]: {
+                name: 'moduleviewer_inuse',
+                layouts: {
+                  desktop: { top: 70, left: 5, width: 38, height: 400 },
+                  mobile: { top: 70, left: 5, width: 38, height: 400 },
+                },
+                type: 'ModuleViewer',
+                general: {},
+                generalStyles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: {
+                  moduleAppId: { value: moduleCoRel },
+                  moduleVersionId: { value: '' },
+                  visibility: { value: true },
+                },
+                styles: { backgroundColor: { value: '#fff' }, padding: { value: 'default' } },
+                parent: null,
+              },
+            },
+          })
+          .expect(201);
+        // Keep the consumer on main as a local (never-pushed) row so it survives the pull and
+        // its reference to the module stays live.
+        await delDs.query(
+          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = false, git_tree_sha = NULL
+             WHERE app_id = $2`,
+          [mainBranchId, consumerId]
+        );
+        await ctx.clearSkipTokens(mainBranchId);
+
+        step(4, 'pull main → 409 in_use (module still referenced); the module is NOT deleted');
+        const pullResp = await ctx.pull(mainBranchId).expect(409);
+        const payload = JSON.parse(pullResp.body.message);
+        expect(payload.conflictGroups).toEqual(
+          expect.arrayContaining([expect.objectContaining({ type: 'module', conflictField: 'in_use' })])
+        );
+        // The module survives because the whole pull aborted before any deletion.
+        expect(await ctx.appRowCount(moduleId)).toBe(1);
+      }, 300000);
+
+      // CASE 5 (TDD-RED) — a synced data source removed from git but still connected to an
+      // app via a query → pull ABORTS with a 409 in_use conflict (type datasource).
+      it('blocks the pull with a 409 in_use conflict when a to-be-deleted data source is still connected to an app', async () => {
+        const ctx = await makeCtx('del-ds-inuse@tooljet.io');
+        step(1, 'configure git + branching, pull main');
+        const mainBranchId = await ctx.configureGitMultiBranch();
+
+        step(2, 'create a consumer app + a global data source, link them via a query, on one feature branch');
+        const featBranchId = await ctx.createFeatureBranch('feat-ds-inuse', mainBranchId);
+        const dsId: string = (
+          await ctx
+            .auth(ctx.agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'inuse-ds',
+              kind: 'restapi',
+              options: [
+                { key: 'url', value: 'http://inuse-ds.example.com' },
+                { key: 'auth_type', value: 'none' },
+                { key: 'headers', value: [['', '']] },
+                { key: 'ssl_certificate', value: 'none', encrypted: false },
+              ],
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        const consumerId = await ctx.createApp('inuse-ds-consumer', 'front-end', featBranchId);
+        const consumerCtx = await ctx.editingVersionOf(consumerId, featBranchId);
+        await ctx
+          .auth(ctx.agent().post(`/api/data-queries/data-sources/${dsId}/versions/${consumerCtx.versionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            kind: 'restapi',
+            name: 'q_inuse_ds',
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          })
+          .expect(201);
+
+        step(3, 'move the data source onto main as a synced orphan; keep the consumer as a local (kept) row');
+        await delDs.query(
+          `UPDATE data_source_versions SET branch_id = $1, is_synced = true, git_tree_sha = $2 WHERE data_source_id = $3`,
+          [mainBranchId, FAKE_TREE_SHA, dsId]
+        );
+        await delDs.query(
+          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = false, git_tree_sha = NULL WHERE app_id = $2`,
+          [mainBranchId, consumerId]
+        );
+        await ctx.clearSkipTokens(mainBranchId);
+
+        step(4, 'pull main → 409 in_use (data source still connected); the data source is NOT deleted');
+        const pullResp = await ctx.pull(mainBranchId).expect(409);
+        const payload = JSON.parse(pullResp.body.message);
+        expect(payload.conflictGroups).toEqual(
+          expect.arrayContaining([expect.objectContaining({ type: 'datasource', conflictField: 'in_use' })])
+        );
+        expect(await ctx.dataSourceRowCount(dsId)).toBe(1);
+      }, 300000);
+
+      // CASE 6 (TDD-RED) — after the blocking reference is removed, a re-pull succeeds and
+      // deletes the now-unreferenced module.
+      it('deletes the module on a re-pull once the referencing app is removed', async () => {
+        const { randomUUID } = await import('crypto');
+        const ctx = await makeCtx('del-repull@tooljet.io');
+        step(1, 'configure git + branching, pull main');
+        const mainBranchId = await ctx.configureGitMultiBranch();
+
+        step(2, 'synced module orphan + a consumer app referencing it (kept local on main)');
+        const { appId: moduleId, coRel: moduleCoRel } = await ctx.makeSyncedOrphanApp(
+          'repull-module',
+          'module',
+          mainBranchId
+        );
+        const consumerFeat = await ctx.createFeatureBranch('feat-repull-consumer', mainBranchId);
+        const consumerId = await ctx.createApp('repull-consumer', 'front-end', consumerFeat);
+        const consumerCtx = await ctx.editingVersionOf(consumerId, consumerFeat);
+        const mvId = randomUUID();
+        await ctx
+          .auth(ctx.agent().post(`/api/v2/apps/${consumerId}/versions/${consumerCtx.versionId}/components`))
+          .query({ branch_id: consumerFeat })
+          .send({
+            is_user_switched_version: false,
+            pageId: consumerCtx.pageId,
+            diff: {
+              [mvId]: {
+                name: 'moduleviewer_repull',
+                layouts: {
+                  desktop: { top: 70, left: 5, width: 38, height: 400 },
+                  mobile: { top: 70, left: 5, width: 38, height: 400 },
+                },
+                type: 'ModuleViewer',
+                general: {},
+                generalStyles: {},
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: {
+                  moduleAppId: { value: moduleCoRel },
+                  moduleVersionId: { value: '' },
+                  visibility: { value: true },
+                },
+                styles: {},
+                parent: null,
+              },
+            },
+          })
+          .expect(201);
+        await delDs.query(
+          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = false, git_tree_sha = NULL WHERE app_id = $2`,
+          [mainBranchId, consumerId]
+        );
+        await ctx.clearSkipTokens(mainBranchId);
+
+        step(3, 'first pull → 409 in_use (module still referenced)');
+        await ctx.pull(mainBranchId).expect(409);
+        expect(await ctx.appRowCount(moduleId)).toBe(1);
+
+        step(4, 'remove the referencing consumer app, clear skip tokens, re-pull → module is deleted');
+        await ctx.auth(ctx.agent().delete(`/api/apps/${consumerId}`).query({ branch_id: mainBranchId }));
+        await ctx.clearSkipTokens(mainBranchId);
+        await ctx.pull(mainBranchId).expect(201);
+        expect(await ctx.appRowCount(moduleId)).toBe(0);
+      }, 300000);
+    });
   });
 });
