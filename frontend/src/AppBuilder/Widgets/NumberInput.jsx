@@ -4,6 +4,15 @@ import { useInput } from './BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
+// parseFloat('') / parseFloat(null) is NaN, and a NaN value must never reach
+// BaseInput: <input type="number"> renders NaN as an empty field while
+// `hasValue` (NaN !== '' && NaN !== null && NaN !== undefined) stays true,
+// so the clear button shows on an input that looks empty (#17550).
+const toDisplayValue = (rawValue, decimalPlaces) => {
+  const parsed = parseFloat(rawValue);
+  return Number.isFinite(parsed) ? Number(parsed.toFixed(decimalPlaces)) : '';
+};
+
 export const NumberInput = (props) => {
   const inputRef = useRef(null);
 
@@ -11,7 +20,7 @@ export const NumberInput = (props) => {
     ...props,
     properties: {
       ...props.properties,
-      value: Number(parseFloat(props.properties.value).toFixed(props.properties.decimalPlaces)),
+      value: toDisplayValue(props.properties.value, props.properties.decimalPlaces),
     },
   });
 
@@ -31,7 +40,7 @@ export const NumberInput = (props) => {
   };
 
   const handleBlur = (e) => {
-    const value = Number(parseFloat(e.target.value).toFixed(props.properties.decimalPlaces));
+    const value = toDisplayValue(e.target.value, props.properties.decimalPlaces);
     inputLogic.setInputValue(value);
     inputLogic.handleBlur(e);
   };
