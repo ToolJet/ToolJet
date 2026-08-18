@@ -16,6 +16,11 @@ export class PersonalAccessTokensController implements IPersonalAccessTokensCont
     throw new Error('Method not implemented.');
   }
 
+  @Get('validate')
+  async validate(@User() user): Promise<{ email: string; organizationId: string }> {
+    throw new Error('Method not implemented.');
+  }
+
   @Delete(':id')
   async delete(@User() user, @Param('id') id: string): Promise<void> {
     throw new Error('Method not implemented.');
