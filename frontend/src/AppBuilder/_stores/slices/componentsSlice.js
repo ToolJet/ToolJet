@@ -29,11 +29,12 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
+import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
-  TOP_ALIGNMENT_HEIGHT_INCREMENT,
-  ROW_SCOPED_WIDGET_TYPES,
-  NESTING_LEVEL_LIMITS,
-} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+  calculateInputCanvasHeight,
+  resolveInputCanvasAlignment,
+  resolveInputCanvasLabelLength,
+} from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
@@ -91,6 +92,23 @@ export function setSuppressQueryRerun(moduleId, value) {
 // ======================
 // END SECTION: Query re-run on dependency change
 // ======================
+
+// Gate for resolving nested arrays, which can be user data of any size (eg. TreeSelect option trees)
+const hasDynamicValue = (value) => {
+  const pending = [value];
+  while (pending.length) {
+    const current = pending.pop();
+    if (typeof current === 'string') {
+      if (current.includes('{{') && current.includes('}}')) return true;
+    } else if (current && typeof current === 'object') {
+      for (const entry of Object.values(current)) pending.push(entry);
+    }
+  }
+  return false;
+};
+
+// Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
+const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
 
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
@@ -970,16 +988,34 @@ export const createComponentsSlice = (set, get) => ({
     component,
     resolvedComponentValues,
     updatePassedValue = true,
-    moduleId
+    moduleId,
+    preClonedValue
   ) => {
-    const { updateResolvedValues, generateDependencyGraphForRefs } = get();
+    const { updateResolvedValues, generateDependencyGraphForRefs, checkValueAndResolve } = get();
     if (Array.isArray(value)) {
-      const updatedPropertyValue = cloneDeep(value);
+      // Nested calls receive the parent's clone of this subtree, so cloning again would repeat per level
+      const updatedPropertyValue = preClonedValue ?? cloneDeep(value);
       value.forEach((val, index) => {
         //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
         if (val && typeof val === 'object') {
           Object.entries(val).forEach(([key, keyValue]) => {
             const propertyWithArrayValue = `${property}[${index}].${key}`;
+            // Nested arrays of objects (eg. Navigation group children) carry their own dynamic values
+            if (Array.isArray(keyValue) && hasObjectEntry(keyValue) && hasDynamicValue(keyValue)) {
+              const { updatedValue } = checkValueAndResolve(
+                componentId,
+                paramType,
+                propertyWithArrayValue,
+                keyValue,
+                component,
+                resolvedComponentValues,
+                updatePassedValue,
+                moduleId,
+                updatedPropertyValue[index][key]
+              );
+              lodashSet(updatedPropertyValue, [index, key], updatedValue);
+              return;
+            }
             const keys = [key];
             if (keyValue?.value) {
               keys.push('value');
@@ -2173,6 +2209,7 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentMode,
       getCustomResolvables,
       setResolvedComponentByProperty,
+      removePropertyNodes,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const componentDef = getComponentDefinition(componentId, moduleId);
@@ -2190,6 +2227,8 @@ export const createComponentsSlice = (set, get) => ({
       if (index === null) {
         resolvedComponent[componentId][paramType][property] = [];
       }
+      // Entries are re-indexed on every edit, so edges for the previous indices must go before the new ones register
+      removePropertyNodes(`components.${componentId}.${paramType}.${property}`, moduleId);
       const { updatedValue } = checkValueAndResolve(
         componentId,
         paramType,
@@ -3119,7 +3158,15 @@ export const createComponentsSlice = (set, get) => ({
       return match; // Return the original match if no mapping is found
     });
   },
-  calculateMoveableBoxHeightWithId: (componentId, currentLayout, stylesDefinition, moduleId = 'canvas') => {
+  calculateMoveableBoxHeightWithId: (
+    componentId,
+    currentLayout,
+    stylesDefinition,
+    moduleId = 'canvas',
+    resolvedStyleAlignment,
+    resolvedStyleLegacyInputSize,
+    resolvedPropertyLabel
+  ) => {
     const componentDefinition = get().getComponentDefinition(componentId, moduleId);
     const layoutData = componentDefinition?.layouts?.[currentLayout];
     const componentType = componentDefinition?.component?.component;
@@ -3131,27 +3178,41 @@ export const createComponentsSlice = (set, get) => ({
     }
     const { alignment = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
     const width = stylesDefinition?.width ?? stylesDefinition?.labelWidth ?? { value: null };
-    let resolvedLabel = label?.value?.length ?? 0;
+    const resolvedLabelLength = resolveInputCanvasLabelLength(label?.value, (value) =>
+      resolvedPropertyLabel !== undefined
+        ? resolvedPropertyLabel
+        : resolveDynamicValues(value + '', getAllExposedValues(moduleId))
+    );
     const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
-    const resolvedLabelType = resolveDynamicValues(labelType?.value + '', getAllExposedValues(moduleId)) ?? 'auto';
-    if (resolvedLabelType === 'auto') {
-      resolvedLabel = 1;
-    }
+    const resolvedLabelType = labelType
+      ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
+      : undefined;
+    const legacyInputSizeProperty = componentDefinition?.component?.definition?.properties?.legacyInputSize;
+    const resolvedLegacyInputSize =
+      resolvedStyleLegacyInputSize ??
+      (legacyInputSizeProperty
+        ? resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false
+        : false);
 
-    const resolvedAlignment =
-      alignment.value === 'top' || alignment.value === 'side'
-        ? alignment.value
-        : resolveDynamicValues(alignment.value + '');
-    let newHeight = layoutData?.height;
+    const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
+      alignment: alignment.value,
+      hasLegacyInputSizeProperty: Boolean(legacyInputSizeProperty),
+      legacyInputSize: resolvedLegacyInputSize,
+      resolveValue: (value) => resolvedStyleAlignment ?? get().getResolvedValue(value, {}, moduleId),
+    });
 
-    if (alignment.value && resolvedAlignment === 'top') {
-      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += TOP_ALIGNMENT_HEIGHT_INCREMENT;
-      }
-    }
-    return newHeight;
+    return calculateInputCanvasHeight({
+      height: layoutData?.height,
+      alignment: alignment.value && resolvedAlignment,
+      labelLength: resolvedLabelLength,
+      width: resolvedWidth,
+      auto: resolvedAuto,
+      labelType: resolvedLabelType,
+      legacyInputSize: resolvedLegacyInputSize,
+      isDynamicAlignment,
+    });
   },
   getIsAutoMobileLayout: (moduleId = 'canvas') => {
     const { getCurrentPage } = get();
