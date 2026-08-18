@@ -1,16 +1,11 @@
 import React from 'react';
-import cx from 'classnames';
+import { LottieLoader } from '@/_ui/LottieLoader';
 
-export const TJLoader = () => {
-  const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-
-  return (
-    <div className={cx('spin-loader', { 'theme-dark dark-theme': darkModeEnabled })}>
-      <div className="load">
-        <div className="one"></div>
-        <div className="two"></div>
-        <div className="three"></div>
-      </div>
-    </div>
-  );
-};
+/**
+ * Canonical in-app loading state. Renders the same animation as the boot loader in
+ * index.ejs so there is one loading visual across the whole product.
+ *
+ * Kept as a separate export because it is imported from ~19 call sites, including the
+ * ee submodule.
+ */
+export const TJLoader = () => <LottieLoader />;
