@@ -37,9 +37,11 @@
       background-color: #1E2226;
     }
 
+    /* The artwork is a 16:9 export that letterboxes inside its box, so halving both
+       dimensions halves the rendered animation regardless of the viewport aspect. */
     .tj-app-loader .loader-animation {
-      width: 100%;
-      height: 100%;
+      width: 50%;
+      height: 50%;
     }
 
     /* roboto-100 - latin */
