@@ -11,7 +11,16 @@ export const NumberInput = (props) => {
     ...props,
     properties: {
       ...props.properties,
-      value: Number(parseFloat(props.properties.value).toFixed(props.properties.decimalPlaces)),
+      // An empty/unparsable value parses to NaN, which BaseInput's emptiness
+      // checks do not recognize (NaN !== null/undefined/'') — the clear
+      // button then shows on an empty field no matter what the visibility
+      // condition evaluates to (#17550). Coerce to null, the same value
+      // handleChange sets when the field is cleared.
+      value: Number.isNaN(Number.parseFloat(props.properties.value))
+        ? null
+        : Number(
+            Number.parseFloat(props.properties.value).toFixed(props.properties.decimalPlaces),
+          ),
     },
   });
 
