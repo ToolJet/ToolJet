@@ -74,9 +74,15 @@ export class DataQueryRepository extends Repository<DataQuery> {
         .andWhere('app.organization_id = module_app.organization_id')
         .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = module_app.co_relation_id::text")
         .andWhere(
-          `(component.properties::jsonb -> 'moduleVersionId' ->> 'value' = ''
-          OR component.properties::jsonb -> 'moduleVersionId' ->> 'value' = module_version.module_reference_id::text
-          OR component.properties::jsonb -> 'moduleVersionId' ->> 'value' = data_query.app_version_id::text)`
+          `COALESCE(
+             NULLIF(component.properties::jsonb -> 'moduleVersionId' ->> 'versionName', ''),
+             COALESCE(component.properties::jsonb -> 'moduleVersionId' ->> 'value', '')
+           ) IN (
+             '', '__default_branch_draft__',
+             module_version.module_reference_id::text,
+             module_version.name,
+             data_query.app_version_id::text
+           )`
         )
         .limit(1)
         .getOne()
