@@ -38,11 +38,8 @@ import {
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
-  // M6: called here, before NestFactory even starts building the module graph — not in
-  // FrontendMetricsModule.onModuleInit(), which fires late enough that any TransactionLogger
-  // call from an earlier provider's constructor/init hook would silently miss the OTLP
-  // stream for that one line (still fine on stdout, just absent from Loki). Idempotent —
-  // that later call becomes a harmless no-op once this one has already run.
+  // Runs before NestFactory even starts, so no early appLogger.* call can miss the OTLP
+  // stream. Idempotent — safe alongside FrontendMetricsModule's own call to this.
   initializeOtelLogs();
 
   const logger = createLogger('Bootstrap');
@@ -171,9 +168,7 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
       logger.error('❌ Error during application shutdown:', error);
       exitCode = 1;
     }
-    // Flush the OTel log queue regardless of how app.close() went — tracing.ts's own
-    // SIGTERM handler shuts down traces/metrics independently of this one, and neither
-    // used to wait for the log processor's own up-to-5s batch to drain before exiting.
+    // Flush the OTel log queue before exiting, regardless of how app.close() went.
     await shutdownOtelLogs();
     process.exit(exitCode);
   };

@@ -500,9 +500,7 @@ process.on('SIGTERM', () => {
     seatPollTimeout = null;
   }
 
-  // Traces/metrics (sdk) and logs (module-local provider, see otel/logs.ts) shut down
-  // independently — flush both before exiting, or the log queue's up-to-5s backlog is
-  // lost on every restart, silently, on the exact lines an incident needs most.
+  // Flush traces/metrics and logs before exiting — both shut down independently.
   Promise.all([sdk ? sdk.shutdown() : Promise.resolve(), shutdownOtelLogs()])
     .then(() => {
       if (process.env.OTEL_LOG_LEVEL === 'debug') {

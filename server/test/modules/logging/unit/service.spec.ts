@@ -2,10 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionLogger } from '../../../../src/modules/logging/service';
 import { __resetBaseLoggerForTests } from '../../../../src/modules/logging/base-logger';
 
-// Level-precedence and OTEL-gating behavior now lives in base-logger.spec.ts —
-// TransactionLogger no longer owns pino construction, it just consumes the shared
-// instance (see base-logger.ts). This file covers what TransactionLogger is actually
-// for: route/transactionId enrichment, including redaction (M4).
+// Level/OTEL-gating tests live in base-logger.spec.ts — this covers TransactionLogger's
+// own job: route/transactionId enrichment and redaction.
 describe('TransactionLogger', () => {
   let logger: TransactionLogger;
 

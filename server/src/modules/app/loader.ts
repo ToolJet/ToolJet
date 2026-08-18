@@ -86,12 +86,7 @@ export class AppModuleLoader {
 
           return {
             // Shared with TransactionLogger (service.ts) — buildBaseLogger() is memoized,
-            // so this resolves to the exact same pino instance either way. Previously built
-            // twice here, with its own independent copy of the level-mapping logic that had
-            // already drifted from service.ts's ('debug' vs 'trace' for the same
-            // NODE_ENV=development case) — one construction site now, so HTTP request logs
-            // and bootstrap lines get the OTLP stream identically to appLogger.* calls,
-            // instead of never reaching it at all.
+            // so both resolve to the same pino instance and both reach the OTLP stream.
             logger: buildBaseLogger(),
             autoLogging,
             redact: {
