@@ -244,6 +244,7 @@
                 max-height: 2500px ;
                 .cm-scroller {
                     flex-grow: 1 !important;
+                    align-items: stretch !important;
                 }
             }
         }
