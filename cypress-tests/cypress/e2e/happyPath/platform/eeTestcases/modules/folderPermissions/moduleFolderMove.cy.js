@@ -8,30 +8,31 @@ import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { commonText } from 'Texts/common';
 import { dashboardText } from 'Texts/dashboard';
 
-describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
+describe('Modules — Moving Modules Between Folders', () => {
   const testId = Date.now();
-  const wsName = `modules-folder-move-${testId}`;
-  const wsSlug = wsName;
 
-  let workspaceId;
+  let workspaceId, wsName, wsSlug;
 
-  before(() => {
-    cy.apiLogin();
-    
-    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
-      workspaceId = res.body.organization_id;
-      Cypress.env('workspaceId', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
-    });
-  });
-
-  after(() => {
+  afterEach(() => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
   beforeEach(() => {
+    wsName = `modules-folder-move-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
+    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env('workspaceId', workspaceId);
+      Cypress.env('workspaceSlug', wsSlug);
+    });
+
+    // The builder ROLE itself is seeded with canEditFolder:true (All Folders) on
+    // module_folder by default (DEFAULT_RESOURCE_PERMISSIONS) — strip it so each
+    // test's custom-group grant is the only source of access being verified.
+    cy.apiStripRoleFolderDefault('builder', 'module_folder');
   });
 
   it('user with Edit Folder access sees only authorized folders in the move picker, and can move a module they can edit into one', () => {
@@ -152,6 +153,14 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
     });
 
     cy.then(() => {
+      // "Create draft version" only renders once a saved version exists
+      // (VersionManagerDropdown.jsx: showCreateDraftButton = savedVersions.length > 0).
+      cy.apiGetEditingVersionId(moduleId).then((versionId) => {
+        Cypress.env('appId', moduleId);
+        Cypress.env('editingVersionId', versionId);
+        cy.apiPublishDraftVersion('v1');
+      });
+
       cy.apiFullUserOnboarding('QA Recalc User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
 
       // Before the move: the module isn't in the folder yet, so the folder's Edit

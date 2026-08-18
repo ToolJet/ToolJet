@@ -5,10 +5,8 @@ import { importSelectors } from 'Selectors/exportImport';
 import { Environments } from 'Constants/constants/multiEnv';
 import { openModulesList, dragModuleIntoCanvas } from 'Support/utils/platform/modules';
 
-describe('Modules — Workspace Constants Across Environments', { retries: 0 }, () => {
+describe('Modules — Workspace Constants Across Environments', () => {
   const testId = Date.now();
-  const wsName = `modules-constants-${testId}`;
-  const wsSlug = wsName;
   const moduleFile = 'cypress/fixtures/templates/modules/one version module.json';
   // Filename-derived, same convention as moduleImport.cy.js (readAndImport
   // strips only the ".json" extension — the space stays as-is).
@@ -19,16 +17,19 @@ describe('Modules — Workspace Constants Across Environments', { retries: 0 }, 
   const HEADER_KEY_VALUE = 'customHeader';
   const UI_CONST_GLOBAL_VALUE = 'sample-ui-constant-value';
 
-  let workspaceId;
+  let workspaceId, wsName, wsSlug;
   let moduleAppId;
   let consumerAppId;
 
-  // after(() => {
-  //   cy.apiLogin();
-  //   cy.then(() => cy.apiArchiveWorkspace(workspaceId));
-  // });
+  afterEach(() => {
+    cy.apiLogin();
+    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
+  });
 
   beforeEach(() => {
+    wsName = `modules-constants-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
@@ -63,6 +64,7 @@ describe('Modules — Workspace Constants Across Environments', { retries: 0 }, 
       moduleAppId = url.split('/apps/')[1].split('/')[0];
       Cypress.env('appId', moduleAppId);
       cy.intercept('GET', `/api/apps/${moduleAppId}`).as('getModuleData');
+      cy.reload();
       cy.wait('@getModuleData').then((interception) => {
         Cypress.env('editingVersionId', interception.response.body.editing_version.id);
       });
@@ -111,7 +113,7 @@ describe('Modules — Workspace Constants Across Environments', { retries: 0 }, 
     verifyResolvedForEnv('Production');
   });
 
-  it.only('embeds the module in a consuming app and verifies its constants still resolve correctly across dev/staging/production', () => {
+  it('embeds the module in a consuming app and verifies its constants still resolve correctly across dev/staging/production', () => {
     const consumerAppName = `Constants Consumer ${testId}`;
 
     cy.apiCreateApp(consumerAppName).then(() => {

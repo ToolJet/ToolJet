@@ -8,12 +8,10 @@ import { apiCreateGroup } from 'Support/utils/manageGroups';
 // grants (confirmed via server/src/modules/ability/util.service.ts createUserAppsPermissions —
 // both paths feed the same editableAppsId/viewableAppsId sets, so a higher grant from
 // either source always wins; nothing is ever subtracted).
-describe('Modules — Folder Permission Inheritance & Aggregation', { retries: 0 }, () => {
+describe('Modules — Folder Permission Inheritance & Aggregation', () => {
   const testId = Date.now();
-  const wsName = `modules-folder-inherit-${testId}`;
-  const wsSlug = wsName;
 
-  let workspaceId;
+  let workspaceId, wsName, wsSlug;
 
   const attemptCreateDraft = (versionName) => {
     cy.get(moduleSelectors.versionSwitcherButton).click();
@@ -22,23 +20,26 @@ describe('Modules — Folder Permission Inheritance & Aggregation', { retries: 0
     cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
   };
 
-  before(() => {
-    cy.apiLogin();
-    
-    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
-      workspaceId = res.body.organization_id;
-      Cypress.env('workspaceId', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
-    });
-  });
-
-  after(() => {
+  afterEach(() => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
   beforeEach(() => {
+    wsName = `modules-folder-inherit-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
+    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env('workspaceId', workspaceId);
+      Cypress.env('workspaceSlug', wsSlug);
+    });
+
+    // The builder ROLE itself is seeded with canEditFolder:true (All Folders) on
+    // module_folder by default (DEFAULT_RESOURCE_PERMISSIONS) — strip it so each
+    // test's custom-group grant is the only source of access being verified.
+    cy.apiStripRoleFolderDefault('builder', 'module_folder');
   });
 
   it('a folder Edit Modules grant gives edit access even when the direct module grant is View-only', () => {
@@ -76,6 +77,14 @@ describe('Modules — Folder Permission Inheritance & Aggregation', { retries: 0
     });
 
     cy.then(() => {
+      // "Create draft version" only renders once a saved version exists
+      // (VersionManagerDropdown.jsx: showCreateDraftButton = savedVersions.length > 0).
+      cy.apiGetEditingVersionId(moduleId).then((versionId) => {
+        Cypress.env('appId', moduleId);
+        Cypress.env('editingVersionId', versionId);
+        cy.apiPublishDraftVersion('v1');
+      });
+
       cy.apiFullUserOnboarding('QA Inherit Union User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
 
       cy.apiLogin(userEmail, 'password');
@@ -124,6 +133,12 @@ describe('Modules — Folder Permission Inheritance & Aggregation', { retries: 0
     });
 
     cy.then(() => {
+      cy.apiGetEditingVersionId(moduleId).then((versionId) => {
+        Cypress.env('appId', moduleId);
+        Cypress.env('editingVersionId', versionId);
+        cy.apiPublishDraftVersion('v1');
+      });
+
       cy.apiFullUserOnboarding('QA Multigroup User', userEmail, 'builder', 'password', wsName, {}, [
         viewGroupName,
         editGroupName,
@@ -177,10 +192,17 @@ describe('Modules — Folder Permission Inheritance & Aggregation', { retries: 0
     });
 
     cy.then(() => {
+      cy.apiGetEditingVersionId(moduleId).then((versionId) => {
+        Cypress.env('appId', moduleId);
+        Cypress.env('editingVersionId', versionId);
+        cy.apiPublishDraftVersion('v1');
+      });
+
       cy.apiFullUserOnboarding('QA Regress User', userEmail, 'builder', 'password', wsName, {}, [
         viewGroupName,
         editGroupName,
       ]);
+      cy.apiLogin();
       cy.apiRemoveUserFromGroup(editGroupId, userEmail);
 
       cy.apiLogin(userEmail, 'password');

@@ -21,7 +21,6 @@ import { dashboardText } from "Texts/dashboard";
 
 describe(
   "Modules — Empty State, Creation & Card Operations",
-  { retries: 0 },
   () => {
     const testId = Date.now();
     const wsName = `modules-crud-${testId}`;

@@ -1348,6 +1348,106 @@ Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
   });
 });
 
+// Default role groups (admin/builder/end-user) are seeded with permissive
+// defaults for every resource type (DEFAULT_RESOURCE_PERMISSIONS) — e.g.
+// builder gets canEditFolder:true (All Folders) on module_folder/workflow_folder
+// out of the box. Any test that grants a NARROWER custom-group permission and
+// expects that narrower grant to be the sole determinant of access must first
+// zero out the role's own default here, otherwise the union of "role default +
+// custom group" silently grants more than the custom group alone would.
+Cypress.Commands.add("apiStripRoleFolderDefault", (roleName, resourceType) => {
+  const endpointByType = {
+    folder: "folder",
+    workflow_folder: "workflow-folder",
+    module_folder: "module-folder",
+  };
+  const endpoint = endpointByType[resourceType];
+
+  return cy.apiGetGroupId(roleName).then((groupId) => {
+    return cy.getAuthHeaders().then((headers) => {
+      return cy
+        .request({
+          method: "GET",
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
+          headers,
+          log: false,
+        })
+        .then((response) => {
+          expect(response.status).to.equal(200);
+          const existing = response.body.find((perm) => perm.type === resourceType);
+          if (!existing) {
+            // Nothing seeded for this role/resourceType — already effectively stripped.
+            return null;
+          }
+          return cy
+            .request({
+              method: "PUT",
+              url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/${endpoint}/${existing.id}`,
+              headers,
+              body: {
+                isAll: true,
+                actions: { canEditFolder: false, canEditApps: false, canViewApps: false },
+              },
+              log: false,
+            })
+            .then((updateResponse) => {
+              expect(updateResponse.status).to.equal(200);
+              return updateResponse.body;
+            });
+        });
+    });
+  });
+});
+
+// Same problem as apiStripRoleFolderDefault, but for the direct app/module/workflow
+// bucket — builder is seeded with canEdit:true (All) on module type by default
+// (DEFAULT_RESOURCE_PERMISSIONS[BUILDER][MODULE]). Module-type grants live in the
+// same underlying table as app-type grants, so the update route is always
+// granular-permissions/app/:id regardless of the specific appType.
+Cypress.Commands.add("apiStripRoleAppDefault", (roleName, resourceType) => {
+  return cy.apiGetGroupId(roleName).then((groupId) => {
+    return cy.getAuthHeaders().then((headers) => {
+      return cy
+        .request({
+          method: "GET",
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
+          headers,
+          log: false,
+        })
+        .then((response) => {
+          expect(response.status).to.equal(200);
+          const existing = response.body.find((perm) => perm.type === resourceType);
+          if (!existing) {
+            return null;
+          }
+          return cy
+            .request({
+              method: "PUT",
+              url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${existing.id}`,
+              headers,
+              body: {
+                isAll: true,
+                actions: {
+                  canEdit: false,
+                  canView: false,
+                  hideFromDashboard: true,
+                  canAccessDevelopment: false,
+                  canAccessStaging: false,
+                  canAccessProduction: false,
+                  canAccessReleased: false,
+                },
+              },
+              log: false,
+            })
+            .then((updateResponse) => {
+              expect(updateResponse.status).to.equal(200);
+              return updateResponse.body;
+            });
+        });
+    });
+  });
+});
+
 Cypress.Commands.add("apiAddModuleToFolder", (moduleId, folderId) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy

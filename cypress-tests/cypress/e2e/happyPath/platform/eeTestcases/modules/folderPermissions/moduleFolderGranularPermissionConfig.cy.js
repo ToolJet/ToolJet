@@ -15,35 +15,31 @@ import { apiCreateGroup } from 'Support/utils/manageGroups';
 // moduleFolderPermissionInheritance.cy.js (effective access matches each permission
 // level, union/highest-wins across grants) — this file only covers what's safely
 // verifiable without that dropdown: group duplication.
-describe('Modules — Folder Granular Permission Configuration', { retries: 0 }, () => {
+describe('Modules — Folder Granular Permission Configuration', () => {
   const testId = Date.now();
-  const wsName = `modules-folder-config-${testId}`;
-  const wsSlug = wsName;
 
-  let workspaceId;
+  let workspaceId, wsName, wsSlug;
 
   const visitGroupsSettingsPage = () => {
     cy.visit(`/${wsSlug}/workspace-settings/groups`);
     cy.wait(2000);
   };
 
-  before(() => {
-    cy.apiLogin();
-    
-    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
-      workspaceId = res.body.organization_id;
-      Cypress.env('workspaceId', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
-    });
-  });
-
-  after(() => {
+  afterEach(() => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
   beforeEach(() => {
+    wsName = `modules-folder-config-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
+    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env('workspaceId', workspaceId);
+      Cypress.env('workspaceSlug', wsSlug);
+    });
   });
 
   it('duplicating a group duplicates its module-folder granular permission', () => {

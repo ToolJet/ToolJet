@@ -10,7 +10,7 @@ import {
 } from "Support/utils/platform/modules";
 import { apiCreateGroup } from "Support/utils/manageGroups";
 
-describe("Modules — Granular Permissions", { retries: 0 }, () => {
+describe("Modules — Granular Permissions", () => {
   const testId = Date.now();
   const shortId = String(testId).slice(-6);
   const wsName = `modules-permissions-${testId}`;
@@ -32,6 +32,12 @@ describe("Modules — Granular Permissions", { retries: 0 }, () => {
       Cypress.env("workspaceId", workspaceId);
       Cypress.env("workspaceSlug", wsSlug);
     });
+
+    // The builder ROLE itself is seeded with canEdit:true (All modules) by default
+    // (DEFAULT_RESOURCE_PERMISSIONS[BUILDER][MODULE]) — strip it so the Build-with
+    // (view-only) custom group grant below is the only source of access for that
+    // module, not silently overridden by the role default's edit access.
+    cy.apiStripRoleAppDefault("builder", "module");
 
     cy.then(() => {
       createModuleViaAPI(editModuleName).then((module) => {
@@ -76,6 +82,10 @@ describe("Modules — Granular Permissions", { retries: 0 }, () => {
   after(() => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
+  });
+
+  beforeEach(() => {
+    cy.apiLogin();
   });
 
   it("Edit-level granular access lets a non-owner actually edit a module", () => {

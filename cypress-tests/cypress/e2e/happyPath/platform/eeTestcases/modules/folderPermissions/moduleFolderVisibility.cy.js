@@ -8,30 +8,31 @@ import { apiCreateGroup } from 'Support/utils/manageGroups';
 // see (folderApps.length > 0) — that last clause means an unauthorized-but-nonempty folder
 // can still surface via its contents. Both tests below keep the inaccessible folder fully
 // empty so only the permission grant itself is under test.
-describe('Modules — Folder & Module Visibility', { retries: 0 }, () => {
+describe('Modules — Folder & Module Visibility', () => {
   const testId = Date.now();
-  const wsName = `modules-folder-visibility-${testId}`;
-  const wsSlug = wsName;
 
-  let workspaceId;
+  let workspaceId, wsName, wsSlug;
 
-  before(() => {
-    cy.apiLogin();
-    
-    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
-      workspaceId = res.body.organization_id;
-      Cypress.env('workspaceId', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
-    });
-  });
-
-  after(() => {
+  afterEach(() => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
   beforeEach(() => {
+    wsName = `modules-folder-visibility-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
+    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env('workspaceId', workspaceId);
+      Cypress.env('workspaceSlug', wsSlug);
+    });
+
+    // The builder ROLE itself is seeded with canEditFolder:true (All Folders) on
+    // module_folder by default (DEFAULT_RESOURCE_PERMISSIONS) — strip it so each
+    // test's custom-group grant is the only source of access being verified.
+    cy.apiStripRoleFolderDefault('builder', 'module_folder');
   });
 
   it('a user sees only the (empty) module folders they are authorized to access, and an empty authorized folder still shows up', () => {

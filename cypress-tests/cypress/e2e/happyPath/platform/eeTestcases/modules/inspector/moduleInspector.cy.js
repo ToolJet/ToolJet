@@ -6,7 +6,7 @@ import {
 } from "Support/utils/platform/modules";
 
 
-describe("Modules — Inspector", { retries: 0 }, () => {
+describe("Modules — Inspector", () => {
   const testId = Date.now();
   const shortId = String(testId).slice(-6);
   const wsName = `modules-globals-${testId}`;

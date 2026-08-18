@@ -11,7 +11,7 @@ import {
 } from "Support/utils/platform/modules";
 import { appPromote } from "Support/utils/platform/multiEnv";
 
-describe("Modules — Versions", { retries: 0 }, () => {
+describe("Modules — Versions", () => {
   const testId = Date.now();
   const wsName = `modules-versions-${testId}`;
   const wsSlug = wsName;
