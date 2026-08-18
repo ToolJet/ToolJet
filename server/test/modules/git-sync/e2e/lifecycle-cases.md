@@ -187,9 +187,9 @@ End-to-end single test; each step depends on the previous. Steps:
 | 58 | Pull `main` with `moduleMeta` same name in different folders → 409 with details |
 | 59 | Pull `main` with conflicting `dataSourceMeta` (intra-incoming same name) → 409 with details |
 | 60 | Delete data source A on a branch, then rename B → A → succeeds (branch-aware name check) |
-| 61 | Orphan **APP** on default branch: pull marks `is_synced=false` (not deleted); GET reflects it |
-| 62 | Orphan **MODULE** on default branch: pull marks `is_synced=false` (not deleted); GET reflects it |
-| 63 | Orphan **DATA SOURCE** on default branch: pull marks `is_synced=false` (not deleted); GET reflects it |
+| 61 | Orphan **APP** on default branch (synced, removed from git): pull DELETES its branch versions; `apps` row kept |
+| 62 | Orphan **MODULE** on default branch: pull DELETES its branch versions; `apps` row kept |
+| 63 | Orphan **DATA SOURCE** on default branch: pull DEACTIVATES the DSV (`is_active=false`); row kept |
 | 64 | meta-prop: create app on `feat-meta-prop-1` & push |
 | 65 | meta-prop: merge `feat-meta-prop-1` → `main`, then SINGLE-APP pull onto `main` |
 | 66 | meta-prop: save the version (publish v1) → `main` holds 1 PUBLISHED + 1 DRAFT sharing meta |
@@ -208,8 +208,8 @@ End-to-end single test; each step depends on the previous. Steps:
 | **79** | **active-branch: no valid active branch** (removed/cleared → `last_branch_id` NULL via FK `ON DELETE SET NULL`) → list falls back to the **default** branch |
 | **80** | **active-branch: branching OFF** → list exposes only the default branch (`isMultiBranchingEnabled=false`, all `isDefault`, active = default); then branching restored |
 | **81** | **single-branch: create on default** — disable branching; create app + module + data source directly on the **default** branch (rejected under multi-branch, allowed here); link the DS to the app via a query |
-| **82** | **single-branch: synced app is push-eligible on default** — `GET /app-git/validate-push/:id` → `{ valid: true }` |
-| **83** | **single-branch: default-branch resource state** — app + module versions are on the default branch, `DRAFT`, **`is_synced=true`** (single-branch marks newly created resources synced-on-create — the default branch is the working branch); the DS has a **synced** DSV on the default branch and is linked to the app via a query; then branching restored |
+| **82** | **single-branch: unsynced app is push-eligible on default** — `GET /app-git/validate-push/:id` → `{ valid: true }` |
+| **83** | **single-branch: default-branch resource state** — app + module versions are on the default branch, `DRAFT`, **`is_synced=false`** (a brand-new resource is unsynced on create in **every** mode — git-off, multi-branch feature, and single-branch default alike; only a push/materializing pull flips it true); the DS has an **unsynced** DSV on the default branch and is linked to the app via a query; then branching restored |
 
 Steps 78–80 are the active-branch resolution cases (last created/switched loads next time;
 invalid/removed or branching-off falls back to the default). Steps 81–83 are the single-branch
@@ -275,8 +275,8 @@ create/publish/replace — so it runs against the protected-`main` repo.
 | Step | Action | Assert |
 |---|---|---|
 | Setup | Configure git, toggle branching OFF; create app + module + data source on the default branch; add `comp_A` + `query_A` to the app, `mod_query_A` to the module | creates succeed |
-| Save v1 | Publish the app version (`PUT status=PUBLISHED`, name `v1`) | v1 has `[comp_A]` / `[query_A]`; publishing seeds a **synced** continuity draft (single-branch apps are synced-on-create) |
-| New draft | Create draft from `v1` (`replace:true`) → `d2` | `d2` is a clean copy of v1 (`[comp_A]` / `[query_A]`); it's the editing version. **`replace:true` is required** — the synced continuity draft means `replace:false` would hit the single-draft rule (400 "Only one draft version is allowed when branching is enabled") |
+| Save v1 | Publish the app version (`PUT status=PUBLISHED`, name `v1`) | v1 has `[comp_A]` / `[query_A]`; the published version is **unsynced-on-create**, so `handleDefaultBranchPublish` returns early and seeds **no** continuity draft (same as §9) — 0 drafts remain after publish |
+| New draft | Create draft from `v1` (`replace:true`) → `d2` | `d2` is a clean copy of v1 (`[comp_A]` / `[query_A]`); it's the editing version. The test uses the atomic `replace:true` path throughout (with no continuity draft, `replace:false` would also succeed here) |
 | Edit draft | Add `comp_B` + `query_B` to `d2` | `d2` = `[comp_A, comp_B]` / `[query_A, query_B]` |
 | Stamp staleness | Set `git_tree_sha` to a non-null value on both `d2` (draft being replaced) and `v1` (source version) | — |
 | **Patch (replace)** | Create draft from `v1` (`replace:true`) → `d3` | `d2` is **deleted**; `d3` is a clean copy of v1 (`[comp_A]` / `[query_A]`) — the uncommitted `comp_B`/`query_B` are **discarded**; `d3` is the editing version; `d3.git_tree_sha` is **NULL** (never-materialized) so a later `pull latest` / app-open refreshes it instead of skipping |
@@ -497,12 +497,13 @@ stored on **pull**. A version's per-resource `git_tree_sha` is stamped when the 
 **materialized** — a pull that imports a fresh stub, or an app-open hydration — and by **push** (so
 just-pushed content reads as in-sync and isn't re-hydrated); a changed-but-unopened app therefore keeps
 a null/stale `git_tree_sha` until it's opened, so this test opens the app before asserting its per-app
-token. The observable effect of a skip is that the pull's orphan sweep — which marks `is_synced=false`
-any default-branch DB resource absent from git — does NOT run for the skipped scope, so a manufactured
-orphan survives as `is_synced=true`. The orphan sweep is gated to the DEFAULT branch, so these tests
-operate on `main` (content lands via admin `/merge`). This test asserts the tokens get stored on pull
-and that a second pull with an unchanged remote HEAD skips the whole pull (a manufactured orphan stays
-`is_synced=true`).
+token. The observable effect of a skip is that the pull's orphan sweep — which DELETES the branch versions
+of a synced default-branch app absent from git (apps row kept; data sources are deactivated instead, see
+§30) — does NOT run for the skipped scope, so a manufactured synced orphan survives untouched
+(`is_synced=true`, row present). The orphan sweep is gated to the DEFAULT branch, so these tests operate on
+`main` (content lands via admin `/merge`). This test asserts the tokens get stored on pull and that a second
+pull with an unchanged remote HEAD skips the whole pull (the orphan survives); its **control** step clears
+the tokens, forcing a full pull that DELETES the orphan app's branch versions.
 
 ## 11. Pull skip — category-level skip (`it: skips the datasource category when data-sources/ tree SHA is unchanged despite a moved HEAD`)
 
@@ -511,7 +512,7 @@ even when the whole-pull skip does NOT fire (branch HEAD moved). HEAD is moved v
 write of a top-level file (touches neither `apps/` nor `data-sources/`), so `data-sources/`'s tree SHA
 is byte-identical → `pullDataSources` returns early → the datasource orphan sweep is skipped → a
 manufactured DS orphan survives. Clearing only the DS token then forces the sweep, isolating the
-category skip as the cause.
+category skip as the cause; the forced run then DEACTIVATES the orphan DSV (`is_active=false`, see §30).
 
 ## 12. Push serialization — no DB internals in pushed files (`it: omits created_at / updated_at / git_tree_sha from pushed app version files`)
 
@@ -592,10 +593,10 @@ Fixes (`ee/git-sync/workspace-git-sync-adapter.ts`):
   serializes **every active DSV** on the branch instead of synced-only — so a freshly created, still-unsynced
   data source is committed by the default push (case 4) instead of being silently dropped and lost on merge.
 
-Related fix (`src/modules/data-sources/util.service.ts`): a branch DSV is marked `is_synced=true` on
-create **only in single-branch** mode; multi-branch feature-branch data sources stay **unsynced** so they
-remain pushable (mirrors the unsynced-on-create rule for apps/modules). This is what makes cases 2–4
-land the new DS in git and keeps the sync indicator honest.
+Related invariant (`src/modules/data-sources/util.service.ts`): a branch DSV is **unsynced on create in
+every mode** — single-branch default included — matching the unsynced-on-create rule for apps/modules, so a
+freshly created data source stays pushable. This is what makes cases 2–4 land the new DS in git and keeps
+the sync indicator honest.
 
 ## 18. Single-branch lifecycle — push/pull apps, modules, data sources (`it: pushes and pulls apps, modules, and data sources directly on the (unprotected) single-branch default`)
 
@@ -800,52 +801,63 @@ separate host-free spec: `test/modules/apps/e2e/slug-update.e2e-spec.ts`. **Mirr
 ## 29. `is_synced` lifecycle invariant (`describe: is_synced lifecycle invariant (in git ⇔ is_synced=true)`)
 
 The single invariant the sync indicator is derived from: **a resource is `is_synced=true` iff it currently
-exists in git.** Each `it` uses a FRESH isolated org (config mode differs per case) and, for git-on cases,
-resets the shared repo + configures git inside the test (mirrors §14/§18). `is_synced` is read straight
-from the DB (`app_versions.is_synced` / `data_source_versions.is_synced`). **GitHub spec only** (no GitLab
-mirror). Cases 4 and 5 are **TDD-RED** — no flip-`is_synced=false`-on-edit hook exists yet, so they fail on
-the post-edit assertion until that lands; the surrounding steps document the full intended sequence.
+exists in git** (i.e. it was pushed). `is_synced` tracks git *presence*, not byte-for-byte content parity, so a
+local edit of a synced resource does **not** flip it — there is deliberately no flip-on-edit hook. Each `it`
+uses a FRESH isolated org (config mode differs per case) and, for git-on cases, resets the shared repo +
+configures git inside the test (mirrors §14/§18). `is_synced` is read straight from the DB
+(`app_versions.is_synced` / `data_source_versions.is_synced`). **Mirrored in `git-sync-gitlab.spec.ts`**
+(`GITLAB_PAYLOAD`, `-gl` emails).
 
 | # | `it` | Expected | Status |
 |---|------|----------|--------|
 | 1 | git-off: created app + module + data source | all `is_synced=false` (nothing is in git) | GREEN |
 | 2 | multi-branch: feature-branch resource unsynced on create, synced after `gitpush`, still synced after merge→main + pull | `false` → `true` → `true` | GREEN |
 | 3 | single-branch: resource unsynced on create, synced after a direct push to the (unprotected `single-branch-main`) default | `false` → `true` | GREEN |
-| 4 | single-branch: **editing** a synced resource flips `is_synced=false`, then a pull (still in git) restores `true` | edit → `false`; pull → `true` | **RED** (flip-on-edit not implemented) |
-| 5 | multi-branch: **editing** a synced resource on a feature branch flips `is_synced=false`, then a pull restores `true` | edit → `false`; pull → `true` | **RED** (same gap) |
-| 6 | a synced app carries its connected data source (linked via a query) + referenced module (via a ModuleViewer) into git on push | host version, linked DSV, and module version all `is_synced=true` | GREEN |
+| 4 | single-branch: **editing** a synced resource does NOT flip `is_synced` (stays `true`) — `is_synced` tracks git presence, not local divergence | edit → still `true` | GREEN |
+| 5 | a synced app carries its connected data source (linked via a query) + referenced module (via a ModuleViewer) into git on push; a pull then reconciles the linked DSV synced | host version, linked DSV, and module version all `is_synced=true` | GREEN |
 
 Reuses: §18 single-branch config + `gitpush` + component-add; §14 reconcile-on-pull; the ModuleViewer
 `moduleAppId = <module co_relation_id>` reference and the query-linking pattern from §19/§27.
 
 ## 30. Delete-on-pull + `in_use` conflict guard (`describe: pull deletes synced resources removed from git (with in_use guard)`)
 
-**TARGET behavior — mostly TDD-RED.** Today a synced default-branch resource absent from git is only marked
-`is_synced=false` on pull (`removeOrphanedResources`, `pull.service.ts:649`; the CURRENT behavior asserted by
-§61–63). These tests pin the intended behavior: a **synced** resource removed from git (merged to the default
-branch) is **deleted** on the next pull; an **unsynced** never-pushed local resource is **kept**; and if a
-to-be-deleted resource is still referenced/connected, the whole pull **aborts with a 409 `in_use`** and
-nothing is deleted. Orphans are manufactured with the §61 SQL technique (create on a feature branch, move the
-version/DSV onto the default branch as `is_synced=true` + a fake `git_tree_sha`, clear the branch pull-skip
-tokens) so the resource is a synced default-branch row absent from git's (empty, post-reset) meta. FRESH org
-per `it`. **GitHub spec only.**
+**Implemented behavior.** A synced default-branch resource that is absent from git (removed via a merge to the
+default branch) is reconciled on the next pull, gated to `is_synced=true` rows — unsynced local work is kept.
+The **delete shape differs by resource type**, matching the code:
+- **App / module** — the branch's `AppVersion` rows are **deleted** (children cascade); the parent `apps`
+  row is **kept** (`removeOrphanedResources`, `pull.service.ts` — "The App row itself is never deleted").
+- **Data source** — the branch DSV is **deactivated** (`is_active=false`, row kept; `is_synced` untouched)
+  by the `deserializeDataSources` orphan sweep in `workspace-git-sync-adapter.ts`.
+- If the resource is still **referenced/connected** by another app/module, the whole pull **aborts with a
+  409 `in_use`** (`GitConflictDetectionService.detectPullConflicts` → `collect*InUseConflicts`) and nothing
+  is reconciled.
 
-| # | `it` | Expected (target) | Status |
-|---|------|-------------------|--------|
-| 1 | a synced app removed from git → pull `main` | `apps` + `app_versions` rows **deleted**; `GET /api/apps/:id` → 404 | **RED** (today: kept, `is_synced=false`) |
-| 2 | a synced module and a synced data source removed from git → pull | module rows + data source rows **deleted** | **RED** |
-| 3 | an unsynced (never-pushed) local resource absent from git → pull | **kept**; still `is_synced=false` (delete applies only to `is_synced=true`) | GREEN |
-| 4 | a synced module removed from git but still referenced by another app's ModuleViewer → pull | **409**; `conflictGroups` contains `{ type: 'module', conflictField: 'in_use' }`; module NOT deleted (whole pull aborts) | **RED** |
-| 5 | a synced data source removed from git but still connected to an app via a query → pull | **409**; `conflictGroups` contains `{ type: 'datasource', conflictField: 'in_use' }`; data source NOT deleted | **RED** |
-| 6 | after deleting the referencing app, clear tokens, re-pull | first pull **409**; re-pull **201** and the now-unreferenced module is **deleted** | **RED** |
+Orphans are manufactured with the §61 SQL technique (create on a feature branch, move the version/DSV onto the
+default branch as `is_synced=true` + a fake `git_tree_sha`, clear the branch pull-skip tokens) so the resource
+is a synced default-branch row absent from git's (empty, post-reset) meta. FRESH org per `it`. **Mirrored in
+`git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`, `-gl` emails).
 
-The `in_use` reference is wired the canonical way the future guard will read it: a ModuleViewer whose
+| # | `it` | Expected | Status |
+|---|------|----------|--------|
+| 1 | a synced app removed from git → pull `main` | branch `app_versions` **deleted**; `apps` row **kept** | GREEN |
+| 2 | a synced module removed from git → pull | module branch versions **deleted** (apps row kept). (DS orphan **deactivation** is covered by §11 — the deserialize sweep needs a real `data-sources/` tree in git, which an empty-repo manufacture doesn't provide.) | GREEN |
+| 3 | an unsynced (never-pushed) local resource absent from git → pull | **kept**; still `is_synced=false` (reconcile applies only to `is_synced=true`) | GREEN |
+| 4 | a synced module removed from git but still referenced by another app's ModuleViewer → pull | **409**; `conflictGroups` contains `{ type: 'module', label: 'Module in use', conflictField: 'in_use' }`; nothing reconciled | GREEN |
+| 5 | a synced data source removed from git but still connected to an app via a query → pull | **409**; `conflictGroups` contains `{ type: 'datasource', label: 'Data source in use', conflictField: 'in_use' }` | GREEN |
+| 6 | after deleting the referencing app, clear tokens, re-pull | first pull **409** (module version survives); re-pull **201** and the module's branch versions are **deleted** | GREEN |
+
+The `in_use` reference is wired the way the guard reads it: a ModuleViewer whose
 `properties.moduleAppId.value` is the orphan module's `co_relation_id` (matching
-`src/modules/data-queries/repository.ts:75`), and a data query whose `data_source_id` points at the orphan
-data source. The consumer app is kept as an unsynced local row on `main` so it survives the pull and its
-reference stays live. Tests assert behavior (status + `conflictGroups` shape), not internals, so they remain
-valid regardless of how the delete/guard code lands. Existing reusable detector for the eventual
-implementation: `checkModuleVersionInUse` (`src/modules/versions/util.service.ts:628`).
+`src/modules/data-queries/repository.ts:75` and `git-conflict-detection.service.ts` `findModulesInUse`), and a
+data query whose `data_source_id` points at the orphan data source (`findDataSourcesInUse`). The consumer app
+is kept as an unsynced local row on `main` so it survives the pull and its reference stays live.
+
+> **Updated §61–63 + §10/§11 to this behavior.** Those steps previously asserted the *old* "orphan marked
+> `is_synced=false`, not deleted" behavior and were stale against the committed delete/deactivate code. They
+> now assert the shape above: §61/§62 (app/module orphan) → branch versions deleted, apps row kept; §63 (data
+> source orphan) → DSV deactivated (`is_active=false`, row kept). The pull-skip specs keep their skip coverage
+> and only their *control* step (the forced full/category pull) was updated — §10 → orphan app deleted, §11 →
+> orphan DSV deactivated.
 
 ## 21. Inbound webhooks → auto-sync (`test/modules/git-sync-webhooks/`)
 

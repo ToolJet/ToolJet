@@ -3330,14 +3330,13 @@ describe('GitSyncController', () => {
         expect(aAfterDelete).toHaveLength(1);
         expect(aAfterDelete[0].is_active).toBe(false);
 
-        step(61, 'orphan APP on default branch: pull marks is_synced=false (not deleted), GET reflects it');
-        // 64. New orphan flow. An app row that lives on the default branch but is
-        //     absent from git is NOT removed on pull — it is marked is_synced=false
-        //     so it behaves like a never-synced (pre-git) app. Setup mirrors the old
-        //     orphan steps: create on a feature branch, SQL-move the version onto main
-        //     as a synced (is_synced=true) default-branch row. Pull main: the orphan
-        //     sweep flips is_synced→false, the row survives, and GET /api/apps/:id
-        //     reflects is_synced=false on the editing version.
+        step(61, 'orphan APP on default branch: pull DELETES the synced orphan branch versions (apps row kept)');
+        // 64. Orphan delete flow. A SYNCED app version that lives on the default branch
+        //     but is absent from git is DELETED on pull (removeOrphanedResources): the
+        //     branch's app_versions rows are removed (children cascade); the parent apps
+        //     row is deliberately kept. Setup: create on a feature branch, SQL-move the
+        //     version onto main as a synced (is_synced=true) default-branch row. Pull
+        //     main → the branch versions are gone, the apps row survives.
         await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
@@ -3414,51 +3413,18 @@ describe('GitSyncController', () => {
           .send({ branchId: mainBranchId })
           .expect(201);
 
-        // Row survives (not deleted) and is now unsynced.
+        // The branch's app_versions rows are DELETED (children cascade); the apps row is kept.
         const orphanAppAfter = await dataSource.query(
           `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2`,
           [orphanSyncedAppId, mainBranchId]
         );
-        expect(orphanAppAfter).toHaveLength(1);
-        expect(orphanAppAfter[0].is_synced).toBe(false);
+        expect(orphanAppAfter).toHaveLength(0);
+        const orphanAppRowAfter = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [orphanSyncedAppId]);
+        expect(orphanAppRowAfter).toHaveLength(1);
 
-        const orphanAppDetail = await request
-          .agent(app.getHttpServer())
-          .get(`/api/apps/${orphanSyncedAppId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .expect(200);
-        const orphanAppEditing =
-          orphanAppDetail.body?.editing_version ||
-          orphanAppDetail.body?.editingVersion ||
-          orphanAppDetail.body?.app?.editing_version;
-        expect(orphanAppEditing).toBeDefined();
-        expect(orphanAppEditing.is_synced ?? orphanAppEditing.isSynced).toBe(false);
-
-        // App-object level: after the orphan sweep flips the version is_synced=false, the
-        // app has no synced version on the branch → is_app_synced must be false too (the
-        // app survives in the list, just unsynced).
-        const orphanListAfter = await request
-          .agent(app.getHttpServer())
-          .get('/api/apps')
-          .query({
-            page: 1,
-            folder: '',
-            searchKey: '',
-            type: 'front-end',
-            branch_id: mainBranchId,
-          })
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .expect(200);
-        const orphanAppInListAfter = orphanListAfter.body.apps.find((a: any) => a.id === orphanSyncedAppId);
-        expect(orphanAppInListAfter).toBeDefined();
-        expect(orphanAppInListAfter.is_app_synced ?? orphanAppInListAfter.isAppSynced).toBe(false);
-
-        step(62, 'orphan MODULE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
-        // 65. Module variant of step 64. Modules are App rows (type='module') and use
-        //     the same GET /api/apps/:id surface, so the assertions match.
+        step(62, 'orphan MODULE on default branch: pull DELETES the synced orphan branch versions (apps row kept)');
+        // 65. Module variant of step 64. Modules are App rows (type='module') and go
+        //     through the same removeOrphanedResources delete path.
         await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
@@ -3508,31 +3474,19 @@ describe('GitSyncController', () => {
           .send({ branchId: mainBranchId })
           .expect(201);
 
+        // Module branch versions DELETED (cascade); the apps row (type='module') is kept.
         const orphanModAfter = await dataSource.query(
           `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2`,
           [orphanSyncedModId, mainBranchId]
         );
-        expect(orphanModAfter).toHaveLength(1);
-        expect(orphanModAfter[0].is_synced).toBe(false);
+        expect(orphanModAfter).toHaveLength(0);
+        const orphanModRowAfter = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [orphanSyncedModId]);
+        expect(orphanModRowAfter).toHaveLength(1);
 
-        const orphanModDetail = await request
-          .agent(app.getHttpServer())
-          .get(`/api/apps/${orphanSyncedModId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .query({ branch_id: mainBranchId })
-          .expect(200);
-        const orphanModEditing =
-          orphanModDetail.body?.editing_version ||
-          orphanModDetail.body?.editingVersion ||
-          orphanModDetail.body?.app?.editing_version;
-        expect(orphanModEditing).toBeDefined();
-        expect(orphanModEditing.is_synced ?? orphanModEditing.isSynced).toBe(false);
-
-        step(63, 'orphan DATA SOURCE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
+        step(63, 'orphan DATA SOURCE on default branch: pull DEACTIVATES the synced orphan DSV (is_active=false)');
         // 66. Data-source variant. Create a DS on a feature branch, SQL-move its DSV
-        //     onto main as synced; pull main flips is_synced→false (the DSV is kept,
-        //     not deactivated/deleted) and GET /api/data-sources reflects it.
+        //     onto main as synced; pull main runs the deserialize orphan sweep, which
+        //     DEACTIVATES the DSV (is_active=false, row kept) rather than deleting it.
         await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
@@ -3580,23 +3534,18 @@ describe('GitSyncController', () => {
           .send({ branchId: mainBranchId })
           .expect(201);
 
+        // The orphan DSV is DEACTIVATED by the deserialize orphan sweep (is_active=false); the
+        // row is kept and its is_synced flag is left untouched. The data_sources row survives.
         const orphanDsAfter = await dataSource.query(
-          `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+          `SELECT is_active FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
           [orphanSyncedDsId, mainBranchId]
         );
         expect(orphanDsAfter).toHaveLength(1);
-        expect(orphanDsAfter[0].is_synced).toBe(false);
-
-        const orphanDsListResp = await request
-          .agent(app.getHttpServer())
-          .get(`/api/data-sources/${orgId}?branch_id=${mainBranchId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .expect(200);
-        const orphanDsList = orphanDsListResp.body.data_sources || orphanDsListResp.body.dataSources || [];
-        const orphanDsRow = orphanDsList.find((ds: any) => ds.id === orphanSyncedDsId);
-        expect(orphanDsRow).toBeDefined();
-        expect(orphanDsRow.is_synced ?? orphanDsRow.isSynced).toBe(false);
+        expect(orphanDsAfter[0].is_active).toBe(false);
+        const orphanDsRowAfter = await dataSource.query(`SELECT id FROM data_sources WHERE id = $1`, [
+          orphanSyncedDsId,
+        ]);
+        expect(orphanDsRowAfter).toHaveLength(1);
 
         // ------------------------------------------------------------------
         // App-meta propagation across all default-branch versions
@@ -4241,8 +4190,7 @@ describe('GitSyncController', () => {
         // Single-branch (branching disabled) default-branch resource flow:
         //   - app / module / data source can be created directly on the DEFAULT branch
         //     (multi-branch rejects create-on-default; single-branch allows it),
-        //   - in single-branch mode the default branch IS the working branch, so those
-        //     freshly created resources are marked synced-on-create and are still
+        //   - freshly created resources are is_synced=FALSE on create (in every mode) and are
         //     push-eligible (the DS is linked to the app via a query, so it would ride along
         //     in the app's push commit).
         // The actual git transport (direct push to the default branch) can't be exercised here:
@@ -4361,7 +4309,7 @@ describe('GitSyncController', () => {
         // single-branch behaviour at the app/authorization layer instead: create-on-default is
         // allowed (step 81), and the unsynced app/module/data-source sit on the default branch,
         // unsynced, and are push-eligible.
-        step(82, 'single-branch: synced app on the default branch is push-eligible (validate-push)');
+        step(82, 'single-branch: unsynced app on the default branch is push-eligible (validate-push)');
         const sbValidatePush = await request
           .agent(app.getHttpServer())
           .get(`/api/app-git/validate-push/${sbAppId}`)
@@ -4371,11 +4319,12 @@ describe('GitSyncController', () => {
           .expect(200);
         expect(sbValidatePush.body).toEqual({ valid: true });
 
-        step(83, 'single-branch: app/module/data-source live on the DEFAULT branch, synced, with the DS linked');
-        // App + module versions: default branch, DRAFT, SYNCED. In single-branch mode the default
-        // branch IS the working branch, so newly created apps/modules/data-sources are marked
-        // is_synced=true on create (AppsService.create + DataSourcesUtilService.create flip the
-        // default-branch DRAFT/VERSION row to synced when git is on and branching is off).
+        step(83, 'single-branch: app/module/data-source live on the DEFAULT branch, UNSYNCED, with the DS linked');
+        // App + module versions: default branch, DRAFT, and is_synced=FALSE. A brand-new resource
+        // has never been committed, so it starts unsynced on create in EVERY mode — git-off,
+        // multi-branch feature, and single-branch default alike (AppsService.create /
+        // DataSourcesUtilService.create keep it is_synced=false regardless of git being enabled).
+        // Only a push (or a pull that materializes it) flips is_synced=true.
         const sbVersionRows = await dataSource.query(
           `SELECT id, branch_id, status, is_synced FROM app_versions WHERE id = ANY($1)`,
           [[sbAppVersionId, sbModuleVersionId]]
@@ -4383,15 +4332,15 @@ describe('GitSyncController', () => {
         expect(sbVersionRows).toHaveLength(2);
         expect(sbVersionRows.every((r: any) => r.branch_id === mainBranchId)).toBe(true);
         expect(sbVersionRows.every((r: any) => r.status === 'DRAFT')).toBe(true);
-        expect(sbVersionRows.every((r: any) => r.is_synced === true)).toBe(true);
+        expect(sbVersionRows.every((r: any) => r.is_synced === false)).toBe(true);
 
-        // Data source: a synced DSV on the default branch, linked to the app via a query
+        // Data source: an UNSYNCED DSV on the default branch, linked to the app via a query
         // (this is what serializeLinkedDataSourcesForApp would carry into the app's push commit).
         const [sbDsvRow] = await dataSource.query(
           `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
           [sbDsId, mainBranchId]
         );
-        expect(sbDsvRow?.is_synced).toBe(true);
+        expect(sbDsvRow?.is_synced).toBe(false);
         const [sbQueryLink] = await dataSource.query(
           `SELECT 1 AS linked FROM data_queries WHERE data_source_id = $1 AND app_version_id = $2`,
           [sbDsId, sbAppVersionId]
@@ -6235,10 +6184,9 @@ describe('GitSyncController', () => {
         step(3, 'gitpush app + module, workspace-push the data source (all to the default branch)');
         await gitpush(appId, appCtx.versionId, 'sb-app', defaultBranchId).expect(201);
         await gitpush(moduleId, moduleCtx.versionId, 'sb-module', defaultBranchId).expect(201);
-        // Single-branch mode auto-marks a newly-created DS is_synced=true (hides the sync
-        // indicator), so it belongs to the SYNCED set. Push it via the synced path (omit
-        // onlyUnsynced) — mirrors the delete push below. onlyUnsynced=true would serialize the
-        // is_synced=false set and skip this DS entirely.
+        // A newly-created DS is is_synced=false (unsynced on create in every mode). The no-flag
+        // scope='datasource' push serializes EVERY active DSV on the branch (not just the unsynced
+        // set), so it commits this DS — mirrors the delete push below.
         await pushWorkspace(defaultBranchId, 'push sb data source', 'datasource').expect(201);
 
         // ── 4. assert all three resources landed in git on the default branch ────────────
@@ -8420,10 +8368,10 @@ describe('GitSyncController', () => {
           )[0]?.page_id;
 
         // ── Draft from v1 (replace), then add 1 more component + query ───────
-        // In single-branch git-sync mode the app is synced-on-create, so publishing v1 seeds a
-        // SYNCED continuity draft on the default branch. The single-draft rule then forbids a second
-        // draft (POST versions with replace:false → 400 "Only one draft version is allowed when
-        // branching is enabled"), so this draft-from-saved-version must REPLACE the continuity draft.
+        // The app is unsynced-on-create (in every mode), so publishing v1 seeds NO continuity draft
+        // (handleDefaultBranchPublish returns early for is_synced=false). This test exercises the
+        // atomic replace path (replace:true) end-to-end regardless — the meaningful replace happens
+        // at the later d2 → d3 patch step, where the uncommitted comp_B/query_B are discarded.
         const d2Resp = await createDraftFrom(appId, v1Id, v1Ctx.envId, true);
         const d2Id: string = d2Resp.body.id;
         expect(await componentNames(d2Id)).toEqual(['comp_A']); // clean copy of v1
@@ -9889,7 +9837,7 @@ describe('GitSyncController', () => {
         // CONTROL — clearing the tokens forces a full pull, which DOES sweep the
         // orphan. This isolates the skip as the sole reason it survived above.
         // ══════════════════════════════════════════════════════════════════════
-        step(7, 'clear skip tokens on main → pull runs in full → the same orphan is now swept (is_synced=false)');
+        step(7, 'clear skip tokens on main → pull runs in full → the synced orphan is now deleted');
         await psDataSource.query(
           `UPDATE organization_git_sync_branches
              SET last_synced_commit = NULL, apps_git_tree_sha = NULL, modules_git_tree_sha = NULL, data_sources_git_tree_sha = NULL
@@ -9897,12 +9845,15 @@ describe('GitSyncController', () => {
           [mainBranchId]
         );
         await pull(mainBranchId).expect(201);
+        // Full pull ran the orphan sweep: a synced default-branch app absent from git has its
+        // branch versions DELETED (removeOrphanedResources; the apps row itself is kept).
         const orphanAfterFull = await psDataSource.query(
           `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2`,
           [orphanAppId, mainBranchId]
         );
-        expect(orphanAfterFull).toHaveLength(1);
-        expect(orphanAfterFull[0].is_synced).toBe(false);
+        expect(orphanAfterFull).toHaveLength(0);
+        const orphanAppRowAfterFull = await psDataSource.query(`SELECT id FROM apps WHERE id = $1`, [orphanAppId]);
+        expect(orphanAppRowAfterFull).toHaveLength(1);
 
         // And the full pull re-stamped the branch tokens (skipping resumes next time).
         const restamped = await branchTokens(mainBranchId);
@@ -10042,6 +9993,14 @@ describe('GitSyncController', () => {
               [dsId, branchId]
             )
           )[0]?.is_synced;
+        // The DS orphan sweep deactivates the branch DSV (is_active=false); is_synced is left as-is.
+        const dsActive = async (dsId: string, branchId: string) =>
+          (
+            await catDataSource.query(
+              `SELECT is_active FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+              [dsId, branchId]
+            )
+          )[0]?.is_active;
 
         // ══════════════════════════════════════════════════════════════════════
         step(1, 'reset gitea repo, configure git + branching, resolve main branch, pull main');
@@ -10118,8 +10077,10 @@ describe('GitSyncController', () => {
           [mainBranchId]
         );
         await pull(mainBranchId).expect(201);
-        // Now the category ran: the orphan (absent from git) is marked unsynced, the real DS stays synced.
-        expect(await dsSynced(orphanDsId, mainBranchId)).toBe(false);
+        // Now the category ran: the orphan (absent from git) is DEACTIVATED by the deserialize
+        // orphan sweep (is_active=false, row kept); the real in-git DS stays active + synced.
+        expect(await dsActive(orphanDsId, mainBranchId)).toBe(false);
+        expect(await dsActive(realDsId, mainBranchId)).toBe(true);
         expect(await dsSynced(realDsId, mainBranchId)).toBe(true);
       }, 600000);
     });
@@ -10346,16 +10307,13 @@ describe('GitSyncController', () => {
     // ────────────────────────────────────────────────────────────────────────────
     // is_synced lifecycle invariant — "a resource is is_synced=true IFF it is in git".
     // Consolidates the sync-flag contract across every git/branching state into one
-    // place and asserts the flip semantics the sync indicator relies on:
+    // place. is_synced tracks git PRESENCE (was pushed), not byte-for-byte parity:
     //   • git-off create → is_synced=false (nothing is in git)
     //   • push → is_synced=true; merge+pull keep it true
-    //   • edit a synced resource → is_synced=false (local divergence from git)
-    //   • pull (resource still in git) → is_synced=true again (reconcile)
+    //   • edit a synced resource → is_synced STAYS true (no flip-on-edit by design)
     //   • a synced app carries every connected resource (data source + module) into git
     // Each `it` uses a FRESH isolated org (config mode differs per case) and resets the
-    // shared repo, mirroring §14/§18. The two edit→false flip cases are TDD-RED: no
-    // flip-on-edit hook exists yet, so they fail on the post-edit assertion until the
-    // implementation lands. Against the real Gitea (@group gitsync).
+    // shared repo, mirroring §14/§18. Against the real Gitea (@group gitsync).
     // ────────────────────────────────────────────────────────────────────────────
     describe('is_synced lifecycle invariant (in git ⇔ is_synced=true)', () => {
       const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
@@ -10422,10 +10380,12 @@ describe('GitSyncController', () => {
               gitVersionName: gitBranchName,
               sourceBranch: gitBranchName,
             });
+        // Adds a Button component and asserts the 201 internally (returns Promise<void>),
+        // so callers `await ctx.addButton(...)` without chaining `.expect`.
         const addButton = async (appId: string, versionId: string, pageId: string, xBranchId: string) => {
           const { randomUUID } = await import('crypto');
           const btnId = randomUUID();
-          return auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+          await auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/components`))
             .query({ branch_id: xBranchId })
             .send({
               is_user_switched_version: false,
@@ -10445,7 +10405,8 @@ describe('GitSyncController', () => {
                   styles: {},
                 },
               },
-            });
+            })
+            .expect(201);
         };
         const merge = async (source: string, target: string) => {
           const resp = await fetch(MERGE_URL, {
@@ -10587,7 +10548,7 @@ describe('GitSyncController', () => {
             .expect(201)
         ).body.id;
         const featCtx = await ctx.editingVersionOf(appId, featBranchId);
-        await ctx.addButton(appId, featCtx.versionId, featCtx.pageId, featBranchId).expect(201);
+        await ctx.addButton(appId, featCtx.versionId, featCtx.pageId, featBranchId);
         expect(await ctx.versionSynced(featCtx.versionId)).toBe(false);
 
         step(3, 'gitpush the app onto the feature branch → is_synced=true');
@@ -10616,7 +10577,7 @@ describe('GitSyncController', () => {
             .expect(201)
         ).body.id;
         const appCtx = await ctx.editingVersionOf(appId, defaultBranchId);
-        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId).expect(201);
+        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId);
         expect(await ctx.versionSynced(appCtx.versionId)).toBe(false);
 
         step(3, 'gitpush directly to the default branch → is_synced=true');
@@ -10624,12 +10585,12 @@ describe('GitSyncController', () => {
         expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
       }, 300000);
 
-      // CASE 4 (TDD-RED) — single-branch flip. Editing a synced resource must flip
-      // is_synced=false (it now diverges from git); a subsequent pull (still in git)
-      // restores is_synced=true. The post-edit assertion is RED: no flip-on-edit hook
-      // exists yet, so is_synced stays true after the edit until the code lands.
-      it('single-branch: editing a synced resource flips is_synced=false, and a pull restores is_synced=true', async () => {
-        const ctx = await makeCtx('inv-sb-flip@tooljet.io');
+      // CASE 4 — editing a synced resource does NOT flip is_synced. `is_synced` tracks
+      // whether the resource exists in git (was pushed), not whether the local content
+      // still matches git byte-for-byte, so a local edit leaves it is_synced=true. (There
+      // is deliberately no flip-on-edit hook.)
+      it('single-branch: editing a synced resource does NOT flip is_synced (stays true)', async () => {
+        const ctx = await makeCtx('inv-sb-noflip@tooljet.io');
         step(1, 'configure git (single-branch), create + push an app → synced');
         const defaultBranchId = await ctx.configureGit('single-branch-main', false);
         const appId: string = (
@@ -10640,53 +10601,16 @@ describe('GitSyncController', () => {
             .expect(201)
         ).body.id;
         const appCtx = await ctx.editingVersionOf(appId, defaultBranchId);
-        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId).expect(201);
+        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId);
         await ctx.gitpush(appId, appCtx.versionId, 'inv-sbf-app', 'single-branch-main', defaultBranchId).expect(201);
         expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
 
-        step(2, 'edit the synced resource (add a component) → is_synced flips to false');
-        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId).expect(201);
-        expect(await ctx.versionSynced(appCtx.versionId)).toBe(false);
-
-        step(3, 'pull the default branch → the resource is still in git → is_synced restored to true');
-        await ctx.pull(defaultBranchId).expect(201);
+        step(2, 'edit the synced resource (add a component) → is_synced stays true (no flip on edit)');
+        await ctx.addButton(appId, appCtx.versionId, appCtx.pageId, defaultBranchId);
         expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
       }, 300000);
 
-      // CASE 5 (TDD-RED) — same flip on a multi-branch feature branch (feature-branch
-      // edits are allowed). Post-edit assertion is RED for the same missing hook.
-      it('multi-branch: editing a synced resource on a feature branch flips is_synced=false, and a pull restores it', async () => {
-        const ctx = await makeCtx('inv-mb-flip@tooljet.io');
-        step(1, 'configure git + branching, feature branch, create + push an app → synced');
-        const mainBranchId = await ctx.configureGit('main', true);
-        await ctx
-          .auth(ctx.agent().post('/api/workspace-branches'))
-          .query({ branch_id: mainBranchId })
-          .send({ name: 'feat-inv-flip', sourceBranchId: mainBranchId })
-          .expect(201);
-        const featBranchId = await ctx.branchIdByName('feat-inv-flip', mainBranchId);
-        const appId: string = (
-          await ctx
-            .auth(ctx.agent().post('/api/apps'))
-            .query({ branch_id: featBranchId })
-            .send({ icon: 'home', name: 'inv-mbf-app', type: 'front-end', branchId: featBranchId })
-            .expect(201)
-        ).body.id;
-        const featCtx = await ctx.editingVersionOf(appId, featBranchId);
-        await ctx.addButton(appId, featCtx.versionId, featCtx.pageId, featBranchId).expect(201);
-        await ctx.gitpush(appId, featCtx.versionId, 'inv-mbf-app', 'feat-inv-flip', featBranchId).expect(201);
-        expect(await ctx.versionSynced(featCtx.versionId)).toBe(true);
-
-        step(2, 'edit the synced feature-branch resource → is_synced flips to false');
-        await ctx.addButton(appId, featCtx.versionId, featCtx.pageId, featBranchId).expect(201);
-        expect(await ctx.versionSynced(featCtx.versionId)).toBe(false);
-
-        step(3, 'pull the feature branch → resource still in git → is_synced restored to true');
-        await ctx.pull(featBranchId).expect(201);
-        expect(await ctx.versionSynced(featCtx.versionId)).toBe(true);
-      }, 300000);
-
-      // CASE 6 (GREEN) — a synced app carries EVERY connected resource into git: a linked
+      // CASE 5 (GREEN) — a synced app carries EVERY connected resource into git: a linked
       // global data source (via a query) and a referenced module (via a ModuleViewer)
       // ride into the push, so both read is_synced=true afterwards.
       it('a synced app carries its connected data source and module into git (all become is_synced=true)', async () => {
@@ -10772,10 +10696,14 @@ describe('GitSyncController', () => {
           })
           .expect(201);
 
-        step(4, 'gitpush the host app + module → the connected resources ride into git and become synced');
+        step(4, 'gitpush the host app + module → the connected resources ride into git');
         const moduleCtx = await ctx.editingVersionOf(moduleId, featBranchId);
         await ctx.gitpush(moduleId, moduleCtx.versionId, 'inv-conn-module', 'feat-inv-conn', featBranchId).expect(201);
         await ctx.gitpush(appId, appCtx.versionId, 'inv-conn-host', 'feat-inv-conn', featBranchId).expect(201);
+        // The push commits the linked data source's file, but its DSV is_synced flag is only
+        // reconciled on a pull (reconcileSyncedDataSourceVersions) — push flips the pushed
+        // app/module versions synced, not the carried DS. Pull the feature branch to settle it.
+        await ctx.pull(featBranchId).expect(201);
 
         step(5, 'assert the host, its linked data source and its referenced module are all is_synced=true');
         expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
@@ -10785,18 +10713,18 @@ describe('GitSyncController', () => {
     });
 
     // ────────────────────────────────────────────────────────────────────────────
-    // Delete-on-pull + in_use conflict guard (TARGET behavior; mostly TDD-RED).
+    // Delete-on-pull + in_use conflict guard (implemented behavior).
     //
-    // Today a synced default-branch resource that is absent from git is only marked
-    // is_synced=false on pull (removeOrphanedResources, pull.service.ts:649 — asserted
-    // as the CURRENT behavior by §61-63). The TARGET behavior these tests pin:
-    //   • a SYNCED resource removed from git (merged to the default branch) is DELETED
-    //     on the next pull — not just unsynced;
-    //   • an UNSYNCED, never-pushed local resource absent from git is KEPT (delete
-    //     applies only to is_synced=true rows) — this case is GREEN today;
-    //   • if a resource that would be deleted is still referenced/connected by another
+    // A synced default-branch resource absent from git is reconciled on pull, gated to
+    // is_synced=true rows (unsynced local work is kept). The delete shape differs by type:
+    //   • APP / MODULE — branch AppVersion rows are DELETED (children cascade); the
+    //     parent apps row is KEPT (removeOrphanedResources).
+    //   • DATA SOURCE — the branch DSV is DEACTIVATED (is_active=false, row kept) by the
+    //     deserializeDataSources orphan sweep.
+    //   • an UNSYNCED, never-pushed local resource absent from git is KEPT untouched.
+    //   • if a resource that would be reconciled is still referenced/connected by another
     //     app or module, the whole pull ABORTS with a 409 in_use conflict and nothing
-    //     is deleted; once the reference is removed a re-pull succeeds and deletes it.
+    //     changes; once the reference is removed a re-pull succeeds.
     //
     // Orphans are manufactured with the §61 SQL technique (create on a feature branch,
     // move the version/DSV onto the default branch as is_synced=true + a fake
@@ -10946,12 +10874,24 @@ describe('GitSyncController', () => {
             [mainBranchId]
           );
 
-        const appVersionRows = (appId: string): Promise<any[]> =>
-          delDs.query(`SELECT id, is_synced FROM app_versions WHERE app_id = $1`, [appId]);
+        const appVersionRows = (appId: string, branchId?: string): Promise<any[]> =>
+          delDs.query(
+            `SELECT id, is_synced FROM app_versions WHERE app_id = $1${branchId ? ' AND branch_id = $2' : ''}`,
+            branchId ? [appId, branchId] : [appId]
+          );
         const appRowCount = async (appId: string): Promise<number> =>
           Number((await delDs.query(`SELECT count(*)::int AS c FROM apps WHERE id = $1`, [appId]))[0]?.c);
         const dataSourceRowCount = async (dsId: string): Promise<number> =>
           Number((await delDs.query(`SELECT count(*)::int AS c FROM data_sources WHERE id = $1`, [dsId]))[0]?.c);
+        // DS orphan handling deactivates the branch DSV (is_active=false) rather than deleting
+        // the row — see workspace-git-sync-adapter deserializeDataSources orphan sweep.
+        const dsvActive = async (dsId: string, branchId: string): Promise<boolean | undefined> =>
+          (
+            await delDs.query(
+              `SELECT is_active FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+              [dsId, branchId]
+            )
+          )[0]?.is_active;
 
         return {
           orgId,
@@ -10970,11 +10910,13 @@ describe('GitSyncController', () => {
           appVersionRows,
           appRowCount,
           dataSourceRowCount,
+          dsvActive,
         };
       };
 
-      // CASE 1 (TDD-RED) — a synced app removed from git is DELETED on pull (today: kept, unsynced).
-      it('deletes a synced app that was removed from git after a merge to main', async () => {
+      // CASE 1 — a synced app removed from git has its default-branch VERSION rows deleted on pull.
+      // The parent `apps` row is deliberately kept (removeOrphanedResources deletes AppVersion only).
+      it('deletes the default-branch versions of a synced app that was removed from git after a merge to main', async () => {
         const ctx = await makeCtx('del-app@tooljet.io');
         step(1, 'configure git + branching, pull main');
         const mainBranchId = await ctx.configureGitMultiBranch();
@@ -10982,36 +10924,35 @@ describe('GitSyncController', () => {
         step(2, 'manufacture a synced app orphan on main (absent from git), clear skip tokens');
         const { appId } = await ctx.makeSyncedOrphanApp('del-synced-app', 'front-end', mainBranchId);
         await ctx.clearSkipTokens(mainBranchId);
-        expect(await ctx.appRowCount(appId)).toBe(1);
+        expect(await ctx.appVersionRows(appId, mainBranchId)).toHaveLength(1);
 
-        step(3, 'pull main → the synced-but-removed-from-git app is DELETED');
+        step(3, "pull main → the synced-but-removed-from-git app's branch versions are DELETED (apps row kept)");
         await ctx.pull(mainBranchId).expect(201);
-        // TARGET: the row is gone (not merely is_synced=false). RED until delete-on-pull lands.
-        expect(await ctx.appVersionRows(appId)).toHaveLength(0);
-        expect(await ctx.appRowCount(appId)).toBe(0);
-        await ctx
-          .auth(ctx.agent().get(`/api/apps/${appId}`))
-          .query({ branch_id: mainBranchId })
-          .expect(404);
+        // The branch's AppVersion rows are gone (cascades handle children); the apps row survives.
+        expect(await ctx.appVersionRows(appId, mainBranchId)).toHaveLength(0);
+        expect(await ctx.appRowCount(appId)).toBe(1);
       }, 300000);
 
-      // CASE 2 (TDD-RED) — a synced module and a synced data source removed from git are deleted on pull.
-      it('deletes a synced module and a synced data source removed from git', async () => {
-        const ctx = await makeCtx('del-mod-ds@tooljet.io');
+      // CASE 2 — a synced module removed from git has its branch versions deleted (apps row kept),
+      // exactly like an app (removeOrphanedResources runs for the module kind too).
+      // NOTE: data-source orphan DEACTIVATION (is_active=false) is covered by §11 (category-skip
+      // control) — that path needs a real `data-sources/` tree in git so `deserializeDataSources`
+      // runs its sweep; a from-empty-repo pull early-returns before the sweep, so it's not
+      // exercised here.
+      it('deletes the branch versions of a synced module removed from git (apps row kept)', async () => {
+        const ctx = await makeCtx('del-mod@tooljet.io');
         step(1, 'configure git + branching, pull main');
         const mainBranchId = await ctx.configureGitMultiBranch();
 
-        step(2, 'manufacture a synced module orphan and a synced data source orphan, clear skip tokens');
+        step(2, 'manufacture a synced module orphan on main, clear skip tokens');
         const { appId: moduleId } = await ctx.makeSyncedOrphanApp('del-synced-mod', 'module', mainBranchId);
-        const dsId = await ctx.makeSyncedOrphanDataSource('del-synced-ds', mainBranchId);
         await ctx.clearSkipTokens(mainBranchId);
+        expect(await ctx.appVersionRows(moduleId, mainBranchId)).toHaveLength(1);
 
-        step(3, 'pull main → both the module and the data source are DELETED');
+        step(3, 'pull main → module branch versions DELETED (apps row kept)');
         await ctx.pull(mainBranchId).expect(201);
-        // TARGET: both rows removed (module app + its versions; data source + its DSVs). RED today.
-        expect(await ctx.appVersionRows(moduleId)).toHaveLength(0);
-        expect(await ctx.appRowCount(moduleId)).toBe(0);
-        expect(await ctx.dataSourceRowCount(dsId)).toBe(0);
+        expect(await ctx.appVersionRows(moduleId, mainBranchId)).toHaveLength(0);
+        expect(await ctx.appRowCount(moduleId)).toBe(1);
       }, 300000);
 
       // CASE 3 (GREEN) — an unsynced, never-pushed local resource absent from git is KEPT.
@@ -11032,7 +10973,7 @@ describe('GitSyncController', () => {
         expect(rows.every((r: any) => r.is_synced === false)).toBe(true);
       }, 300000);
 
-      // CASE 4 (TDD-RED) — a synced module removed from git but still referenced by another
+      // CASE 4 — a synced module removed from git but still referenced by another
       // app's ModuleViewer → pull ABORTS with a 409 in_use conflict; nothing is deleted.
       it('blocks the pull with a 409 in_use conflict when a to-be-deleted module is still referenced by an app', async () => {
         const { randomUUID } = await import('crypto');
@@ -11103,7 +11044,7 @@ describe('GitSyncController', () => {
         expect(await ctx.appRowCount(moduleId)).toBe(1);
       }, 300000);
 
-      // CASE 5 (TDD-RED) — a synced data source removed from git but still connected to an
+      // CASE 5 — a synced data source removed from git but still connected to an
       // app via a query → pull ABORTS with a 409 in_use conflict (type datasource).
       it('blocks the pull with a 409 in_use conflict when a to-be-deleted data source is still connected to an app', async () => {
         const ctx = await makeCtx('del-ds-inuse@tooljet.io');
@@ -11160,7 +11101,7 @@ describe('GitSyncController', () => {
         expect(await ctx.dataSourceRowCount(dsId)).toBe(1);
       }, 300000);
 
-      // CASE 6 (TDD-RED) — after the blocking reference is removed, a re-pull succeeds and
+      // CASE 6 — after the blocking reference is removed, a re-pull succeeds and
       // deletes the now-unreferenced module.
       it('deletes the module on a re-pull once the referencing app is removed', async () => {
         const { randomUUID } = await import('crypto');
@@ -11212,15 +11153,17 @@ describe('GitSyncController', () => {
         );
         await ctx.clearSkipTokens(mainBranchId);
 
-        step(3, 'first pull → 409 in_use (module still referenced)');
+        step(3, 'first pull → 409 in_use (module still referenced); the module version survives');
         await ctx.pull(mainBranchId).expect(409);
-        expect(await ctx.appRowCount(moduleId)).toBe(1);
+        expect(await ctx.appVersionRows(moduleId, mainBranchId)).toHaveLength(1);
 
-        step(4, 'remove the referencing consumer app, clear skip tokens, re-pull → module is deleted');
+        step(4, 'remove the referencing consumer app, clear skip tokens, re-pull → module branch versions deleted');
         await ctx.auth(ctx.agent().delete(`/api/apps/${consumerId}`).query({ branch_id: mainBranchId }));
         await ctx.clearSkipTokens(mainBranchId);
         await ctx.pull(mainBranchId).expect(201);
-        expect(await ctx.appRowCount(moduleId)).toBe(0);
+        // Branch versions gone (apps row kept), matching removeOrphanedResources.
+        expect(await ctx.appVersionRows(moduleId, mainBranchId)).toHaveLength(0);
+        expect(await ctx.appRowCount(moduleId)).toBe(1);
       }, 300000);
     });
   });
