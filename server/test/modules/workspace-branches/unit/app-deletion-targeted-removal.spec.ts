@@ -38,6 +38,22 @@ describe('WorkspaceBranchService.removeTargetedAppsFromRepo — only the targete
   // Remote-like repo: 10 apps + 2 modules committed. Mirrors "remote has 10 apps" from the report.
   beforeEach(async () => {
     repo = fs.mkdtempSync(path.join(os.tmpdir(), 'tj-del-'));
+
+    // Hard guard: this test runs real `git init`/`git commit`. A stray GIT_DIR/GIT_WORK_TREE
+    // env var (leaked from the shell or another tool) makes git ignore cwd-based repo discovery
+    // entirely and operate on whatever those vars point at - which once landed this test's seed
+    // commit on top of the real repo's HEAD instead of the temp dir. Fail loud instead of silently
+    // committing into the wrong repo.
+    const realRepoRoot = path.resolve(__dirname, '../../../../../..');
+    if (!path.resolve(repo).startsWith(path.resolve(os.tmpdir()) + path.sep)) {
+      throw new Error(`Expected an isolated tmpdir, got: ${repo}`);
+    }
+    if (process.env.GIT_DIR || process.env.GIT_WORK_TREE) {
+      throw new Error(
+        `Refusing to run - GIT_DIR/GIT_WORK_TREE is set in the environment and would redirect git commands away from the isolated ${repo} (would target ${realRepoRoot} instead)`
+      );
+    }
+
     for (let i = 1; i <= 10; i++) writeAppJson(`apps/app-${i}`, `corel-app-${i}`);
     writeAppJson('modules/mod-1', 'corel-mod-1');
     writeAppJson('modules/mod-2', 'corel-mod-2');

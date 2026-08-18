@@ -22,7 +22,7 @@ export const groupsText = {
   emailTableHeader: "Email id",
   resourcesTableHeader: "Resource",
   resourcesApps: "Apps",
-  resourcesFolders: "Folder",
+  resourcesFolders: "App folder",
   createLabel: "Create",
   folderCreateLabel: "Create",
   folderCreateHelperText: "Create new app folders in this workspace",

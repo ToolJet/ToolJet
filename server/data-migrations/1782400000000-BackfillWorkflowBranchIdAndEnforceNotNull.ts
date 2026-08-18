@@ -34,6 +34,23 @@ export class BackfillWorkflowBranchIdAndEnforceNotNull1782400000000 implements M
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
+    // Heal any workflow rows still missing slug/app_name before we give them a branch_id.
+    // Task 1 (1782250000000) copied apps.slug/apps.name onto app_versions verbatim, so a
+    // legacy workflow app whose apps.slug (or apps.name) was NULL left the version row with
+    // a NULL slug/app_name. Once branch_id is populated below, chk_app_versions_branch_metadata
+    // (branch_id IS NULL OR (app_name IS NOT NULL AND slug IS NOT NULL)) would reject those rows.
+    // Task 1 already zeroed apps.slug -> id for workflows, so a.slug is a non-null fallback here;
+    // a.id is the ultimate backstop (matches the "slug defaults to app.id" write-path convention).
+    // Scoped to the null rows so the slug-uniqueness triggers only fire for the few that need it.
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET slug = COALESCE(av.slug, a.slug, a.id::text),
+          app_name = COALESCE(av.app_name, a.name, a.slug, a.id::text)
+      FROM apps a
+      WHERE av.app_id = a.id AND a.type = 'workflow' AND av.branch_id IS NULL
+        AND (av.slug IS NULL OR av.app_name IS NULL)
+    `);
+
     await queryRunner.query(`
       UPDATE app_versions av
       SET branch_id = wb.id

@@ -63,9 +63,16 @@ export class CopyWorkflowAppMetaToAppVersions1782250000000 implements MigrationI
     // Step 2: Backfill app_versions from the now-deduped apps row. Every version row
     // of a given workflow app gets the same slug/name/icon/is_public — there is no
     // per-row divergence to reconcile (workflows have only ever had one apps.slug value).
+    // slug/app_name fall back to app.id for legacy workflow apps that carried a NULL
+    // apps.slug/apps.name — leaving them NULL would violate chk_app_versions_branch_metadata
+    // once 1782400000000 gives these rows a branch_id (app.id matches the "slug defaults to
+    // app.id" write-path convention and is unique per app).
     await queryRunner.query(`
       UPDATE app_versions av
-      SET slug = a.slug, app_name = a.name, icon = a.icon, is_public = a.is_public
+      SET slug = COALESCE(a.slug, a.id::text),
+          app_name = COALESCE(a.name, a.slug, a.id::text),
+          icon = a.icon,
+          is_public = a.is_public
       FROM apps a
       WHERE av.app_id = a.id AND a.type = 'workflow'
     `);
