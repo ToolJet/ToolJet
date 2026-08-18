@@ -916,7 +916,12 @@
         {
           "type": "category",
           "label": "Branding",
+          "link": {
+            "type": "doc",
+            "id": "tj-setup/org-branding/overview"
+          },
           "items": [
+            "tj-setup/org-branding/overview",
             "tj-setup/org-branding/white-labeling",
             "tj-setup/org-branding/custom-domain"
           ]
