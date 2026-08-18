@@ -19,7 +19,7 @@ const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
   // eslint-disable-next-line no-constant-binary-expression
-  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
+  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : (95 ?? 70),
   selectedQuery: null,
   previewPanelHeight: 0,
   selectedDataSource: null,
@@ -620,15 +620,15 @@ export const createQueryPanelSlice = (set, get) => ({
                   response: errorData?.data?.responseObject,
                 }
               : query.kind === 'restapi'
-              ? {
-                  metadata: errorData?.metadata,
-                  request: errorData?.data?.requestObject,
-                  response: errorData?.data?.responseObject,
-                  responseHeaders: errorData?.data?.responseHeaders,
-                }
-              : query.kind === 'workflows'
-              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
-              : {}),
+                ? {
+                    metadata: errorData?.metadata,
+                    request: errorData?.data?.requestObject,
+                    response: errorData?.data?.responseObject,
+                    responseHeaders: errorData?.data?.responseHeaders,
+                  }
+                : query.kind === 'workflows'
+                  ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
+                  : {}),
           },
           moduleId
         );
@@ -799,7 +799,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // Handle synchronous queries (original code)
 
             let queryStatusCode = data?.status ?? null;
-            const promiseStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
+            const promiseStatus = query.kind === 'runpy' ? (data?.data?.status ?? 'ok') : data.status;
             // Note: Need to move away from statusText -> statusCode
             if (
               promiseStatus === 'failed' ||
@@ -1118,7 +1118,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
             let finalData = data.data;
             let queryStatusCode = data?.status ?? null;
-            const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
+            const queryStatus = query.kind === 'runpy' ? (data?.data?.status ?? 'ok') : data.status;
             switch (true) {
               case queryStatus === 'Bad Request' ||
                 queryStatus === 'Not Found' ||
