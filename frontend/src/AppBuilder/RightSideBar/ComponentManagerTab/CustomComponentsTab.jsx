@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import moment from 'moment';
 import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -9,7 +9,7 @@ import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
 import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
-import { normalizePin, pinKey } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { normalizePin, pinKey, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { Container } from 'lucide-react';
 import {
@@ -21,6 +21,63 @@ import {
 } from '@/components/ui/Rocket/shadcn/dropdown-menu';
 
 const initials = (name = '') => (name.match(/[A-Z]/g) || []).slice(0, 2).join('') || name.slice(0, 2).toUpperCase();
+
+// Single source of truth for "what revision is this library showing" — shared by the
+// palette (LibrarySection) and the dropdown (VersionPicker) so they can't disagree.
+// `current` is for DISPLAY (may be `dev:{userId}`); `pinRevision` is for a fresh drop's
+// auto-pin and must never be the dev preview — pinning it would write the session-local
+// preview into globalSettings and violate invariant #14 (dev preview must never persist).
+const useLibraryCurrentRevision = (library) => {
+  const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
+  const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[library.id]);
+  const latest = library.revisions[0]?.version;
+  const pin = normalizePin(pins?.[pinKey(library.id)] ?? pins?.[library.id]);
+  const pinRevision = pin ?? latest;
+  return { current: devPreview ?? pinRevision, pin, latest, devPreview, pinRevision };
+};
+
+// Fetches manifest.json for whatever revision the palette should currently display,
+// via the same per-revision/per-dev-bundle serve routes the widget runtime already
+// uses (libraryFileUrl) — no separate manifest API needed. Falls back to the B9 list's
+// latest-revision manifest (already in hand) so the common case needs no network call.
+const useResolvedManifest = (library, current, latest) => {
+  const cacheRef = useRef({});
+  // TODO(P26): dev-bundle manifests are cached per (libraryId, revision) here, so a user
+  // actively pushing new props/components via `component dev` won't see the palette
+  // update until they reselect the dev entry — the server always serves the latest push
+  // (`no-store`, invariant #3), but this client cache doesn't know to bypass for `dev:`
+  // keys. Deferred; revisit alongside the P8 dev-refresh-mechanism decision.
+  const [manifest, setManifest] = useState(current === latest ? library.manifest : null);
+
+  useEffect(() => {
+    if (current === latest) {
+      setManifest(library.manifest);
+      return;
+    }
+
+    if (cacheRef.current[current]) {
+      setManifest(cacheRef.current[current]);
+      return;
+    }
+
+    let cancelled = false;
+
+    fetch(libraryFileUrl(library.id, current, 'manifest.json'))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) {
+          cacheRef.current[current] = data;
+          setManifest(data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [library.id, library.manifest, current, latest]);
+
+  return manifest;
+};
 
 const CustomComponentCard = ({ libraryId, revisionId, name, displayName, description, props }) => {
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
@@ -83,13 +140,10 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
 const VersionPicker = ({ library }) => {
   const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
   const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
-  const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[library.id]);
   const setDevPreview = useCustomComponentPreviewStore((state) => state.setDevPreview);
   const clearDevPreview = useCustomComponentPreviewStore((state) => state.clearDevPreview);
 
-  const latest = library.revisions[0]?.version;
-  const pin = normalizePin(pins?.[pinKey(library.id)] ?? pins?.[library.id]);
-  const current = devPreview ?? pin ?? latest;
+  const { current, pin, latest, devPreview } = useLibraryCurrentRevision(library);
   const hasUpdate = Boolean(pin && pin !== latest);
 
   const normalizedPins = () =>
@@ -186,13 +240,20 @@ const VersionPicker = ({ library }) => {
   );
 };
 
-const LibrarySection = ({ library }) => {
+const LibrarySection = ({ library, searchQuery = '' }) => {
   const [open, setOpen] = useState(true);
-  const latestVersion = library.revisions[0]?.version;
+  const { current, latest, pinRevision } = useLibraryCurrentRevision(library);
+  const manifest = useResolvedManifest(library, current, latest);
   // manifest.components: Record<exportName, { displayName?, description?, defaultWidth?, defaultHeight? }>
-  const components = Object.entries(library.manifest?.components ?? {});
+  // Filtered here (against whatever revision is actually displayed) rather than upstream,
+  // so switching revisions/dev preview while a search is active stays consistent with the query.
+  const q = searchQuery.trim().toLowerCase();
+  const matchesLibraryName = library.name.toLowerCase().includes(q);
+  const components = Object.entries(manifest?.components ?? {}).filter(
+    ([exportName]) => !q || matchesLibraryName || exportName.toLowerCase().includes(q)
+  );
 
-  if (!components.length) return null; // library with no published revision yet
+  if (!components.length) return null; // library with no published revision yet, or the selected revision is still loading
 
   return (
     <div className="custom-library-section">
@@ -211,13 +272,14 @@ const LibrarySection = ({ library }) => {
           />
         </div>
       </div>
+
       {open && (
         <div className="custom-library-section-content">
           {components.map(([exportName, comp]) => (
             <CustomComponentCard
               key={exportName}
               libraryId={library.id}
-              revisionId={latestVersion}
+              revisionId={pinRevision}
               name={exportName} // the bundle's export — what the shell resolves
               displayName={comp.displayName}
               description={comp.description}
@@ -245,17 +307,14 @@ export const CustomComponentsTab = ({ searchQuery = '' }) => {
     const withRevisions = libraries.filter((lib) => lib.revisions.length > 0);
     const q = searchQuery.trim().toLowerCase();
     if (!q) return withRevisions;
-    // match on library name OR component name — a matching library keeps all its
-    // components, otherwise only the matching components are kept.
-    return withRevisions
-      .map((lib) => {
-        if (lib.name.toLowerCase().includes(q)) return lib;
-        const components = Object.fromEntries(
-          Object.entries(lib.manifest?.components ?? {}).filter(([name]) => name.toLowerCase().includes(q))
-        );
-        return { ...lib, manifest: { ...lib.manifest, components } };
-      })
-      .filter((lib) => Object.keys(lib.manifest?.components ?? {}).length > 0);
+    // match on library name OR component name — component-name matching is against the
+    // latest-revision manifest (the only one we have without a fetch); a matching library
+    // keeps everything regardless. LibrarySection re-applies this same query against
+    // whichever revision it actually ends up displaying (see its own filtering).
+    return withRevisions.filter((lib) => {
+      if (lib.name.toLowerCase().includes(q)) return true;
+      return Object.keys(lib.manifest?.components ?? {}).some((name) => name.toLowerCase().includes(q));
+    });
   }, [libraries, searchQuery]);
 
   if (filtered === null) return null; // loading — the panel shows nothing briefly
@@ -277,7 +336,7 @@ export const CustomComponentsTab = ({ searchQuery = '' }) => {
   return (
     <div className="custom-components-tab">
       {filtered.map((library) => (
-        <LibrarySection key={library.id} library={library} />
+        <LibrarySection key={library.id} library={library} searchQuery={searchQuery} />
       ))}
     </div>
   );
