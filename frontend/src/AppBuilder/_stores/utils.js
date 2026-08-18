@@ -355,6 +355,9 @@ export const extractAndReplaceReferencesFromString = (str = '', componentIdMap =
 };
 
 export const checkSubstringRegex = (mainString, subString) => {
+  // Optional chaining reads the same entity, so listItem?.a must match like listItem.a
+  const normalizedMainString = mainString.replace(/\?\./g, '.');
+
   // Escape special characters in the subString
   const escapedSubString = subString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -362,7 +365,7 @@ export const checkSubstringRegex = (mainString, subString) => {
   const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[])`);
 
   // Test the mainString against the regex
-  return regex.test(mainString);
+  return regex.test(normalizedMainString);
 };
 
 export const normalizePattern = (pattern) => {
