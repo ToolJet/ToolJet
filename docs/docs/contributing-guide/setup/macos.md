@@ -27,30 +27,11 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     npm install -g npm@9.8.1
     ```
 
-    1.3 Install Postgres
-    :::tip
-    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not plan to support other databases such as MySQL.
-    :::
-
-    ```bash
-    brew install postgresql@13
-    ```
-    
-    1.4 Install PostgREST
-
-    :::info
-    Please use PostgREST version 12.2.0
-    :::
-
-    ```bash
-    brew install postgrest
-    ```
-
-    1.5 Fork the repository:
+    1.3 Fork the repository:
 
     Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the **Fork** button to create a copy of the repository under your own GitHub account.
 
-    1.6 Clone your forked repository:
+    1.4 Clone your forked repository:
 
     After forking, clone the forked repository to your local machine using the URL of your forked repo.
 
@@ -91,8 +72,37 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     TOOLJET_DB_PASS=postgres
     ORM_LOGGING=all
    ```
+4. Install and set up Docker
 
-4. Install and build dependencies
+    Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) for macOS and make sure Docker Desktop is running.
+
+    Verify the installation:
+
+    ```bash
+    docker --version
+    docker compose version
+    ```
+
+    Start the required development services:
+
+    ```bash
+    docker compose up -d postgres postgrest
+    ```
+
+    Verify that the services are running:
+
+    ```bash
+    docker compose ps postgres postgrest 
+    ```
+
+    To stop or start the container later:
+
+    ```bash
+    docker compose stop postgres postgrest
+    docker compose start postgres postgrest
+    ```
+
+5. Install and build dependencies
     ```bash
     npm install
     npm install --prefix server
@@ -100,7 +110,7 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     npm run build:plugins
     ```
 
-5. Set up database
+6. Set up database
     ```bash
     npm run --prefix server db:create
     npm run --prefix server db:reset
@@ -148,3 +158,5 @@ To run a specific unit test
 ```bash
 npm run --prefix server test <path-to-file>
 ```
+
+
