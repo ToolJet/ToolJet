@@ -15,6 +15,7 @@ import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/L
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import * as envConfigs from 'config';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
+import { LinkExpiredCard } from '@/modules/common/components';
 
 const SignupPage = ({ configs, organizationId }) => {
   const edition = fetchEdition();
@@ -23,6 +24,7 @@ const SignupPage = ({ configs, organizationId }) => {
   const navigate = useNavigate();
   const params = useParams();
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [linkExpiredInfo, setLinkExpiredInfo] = useState(null); // { message, orgSlug }
   const [signingUserInfo, setSigningUserInfo] = useState({
     email: '',
     name: '',
@@ -52,6 +54,13 @@ const SignupPage = ({ configs, organizationId }) => {
         .activateAccountWithToken(email, password, organizationToken)
         .then((response) => onInvitedUserSignUpSuccess(response, navigate))
         .catch((errorObj) => {
+          if (errorObj?.statusCode === 410) {
+            setLinkExpiredInfo({
+              message: errorObj?.error,
+              orgSlug: errorObj?.data?.organizationSlug || null,
+            });
+            return;
+          }
           let errorMessage;
           if (typeof errorObj?.error === 'string') {
             errorMessage = errorObj.error;
@@ -130,6 +139,21 @@ const SignupPage = ({ configs, organizationId }) => {
 
   if (paramInviteOrganizationSlug && !configs?.id) {
     return <Navigate to="/error/invalid-link" />;
+  }
+
+  if (linkExpiredInfo) {
+    const isWorkspaceExpiry = linkExpiredInfo.message === 'WORKSPACE_INVITE_LINK_EXPIRED';
+    return (
+      <OnboardingBackgroundWrapper
+        MiddleComponent={() =>
+          isWorkspaceExpiry ? (
+            <LinkExpiredCard variant="invite" organizationSlug={linkExpiredInfo.orgSlug} />
+          ) : (
+            <LinkExpiredCard variant="verification" />
+          )
+        }
+      />
+    );
   }
 
   const setSignupOrganizationDetails = () => {
