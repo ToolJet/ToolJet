@@ -17,10 +17,7 @@ const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPre
 
 // tj-403 = data-source query-run permission denied; toast in every mode, unlike ordinary query failures
 const toastIfQueryRunRestricted = (errorData) => {
-  if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN)
-    toast.error(
-      errorData.data.responseObject?.responseBody ?? 'You do not have permission to run queries on this data source'
-    );
+  if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
 };
 
 const initialState = {

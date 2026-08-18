@@ -186,7 +186,6 @@ class BaseManageGranularAccess extends React.Component {
         toast.error(err.error);
       });
   };
-  // Spinner only on first load; refetches after inline/modal updates keep the list mounted (no flash)
   fetchGranularPermissions = (groupPermissionId, { showLoader = false } = {}) => {
     if (showLoader) this.setState({ isLoading: true });
     groupPermissionV2Service.fetchGranularPermissions(groupPermissionId).then((data) => {
