@@ -114,6 +114,18 @@ const Sharepoint = ({
         />
       </div>
       <div>
+        <label className="form-label mt-3">Site URL</label>
+        <Input
+          type="text"
+          className="form-control"
+          onChange={(e) => optionchanged('sp_site_url', e.target.value)}
+          value={options?.sp_site_url?.value ?? ''}
+          placeholder="https://contoso.sharepoint.com/sites/marketing"
+          helpText="The SharePoint site this data source reads and writes. Paste the address of the site from your browser; every query runs against it. To use a second site, add a second SharePoint data source."
+          workspaceConstants={workspaceConstants}
+        />
+      </div>
+      <div>
         <label className="form-label mt-3">Redirect URI</label>
         <Input
           value={redirectUri}
