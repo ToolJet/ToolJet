@@ -68,7 +68,7 @@ The following actions of the component can be controlled using the component-spe
 | Visibility | Controls whether the component is visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Disables user interaction with the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip | Displays an informational tooltip when the user hovers over the component. | String (e.g., `Pick a brand color`). |
+| Tooltip | Displays an informational tooltip when the user hovers over the component. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Pick a brand color`). |
 
 ## Devices
 

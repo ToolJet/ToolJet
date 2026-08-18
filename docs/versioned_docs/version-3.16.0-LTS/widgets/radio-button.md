@@ -117,7 +117,7 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | Visibility           | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Collapse when hidden | Collapses the component's space when hidden, so surrounding components fill the space. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable              | Enables or disables the component.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip              | Displays an informational tooltip when the user hovers over the component.   | String (e.g., `Select an option`).                                                                                          |
+| Tooltip | Displays an informational tooltip when the user hovers over the component. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Select an option`).                                                                                          |
 
 ## Devices
 

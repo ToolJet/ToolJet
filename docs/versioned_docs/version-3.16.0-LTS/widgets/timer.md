@@ -62,7 +62,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field. Now hovering over the component will display the tooltip.
 
 </div>
 

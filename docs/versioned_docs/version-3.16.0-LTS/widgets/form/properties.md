@@ -41,7 +41,7 @@ Refer to the [Generate Form](/docs/widgets/form/) guide for more details.
 | Visibility                             | Controls whether the component is visible.       | Enable/disable the toggle, or use **fx** to enter a logical expression. |
 | Dynamic height                         | Automatically adjusts height based on content.   | Enable/disable the toggle, or use **fx** to enter a logical expression. |
 | Disable                                | Enables or disables the entire component.        | Enable/disable the toggle, or use **fx** to enter a logical expression. |
-| Tooltip                                | Displays a tooltip on hover.                     | String value (e.g., `Enter your password here.`) |
+| Tooltip | Displays a tooltip on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String value (e.g., `Enter your password here.`) |
 
 ## Devices
 

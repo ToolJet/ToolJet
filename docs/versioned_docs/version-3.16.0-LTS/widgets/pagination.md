@@ -50,7 +50,7 @@ The following actions of the Pagination component can be controlled using the co
 | Loading state | Shows a loading indicator on the current page and blocks page navigation while enabled. Often used together with `isLoading`. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Toggle on or off to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | This is `off` by default. Toggle `on` to lock the component and make it non-functional. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip | Displays an informational tooltip when the user hovers over the component. | String (e.g., `Go to next page`). |
+| Tooltip | Displays an informational tooltip when the user hovers over the component. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Go to next page`). |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.

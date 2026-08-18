@@ -46,7 +46,7 @@ Following actions of the component can be controlled using the component specifi
 | Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility         | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable            | Disables the component and makes the editor read-only. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip            | Provides additional information on hover. Set a string value for display. | String (e.g., `Edit your JSON configuration here.`). |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Edit your JSON configuration here.`). |
 
 ## Devices
 
