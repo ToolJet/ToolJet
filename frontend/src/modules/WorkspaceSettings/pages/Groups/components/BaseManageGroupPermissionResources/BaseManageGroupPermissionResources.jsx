@@ -1695,8 +1695,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     selectedAdminUsers.length !== 0
                                       ? '#ffffff'
                                       : this.props.darkMode
-                                      ? '#131620'
-                                      : '#C1C8CD'
+                                        ? '#131620'
+                                        : '#C1C8CD'
                                   }
                                   iconWidth="16"
                                   className="add-users-button"

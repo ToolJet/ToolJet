@@ -146,7 +146,7 @@ export const createAppSlice = (set, get) => ({
       }
       const temporaryLayout = temporaryLayouts?.[getDynamicLayoutKey(component.id, null, '', moduleId)];
       const top = temporaryLayout?.top ?? layout.top;
-      const height = visibility ? temporaryLayout?.height ?? layout.height : 10;
+      const height = visibility ? (temporaryLayout?.height ?? layout.height) : 10;
       return Math.max(max, top + height);
     }, 0);
 
