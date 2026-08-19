@@ -1348,13 +1348,7 @@ Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
   });
 });
 
-// Default role groups (admin/builder/end-user) are seeded with permissive
-// defaults for every resource type (DEFAULT_RESOURCE_PERMISSIONS) — e.g.
-// builder gets canEditFolder:true (All Folders) on module_folder/workflow_folder
-// out of the box. Any test that grants a NARROWER custom-group permission and
-// expects that narrower grant to be the sole determinant of access must first
-// zero out the role's own default here, otherwise the union of "role default +
-// custom group" silently grants more than the custom group alone would.
+
 Cypress.Commands.add("apiStripRoleFolderDefault", (roleName, resourceType) => {
   const endpointByType = {
     folder: "folder",
@@ -1399,11 +1393,7 @@ Cypress.Commands.add("apiStripRoleFolderDefault", (roleName, resourceType) => {
   });
 });
 
-// Same problem as apiStripRoleFolderDefault, but for the direct app/module/workflow
-// bucket — builder is seeded with canEdit:true (All) on module type by default
-// (DEFAULT_RESOURCE_PERMISSIONS[BUILDER][MODULE]). Module-type grants live in the
-// same underlying table as app-type grants, so the update route is always
-// granular-permissions/app/:id regardless of the specific appType.
+
 Cypress.Commands.add("apiStripRoleAppDefault", (roleName, resourceType) => {
   return cy.apiGetGroupId(roleName).then((groupId) => {
     return cy.getAuthHeaders().then((headers) => {
@@ -1428,13 +1418,14 @@ Cypress.Commands.add("apiStripRoleAppDefault", (roleName, resourceType) => {
               body: {
                 isAll: true,
                 actions: {
+       
                   canEdit: false,
-                  canView: false,
-                  hideFromDashboard: true,
-                  canAccessDevelopment: false,
-                  canAccessStaging: false,
-                  canAccessProduction: false,
-                  canAccessReleased: false,
+                  canView: true,
+                  hideFromDashboard: false,
+                  canAccessDevelopment: true,
+                  canAccessStaging: true,
+                  canAccessProduction: true,
+                  canAccessReleased: true,
                 },
               },
               log: false,

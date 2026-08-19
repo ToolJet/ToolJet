@@ -129,15 +129,23 @@ describe("Modules — Inspector", () => {
 
     const themeToggleButton = () => cy.get(".left-sidebar-item:has(svg.lucide-moon), .left-sidebar-item:has(svg.lucide-sun)");
 
+    cy.get("body").then(($body) => {
+      if ($body.find(".left-sidebar-item:has(svg.lucide-sun)").length > 0) {
+        themeToggleButton().click();
+        cy.reload();
+      }
+    });
 
     navigateAndVerifyInspector(["globals", "theme"], [["name", `light`]]);
 
 
     themeToggleButton().click();
+    cy.wait(500);
     cy.reload();
     navigateAndVerifyInspector(["globals", "theme"], [["name", `dark`]]);
 
     themeToggleButton().click();
+    cy.wait(500);
     cy.reload();
     navigateAndVerifyInspector(["globals", "theme"], [["name", `light`]]);
   });
