@@ -84,7 +84,9 @@ export default function CustomComponentLibraries({ darkMode }) {
             {libraries.map((library) => (
               <div className="libraries-row" key={library.id} data-cy={`library-row-${library.name}`}>
                 <div className="col-name">{library.name}</div>
-                <div className="col-version">{library.revisions[0]?.version ?? '—'}</div>
+                <div className="col-version">
+                  {library.revisions[0]?.version ?? (library.devBundles?.length ? 'dev' : '—')}
+                </div>
 
                 <OverlayTrigger
                   rootClose

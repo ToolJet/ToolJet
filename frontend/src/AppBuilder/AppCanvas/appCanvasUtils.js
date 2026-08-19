@@ -27,6 +27,16 @@ export function snapToGrid(canvasWidth, x, y) {
   return [snappedX, snappedY];
 }
 
+// Mirrors LibraryComponent Inspector's fieldMeta() type→field mapping so the stamped
+// value matches what that field type expects (dropdown.js/checkbox.js precedent):
+// toggle → '{{bool}}', select → raw string, code → raw string (string) or '{{json}}' (else).
+function manifestDefaultToDefinitionValue(prop) {
+  if (prop.default === undefined) return prop.type === 'boolean' ? '{{false}}' : '';
+  if (prop.type === 'boolean') return `{{${prop.default}}}`;
+  if (prop.type === 'enumeration' || prop.type === 'string') return prop.default;
+  return `{{${JSON.stringify(prop.default)}}}`; // number | object | array
+}
+
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
 export const addNewWidgetToTheEditor = (
   componentType,
@@ -57,7 +67,7 @@ export const addNewWidgetToTheEditor = (
     // Manifest prop defaults land as instance values so the Inspector's fields arrive
     // pre-filled (module input_items precedent below).
     for (const prop of libraryComponentInfo.props ?? []) {
-      componentData.definition.properties[prop.name] = { value: prop.default ?? '' };
+      componentData.definition.properties[prop.name] = { value: manifestDefaultToDefinitionValue(prop) };
     }
     if (libraryComponentInfo.defaultSize?.width)
       componentData.defaultSize.width = libraryComponentInfo.defaultSize.width;
