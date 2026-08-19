@@ -51,6 +51,10 @@ RUN npm --prefix plugins prune --production
 ENV TOOLJET_EDITION=cloud
 ENV NODE_ENV=production
 
+# Copy shared widget-definitions package (required by server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
+
 # Building ToolJet server
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
@@ -105,6 +109,8 @@ COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
 COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
