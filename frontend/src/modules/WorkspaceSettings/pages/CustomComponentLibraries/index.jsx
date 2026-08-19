@@ -7,6 +7,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Dialog from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button/Button';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
+import { licenseService } from '@/_services';
 
 import './custom-component-libraries.styles.scss';
 
@@ -16,6 +17,7 @@ export default function CustomComponentLibraries({ darkMode }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
   const [popoverToOpenId, setPopoverToOpenId] = useState(null);
+  const [hasAccess, setHasAccess] = useState(null);
 
   const fetchLibraries = () => {
     setLoadFailed(false);
@@ -28,7 +30,18 @@ export default function CustomComponentLibraries({ darkMode }) {
       });
   };
 
-  useEffect(fetchLibraries, []);
+  useEffect(() => {
+    licenseService
+      .getFeatureAccess()
+      .then((data) => setHasAccess(data?.customComponentLibraries === true))
+      .catch(() => setHasAccess(false));
+  }, []);
+
+  useEffect(() => {
+    if (hasAccess === true) fetchLibraries();
+  }, [hasAccess]);
+
+  if (hasAccess !== true) return null;
 
   const handleDelete = async () => {
     setDeleteInProgress(true);

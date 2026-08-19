@@ -68,6 +68,7 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
+      customComponentLibraries?: boolean;
     };
   };
   modules?: {
