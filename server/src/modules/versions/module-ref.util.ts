@@ -208,6 +208,23 @@ export async function resolveModuleRef(
         },
       });
       if (unsyncedDraft) return unsyncedDraft;
+      // Feature-branch-only pin: an app+module imported (or created) directly onto a
+      // feature branch has no default-branch counterpart, so the pinned version lives
+      // only on the consumer's own branch (branch rows are DRAFTs by invariant). Match
+      // the exact module_reference_id there — scoped to the consumer's branch, so it's a
+      // precise hit, never a silent cross-branch guess. Without this the pin 404s even
+      // though the version exists (device-import-onto-branch case).
+      if (consumerBranchId && consumerBranchId !== defaultBranch.id) {
+        const onConsumerBranch = await manager.findOne(AppVersion, {
+          where: {
+            appId: moduleApp.id,
+            moduleReferenceId,
+            branchId: consumerBranchId,
+            isStub: false,
+          },
+        });
+        if (onConsumerBranch) return onConsumerBranch;
+      }
     } else {
       // Non-git-sync: default-branch (all rows land there, no status filter needed).
       const byMref = await manager.findOne(AppVersion, {
