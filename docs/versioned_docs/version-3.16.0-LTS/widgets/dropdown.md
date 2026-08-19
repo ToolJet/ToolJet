@@ -100,6 +100,55 @@ Allows you to add a loading state to the dynamically generated options. You can 
 
 Sort all the options in the selected pattern. Choose from **None**, **a-z** or **z-a**.
 
+## Search
+
+Turn on **Show search in options** to add a search box to the options menu. Search is **Client side** by default: the component filters the options it already holds, in the browser, and highlights the matching text in option labels and captions.
+
+Use **Search type** to switch between the two modes:
+
+| <div style={{ width:"120px"}}> Mode </div> | <div style={{ width:"400px"}}> Behaviour </div> |
+| :------------------------------------------ | :----------------------------------------------- |
+| Client side (default) | The component filters the options it already holds and highlights the matching text. |
+| Server side | The component renders every option it is given, without filtering or highlighting, so that a query can filter the options in your datasource. |
+
+### Server Side Search
+
+Use Server side search when the option list is too large to load into the browser. The component stops filtering locally, and you bind its options to a query that returns only the matching rows.
+
+:::warning
+Server side mode does not fetch anything on its own, it only stops the component from filtering. If you enable it without binding the options to a query, the menu shows the full unfiltered list while the user types.
+:::
+
+To set up server side search:
+
+1. Turn on **Show search in options**, then set **Search type** to **Server side**.
+
+2. Create a query that filters on the component's `searchText`:
+
+   ```sql
+   SELECT name AS label, id AS value
+   FROM public.sample_data_orders
+   WHERE name ILIKE '%{{components.dropdown1.searchText || ""}}%'
+   LIMIT 50
+   ```
+
+   Replace `dropdown1` with the name of your component.
+
+3. Bind **Option values** and **Option labels**, or the **Schema** if you are using dynamic options, to the query's data. For example, `{{queries.searchOrders.data.map(o => o.value)}}`.
+
+4. Add an event handler to the component:<br/>
+   Event: **On search text changed**<br/>
+   Action: **Run Query**<br/>
+   Query: the query you created in step 2
+
+5. Optionally, click on **fx** next to **Loading state** and enter `{{queries.searchOrders.isLoading}}` so that the menu shows a spinner while the query runs.
+
+:::info
+**On search text changed** fires on every keystroke, so each keystroke runs the query. Keep a `LIMIT` in the query to bound the number of rows returned.
+:::
+
+**Sort Options** still applies in Server side mode and re-sorts whatever the query returned, in the browser. Set it to **None** if your query already sorts the results.
+
 ## Events
 
 | <div style={{ width:"135px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div>          |
@@ -181,6 +230,7 @@ components.dropdown1.selectOption(2);
 | :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Show clear selection button | Gives a button to clear all selections. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show search in options | Enables a search option. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Search type | Sets whether the options menu is filtered in the browser (**Client side**) or by a query (**Server side**). Only visible when **Show search in options** is enabled. | Select **Client side** or **Server side**, or click on **fx** and enter an expression that resolves to a boolean (`{{true}}` for **Server side**). |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
