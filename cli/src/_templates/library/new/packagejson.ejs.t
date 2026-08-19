@@ -7,8 +7,8 @@ to: <%= name %>/package.json
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tooljet component dev",
-    "build": "tooljet component build"
+    "dev": "tooljet library dev",
+    "build": "tooljet library build"
   },
   "dependencies": {
     "@tooljet/custom-component-sdk": "^1.0.0"

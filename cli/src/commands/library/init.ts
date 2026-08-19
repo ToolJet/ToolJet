@@ -2,9 +2,9 @@ import { Command } from '@oclif/core';
 import * as inquirer from 'inquirer';
 import * as fs from 'fs';
 
-import { Auth } from '../../lib/component/auth';
-import { ApiClient } from '../../lib/component/api-client';
-import { scaffoldTemplate, writeLibraryConfig } from '../../lib/component/scaffolder';
+import { Auth } from '../../lib/library/auth';
+import { ApiClient } from '../../lib/library/api-client';
+import { scaffoldTemplate, writeLibraryConfig } from '../../lib/library/scaffolder';
 import { formatError } from '../../lib/log';
 
 interface InitAnswers {
@@ -14,7 +14,12 @@ interface InitAnswers {
 export default class ComponentInit extends Command {
   static description = 'Initialize a new custom component library';
 
-  static examples = [`$ tooljet component init <library_directory_name>`];
+  static aliases = ['lib:init'];
+
+  static examples = [
+    `$ tooljet library init <library_directory_name>`,
+    `$ tooljet lib init <library_directory_name>`,
+  ];
 
   static args = [
     { name: 'library_directory_name', description: 'Directory name for the new component library', required: true },

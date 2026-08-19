@@ -1,15 +1,22 @@
 import { Command, Flags } from '@oclif/core';
 
-import { Auth } from '../../lib/component/auth';
-import { ApiClient } from '../../lib/component/api-client';
-import { ProjectConfig, ProjectConfigData } from '../../lib/component/project-config';
-import { DevWatcher } from '../../lib/component/dev-watcher';
+import { Auth } from '../../lib/library/auth';
+import { ApiClient } from '../../lib/library/api-client';
+import { ProjectConfig, ProjectConfigData } from '../../lib/library/project-config';
+import { DevWatcher } from '../../lib/library/dev-watcher';
 import { formatError, formatSuccess, formatDuration } from '../../lib/log';
 
 export default class Dev extends Command {
   static description = 'Watch src/ and upload to the dev track on every save';
 
-  static examples = ['$ tooljet component dev', '$ tooljet component dev --debounce 500'];
+  static aliases = ['lib:dev'];
+
+  static examples = [
+    '$ tooljet library dev',
+    '$ tooljet library dev --debounce 500',
+    '$ tooljet lib dev',
+    '$ tooljet lib dev --debounce 500',
+  ];
 
   static flags = {
     debounce: Flags.integer({ description: 'Debounce ms between saves', default: 300 }),
