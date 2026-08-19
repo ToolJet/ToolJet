@@ -864,7 +864,13 @@ export class AppImportExportService {
     if (appParams?.modules?.length > 0 && appParams?.type === APP_TYPES.FRONT_END) {
       for (const module of appParams.modules) {
         if (module?.appV2?.name) moduleAppNames.push(module.appV2.name);
+        // co_relation_id is the portable identity. Older exports omit it, but the module's
+        // raw id doubles as the target's co_relation_id (createImportedAppForUser sets
+        // co_relation_id = source.id on first import). Match on both — this is BRANCH-INDEPENDENT
+        // (co_relation_id lives on the App row, not per-branch), so a re-import finds the
+        // existing module even when its app_name only exists on a feature branch.
         if (module?.appV2?.co_relation_id) moduleAppCoRelIds.push(module.appV2.co_relation_id);
+        if (module?.appV2?.id) moduleAppCoRelIds.push(module.appV2.id);
       }
     }
     const moduleResourceMappings: {
@@ -883,6 +889,12 @@ export class AppImportExportService {
     const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
     const defaultBranchId = options.defaultBranch?.id;
 
+    // A module imported/created directly onto a feature branch carries its app_name ONLY
+    // on that branch (no default-branch row), so the existing-module lookup must consider
+    // the consumer's branch too — otherwise a re-import onto the same branch fails to find
+    // the module, tries to recreate it, and violates app_versions(app_name, branch_id, type).
+    const nameMatchBranchIds = Array.from(new Set([defaultBranchId, branchId].filter(Boolean)));
+
     const existingModules =
       moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
         ? await manager
@@ -896,10 +908,10 @@ export class AppImportExportService {
                       `EXISTS (
                          SELECT 1 FROM app_versions av
                          WHERE av.app_id = app.id
-                           AND av.branch_id = :defaultBranchId
+                           AND av.branch_id IN (:...nameMatchBranchIds)
                            AND av.app_name IN (:...moduleAppNames)
                        )`,
-                      { defaultBranchId, moduleAppNames }
+                      { nameMatchBranchIds, moduleAppNames }
                     );
                   } else {
                     // Non-git-sync workspace: no branches. Match against any version's app_name.
@@ -931,7 +943,9 @@ export class AppImportExportService {
         .where('av.app_id IN (:...appIds)', { appIds: existingModules.map((m) => m.id) })
         .andWhere('av.app_name IN (:...moduleAppNames)', { moduleAppNames });
       if (defaultBranchId) {
-        nameQb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId });
+        // Match the consumer's branch too — a feature-branch-only module has no
+        // default-branch app_name row (see nameMatchBranchIds above).
+        nameQb.andWhere('av.branch_id IN (:...nameMatchBranchIds)', { nameMatchBranchIds });
       }
       const moduleNameRows: { app_id: string; app_name: string }[] = await nameQb.getRawMany();
       const appById = new Map(existingModules.map((m) => [m.id, m]));
@@ -950,6 +964,7 @@ export class AppImportExportService {
       const missingModules = appParams.modules.filter((m) => {
         const resolved =
           (m?.appV2?.co_relation_id && existingByCoRel.get(m.appV2.co_relation_id)) ||
+          (m?.appV2?.id && existingByCoRel.get(m.appV2.id)) ||
           existingByName.get(m?.appV2?.name);
         return !resolved;
       });
@@ -996,8 +1011,12 @@ export class AppImportExportService {
 
       for (const importedModule of uniqueModules) {
         // Prefer passport match (survives renames and cross-lineage name collisions).
+        // The id fallback matches older exports whose module carries no co_relation_id —
+        // the target's co_relation_id equals the source id (see collection above). This is
+        // branch-independent, unlike the name match which depends on branch metadata.
         const existingModule =
           (importedModule?.appV2?.co_relation_id && existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
+          (importedModule?.appV2?.id && existingByCoRel.get(importedModule.appV2.id)) ||
           existingByName.get(importedModule?.appV2?.name);
 
         if (existingModule) {
@@ -1013,38 +1032,48 @@ export class AppImportExportService {
           }
           if (shouldHydrateBranchStub) moduleAppIdsForStub.push(existingModule.id);
 
-          // Fetch existing module's versions to map by name
+          // Fetch existing module's versions to remap the ModuleViewer's pinned
+          // version reference. A pin (moduleVersionId.value) is resolved at runtime by
+          // resolveAllModuleViewers, which matches it against a candidate row's DB `id`
+          // or `module_reference_id` — NEVER co_relation_id, never name. module_reference_id
+          // is the git-portable, canonical pin identity (see appCanvasUtils drag-create),
+          // so that's the map value, falling back to the row id.
           const existingVersions = await manager.find(AppVersion, {
             where: { appId: existingModule.id },
             order: { createdAt: 'DESC' },
           });
 
           const importedModuleVersions = importedModule?.appV2?.appVersions || [];
-          const fallbackVersionName = existingVersions[0]?.name;
+          const versionKeyOf = (v?: AppVersion): string | null => v?.moduleReferenceId ?? v?.id ?? null;
+          // Prefer the version on the consumer's branch — that's the row the runtime
+          // resolver scopes to; otherwise fall back to the newest version.
+          const preferredExistingVersion =
+            (branchId && existingVersions.find((v) => v.branchId === branchId)) || existingVersions[0];
+          const fallbackVersionKey = versionKeyOf(preferredExistingVersion);
 
           for (const importedVersion of importedModuleVersions) {
-            const matchingVersion = existingVersions.find((v) => v.name === importedVersion.name);
-            const targetVersionName = matchingVersion?.name ?? fallbackVersionName;
-            if (!targetVersionName) continue;
+            // Match by co_relation_id first (survives renames), fall back to name.
+            const matchingVersion =
+              existingVersions.find(
+                (v) => importedVersion.co_relation_id && v.co_relation_id === importedVersion.co_relation_id
+              ) ?? existingVersions.find((v) => v.name === importedVersion.name);
+            const targetVersionKey = versionKeyOf(matchingVersion) ?? fallbackVersionKey;
+            if (!targetVersionKey) continue;
 
-            // Name key — matches post-migration components that store a version name.
-            if (importedVersion.name) {
-              moduleResourceMappings.moduleVersions[importedVersion.name] = targetVersionName;
-            }
-            // UUID key — matches legacy YAML where moduleVersionId.value is a DB UUID.
-            if (importedVersion.id) {
-              moduleResourceMappings.moduleVersions[importedVersion.id] = targetVersionName;
+            // Map every value a ModuleViewer could have stored for this version:
+            // co_relation_id (migrated exports), raw DB id (legacy/older exports), name.
+            for (const sourceKey of [importedVersion.co_relation_id, importedVersion.id, importedVersion.name]) {
+              if (sourceKey) moduleResourceMappings.moduleVersions[sourceKey] = targetVersionKey;
             }
           }
 
           // Also map the editingVersion if not already mapped
           const editingVersion = importedModule?.appV2?.editingVersion;
-          if (editingVersion && fallbackVersionName) {
-            if (editingVersion.name && !moduleResourceMappings.moduleVersions[editingVersion.name]) {
-              moduleResourceMappings.moduleVersions[editingVersion.name] = fallbackVersionName;
-            }
-            if (editingVersion.id && !moduleResourceMappings.moduleVersions[editingVersion.id]) {
-              moduleResourceMappings.moduleVersions[editingVersion.id] = fallbackVersionName;
+          if (editingVersion && fallbackVersionKey) {
+            for (const sourceKey of [editingVersion.co_relation_id, editingVersion.id, editingVersion.name]) {
+              if (sourceKey && !moduleResourceMappings.moduleVersions[sourceKey]) {
+                moduleResourceMappings.moduleVersions[sourceKey] = fallbackVersionKey;
+              }
             }
           }
         } else {
@@ -1094,14 +1123,30 @@ export class AppImportExportService {
           }
           if (shouldHydrateBranchStub) moduleAppIdsForStub.push(newApp.id);
 
-          // Names are preserved during import, so the target version's name
-          // equals the source's name. Write dual keys (name + legacy UUID).
+          // A ModuleViewer pin is resolved at runtime by the target version's DB `id` or
+          // `module_reference_id` (resolveAllModuleViewers) — NOT co_relation_id. Both are
+          // freshly generated on import, so read them back from the created rows and map
+          // every value the source pin could hold (co_relation_id / raw id / name) → the
+          // target's module_reference_id (git-portable), falling back to its new id.
           const importedModuleVersions = importedModule?.appV2?.appVersions || [];
+          const newVersionIds = importedModuleVersions
+            .map((v: AppVersion) => resourceMapping.appVersionMapping[v.id])
+            .filter(Boolean);
+          const newModuleVersions = newVersionIds.length
+            ? await manager.find(AppVersion, {
+                where: { id: In(newVersionIds) },
+                select: ['id', 'moduleReferenceId'],
+              })
+            : [];
+          const targetKeyByNewId = new Map(
+            newModuleVersions.map((v) => [v.id, v.moduleReferenceId ?? v.id] as [string, string])
+          );
           for (const importedVersion of importedModuleVersions) {
-            if (!importedVersion.name) continue;
-            if (resourceMapping.appVersionMapping[importedVersion.id]) {
-              moduleResourceMappings.moduleVersions[importedVersion.name] = importedVersion.name;
-              moduleResourceMappings.moduleVersions[importedVersion.id] = importedVersion.name;
+            const newVersionId = resourceMapping.appVersionMapping[importedVersion.id];
+            if (!newVersionId) continue;
+            const targetVersionKey = targetKeyByNewId.get(newVersionId) ?? newVersionId;
+            for (const sourceKey of [importedVersion.co_relation_id, importedVersion.id, importedVersion.name]) {
+              if (sourceKey) moduleResourceMappings.moduleVersions[sourceKey] = targetVersionKey;
             }
           }
         }
@@ -1747,7 +1792,8 @@ export class AppImportExportService {
       isNormalizedAppDefinitionSchema,
       createNewVersion,
       branchId,
-      isGitApp || cloning || !!branchId
+      isGitApp || cloning || !!branchId,
+      isGitApp
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2451,16 +2497,26 @@ export class AppImportExportService {
             newComponent.parent = component.parent ? parentId : null;
 
             if (component.type === 'ModuleViewer' && moduleResourceMappings && !isGitApp) {
-              // ModuleViewer properties carry stable cross-instance keys:
-              //   moduleAppId.value     = module App.co_relation_id
-              //   moduleVersionId.value = AppVersion.module_reference_id (uuid) or "" (unpinned)
-              // The version id is portable across instances by design — no rewrite needed.
-              // Only the app id may need remapping for non-git imports (file upload, clone)
-              // where the source payload could contain a DB id rather than a co_relation_id.
+              // ModuleViewer properties hold references into the module app/version.
+              // Depending on export vintage the stored value can be a co_relation_id,
+              // a raw DB id, or a name — mapModulesForAppImport keys the maps by all of
+              // them. Remap for non-git imports (file upload, clone); git imports resolve
+              // natively because referenced modules are hydrated with matching identities.
+              //   moduleAppId.value     → target module App.co_relation_id
+              //   moduleVersionId.value → target AppVersion.module_reference_id (or id)
               if (properties.moduleAppId?.value && moduleResourceMappings.moduleApps) {
                 const oldAppId = properties.moduleAppId.value;
                 if (moduleResourceMappings.moduleApps[oldAppId]) {
                   properties.moduleAppId.value = moduleResourceMappings.moduleApps[oldAppId];
+                }
+              }
+              // A pinned version reference must follow the module to its new identity,
+              // else the pin dangles (module renders unpinned / fails to resolve).
+              // Unpinned refs ("" / absent) have no map entry and are left untouched.
+              if (properties.moduleVersionId?.value && moduleResourceMappings.moduleVersions) {
+                const oldVersionId = properties.moduleVersionId.value;
+                if (moduleResourceMappings.moduleVersions[oldVersionId]) {
+                  properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
                 }
               }
             }
@@ -3413,7 +3469,8 @@ export class AppImportExportService {
     isNormalizedAppDefinitionSchema: boolean,
     createNewVersion?: boolean,
     branchId?: string,
-    useBranchVersionType = false
+    useBranchVersionType = false,
+    isGitApp = false
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -3438,14 +3495,12 @@ export class AppImportExportService {
     // Applies to git-sync, clone, AND device imports on a feature branch (branchId set).
     // Skipped for workflows since they are branch-agnostic.
     let isSubBranch = false;
-    let targetBranchName: string | null = null;
     if (!isWorkflow && branchId && useBranchVersionType) {
       const targetBranch = await manager.findOne(WorkspaceBranch, {
         where: { id: branchId },
-        select: ['id', 'isDefault', 'name'],
+        select: ['id', 'isDefault'],
       });
       isSubBranch = !!targetBranch && !targetBranch.isDefault;
-      if (isSubBranch) targetBranchName = targetBranch.name;
     }
 
     // Find the latest draft version
@@ -3526,22 +3581,37 @@ export class AppImportExportService {
         // it's already taken — that lets a deleted app's slug be reclaimed on re-import
         // instead of always minting a fresh one.
         //
-        // Slug uniqueness is enforced by enforce_app_versions_default_branch_slug_unique which
-        // is GLOBAL (no org scope). Use the transaction manager so we also see slugs already
-        // inserted earlier in this same loop (findBySlug only reads committed data and would miss
-        // those pending rows). assignedSlugsThisImport guards the fast-path to avoid redundant DB
-        // hits for slugs already claimed in this session.
+        // Two triggers enforce slug uniqueness, both INSTANCE-WIDE and TYPE-SCOPED across
+        // ALL branches (no branch filter in their EXISTS):
+        //   - enforce_app_versions_default_branch_slug_unique (default-branch rows)
+        //   - enforce_app_versions_slug_branch_unique         (feature-branch rows)
+        // For NON-git imports (device upload / clone) the pre-flight must scan every branch —
+        // an earlier import onto THIS feature branch already holds the source slug, and a
+        // default-branch-only check misses it, causing a 23505 at INSERT.
+        //
+        // Git imports keep the ORIGINAL default-branch-only scope to leave the git-sync flow
+        // byte-for-byte unchanged: a re-pull reuses the same App row (co_relation match), so
+        // its own slug is excluded and cross-app slug collisions don't arise on the git path.
+        //
+        // Use the transaction manager so slugs inserted earlier in this same loop are visible;
+        // assignedSlugsThisImport guards the fast-path.
         const rawSlug = appVersion.slug ?? importMeta?.slug;
         let resolvedSlug: string;
         if (rawSlug && !assignedSlugsThisImport.has(rawSlug)) {
-          const slugTakenByOther = await manager
+          const slugTakenQb = manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin(App, 'a', 'a.id = av.app_id')
-            .innerJoin('organization_git_sync_branches', 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
             .where('LOWER(av.slug) = LOWER(:slug)', { slug: rawSlug })
             .andWhere('a.type = :type', { type: importedApp.type || APP_TYPES.FRONT_END })
-            .andWhere('av.app_id != :appId', { appId: importedApp.id })
-            .getCount();
+            .andWhere('av.app_id != :appId', { appId: importedApp.id });
+          if (isGitApp) {
+            slugTakenQb.innerJoin(
+              'organization_git_sync_branches',
+              'wb',
+              'wb.id = av.branch_id AND wb.is_default = true'
+            );
+          }
+          const slugTakenByOther = await slugTakenQb.getCount();
           if (slugTakenByOther > 0) {
             resolvedSlug = importedApp.id;
           } else {
@@ -3556,7 +3626,13 @@ export class AppImportExportService {
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
           definition: appVersion.definition,
-          name: isSubBranch && isLastVersion && targetBranchName ? targetBranchName : appVersion.name,
+          // Feature-branch drafts get a fresh UUID name — matching native branch creation
+          // (AppsUtilService.create) — NOT the branch name. For a branch draft the version
+          // name is display-only (git identity is co_relation_id; only released 'version'
+          // rows use the name as a git-tag identity), and a branch-name value collides with
+          // the branch-name-shorthand pin semantics in resolveModuleRef. Applies to apps and
+          // modules alike (workflows never reach here — isSubBranch is false for them).
+          name: isSubBranch && isLastVersion ? uuid() : appVersion.name,
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -4846,12 +4922,21 @@ function transformComponentData(
       transformedComponent.parent = component.parent ? parentId : null;
 
       if (componentData.component === 'ModuleViewer' && moduleResourceMappings && !isGitApp) {
-        // moduleVersionId.value is a portable module_reference_id — no rewrite needed.
-        // Only the app id may need remapping for non-git imports.
+        // Remap both the module app id and the pinned version id for non-git imports.
+        // The stored values may be co_relation_id / raw id / name (export-vintage
+        // dependent); mapModulesForAppImport keys the maps by all of them.
         if (properties.moduleAppId?.value && moduleResourceMappings.moduleApps) {
           const oldAppId = properties.moduleAppId.value;
           if (moduleResourceMappings.moduleApps[oldAppId]) {
             properties.moduleAppId.value = moduleResourceMappings.moduleApps[oldAppId];
+          }
+        }
+        // Follow the pinned version to its new identity so the pin doesn't dangle.
+        // Unpinned refs ("" / absent) have no map entry and are left untouched.
+        if (properties.moduleVersionId?.value && moduleResourceMappings.moduleVersions) {
+          const oldVersionId = properties.moduleVersionId.value;
+          if (moduleResourceMappings.moduleVersions[oldVersionId]) {
+            properties.moduleVersionId.value = moduleResourceMappings.moduleVersions[oldVersionId];
           }
         }
       }
