@@ -186,13 +186,9 @@ export class VersionUtilService implements IVersionUtilService {
       ...extraParams,
     };
 
-    // chk_app_versions_branched_implies_draft requires non-DRAFT rows to be
-    // branchless. Detach branch_id in the SAME UPDATE as the status flip so
-    // the row never lands in the violating state, even momentarily within
-    // this statement.
-    if (appVersion.branchId) {
-      editableParams.branchId = null;
-    }
+    // branch_id is NOT NULL now and chk_app_versions_branched_implies_draft was dropped —
+    // PUBLISHED rows live on the default branch, so the status flip doesn't detach branch_id.
+    // (Mirrors updateVersion's handling above.)
 
     const runWrite = async (mgr: EntityManager) => {
       await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);
