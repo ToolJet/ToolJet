@@ -56,8 +56,18 @@ describe('RolesUtilService.checkIfBuilderLevelResourcesPermissions', () => {
     await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();
   });
 
-  it('returns truthy for a group with any DATA_SOURCE permission — existing behaviour', async () => {
+  it('returns falsy for a group with a restrict-only DATA_SOURCE permission (no Configure/Build with)', async () => {
     const service = makeService(jest.fn().mockResolvedValue([makePermission(ResourceType.DATA_SOURCE)]));
+
+    await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeFalsy();
+  });
+
+  it('returns truthy for a group with DATA_SOURCE Configure/Build with permission', async () => {
+    const service = makeService(
+      jest
+        .fn()
+        .mockResolvedValue([{ type: ResourceType.DATA_SOURCE, dataSourcesGroupPermission: { canConfigure: true } }])
+    );
 
     await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();
   });
