@@ -34,11 +34,7 @@ export function buildBaseLogger(): pino.Logger {
         })
       : process.stdout;
 
-  // One level for every destination: a line in `docker logs` is a line in the logs backend and
-  // vice versa. level:0 is required — multistream's own per-stream default is 'info', which would
-  // silently clamp a LOG_LEVEL of debug/trace on both legs. Filtering happens once, on the
-  // instance level below; if the backend ever needs to be quieter than stdout, that belongs in
-  // the collector's filter processor, not a second app-side knob.
+  // level:0 on both legs — multistream's per-stream default is 'info', not 0
   const destination = otelOn
     ? pino.multistream([
         { stream: consoleStream, level: 0 },

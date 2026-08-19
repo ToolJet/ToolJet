@@ -49,7 +49,7 @@ describe('buildBaseLogger', () => {
       try {
         const logger = build({
           NODE_ENV: 'production',
-          LOG_LEVEL: 'info', // one level for both destinations — nothing is filtered per-stream
+          LOG_LEVEL: 'info',
           ENABLE_OTEL: 'true',
           OTEL_EXPORTER_OTLP_LOGS: 'http://localhost:4318/v1/logs',
         });
@@ -98,8 +98,7 @@ describe('buildBaseLogger', () => {
   });
 
   describe('OTEL gating (I3 — both ENABLE_OTEL and OTEL_EXPORTER_OTLP_LOGS must be set)', () => {
-    // multistream keeps its destinations on `streams`; reaching for it is the only way to prove
-    // wiring now that the level no longer moves when OTLP is switched on.
+    // multistream exposes its destinations on `streams`
     const streamsOf = (logger: pino.Logger): Array<{ level: number }> | undefined =>
       (logger[pino.symbols.streamSym] as unknown as { streams?: Array<{ level: number }> }).streams;
 
@@ -126,16 +125,13 @@ describe('buildBaseLogger', () => {
     it('leaves the level alone when OTLP is switched on — both destinations share it', () => {
       const logger = build(bothGates);
 
-      // pre-unification this was forced down to 'info' so the OTLP stream could see more than
-      // stdout. One level now means switching OTLP on changes where lines go, never which ones.
       expect(logger.level).toBe('error');
     });
 
     it('does not clamp a verbose LOG_LEVEL on either destination', () => {
       const logger = build({ ...bothGates, LOG_LEVEL: 'debug' });
 
-      // multistream defaults each stream to 'info' when no level is given, which would drop
-      // debug records on both legs. level:0 on both is what keeps LOG_LEVEL authoritative.
+      // omitting level would clamp both legs to 'info'
       expect(logger.level).toBe('debug');
       expect(streamsOf(logger)?.map((s) => s.level)).toEqual([0, 0]);
     });
