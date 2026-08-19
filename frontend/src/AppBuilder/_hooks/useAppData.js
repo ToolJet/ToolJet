@@ -960,9 +960,8 @@ const useAppData = (
         setPageSettings(
           computePageSettings(deepCamelCase(appData?.editing_version?.pageSettings ?? appData?.pageSettings))
         );
-        let startingPage = appData.pages.find(
-          (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
-        );
+        const homePageId = appData.editing_version.homePageId || appData.editing_version.home_page_id;
+        let startingPage = appData.pages.find((page) => page.id === homePageId) || appData.pages[0];
         setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
