@@ -3,10 +3,9 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
-import { renderElement, renderCustomStyles } from './Utils';
+import { renderElement, renderCustomStyles, goToModule } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
-import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
@@ -27,15 +26,9 @@ import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import Student from '@/_ui/Icon/solidIcons/Student';
 import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
-import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import Edit from '@/_ui/Icon/bulkIcons/Edit';
-import Copy from '@/_ui/Icon/solidIcons/Copy';
-import Trash from '@/_ui/Icon/solidIcons/Trash';
-import Inspect from '@/_ui/Icon/solidIcons/Inspect';
 import classNames from 'classnames';
-import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
 import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -57,6 +50,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { Cascader } from './Components/Cascader/Cascader';
+import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
 
@@ -64,35 +58,33 @@ const INSPECTOR_HEADER_OPTIONS = [
   {
     label: 'Inspect',
     value: 'inspect',
-    icon: <Inspect width={16} />,
+    icon: <SquareDashedMousePointer size={16} color="var(--icon-weak)" />,
   },
   {
     label: 'Rename',
     value: 'rename',
-    icon: <Edit width={16} />,
+    icon: <SquarePen size={16} color="var(--icon-weak)" />,
   },
   {
     label: 'Duplicate',
     value: 'duplicate',
-    icon: <Copy width={16} />,
+    icon: <Copy size={16} color="var(--icon-weak)" />,
   },
   {
     label: 'Component permission',
     value: 'permission',
-    icon: (
-      <img
-        alt="permission-icon"
-        src="assets/images/icons/editor/left-sidebar/authorization.svg"
-        width="16"
-        height="16"
-      />
-    ),
+    icon: <LockKeyhole size={16} color="var(--icon-weak)" />,
     trailingIcon: <SolidIcon width={16} name="enterprisecrown" className="mx-1" />,
+  },
+  {
+    label: 'Edit module',
+    value: 'edit-module',
+    icon: <PencilRuler size={16} color="var(--icon-weak)" />,
   },
   {
     label: 'Delete',
     value: 'delete',
-    icon: <Trash width={16} fill={'#E54D2E'} />,
+    icon: <Trash size={16} color={'#E54D2E'} />,
   },
 ];
 
@@ -154,6 +146,9 @@ export const NEW_REVAMPED_COMPONENTS = [
   'ColorPicker',
   'FileButton',
   'ButtonGroupV2',
+  'FlexContainer',
+  'Pagination',
+  'Timeline',
 ];
 
 export const Inspector = ({
@@ -172,6 +167,7 @@ export const Inspector = ({
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
+  const hasCustomStyling = useStore((state) => state.license.featureAccess?.customStyling);
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
@@ -205,6 +201,9 @@ export const Inspector = ({
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+  const inspectorHeaderOptions = INSPECTOR_HEADER_OPTIONS.filter(
+    (option) => option.value !== 'edit-module' || componentMeta?.component === 'ModuleViewer'
+  );
 
   const { t } = useTranslation();
 
@@ -463,6 +462,9 @@ export const Inspector = ({
     if (value === 'duplicate') {
       copyComponents({ isCloning: true });
     }
+    if (value === 'edit-module') {
+      goToModule(componentMeta?.definition?.properties?.moduleAppId?.value);
+    }
     setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
@@ -571,6 +573,7 @@ export const Inspector = ({
             dataQueries={dataQueries}
             currentState={currentState}
             allComponents={allComponents}
+            hasCustomStyling={hasCustomStyling}
           />
         </div>
         {!isRevampedComponent && buildGeneralStyle()}
@@ -645,7 +648,7 @@ export const Inspector = ({
                         className={classNames({ 'dark-theme': darkMode }, 'inspector-header-actions-menu')}
                       >
                         <Popover.Body bsPrefix="list-item-popover-body">
-                          {INSPECTOR_HEADER_OPTIONS.map((option) => {
+                          {inspectorHeaderOptions.map((option) => {
                             const optionBody = (
                               <div
                                 data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
@@ -757,6 +760,9 @@ const getDocsLink = (componentMeta) => {
       return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
     case 'RangeSliderV2':
       return 'https://docs.tooljet.com/docs/widgets/range-slider';
+    case 'ModuleViewer':
+    case 'ModuleContainer':
+      return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }
@@ -783,7 +789,15 @@ const widgetsWithStyleConditions = {
   },
 };
 
-const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+const RenderStyleOptions = ({
+  componentMeta,
+  component,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  allComponents,
+  hasCustomStyling,
+}) => {
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
   if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
@@ -806,9 +820,20 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
     return null;
   }
 
-  return Object.keys(
-    NEW_REVAMPED_COMPONENTS.includes(component.component.component) ? groupedProperties : componentMeta.styles
-  ).map((style) => {
+  const deprecatedStyleProperties = Object.entries(componentMeta.properties ?? {})
+    .filter(([, property]) => property.section === 'deprecatedStyles')
+    .map(([key]) => key);
+
+  const isRevamped = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+  // Universal styles (e.g. the "Advanced" group holding `cssClass`) are spread first in
+  // combineProperties, so without this they'd render at the top. Pin "Advanced" last.
+  const orderedStyleKeys = isRevamped
+    ? Object.keys(groupedProperties)
+        .filter((key) => key !== 'Advanced' || hasCustomStyling)
+        .sort((a, b) => (a === 'Advanced' ? 1 : b === 'Advanced' ? -1 : 0))
+    : Object.keys(componentMeta.styles).filter((key) => key !== 'cssClass' || hasCustomStyling);
+
+  const styleAccordions = orderedStyleKeys.map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 
@@ -862,6 +887,37 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
       );
     }
   });
+
+  if (deprecatedStyleProperties.length === 0) {
+    return styleAccordions;
+  }
+
+  return [
+    ...styleAccordions,
+    <Accordion
+      key="deprecated-styles"
+      isTitleCase={false}
+      items={[
+        {
+          title: 'Deprecated styles',
+          isOpen: true,
+          isDeprecated: true,
+          children: deprecatedStyleProperties.map((property) =>
+            renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              property,
+              'properties',
+              currentState,
+              allComponents
+            )
+          ),
+        },
+      ]}
+    />,
+  ];
 };
 
 const resolveConditionalStyle = (definition, condition, currentState) => {
