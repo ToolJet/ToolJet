@@ -112,6 +112,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     const gps = await em.find(GranularPermissions, {
       where,
       relations: { group: true },
+      order: { createdAt: 'ASC' },
     });
     if (gps.length === 0) return gps;
 

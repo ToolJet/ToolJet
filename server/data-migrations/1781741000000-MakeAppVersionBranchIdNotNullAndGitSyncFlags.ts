@@ -50,12 +50,33 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     `);
 
     // ── 3. Backfill branch_id = org default branch, then enforce NOT NULL ────────
-    // Covers the remaining NULL rows: DRAFT version rows and PUBLISHED rows. All of
-    // them already carry app_name/slug, so chk_app_versions_branch_metadata holds.
+    // Covers the remaining NULL rows: DRAFT version rows and PUBLISHED rows.
     // Workflows are excluded from the backfill and from the NOT NULL requirement below —
     // they don't participate in branching (1778000000000's step 2a-bis already detached
     // their branch_id to NULL) and never carry app_name/slug, so backfilling a real
     // branch_id here would immediately trip chk_app_versions_branch_metadata.
+
+    // Heal non-workflow rows still missing app_name/slug BEFORE the branch_id backfill.
+    // The step originally assumed every branch_id-NULL non-workflow row already carried
+    // app_name/slug (from 1778000000000 + BackfillPublishedVersionMetadataFromDraft), but
+    // real data contains rows whose source apps.name was NULL / apps.slug was zeroed to
+    // app.id, leaving app_versions metadata NULL. Once branch_id is populated below,
+    // chk_app_versions_branch_metadata (branch_id IS NULL OR (app_name IS NOT NULL AND
+    // slug IS NOT NULL)) would reject those rows. Fall back to apps.slug (zeroed to app.id,
+    // non-null) then app.id — matches the "slug defaults to app.id" convention and is
+    // unique per app. The name/slug triggers were dropped in step 2, so this write does
+    // not re-validate uniqueness here.
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET slug = COALESCE(av.slug, a.slug, a.id::text),
+          app_name = COALESCE(av.app_name, a.name, a.slug, a.id::text)
+      FROM apps a
+      WHERE av.app_id = a.id
+        AND a.type <> 'workflow'
+        AND av.branch_id IS NULL
+        AND (av.slug IS NULL OR av.app_name IS NULL)
+    `);
+
     await queryRunner.query(`
       UPDATE app_versions av
       SET branch_id = wb.id

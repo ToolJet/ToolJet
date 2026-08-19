@@ -8,10 +8,7 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types';
 import * as grpc from '@grpc/grpc-js';
-import * as os from 'os';
-import * as path from 'path';
 import JSON5 from 'json5';
-import { isEmpty } from 'lodash';
 import fg from 'fast-glob';
 import {
   buildReflectionClient,
@@ -27,6 +24,7 @@ import {
   loadProtoFromRemoteUrl,
   extractServicesFromGrpcPackage,
   executeGrpcMethod,
+  resolveFilesystemConfig,
 } from './operations';
 
 export default class Grpcv2QueryService implements QueryService {
@@ -87,7 +85,7 @@ export default class Grpcv2QueryService implements QueryService {
         }
 
         case 'import_protos_from_filesystem': {
-          const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+          const { directory, pattern } = resolveFilesystemConfig(sourceOptions);
           const expandedDir = validateFilesystemAccess(directory);
 
           // Count proto files — don't parse them
@@ -238,25 +236,13 @@ export default class Grpcv2QueryService implements QueryService {
   }
 
   /**
-   * Resolves the filesystem proto directory and glob pattern from source options,
-   * falling back to ~/protos and **\/*.proto respectively.
-   */
-  private resolveFilesystemConfig(sourceOptions: SourceOptions): { directory: string; pattern: string } {
-    const directory = isEmpty(sourceOptions.proto_files_directory)
-      ? path.join(os.homedir(), 'protos')
-      : sourceOptions.proto_files_directory;
-    const pattern = isEmpty(sourceOptions.proto_files_pattern) ? '**/*.proto' : sourceOptions.proto_files_pattern;
-    return { directory, pattern };
-  }
-
-  /**
    * Lightweight service name enumeration for the DS config page (filesystem mode).
    * Uses protobufjs.parse() (~30KB/file vs 500KB with proto-loader) to scan
    * proto files and return just service names for a multi-select.
    */
   private async listServices(sourceOptions: SourceOptions): Promise<Array<{ label: string; value: string }>> {
     try {
-      const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+      const { directory, pattern } = resolveFilesystemConfig(sourceOptions);
 
       const { serviceNames, failures } = await discoverServiceNamesFromFilesystem(directory, pattern);
 
@@ -288,7 +274,7 @@ export default class Grpcv2QueryService implements QueryService {
 
       if (sourceOptions.proto_files === 'import_protos_from_filesystem') {
         if (!serviceNames?.length) return [];
-        const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+        const { directory, pattern } = resolveFilesystemConfig(sourceOptions);
         const { services } = await discoverMethodsForSelectedServices(directory, pattern, serviceNames);
         return services;
       }

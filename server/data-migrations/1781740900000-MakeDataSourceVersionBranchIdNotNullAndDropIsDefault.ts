@@ -78,7 +78,11 @@ export class MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000 i
     //     the is_default fallback is a redundant leftover, left for the delete below.
     //
     // Backfill the first case only: set branch_id = org default branch on every
-    // is_default fallback that is the sole row of its data source.
+    // branch_id-NULL row that is the sole row of its data source. NOT filtered on
+    // is_default: real data also contains is_default=false, is_active=true,
+    // branch_id IS NULL duplicate rows (never the fallback, but still branchless) —
+    // when such a row is the only DSV of its data source, its data lives nowhere
+    // else, so it must move onto the default branch too.
     await queryRunner.query(`
       UPDATE data_source_versions f
       SET branch_id = wb.id
@@ -86,7 +90,6 @@ export class MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000 i
       JOIN organization_git_sync_branches wb
         ON wb.organization_id = ds.organization_id AND wb.is_default = true
       WHERE f.data_source_id = ds.id
-        AND f.is_default = true
         AND f.is_active = true
         AND f.branch_id IS NULL
         AND (
@@ -95,16 +98,23 @@ export class MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000 i
         ) = 1
     `);
 
-    // Delete the redundant leftovers. After the backfill above, the only
-    // is_default fallback rows still carrying branch_id IS NULL are those whose
-    // data source has more than one DSV row — the data already lives on a default
-    // or feature branch, so the NULL-branch fallback is safe to drop. Cascade
-    // removes its data_source_version_options.
+    // Delete the redundant leftovers. After the backfill above, every branch_id-NULL
+    // row still remaining belongs to a data source that has MORE THAN ONE DSV row.
+    // Drop such a row only when its data source still has a branch-bearing sibling —
+    // the data already lives on a default or feature branch, so the NULL-branch copy
+    // is safe to remove. The sibling guard guarantees we never delete the last copy
+    // (also NOT filtered on is_default: covers both the legacy is_default fallback and
+    // the is_default=false branchless duplicates seen in real data). Cascade removes
+    // its data_source_version_options.
     await queryRunner.query(`
-      DELETE FROM data_source_versions
-      WHERE is_default = true
-        AND is_active = true
-        AND branch_id IS NULL
+      DELETE FROM data_source_versions f
+      WHERE f.is_active = true
+        AND f.branch_id IS NULL
+        AND EXISTS (
+          SELECT 1 FROM data_source_versions d
+          WHERE d.data_source_id = f.data_source_id
+            AND d.branch_id IS NOT NULL
+        )
     `);
 
     // ── Phase C: drop is_default, enforce NOT NULL, rebuild the index ────

@@ -57,7 +57,7 @@ class BaseManageGranularAccess extends React.Component {
       deletingPermissions: false,
       initialPermissionStateDs: {
         canUse: false,
-        canView: false,
+        canConfigure: false,
         canRunQuery: true,
       },
       initialPermissionStateFolder: {
@@ -115,7 +115,7 @@ class BaseManageGranularAccess extends React.Component {
 
   componentDidMount() {
     this.fetchAppsCanBeAdded();
-    this.fetchGranularPermissions(this.props.groupPermissionId);
+    this.fetchGranularPermissions(this.props.groupPermissionId, { showLoader: true });
   }
   componentDidUpdate(prevProps) {
     if (prevProps.addableDs !== this.props.addableDs) {
@@ -186,10 +186,8 @@ class BaseManageGranularAccess extends React.Component {
         toast.error(err.error);
       });
   };
-  fetchGranularPermissions = (groupPermissionId) => {
-    this.setState({
-      isLoading: true,
-    });
+  fetchGranularPermissions = (groupPermissionId, { showLoader = false } = {}) => {
+    if (showLoader) this.setState({ isLoading: true });
     groupPermissionV2Service.fetchGranularPermissions(groupPermissionId).then((data) => {
       this.setState({
         granularPermissions: data,
@@ -552,7 +550,7 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   renderResourcePermissions = (props) => {
-    const { permissions, currentGroupPermission, isEditable, index } = props;
+    const { permissions, currentGroupPermission, isEditable } = props;
     const { type } = permissions;
 
     switch (type) {
@@ -564,7 +562,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.DATA_SOURCES:
@@ -575,7 +573,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.WORKFLOWS:
@@ -586,7 +584,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.FOLDERS:
@@ -597,7 +595,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.MODULES:
@@ -608,7 +606,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.WORKFLOW_FOLDERS:
@@ -619,7 +617,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       case RESOURCE_TYPE.MODULE_FOLDERS:
@@ -630,7 +628,7 @@ class BaseManageGranularAccess extends React.Component {
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
             isEditable={isEditable}
-            key={index}
+            key={permissions.id}
           />
         );
       default:
@@ -873,8 +871,8 @@ class BaseManageGranularAccess extends React.Component {
           { label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' },
         ];
 
-    // End-user groups cannot hold builder-level data source access; only query-run restriction
-    const isEndUserGroup = this.props?.groupPermission?.name === 'end-user';
+    // Groups with end-users cannot hold builder-level data source access; only query-run restriction
+    const isEndUserGroup = this.props?.groupPermission?.name === 'end-user' || hasEndUsers;
     this.setState((prevState) => ({
       modalTitle: `Add ${RESOURCE_NAME_MAPPING[resourceType].toLowerCase()} permissions`,
       resourceType,
@@ -965,7 +963,7 @@ class BaseManageGranularAccess extends React.Component {
     const permissionStateChanged =
       type === RESOURCE_TYPE.DATA_SOURCES
         ? this.state.initialState.initialPermissionStateDs?.canUse !== newPermissionState?.canUse ||
-          this.state.initialPermissionStateDs?.canConfigure !== newPermissionState?.canConfigure ||
+          this.state.initialState.initialPermissionStateDs?.canConfigure !== newPermissionState?.canConfigure ||
           (this.state.initialState.initialPermissionStateDs?.canRunQuery ?? true) !==
             (newPermissionState?.canRunQuery ?? true)
         : this.state.initialState.initialPermissionState?.canEdit !== newPermissionState?.canEdit ||
@@ -1045,16 +1043,27 @@ class BaseManageGranularAccess extends React.Component {
       hasChanges,
     } = this.state;
 
-    const { addableDs = [], resourcesOptions } = this.props;
+    const { resourcesOptions } = this.props;
 
     const currentGroupPermission = this.props?.groupPermission;
 
     const isRoleGroup = currentGroupPermission.name == 'admin';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
+    // Adding a data-source permission that grants nothing (no builder access, no restriction) is a no-op; block it.
+    // Edit left alone: legacy all-false end-user rows must stay editable (resource list).
+    const { canUse, canConfigure, canRunQuery } = this.state.initialPermissionStateDs;
+    const isEmptyDsPermission =
+      modalType === 'add' &&
+      resourceType === RESOURCE_TYPE.DATA_SOURCES &&
+      !canUse &&
+      !canConfigure &&
+      canRunQuery !== false;
     const addPermissionTooltipMessage = !newPermissionName
       ? 'Please input permissions name'
       : isCustom && this.getSelectedResources().length === 0
       ? 'Please select apps or select all apps option'
+      : isEmptyDsPermission
+      ? 'Select an access level or restrict query run'
       : '';
     const isBasicPlan = this.props.isBasicPlan;
     const disableEditUpdate = currentGroupPermission.name == 'end-user' || isBasicPlan;
@@ -1142,7 +1151,8 @@ class BaseManageGranularAccess extends React.Component {
               disabled:
                 (modalType === 'add' && !newPermissionName) ||
                 (modalType === 'edit' && !hasChanges) ||
-                (isCustom && this.getSelectedResources().length === 0),
+                (isCustom && this.getSelectedResources().length === 0) ||
+                isEmptyDsPermission,
               tooltipMessage: addPermissionTooltipMessage,
             }}
             disableBuilderLevelUpdate={disableEditUpdate}
@@ -1226,12 +1236,11 @@ class BaseManageGranularAccess extends React.Component {
                       ];
                       return order.indexOf(a.type) - order.indexOf(b.type);
                     })
-                    .map((permissions, index) => {
+                    .map((permissions) => {
                       return this.renderResourcePermissions({
                         permissions,
                         currentGroupPermission,
                         isEditable: this.getIsEditable(isBasicPlan, this.props.isFeatureEnabled),
-                        index,
                       });
                     })}
                 </>

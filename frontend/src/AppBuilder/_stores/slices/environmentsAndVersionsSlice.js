@@ -329,7 +329,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }
   },
 
-  deleteVersionAction: async (appId, versionId, onSuccess, onFailure) => {
+  deleteVersionAction: async (appId, versionId, onSuccess, onFailure, moduleId = 'canvas') => {
     try {
       // Delete the version. In a git-enabled workspace the app-git endpoint performs the DB delete
       // AND removes the git tag in one server-side call; non-git workspaces (incl. CE) use the
@@ -350,6 +350,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         editorEnvironmentId: get().selectedEnvironment.id,
       });
       const editorVersion = response.editorVersion;
+      const wasSelectedVersionDeleted = get().selectedVersion?.id === versionId;
 
       set((state) => {
         const newState = {
@@ -360,14 +361,19 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           environments: response?.environments?.length ? response.environments : get().environments,
         };
 
-        if (state.selectedVersion?.id === versionId) {
-          const newSelectedVersion = editorVersion; // last version can't be deleted
-          newState.selectedVersion = newSelectedVersion;
-          newState.currentVersionId = newSelectedVersion.id;
+        if (wasSelectedVersionDeleted) {
+          newState.selectedVersion = editorVersion; // last version can't be deleted
+          newState.currentVersionId = editorVersion.id;
         }
 
         return newState;
       });
+
+      const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
+      if (isModuleApp && wasSelectedVersionDeleted) {
+        get().changeEditorVersionAction(appId, editorVersion.id, onSuccess, onFailure, moduleId);
+        return;
+      }
 
       onSuccess();
     } catch (error) {
@@ -764,6 +770,36 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         { id: response.editorEnvironment?.id, name: response.editorEnvironment?.name },
         moduleId
       );
+
+      const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
+      if (isModuleApp) {
+        get().fetchGlobalDataSources(
+          get().appStore?.modules?.[moduleId]?.app?.organizationId,
+          versionId,
+          response.editorEnvironment?.id
+        );
+
+        if (response.editorEnvironment?.id) {
+          const { constants } = await orgEnvironmentConstantService.getConstantsFromEnvironment(
+            response.editorEnvironment.id
+          );
+          const orgConstants = {};
+          const orgSecrets = {};
+          constants.forEach((constant) => {
+            if (constant.type !== 'Secret') {
+              orgConstants[constant.name] = constant.value;
+            } else {
+              orgSecrets[constant.name] = constant.value;
+            }
+          });
+          get().setResolvedConstants(orgConstants, moduleId);
+          get().setSecrets(orgSecrets, moduleId);
+        }
+
+        get().initDependencyGraph(moduleId);
+        get().dataQuery.runOnLoadQueries(moduleId);
+      }
+
       onSuccess({
         selectedEnvironment: response.editorEnvironment,
         hasAccessToPromotedEnvironment: hasAccessToPromotedEnv,

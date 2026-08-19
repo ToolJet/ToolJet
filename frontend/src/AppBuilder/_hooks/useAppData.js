@@ -379,6 +379,11 @@ const useAppData = (
             // on the module's slug. ModuleViewer already resolved the parent's environment
             // id/name — reuse them instead of re-resolving.
             editorEnvironment = { id: environmentId, name: environmentName };
+            try {
+              constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(environmentId);
+            } catch (error) {
+              console.error('Error fetching module constants:', error);
+            }
           } else {
             try {
               const queryParams = { slug: slug };
@@ -520,6 +525,8 @@ const useAppData = (
 
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
+        }
+        if (!moduleMode || moduleId === 'canvas') {
           const global_settings = mapKeys(
             appData.editing_version?.global_settings || appData.global_settings,
             (value, key) => camelCase(key)
@@ -530,7 +537,7 @@ const useAppData = (
           setGlobalSettings(global_settings);
         }
         setPages(pages, moduleId);
-        if (!moduleMode) {
+        if (!moduleMode || moduleId === 'canvas') {
           setPageSettings(
             computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
           );

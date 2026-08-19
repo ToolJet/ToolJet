@@ -35,7 +35,7 @@ Edition pattern: **composition** via registries + webpack module replacement.
   - `frontend/src/modules/common/helpers/getEditionSpecificStores.js`
 - `fetchEdition()` (`frontend/src/modules/common/helpers/utils.js`) — runtime edition check
 
-Frontend domain glossary and decisions: `frontend/CONTEXT.md`.
+Frontend conventions, App Builder architecture and glossary: `frontend/AGENTS.md`.
 
 ## Project structure
 
@@ -86,6 +86,17 @@ cd plugins && npm install && npm run build
 - TypeORM schema migrations in `server/src/migrations/` (and `server/ee/migrations/` for EE); data migrations in `server/data-migrations/`
 - Never import `@ee/` or `@cloud/` from CE code — webpack enforces this at compile time
 - Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
+- Lint before committing. Pre-commit hooks are in the repo (husky + lint-staged, activated by root `npm install`); the hook only lint-fixes frontend files — backend needs `cd server && npm run lint` manually. CI lints all three folders and blocks the PR on failure. Never `--no-verify` unless the user explicitly asks
+
+## Skills
+
+Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load the one matching the task instead of improvising — ToolJet is a superproject with two submodules, and every git operation has to fan out across all three in a fixed order.
+
+| Task | Skill |
+|---|---|
+| Merge a branch across root + submodules | `merge` |
+| Commit across root + submodules | `commit` |
+| Push and open PRs across root + submodules | `create-pr` |
 
 ## Context file layout
 
@@ -98,6 +109,7 @@ Context is layered — the closest file to the code you're changing wins:
 | `server/AGENTS.md` | Backend + testing conventions |
 | `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants |
 | `server/ee/AGENTS.md` | EE-extends-CE rules (in EE submodule) |
-| `frontend/CONTEXT.md` | Frontend glossary + decisions log |
+| `frontend/AGENTS.md` | Frontend conventions, App Builder architecture, glossary |
+| `server/docs/testing.md` | Backend testing — what to test, then how to write it |
 
 **Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature. Stale context is worse than no context.

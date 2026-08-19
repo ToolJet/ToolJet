@@ -28,6 +28,13 @@ modules/{feature}/
 
 ## Conventions
 
+### Design principles
+
+- Strong typing always. Never `any` — use precise types, or cast through `unknown` where unavoidable (test private access, caught errors).
+- *A Philosophy of Software Design*, pragmatically: deep modules (simple interface hiding a rich implementation, no shallow pass-through layers); design it twice (sketch a second approach before committing to the first); define errors out of existence (make edge cases structurally impossible over exception plumbing); pull complexity downward (absorb it in the module, don't push it onto callers); separate general-purpose from special-purpose code; comment only the non-obvious — design decisions and invariants code can't express.
+- *Grokking Simplicity*, pragmatically: separate calculations (pure functions) from actions (effects); stratified design — module-level pure helpers above the class, domain-named types; push effects to the edges.
+- Prefer simplicity and readability over cleverness. Optimize for the next reader.
+
 ### Entities (TypeORM)
 
 - `@Entity({ name: 'table_name' })` with `@PrimaryGeneratedColumn('uuid')`.
@@ -61,8 +68,9 @@ modules/{feature}/
 
 ### Migrations
 
-- **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs.
-- **Data migrations** (`data-migrations/`): MUST log progress — `[START] {Action} | Total: {N}`, `[PROGRESS] {i}/{N} ({%})`, `[SUCCESS] {Action} finished.` No silent bulk updates.
+- **Schema migrations** (`src/migrations/`, EE: `ee/migrations/`): `{timestamp}-{DescriptiveName}.ts`, `MigrationInterface` with `up`/`down`, QueryRunner API, CASCADE on delete for FKs. Schema shape changes only — no data manipulation here.
+- **Data migrations** (`data-migrations/`): any data manipulation that must run on deployment goes here, never in schema migrations.
+- Data migrations MUST log progress — `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` No silent bulk updates. Exemplar: `data-migrations/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.
 - Prefer runtime interpretation of existing values over new sentinel columns + migrations; repurpose existing columns/tables over adding parallel structures.
 
 ### Widget config sync (CRITICAL)
@@ -78,11 +86,18 @@ Server widget config (`src/modules/apps/services/widget-config/`) and frontend c
 - Never abbreviate `data_source` as `ds`.
 - Use glossary terms (`../UBIQUITOUS_LANGUAGE.md`): Workspace not Organization, Component not Widget, Builder/End User not Editor/Viewer.
 
+### Linting & hooks
+
+- Always lint before committing: `cd server && npm run lint`. CI runs the same per folder (`lint-for-server`/`-frontend`/`-plugins` jobs in `.github/workflows/ci.yml`) and a lint failure blocks the PR — catching it locally is strictly cheaper.
+- Git hooks live in the repo (husky, root `package.json`; activated by root `npm install`). Pre-commit lint-staged covers frontend files only — backend lint is NOT run by the hook, run it yourself. Some branch lines also ship a pre-push hook running affected server tests.
+- Hook not installed (fresh clone, `.git/hooks` missing husky)? Run root `npm install` to set it up, or flag it to the user.
+- **Never commit or push with `--no-verify` unless the user explicitly asks.** Hooks failing means fix the failure, not bypass it — a bypass only defers the same failure to CI.
+
 ## Testing (Jest)
 
 > Tests are documentation first. Describe blocks = table of contents; `it()` = plain English; assertions = response shape. Write failing tests before implementation.
 
-Judgment layer: `docs/testing-philosophy.md` — what to test (behavior matrix: edition × plan × role × feature gate × tenant scope × resource state, with pruning rules), unit vs e2e placement, what to skip, when to delete a test. This section is mechanics only. The checklist below is that doc's summary (canonical here); read the full doc when placement or matrix coverage is unclear.
+Full reference: `docs/testing.md` — part 1 is judgment (behavior matrix across edition × plan × role × feature gate × tenant scope × resource state, pruning rules, unit vs e2e placement, what to skip, when to delete a test), part 2 is mechanics (run commands, directory layout, isolation model, describe templates, helper layers, `@group`). This section summarises both; read the doc when the summary runs out.
 
 1. What could actually break here?
 2. Needs real DB/HTTP round trip to be meaningful? → e2e. Else → unit.
@@ -97,7 +112,7 @@ Judgment layer: `docs/testing-philosophy.md` — what to test (behavior matrix: 
 - Edition/plan blocks only when behavior differs: EE-only features add a `CE` block asserting the 403/gating error; plan-variant features get one describe per plan.
 - Assert shape with `toMatchObject()` + `expect.any()`, not per-field assertions. Test failure paths (401/403/404) too.
 - Helpers are stratified (import from `'test-helper'` barrel, never direct files): setup (bootstrap) / seed (factories) / api (HTTP) / utils (TypeORM) / domain files. New domain helpers → new file, added to barrel. Use seed helpers, not inline entity construction.
-- Tag suites with `/** @group platform|workflows|database|marketplace|security|events|notifications */` before the outermost describe.
+- Tag suites with `/** @group platform|workflows|database|marketplace */` before the outermost describe.
 - Run: `npm test`, `npm run test:e2e` (`--testPathPatterns`, `-t`, `--group=` filters). `DEBUG_TESTS=true` restores console output.
 
 ## Module context files
