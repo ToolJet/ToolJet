@@ -5,6 +5,7 @@ import moment from 'moment';
 
 import { cn } from '@/lib/utils';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { organizationService } from '@/_services';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { Button } from '@/components/ui/Button/Button';
@@ -48,6 +49,8 @@ export const AccessTokensCard = ({ darkMode }) => {
 
   const edition = fetchEdition();
 
+  const currentOrgId = authenticationService.currentSessionValue?.current_organization_id;
+
   const fetchTokens = () => {
     setLoadFailed(false);
     customComponentLibrariesService
@@ -68,7 +71,7 @@ export const AccessTokensCard = ({ darkMode }) => {
       .then((res) => {
         const orgs = res?.organizations ?? res ?? [];
         setOrganizations(orgs);
-        if (orgs.length > 0) setOrganizationId(orgs[0].id);
+        if (orgs.length > 0) setOrganizationId(orgs.find((org) => org.id === currentOrgId)?.id ?? orgs[0].id);
       })
       .catch(() => toast.error('Could not load your workspaces', { duration: 3000 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,14 +115,14 @@ export const AccessTokensCard = ({ darkMode }) => {
     setCreateInProgress(false);
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (textToCopy) => {
     try {
-      await navigator.clipboard.writeText(createdToken);
-      toast.success('Token copied to clipboard', { duration: 2000 });
+      await navigator.clipboard.writeText(textToCopy);
+      toast.success('Copied to clipboard', { duration: 2000 });
     } catch {
       // clipboard API can be denied (permissions / non-secure context) — the token is
       // still on screen, so tell the user to grab it manually instead of failing silently.
-      toast.error('Could not copy automatically — select and copy the token manually', { duration: 3000 });
+      toast.error('Could not copy automatically — select and copy the text manually', { duration: 3000 });
     }
   };
 
@@ -256,7 +259,7 @@ export const AccessTokensCard = ({ darkMode }) => {
                 leadingIcon="copy"
                 className="tw-shrink-0"
                 fill="var(--icon-strong)"
-                onClick={handleCopy}
+                onClick={() => handleCopy(createdToken)}
               />
             </div>
 
@@ -273,7 +276,7 @@ export const AccessTokensCard = ({ darkMode }) => {
                 leadingIcon="copy"
                 className="tw-shrink-0"
                 fill="var(--icon-strong)"
-                onClick={handleCopy}
+                onClick={() => handleCopy(organizationId)}
               />
             </div>
           </div>
