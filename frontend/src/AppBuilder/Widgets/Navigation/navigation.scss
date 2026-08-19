@@ -187,6 +187,12 @@
         color: var(--nav-item-label-color);
       }
     }
+
+    &.more-pages-btn-icon-only {
+      width: 32px !important;
+      padding: 6px;
+      gap: 0;
+    }
   }
 
   // Accordion item for vertical groups

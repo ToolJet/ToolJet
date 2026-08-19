@@ -455,6 +455,9 @@ export const Navigation = function Navigation(props) {
     shallow
   );
 
+  // Below 3 grid columns the "More" button's fixed width no longer fits its label — show icon only.
+  const isCompactMoreBtn = gridColumns != null && gridColumns < 3;
+
   const [viewerMaxWidth, setViewerMaxWidth] = useState(undefined);
   useLayoutEffect(() => {
     if (currentMode !== 'view' || orientation !== 'horizontal') {
@@ -588,9 +591,13 @@ export const Navigation = function Navigation(props) {
               <NavigationMenuItem>
                 <DropdownMenu.Root modal={false}>
                   <DropdownMenu.Trigger asChild>
-                    <button type="button" className="more-pages-btn">
+                    <button
+                      type="button"
+                      className={cx('more-pages-btn', { 'more-pages-btn-icon-only': isCompactMoreBtn })}
+                      aria-label="More"
+                    >
                       <TablerIcon iconName="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
-                      More
+                      {!isCompactMoreBtn && 'More'}
                     </button>
                   </DropdownMenu.Trigger>
                   <DropdownMenu.Portal>
