@@ -2,23 +2,24 @@ import React from 'react';
 import { render as rtlRender } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 
 /**
- * Renders a component the way the app mounts it: inside a router and the
- * breadcrumb context. Use this instead of @testing-library/react's render
- * for anything that touches routing, links, or breadcrumbs.
+ * Renders a component inside a router. Feature-specific providers stay
+ * explicit in each test or adapter.
  *
  *   render(<MyComponent />, { route: '/workspace/apps' })
  */
-function render(ui, { route = '/', breadcrumb = { sidebarNav: null, updateSidebarNAV: jest.fn() }, ...options } = {}) {
+function render(ui, { route = '/', ...options } = {}) {
   const Wrapper = ({ children }) => (
-    <MemoryRouter initialEntries={[route]}>
-      <BreadCrumbContext.Provider value={breadcrumb}>{children}</BreadCrumbContext.Provider>
+    <MemoryRouter initialEntries={[route]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      {children}
     </MemoryRouter>
   );
   return rtlRender(ui, { wrapper: Wrapper, ...options });
 }
 
+// Re-export RTL's public helpers while intentionally replacing its render.
+// eslint-disable-next-line import/export
 export * from '@testing-library/react';
+// eslint-disable-next-line import/export
 export { render, userEvent };

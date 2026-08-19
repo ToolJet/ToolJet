@@ -6,7 +6,7 @@ const path = require('path');
 // TOOLJET_EDITION (NormalModuleReplacementPlugin + resolve.fallback); mirror
 // that here. Default: ee when the submodule is present, ce otherwise. Run
 // `TOOLJET_EDITION=ce npx jest` to test CE resolution on an ee checkout.
-const eeExists = fs.existsSync(path.resolve(__dirname, 'ee'));
+const eeExists = fs.existsSync(path.resolve(__dirname, 'ee/modules'));
 const edition = process.env.TOOLJET_EDITION || (eeExists ? 'ee' : 'ce');
 const useRealEe = edition !== 'ce' && eeExists;
 const emptyModule = '<rootDir>/src/modules/emptyModule';
@@ -29,28 +29,15 @@ const esmPackages = [
 ];
 
 module.exports = {
-  // @swc/jest instead of babel-jest: the app builds with Babel, but for tests SWC
-  // transforms ~10x faster and this codebase (263k LOC + transformed node_modules)
-  // makes transform speed the long pole. Fallback: swap either entry back to
-  // 'babel-jest' (still installed) if an SWC edge case appears.
   transform: {
-    // JSX lives in .js files here, so .js/.jsx need the ecmascript parser with jsx.
-    '^.+\\.m?jsx?$': [
-      '@swc/jest',
+    // Keep the application presets, but omit production-only Babel plugins when
+    // transforming ESM dependencies such as MSW.
+    '^.+\\.(mjs|[jt]sx?)$': [
+      'babel-jest',
       {
-        jsc: {
-          parser: { syntax: 'ecmascript', jsx: true },
-          transform: { react: { runtime: 'classic' } },
-        },
-      },
-    ],
-    '^.+\\.tsx?$': [
-      '@swc/jest',
-      {
-        jsc: {
-          parser: { syntax: 'typescript', tsx: true },
-          transform: { react: { runtime: 'classic' } },
-        },
+        babelrc: false,
+        configFile: false,
+        presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
       },
     ],
     '^.+\\.svg$': '<rootDir>/__mocks__/svg.js',
@@ -58,6 +45,7 @@ module.exports = {
   transformIgnorePatterns: [`node_modules/(?!(${esmPackages.join('|')})/)`],
   moduleNameMapper: {
     '^config$': '<rootDir>/src/test/mocks/config.js',
+    '^@tooljet/plugins/client$': '<rootDir>/src/test/mocks/tooljetPluginsClient.js',
     // Real module uses top-level await (bundler-only); analytics stay dead in tests.
     'modules/common/helpers/posthogHelper(\\.js)?$': '<rootDir>/src/test/mocks/posthogHelper.js',
     '\\.(css|less|sass|scss)$': '<rootDir>/__mocks__/style.js',
@@ -81,18 +69,21 @@ module.exports = {
   // required by MSW v2. Suites can still opt into `@jest-environment node`.
   testEnvironment: 'jest-fixed-jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/test/setupTests.js'],
+  clearMocks: true,
   moduleDirectories: ['node_modules', 'src'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'json', 'jsx'],
-  // Convention: colocated __tests__ dirs, .test.* suffix (see src/test/README.md).
-  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
+  // Keep both naming patterns already present in the repository.
+  testMatch: ['**/__tests__/**/*.spec.[jt]s?(x)', '<rootDir>/src/test/**/__tests__/**/*.test.[jt]s?(x)'],
   testPathIgnorePatterns: ['/node_modules/'],
   coverageReporters: ['text', 'lcov', 'json-summary'],
+  coverageDirectory: `<rootDir>/coverage/app-builder/${edition}/jest`,
   collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.stories.{js,jsx,ts,tsx}',
-    '!src/**/*.spec.md',
-    '!src/**/index.{js,ts}',
-    '!src/**/__mocks__/**',
+    'src/AppBuilder/**/*.{js,jsx,ts,tsx}',
+    '!src/AppBuilder/**/*.stories.{js,jsx,ts,tsx}',
+    '!src/AppBuilder/**/*.spec.md',
+    '!src/AppBuilder/**/__tests__/**',
+    '!src/AppBuilder/**/*.(test|spec).{js,jsx,ts,tsx}',
+    '!src/AppBuilder/**/__mocks__/**',
     '!src/test/**',
   ],
 };

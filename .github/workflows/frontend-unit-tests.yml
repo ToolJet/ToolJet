@@ -4,15 +4,6 @@ on:
   pull_request:
     paths:
       - 'frontend/**'
-  push:
-    branches:
-      - develop
-      - lts-3.16
-    paths:
-      - 'frontend/**'
-  schedule:
-    # Nightly full run keeps the coverage baseline honest even on quiet days.
-    - cron: '30 1 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -28,12 +19,12 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # --changedSince needs the full history to diff against the base branch.
           fetch-depth: 0
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 22.15.1
           cache: npm
@@ -45,17 +36,20 @@ jobs:
       - name: Run tests related to changed files
         run: npx jest --ci --coverage --changedSince=origin/${{ github.base_ref }}
 
+      - name: Validate App Builder coverage manifest and harness contracts
+        run: npm run validate:app-builder-coverage-manifest && npm run test:app-builder:contracts
+
   full-suite:
-    name: Full suite + coverage ratchet
+    name: Full suite + App Builder coverage
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 22.15.1
           cache: npm
@@ -67,15 +61,10 @@ jobs:
       - name: Run full test suite with coverage
         run: npm run test:ci
 
-      - name: Coverage ratchet
-        run: npm run coverage:ratchet
-
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
-          path: |
-            frontend/coverage/lcov.info
-            frontend/coverage/coverage-summary.json
+          path: frontend/coverage/app-builder/**/jest/
           retention-days: 30

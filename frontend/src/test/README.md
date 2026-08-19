@@ -1,26 +1,31 @@
 # Frontend unit tests
 
-Jest + @swc/jest + Testing Library + MSW. Run from `frontend/`:
+Jest + Babel + Testing Library + MSW. Run from `frontend/`:
 
 ```bash
 npm test                    # everything
 npm run test:watch          # watch mode
 npm run test:unit:changed   # only tests related to your uncommitted changes
 npm run test:coverage       # with coverage report
+npm run test:app-builder:contracts
+npm run test:app-builder:parity -- --edition ce
+npm run test:app-builder:coverage
+npm run test:app-builder:cypress # requires the normal Cypress app/server setup
 ```
 
 ## Conventions
 
 - **Placement**: colocated `__tests__/` directory next to the source file.
   `src/foo/bar.js` → `src/foo/__tests__/bar.test.js`.
-- **Naming**: `.test.js` / `.test.jsx` / `.test.ts` / `.test.tsx`. Nothing else
-  is picked up (`testMatch` enforces this).
+- **Naming**: product tests use the existing `.spec.*` convention. Harness
+  self-tests under `src/test/` use `.test.*`.
 - **Environment**: default is `jest-fixed-jsdom` (jsdom + Node's native fetch,
   required by MSW). Pure-logic suites that must prove they are DOM-free can opt
   into node with a `/** @jest-environment node */` docblock.
 - **Mock discipline**: never reimplement production logic inside a `jest.mock`
-  factory — the test ends up validating the mock. Mock at module boundaries
-  (`@/_services`, store selectors) and assert on real code.
+  factory. App Builder tests use its real composed store and MSW at the HTTP
+  boundary; only time, IDs, geometry, observers, media, storage, edition, and
+  external package adapters may be controlled.
 - **Store reset**: zustand stores are reset automatically after every test
   (`__mocks__/zustand.js` + `resetAllStores()` in `setupTests.js`). Do not
   hand-roll `setState({}, true)` cleanup in tests.
@@ -40,16 +45,16 @@ npm run test:coverage       # with coverage report
 | You are testing…            | Use                                                         |
 | --------------------------- | ----------------------------------------------------------- |
 | Pure functions/helpers      | plain jest, no DOM (consider `@jest-environment node`)      |
-| Zustand stores/slices       | `useStore.getState().action()` + assert on `getState()` — no React needed |
+| App Builder store behavior  | `AppBuilderTestSession.store.act/read` against the real composed store |
 | `src/_services/**`          | MSW: `import '@/test/setupMsw'`, add handlers with `server.use()`, seed auth with `seedSession()` |
-| Components                  | `render` from `@/test/test-utils` (router + breadcrumb included), `jest.mock('@/_services')` for data |
+| Components                  | `render` from `@/test/test-utils` when routing is needed; add feature providers explicitly |
 
 Shared pieces:
 
-- `@/test/test-utils` — custom `render` (MemoryRouter + BreadCrumbContext), re-exports all of Testing Library plus `userEvent`.
+- `@/test/test-utils` — custom `render` with `MemoryRouter`; re-exports all of Testing Library plus `userEvent`.
 - `@/test/setupMsw` — opt-in MSW lifecycle for HTTP-layer suites.
 - `@/test/msw/server` — the MSW server; register durable handlers in `@/test/msw/handlers/`.
-- `@/test/factories` — deterministic data builders (`buildSession`, `seedSession`, `buildApp`, `buildUser`). Add new factories here, fixed values only, no randomness.
+- `@/test/app-builder` — App Builder Scenario contract, builders, deterministic controls, store/RTL session, and domain assertions.
 - `src/test/__tests__/infra.test.js` — self-test for all of the above; if it fails, fix the infrastructure before trusting any other suite.
 
 ## What NOT to unit test
@@ -60,10 +65,15 @@ Editor/Viewer route flows, multiplayer/yjs realtime, CodeMirror internals,
 chart/plotly rendering, pixel layout. Unit-test the math/helpers behind those
 surfaces instead (see `AppCanvas/Grid/helpers/__tests__`).
 
-## Coverage ratchet
+## Coverage reporting
 
-CI runs the full suite on pushes to develop and nightly, then
-`npm run coverage:ratchet` compares per-directory coverage against the
-committed `coverage-baseline.json`. Coverage may only go up: if your PR drops
-a tracked directory by more than 0.5pp, add tests. After landing a wave of new
-tests, bump the baseline with `npm run coverage:ratchet:update` and commit it.
+`app-builder-coverage-manifest.json` assigns every eligible App Builder source
+file to one of the ten approved subsystems. Validate it with
+`npm run validate:app-builder-coverage-manifest`. `npm run
+test:app-builder:coverage` writes edition-separated output under
+`coverage/app-builder/<ce|ee>/jest`. During adoption CI publishes these numbers
+without a threshold; the manifest target is intentionally `report-only`.
+
+Compatibility fixtures live under `test-resources/app-builder/compatibility`.
+Every fixture must be declared in the manifest with schema, provenance,
+edition applicability, oracle, and SHA-256. The loader fails closed on drift.

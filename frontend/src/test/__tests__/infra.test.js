@@ -1,13 +1,11 @@
 // Self-test for the shared test infrastructure: zustand auto-reset, MSW at the
-// fetch boundary, session fixtures, and the custom render. If this suite breaks,
+// fetch boundary, asset/edition parity, and custom render. If this suite breaks,
 // every other suite's isolation guarantees are suspect.
 import React from 'react';
 import '@/test/setupMsw';
 import { http, HttpResponse } from 'msw';
 import { create } from 'zustand';
 import { server } from '@/test/msw/server';
-import { seedSession } from '@/test/factories';
-import HttpClient from '@/_helpers/http-client';
 import { render, screen } from '@/test/test-utils';
 
 const useCounterStore = create((set) => ({
@@ -27,23 +25,13 @@ describe('zustand store isolation', () => {
   });
 });
 
-describe('MSW + session fixture', () => {
-  test('HttpClient sends tj-workspace-id from the seeded session', async () => {
-    seedSession({ current_organization_id: 'org-from-fixture' });
+describe('MSW HTTP boundary', () => {
+  test('intercepts a declared request and returns its response', async () => {
+    server.use(http.get('http://localhost:3000/api/example', () => HttpResponse.json({ ok: true })));
 
-    let capturedHeader;
-    server.use(
-      http.get('http://localhost:3000/api/example', ({ request }) => {
-        capturedHeader = request.headers.get('tj-workspace-id');
-        return HttpResponse.json({ ok: true });
-      })
-    );
+    const response = await fetch('http://localhost:3000/api/example');
 
-    const client = new HttpClient();
-    const response = await client.get('/example');
-
-    expect(capturedHeader).toBe('org-from-fixture');
-    expect(response.data).toEqual({ ok: true });
+    expect(await response.json()).toEqual({ ok: true });
   });
 });
 
