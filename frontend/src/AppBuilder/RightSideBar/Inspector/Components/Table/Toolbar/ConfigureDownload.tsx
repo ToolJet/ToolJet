@@ -6,7 +6,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Checkbox } from '@/components/ui/Rocket';
 
 // Untyped (.jsx) imports — cast to loose component types so they can be used as JSX under strict TS.
-const ButtonComponent = Button as React.ComponentType<any>
+const ButtonComponent = Button as React.ComponentType<any>;
 const CodeHinterComponent = CodeHinter as React.ComponentType<any>;
 const CheckboxComponent = Checkbox as React.ComponentType<any>;
 
@@ -37,7 +37,8 @@ export const ConfigureDownload = ({ component, paramUpdated, onClose }: Configur
   const filteredValue = resolveReferences(definitionProps.downloadFilteredData?.value);
   const isFilteredOnly = !!filteredValue;
 
-  const displayName = buildDisplayName(component?.component?.name, resolveReferences(fileName));
+  const hasFileName = typeof fileName === 'string' && fileName.trim().length > 0;
+  const fallbackName = buildDisplayName(component?.component?.name, '');
 
   const handleFileNameChange = (value: string) =>
     paramUpdated({ name: 'downloadFileName' }, 'value', value, 'properties');
@@ -70,9 +71,11 @@ export const ConfigureDownload = ({ component, paramUpdated, onClose }: Configur
             component={component?.component}
             cyLabel="download-file-name"
           />
-          <span className="tw-font-body-small tw-text-text-placeholder" data-cy="download-saved-as-hint">
-            Saved as {displayName}.csv
-          </span>
+          {!hasFileName && (
+            <span className="tw-font-body-small tw-text-text-placeholder" data-cy="download-saved-as-hint">
+              Saved as {fallbackName}.csv
+            </span>
+          )}
         </div>
 
         <label className="tw-flex tw-items-start tw-gap-2 tw-cursor-pointer" data-cy="download-filtered-only">

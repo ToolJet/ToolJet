@@ -105,7 +105,7 @@ export const tableConfig = {
     },
     useHideColumnSelectorButton: {
       type: 'toggle',
-      displayName: 'Manage columns',
+      displayName: 'Hide column selector button',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -213,7 +213,7 @@ export const tableConfig = {
     },
     showDownloadButton: {
       type: 'toggle',
-      displayName: 'Show download button',
+      displayName: 'Download data',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
@@ -229,7 +229,7 @@ export const tableConfig = {
     },
     showBulkUpdateActions: {
       type: 'toggle',
-      displayName: 'Show update buttons',
+      displayName: 'Update buttons',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
@@ -289,7 +289,7 @@ export const tableConfig = {
 
     showAddNewRowButton: {
       type: 'toggle',
-      displayName: 'Show add new row button',
+      displayName: 'Add new row',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
@@ -297,7 +297,7 @@ export const tableConfig = {
     },
     showRefreshButton: {
       type: 'toggle',
-      displayName: 'Show refresh button',
+      displayName: 'Refresh table',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,

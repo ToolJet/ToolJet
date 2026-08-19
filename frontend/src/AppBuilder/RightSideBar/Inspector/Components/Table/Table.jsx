@@ -715,11 +715,11 @@ export const Table = (props) => {
           <ToolbarSection
             component={component}
             paramUpdated={paramUpdated}
+            renderCustomElement={renderCustomElement}
             darkMode={darkMode}
             columns={columns}
             useDynamicColumn={useDynamicColumn}
             useHideColumnSelectorButton={useHideColumnSelectorButton}
-            currentState={currentState}
           />
         ),
       },
