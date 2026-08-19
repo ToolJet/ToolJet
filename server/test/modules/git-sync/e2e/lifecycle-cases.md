@@ -910,6 +910,43 @@ endpoint spec, Redis) but not the simulator, so
 
 ---
 
+## 31. External API save/release against a real git host (`test/modules/external-apis/e2e/save-release-gitsync.e2e-spec.ts`)
+
+The External API analog of §24, plus the "auto-release" path §24 doesn't cover. Every other External
+API spec (`save-version.e2e-spec.ts`, `promote-to-next-version.e2e-spec.ts`, `auto-deploy.e2e-spec.ts`)
+stubs `SourceControlProviderService` at the boundary — correct for pinning the DB-side publish/promote
+logic deterministically, but it means the actual GitHub App auth → Octokit tag-creation → tag-lookup
+wiring behind `saveAppVersion` and `autoDeployApp`'s "latest tag" auto mode had never run against a
+real host. This file closes that gap.
+
+Self-guards like `git-sync-gitlab.spec.ts` (`describe.skip` at runtime when the simulator env is
+absent — see the note at the top of this doc) rather than throwing at import like `git-sync.spec.ts`,
+so a plain `npm run test:e2e` stays green without the simulator configured. Own repo path — the
+GitHub suite's `TEST_GIT_REPO_PATH` (or its `gsmithun4/e2e` fallback) with a `-ext-api` suffix — so it
+can't collide with `git-sync.spec.ts`'s shared, stateful fixture.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset the `-ext-api` repo; configure git + enable branching; load `main` | 201/200 |
+| 2 | Create a feature branch, create an app on it, `gitpush` it | 201 |
+| 3 | Admin-`/merge` feature → `main`; pull `main` (lands as a stub); hydrate via `GET /apps/:id` | 200 |
+| 4 | **External API**: `POST /ext/apps/:id/versions/save` `{ name: 'v1' }` | 201; `status: PUBLISHED` — and a REAL tag now exists on the simulator (no mock) |
+| 5 | **External API**: `POST /ext/apps/:id/git-sync/release` with an EMPTY body (auto mode) | 201; `currentVersionId` matches the version saved in step 4 |
+
+Step 5 is the actual assertion for step 4's tag: `autoDeployApp`'s auto mode calls
+`getLatestTagNameForApp` → a real Octokit `listTags` call against the simulator. A broken
+tag-creation or tag-lookup wiring surfaces as a `BadRequestException` (`No git tags found` / `Latest
+tag not found after pull`) — asserting `201` here **is** the assertion that Octokit found the tag
+`saveAppVersion` created. `currentVersionId` on top of that rules out the release resolving to some
+other row.
+
+Not mirrored in `git-sync-gitlab.spec.ts` — the External API's `SourceControlProviderService` wiring
+is provider-agnostic at the DB layer (already covered by the mocked specs); this file exists
+specifically to exercise the GitHub-App-auth → Octokit path once for real, not to re-prove
+provider-parity.
+
+---
+
 ## Test-only license control
 
 The real License path (`ee/licensing/configs/License.ts`) always decrypts its key — no test-only branch. In
