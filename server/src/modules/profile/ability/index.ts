@@ -25,6 +25,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         FEATURE_KEY.GET,
         FEATURE_KEY.UPDATE_AVATAR,
         FEATURE_KEY.UPDATE_PASSWORD,
+        FEATURE_KEY.UPDATE_PREFERENCES,
         FEATURE_KEY.MFA_SETUP,
         FEATURE_KEY.MFA_CONFIRM,
         FEATURE_KEY.MFA_DISABLE,
