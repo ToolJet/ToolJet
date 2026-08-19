@@ -137,8 +137,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
   // ---------------------------------------------------------------------------
 
   describe('fires via save', () => {
-    // skip: publish detaches branch_id — src bug, #17333 (1)
-    it.skip('seeds a new DRAFT on the default branch; the published row keeps its branch id', async () => {
+    it('seeds a new DRAFT on the default branch; the published row keeps its branch id', async () => {
       const { user, organization } = await seedOrgWithGit();
       const branch = await seedDefaultBranch(organization.id);
       const app = await seedApp(user);
@@ -183,8 +182,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
   // ---------------------------------------------------------------------------
 
   describe('no-op guards', () => {
-    // skip: publish detaches branch_id — src bug, #17333 (1)
-    it.skip('publishes the version in place, but does not seed a new draft, when the version is on a non-default branch', async () => {
+    it('publishes the version in place, but does not seed a new draft, when the version is on a non-default branch', async () => {
       const { user, organization } = await seedOrgWithGit();
       await seedDefaultBranch(organization.id, 'main');
       const featureBranch = await saveEntity(WorkspaceBranch, {
@@ -233,8 +231,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
       expect(versions[0].branchId).toBeNull();
     });
 
-    // skip: publish detaches branch_id — src bug, #17333 (1)
-    it.skip('does not seed a new draft when the version has no branchId', async () => {
+    it('does not seed a new draft when the version has no branchId', async () => {
       const { user } = await seedOrgWithGit();
       const app = await seedApp(user);
       const draft = await createApplicationVersion(nestApp, app as any, { name: 'v1' });
@@ -264,8 +261,7 @@ describe('External API — promote to next version (handleDefaultBranchPublish)'
     // seeds the next draft, release promotes that published version to prod,
     // push pushes its commit — closing the "save then release" claim that
     // used to be a stale comment in save-version.e2e-spec.ts.
-    // skip: publish detaches branch_id — src bug, #17333 (1)
-    it.skip('chains save -> release -> push through a full git-sync lifecycle', async () => {
+    it('chains save -> release -> push through a full git-sync lifecycle', async () => {
       const { user, organization } = await seedOrgWithGit();
       const branch = await seedDefaultBranch(organization.id);
       const app = await seedApp(user);
