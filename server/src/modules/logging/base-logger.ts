@@ -25,10 +25,6 @@ export function buildBaseLogger(): pino.Logger {
           'warn');
 
   const otelOn = process.env.ENABLE_OTEL === 'true' && !!process.env.OTEL_EXPORTER_OTLP_LOGS;
-  const otelLevel = validLevel(process.env.OTEL_LOGS_LEVEL, 'info');
-
-  // pino's `level` is a hard floor for every stream — lower it only when OTEL needs to see more.
-  const effectiveLevel = otelOn && pino.levels.values[level] > pino.levels.values[otelLevel] ? otelLevel : level;
 
   const consoleStream =
     env !== 'production' && env !== 'test'
@@ -38,16 +34,21 @@ export function buildBaseLogger(): pino.Logger {
         })
       : process.stdout;
 
+  // One level for every destination: a line in `docker logs` is a line in the logs backend and
+  // vice versa. level:0 is required — multistream's own per-stream default is 'info', which would
+  // silently clamp a LOG_LEVEL of debug/trace on both legs. Filtering happens once, on the
+  // instance level below; if the backend ever needs to be quieter than stdout, that belongs in
+  // the collector's filter processor, not a second app-side knob.
   const destination = otelOn
     ? pino.multistream([
-        { stream: consoleStream, level },
-        { stream: new OtelLogStream(), level: otelLevel },
+        { stream: consoleStream, level: 0 },
+        { stream: new OtelLogStream(), level: 0 },
       ])
     : consoleStream;
 
   // formatters.level applies always, not just when OTEL is on — readable prod JSON
   // ("info" instead of 30) is worth having either way.
-  baseLogger = pino({ level: effectiveLevel, formatters: { level: (label) => ({ level: label }) } }, destination);
+  baseLogger = pino({ level, formatters: { level: (label) => ({ level: label }) } }, destination);
 
   return baseLogger;
 }

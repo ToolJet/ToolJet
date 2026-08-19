@@ -1,3 +1,4 @@
+import pino from 'pino';
 import { buildBaseLogger, __resetBaseLoggerForTests } from '../../../../src/modules/logging/base-logger';
 
 describe('buildBaseLogger', () => {
@@ -7,7 +8,6 @@ describe('buildBaseLogger', () => {
     'ORM_LOGGING',
     'ENABLE_OTEL',
     'OTEL_EXPORTER_OTLP_LOGS',
-    'OTEL_LOGS_LEVEL',
   ];
   const originalEnv: Record<string, string | undefined> = {};
 
@@ -49,7 +49,7 @@ describe('buildBaseLogger', () => {
       try {
         const logger = build({
           NODE_ENV: 'production',
-          ORM_LOGGING: 'error', // stdout stays quiet — split verbosity must survive unification
+          LOG_LEVEL: 'info', // one level for both destinations — nothing is filtered per-stream
           ENABLE_OTEL: 'true',
           OTEL_EXPORTER_OTLP_LOGS: 'http://localhost:4318/v1/logs',
         });
@@ -98,48 +98,46 @@ describe('buildBaseLogger', () => {
   });
 
   describe('OTEL gating (I3 — both ENABLE_OTEL and OTEL_EXPORTER_OTLP_LOGS must be set)', () => {
-    it('does not lower the floor when ENABLE_OTEL is on but OTEL_EXPORTER_OTLP_LOGS is unset', () => {
+    // multistream keeps its destinations on `streams`; reaching for it is the only way to prove
+    // wiring now that the level no longer moves when OTLP is switched on.
+    const streamsOf = (logger: pino.Logger): Array<{ level: number }> | undefined =>
+      (logger[pino.symbols.streamSym] as unknown as { streams?: Array<{ level: number }> }).streams;
+
+    const bothGates = {
+      NODE_ENV: 'production',
+      ORM_LOGGING: 'error',
+      ENABLE_OTEL: 'true',
+      OTEL_EXPORTER_OTLP_LOGS: 'http://localhost:4318/v1/logs',
+    };
+
+    it('wires a single destination when ENABLE_OTEL is on but OTEL_EXPORTER_OTLP_LOGS is unset', () => {
       const logger = build({ NODE_ENV: 'production', ORM_LOGGING: 'error', ENABLE_OTEL: 'true' });
 
-      // stayed at 'error' — proves the OTLP stream was never wired, since wiring it would
-      // have forced the floor down to let info-level lines through to it
+      expect(streamsOf(logger)).toBeUndefined();
       expect(logger.level).toBe('error');
     });
 
-    it('lowers the floor once both gates are actually satisfied', () => {
-      const logger = build({
-        NODE_ENV: 'production',
-        ORM_LOGGING: 'error',
-        ENABLE_OTEL: 'true',
-        OTEL_EXPORTER_OTLP_LOGS: 'http://localhost:4318/v1/logs',
-      });
+    it('wires stdout and the OTLP stream once both gates are satisfied', () => {
+      const logger = build(bothGates);
 
-      expect(logger.level).toBe('info');
+      expect(streamsOf(logger)).toHaveLength(2);
     });
 
-    it('OTEL_LOGS_LEVEL overrides the default "info" floor for the OTLP stream', () => {
-      const logger = build({
-        NODE_ENV: 'production',
-        ORM_LOGGING: 'error',
-        ENABLE_OTEL: 'true',
-        OTEL_EXPORTER_OTLP_LOGS: 'http://localhost:4318/v1/logs',
-        OTEL_LOGS_LEVEL: 'warn',
-      });
+    it('leaves the level alone when OTLP is switched on — both destinations share it', () => {
+      const logger = build(bothGates);
 
-      // floor only needs to drop as far as 'warn' now, not all the way to 'info'
-      expect(logger.level).toBe('warn');
+      // pre-unification this was forced down to 'info' so the OTLP stream could see more than
+      // stdout. One level now means switching OTLP on changes where lines go, never which ones.
+      expect(logger.level).toBe('error');
     });
 
-    it('falls back to "info" when OTEL_LOGS_LEVEL is not a recognized pino level', () => {
-      const logger = build({
-        NODE_ENV: 'production',
-        ORM_LOGGING: 'error',
-        ENABLE_OTEL: 'true',
-        OTEL_EXPORTER_OTLP_LOGS: 'http://localhost:4318/v1/logs',
-        OTEL_LOGS_LEVEL: 'not-a-real-level',
-      });
+    it('does not clamp a verbose LOG_LEVEL on either destination', () => {
+      const logger = build({ ...bothGates, LOG_LEVEL: 'debug' });
 
-      expect(logger.level).toBe('info');
+      // multistream defaults each stream to 'info' when no level is given, which would drop
+      // debug records on both legs. level:0 on both is what keeps LOG_LEVEL authoritative.
+      expect(logger.level).toBe('debug');
+      expect(streamsOf(logger)?.map((s) => s.level)).toEqual([0, 0]);
     });
   });
 });
