@@ -1167,10 +1167,27 @@ export class AppImportExportService {
       });
       const alreadyOnBranch = new Set(existingRows.map((r) => r.appId));
 
+      // The stub carries a branch_id, so chk_app_versions_branch_metadata requires a non-null
+      // app_name AND slug. Source the module's real name from an existing (non-stub) version so
+      // the Modules tab shows it correctly; slug is a fresh placeholder (branch stubs aren't
+      // routed to). Read metadata for every module in one query.
+      const metaRows = await manager.find(AppVersion, {
+        where: uniqueAppIds.map((appId) => ({ appId, isStub: false })),
+        select: ['appId', 'appName', 'icon', 'isPublic'],
+        order: { createdAt: 'ASC' },
+      });
+      const metaByApp = new Map<string, { appName: string | null; icon: string | null; isPublic: boolean }>();
+      for (const r of metaRows) {
+        if (r.appName && !metaByApp.has(r.appId)) {
+          metaByApp.set(r.appId, { appName: r.appName, icon: r.icon ?? null, isPublic: r.isPublic ?? false });
+        }
+      }
+
       // moduleAppIdsForStub holds module app ids only — moduleReferenceId is safe
       // to set unconditionally here.
       for (const appId of uniqueAppIds) {
         if (alreadyOnBranch.has(appId)) continue;
+        const meta = metaByApp.get(appId);
         const stub = manager.create(AppVersion, {
           name: uuid(),
           appId,
@@ -1183,6 +1200,11 @@ export class AppImportExportService {
           pageSettings: {},
           showViewerNavigation: false,
           moduleReferenceId: uuid(),
+          // Required by chk_app_versions_branch_metadata (app_name + slug non-null when branch_id set).
+          appName: meta?.appName ?? appId,
+          slug: uuid(),
+          icon: meta?.icon ?? null,
+          isPublic: meta?.isPublic ?? false,
         } as DeepPartial<AppVersion>);
         await manager.save(AppVersion, stub);
       }
