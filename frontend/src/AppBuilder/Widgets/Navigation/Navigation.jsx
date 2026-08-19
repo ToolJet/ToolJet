@@ -87,9 +87,8 @@ const RenderNavGroup = ({
   darkMode,
   childAlignment,
   popupThemeVars,
+  isInOverflow,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   if (!isItemVisible(group)) return null;
 
   const isDisabled = isItemDisabled(group);
@@ -130,109 +129,91 @@ const RenderNavGroup = ({
     </div>
   );
 
-  if (orientation === 'horizontal') {
-    const triggerButton = (
-      <button
-        type="button"
-        className={cx('tw-group page-group-wrapper', {
-          'page-group-selected': hasSelectedChild,
-          'page-group-disabled': isDisabled,
+  // A horizontal top-level group opens downward (chevron flips to indicate open/closed); a
+  // vertical group or one nested inside the "More" overflow menu opens sideways as a flyout
+  // (static right-pointing chevron, matching standard submenu iconography).
+  const isDownwardFlyout = orientation === 'horizontal' && !isInOverflow;
+
+  const triggerButton = (
+    <button
+      type="button"
+      className={cx('tw-group page-group-wrapper', {
+        'page-group-selected': hasSelectedChild,
+        'page-group-disabled': isDisabled,
+      })}
+      disabled={isDisabled}
+      {...(isDisabled ? { 'data-state': 'closed' } : {})}
+      aria-label={group.label}
+      data-cy={`nav-group-${group.id}`}
+    >
+      {triggerBody}
+      <TablerIcon
+        iconName={isDownwardFlyout ? 'IconChevronUp' : 'IconChevronRight'}
+        size={16}
+        className={cx('nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200', {
+          'group-data-[state=closed]:tw-rotate-180': isDownwardFlyout,
         })}
-        disabled={isDisabled}
-        {...(isDisabled ? { 'data-state': 'closed' } : {})}
-        aria-label={group.label}
-        data-cy={`nav-group-${group.id}`}
-      >
-        {triggerBody}
-        <TablerIcon
-          iconName="IconChevronUp"
-          size={16}
-          className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
-        />
-      </button>
-    );
+      />
+    </button>
+  );
 
-    if (isDisabled) {
-      return <NavigationMenuItem key={group.id}>{triggerButton}</NavigationMenuItem>;
-    }
+  if (isDisabled) {
+    return isInOverflow ? triggerButton : <NavigationMenuItem key={group.id}>{triggerButton}</NavigationMenuItem>;
+  }
 
+  const childItems = deduplicatedChildren.map((child) => (
+    <RenderNavItem
+      key={child.id}
+      item={child}
+      isSelected={child.id === selectedItemId}
+      onItemClick={onItemClick}
+      styles={styles}
+      displayStyle={displayStyle}
+      orientation={orientation}
+      isNested={true}
+    />
+  ));
+
+  const popupClassName = cx('page-menu-popup', childAlignment && `nav-subalign-${childAlignment}`, {
+    'dark-theme': darkMode,
+  });
+
+  // Nested inside an already-open "More" menu: use Radix's own submenu primitive rather than a
+  // second top-level menu, so it flies out from its parent instead of opening independently.
+  if (isInOverflow) {
     return (
-      <NavigationMenuItem key={group.id}>
-        {/* modal={false}: default modal Radix menu disables page-wide pointer-events while open. */}
-        <DropdownMenu.Root modal={false}>
-          <DropdownMenu.Trigger asChild>{triggerButton}</DropdownMenu.Trigger>
-          {/* Portal escapes the widget's transformed wrapper for correct z-index/positioning. */}
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
-              className={cx('page-menu-popup', childAlignment && `nav-subalign-${childAlignment}`, {
-                'dark-theme': darkMode,
-              })}
-              style={popupThemeVars}
-              sideOffset={6}
-              align="start"
-              collisionPadding={8}
-            >
-              {deduplicatedChildren.map((child) => (
-                <RenderNavItem
-                  key={child.id}
-                  item={child}
-                  isSelected={child.id === selectedItemId}
-                  onItemClick={onItemClick}
-                  styles={styles}
-                  displayStyle={displayStyle}
-                  orientation={orientation}
-                  isNested={true}
-                />
-              ))}
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
-      </NavigationMenuItem>
+      <DropdownMenu.Sub key={group.id}>
+        <DropdownMenu.SubTrigger asChild>{triggerButton}</DropdownMenu.SubTrigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.SubContent className={popupClassName} style={popupThemeVars} sideOffset={2} alignOffset={-4}>
+            {childItems}
+          </DropdownMenu.SubContent>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Sub>
     );
   }
 
-  // For vertical orientation, use accordion-style expansion
-  return (
-    <div key={group.id} className={cx('accordion-item', { 'dark-theme': darkMode })} data-cy={`nav-group-${group.id}`}>
-      <button
-        className={cx('tw-group page-group-wrapper', {
-          'page-group-selected': hasSelectedChild,
-          'page-group-disabled': isDisabled,
-        })}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!isDisabled) setIsExpanded(!isExpanded);
-        }}
-        disabled={isDisabled}
-        data-state={isExpanded ? 'open' : 'closed'}
-        aria-label={group.label}
-        aria-expanded={isExpanded}
-      >
-        {triggerBody}
-        <TablerIcon
-          iconName="IconChevronUp"
-          size={16}
-          className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
-        />
-      </button>
-      <div className={cx('accordion-body', { expanded: isExpanded, collapsed: !isExpanded })}>
-        <div className={cx('accordion-content', childAlignment && `nav-subalign-${childAlignment}`)}>
-          {deduplicatedChildren.map((child) => (
-            <RenderNavItem
-              key={child.id}
-              item={child}
-              isSelected={child.id === selectedItemId}
-              onItemClick={onItemClick}
-              styles={styles}
-              displayStyle={displayStyle}
-              orientation={orientation}
-              isNested={true}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+  const menu = (
+    // modal={false}: default modal Radix menu disables page-wide pointer-events while open.
+    <DropdownMenu.Root modal={false}>
+      <DropdownMenu.Trigger asChild>{triggerButton}</DropdownMenu.Trigger>
+      {/* Portal escapes the widget's transformed wrapper for correct z-index/positioning. */}
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          className={popupClassName}
+          style={popupThemeVars}
+          side={isDownwardFlyout ? 'bottom' : 'right'}
+          align="start"
+          sideOffset={6}
+          collisionPadding={8}
+        >
+          {childItems}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
+
+  return orientation === 'horizontal' ? <NavigationMenuItem key={group.id}>{menu}</NavigationMenuItem> : menu;
 };
 
 export const Navigation = function Navigation(props) {
@@ -622,6 +603,7 @@ export const Navigation = function Navigation(props) {
                               darkMode={darkMode}
                               isInOverflow={true}
                               childAlignment={childAlignment}
+                              popupThemeVars={popupThemeVars}
                             />
                           );
                         }
@@ -675,6 +657,7 @@ export const Navigation = function Navigation(props) {
                 orientation={orientation}
                 darkMode={darkMode}
                 childAlignment={childAlignment}
+                popupThemeVars={popupThemeVars}
               />
             );
           }
