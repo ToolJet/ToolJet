@@ -54,9 +54,7 @@ describe('buildBaseLogger', () => {
           OTEL_EXPORTER_OTLP_LOGS: 'http://localhost:4318/v1/logs',
         });
 
-        // simulates loader.ts's LoggerModule.forRoot({ pinoHttp: { logger: buildBaseLogger() } })
         logger.info('request completed');
-        // simulates TransactionLogger, which now consumes the same buildBaseLogger() result
         logger.warn('slow query');
 
         await new Promise((resolve) => setTimeout(resolve, 20));
@@ -87,6 +85,14 @@ describe('buildBaseLogger', () => {
 
   it('falls back to "warn" when neither LOG_LEVEL nor a recognized ORM_LOGGING value is set', () => {
     const logger = build({ NODE_ENV: 'production' });
+
+    expect(logger.level).toBe('warn');
+  });
+
+  it('ignores an unrecognized LOG_LEVEL instead of crashing pino at boot', () => {
+    // pino throws on an unknown level, so validLevel() is the only thing between a typo'd
+    // LOG_LEVEL and a boot failure
+    const logger = build({ NODE_ENV: 'production', LOG_LEVEL: 'not-a-level' });
 
     expect(logger.level).toBe('warn');
   });
