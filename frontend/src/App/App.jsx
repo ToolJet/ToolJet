@@ -199,6 +199,8 @@ class AppComponent extends React.Component {
     let toastOptions = {
       style: {
         wordBreak: 'break-word',
+        overflowWrap: 'break-word',
+        maxWidth: '400px',
       },
     };
 
@@ -210,6 +212,8 @@ class AppComponent extends React.Component {
           background: '#333',
           color: '#fff',
           wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+          maxWidth: '400px',
         },
       };
     }
