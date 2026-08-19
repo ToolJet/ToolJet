@@ -12,6 +12,7 @@ import { appendBranchName } from '@/_helpers/active-branch';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -40,10 +41,8 @@ export const GlobalDataSourcesPage = (props) => {
   const initialUrlSelectionHandled = useRef(false);
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
-  const lastPullAt = useWorkspaceBranchesStore((state) => state.lastPullAt);
   const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
-  const prevLastPullAtRef = useRef(lastPullAt);
 
   // Refetch datasources when the active branch changes (without hard reload)
   useEffect(() => {
@@ -57,14 +56,20 @@ export const GlobalDataSourcesPage = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBranchId, environments]);
 
-  // Refetch datasources after a workspace pull (branch stays the same but content changes)
+  // Refetch datasources once a workspace pull actually completes. `pullWorkspace()` only
+  // enqueues a background job and returns immediately — the pulled data isn't in the DB yet at
+  // that point, so we wait for the job-completion notification (same signal HomePage listens to
+  // for apps/folders) instead of refetching right after the request resolves.
   useEffect(() => {
-    if (prevLastPullAtRef.current !== lastPullAt && lastPullAt) {
-      prevLastPullAtRef.current = lastPullAt;
+    const unsubscribe = subscribeLiveNotifications((n) => {
+      const meta = n?.metadata;
+      if (meta?.source !== 'git-sync' || n?.type !== 'success') return;
+      if (meta.action !== 'git-pull-branch') return;
       fetchDataSources(true);
-    }
+    });
+    return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastPullAt]);
+  }, []);
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Commonly used');
