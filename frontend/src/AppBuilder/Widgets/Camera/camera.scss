@@ -127,6 +127,21 @@
     }
 }
 
+// Single icon, so square rather than the icon+chevron width of .camera-device-select
+.camera-flip-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    width: 28px;
+    padding: 6px;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
 .camera-device-popover-content {
     background: var(--cc-surface1-surface);
     border: 1px solid var(--cc-default-border);
