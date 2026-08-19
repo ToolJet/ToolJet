@@ -15,7 +15,7 @@ export function debounce(func) {
   return (...args) => {
     const event = args[0] || {};
     const moduleId = args[3] || 'canvas';
-    const eventId = moduleId + '-' + (event?.id || uuidv4());
+    const eventId = moduleId + '-' + (event?.id || event?.ref || uuidv4());
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
