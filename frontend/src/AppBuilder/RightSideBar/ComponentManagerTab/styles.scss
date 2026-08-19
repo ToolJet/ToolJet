@@ -110,10 +110,9 @@
     align-items: center;
     gap: 12px;
     border-radius: 8px;
-    cursor: grab;
     background: var(--surfaces-surface-01);
     &:hover {
-      background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.1));
+      cursor: move;
     }
 
     .custom-component-card-icon {
