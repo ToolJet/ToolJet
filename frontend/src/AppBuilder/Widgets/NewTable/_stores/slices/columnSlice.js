@@ -1,7 +1,7 @@
 import useStore from '@/AppBuilder/_stores/store';
 import autogenerateColumns from '../../_utils/autoGenerateColumns';
 import { removeNullValues } from '../helper';
-import { isEqual } from 'lodash';
+import { isEmpty, isEqual } from 'lodash';
 export const createColumnSlice = (set, get) => ({
   getColumnProperties: (id) => {
     return get().components[id]?.columnDetails?.columnProperties ?? [];
@@ -26,13 +26,21 @@ export const createColumnSlice = (set, get) => ({
         } else {
           state.components[id].columnDetails.useDynamicColumn = false;
         }
-        if (shouldAutogenerateColumns) {
+        /*
+          Locked schema: autogenerateColumns.value false means keep configured columns as-is so a
+          change in the data shape can neither add nor drop columns. Dynamic columns own the schema
+          outright, and an empty schema is still allowed to generate once so the table cannot be
+          locked into a permanently blank state. generateColumns is forced on whenever this skip
+          does not fire so the inner flag cannot return undefined.
+        */
+        const isSchemaLocked = !autogenerateColumnsFlag && !isDynamicColumnSelected && !isEmpty(columns);
+        if (shouldAutogenerateColumns && !isSchemaLocked) {
           const columnProperties = get().generateColumns(
             id,
             columns,
             firstRowOfTable,
             isDynamicColumnSelected,
-            autogenerateColumnsFlag,
+            true,
             columnDeletionHistory,
             columnData,
             moduleId
