@@ -5,8 +5,6 @@ title: Sort Operation
 
 This guide explains how to implement a server side sort operation on the **Table** component in ToolJet.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Add Table Component
 
 Before implementing the sort operation, add the **Table** component and populate it with data:
@@ -22,10 +20,6 @@ LIMIT 100
 <img className="screenshot-full" src="/img/widgets/table/serverside-operations/fetch-data-query.png" alt="Fetch data from the data source" />
 
 3. Set the value of the **Data** property of the **Table** component to `{{queries.<query_name>.data}}` to populate the **Table** component with the data retrieved by the query.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Server Side Sort
 
@@ -66,5 +60,3 @@ This will run the query and fetch the data every time a sort is applied.
 
 
 This is how server side sort operation is implemented in ToolJet's **Table** component. When sorting is applied to a column in the **Table** component, the query is executed on the server, enabling sorting across the entire dataset. This ensures that the sorting is not limited to the data loaded into the **Table** but covers all records in the database.
-
-</div>
