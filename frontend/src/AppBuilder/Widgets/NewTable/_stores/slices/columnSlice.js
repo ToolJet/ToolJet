@@ -67,7 +67,6 @@ export const createColumnSlice = (set, get) => ({
   ) => {
     if (autogenerateColumnsFlag) {
       const setComponentProperty = useStore.getState().setComponentProperty;
-      const existingGeneratedColumn = get().getColumnProperties(id);
       const generatedColumns = autogenerateColumns(
         firstRowOfTable,
         columns,
@@ -77,7 +76,7 @@ export const createColumnSlice = (set, get) => ({
         autogenerateColumns ?? false
       );
 
-      if (!isDynamicColumnSelected && !isEqual(existingGeneratedColumn, generatedColumns)) {
+      if (!isDynamicColumnSelected && !isEqual(columns, generatedColumns)) {
         setComponentProperty(id, 'columns', generatedColumns, 'properties', 'value', false, moduleId, {
           skipUndoRedo: true,
           saveAfterAction: true,
