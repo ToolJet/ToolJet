@@ -1,40 +1,40 @@
 import { Injectable, LoggerService } from '@nestjs/common';
 import { RequestContext } from '@modules/request-context/service';
-import pino, { Logger as PinoBaseLogger } from 'pino';
-import { ConfigService } from '@nestjs/config';
+import { Logger as PinoBaseLogger } from 'pino';
 import { ignoreLogPaths } from '../logging/constant';
+import { buildBaseLogger } from './base-logger';
+
+const SENSITIVE_KEYS = [
+  'password',
+  'current_password',
+  'new_password',
+  'token',
+  'invitation_token',
+  'access_token',
+  'refresh_token',
+  'secret',
+  'api_key',
+  'authorization',
+  'cookie',
+];
+
+// Redact known-sensitive keys before an object gets flattened into the log message string —
+// has to happen here, not downstream, since there's no object shape left to redact after.
+function redact(value: unknown, seen = new WeakSet<object>()): unknown {
+  if (typeof value !== 'object' || value === null) return value;
+  if (seen.has(value)) return '[CIRCULAR]';
+  seen.add(value);
+  const result: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(value)) {
+    result[key] = SENSITIVE_KEYS.includes(key.toLowerCase()) ? '[REDACTED]' : redact(val, seen);
+  }
+  return result;
+}
 
 @Injectable()
 export class TransactionLogger implements LoggerService {
-  private static baseLogger: PinoBaseLogger;
-
-  constructor(private readonly configService: ConfigService) {
-    // Initialize only once
-    if (!TransactionLogger.baseLogger) {
-      const env = this.configService.get<string>('NODE_ENV', 'development');
-      // Level follows ORM_LOGGING outside dev/test so one env var drives all log verbosity
-      const level =
-        env === 'development'
-          ? 'trace'
-          : env === 'test'
-            ? 'error'
-            : ({ all: 'debug', warn: 'warn', error: 'error' } as Record<string, string>)[
-                this.configService.get('ORM_LOGGING') ?? ''
-              ] || 'warn';
-
-      TransactionLogger.baseLogger = pino({
-        level,
-        ...(env !== 'production' && env !== 'test'
-          ? {
-              transport: {
-                target: 'pino-pretty',
-                options: { colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z' },
-              },
-            }
-          : {}),
-      });
-    }
-  }
+  // Shared with nestjs-pino's HTTP/bootstrap logger (loader.ts) via buildBaseLogger().
+  private readonly logger: PinoBaseLogger = buildBaseLogger();
 
   private enrichLogData(
     message: any,
@@ -48,8 +48,18 @@ export class TransactionLogger implements LoggerService {
     const transactionId = RequestContext.getTransactionId();
     const route = RequestContext.getRoute();
     const startTime = RequestContext.getStartTime();
+    // A logging call must never crash its caller — if redact/stringify blows up on some
+    // exotic value (a throwing getter, a circular ref past the seen-set, etc.), fall back
+    // to a placeholder for that one param instead of losing the whole log line.
     const formattedParams = optionalParams
-      .map((param) => (typeof param === 'object' ? JSON.stringify(param) : param))
+      .map((param) => {
+        if (typeof param !== 'object' || param === null) return param;
+        try {
+          return JSON.stringify(redact(param));
+        } catch {
+          return '[unloggable]';
+        }
+      })
       .join(' ')
       .trim();
 
@@ -85,21 +95,21 @@ export class TransactionLogger implements LoggerService {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.info(...this.processData(message, ...optionalParams));
+    this.logger.info(...this.processData(message, ...optionalParams));
   }
 
   error(message: any, ...optionalParams: any[]) {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.error(...this.processData(message, ...optionalParams));
+    this.logger.error(...this.processData(message, ...optionalParams));
   }
 
   warn(message: any, ...optionalParams: any[]) {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.warn(...this.processData(message, ...optionalParams));
+    this.logger.warn(...this.processData(message, ...optionalParams));
   }
 
   // Use for detailed debug level logs
@@ -107,7 +117,7 @@ export class TransactionLogger implements LoggerService {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.debug(...this.processData(message, ...optionalParams));
+    this.logger.debug(...this.processData(message, ...optionalParams));
   }
 
   // Use for detailed trace level logs
@@ -115,6 +125,6 @@ export class TransactionLogger implements LoggerService {
     if (this.shouldIgnoreLog()) {
       return;
     }
-    TransactionLogger.baseLogger.trace(...this.processData(message, ...optionalParams));
+    this.logger.trace(...this.processData(message, ...optionalParams));
   }
 }

@@ -28,3 +28,16 @@ export const initializeOtelLogs = () => {
 };
 
 export const getFrontendErrorLogger = (): Logger | undefined => provider?.getLogger('tooljet-frontend-errors');
+
+// Same module-local provider, different logger name — server logs land in the same
+// place as frontend error logs, distinguishable in Loki by the logger/service name.
+export const getServerLogger = (): Logger | undefined => provider?.getLogger('tooljet-server');
+
+// Flushes the queued batch before shutdown. Bounded so a dead collector can't hang exit.
+export const shutdownOtelLogs = async (timeoutMs = 3000): Promise<void> => {
+  if (!provider) return;
+  await Promise.race([
+    provider.shutdown().catch((err) => console.error('Error shutting down OTel log provider', err)),
+    new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+};
