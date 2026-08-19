@@ -18,7 +18,7 @@ describe('Modules — Workspace Constants Across Environments', () => {
   const UI_CONST_GLOBAL_VALUE = 'sample-ui-constant-value';
 
   let workspaceId, wsName, wsSlug;
-  let moduleAppId;
+  let moduleAppId, moduleEditingVersionId, moduleDevEnvironmentId;
   let consumerAppId;
 
   afterEach(() => {
@@ -66,9 +66,15 @@ describe('Modules — Workspace Constants Across Environments', () => {
       cy.intercept('GET', `/api/apps/${moduleAppId}`).as('getModuleData');
       cy.reload();
       cy.wait('@getModuleData').then((interception) => {
-        Cypress.env('editingVersionId', interception.response.body.editing_version.id);
+        moduleEditingVersionId = interception.response.body.editing_version.id;
+        moduleDevEnvironmentId = interception.response.body.editorEnvironment.id;
+        Cypress.env('editingVersionId', moduleEditingVersionId);
+        Cypress.env('environmentId', moduleDevEnvironmentId);
       });
     });
+     cy.apiPublishDraftVersion('v1');
+    cy.reload();
+    cy.wait(2000);
   });
 
   const promoteEnv = (fromEnv) => {
@@ -100,10 +106,7 @@ describe('Modules — Workspace Constants Across Environments', () => {
   };
 
   it('imports a module and verifies its secrets/constants resolve correctly across dev/staging/production', () => {
-    cy.apiPublishDraftVersion('v1');
-    cy.reload();
-    cy.wait(2000);
-
+  
     verifyResolvedForEnv('Development');
 
     promoteEnv(Environments.development);
@@ -132,14 +135,32 @@ describe('Modules — Workspace Constants Across Environments', () => {
 
     verifyResolvedForEnv('Development');
 
-    // Save/lock this version before promoting — same rule as the module
-    // itself in the previous test, confirmed working for a consuming app via
-    // this exact sequence in ModulePinning.cy.js.
+    // Save/lock this version before promoting 
     cy.get(moduleSelectors.versionSwitcherButton).click();
     cy.get(commonSelectors.buttonSelector('v1 save version')).click();
     cy.get(commonWidgetSelector.parameterInputField('version name')).clear().type('v1');
     cy.get(commonSelectors.buttonSelector('create version save')).click();
     cy.get(moduleSelectors.versionLockBanner, { timeout: 15000 }).should('be.visible');
+
+   
+    cy.then(() => {
+      Cypress.env('editingVersionId', moduleEditingVersionId);
+      cy.apiPromoteAppVersion(moduleDevEnvironmentId, moduleAppId).then(() => {
+        cy.apiPromoteAppVersion(Cypress.env('stagingEnvId'), moduleAppId);
+      });
+    });
+    cy.then(() => {
+      cy.getAuthHeaders().then((headers) => {
+        cy.request({
+          method: 'PUT',
+          url: `${Cypress.env('server_host')}/api/apps/${moduleAppId}/release`,
+          headers,
+          body: { versionToBeReleased: moduleEditingVersionId },
+        }).then((res) => {
+          expect(res.status).to.eq(200);
+        });
+      });
+    });
 
     promoteEnv(Environments.development);
     verifyResolvedForEnv('Staging');

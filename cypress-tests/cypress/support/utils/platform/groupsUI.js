@@ -936,7 +936,7 @@ export const verifyGranularAccessByRole = (role) => {
             );
         }
 
-        cy.verifyElement(groupsSelector.foldersText, "  Folders");
+        cy.verifyElement(groupsSelector.foldersText, "  App folders");
 
         cy.get(groupsSelector.folderEditRadio)
             .should("be.visible")
@@ -978,7 +978,7 @@ export const verifyGranularAccessByRole = (role) => {
             );
         }
 
-        cy.verifyElement(groupsSelector.groupChip("All folders"), "All folders");
+        cy.verifyElement(groupsSelector.groupChip("All app folders"), "All app folders");
 
         cy.verifyElement(groupsSelector.addPermissionButton, "Add permission");
         cy.get(groupsSelector.addPermissionButton).should(
