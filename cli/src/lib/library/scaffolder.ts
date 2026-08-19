@@ -12,7 +12,7 @@ export interface ScaffoldOptions {
 
 // Scaffolds a new component library directory via hygen templates.
 export async function scaffoldTemplate(name: string, displayName: string): Promise<void> {
-  const hygenArgs = ['component', 'new', '--name', name, '--display_name', displayName];
+  const hygenArgs = ['library', 'new', '--name', name, '--display_name', displayName];
 
   const result = await runner(hygenArgs, {
     templates: path.join(__dirname, '..', '..', '_templates'),

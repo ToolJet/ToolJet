@@ -1,12 +1,14 @@
 import { Command } from '@oclif/core';
 
-import { build } from '../../lib/component/builder';
+import { build } from '../../lib/library/builder';
 import { formatError, formatSuccess, formatDuration } from '../../lib/log';
 
 export default class Build extends Command {
   static description = 'Build the component library locally to dist/ (no upload, no auth required)';
 
-  static examples = [`$ tooljet component build`];
+  static aliases = ['lib:build'];
+
+  static examples = [`$ tooljet library build`, `$ tooljet lib build`];
 
   async run(): Promise<void> {
     try {

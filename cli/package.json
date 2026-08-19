@@ -68,7 +68,7 @@
       "plugin": {
         "description": "manage plugins options: create, delete and install"
       },
-      "component": {
+      "library": {
         "description": "manage custom component libraries"
       }
     }

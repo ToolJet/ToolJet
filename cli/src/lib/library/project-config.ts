@@ -13,7 +13,7 @@ export class ProjectConfig {
 
     if (!fs.existsSync(configPath)) {
       throw new Error(
-        '.tooljet/config.json not found. Run this command from a component library directory created with `tooljet component init`.'
+        '.tooljet/config.json not found. Run this command from a component library directory created with `tooljet library init`.'
       );
     }
 
@@ -21,12 +21,12 @@ export class ProjectConfig {
     try {
       data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     } catch {
-      throw new Error('.tooljet/config.json is not valid JSON. Re-run `tooljet component init` to regenerate it.');
+      throw new Error('.tooljet/config.json is not valid JSON. Re-run `tooljet library init` to regenerate it.');
     }
 
     if (!ProjectConfig.isValid(data)) {
       throw new Error(
-        '.tooljet/config.json is missing required fields. Re-run `tooljet component init` to regenerate it.'
+        '.tooljet/config.json is missing required fields. Re-run `tooljet library init` to regenerate it.'
       );
     }
 

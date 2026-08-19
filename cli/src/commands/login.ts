@@ -1,8 +1,8 @@
 import { Command } from '@oclif/core';
 import * as inquirer from 'inquirer';
 
-import { Auth } from '../lib/component/auth';
-import { ApiClient } from '../lib/component/api-client';
+import { Auth } from '../lib/library/auth';
+import { ApiClient } from '../lib/library/api-client';
 import { formatError } from '../lib/log';
 
 export default class Login extends Command {

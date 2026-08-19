@@ -1,18 +1,22 @@
 import { Command, Flags } from '@oclif/core';
 
-import { Auth } from '../../lib/component/auth';
-import { build } from '../../lib/component/builder';
-import { ApiClient } from '../../lib/component/api-client';
-import { ProjectConfig, ProjectConfigData } from '../../lib/component/project-config';
+import { Auth } from '../../lib/library/auth';
+import { build } from '../../lib/library/builder';
+import { ApiClient } from '../../lib/library/api-client';
+import { ProjectConfig, ProjectConfigData } from '../../lib/library/project-config';
 import { formatError, formatSuccess, formatDuration } from '../../lib/log';
 
 export default class ComponentDeploy extends Command {
   static description =
     'Build and publish a new immutable production revision of a component library';
 
+  static aliases = ['lib:deploy'];
+
   static examples = [
-    `$ tooljet component deploy`,
-    `$ tooljet component deploy --message "Add dark mode support"`,
+    `$ tooljet library deploy`,
+    `$ tooljet library deploy --message "Add dark mode support"`,
+    `$ tooljet lib deploy`,
+    `$ tooljet lib deploy --message "Add dark mode support"`,
   ];
 
   static flags = {
