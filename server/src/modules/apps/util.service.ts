@@ -498,8 +498,12 @@ export class AppsUtilService implements IAppsUtilService {
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const appBuilderMode = appUpdateDto.app_builder_mode;
     const { name, slug, icon } = appUpdateDto;
-    const branchId = appUpdateDto.branch_id;
-    const { id: appId, currentVersionId: lastReleasedVersion } = app;
+    const { id: appId, currentVersionId: lastReleasedVersion, type: appType } = app;
+
+    const branchId =
+      appType === APP_TYPES.WORKFLOW
+        ? (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id
+        : appUpdateDto.branch_id;
 
     // Version-level fields, written to app_versions for every app type.
     const versionParams: Record<string, any> = {};
