@@ -11,6 +11,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
 import config from 'config';
+import { getI18nConfig } from './i18nConfig';
 
 // When on a custom domain, use relative API path so requests go through the
 // Cloudflare Worker proxy, making cookies first-party (fixes incognito sign-in).
@@ -34,17 +35,7 @@ appService
     window.public_config = config;
     const language = config.LANGUAGE || 'en';
     const path = config?.SUB_PATH || '/';
-    i18n
-      .use(Backend)
-      .use(initReactI18next)
-      .init({
-        load: 'languageOnly',
-        fallbackLng: 'en',
-        lng: language,
-        backend: {
-          loadPath: `${path}assets/translations/{{lng}}.json`,
-        },
-      });
+    i18n.use(Backend).use(initReactI18next).init(getI18nConfig({ language, path }));
 
     if (window.public_config.APM_VENDOR === 'sentry') {
       const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
