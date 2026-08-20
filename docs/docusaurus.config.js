@@ -24,6 +24,15 @@ module.exports = {
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'fr'],
+    localeConfigs: {
+      fr: {
+        label: 'Français',
+      },
+    },
+  },
   markdown: {
     mermaid: true,
   },
@@ -70,26 +79,31 @@ module.exports = {
           position: 'right',
         },
         {
+          type: 'localeDropdown',
+          position: 'right',
+          className: 'navbar-locale-dropdown',
+        },
+        {
           to: '/api',
           label: 'API Reference',
           position: 'right',
           activeBaseRegex: '^/api',
           className: 'navbar-api',
         },
-        {
-          href: 'https://www.tooljet.com/',
-          position: 'right',
-          label: 'Website',
-          className: 'navbar-signin',
-          'aria-label': 'Visit ToolJet Website',
-        },
-        {
-          href: 'https://www.tooljet.com/login',
-          position: 'right',
-          label: 'Sign in',
-          className: 'navbar-signin',
-          'aria-label': 'Signin to ToolJet',
-        },
+        // {
+        //   href: 'https://www.tooljet.com/',
+        //   position: 'right',
+        //   label: 'Website',
+        //   className: 'navbar-signin',
+        //   'aria-label': 'Visit ToolJet Website',
+        // },
+        // {
+        //   href: 'https://www.tooljet.com/login',
+        //   position: 'right',
+        //   label: 'Sign in',
+        //   className: 'navbar-signin',
+        //   'aria-label': 'Signin to ToolJet',
+        // },
         {
           href: 'https://www.tooljet.com/create-account',
           position: 'right',

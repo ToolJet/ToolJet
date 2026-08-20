@@ -1,0 +1,98 @@
+{
+  "link.title.Platform": {
+    "message": "Plateforme",
+    "description": "The title of the footer links column with title=Platform in the footer"
+  },
+  "link.title.Solutions": {
+    "message": "Solutions",
+    "description": "The title of the footer links column with title=Solutions in the footer"
+  },
+  "link.title.Developers": {
+    "message": "Développeurs",
+    "description": "The title of the footer links column with title=Developers in the footer"
+  },
+  "link.title.Templates": {
+    "message": "Modèles",
+    "description": "The title of the footer links column with title=Templates in the footer"
+  },
+  "link.title.Contact us": {
+    "message": "Contactez-nous",
+    "description": "The title of the footer links column with title=Contact us in the footer"
+  },
+  "link.item.label.App builder": {
+    "message": "Créateur d'applications",
+    "description": "The label of footer link with label=App builder linking to https://www.tooljet.com/visual-app-builder"
+  },
+  "link.item.label.AI Agent builder": {
+    "message": "Créateur d'agents IA",
+    "description": "The label of footer link with label=AI Agent builder linking to https://www.tooljet.com/ai-agent-builder"
+  },
+  "link.item.label.ToolJet Database": {
+    "message": "Base de données ToolJet",
+    "description": "The label of footer link with label=ToolJet Database linking to https://www.tooljet.com/database"
+  },
+  "link.item.label.Trust Center": {
+    "message": "Centre de confiance",
+    "description": "The label of footer link with label=Trust Center linking to https://trust.tooljet.com/"
+  },
+  "link.item.label.Back office tools": {
+    "message": "Outils de back-office",
+    "description": "The label of footer link with label=Back office tools linking to https://www.tooljet.com/building-back-office-apps"
+  },
+  "link.item.label.Business applications": {
+    "message": "Applications métier",
+    "description": "The label of footer link with label=Business applications linking to https://www.tooljet.com/business-applications"
+  },
+  "link.item.label.Blogs": {
+    "message": "Blog",
+    "description": "The label of footer link with label=Blogs linking to https://blog.tooljet.com/"
+  },
+  "link.item.label.Events": {
+    "message": "Événements",
+    "description": "The label of footer link with label=Events linking to https://www.tooljet.com/events"
+  },
+  "link.item.label.GitHub": {
+    "message": "GitHub",
+    "description": "The label of footer link with label=GitHub linking to https://github.com/ToolJet/ToolJet"
+  },
+  "link.item.label.Slack": {
+    "message": "Slack",
+    "description": "The label of footer link with label=Slack linking to https://tooljet.com/slack"
+  },
+  "link.item.label.Lead management": {
+    "message": "Gestion des prospects",
+    "description": "The label of footer link with label=Lead management linking to https://www.tooljet.com/templates/lead-management-system"
+  },
+  "link.item.label.KPI management": {
+    "message": "Gestion des KPI",
+    "description": "The label of footer link with label=KPI management linking to https://www.tooljet.com/templates/kpi-management-dashboard"
+  },
+  "link.item.label.Inventory management": {
+    "message": "Gestion des stocks",
+    "description": "The label of footer link with label=Inventory management linking to https://www.tooljet.com/templates/inventory-management-system"
+  },
+  "link.item.label.Leave management": {
+    "message": "Gestion des congés",
+    "description": "The label of footer link with label=Leave management linking to https://www.tooljet.com/templates/leave-management-portal"
+  },
+  "link.item.label.Applicant tracking": {
+    "message": "Suivi des candidatures",
+    "description": "The label of footer link with label=Applicant tracking linking to https://www.tooljet.com/templates/applicant-tracking-system"
+  },
+  "link.item.label.hello@tooljet.com": {
+    "message": "hello@tooljet.com",
+    "description": "The label of footer link with label=hello@tooljet.com linking to mailto:hello@tooljet.com"
+  },
+  "link.item.label.support@tooljet.com": {
+    "message": "support@tooljet.com",
+    "description": "The label of footer link with label=support@tooljet.com linking to mailto:support@tooljet.com"
+  },
+  "copyright": {
+    "message": "Copyright © 2026 ToolJet Solutions, Inc. Tous droits réservés.\n      <img referrerpolicy=\"no-referrer-when-downgrade\" src=\"https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206\" />\n      <script>window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent(\"FAITRACKER_QUEUED_EVENT\");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent(\"FAITRACKER_INIT_EVENT\"))},this.call=function(){var e={k:\"\",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener(\"message\",function(t){\"faitracker\"===t.data.origin&&this.call(\"message\",t.data.type,t.data.message)})},this.message(),this.init(\"okh5zgrqwwcsl4ac5rqac309eup0mjb3\",{host:\"https://api.factors.ai\"}),this}(),function(){var t=document.createElement(\"script\");t.type=\"text/javascript\",t.src=\"https://app.factors.ai/assets/factors.js\",t.async=!0,(d=document.getElementsByTagName(\"script\")[0]).parentNode.insertBefore(t,d)}();</script>      \n      <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5L8R522S');</script>\n      <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-5L8R522S\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>\n      <script>\n      (function () {\n          const hubspotKeys = ['__hstc', '__hssc', '__hsfp'];\n          const marketingKeys = ['utm_', '_hs', '_gl', 'li'];\n          const exactKeys = ['gclid', '_ga', '_gid', 'msclkid', 'fbclid', 'li_fat_id', 'gbraid'];\n          function getStoredParams() {\n              const keys = JSON.parse(localStorage.getItem(\"storedQueryParamsKeys\") || \"[]\");\n              const params = {};\n              keys.forEach(key => {\n                  const val = localStorage.getItem(key);\n                  if (val) params[key] = val;\n              });\n              return params;\n          }\n          function storeUTMParams() {\n              try {\n                  const url = new URL(window.location.href);\n                  const params = new URLSearchParams(url.search);\n                  const storedParams = {};\n                  const keysToStore = [];\n                  for (const [key, value] of params.entries()) {\n                      const isMatch = exactKeys.includes(key) || marketingKeys.some(prefix => key.startsWith(prefix)) || hubspotKeys.includes(key);\n                      if (isMatch && value && value !== '[object Object]') {\n                        localStorage.setItem(key, value);\n                          storedParams[key] = value;\n                          keysToStore.push(key);\n                      }\n                  }\n                  if (keysToStore.length > 0) {\n                      localStorage.setItem(\"storedQueryParamsKeys\", JSON.stringify(keysToStore));\n                  }\n              } catch (e) {\n                  console.warn('UTM store error:', e);\n              }\n          }\n          function appendTrackingToLinks() {\n              const utmParams = getStoredParams();\n              const links = document.querySelectorAll('a[href]');\n              const allowedDomains = ['tooljet.ai', 'tooljet.com', 'tooljet.webflow.io', 'docs.tooljet.ai'];\n              links.forEach(link => {\n                  const href = link.getAttribute('href');\n                  if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;\n                  const tempA = document.createElement('a');\n                  tempA.href = href;\n                  const isInternal = allowedDomains.some(domain => tempA.hostname.includes(domain));\n                  if (!isInternal) return;\n                  const linkParams = new URLSearchParams(tempA.search);\n                  Object.entries(utmParams).forEach(([key, value]) => {\n                      if (!linkParams.has(key)) linkParams.set(key, value);\n                  });\n                  const newHref = tempA.origin + tempA.pathname + (linkParams.toString() ? '?' + linkParams.toString() : '') + tempA.hash;\n                  link.setAttribute('href', newHref);\n              });\n          }\n          // NEW: Function to build URL with stored UTM parameters\n          function buildUrlWithStoredParams(baseUrl) {\n              try {\n                  const storedParams = getStoredParams();\n                  if (Object.keys(storedParams).length === 0) {\n                      return baseUrl;\n                  }\n                  const url = new URL(baseUrl, window.location.origin);\n                  const urlParams = new URLSearchParams(url.search);\n                  // Add stored parameters that don't already exist in the URL\n                  Object.entries(storedParams).forEach(([key, value]) => {\n                      if (!urlParams.has(key)) {\n                          urlParams.set(key, value);\n                      }\n                  });\n                  const finalUrl = url.origin + url.pathname +\n                      (urlParams.toString() ? '?' + urlParams.toString() : '') +\n                      url.hash;\n                  return finalUrl;\n              } catch (e) {\n                  console.warn('Error building URL with params:', e);\n                  return baseUrl;\n              }\n          }\n          function clearStoredUTMParams() {\n              try {\n                  const storedKeys = JSON.parse(localStorage.getItem(\"storedQueryParamsKeys\") || \"[]\");\n                  storedKeys.forEach(key => {\n                      localStorage.removeItem(key);\n                  });\n                  localStorage.removeItem(\"storedQueryParamsKeys\");\n              } catch (e) {\n                  console.warn('Error clearing UTM params:', e);\n              }\n          }\n          // Run when the page loads\n          window.addEventListener('load', () => {\n              clearStoredUTMParams();\n              storeUTMParams();\n              appendTrackingToLinks();\n          });\n          // Run before the user leaves the page\n          window.addEventListener('beforeunload', () => {\n              clearStoredUTMParams();\n          });\n          // Expose functions for manual use\n          window.clearStoredUTMParams = clearStoredUTMParams;\n          window.getStoredUTMParams = getStoredParams; // NEW: Access stored params\n          window.buildUrlWithStoredParams = buildUrlWithStoredParams; // NEW: Build URLs with UTM params\n      })();\n      </script>\n      <script>\n      document.addEventListener('DOMContentLoaded', function () {\n          console.log(\"Script for cookie called\");\n          var cookieName = \"source_page\";\n          var domain = \".tooljet.ai\";\n          var maxAge = 7 * 24 * 60 * 60; // 7 days\n          var currentHost = window.location.hostname;\n          var fullUrl = window.location.href;\n          // Helper: read cookie\n          function getCookie(name) {\n              var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));\n              return match ? decodeURIComponent(match[2]) : null;\n          }\n          // Helper: set cookie\n          function setCookie(name, value, maxAgeSeconds, domain) {\n              document.cookie =\n                  name + \"=\" + encodeURIComponent(value) +\n                  \"; path=/; domain=\" + domain +\n                  \"; max-age=\" + maxAgeSeconds + \";\";\n          }\n          // If user is on blog.tooljet.ai → always update cookie with latest blog URL\n          // Else → do not overwrite, just keep existing one\n          if (currentHost.includes(\"blog.tooljet.ai\")) {\n              setCookie(cookieName, fullUrl, maxAge, domain);\n              console.log(\"Updated source_page cookie with latest blog URL: \" + fullUrl);\n          } else {\n              console.log(\"Not on blog domain — keeping existing source_page: \" + getCookie(cookieName));\n          }\n      });\n      </script>\n      <!-- Start of HubSpot Embed Code -->\n      <script type=\"text/javascript\" id=\"hs-script-loader\" async defer src=\"//js.hs-scripts.com/39494431.js\"></script>\n      <!-- End of HubSpot Embed Code -->\n      ",
+    "description": "The footer copyright"
+  },
+  "logo.alt": {
+    "message": "Logo ToolJet",
+    "description": "The alt text of footer logo"
+  }
+}

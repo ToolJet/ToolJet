@@ -1,0 +1,304 @@
+---
+id: overview
+title: Créer avec l'IA
+sidebar_label: Aperçu
+hide_title: true
+---
+
+import Link from '@docusaurus/Link';
+
+export const FeatureCard = ({ icon, title, description, href, badge }) => (
+    <Link to={href} style={{ textDecoration: 'none' }}>
+        <div style={{
+            border: '1px solid var(--ifm-toc-border-color)',
+            borderRadius: '10px',
+            padding: '20px',
+            height: '100%',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            background: 'var(--ifm-card-background-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.12)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '28px', lineHeight: 1 }}>{icon}</span>
+                {badge && (
+                    <span style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        padding: '2px 8px',
+                        borderRadius: '20px',
+                        background: badge === 'Paid' ? '#fef3c7' : '#dbeafe',
+                        color: badge === 'Paid' ? '#92400e' : '#1e40af',
+                        border: badge === 'Paid' ? '1px solid #fcd34d' : '1px solid #93c5fd',
+                    }}>{badge}</span>
+                )}
+            </div>
+            <div>
+                <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--ifm-font-color-base)', marginBottom: '6px' }}>{title}</div>
+                <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{description}</div>
+            </div>
+        </div>
+    </Link>
+);
+
+export const ConfigCard = ({ title, description, href, label, labelColor, labelBg, features }) => (
+    <Link to={href} style={{ textDecoration: 'none' }}>
+        <div style={{
+            border: '1px solid var(--ifm-toc-border-color)',
+            borderRadius: '10px',
+            padding: '22px',
+            height: '100%',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            background: 'var(--ifm-card-background-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.12)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+        >
+            <div>
+                <span style={{
+                    display: 'inline-block',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    padding: '3px 10px',
+                    borderRadius: '20px',
+                    background: labelBg,
+                    color: labelColor,
+                    marginBottom: '10px',
+                    letterSpacing: '0.03em',
+                    textTransform: 'uppercase',
+                }}>{label}</span>
+                <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--ifm-font-color-base)', marginBottom: '6px' }}>{title}</div>
+                <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{description}</div>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {features.map((f, i) => <li key={i} style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)' }}>{f}</li>)}
+            </ul>
+        </div>
+    </Link>
+);
+
+export const SectionSubtitle = ({ text }) => (
+    <p style={{ color: 'var(--ifm-color-emphasis-600)', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>{text}</p>
+);
+
+<div style={{
+    padding: '28px 28px 24px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0f2fe 100%)',
+    border: '1px solid #e9d5ff',
+    marginBottom: '32px',
+}}>
+    <div style={{ fontSize: '13px', fontWeight: 600, color: '#7c3aed', marginBottom: '8px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>ToolJet AI</div>
+    <h1 style={{ fontSize: '28px', fontWeight: 700, margin: '0 0 10px', color: '#1e1b4b' }}>Créer avec l'IA</h1>
+    <p style={{ fontSize: '15px', color: '#4c1d95', margin: 0, maxWidth: '620px', lineHeight: '1.6' }}>
+        Avec ToolJet, vous pouvez créer des applications métier sans effort en langage naturel. Que vous partiez de zéro ou que vous améliorez une application existante, ToolJet AI accélère le développement en générant l'interface, les requêtes et les liaisons de données ; votre équipe livre ainsi des outils internes plus rapidement.
+    </p>
+</div>
+
+## Générer une application
+
+<SectionSubtitle text="Passez d'une invite à une application métier pleinement fonctionnelle en quelques minutes" />
+
+export const Step = ({ n, title, desc, img, alt, tip, tipHref, imgClass = 'img-full' }) => (
+    <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '20px' }}>
+        <div style={{
+            minWidth: '28px', height: '28px', borderRadius: '50%',
+            background: '#ede9fe', color: '#6d28d9',
+            fontWeight: 700, fontSize: '13px', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginTop: '1px',
+        }}>{n}</div>
+        <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--ifm-font-color-base)', marginBottom: '4px' }}>{title}</div>
+            <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{desc}</div>
+            {tip && tipHref && (
+                <Link to={tipHref} style={{ textDecoration: 'none' }}>
+                    <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '5px',
+                        marginTop: '8px', padding: '3px 10px',
+                        borderRadius: '20px', fontSize: '13px', fontWeight: 500,
+                        border: '1px solid #ddd6fe', color: '#6d28d9',
+                        background: '#faf5ff',
+                    }}>
+                        ✍️ {tip}
+                    </span>
+                </Link>
+            )}
+            <img className={`screenshot-full ${imgClass}`} style={{ marginTop: '12px', marginBottom: '4px', display: 'block', width: '100%' }} src={img} alt={alt} />
+        </div>
+    </div>
+);
+
+<Step
+    n="1"
+    title="Décrivez votre application"
+    desc='Saisissez une invite sur le tableau de bord. Par ex. : "Créer un tableau de bord de support client pour suivre le volume de tickets, les temps de réponse et la performance des agents en utilisant @postgresql "'
+    tip="Conseils pour rédiger de meilleures invites"
+    tipHref="/docs/build-with-ai/prompting101"
+    img="/img/tooljet-ai/overview/step-1.png"
+    alt="Décrivez votre application"
+    imgClass="img-s"
+/>
+
+<Step
+    n="2"
+    title="Sélectionnez votre source de données"
+    desc="Choisissez parmi vos bases de données existantes pour connecter votre schéma réel, ou continuez avec des données d'exemple pour prototyper rapidement."
+    img="/img/tooljet-ai/overview/step-2.png"
+    alt="Sélectionnez votre source de données"
+    imgClass="img-m"
+/>
+
+<Step
+    n="3"
+    title="Consultez le document de spécification"
+    desc="L'IA génère une spécification décrivant les fonctionnalités, les pages et la navigation. Consultez-la et approuvez-la avant que quoi que ce soit ne soit créé."
+    img="/img/tooljet-ai/overview/step-3.png"
+    alt="Consultez le document de spécification"
+    imgClass="img-m"
+/>
+
+<Step
+    n="4"
+    title="L'application est générée"
+    desc="Une application pleinement fonctionnelle est créée avec les composants d'interface, les requêtes et les liaisons de données déjà configurés. Personnalisez-la ensuite à votre convenance."
+    img="/img/tooljet-ai/overview/step-4.png"
+    alt="L'application est générée"
+/>
+
+## Capacités de l'IA {#ai-capabilities}
+
+<SectionSubtitle text="Tout ce que vous pouvez faire avec ToolJet AI aujourd'hui" />
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '8px' }}>
+    <FeatureCard
+        icon="⚡"
+        title="Générer des applications"
+        description="Décrivez votre application en langage naturel. ToolJet AI construit l'interface complète, les requêtes et le schéma ; prêts à être personnalisés."
+        href="/docs/build-with-ai/generate-applications"
+    />
+    <FeatureCard
+        icon="🗄️"
+        title="Intégrer des données existantes"
+        description="Connectez votre base de données existante. L'IA lit vos tables et construit des applications à partir de votre schéma."
+        href="/docs/build-with-ai/integrating-data"
+    />
+    <FeatureCard
+        icon="🔧"
+        title="Déboguer les composants"
+        description="Des liaisons cassées ou des expressions invalides ? Cliquez sur Fix with AI directement dans l'éditeur de propriétés pour résoudre les erreurs sur place."
+        href="/docs/build-with-ai/debug-components"
+    />
+    <FeatureCard
+        icon="📚"
+        title="Apprendre avec l'IA"
+        description="Posez n'importe quelle question sur ToolJet : composants, requêtes, intégrations. Obtenez des réponses instantanées et contextuelles de l'assistant de documentation."
+        href="/docs/build-with-ai/ai-docs-assistant"
+    />
+    <FeatureCard
+        icon="✍️"
+        title="Prompting 101"
+        description="Des invites génériques produisent des applications génériques. Apprenez à rédiger des invites qui produisent des outils conçus spécifiquement pour votre entreprise."
+        href="/docs/build-with-ai/prompting101"
+    />
+    <FeatureCard
+        icon="🔌"
+        title="ToolJet MCP"
+        description="Connectez des assistants IA comme Cursor, Claude ou Copilot à votre instance ToolJet via le Model Context Protocol."
+        href="/docs/build-with-ai/tooljet-mcp"
+        badge="Auto-hébergé"
+    />
+</div>
+
+## Configuration de l'IA
+
+<SectionSubtitle text="Choisissez comment les requêtes IA sont alimentées : selon vos besoins en matière de coût, de conformité et d'infrastructure" />
+
+Pour une répartition complète de l'architecture et une comparaison côte à côte des quatre configurations, consultez [Configurer ToolJet AI](/docs/setup/tooljet-ai/overview) dans la documentation de déploiement.
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px', marginBottom: '8px' }}>
+    <ConfigCard
+        label="Par défaut"
+        labelBg="#dcfce7"
+        labelColor="#166534"
+        title="ToolJet Managed AI"
+        description="Les requêtes IA sont acheminées via ToolJet AI Cloud et facturées sur les crédits IA de votre espace de travail. Aucune configuration requise."
+        href="/docs/build-with-ai/ai-credits"
+        features={[
+            'Aucune configuration nécessaire',
+            'Facturation basée sur des crédits',
+            'Crédits mensuels + crédits complémentaires',
+        ]}
+    />
+    <ConfigCard
+        label="Entreprise"
+        labelBg="#fef3c7"
+        labelColor="#92400e"
+        title="Utiliser votre propre clé"
+        description="Utilisez votre propre clé API LLM au lieu de consommer les crédits ToolJet. Les requêtes passent toujours par ToolJet AI Cloud."
+        href="/docs/setup/tooljet-ai/bring-your-own-key"
+        features={[
+            'Facturation directe par votre fournisseur LLM',
+            'Visibilité complète sur l\'utilisation',
+            'Aucun crédit ToolJet consommé',
+        ]}
+    />
+    <ConfigCard
+        label="Entreprise · Auto-hébergé"
+        labelBg="#e0e7ff"
+        labelColor="#3730a3"
+        title="ToolJet AI Enterprise"
+        description="Déployez le serveur IA de ToolJet sur votre propre infrastructure. Aucune donnée ne quitte jamais votre environnement."
+        href="/docs/setup/tooljet-ai/tj-ai-enterprise"
+        features={[
+            'Déploiement entièrement isolé (air-gapped)',
+            'Vos propres clés LLM',
+            'Répond aux exigences strictes de résidence des données',
+        ]}
+    />
+</div>
+
+## Données et confidentialité
+
+<SectionSubtitle text="Comprenez comment ToolJet traite vos données lorsque l'IA est impliquée" />
+
+<Link to="/docs/build-with-ai/privacy" style={{ textDecoration: 'none' }}>
+    <div style={{
+        border: '1px solid var(--ifm-toc-border-color)',
+        borderRadius: '10px',
+        padding: '18px 22px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        background: 'var(--ifm-card-background-color)',
+        display: 'flex',
+        alignItems: 'center',
+    }}
+    onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.1)'; }}
+    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+    >
+        <span style={{ fontSize: '24px', marginRight: '14px' }}>🔒</span>
+        <div>
+            <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--ifm-font-color-base)' }}>Politique de confidentialité</div>
+            <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)' }}>Quelles données sont partagées avec l'IA, comment elles sont protégées, et vos options de déploiement.</div>
+        </div>
+    </div>
+</Link>
+
+<br/>
+
+---
+
+## Besoin d'aide ?
+
+- Contactez-nous via notre [communauté Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Ou envoyez-nous un e-mail à [support@tooljet.com](mailto:support@tooljet.com)
+- Vous avez trouvé un bug ? Merci de le signaler via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

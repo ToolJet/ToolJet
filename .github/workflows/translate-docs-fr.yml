@@ -1,0 +1,65 @@
+name: Sync French docs translation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - documentation
+    paths:
+      - docs/versioned_docs/version-3.16.0-LTS/**
+      - docs/versioned_sidebars/version-3.16.0-LTS-sidebars.json
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: documentation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.18.2
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: docs
+
+      - name: Translate changed docs to French
+        run: npm run translate:fr
+        working-directory: docs
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Open PR with translation updates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- docs/i18n/fr docs/scripts/.translation-manifest.json docs/scripts/.ui-translation-manifest.json; then
+            echo "No translation changes to commit."
+            exit 0
+          fi
+
+          BRANCH="bot/fr-translation-sync"
+          git config user.name "tooljet-docs-bot"
+          git config user.email "bot@tooljet.com"
+          git checkout -B "$BRANCH"
+          git add docs/i18n/fr docs/scripts/.translation-manifest.json docs/scripts/.ui-translation-manifest.json
+          git commit -m "docs(i18n): sync French translations"
+          git push -f origin "$BRANCH"
+
+          if gh pr list --base documentation --head "$BRANCH" --state open --json number --jq '.[0].number' | grep -q .; then
+            echo "PR already open for $BRANCH."
+          else
+            gh pr create \
+              --base documentation \
+              --head "$BRANCH" \
+              --title "docs(fr): sync French translations" \
+              --body "Auto-generated French translations for docs changed on this push. Machine-translated via the Claude API — please spot-check before merging."
+          fi
