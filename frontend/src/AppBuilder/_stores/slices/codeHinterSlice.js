@@ -160,6 +160,33 @@ function buildGlobalHints(storeState, moduleId) {
   return hints;
 }
 
+/** Build hints for all data sources exposed to the builder (dataSources['name'].id / .kind / .name). */
+function buildDataSourceHints(storeState, moduleId) {
+  const hints = [];
+  const dataSources = storeState.resolvedStore.modules[moduleId]?.exposedValues?.dataSources || {};
+
+  if (Object.keys(dataSources).length > 0) {
+    hints.push({ hint: 'dataSources', type: 'Object' });
+
+    for (const [name, value] of Object.entries(dataSources)) {
+      const isValidIdentifier = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
+      // hint uses dot notation for autocomplete filtering; insertHint uses bracket notation for valid JS
+      const dotPath = `dataSources.${name}`;
+      const insertPath = isValidIdentifier ? dotPath : `dataSources['${name}']`;
+      hints.push({ hint: dotPath, type: 'Object', insertHint: insertPath });
+
+      if (value && typeof value === 'object') {
+        for (const [prop, propVal] of Object.entries(value)) {
+          const _type = Object.prototype.toString.call(propVal).slice(8, -1);
+          hints.push({ hint: `${dotPath}.${prop}`, type: _type, insertHint: `${insertPath}.${prop}` });
+        }
+      }
+    }
+  }
+
+  return hints;
+}
+
 function buildActionHints() {
   return ACTIONS.map((action) => ({ hint: `actions.${action}()`, type: 'method' }));
 }
@@ -206,6 +233,7 @@ const initialState = {
       queries: [],
       variables: [],
       globals: [],
+      dataSources: [],
       page: [],
       actions: [],
     },
@@ -318,6 +346,19 @@ export const createCodeHinterSlice = (set, get) => ({
     );
   },
 
+  rebuildDataSourceHints: (moduleId = 'canvas') => {
+    const state = get();
+    const dataSourceHints = buildDataSourceHints(state, moduleId);
+    set(
+      (draft) => {
+        draft.suggestions.segments.dataSources = dataSourceHints;
+        draft.suggestions.appHints = mergeAllSegments(draft.suggestions.segments);
+      },
+      false,
+      'rebuildDataSourceHints'
+    );
+  },
+
   // ─── Full Initialization ───────────────────────────────────────────
 
   initSuggestions: (moduleId = 'canvas') => {
@@ -327,6 +368,7 @@ export const createCodeHinterSlice = (set, get) => ({
       queries: buildQueryHints(state, moduleId),
       variables: buildVariableHints(state, moduleId),
       globals: buildGlobalHints(state, moduleId),
+      dataSources: buildDataSourceHints(state, moduleId),
       page: buildPageHints(state, moduleId),
       actions: buildActionHints(),
     };
@@ -526,6 +568,7 @@ function mergeAllSegments(segments) {
     ...segments.queries,
     ...segments.variables,
     ...segments.globals,
+    ...(segments.dataSources || []),
     ...segments.page,
     ...segments.actions,
   ];
