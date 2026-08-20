@@ -14,12 +14,25 @@ export interface ManifestProp {
 
 export interface ManifestEvent { name: string; }
 
+export interface ManifestActionParam {
+  handle: string;
+  displayName?: string;
+  defaultValue?: unknown;
+}
+
+export interface ManifestAction {
+  name: string;
+  displayName?: string;
+  params?: ManifestActionParam[];
+}
+
 export interface ManifestComponent {
   displayName: string;
   defaultWidth: number;
   defaultHeight: number;
   props: ManifestProp[];
   events: ManifestEvent[];
+  actions: ManifestAction[];
 }
 
 export interface Manifest {
@@ -103,8 +116,10 @@ function walkComponentDeclaration(
 
   const props: ManifestProp[] = [];
   const events: ManifestEvent[] = [];
+  const actions: ManifestAction[] = [];
   const propNames = new Set<string>();
   const eventNames = new Set<string>();
+  const actionNames = new Set<string>();
   let defaultWidth = 6;
   let defaultHeight = 5;
 
@@ -181,6 +196,53 @@ function walkComponentDeclaration(
             }
           }
 
+          if (method === 'useAction') {
+            const [optionsArg] = node.arguments;
+            if (ts.isObjectLiteralExpression(optionsArg)) {
+              const name = getStringProp(optionsArg, 'name');
+              const displayName = getStringProp(optionsArg, 'displayName');
+              const paramsNode = getPropNode(optionsArg, 'params');
+
+              if (name) {
+                if (actionNames.has(name)) {
+                  throw new Error(`Duplicate action name "${name}" in component "${componentName}".`);
+                }
+                actionNames.add(name);
+
+                let params: ManifestActionParam[] | undefined;
+                if (paramsNode && ts.isArrayLiteralExpression(paramsNode)) {
+                  params = [];
+                  for (const el of paramsNode.elements) {
+                    if (!ts.isObjectLiteralExpression(el)) {
+                      throw new Error(
+                        `Invalid params in component "${componentName}", action "${name}": each param must be an object literal.`
+                      );
+                    }
+                    const handle = getStringProp(el, 'handle');
+                    if (!handle) {
+                      throw new Error(
+                        `Invalid params in component "${componentName}", action "${name}": each param needs a string "handle".`
+                      );
+                    }
+                    const paramDisplayName = getStringProp(el, 'displayName');
+                    const defaultValueNode = getPropNode(el, 'defaultValue');
+                    params.push({
+                      handle,
+                      ...(paramDisplayName ? { displayName: paramDisplayName } : {}),
+                      ...(defaultValueNode ? { defaultValue: evalLiteralNode(defaultValueNode) } : {}),
+                    });
+                  }
+                }
+
+                actions.push({
+                  name,
+                  ...(displayName ? { displayName } : {}),
+                  ...(params?.length ? { params } : {}),
+                });
+              }
+            }
+          }
+
           if (method === 'useComponentSettings') {
             // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4 })
             const [settingsArg] = node.arguments;
@@ -218,6 +280,7 @@ function walkComponentDeclaration(
     defaultHeight,
     props,
     events,
+    actions,
   };
 }
 
