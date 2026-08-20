@@ -130,22 +130,33 @@ class AppComponent extends React.Component {
         showBanner: false, // show banner when required for ee or cloud
       });
     }
-    setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+    this.metadataRefreshInterval = setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
     let counter = 0;
-    let interval;
 
-    interval = setInterval(async () => {
+    this.userCheckInterval = setInterval(async () => {
       ++counter;
       const current_user = authenticationService.currentSessionValue?.current_user;
       if (current_user?.id) {
         this.initTelemetryAndSupport(current_user); //Call when currentuser is available
-        clearInterval(interval);
+        clearInterval(this.userCheckInterval);
       } else if (counter > 10) {
-        clearInterval(interval);
+        clearInterval(this.userCheckInterval);
       }
     }, 1000);
   }
+
+  componentWillUnmount() {
+    // Without this the hourly metadata refresh keeps running after the
+    // component unmounts (e.g. on logout) and on remount a second interval
+    // is added, so authenticated fetchMetadata calls accumulate.
+    clearInterval(this.metadataRefreshInterval);
+    // The user-availability poll above self-clears after login or ~10s, but
+    // clear it on unmount too so a quick unmount/remount cannot leave the old
+    // instance's poll running against a stale `this`.
+    clearInterval(this.userCheckInterval);
+  }
+
   // check if its getting routed from editor
   checkPreviousRoute = (route) => {
     if (route.includes('/apps')) {
