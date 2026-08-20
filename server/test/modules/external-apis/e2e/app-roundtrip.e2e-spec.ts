@@ -31,9 +31,7 @@ describe('External API — app export/import/list round trip', () => {
     await closeTestApp(app);
   }, 60000);
 
-  // Skipped: cross-workspace import throws 500 on app_versions_default_branch_slug_unique —
-  // slug preservation (commit f643adb520) isn't scoped per-workspace. Feature owner to fix.
-  it.skip('preserves all versions across export (exportAllVersions=true) → import → list', async () => {
+  it('preserves all versions across export (exportAllVersions=true) → import → list', async () => {
     const { user, organization } = await createUser(app, { email: `app-roundtrip-${Date.now()}@tooljet.io` });
     const seededApp = await createApplication(app, { name: 'Multi-Version App', user });
     await createApplicationVersion(app, seededApp, { name: 'v1' });
