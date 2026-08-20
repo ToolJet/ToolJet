@@ -54,10 +54,6 @@ export const LibraryComponent = ({
 
   const iframeRef = useRef(null);
   const [shellReady, setShellReady] = useState(false);
-  const registeredSetters = useRef(new Set());
-
-  const explicitActions = useRef(new Set());
-
   const pendingInvocations = useRef(new Map());
   const invocationSeq = useRef(0);
 
@@ -107,15 +103,7 @@ export const LibraryComponent = ({
           postToShell({ type: 'props', data: componentProps });
         }
       }
-      if (type === 'stateChange') {
-        setExposedVariable(key, value);
-
-        const setterName = `set${key.charAt(0).toUpperCase()}${key.slice(1)}`;
-        if (!registeredSetters.current.has(setterName) && !explicitActions.current.has(setterName)) {
-          registeredSetters.current.add(setterName);
-          setExposedVariable(setterName, (v) => invokeInShell({ type: 'setState', key, value: v }));
-        }
-      }
+      if (type === 'stateChange') setExposedVariable(key, value);
       if (type === 'event') fireEvent(name, { isCustomComponentEvent: true });
       if (type === 'actionResult') {
         const pending = pendingInvocations.current.get(e.data.id);
@@ -145,7 +133,6 @@ export const LibraryComponent = ({
       .then((manifest) => {
         if (cancelled) return;
         const actions = manifest?.components?.[componentName]?.actions ?? [];
-        explicitActions.current = new Set(actions.map((a) => a.name));
         actions.forEach((a) =>
           setExposedVariable(a.name, (...args) => invokeInShell({ type: 'invokeAction', name: a.name, args }))
         );

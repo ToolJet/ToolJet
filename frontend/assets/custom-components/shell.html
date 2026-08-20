@@ -35,7 +35,6 @@
       let Component = null;
       let currentProps = {};
       
-      const stateSetters = {};
       const actionHandlers = {};
 
       const post = (msg) => window.parent.postMessage(msg, '*');
@@ -57,8 +56,6 @@
           
           React.useEffect(() => {
             post({ type: 'stateChange', key: name, value: valueRef.current });
-            stateSetters[name] = (v) => setAndSyncRef.current(v);
-            return () => delete stateSetters[name];
           }, [name]);
           const setAndSync = React.useCallback(
             (next) => {
@@ -70,8 +67,6 @@
             },
             [name]
           );
-          const setAndSyncRef = React.useRef(setAndSync);
-          setAndSyncRef.current = setAndSync;
           return [value, setAndSync];
         };
 
@@ -134,12 +129,6 @@
         if (type === 'props') {
           currentProps = data ?? {};
           render();
-        }
-
-        if (type === 'setState') {
-         
-          stateSetters[e.data.key]?.(e.data.value);
-          if (e.data.id) post({ type: 'actionResult', id: e.data.id });
         }
 
         if (type === 'invokeAction') {
