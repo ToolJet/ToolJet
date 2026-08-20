@@ -665,8 +665,9 @@ export const createDataQuerySlice = (set, get) => ({
 });
 
 const sortByAttribute = (data, sortBy, order) => {
+  const sorted = [...data];
   if (sortBy === 'updated_at') {
-    return data.sort((a, b) => {
+    return sorted.sort((a, b) => {
       const aTime = new Date(a.updated_at ?? 0).getTime();
       const bTime = new Date(b.updated_at ?? 0).getTime();
       return order === 'asc' ? aTime - bTime : bTime - aTime;
@@ -674,14 +675,14 @@ const sortByAttribute = (data, sortBy, order) => {
   }
   if (order === 'asc') {
     if (sortBy === 'kind') {
-      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+      return sorted.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
     }
-    return data.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+    return sorted.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
   }
   if (order === 'desc') {
     if (sortBy === 'kind') {
-      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
+      return sorted.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
     }
-    return data.sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
+    return sorted.sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
   }
 };

@@ -72,8 +72,9 @@ export const highlightText = (text = '', highlight) => {
 };
 
 export const sortArray = (arr, sort) => {
+  const sorted = [...arr];
   if (sort === 'asc') {
-    return arr.sort((a, b) => {
+    return sorted.sort((a, b) => {
       const labelA = typeof a.label === 'string' ? a.label : '';
       const labelB = typeof b.label === 'string' ? b.label : '';
       return labelA.localeCompare(labelB);
