@@ -169,6 +169,7 @@ const initialState = {
   focusedParentId: null,
   modalsOpenOnCanvas: [],
   showComponentPermissionModal: false,
+  pendingComponentNavigation: null,
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -3640,5 +3641,103 @@ export const createComponentsSlice = (set, get) => ({
     const { getResolvedComponent } = get();
     const component = getResolvedComponent(componentId, null, moduleId);
     return component?.properties?.label;
+  },
+
+  // --- Navigate to component (Cmd/Ctrl+Click in code editors) ---
+
+  findComponentAcrossPages: (componentName, moduleId = 'canvas') => {
+    const pages = get().modules?.[moduleId]?.pages ?? [];
+    for (const page of pages) {
+      for (const [id, entry] of Object.entries(page?.components ?? {})) {
+        if (entry?.component?.name === componentName) return { id, entry, page };
+      }
+    }
+    return null;
+  },
+
+  navigateToComponent: (componentName, moduleId = 'canvas') => {
+    const { findComponentAcrossPages, getCurrentPageId, setSelectedComponents, getComponentIdToAutoScroll } = get();
+
+    const result = findComponentAcrossPages(componentName, moduleId);
+    if (!result) return;
+
+    const { id: componentId, page } = result;
+    const currentPageId = getCurrentPageId(moduleId);
+
+    if (page.id === currentPageId) {
+      // Same page — select and scroll directly
+      const { isAccessible, computedComponentId } = getComponentIdToAutoScroll(componentId, moduleId);
+      if (!isAccessible) {
+        toast.error(`Cannot navigate: component is inside "${computedComponentId}". Open it first.`);
+        return;
+      }
+      setSelectedComponents([computedComponentId]);
+      requestAnimationFrame(() => {
+        const target = document.getElementById(computedComponentId);
+        target?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    } else {
+      // Different page — show confirmation
+      set(
+        (state) => {
+          state.pendingComponentNavigation = {
+            componentName,
+            componentId,
+            pageId: page.id,
+            pageHandle: page.handle,
+            pageName: page.name,
+            moduleId,
+          };
+        },
+        false,
+        { type: 'setPendingComponentNavigation', payload: { componentName, pageId: page.id } }
+      );
+    }
+  },
+
+  confirmNavigateToComponent: () => {
+    const { pendingComponentNavigation, switchPage, setSelectedComponents, getComponentIdToAutoScroll } = get();
+    if (!pendingComponentNavigation) return;
+
+    const { componentId, pageId, pageHandle, moduleId } = pendingComponentNavigation;
+
+    // Clear the pending state first
+    set(
+      (state) => {
+        state.pendingComponentNavigation = null;
+      },
+      false,
+      'clearPendingComponentNavigation'
+    );
+
+    // Switch page then select the component after page loads
+    switchPage(pageId, pageHandle, [], moduleId);
+
+    // Wait for page switch to complete, then select & scroll
+    const waitForPageSwitch = () => {
+      if (get().pageSwitchInProgress) {
+        requestAnimationFrame(waitForPageSwitch);
+        return;
+      }
+      const { isAccessible, computedComponentId } = getComponentIdToAutoScroll(componentId, moduleId);
+      if (isAccessible) {
+        setSelectedComponents([computedComponentId]);
+        requestAnimationFrame(() => {
+          const target = document.getElementById(computedComponentId);
+          target?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+    };
+    requestAnimationFrame(waitForPageSwitch);
+  },
+
+  clearPendingComponentNavigation: () => {
+    set(
+      (state) => {
+        state.pendingComponentNavigation = null;
+      },
+      false,
+      'clearPendingComponentNavigation'
+    );
   },
 });

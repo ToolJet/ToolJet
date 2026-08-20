@@ -15,6 +15,7 @@ import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './Hooks/useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
+import { NavigateToComponentConfirmation } from './NavigateToComponentConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
 import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
 import { Container } from './Container';
@@ -272,6 +273,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 }}
               >
                 <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+                <NavigateToComponentConfirmation />
                 <HotkeyProvider
                   mode={currentMode}
                   canvasMaxWidth={canvasMaxWidth}
