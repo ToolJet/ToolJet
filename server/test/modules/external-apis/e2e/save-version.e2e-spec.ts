@@ -9,10 +9,15 @@ import {
   createApplication,
   createApplicationVersion,
   getDefaultDataSource,
+  findEntityOrFail,
+  saveEntity,
+  updateEntity,
 } from 'test-helper';
 import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { App } from 'src/entities/app.entity';
+import { Page } from 'src/entities/page.entity';
+import { Component } from 'src/entities/component.entity';
 import { SourceControlProviderService } from '@ee/app-git/source-control-provider';
 import { Repository } from 'typeorm';
 
@@ -94,6 +99,25 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
     const version = await createApplicationVersion(nestApp, app, { name });
     await versionRepo.update(version.id, { status: AppVersionStatus.PUBLISHED });
     return versionRepo.findOne({ where: { id: version.id } });
+  }
+
+  // Pins a ModuleViewer component on the app's home page directly at a module
+  // version's id (UUID pin, resolves via the byId clause regardless of branch).
+  async function embedModule(consumerVersionId: string, moduleCoRelationId: string, moduleVersionId: string) {
+    const homePage = await findEntityOrFail(Page, { appVersionId: consumerVersionId } as any);
+    await saveEntity(Component, {
+      name: 'module1',
+      type: 'ModuleViewer',
+      pageId: homePage.id,
+      properties: {
+        moduleAppId: { value: moduleCoRelationId },
+        moduleVersionId: { value: moduleVersionId },
+      },
+      general: {},
+      styles: {},
+      generalStyles: {},
+      validation: {},
+    } as any);
   }
 
   // ---------------------------------------------------------------------------
@@ -183,6 +207,32 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
         .send({ name: 'a'.repeat(26) })
         .expect(400);
     });
+
+    // Regression: the manual/UI save flow blocks publishing a version that pins a
+    // DRAFT module (VersionService.update -> checkDraftModulesInApp). This endpoint
+    // went straight to versionUtilService.publishVersionWithEnvironment without that
+    // check, so the same app could be saved via the External API despite carrying an
+    // unreleased module pin.
+    it('returns 400 when the version pins a draft module version', async () => {
+      const { user } = await seedOrg();
+
+      const moduleApp = await createApplication(nestApp, { user, name: `Module-${Date.now()}`, type: 'module' });
+      await updateEntity(App, moduleApp.id, { co_relation_id: moduleApp.id } as any);
+      const moduleDraft = await createApplicationVersion(nestApp, moduleApp as any, { name: 'm1' });
+      await updateEntity(AppVersion, moduleDraft.id, { status: AppVersionStatus.DRAFT } as any);
+
+      const app = await seedApp(user);
+      const draft = await seedDraftVersion(app as any, 'v1');
+      await embedModule(draft.id, moduleApp.id, moduleDraft.id);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/save`)
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(400);
+
+      expect(response.body.message.error ?? response.body.message).toContain('draft');
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -190,8 +240,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
   // ---------------------------------------------------------------------------
 
   describe('201 — happy path', () => {
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('saves the DRAFT version to PUBLISHED, targeting the development environment', async () => {
+    it('saves the DRAFT version to PUBLISHED, targeting the development environment', async () => {
       const { user, organization } = await seedOrg();
       const app = await seedApp(user);
       const draft = await seedDraftVersion(app as any, 'v1');
@@ -213,8 +262,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       expect(response.body.appId).toBe(app.id);
     });
 
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('renames the DRAFT version when name is provided', async () => {
+    it('renames the DRAFT version when name is provided', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
       await seedDraftVersion(app as any, 'v1');
@@ -229,8 +277,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       expect(response.body.name).toBe('release-1.0.0');
     });
 
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('accepts name at exactly 25 characters (boundary)', async () => {
+    it('accepts name at exactly 25 characters (boundary)', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
       await seedDraftVersion(app as any, 'v1');
@@ -245,8 +292,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       expect(response.body.name).toBe('a'.repeat(25));
     });
 
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('resolves app by slug', async () => {
+    it('resolves app by slug', async () => {
       const { user } = await seedOrg();
       const slug = `my-app-${Date.now()}`;
       const app = await createApplication(nestApp, { user, name: `App-${Date.now()}`, isPublic: false, slug });
@@ -261,8 +307,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       expect(response.body.status).toBe(AppVersionStatus.PUBLISHED);
     });
 
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('persists the status change in the database', async () => {
+    it('persists the status change in the database', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
       const draft = await seedDraftVersion(app as any, 'v1');
@@ -277,8 +322,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       expect(updated.status).toBe(AppVersionStatus.PUBLISHED);
     });
 
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('does not affect other versions on the same app', async () => {
+    it('does not affect other versions on the same app', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
       const draft = await seedDraftVersion(app as any, 'v1');
@@ -299,8 +343,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       expect(reloadedDraft.status).toBe(AppVersionStatus.PUBLISHED);
     });
 
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('persists currentEnvironmentId to the development environment in the database', async () => {
+    it('persists currentEnvironmentId to the development environment in the database', async () => {
       const { user, organization } = await seedOrg();
       const app = await seedApp(user);
       const draft = await seedDraftVersion(app as any, 'v1');
@@ -326,8 +369,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
   // ---------------------------------------------------------------------------
 
   describe('git tag creation', () => {
-    // skip: publish detaches branch_id — src bug, #17333 (1)
-    it.skip('creates a git tag when git sync is configured for the app', async () => {
+    it('creates a git tag when git sync is configured for the app', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
       await seedDraftVersion(app as any, 'v1');
@@ -350,8 +392,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       );
     });
 
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('returns 201 and persists the save even when git tag creation throws', async () => {
+    it('returns 201 and persists the save even when git tag creation throws', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
       const draft = await seedDraftVersion(app as any, 'v1');
@@ -370,8 +411,7 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       expect(updated.status).toBe(AppVersionStatus.PUBLISHED);
     });
 
-    // QUARANTINE(external-apis): failing since main CI rehab — see #17260
-    it.skip('returns 201 when no git sync is configured (getSourceControlService throws)', async () => {
+    it('returns 201 when no git sync is configured (getSourceControlService throws)', async () => {
       const { user } = await seedOrg();
       const app = await seedApp(user);
       const draft = await seedDraftVersion(app as any, 'v1');

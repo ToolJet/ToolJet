@@ -498,8 +498,12 @@ export class AppsUtilService implements IAppsUtilService {
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const appBuilderMode = appUpdateDto.app_builder_mode;
     const { name, slug, icon } = appUpdateDto;
-    const branchId = appUpdateDto.branch_id;
-    const { id: appId, currentVersionId: lastReleasedVersion } = app;
+    const { id: appId, currentVersionId: lastReleasedVersion, type: appType } = app;
+
+    const branchId =
+      appType === APP_TYPES.WORKFLOW
+        ? (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id
+        : appUpdateDto.branch_id;
 
     // Version-level fields, written to app_versions for every app type.
     const versionParams: Record<string, any> = {};
@@ -584,10 +588,12 @@ export class AppsUtilService implements IAppsUtilService {
       // from the manager.update further down. Sub-branch rows aren't
       // slug-addressable until they merge to the default branch.
       if (versionParams.slug) {
-        // Same-branch collision (git-sync sub-branch path only). Without a
-        // branchId we skip this — a non-git-sync update has no branch scope
-        // and would otherwise scan unaddressable sub-branch rows on other
-        // workspaces. The default-branch check below covers non-git.
+        // Same-branch collision. branchId is populated even for non-git-sync
+        // workspaces now (resolves to the org's default branch, see
+        // jwt.strategy.ts#resolveBranchId), so the check itself still runs the
+        // same as before either way — only the message differs: non-git
+        // workspaces should never see "branch" in an error they have no context
+        // for.
         if (branchId) {
           const conflictingVersion = await manager.findOne(AppVersion, {
             where: {
@@ -597,7 +603,10 @@ export class AppsUtilService implements IAppsUtilService {
             },
           });
           if (conflictingVersion) {
-            throw new BadRequestException('This slug is already taken on this branch.');
+            const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+            throw new BadRequestException(
+              isGitEnabled ? 'This slug is already taken on this branch.' : 'This slug is already taken.'
+            );
           }
         }
 

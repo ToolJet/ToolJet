@@ -24,6 +24,11 @@ const CONFLICT_SECTION_HEADER_MAP = {
   // until the reference is removed, so these are always manual-resolution only.
   'module-in_use': 'Module in use',
   'datasource-in_use': 'Data source in use',
+  // Legacy name containing '/', pushed before name validation existed — always
+  // manual-resolution only (nothing to sync, the name must be fixed at the source).
+  'app-invalid_name': 'App invalid naming',
+  'module-invalid_name': 'Module invalid naming',
+  'datasource-invalid_name': 'Data source invalid naming',
 };
 
 const LOCAL_STATUSES = ['existing', 'local'];
@@ -157,11 +162,12 @@ function ConflictRow({
                     <SolidIcon name={TYPE_ICON_MAP[group.type] || 'apps'} width="16" fill="var(--slate9)" />
 
                     <span className="conflict-item-name">
-                      {group.conflictField === 'slug'
+                      {/* invalid_name: the whole point is showing the offending name itself, not an id. */}
+                      {group.conflictField === 'slug' || group.conflictField === 'invalid_name'
                         ? item.name
                         : item.coRelationId
-                        ? `#${item.coRelationId.slice(0, 8)}`
-                        : item.name}
+                          ? `#${item.coRelationId.slice(0, 8)}`
+                          : item.name}
                     </span>
 
                     {!hideBadges && (
