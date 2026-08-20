@@ -102,16 +102,13 @@ Sort all the options in the selected pattern. Choose from **None**, **a-z** or *
 
 ## Search
 
-Turn on **Show search in options** to add a search box to the options menu. Search is **Client side** by default: the component filters the options it already holds, in the browser, and highlights the matching text in option labels and captions.
+Turn on **Show search in options** to add a search box to the options menu, then use **Search type** to choose where the filtering happens.
 
-Use **Search type** to switch between the two modes:
+#### Client Side Search
 
-| <div style={{ width:"120px"}}> Mode </div> | <div style={{ width:"400px"}}> Behaviour </div> |
-| :------------------------------------------ | :----------------------------------------------- |
-| Client side (default) | The component filters the options it already holds and highlights the matching text. |
-| Server side | The component renders every option it is given, without filtering or highlighting, so that a query can filter the options in your datasource. |
+This is the default search option. The component filters the options it already holds, in the browser, and highlights the matching text in option labels and captions. The complete option list has to be loaded into the component for this to work.
 
-### Server Side Search
+#### Server Side Search
 
 Use Server side search when the option list is too large to load into the browser. The component stops filtering locally, and you bind its options to a query that returns only the matching rows.
 

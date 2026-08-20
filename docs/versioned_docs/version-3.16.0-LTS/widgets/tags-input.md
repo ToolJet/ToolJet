@@ -49,16 +49,13 @@ When Dynamic tags is enabled, use this schema format:
 
 ## Search
 
-Turn on **Turn on search** in the **Tags** section to let users search the tag list. Search is **Client side** by default: the component filters the tags it already holds, in the browser. When search is turned off, the dropdown menu does not appear and the component acts as a simple input field.
+Turn on **Turn on search** in the **Tags** section to let users search the tag list, then use **Search type** to choose where the filtering happens. When search is turned off, the dropdown menu does not appear and the component acts as a simple input field.
 
-Use **Search type** to switch between the two modes:
+#### Client Side Search
 
-| <div style={{ width:"120px"}}> Mode </div> | <div style={{ width:"400px"}}> Behaviour </div> |
-| :------------------------------------------ | :----------------------------------------------- |
-| Client side (default) | The component filters the tags it already holds. |
-| Server side | The component renders every tag it is given, without filtering, so that a query can filter the tags in your datasource. |
+This is the default search option. The component filters the tags it already holds, in the browser. The complete tag list has to be loaded into the component for this to work.
 
-### Server Side Search
+#### Server Side Search
 
 Use Server side search when the tag list is too large to load into the browser. The component stops filtering locally, and you bind its options to a query that returns only the matching rows.
 
