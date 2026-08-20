@@ -74,7 +74,7 @@ jobs:
 
       # Initialize Packer templates
       - name: Initialize Packer Template
-        uses: hashicorp/packer-github-actions@master
+        uses: hashicorp/packer-github-actions@8c999b2ff7c48cce2adc5fe43ad7fd8a80e6a8b5 # master
         with:
           command: init
           target: .
@@ -82,7 +82,7 @@ jobs:
 
       # validate templates
       - name: Validate Template
-        uses: hashicorp/packer-github-actions@master
+        uses: hashicorp/packer-github-actions@8c999b2ff7c48cce2adc5fe43ad7fd8a80e6a8b5 # master
         with:
           command: validate
           arguments: -syntax-only
@@ -101,7 +101,7 @@ jobs:
       # build artifact
       - name: Build Artifact
         id: packer-build
-        uses: hashicorp/packer-github-actions@master
+        uses: hashicorp/packer-github-actions@8c999b2ff7c48cce2adc5fe43ad7fd8a80e6a8b5 # master
         with:
           command: build
           #The the below argument is specific for building EE AMI image
