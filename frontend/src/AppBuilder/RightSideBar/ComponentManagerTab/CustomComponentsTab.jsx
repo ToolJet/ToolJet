@@ -42,12 +42,14 @@ const useLibraryCurrentRevision = (library) => {
 // latest-revision manifest (already in hand) so the common case needs no network call.
 const useResolvedManifest = (library, current, latest) => {
   const cacheRef = useRef({});
-  // TODO(P26): dev-bundle manifests are cached per (libraryId, revision) here, so a user
-  // actively pushing new props/components via `component dev` won't see the palette
-  // update until they reselect the dev entry — the server always serves the latest push
-  // (`no-store`, invariant #3), but this client cache doesn't know to bypass for `dev:`
-  // keys. Deferred; revisit alongside the P8 dev-refresh-mechanism decision.
+
+  const devNonce = useCustomComponentPreviewStore((state) =>
+    current?.startsWith?.('dev:') ? state.devBundleUpdatedAt?.[library.id] : undefined
+  );
+
   const [manifest, setManifest] = useState(current === latest ? library.manifest : null);
+
+  const cacheKey = devNonce ? `${current}@${devNonce}` : current;
 
   useEffect(() => {
     if (current === latest) {
@@ -55,8 +57,8 @@ const useResolvedManifest = (library, current, latest) => {
       return;
     }
 
-    if (cacheRef.current[current]) {
-      setManifest(cacheRef.current[current]);
+    if (cacheRef.current[cacheKey]) {
+      setManifest(cacheRef.current[cacheKey]);
       return;
     }
 
@@ -66,7 +68,7 @@ const useResolvedManifest = (library, current, latest) => {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!cancelled && data) {
-          cacheRef.current[current] = data;
+          cacheRef.current[cacheKey] = data;
           setManifest(data);
         }
       })
@@ -74,7 +76,7 @@ const useResolvedManifest = (library, current, latest) => {
     return () => {
       cancelled = true;
     };
-  }, [library.id, library.manifest, current, latest]);
+  }, [library.id, library.manifest, current, latest, cacheKey]);
 
   return manifest;
 };

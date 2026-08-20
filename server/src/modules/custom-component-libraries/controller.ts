@@ -71,6 +71,11 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
     throw new Error('Method not implemented.');
   }
 
+  @Get(':id/dev/:userId/stream')
+  async streamDev(@User() user, @Param('id') id: string, @Param('userId') userId: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
   @Get(':id')
   async get(@User() user, @Param('id') id: string): Promise<any> {
     throw new Error('Method not implemented.');
