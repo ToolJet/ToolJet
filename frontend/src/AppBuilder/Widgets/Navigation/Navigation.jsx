@@ -13,6 +13,9 @@ import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
+// max length for label and caption
+const NAV_TEXT_MAX_LENGTH = 25;
+
 // Render individual nav item - uses tj-list-item class like page navigation
 const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientation, isNested }) => {
   if (!isItemVisible(item)) return null;
@@ -56,11 +59,17 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientatio
       )}
       {showLabel && (
         <div className="nav-item-text">
-          <div className="page-name" data-cy={`nav-label-${item.id}`}>
+          <OverflowTooltip
+            childrenClassName="page-name"
+            maxLetters={NAV_TEXT_MAX_LENGTH}
+            data-cy={`nav-label-${item.id}`}
+          >
             {item.label}
-          </div>
+          </OverflowTooltip>
           {showInlineCaption ? (
-            <OverflowTooltip childrenClassName="nav-item-caption">{item.caption}</OverflowTooltip>
+            <OverflowTooltip childrenClassName="nav-item-caption" maxLetters={NAV_TEXT_MAX_LENGTH} alwaysShowTooltip>
+              {item.caption}
+            </OverflowTooltip>
           ) : null}
         </div>
       )}
@@ -125,7 +134,11 @@ const RenderNavGroup = ({
           />
         </div>
       )}
-      {showLabel && <div className="page-name">{group.label}</div>}
+      {showLabel && (
+        <OverflowTooltip childrenClassName="page-name" maxLetters={NAV_TEXT_MAX_LENGTH}>
+          {group.label}
+        </OverflowTooltip>
+      )}
     </div>
   );
 
