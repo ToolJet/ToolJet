@@ -874,7 +874,6 @@ export const tableConfig = {
       enabledSort: { value: '{{true}}' },
       hideColumnSelectorButton: { value: '{{false}}' },
       manageColumns: { value: '{{true}}' },
-      useHideColumnSelectorButton: { value: '{{false}}' },
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
       showRefreshButton: { value: '{{false}}' },
