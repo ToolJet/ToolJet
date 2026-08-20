@@ -2,6 +2,8 @@ import React, { useEffect, useLayoutEffect, useState, useMemo, useRef } from 're
 import cx from 'classnames';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ToolTip } from '@/_components';
@@ -232,6 +234,7 @@ const RenderNavGroup = ({
 export const Navigation = function Navigation(props) {
   const {
     id,
+    height,
     width,
     properties,
     styles,
@@ -241,6 +244,9 @@ export const Navigation = function Navigation(props) {
     setExposedVariables,
     darkMode,
     currentMode,
+    currentLayout,
+    subContainerIndex,
+    componentType,
   } = props;
 
   const { loadingState, disabledState, visibility } = properties;
@@ -285,6 +291,22 @@ export const Navigation = function Navigation(props) {
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,
+  });
+
+  // ===== DYNAMIC HEIGHT =====
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
   });
 
   const updateExposedVariablesState = (key, value) => {
@@ -482,14 +504,15 @@ export const Navigation = function Navigation(props) {
       flexDirection: isHorizontal ? 'row' : 'column',
       alignItems: isHorizontal ? mapAlignment(verticalAlignment) : undefined,
       width: '100%',
-      height: '100%',
+      height: isDynamicHeightEnabled ? 'auto' : '100%',
+      ...(isDynamicHeightEnabled && { minHeight: height }),
       maxWidth: viewerMaxWidth ? `${viewerMaxWidth}px` : undefined,
       backgroundColor: bgColor,
       border: `1px solid ${bdrColor}`,
       borderRadius: `${parsedBorderRadius}px`,
       padding: `${parsedPadding}px`,
       boxSizing: 'border-box',
-      overflow: orientation === 'horizontal' ? 'visible' : 'auto',
+      overflow: isDynamicHeightEnabled ? 'visible' : orientation === 'horizontal' ? 'visible' : 'auto',
       '--nav-container-bg': bgColor,
       '--nav-container-border': bdrColor,
     };
@@ -502,6 +525,8 @@ export const Navigation = function Navigation(props) {
     padding,
     verticalAlignment,
     viewerMaxWidth,
+    isDynamicHeightEnabled,
+    height,
   ]);
 
   // Loading state
