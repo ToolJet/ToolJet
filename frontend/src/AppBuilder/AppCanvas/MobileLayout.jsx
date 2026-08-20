@@ -104,8 +104,7 @@ export const MobileLayout = ({
               overflow: 'hidden auto',
               // Containing block for Moveable's control boxes; drop it and resize handles drift by scrollTop.
               position: 'relative',
-              // Padding belongs here, not on the canvas: widget widths derive from the canvas's own width.
-              padding: '16px 16px 0',
+              // No gutter: stacked components carry their own side inset.
               boxSizing: 'border-box',
               backgroundColor: frameBgColor,
             }}
@@ -116,9 +115,7 @@ export const MobileLayout = ({
           </div>
         ) : (
           // Matches the editor gutter so preview and the published app frame the canvas identically.
-          <div style={{ padding: '16px 16px 0', boxSizing: 'border-box', backgroundColor: frameBgColor }}>
-            {mainCanvasContainer}
-          </div>
+          <div style={{ boxSizing: 'border-box', backgroundColor: frameBgColor }}>{mainCanvasContainer}</div>
         )}
       </CanvasContentTail>
       <Suspense fallback={null}>

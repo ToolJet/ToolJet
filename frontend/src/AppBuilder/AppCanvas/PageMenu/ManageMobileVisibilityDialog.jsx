@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
@@ -48,7 +48,7 @@ const VisibilityRow = React.memo(({ component: c, checked, onToggle, cellClass, 
 ));
 VisibilityRow.displayName = 'VisibilityRow';
 
-// Lists components hidden on mobile and lets the user re-enable the selected ones in one action.
+// Lists every component with its mobile visibility; checked mirrors showOnMobile.
 export default function ManageMobileVisibilityDialog({ open, onClose, moduleId = 'canvas', darkMode }) {
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const setComponentPropertyByComponentIds = useStore((state) => state.setComponentPropertyByComponentIds, shallow);
@@ -61,18 +61,30 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
   const [searchOpen, setSearchOpen] = useState(false);
   const [selected, setSelected] = useState(() => new Set());
 
-  const hiddenComponents = useMemo(
+  const components = useMemo(
     () =>
-      Object.entries(currentPageComponents)
-        .filter(([, comp]) => !getResolvedValue(comp?.component?.definition?.others?.showOnMobile?.value))
-        .map(([id, comp]) => ({ id, name: comp?.component?.name ?? id, type: comp?.component?.component ?? '' })),
+      Object.entries(currentPageComponents).map(([id, comp]) => ({
+        id,
+        name: comp?.component?.name ?? id,
+        type: comp?.component?.component ?? '',
+        onMobile: !!getResolvedValue(comp?.component?.definition?.others?.showOnMobile?.value),
+      })),
     [currentPageComponents, getResolvedValue]
   );
 
+  // Reseed on open so a cancelled edit doesn't survive into the next one.
+  useEffect(() => {
+    if (!open) return;
+    setSelected(new Set(components.filter((c) => c.onMobile).map((c) => c.id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return q ? hiddenComponents.filter((c) => c.name.toLowerCase().includes(q)) : hiddenComponents;
-  }, [hiddenComponents, search]);
+    return q ? components.filter((c) => c.name.toLowerCase().includes(q)) : components;
+  }, [components, search]);
+
+  const changed = useMemo(() => components.filter((c) => c.onMobile !== selected.has(c.id)), [components, selected]);
 
   const allFilteredSelected = filtered.length > 0 && filtered.every((c) => selected.has(c.id));
 
@@ -97,7 +109,6 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
   const handleClose = () => {
     setSearch('');
     setSearchOpen(false);
-    setSelected(new Set());
     onClose();
   };
 
@@ -105,14 +116,14 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
     if (shouldFreeze) return;
     // Batched: setComponentProperty per component fires one autosave request each.
     const componentDiffs = {};
-    selected.forEach((id) => {
+    changed.forEach(({ id }) => {
       const comp = currentPageComponents[id]?.component;
       if (!comp) return;
       // Spread `others`: the batch helper replaces the whole param group in the saved diff.
       componentDiffs[id] = {
         component: {
           component: comp.component,
-          definition: { others: { ...comp.definition?.others, showOnMobile: { value: true } } },
+          definition: { others: { ...comp.definition?.others, showOnMobile: { value: selected.has(id) } } },
         },
       };
     });
@@ -219,10 +230,10 @@ export default function ManageMobileVisibilityDialog({ open, onClose, moduleId =
           <Button
             variant="primary"
             onClick={handleUpdate}
-            disabled={selected.size === 0 || shouldFreeze}
+            disabled={changed.length === 0 || shouldFreeze}
             data-cy="manage-mobile-visibility-update"
           >
-            Add to mobile
+            Save changes
           </Button>
         </DialogFooter>
       </DialogContent>

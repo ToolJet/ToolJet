@@ -7,6 +7,8 @@ import { NO_OF_GRIDS } from '../appCanvasConstants';
 export const MOBILE_GRID_COLUMNS = NO_OF_GRIDS;
 // Vertical breathing room between stacked mobile items (top/height are in px).
 const MOBILE_STACK_GAP_PX = 10;
+// Side inset in grid columns; keeps the gutter on the components instead of the canvas padding.
+const MOBILE_SIDE_INSET_COLUMNS = 1;
 
 // Backstop for compactItem's move-down loop, which has no structural exit if a top goes NaN.
 const MAX_COMPACTION_STEPS = 10000;
@@ -45,6 +47,8 @@ export function computeAutoMobileLayout(currentPageComponents) {
 
   // Stack a parent's direct children into one full-width column (children recursed first).
   const stackGroup = (parentKey) => {
+    // Inset the root column only — a nested container already sits inside the root's inset.
+    const sideInset = parentKey === ROOT ? MOBILE_SIDE_INSET_COLUMNS : 0;
     const layouts = (childrenByParent[parentKey] || []).filter(isVisibleOnMobile).map((id) => {
       const desktop = currentPageComponents[id]?.layouts?.desktop || {};
       const nestedExtent = stackContainer(id);
@@ -52,20 +56,22 @@ export function computeAutoMobileLayout(currentPageComponents) {
       return {
         i: id,
         top: desktop.top ?? 0,
-        left: 0,
-        width: MOBILE_GRID_COLUMNS,
+        left: sideInset,
+        width: MOBILE_GRID_COLUMNS - sideInset * 2,
         height: nestedExtent != null ? Math.max(height, nestedExtent) : height,
       };
     });
 
-    const stacked = compact(correctBounds(layouts, { cols: MOBILE_GRID_COLUMNS }), 'vertical', MOBILE_GRID_COLUMNS);
+    // Not via correctBounds: it triples widths and resets left=1 to 0, both undoing the inset.
+    const stacked = compact(layouts, 'vertical', MOBILE_GRID_COLUMNS);
 
     // compact() packs items flush; offset each by a cumulative 10px gap (top/height are in px).
     let extent = 0;
     [...stacked]
       .sort((a, b) => a.top - b.top)
       .forEach((l, idx) => {
-        const top = l.top + idx * MOBILE_STACK_GAP_PX;
+        // Leading gap at the root replaces the removed canvas top padding.
+        const top = l.top + (idx + (sideInset ? 1 : 0)) * MOBILE_STACK_GAP_PX;
         // Spacing uses the rendered height; the stored height drops the bump the renderer re-adds.
         updatedBoxes[l.i] = { left: l.left, top, width: l.width, height: l.height - (labelBumpById[l.i] ?? 0) };
         extent = Math.max(extent, top + l.height);

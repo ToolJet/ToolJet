@@ -149,25 +149,22 @@ export default function MobileAutoLayoutToolbar({ currentLayout, darkMode, modul
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        {/* Nothing hidden: drop the divider with the text, or it reads as a trailing empty section. */}
-        {hiddenCount > 0 && (
-          <>
-            <div className="tw-h-[17.5px] tw-w-px tw-bg-border-weak" />
+        <div className="tw-h-[17.5px] tw-w-px tw-bg-border-weak" />
 
-            <div className="tw-flex tw-items-center tw-gap-2">
-              <span className="tw-text-xs tw-text-text-default">{hiddenCount} components not on mobile</span>
-              <Button
-                variant="outline"
-                size="medium"
-                onClick={() => setManageOpen(true)}
-                disabled={shouldFreeze}
-                data-cy="manage-hidden-components-button"
-              >
-                manage
-              </Button>
-            </div>
-          </>
-        )}
+        <div className="tw-flex tw-items-center tw-gap-2">
+          <span className="tw-text-xs tw-text-text-default">
+            {hiddenCount > 0 ? `${hiddenCount} components not on mobile` : 'All components on mobile'}
+          </span>
+          <Button
+            variant="outline"
+            size="medium"
+            onClick={() => setManageOpen(true)}
+            disabled={shouldFreeze}
+            data-cy="manage-hidden-components-button"
+          >
+            manage
+          </Button>
+        </div>
       </div>
 
       <AlertDialog open={!!confirm} onOpenChange={(next) => !next && setConfirm(null)}>
