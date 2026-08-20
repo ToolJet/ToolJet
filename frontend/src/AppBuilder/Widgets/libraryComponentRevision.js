@@ -2,21 +2,6 @@ import config from 'config';
 import useStore from '@/AppBuilder/_stores/store';
 import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
 
-// F5: ONE resolution rule for which revision a LibraryComponent instance runs —
-// shared by the runner and the Inspector so they can never disagree.
-//
-//   1. dev preview override (local session only — never persisted, absent in viewer)
-//   2. app-level pin: globalSettings.customComponentLibraries[libraryId].revisionId
-//      (LLD §5.7 — every instance of a library in an app version moves together)
-//   3. the instance's own revisionId property (back-compat: pre-F5 instances)
-// The pin map must survive BOTH of the platform's deep key transforms in transit:
-// released/editor loads run humps decamelizeKeys (renames camel keys → snake), the
-// v2 preview load runs humps camelizeKeys (EATS THE DASHES in UUID keys). Hence:
-//   - VALUES are flat strings ('v1') — nothing nested for either transform to rename
-//   - KEYS are the library UUID WITHOUT dashes (pure lowercase hex) — a no-op under
-//     both camelize and decamelize
-// normalizePin / the `?? pins[libraryId]` fallback tolerate rows written in the
-// short-lived earlier shapes (object values / dashed keys).
 export const pinKey = (libraryId) => libraryId?.replace(/-/g, '');
 export const normalizePin = (pin) => (typeof pin === 'string' ? pin : pin?.revisionId ?? pin?.revision_id);
 
@@ -35,3 +20,26 @@ export const libraryFileUrl = (libraryId, revision, file) =>
   revision?.startsWith?.('dev:')
     ? `${config.apiUrl}/custom-component-libraries/${libraryId}/dev/${revision.slice(4)}/files/${file}`
     : `${config.apiUrl}/custom-component-libraries/${libraryId}/revisions/${revision}/files/${file}`;
+
+const instanceActions = new Map();
+
+export const setLibraryComponentActions = (componentId, actions) => {
+  if (!actions?.length) {
+    instanceActions.delete(componentId);
+    return;
+  }
+  instanceActions.set(
+    componentId,
+    actions.map((a) => ({
+      handle: a.name,
+      displayName: a.displayName ?? a.name,
+      params: (a.params ?? []).map((p) => ({
+        handle: p.handle,
+        displayName: p.displayName ?? p.handle,
+        defaultValue: p.defaultValue,
+      })),
+    }))
+  );
+};
+
+export const getLibraryComponentActions = (componentId) => instanceActions.get(componentId) ?? [];

@@ -1,18 +1,19 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { CliApiToken } from '@entities/cli_api_token.entity';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 export const CLI_TOKEN_PREFIX = 'tj_cli_';
 
 export const hashCliToken = (rawToken: string): string => createHash('sha256').update(rawToken).digest('hex');
 
-// Authenticates `Authorization: Bearer tj_cli_...` from the ToolJet CLI (login/init/dev/deploy).
-// Modeled on WebhookGuard's bearer parsing; attaches the token's user (org-scoped to the token's
-// workspace) as request.user so @User() works identically to session-guarded routes.
 @Injectable()
 export class CliTokenGuard implements CanActivate {
+  constructor(protected readonly licenseTermsService: LicenseTermsService) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader: string | undefined = request.headers.authorization;
@@ -32,6 +33,18 @@ export class CliTokenGuard implements CanActivate {
       // Expired = dead credential; deliberately NOT stamped as "used" — lastUsedAt only
       // records successful auths (product decision, 2026-08-07).
       throw new UnauthorizedException('CLI token expired');
+    }
+
+    if (
+      !(await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.CUSTOM_COMPONENT_LIBRARIES,
+        cliToken.organizationId
+      ))
+    ) {
+      throw new HttpException(
+        `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
+        451
+      );
     }
 
     // "Last used" for the profile-settings token table. Per-auth write, no throttling —

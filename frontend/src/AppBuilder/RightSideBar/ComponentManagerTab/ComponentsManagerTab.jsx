@@ -61,6 +61,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     shallow
   );
 
+  const hasCustomComponentLibrariesAccess = useStore(
+    (state) => state.license?.featureAccess?.customComponentLibraries === true
+  );
+
   const componentList = useMemo(() => {
     return componentTypes
       .map((component) => component.component)
@@ -309,10 +313,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
                 </ModuleErrorBoundary>
               </Tab>
             )}
-            <Tab eventKey="custom" title={t('globals.custom', 'Custom')} darkMode={darkMode}>
-              {searchBox()}
-              <CustomComponentsTab searchQuery={searchQuery} />
-            </Tab>
+            {hasCustomComponentLibrariesAccess && (
+              <Tab eventKey="custom" title={t('globals.custom', 'Custom')} darkMode={darkMode}>
+                {searchBox()}
+                <CustomComponentsTab searchQuery={searchQuery} />
+              </Tab>
+            )}
           </Tabs>
         </>
       )}

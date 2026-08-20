@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useEffectiveLibraryRevision, libraryFileUrl } from './libraryComponentRevision';
+import { useEffectiveLibraryRevision, libraryFileUrl, setLibraryComponentActions } from './libraryComponentRevision';
 import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
 
 const DevBadge = ({ label }) => (
@@ -33,7 +33,15 @@ const META_KEYS = new Set(['libraryId', 'componentName', 'revisionId']);
    props change → we send props
    shell → stateChange/event → setExposedVariable / fireEvent 
 */
-export const LibraryComponent = ({ properties = {}, styles = {}, height, setExposedVariable, fireEvent, dataCy }) => {
+export const LibraryComponent = ({
+  id,
+  properties = {},
+  styles = {},
+  height,
+  setExposedVariable,
+  fireEvent,
+  dataCy,
+}) => {
   const { libraryId, componentName, revisionId } = properties;
   const safeHeight = Math.max(height ?? 0, 0);
 
@@ -46,6 +54,8 @@ export const LibraryComponent = ({ properties = {}, styles = {}, height, setExpo
 
   const iframeRef = useRef(null);
   const [shellReady, setShellReady] = useState(false);
+  const pendingInvocations = useRef(new Map());
+  const invocationSeq = useRef(0);
 
   const fileUrl = (file) => libraryFileUrl(libraryId, effectiveRevision, file);
 
@@ -56,6 +66,19 @@ export const LibraryComponent = ({ properties = {}, styles = {}, height, setExpo
   );
 
   const postToShell = (msg) => iframeRef.current?.contentWindow?.postMessage(msg, '*');
+
+  const invokeInShell = (msg) => {
+    const id = ++invocationSeq.current;
+    return new Promise((resolve, reject) => {
+      pendingInvocations.current.set(id, { resolve, reject });
+      postToShell({ ...msg, id });
+    });
+  };
+
+  const rejectAllPending = (reason) => {
+    pendingInvocations.current.forEach(({ reject }) => reject(new Error(reason)));
+    pendingInvocations.current.clear();
+  };
 
   // Latest render values, readable from the stable message listener below.
   const latest = useRef({});
@@ -72,6 +95,7 @@ export const LibraryComponent = ({ properties = {}, styles = {}, height, setExpo
       if (e.source !== iframeRef.current?.contentWindow) return;
       const { type, key, value, name, message } = e.data ?? {};
       if (type === 'ready') {
+        rejectAllPending('component reloaded before the action completed');
         setShellReady(true);
         const { configured, componentName, componentProps, bundleUrl, cssUrl } = latest.current;
         if (configured) {
@@ -81,9 +105,15 @@ export const LibraryComponent = ({ properties = {}, styles = {}, height, setExpo
       }
       if (type === 'stateChange') setExposedVariable(key, value);
       if (type === 'event') fireEvent(name, { isCustomComponentEvent: true });
+      if (type === 'actionResult') {
+        const pending = pendingInvocations.current.get(e.data.id);
+        if (pending) {
+          pendingInvocations.current.delete(e.data.id);
+          if (e.data.error) pending.reject(new Error(e.data.error));
+          else pending.resolve(e.data.result);
+        }
+      }
       if (type === 'error') {
-        // Locked decision #18: never crash the app — degrade to blank + console.
-        // eslint-disable-next-line no-console
         console.error(`[LibraryComponent] ${message}`);
       }
     };
@@ -95,14 +125,40 @@ export const LibraryComponent = ({ properties = {}, styles = {}, height, setExpo
     setShellReady(false);
   }, [libraryId, effectiveRevision, componentName]);
 
-  // Forward resolved props on every change (shell holds them until load completes).
+  useEffect(() => {
+    if (!configured) return;
+    let cancelled = false;
+    fetch(libraryFileUrl(libraryId, effectiveRevision, 'manifest.json'))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((manifest) => {
+        if (cancelled) return;
+        const actions = manifest?.components?.[componentName]?.actions ?? [];
+        actions.forEach((a) =>
+          setExposedVariable(a.name, (...args) => invokeInShell({ type: 'invokeAction', name: a.name, args }))
+        );
+        setLibraryComponentActions(id, actions);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [configured, libraryId, effectiveRevision, componentName, id, setExposedVariable]);
+
+  useEffect(
+    () => () => {
+      setLibraryComponentActions(id, null);
+      rejectAllPending('component was removed before the action completed');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [id]
+  );
+
   useEffect(() => {
     if (!shellReady) return;
     postToShell({ type: 'props', data: componentProps });
   }, [shellReady, componentProps]);
 
   if (!configured) {
-    // Unconfigured instance keeps the F1 "Slot" placeholder (design 47-4063).
     return (
       <div
         data-cy={dataCy}

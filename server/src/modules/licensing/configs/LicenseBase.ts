@@ -447,6 +447,17 @@ export default class LicenseBase {
     return !!this._features?.['queryFolders'];
   }
 
+  public get customComponentLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.customComponentLibraries;
+    }
+
+    if (this._app?.features?.customComponentLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.customComponentLibraries;
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -606,6 +617,7 @@ export default class LicenseBase {
       appHistory: this.appHistory,
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
+      customComponentLibraries: this.customComponentLibraries,
       aiPlan: this.aiPlan,
     };
   }
