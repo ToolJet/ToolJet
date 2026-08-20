@@ -102,7 +102,7 @@ describe(
       });
     });
 
-    it("saves v1 from UI, verifies tag format + message, creates v2 via UI, renames version via UI and verifies git tags", () => {
+    it("saves v1 from UI, verifies tag format + message, creates v2 via UI — confirms edit option hidden when git sync is enabled", () => {
       cy.apiGetEditingVersionId(appId, masterBranchId).then((vid) => {
         v1VersionId = vid;
         cy.log(`[gitSync] v1VersionId: ${vid}`);
@@ -111,13 +111,13 @@ describe(
       cy.gitSyncGoToDashboard();
       cy.gitSyncOpenAppInBuilder(appName);
 
-      // Save v1
+      // Save v1 — git sync mode starts with an empty name field; user must type the name
       cy.get('[data-cy="version-name"]').eq(0).should("be.visible").click();
       cy.wait(300);
       cy.get(`[data-cy="${VERSION_V1}-save-version-button"]`, { timeout: 10000 })
         .should("be.visible")
         .click();
-      cy.get('[data-cy="version-name-input-field"]').should("have.value", VERSION_V1);
+      cy.get('[data-cy="version-name-input-field"]').should("be.visible").clear().type(VERSION_V1);
       cy.get('[data-cy="create-version-save-button"]').click();
       cy.verifyToastMessage(".go3958317564", "Version Created successfully");
 
@@ -139,22 +139,21 @@ describe(
         expect(verPart, "version part is normalized").to.equal(normalizeForTag(VERSION_V1));
       });
 
-      // Create v2 draft
+      // Create v2 draft — in git sync mode, no name input field; draft is auto-named after defaultBranch
       cy.get('[data-cy="version-name"]').eq(0).should("be.visible").click();
       cy.wait(300);
       cy.get('[data-cy="create-draft-version-button"]').should("be.visible").click();
       cy.get('[data-cy="create-draft-version-from-input-field"]').click();
       cy.contains(`[id*="react-select-"]`, VERSION_V1).click();
-      cy.get('[data-cy="version-name-input-field"]').clear().type(VERSION_V2);
       cy.get('[data-cy="create-draft-version-create-button"]').click();
 
-      // Save v2
+      // Save v2 — draft is named "master" (defaultBranch); git sync modal starts with empty name field
       cy.get('[data-cy="version-name"]').eq(0).should("be.visible").click();
       cy.wait(300);
-      cy.get(`[data-cy="${VERSION_V2}-save-version-button"]`, { timeout: 10000 })
+      cy.get('[data-cy="master-save-version-button"]', { timeout: 10000 })
         .should("be.visible")
         .click();
-      cy.get('[data-cy="version-name-input-field"]').should("have.value", VERSION_V2);
+      cy.get('[data-cy="version-name-input-field"]').should("be.visible").clear().type(VERSION_V2);
       cy.get('[data-cy="create-version-save-button"]').click();
       cy.verifyToastMessage(".go3958317564", "Version Created successfully");
 
@@ -172,45 +171,16 @@ describe(
         expect(tagName, "v2 tagName format").to.equal(expectedV2TagName);
       });
 
-      // Rename app before version rename — tag message reads app.name from DB at rename time
-      renamedAppName = `${appName}-renamed`;
-      cy.apiRenameApp(appId, renamedAppName);
-
-      // Rename v2 → v2-renamed
+      // Version editing via UI is disabled when git sync is enabled.
+      // Verify the more menu shows Delete but not Edit details.
       cy.get('[data-cy="version-name"]').eq(0).should("be.visible").click();
       cy.wait(300);
       cy.get(`[data-cy="${VERSION_V2}-version-more-menu-button"]`, { timeout: 10000 })
         .should("be.visible")
         .click();
-      cy.get(`[data-cy="${VERSION_V2}-edit-version-button"]`).should("be.visible").click();
-      cy.get('[data-cy="edit-version-name-input-field"]', { timeout: 10000 })
-        .should("be.visible")
-        .clear()
-        .type(VERSION_V2_RENAMED);
-      cy.get('[data-cy="save-button"]').click();
-
-      const oldTagName = buildTagName(appCoRelationId, VERSION_V2);
-      const newTagName = buildTagName(appCoRelationId, VERSION_V2_RENAMED);
-
-      // Old tag is deleted by the version rename
-      cy.gitHubWaitForTagGone(oldTagName);
-
-      // version-rename-commit event is async — poll until new tag appears
-      cy.gitHubWaitForTag(newTagName).then((tag) => {
-        expect(tag, `renamed tag '${newTagName}' exists`).to.not.be.null;
-        expect(tag.message, "renamed tag message contains new version name").to.include(VERSION_V2_RENAMED);
-        expect(tag.message, "renamed tag message contains renamed app name").to.include(
-          `${renamedAppName}/${VERSION_V2_RENAMED}`,
-        );
-      });
-
-      cy.apiCheckTagExists(appId, VERSION_V2).then(({ exists }) => {
-        expect(exists, "old v2 tag gone after rename").to.equal(false);
-      });
-      cy.apiCheckTagExists(appId, VERSION_V2_RENAMED).then(({ exists, tagName }) => {
-        expect(exists, "v2-renamed exists").to.equal(true);
-        expect(tagName, "renamed tagName format").to.equal(newTagName);
-      });
+      cy.get(`[data-cy="${VERSION_V2}-edit-version-button"]`).should("not.exist");
+      cy.get(`[data-cy="${VERSION_V2}-delete-version-button"]`).should("be.visible");
+      cy.get("body").click();
     });
 
     it("imports app using v1 tag (app shows renamed name) and pulls renamed v2 version in editor", () => {
