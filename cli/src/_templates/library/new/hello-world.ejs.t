@@ -5,7 +5,11 @@ import React from "react";
 import { ToolJet } from "@tooljet/custom-component-sdk";
 
 export const HelloWorld: React.FC = () => {
-  const [firstName] = ToolJet.useStateString({ name: 'firstName', label: 'First Name', initialValue: 'John' });
+  const [firstName, setFirstName] = ToolJet.useStateString({ name: 'firstName', label: 'First Name', initialValue: 'John' });
+
+  ToolJet.useAction({ name: 'reset', displayName: 'Reset' }, () => {
+    setFirstName('John');
+  });
 
   return (
     <div>
