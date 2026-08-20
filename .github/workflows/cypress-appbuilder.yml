@@ -29,7 +29,7 @@ jobs:
         edition:
           - ee
 
-    steps:
+    steps: #I am testing
       - name: Debug labels and matrix edition
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
