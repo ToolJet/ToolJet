@@ -19,7 +19,7 @@ export class FolderAppsService implements IFolderAppsService {
     protected folderAppsUtilService: FolderAppsUtilService
   ) {}
 
-  async create(folderId: string, appId: string): Promise<FolderApp> {
+  async create(folderId: string, appId: string, manager?: EntityManager): Promise<FolderApp> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const existingFolderApp = await manager.findOne(FolderApp, {
         where: { appId, folderId },
@@ -41,14 +41,14 @@ export class FolderAppsService implements IFolderAppsService {
       const folderApp = await manager.save(FolderApp, newFolderApp);
 
       return folderApp;
-    });
+    }, manager);
   }
 
-  async remove(folderId: string, appId: string): Promise<void> {
+  async remove(folderId: string, appId: string, manager?: EntityManager): Promise<void> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // TODO: folder under user.organizationId
       return await manager.delete(FolderApp, { folderId, appId });
-    });
+    }, manager);
   }
 
   private getResourceTypefromAppType(type: APP_TYPES) {
