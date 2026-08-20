@@ -26,8 +26,11 @@ describe('Personal access token session exchange', () => {
       .post('/api/personal-access-tokens')
       .set('Cookie', tokenCookie)
       .set('tj-workspace-id', orgId)
-      .send({ name, organizationId: orgId, expiresAt: futureDate(7) })
-      .expect(201);
+      .send({ name, organizationId: orgId, expiresAt: futureDate(7) });
+    // Surface the server's reason — a bare "expected 201, got 403" gives the next person nothing.
+    if (res.status !== 201) {
+      throw new Error(`createPat expected 201, got ${res.status}: ${JSON.stringify(res.body)}`);
+    }
     return { token: res.body.token, id: res.body.id };
   };
 
@@ -192,6 +195,60 @@ describe('Personal access token session exchange', () => {
         .set('Cookie', `tj_auth_token=${body.authToken}`)
         .set('tj-workspace-id', orgId)
         .expect(401);
+    });
+
+    it('should reach a module inside the allowlist', async () => {
+      const { token } = await createPat('in-allowlist');
+      const { body } = await exchange(token).expect(201);
+
+      await request
+        .agent(app.getHttpServer())
+        .get(`/api/tooljet-db/organizations/${orgId}/tables`)
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .expect(200);
+    });
+
+    it('should be refused on a module outside the allowlist', async () => {
+      const { token } = await createPat('outside-allowlist');
+      const { body } = await exchange(token).expect(201);
+
+      // The owner is an admin, so this is denied by the token's ceiling, not by their role —
+      // which is the whole point of the allowlist.
+      const res = await request
+        .agent(app.getHttpServer())
+        .get('/api/organization-users')
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .expect(403);
+
+      expect(res.body.message).toMatch(/personal access token cannot access/i);
+    });
+
+    it('should not be able to mint another token', async () => {
+      const { token } = await createPat('no-self-propagation');
+      const { body } = await exchange(token).expect(201);
+
+      // A token that can create tokens is a persistence mechanism that survives revoking the
+      // original, and launders a scoped token into an unscoped one.
+      await request
+        .agent(app.getHttpServer())
+        .post('/api/personal-access-tokens')
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .send({ name: 'spawned', organizationId: orgId, expiresAt: futureDate(1) })
+        .expect(403);
+    });
+
+    it('should leave the same endpoints reachable for a normal browser session', async () => {
+      // The allowlist must narrow tokens only. A regression here logs every human out of
+      // workspace administration.
+      await request
+        .agent(app.getHttpServer())
+        .get('/api/organization-users')
+        .set('Cookie', tokenCookie)
+        .set('tj-workspace-id', orgId)
+        .expect(200);
     });
 
     it('should refuse to re-exchange a revoked token', async () => {
