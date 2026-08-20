@@ -106,6 +106,30 @@ export const createFormComponentSlice = (set, get) => ({
     }
   },
 
+  // Returns the base Form id when the component sits inside a Form, null otherwise.
+  getParentFormId: (componentId, moduleId = 'canvas') => {
+    const { getComponentDefinition, getParentComponentType, getBaseParentId } = get();
+    const parentId = getComponentDefinition(componentId, moduleId)?.component?.parent;
+    if (!parentId) return null;
+    if (getParentComponentType(parentId, moduleId) !== 'Form') return null;
+    return getBaseParentId(parentId);
+  },
+
+  // Drops deleted components from their parent Form's `fields` list inside an existing immer draft.
+  // Doing it in the caller's draft (instead of a separate `set`) keeps the Form field removal in the SAME undo/redo patch as the component deletion.
+  removeDeletedComponentsFromFormFieldsInDraft: ({ page, fieldDeletionMap = {} }) => {
+    Object.entries(fieldDeletionMap).forEach(([formId, componentIds]) => {
+      const formComponent = page?.components?.[formId]?.component;
+      const fields = formComponent?.definition?.properties?.fields?.value;
+      if (!Array.isArray(fields)) return;
+
+      const updatedFields = fields.filter((field) => !componentIds.includes(field.componentId));
+      if (updatedFields.length === fields.length) return;
+
+      lodashSet(formComponent, ['definition', 'properties', 'fields', 'value'], cleanupFormFields(updatedFields));
+    });
+  },
+
   // Check if the parent component is a Form and delete the form fields if it has the componentId
   // skipSettingProperty: if true, returns the componentId without updating (used for batching)
   // skipSave: if true, updates local state but skips API call (for batching with other operations)
@@ -367,8 +391,8 @@ export const createFormComponentSlice = (set, get) => ({
             }
           }
         });
-      }),
-      skipUndoRedo,
+      }, skipUndoRedo),
+      false,
       'setComponentPropertiesByDiff'
     );
 
@@ -424,7 +448,7 @@ export const createFormComponentSlice = (set, get) => ({
       // Use existing addComponentToCurrentPage but with saveAfterAction=false
       // We'll save all changes together at the end
       return addComponentToCurrentPage(componentsToCreate, moduleId, {
-        skipUndoRedo: false,
+        skipUndoRedo,
         saveAfterAction: false,
         skipFormUpdate: true,
       });
@@ -436,7 +460,7 @@ export const createFormComponentSlice = (set, get) => ({
 
       // Use existing setComponentPropertyByComponentIds function
       upatedDiff = setComponentPropertyByComponentIds(operations.updated, moduleId, {
-        skipUndoRedo: false,
+        skipUndoRedo,
         saveAfterAction: false, // We'll save all changes together at the end
       });
     };
@@ -447,7 +471,7 @@ export const createFormComponentSlice = (set, get) => ({
 
       // Use existing deleteComponents function but with saveAfterAction=false
       deleteComponents(operations.deleted, moduleId, {
-        skipUndoRedo: false,
+        skipUndoRedo,
         saveAfterAction: false,
         isCut: false,
         skipFormUpdate: true, // Skip form updates to avoid conflicts
