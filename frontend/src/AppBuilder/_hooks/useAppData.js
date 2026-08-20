@@ -80,6 +80,8 @@ const useAppData = (
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals);
+  const updateExposedTheme = useStore((state) => state.updateExposedTheme);
+  const getActiveTheme = useStore((state) => state.getActiveTheme);
   const setResolvedPageConstants = useStore((state) => state.setResolvedPageConstants);
   const updateFeatureAccess = useStore((state) => state.updateFeatureAccess);
   const computePageSettings = useStore((state) => state.computePageSettings);
@@ -257,10 +259,8 @@ const useAppData = (
   }, [moduleMode]);
 
   useEffect(() => {
-    const exposedTheme =
-      appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
-    setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
-  }, [appMode, darkMode, moduleId]);
+    updateExposedTheme(undefined, moduleId);
+  }, [appMode, darkMode, moduleId, selectedTheme, themeAccess]);
 
   useEffect(() => {
     if (!currentSession) {
@@ -728,7 +728,7 @@ const useAppData = (
   useEffect(() => {
     const root = document.documentElement;
     const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
-    const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
+    const themeObj = getActiveTheme().definition || {};
     Object.keys(themeObj).forEach((category) => {
       const categoryObj = themeObj[category];
       Object.keys(categoryObj).forEach((property) => {
@@ -860,9 +860,7 @@ const useAppData = (
         }
 
         try {
-          const exposedTheme =
-            appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
-          setResolvedGlobals('theme', { name: exposedTheme });
+          updateExposedTheme();
         } catch (error) {
           console.log('error', error);
         }

@@ -1,4 +1,4 @@
-import { resolveDynamicValues } from '../utils';
+import { resolveDynamicValues, resolveThemeForMode } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
@@ -153,6 +153,21 @@ export const createResolvedSlice = (set, get) => {
       );
       get().updateDependencyValues(`globals.${objKey}`, moduleId);
     },
+
+    // `overrideMode` is for toggle handlers that fire before the new mode is persisted to
+    // globalSettings/localStorage — they know the mode they're switching to. Everywhere else
+    // (e.g. reacting to a theme/appMode change), omit it and let this derive the current mode itself.
+    updateExposedTheme: (overrideMode, moduleId = 'canvas') => {
+      const state = get();
+      const appMode = state.globalSettings?.appMode;
+      const mode =
+        overrideMode ??
+        (appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light');
+      const theme = state.getActiveTheme();
+      const resolvedTheme = resolveThemeForMode(theme.definition, mode);
+      state.setResolvedGlobals('theme', { name: mode, themeName: theme.name, ...resolvedTheme }, moduleId);
+    },
+
     setResolvedConstants: (constants = {}, moduleId = 'canvas') => {
       set(
         (state) => {
