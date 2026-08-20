@@ -52,6 +52,23 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { AppVersionStatus } from '@entities/app_version.entity';
+import {
+  DefaultDataSourceName,
+  PartialRevampedComponent,
+  NewRevampedComponent,
+  DefaultDataSourceNames,
+  NewRevampedComponents,
+  PartialRevampedComponents,
+  INPUT_WIDGET_TYPES,
+  SHOW_CLEAR_BTN_COMPONENT_TYPES,
+  PLACEHOLDER_DATE_TIME_COMPONENT,
+  DYNAMIC_HEIGHT_COMPONENT_TYPES,
+  LEGACY_INPUT_SIZE_COMPONENT_TYPES,
+  PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES,
+  MAX_LIMIT_COMPONENT_TYPES,
+  TOOLTIP_FORMAT_COMPONENT_TYPES,
+  LEGACY_CONTAINER_STYLES,
+} from 'src/constants/app-import-export.constant';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -61,277 +78,6 @@ interface AppResourceMappings {
   pagesMapping: Record<string, string>;
   componentsMapping: Record<string, string>;
 }
-
-type DefaultDataSourceName =
-  | 'restapidefault'
-  | 'runjsdefault'
-  | 'runpydefault'
-  | 'tooljetdbdefault'
-  | 'workflowsdefault';
-
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
-
-type NewRevampedComponent =
-  | 'Text'
-  | 'TextInput'
-  | 'PasswordInput'
-  | 'NumberInput'
-  | 'EmailInput'
-  | 'DropdownV2'
-  | 'Table'
-  | 'Button'
-  | 'Cascader'
-  | 'Checkbox'
-  | 'Divider'
-  | 'VerticalDivider'
-  | 'Link'
-  | 'Datepicker'
-  | 'DatePickerV2'
-  | 'TimePicker'
-  | 'DatetimePickerV2'
-  | 'DaterangePicker'
-  | 'TextArea'
-  | 'Container'
-  | 'FlexContainer'
-  | 'Tabs'
-  | 'Form'
-  | 'Image'
-  | 'FilePicker'
-  | 'Icon'
-  | 'Steps'
-  | 'Statistics'
-  | 'StarRating'
-  | 'Tags'
-  | 'CircularProgressBar'
-  | 'Html'
-  | 'Chat'
-  | 'CurrencyInput'
-  | 'PhoneInput'
-  | 'IFrame'
-  | 'DropdownV2'
-  | 'TreeSelect'
-  | 'Listview'
-  | 'ColorPicker'
-  | 'ButtonGroupV2'
-  | 'ModalV2'
-  | 'PopoverMenu'
-  | 'Pagination'
-  | 'Timeline';
-
-const DefaultDataSourceNames: DefaultDataSourceName[] = [
-  'restapidefault',
-  'runjsdefault',
-  'runpydefault',
-  'tooljetdbdefault',
-  'workflowsdefault',
-];
-const NewRevampedComponents: NewRevampedComponent[] = [
-  'Text',
-  'TextInput',
-  'PasswordInput',
-  'NumberInput',
-  'EmailInput',
-  'DropdownV2',
-  'Table',
-  'Checkbox',
-  'Button',
-  'Cascader',
-  'Divider',
-  'VerticalDivider',
-  'Link',
-  'Datepicker',
-  'DatePickerV2',
-  'TimePicker',
-  'DatetimePickerV2',
-  'DaterangePicker',
-  'TextArea',
-  'Container',
-  'FlexContainer',
-  'Tabs',
-  'Form',
-  'Image',
-  'FilePicker',
-  'Icon',
-  'Steps',
-  'Statistics',
-  'StarRating',
-  'Tags',
-  'CircularProgressBar',
-  'Html',
-  'Chat',
-  'CurrencyInput',
-  'PhoneInput',
-  'IFrame',
-  'DropdownV2',
-  'TreeSelect',
-  'Listview',
-  'ColorPicker',
-  'ButtonGroupV2',
-  'ModalV2',
-  'PopoverMenu',
-  'Pagination',
-  'Timeline',
-];
-
-const PartialRevampedComponents: PartialRevampedComponent[] = [
-  'CodeEditor',
-  'PDF',
-  'Calendar',
-  'CustomComponent',
-  'RadioButtonV2',
-];
-
-const INPUT_WIDGET_TYPES = [
-  'TextInput',
-  'NumberInput',
-  'PasswordInput',
-  'EmailInput',
-  'PhoneInput',
-  'CurrencyInput',
-  'DatePickerV2',
-  'DaterangePicker',
-  'TimePicker',
-  'DatetimePickerV2',
-  'TextArea',
-  'DropdownV2',
-  'MultiselectV2',
-  'RadioButtonV2',
-  'RangeSliderV2',
-];
-
-const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
-  'TextInput',
-  'NumberInput',
-  'EmailInput',
-  'CurrencyInput',
-  'PhoneInput',
-  'Datepicker',
-  'DatePickerV2',
-  'DatetimePickerV2',
-  'TimePicker',
-  'DaterangePicker',
-];
-
-const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
-  Datepicker: 'Select date',
-  DatePickerV2: 'Select date',
-  DatetimePickerV2: 'Select date and time',
-  TimePicker: 'Select time',
-  DaterangePicker: 'Select Date Range',
-};
-
-const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
-  'Accordion',
-  'Button',
-  'ButtonGroupV2',
-  'Cascader',
-  'Checkbox',
-  'CodeEditor',
-  'ColorPicker',
-  'Container',
-  'FlexContainer',
-  'CurrencyInput',
-  'DatePickerV2',
-  'DaterangePicker',
-  'DatetimePickerV2',
-  'DropdownV2',
-  'EmailInput',
-  'Form',
-  'Html',
-  'Image',
-  'JSONEditor',
-  'JSONExplorer',
-  'KeyValuePair',
-  'Listview',
-  'ModalV2',
-  'MultiselectV2',
-  'NumberInput',
-  'PasswordInput',
-  'PhoneInput',
-  'RadioButtonV2',
-  'RichTextEditor',
-  'StarRating',
-  'Table',
-  'Tabs',
-  'TagsInput',
-  'Text',
-  'TextArea',
-  'TextInput',
-  'TimePicker',
-  'ToggleSwitchV2',
-  'TreeSelect',
-];
-
-const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
-  'TextInput',
-  'PasswordInput',
-  'EmailInput',
-  'PhoneInput',
-  'CurrencyInput',
-  'NumberInput',
-  'Cascader',
-  'TextArea',
-];
-
-const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
-
-const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
-
-const TOOLTIP_FORMAT_COMPONENT_TYPES = [
-  'Accordion',
-  'AudioRecorder',
-  'Button',
-  'ButtonGroupV2',
-  'Camera',
-  'Cascader',
-  'Checkbox',
-  'CircularProgressBar',
-  'ColorPicker',
-  'Container',
-  'CurrencyInput',
-  'DatePickerV2',
-  'DaterangePicker',
-  'DatetimePickerV2',
-  'Divider',
-  'DropdownV2',
-  'EmailInput',
-  'FileButton',
-  'FileInput',
-  'FilePicker',
-  'Form',
-  'Icon',
-  'IFrame',
-  'Image',
-  'JSONEditor',
-  'JSONExplorer',
-  'Kanban',
-  'KeyValuePair',
-  'Link',
-  'Listview',
-  'ModalV2',
-  'MultiselectV2',
-  'NumberInput',
-  'PasswordInput',
-  'PhoneInput',
-  'PopoverMenu',
-  'ProgressBar',
-  'RadioButtonV2',
-  'RangeSliderV2',
-  'ReorderableList',
-  'StarRating',
-  'Statistics',
-  'Tabs',
-  'Tags',
-  'TagsInput',
-  'Text',
-  'TextArea',
-  'TextInput',
-  'TimePicker',
-  'Timeline',
-  'ToggleSwitchV2',
-  'TreeSelect',
-  'VerticalDivider',
-];
 
 @Injectable()
 export class AppImportExportService {
@@ -2952,6 +2698,18 @@ function migrateProperties(
       }
     }
   }
+
+  // Container-section backfill for the newly revamped components. Runs after the block above so
+  // any key it already pinned (PDF/Calendar border, CustomComponent border+shadow) is left alone.
+  const legacyContainerStyles = LEGACY_CONTAINER_STYLES[componentType];
+  if (legacyContainerStyles) {
+    for (const [key, value] of Object.entries(legacyContainerStyles)) {
+      if (!styles[key]) {
+        styles[key] = value;
+      }
+    }
+  }
+
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
