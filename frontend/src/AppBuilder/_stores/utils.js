@@ -28,8 +28,6 @@ export function debounce(func) {
     if (rowIndex !== undefined && rowIndex !== null) {
       eventId += `-${rowIndex}`;
     }
-    console.log(exposedValue);
-    console.log(eventId, 'eventId');
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
