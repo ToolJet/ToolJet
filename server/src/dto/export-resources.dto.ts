@@ -2,13 +2,13 @@ import { IsUUID, IsOptional } from 'class-validator';
 
 export class ExportResourcesDto {
   @IsOptional()
-  app: ExportAppDto[];
+  app?: ExportAppDto[];
 
   @IsOptional()
-  tooljet_database: ExportTooljetDatabaseDto[];
+  tooljet_database?: ExportTooljetDatabaseDto[];
 
   @IsUUID()
-  organization_id: string;
+  organization_id: string ;
 }
 
 export class ExportAppDto {
@@ -16,7 +16,7 @@ export class ExportAppDto {
   id: string;
 
   @IsOptional()
-  search_params: any;
+  search_params?: any;
 }
 
 export class ExportTooljetDatabaseDto {
