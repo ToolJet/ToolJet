@@ -24,7 +24,7 @@ export const openPageEditor = (pageName) => {
 // Close the AddEditPagePopup. Dismiss any nested Radix popover (e.g. the event
 // add-menu) first with Escape, then click far from any overlay to trigger the
 // react-bootstrap rootClose.
-export const closePageEditor = () => {
+const closePageEditor = () => {
   cy.get("body").type("{esc}");
   cy.wait(200);
   cy.get("body").click(5, 5);
@@ -53,16 +53,6 @@ const toggleFormLabelSwitch = (label) => {
     .parent()
     .find('.form-switch input[type="checkbox"]')
     .click({ force: true });
-};
-
-export const searchPage = (pageName) => {
-  // Search input lives in the panel header — AddPageButton/PageSettings header.
-  cy.get('[title="Search"]').click();
-  cy.get('[data-cy="search-input-field"]').type(pageName);
-};
-
-export const clearSearch = () => {
-  cy.get(".clear-icon").click();
 };
 
 // New page creation: the "New page" button auto-creates "Page N" and opens the
@@ -162,12 +152,4 @@ export const disableOrEnablePage = (pageName, option = "disable") => {
   toggleFormLabelSwitch("Disable page");
   cy.wait(500);
   closePageEditor();
-};
-
-// hideOrUnhidePageMenu / page-menu disable were part of the removed left-sidebar
-// "Page settings header" UI; the toggle now lives under Header & navigation in the
-// PageSettings Properties tab and has no data-cy. Kept as a no-op-safe stub so any
-// stale import resolves; real coverage is quarantined in the spec.
-export const hideOrUnhidePageMenu = () => {
-  openPagesPanel();
 };
