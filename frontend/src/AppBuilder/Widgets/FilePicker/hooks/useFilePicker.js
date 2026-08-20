@@ -47,8 +47,8 @@ export const useFilePicker = ({
   const isMandatory = validation?.enableValidation ?? false;
 
   // --- Resolved Styles ---
-  const containerBackgroundColor = styles?.containerBackgroundColor ?? 'var(--color-surface-1)';
-  const containerBorder = styles?.containerBorder ?? 'transparent';
+  const containerBackgroundColor = styles?.backgroundColor ?? 'var(--color-surface-1)';
+  const containerBorder = styles?.borderColor ?? 'transparent';
   const boxShadow = styles?.boxShadow ?? 'none';
   const containerPadding = styles?.padding ?? 'default';
   const borderRadius = styles?.borderRadius ?? 8;
