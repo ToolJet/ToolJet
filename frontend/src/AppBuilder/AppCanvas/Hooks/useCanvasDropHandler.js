@@ -33,6 +33,8 @@ export const useCanvasDropHandler = () => {
 
     try {
       if (isModuleEditor && canvasId === 'canvas') {
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+        setRightSidebarOpen(true);
         return;
       }
 
@@ -93,6 +95,8 @@ export const useCanvasDropHandler = () => {
       setCurrentDragCanvasId(null);
       setFlexContainerDropTarget(null);
     }
+    // Reset canvas ID when dropping
+    setCurrentDragCanvasId(null);
   };
 
   return { handleDrop };
