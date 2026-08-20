@@ -494,6 +494,9 @@ Cypress.Commands.add(
               workflow: "app",
               data_source: "data-source",
               folder: "folder",
+              modules:"data-source",
+              workflow_folder: "workflow-folder",
+              module_folder: "module-folder",
             };
             const endpoint = typeEndpointMap[permission.type] || "app";
 
@@ -1348,96 +1351,6 @@ Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
   });
 });
 
-
-Cypress.Commands.add("apiStripRoleFolderDefault", (roleName, resourceType) => {
-  const endpointByType = {
-    folder: "folder",
-    workflow_folder: "workflow-folder",
-    module_folder: "module-folder",
-  };
-  const endpoint = endpointByType[resourceType];
-
-  return cy.apiGetGroupId(roleName).then((groupId) => {
-    return cy.getAuthHeaders().then((headers) => {
-      return cy
-        .request({
-          method: "GET",
-          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
-          headers,
-          log: false,
-        })
-        .then((response) => {
-          expect(response.status).to.equal(200);
-          const existing = response.body.find((perm) => perm.type === resourceType);
-          if (!existing) {
-            // Nothing seeded for this role/resourceType — already effectively stripped.
-            return null;
-          }
-          return cy
-            .request({
-              method: "PUT",
-              url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/${endpoint}/${existing.id}`,
-              headers,
-              body: {
-                isAll: true,
-                actions: { canEditFolder: false, canEditApps: false, canViewApps: false },
-              },
-              log: false,
-            })
-            .then((updateResponse) => {
-              expect(updateResponse.status).to.equal(200);
-              return updateResponse.body;
-            });
-        });
-    });
-  });
-});
-
-
-Cypress.Commands.add("apiStripRoleAppDefault", (roleName, resourceType) => {
-  return cy.apiGetGroupId(roleName).then((groupId) => {
-    return cy.getAuthHeaders().then((headers) => {
-      return cy
-        .request({
-          method: "GET",
-          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
-          headers,
-          log: false,
-        })
-        .then((response) => {
-          expect(response.status).to.equal(200);
-          const existing = response.body.find((perm) => perm.type === resourceType);
-          if (!existing) {
-            return null;
-          }
-          return cy
-            .request({
-              method: "PUT",
-              url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${existing.id}`,
-              headers,
-              body: {
-                isAll: true,
-                actions: {
-       
-                  canEdit: false,
-                  canView: true,
-                  hideFromDashboard: false,
-                  canAccessDevelopment: true,
-                  canAccessStaging: true,
-                  canAccessProduction: true,
-                  canAccessReleased: true,
-                },
-              },
-              log: false,
-            })
-            .then((updateResponse) => {
-              expect(updateResponse.status).to.equal(200);
-              return updateResponse.body;
-            });
-        });
-    });
-  });
-});
 
 Cypress.Commands.add("apiAddModuleToFolder", (moduleId, folderId) => {
   return cy.getAuthHeaders().then((headers) => {

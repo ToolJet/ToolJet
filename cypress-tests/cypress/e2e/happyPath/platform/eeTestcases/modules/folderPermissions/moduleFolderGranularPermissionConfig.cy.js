@@ -1,8 +1,8 @@
 import { commonSelectors } from 'Selectors/common';
-import { groupsSelector } from 'Selectors/manageGroups';
 import { commonEeSelectors } from 'Selectors/eeCommon';
-import { openGroupThreeDotMenu } from 'Support/utils/platform/customGroups';
+import { groupsSelector } from 'Selectors/manageGroups';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { openGroupThreeDotMenu } from 'Support/utils/platform/customGroups';
 
 // Section 1 (Permission Configuration) scope note: the other config checks in the
 // manual doc — the Edit Folder/Edit Modules/View Modules radios existing & being

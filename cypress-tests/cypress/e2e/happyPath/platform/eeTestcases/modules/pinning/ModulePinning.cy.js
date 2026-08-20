@@ -7,7 +7,7 @@ import {
   createModuleDraftVersion,
   createModuleViaAPI,
   dragModuleIntoCanvas,
-  ensureVersionSwitcherOpen, 
+  ensureVersionSwitcherOpen,
   openModulesList,
   publishModuleVersion,
   selectModuleViewerPinnedVersion,

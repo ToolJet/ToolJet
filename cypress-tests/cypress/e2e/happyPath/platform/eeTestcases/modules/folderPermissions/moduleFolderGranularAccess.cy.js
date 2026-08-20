@@ -6,22 +6,16 @@ import { openModulesList } from 'Support/utils/platform/modules';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { commonText } from 'Texts/common';
 
-// Granular per-folder module permissions (Edit Folder / Edit Modules / View Modules),
-// distinct from the coarse moduleFolderCreate/moduleFolderDelete toggles covered in
-// moduleFolder{Create,Delete}Permission.cy.js. Set up via cy.apiCreateGranularPermission
-// with resourceType "module_folder" (endpoint added to platformApiCommands.js) rather than
-// the "Add permission" UI dropdown, for the same reliability reasons as the direct-module
-// granular permission suite.
-describe('Modules — Folder Granular Access', () => {
-  const testId = Date.now();
 
+describe('Modules — Folder Granular Access', () => {
   let workspaceId, wsName, wsSlug;
 
   const setupFolderAccess = (label, permissions) => {
-    const folderName = `${label} Folder ${testId}`;
-    const moduleName = `${label} Module ${testId}`;
-    const groupName = `QA ${label} Group ${testId}`;
-    const userEmail = `qa-folder-${label.toLowerCase().replace(/\s+/g, '-')}-${testId}@example.com`;
+    const attemptId = Date.now();
+    const folderName = `${label} Folder ${attemptId}`;
+    const moduleName = `${label} Module ${attemptId}`;
+    const groupName = `QA ${label} Group ${attemptId}`;
+    const userEmail = `qa-folder-${label.toLowerCase().replace(/\s+/g, '-')}-${attemptId}@example.com`;
     let folderId;
     let moduleId;
 
@@ -58,18 +52,14 @@ describe('Modules — Folder Granular Access', () => {
       Cypress.env('workspaceId', workspaceId);
       Cypress.env('workspaceSlug', wsSlug);
     });
-
-    // The builder ROLE itself is seeded with canEditFolder:true (All Folders) on
-    // module_folder by default (DEFAULT_RESOURCE_PERMISSIONS) — strip it so each
-    // test's custom-group grant is the only source of access being verified.
-    cy.apiStripRoleFolderDefault('builder', 'module_folder');
+    cy.apiDeleteGranularPermission('builder', ['module_folder']);
   });
 
   it('user with Edit Folder permission can rename an authorized folder, move modules in and out of it, and edit a module within it — and deleting the folder does not delete the module inside it', () => {
     setupFolderAccess('EditFolder', { canEditFolder: true, canEditApps: false, canViewApps: false }).then(
       ({ folderId, moduleId, folderName, moduleName, userEmail }) => {
         const renamedFolderName = `${folderName} Renamed`;
-        const looseModuleName = `Loose Module ${testId}`;
+        const looseModuleName = `Loose Module ${Date.now()}`;
         let looseModuleId;
 
         cy.apiCreateModule(looseModuleName).then((module) => {
@@ -157,8 +147,9 @@ describe('Modules — Folder Granular Access', () => {
   });
 
   it("non-owner without any folder-level grant cannot rename or manage another user's folder", () => {
-    const folderName = `Unshared Folder ${testId}`;
-    const userEmail = `qa-folder-unshared-${testId}@example.com`;
+    const attemptId = Date.now();
+    const folderName = `Unshared Folder ${attemptId}`;
+    const userEmail = `qa-folder-unshared-${attemptId}@example.com`;
 
     cy.apiCreateModuleFolder(folderName);
     cy.apiFullUserOnboarding('QA Unshared Folder User', userEmail, 'builder', 'password', wsName);

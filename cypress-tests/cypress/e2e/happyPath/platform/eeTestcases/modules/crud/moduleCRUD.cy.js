@@ -1,20 +1,20 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { moduleSelectors } from "Selectors/platform/modules";
 import { dashboardSelector } from "Selectors/dashboard";
 import { multiEnvSelector, versionModalSelector } from "Selectors/eeCommon";
+import { moduleSelectors } from "Selectors/platform/modules";
 import {
-  viewAppCardOptions,
   createFolder,
   verifyModal,
+  viewAppCardOptions,
 } from "Support/utils/common";
 import { modifyAndVerifyAppCardIcon } from "Support/utils/dashboard";
 import {
-  openModulesList,
-  createModuleViaUI,
-  dropModuleComponent,
-  defineModuleContract,
-  renameModuleFromList,
   attemptDeleteModuleFromList,
+  createModuleViaUI,
+  defineModuleContract,
+  dropModuleComponent,
+  openModulesList,
+  renameModuleFromList,
 } from "Support/utils/platform/modules";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";

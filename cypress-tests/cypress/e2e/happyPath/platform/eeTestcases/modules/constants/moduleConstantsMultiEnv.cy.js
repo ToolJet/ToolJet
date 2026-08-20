@@ -1,9 +1,9 @@
+import { Environments } from 'Constants/constants/multiEnv';
 import { commonSelectors, commonWidgetSelector } from 'Selectors/common';
 import { commonEeSelectors, multiEnvSelector } from 'Selectors/eeCommon';
-import { moduleSelectors } from 'Selectors/platform/modules';
 import { importSelectors } from 'Selectors/exportImport';
-import { Environments } from 'Constants/constants/multiEnv';
-import { openModulesList, dragModuleIntoCanvas } from 'Support/utils/platform/modules';
+import { moduleSelectors } from 'Selectors/platform/modules';
+import { dragModuleIntoCanvas, openModulesList } from 'Support/utils/platform/modules';
 
 describe('Modules — Workspace Constants Across Environments', () => {
   const testId = Date.now();

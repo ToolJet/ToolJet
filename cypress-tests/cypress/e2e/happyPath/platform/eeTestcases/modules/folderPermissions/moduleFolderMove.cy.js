@@ -1,16 +1,14 @@
 import { commonSelectors } from 'Selectors/common';
-import { moduleSelectors } from 'Selectors/platform/modules';
-import { versionModalSelector } from 'Selectors/eeCommon';
 import { dashboardSelector } from 'Selectors/dashboard';
+import { versionModalSelector } from 'Selectors/eeCommon';
+import { moduleSelectors } from 'Selectors/platform/modules';
 import { viewAppCardOptions } from 'Support/utils/common';
-import { openModulesList } from 'Support/utils/platform/modules';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { openModulesList } from 'Support/utils/platform/modules';
 import { commonText } from 'Texts/common';
 import { dashboardText } from 'Texts/dashboard';
 
 describe('Modules — Moving Modules Between Folders', () => {
-  const testId = Date.now();
-
   let workspaceId, wsName, wsSlug;
 
   afterEach(() => {
@@ -29,18 +27,17 @@ describe('Modules — Moving Modules Between Folders', () => {
       Cypress.env('workspaceSlug', wsSlug);
     });
 
-    // The builder ROLE itself is seeded with canEditFolder:true (All Folders) on
-    // module_folder by default (DEFAULT_RESOURCE_PERMISSIONS) — strip it so each
-    // test's custom-group grant is the only source of access being verified.
-    cy.apiStripRoleFolderDefault('builder', 'module_folder');
+    cy.apiDeleteGranularPermission('builder', ['module_folder']);
   });
 
   it('user with Edit Folder access sees only authorized folders in the move picker, and can move a module they can edit into one', () => {
-    const editableFolderName = `Editable Folder ${testId}`;
-    const inaccessibleFolderName = `Inaccessible Folder ${testId}`;
-    const moduleName = `Move Source Module ${testId}`;
-    const groupName = `QA Move Group ${testId}`;
-    const userEmail = `qa-move-basic-${testId}@example.com`;
+
+    const attemptId = Date.now();
+    const editableFolderName = `Editable Folder ${attemptId}`;
+    const inaccessibleFolderName = `Inaccessible Folder ${attemptId}`;
+    const moduleName = `Move Source Module ${attemptId}`;
+    const groupName = `QA Move Group ${attemptId}`;
+    const userEmail = `qa-move-basic-${attemptId}@example.com`;
 
     cy.apiCreateModuleFolder(inaccessibleFolderName);
     cy.apiCreateModuleFolder(editableFolderName).then((folder) => {
@@ -81,11 +78,12 @@ describe('Modules — Moving Modules Between Folders', () => {
   });
 
   it('a module can belong to only one folder — moving it to another folder removes it from the previous one', () => {
-    const sourceFolderName = `Source Folder ${testId}`;
-    const destFolderName = `Dest Folder ${testId}`;
-    const moduleName = `Relocating Module ${testId}`;
-    const groupName = `QA Relocate Group ${testId}`;
-    const userEmail = `qa-move-relocate-${testId}@example.com`;
+    const attemptId = Date.now();
+    const sourceFolderName = `Source Folder ${attemptId}`;
+    const destFolderName = `Dest Folder ${attemptId}`;
+    const moduleName = `Relocating Module ${attemptId}`;
+    const groupName = `QA Relocate Group ${attemptId}`;
+    const userEmail = `qa-move-relocate-${attemptId}@example.com`;
     let moduleId;
     let destFolderId;
 
@@ -128,10 +126,11 @@ describe('Modules — Moving Modules Between Folders', () => {
   });
 
   it("a module's effective permission recalculates immediately once it's moved into a folder that grants access", () => {
-    const folderName = `Recalc Folder ${testId}`;
-    const moduleName = `Recalc Module ${testId}`;
-    const groupName = `QA Recalc Group ${testId}`;
-    const userEmail = `qa-move-recalc-${testId}@example.com`;
+    const attemptId = Date.now();
+    const folderName = `Recalc Folder ${attemptId}`;
+    const moduleName = `Recalc Module ${attemptId}`;
+    const groupName = `QA Recalc Group ${attemptId}`;
+    const userEmail = `qa-move-recalc-${attemptId}@example.com`;
     let moduleId;
     let folderId;
 

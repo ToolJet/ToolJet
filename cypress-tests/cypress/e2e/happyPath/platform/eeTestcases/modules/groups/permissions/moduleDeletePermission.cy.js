@@ -1,7 +1,7 @@
 import { commonSelectors } from 'Selectors/common';
 import { moduleSelectors } from 'Selectors/platform/modules';
-import { apiCreateGroup, apiAddUserToGroup } from 'Support/utils/manageGroups';
-import { openModulesList, createModuleViaAPI } from 'Support/utils/platform/modules';
+import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
+import { createModuleViaAPI, openModulesList } from 'Support/utils/platform/modules';
 
 describe('Modules — Coarse Permissions: Custom Group Delete Override & Ownership', () => {
   const testId = Date.now();

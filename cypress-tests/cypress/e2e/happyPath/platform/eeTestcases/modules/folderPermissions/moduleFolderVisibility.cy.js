@@ -1,16 +1,9 @@
 import { commonSelectors } from 'Selectors/common';
-import { openModulesList } from 'Support/utils/platform/modules';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { openModulesList } from 'Support/utils/platform/modules';
 
-// Folder-list visibility is filtered server-side (server/src/modules/folder-apps/service.ts
-// filterFoldersByPermissions): a builder sees a folder if it's in their editable/viewable
-// folder-permission set, if they own it, OR if it contains at least one app they can already
-// see (folderApps.length > 0) — that last clause means an unauthorized-but-nonempty folder
-// can still surface via its contents. Both tests below keep the inaccessible folder fully
-// empty so only the permission grant itself is under test.
+
 describe('Modules — Folder & Module Visibility', () => {
-  const testId = Date.now();
-
   let workspaceId, wsName, wsSlug;
 
   afterEach(() => {
@@ -29,17 +22,16 @@ describe('Modules — Folder & Module Visibility', () => {
       Cypress.env('workspaceSlug', wsSlug);
     });
 
-    // The builder ROLE itself is seeded with canEditFolder:true (All Folders) on
-    // module_folder by default (DEFAULT_RESOURCE_PERMISSIONS) — strip it so each
-    // test's custom-group grant is the only source of access being verified.
-    cy.apiStripRoleFolderDefault('builder', 'module_folder');
+
+    cy.apiDeleteGranularPermission('builder', ['module_folder']);
   });
 
   it('a user sees only the (empty) module folders they are authorized to access, and an empty authorized folder still shows up', () => {
-    const authorizedFolderName = `Authorized Folder ${testId}`;
-    const unauthorizedFolderName = `Unauthorized Folder ${testId}`;
-    const groupName = `QA Visibility Group ${testId}`;
-    const userEmail = `qa-visibility-scope-${testId}@example.com`;
+    const attemptId = Date.now();
+    const authorizedFolderName = `Authorized Folder ${attemptId}`;
+    const unauthorizedFolderName = `Unauthorized Folder ${attemptId}`;
+    const groupName = `QA Visibility Group ${attemptId}`;
+    const userEmail = `qa-visibility-scope-${attemptId}@example.com`;
 
     cy.apiCreateModuleFolder(unauthorizedFolderName);
     cy.apiCreateModuleFolder(authorizedFolderName).then((folder) => {

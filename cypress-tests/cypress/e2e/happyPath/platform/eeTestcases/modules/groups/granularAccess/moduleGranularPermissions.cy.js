@@ -1,14 +1,14 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { moduleSelectors } from "Selectors/platform/modules";
 import { versionModalSelector } from "Selectors/eeCommon";
+import { moduleSelectors } from "Selectors/platform/modules";
+import { apiCreateGroup } from "Support/utils/manageGroups";
 import {
-  createModuleViaAPI,
   authorModuleContract,
-  publishModuleVersion,
+  createModuleViaAPI,
   dragModuleIntoCanvas,
   openModulesList,
+  publishModuleVersion,
 } from "Support/utils/platform/modules";
-import { apiCreateGroup } from "Support/utils/manageGroups";
 
 describe("Modules — Granular Permissions", () => {
   const testId = Date.now();
@@ -33,7 +33,7 @@ describe("Modules — Granular Permissions", () => {
       Cypress.env("workspaceSlug", wsSlug);
     });
 
-    cy.apiStripRoleAppDefault("builder", "module");
+    cy.apiDeleteGranularPermission("builder", ["module"]);
 
     cy.then(() => {
       createModuleViaAPI(editModuleName).then((module) => {
@@ -112,12 +112,6 @@ describe("Modules — Granular Permissions", () => {
   });
 
   it("a Build-with user's module card shows the correct access-level button", () => {
-    // KNOWN BUG (confirmed by reading source, 2026-08-10): AppCard.jsx's
-    // edit-button condition is `canUpdate || appType === 'module'` — true
-    // for ANY module regardless of canUpdate, so the correct view-button
-    // branch right below it (`!canUpdate && canView && appType === 'module'`)
-    // is unreachable dead code. A Build-with (view-only) module's card should
-    // show "View", not "Edit" — left failing intentionally as documentation.
     const attemptId = Date.now();
     const grantedUserEmail = `qa-granular-cardview-${attemptId}@example.com`;
     cy.apiFullUserOnboarding(
