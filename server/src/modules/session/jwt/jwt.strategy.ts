@@ -115,6 +115,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.isPATLogin = !!payload.isPATLogin;
+        user.patAppId = payload.appId;
         if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
 
         // Track user activity for metrics (every authenticated request)
