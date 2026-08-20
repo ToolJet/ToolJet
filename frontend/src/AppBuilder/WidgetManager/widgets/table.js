@@ -158,6 +158,31 @@ export const tableConfig = {
         { displayName: 'Server side', value: 'serverSide' },
       ],
     },
+    defaultSortColumn: {
+      type: 'select',
+      displayName: 'Default sort column',
+      options: [],
+      newLine: true,
+      fullWidth: true,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '',
+      },
+    },
+    defaultSortDirection: {
+      type: 'switch',
+      displayName: 'Sort order',
+      isIcon: true,
+      options: [
+        { displayName: 'Ascending', value: 'asc', lucideIconName: 'sort-asc' },
+        { displayName: 'Descending', value: 'desc', lucideIconName: 'sort-desc' },
+        { displayName: 'Auto', value: 'auto', lucideIconName: 'refresh-ccw' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'auto',
+      },
+    },
     serverSideFilter: {
       type: 'clientServerSwitch',
       displayName: 'Type',
@@ -823,6 +848,8 @@ export const tableConfig = {
       columnSizes: { value: '{{({})}}' },
       actions: { value: [] },
       enabledSort: { value: '{{true}}' },
+      defaultSortColumn: { value: '' },
+      defaultSortDirection: { value: 'auto' },
       hideColumnSelectorButton: { value: '{{false}}' },
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
