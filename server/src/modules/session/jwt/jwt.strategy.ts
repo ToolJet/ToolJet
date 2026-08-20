@@ -51,7 +51,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           ? req.headers['tj-workspace-id'][0]
           : req.headers['tj-workspace-id'];
 
-      if (!organizationId && payload?.isPATLogin && payload?.appId) {
+      /* A PAT session is bound to exactly one workspace at mint time, so its single
+         organizationId is unambiguous — no tj-workspace-id header required. Previously gated on
+         payload.appId, which only the app-scoped embed flow sets; workspace PATs have no appId. */
+      if (!organizationId && payload?.isPATLogin && payload?.organizationIds?.length === 1) {
         organizationId = payload.organizationIds[0];
       }
 
