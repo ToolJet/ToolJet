@@ -9,6 +9,13 @@ import {
 } from '@modules/personal-access-tokens/constants/scopes';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 
+/**
+ * Tagged `security` because CI's unit step runs only --group=working|workflows|security, and
+ * jest-runner-groups EXCLUDES untagged specs — an untagged file here would pass locally and never
+ * run in CI at all.
+ *
+ * @group security
+ */
 const allBundledModules = () => Object.values(PAT_BUNDLE_MODULES).flat();
 
 describe('PAT scope definition', () => {
