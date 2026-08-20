@@ -58,7 +58,7 @@ export const OptionCombobox = ({ options, value, onChange, placeholder }) => {
       onValueChange={(item) => onChange(item?.value ?? null)}
     >
       <ComboboxInput placeholder={placeholder ?? t('globals.select', 'Select') + '...'} />
-      <ComboboxContent align="end" className="!tw-w-min !tw-max-w-[268px]">
+      <ComboboxContent align="end" collisionPadding={60} className="!tw-w-min !tw-max-w-[268px]">
         <ComboboxList>
           {(item) => (
             <ComboboxItem key={item.value} value={item}>
