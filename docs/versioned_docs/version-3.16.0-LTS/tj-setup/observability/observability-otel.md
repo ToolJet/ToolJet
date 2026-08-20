@@ -6,6 +6,8 @@ sidebar_label: Overview
 
 ToolJet supports OpenTelemetry (OTEL) for comprehensive observability, enabling you to monitor application performance, track query executions, and analyze the health of ToolJet services and infrastructure through metrics. OpenTelemetry provides a standardized, vendor-agnostic way to collect observability data, allowing ToolJet to integrate with any OTEL-compatible third-party monitoring tool such as [Datadog](/docs/tj-setup/observability/datadog), [New Relic](/docs/tj-setup/observability/new-relic), and [Grafana](/docs/tj-setup/observability/grafana).
 
+Once your metrics are flowing, see [Recommended Production Alerts](/docs/tj-setup/observability/production-alerts) for the alert rules and thresholds we recommend for a production deployment.
+
 **Categories of Metrics**
 
 1. **App-Based Metrics** - Monitor the performance and reliability of individual ToolJet applications. These metrics include detailed labels such as `app_name`, `query_name`, `environment`, `query_text`, and `query_mode` (SQL/GUI) for fine-grained analysis.
