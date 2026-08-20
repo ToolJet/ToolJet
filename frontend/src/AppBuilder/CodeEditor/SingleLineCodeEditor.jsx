@@ -579,6 +579,7 @@ const EditorInput = ({
         isOpen={isOpen}
         callback={setIsOpen}
         componentName={componentName}
+        paramLabel={paramLabel}
         key={componentName}
         customComponent={renderPreview}
         forceUpdate={forceUpdate}
