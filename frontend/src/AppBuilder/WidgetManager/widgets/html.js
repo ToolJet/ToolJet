@@ -54,6 +54,24 @@ export const htmlConfig = {
   },
   events: {},
   styles: {
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      accordian: 'container',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      accordian: 'container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      accordian: 'container',
+    },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
@@ -107,6 +125,9 @@ export const htmlConfig = {
     },
     events: [],
     styles: {
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },

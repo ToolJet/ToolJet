@@ -59,6 +59,10 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FileButton',
   'FlexContainer',
   'Timeline',
+  'PDF',
+  'BoundedBox',
+  'QrScanner',
+  'Calendar',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -217,6 +221,10 @@ export const baseComponentProperties = (
       'ModalV2',
       'Container',
       'Timeline',
+      'PDF',
+      'BoundedBox',
+      'QrScanner',
+      'Calendar',
     ],
     Layout: [],
   };

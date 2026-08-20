@@ -113,7 +113,7 @@ const FilePicker = (props) => {
       rootRef.current.style.setProperty('--file-picker-background-color', containerBackgroundColor);
     }
     if (containerBorder) {
-      rootRef.current.style.setProperty('--file-picker-border', containerBorder);
+      rootRef.current.style.setProperty('--file-picker-border-color', containerBorder);
     }
     if (boxShadow) {
       rootRef.current.style.setProperty('--file-picker-box-shadow', boxShadow);
@@ -141,7 +141,7 @@ const FilePicker = (props) => {
   const dynamicDropzoneStyle = useMemo(
     () => ({
       display: isVisible ? 'flex' : 'none',
-      backgroundColor: 'var(--cc-surface1-surface)',
+      backgroundColor: 'var(--file-picker-background-color)',
       color: darkMode ? '#c3c9d2' : '#5e6571',
       height: isDynamicHeightEnabled ? 'auto' : `${dropzoneBaseHeight}px`,
       ...(isDynamicHeightEnabled && { minHeight: `${dropzoneBaseHeight}px` }),
@@ -166,7 +166,7 @@ const FilePicker = (props) => {
     'is-focused': isFocused,
   });
 
-  const widgetVisibility = styles?.visibility ?? true;
+  const widgetVisibility = properties?.visibility ?? true;
   if (!widgetVisibility) {
     return null;
   }
