@@ -43,6 +43,8 @@ const NavItemPopover = forwardRef(
       onItemChange(propertyPath, value, item.id, parentId);
     };
 
+    const getFxStashKey = (property) => `${componentId}-navItems-${item.id}-${property}`;
+
     const handleDelete = () => {
       onDeleteItem(item.id, parentId);
     };
@@ -139,7 +141,14 @@ const NavItemPopover = forwardRef(
                     const transformedValue = getResolvedValue(value);
                     handleChange('iconVisibility', transformedValue);
                   }}
-                  onFxPress={(active) => handleChange('icon.fxActive', active)}
+                  onFxToggle={(active, newValue) =>
+                    handleChange('icon', {
+                      ...item?.icon,
+                      fxActive: active,
+                      ...(newValue !== undefined && { value: newValue }),
+                    })
+                  }
+                  fxStashKey={getFxStashKey('icon')}
                   fxActive={item?.icon?.fxActive}
                   fieldMeta={{ type: 'icon', displayName: 'Icon' }}
                   paramType={'icon'}
@@ -158,7 +167,14 @@ const NavItemPopover = forwardRef(
                   paramLabel={'Hide this item'}
                   paramName={'visibility'}
                   onChange={(value) => handleChange('visible.value', value)}
-                  onFxPress={(active) => handleChange('visible.fxActive', active)}
+                  onFxToggle={(active, newValue) =>
+                    handleChange('visible', {
+                      ...item?.visible,
+                      fxActive: active,
+                      ...(newValue !== undefined && { value: newValue }),
+                    })
+                  }
+                  fxStashKey={getFxStashKey('visible')}
                   fxActive={item?.visible?.fxActive}
                   fieldMeta={{ type: 'toggle', displayName: 'Hide this item' }}
                   paramType={'toggle'}
@@ -173,7 +189,14 @@ const NavItemPopover = forwardRef(
                   paramLabel={'Disable item'}
                   paramName={'disable'}
                   onChange={(value) => handleChange('disable.value', value)}
-                  onFxPress={(active) => handleChange('disable.fxActive', active)}
+                  onFxToggle={(active, newValue) =>
+                    handleChange('disable', {
+                      ...item?.disable,
+                      fxActive: active,
+                      ...(newValue !== undefined && { value: newValue }),
+                    })
+                  }
+                  fxStashKey={getFxStashKey('disable')}
                   fxActive={item?.disable?.fxActive}
                   fieldMeta={{ type: 'toggle', displayName: 'Disable item' }}
                   paramType={'toggle'}
