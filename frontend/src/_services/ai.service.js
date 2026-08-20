@@ -19,6 +19,7 @@ export const aiService = {
   getLlmPreference,
   updateLlmPreference,
   getOpenRouterModels,
+  getProviderModels,
 };
 
 function handleAITextResponse(response) {
@@ -210,17 +211,24 @@ async function getOpenRouterModels() {
   return fetch(`${config.apiUrl}/ai/openrouter-models`, requestOptions).then(handleResponse);
 }
 
+async function getProviderModels(provider) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/provider-models?provider=${encodeURIComponent(provider)}`, requestOptions).then(
+    handleResponse
+  );
+}
+
 async function getLlmPreference() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
 }
 
-async function updateLlmPreference(provider) {
+async function updateLlmPreference(provider, model, modelContextWindow) {
   const requestOptions = {
     method: 'PATCH',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ provider }),
+    body: JSON.stringify({ provider, ...(model ? { model, modelContextWindow } : {}) }),
   };
   return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
 }
