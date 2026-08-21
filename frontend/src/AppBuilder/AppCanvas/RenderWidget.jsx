@@ -67,6 +67,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Cascader',
   'ModalV2',
   'Container',
+  'Timeline',
 ];
 
 const RenderWidget = ({
@@ -121,6 +122,7 @@ const RenderWidget = ({
   const setExposedValuePerRow = useStore((state) => state.setExposedValuePerRow, shallow);
   const setExposedValuesPerRow = useStore((state) => state.setExposedValuesPerRow, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
+  const resetComponentExposedValues = useStore((state) => state.resetComponentExposedValues, shallow);
   const resolvedValidation = useStore(
     (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.validation,
     shallow
@@ -199,6 +201,10 @@ const RenderWidget = ({
   const resetComponent = useCallback(() => {
     setKey(Math.random());
   }, []);
+
+  const resetExposedVariables = useCallback(() => {
+    resetComponentExposedValues(id, moduleId);
+  }, [id, moduleId, resetComponentExposedValues]);
 
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
   const setExposedVariable = useCallback(
@@ -335,6 +341,7 @@ const RenderWidget = ({
           fireEvent={fireEventWrapper}
           validate={validate}
           resetComponent={resetComponent}
+          resetExposedVariables={resetExposedVariables}
           onComponentClick={onComponentClick}
           darkMode={darkMode}
           componentName={componentName}
@@ -353,7 +360,7 @@ const RenderWidget = ({
   // tooltip surfaces the widget's *description*, not user-authored content.
   if (inCanvas) {
     return (
-      <ErrorBoundary>
+      <ErrorBoundary widgetType={componentType}>
         <WidgetTooltip
           content={userTooltipContent}
           format={userTooltipFormat}
@@ -367,7 +374,7 @@ const RenderWidget = ({
   }
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary widgetType={componentType}>
       <OverlayTrigger
         placement="top"
         delay={{ show: 500, hide: 0 }}

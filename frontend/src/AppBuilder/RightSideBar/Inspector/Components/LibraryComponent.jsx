@@ -3,6 +3,7 @@ import Accordion from '@/_ui/Accordion';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import { renderElement } from '@/AppBuilder/RightSideBar/Inspector/Utils';
 import { useEffectiveLibraryRevision, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
+import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
 
 // F4b: manifest-driven Inspector for LibraryComponent (LLD §5.6, ModuleViewerInspector
 // pattern). Identity (libraryId/componentName/revisionId) lives ONLY in
@@ -56,6 +57,11 @@ export const LibraryComponent = ({
 
   const [manifest, setManifest] = useState(null);
 
+  // Live-reload: a dev-preview push bumps this nonce
+  const devNonce = useCustomComponentPreviewStore((state) =>
+    effectiveRevision?.startsWith?.('dev:') ? state.devBundleUpdatedAt?.[libraryId] : undefined
+  );
+
   useEffect(() => {
     if (!libraryId || !effectiveRevision) return;
     // Published revisions: immutable-cached. Dev slots: no-store — always fresh.
@@ -63,7 +69,7 @@ export const LibraryComponent = ({
       .then((r) => (r.ok ? r.json() : null))
       .then(setManifest)
       .catch(() => setManifest(null));
-  }, [libraryId, effectiveRevision]);
+  }, [libraryId, effectiveRevision, devNonce]);
 
   const componentManifest = manifest?.components?.[componentName];
   const props = componentManifest?.props ?? [];

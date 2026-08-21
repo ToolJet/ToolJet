@@ -31,6 +31,16 @@ export function snapToGrid(canvasWidth, x, y) {
 // value matches what that field type expects (dropdown.js/checkbox.js precedent):
 // toggle → '{{bool}}', select → raw string, code → raw string (string) or '{{json}}' (else).
 function manifestDefaultToDefinitionValue(prop) {
+  // TODO: prop.default is undefined both when
+  // the author never set a useStateX initialValue AND when they set one the CLI's manifest
+  // generator can't statically resolve (template literal, computed expr, imported constant
+  // — evalLiteralNode in manifest-generator.ts). The '' /'{{false}}' fallback below is
+  // correct for the former and silently wrong for the latter (it permanently overrides the
+  // shell's real runtime initialValue for that prop). Decided to keep current behavior for
+  // now rather than risk downstream undefined-handling issues; future fix is to have the
+  // generator distinguish "not set" from "unresolved" (e.g. a `defaultUnresolved` flag) and
+  // surface a warning icon/tooltip on the Inspector field for the latter case, rather than
+  // silently guessing a fallback value.
   if (prop.default === undefined) return prop.type === 'boolean' ? '{{false}}' : '';
   if (prop.type === 'boolean') return `{{${prop.default}}}`;
   if (prop.type === 'enumeration' || prop.type === 'string') return prop.default;
@@ -52,7 +62,8 @@ export const addNewWidgetToTheEditor = (
   // not the host widget type (librarycomponent1).
   const componentName = computeComponentName(
     libraryComponentInfo?.componentName ?? componentType,
-    useStore.getState().getCurrentPageComponents()
+    useStore.getState().getCurrentPageComponents(),
+    moduleInfo?.moduleName
   );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
@@ -297,20 +308,28 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
   return childrenWidgets;
 }
 
-export function computeComponentName(componentType, currentComponents) {
-  const currentComponentsForKind = Object.values(currentComponents).filter(
-    (component) => component.component.component === componentType
-  );
-  let found = false;
+export function computeComponentName(componentType, currentComponents, moduleName) {
   // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
-  // instances after the LIBRARY component: 'HelloWorld' → helloworld1). Without the
-  // fallback an unknown seed produced the literal name "undefined1".
-  const componentName =
+  // instances after the LIBRARY component: 'HelloWorld' → helloworld1)
+  const widgetConfigName =
     componentTypes.find((component) => component?.component === componentType)?.name ?? componentType;
-  let currentNumber = currentComponentsForKind.length + 1;
+  const rawBase = moduleName || widgetConfigName || '';
+  let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+
+  if (!sanitizedBase) {
+    sanitizedBase = (widgetConfigName || 'component').toLowerCase();
+  }
+
+  const matchingCount = Object.values(currentComponents).filter((component) =>
+    component?.component?.name?.startsWith(sanitizedBase)
+  ).length;
+  let currentNumber = matchingCount + 1;
+
+  let found = false;
+
   let _componentName = '';
   while (!found) {
-    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
+    _componentName = `${sanitizedBase}${currentNumber}`;
     if (
       Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {

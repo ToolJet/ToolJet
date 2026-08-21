@@ -39,6 +39,7 @@ export const LibraryComponent = ({
   styles = {},
   height,
   setExposedVariable,
+  resetExposedVariables,
   fireEvent,
   dataCy,
 }) => {
@@ -47,7 +48,25 @@ export const LibraryComponent = ({
 
   const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[libraryId]);
   const devEmail = useCustomComponentPreviewStore((state) => state.devPreviewEmails?.[libraryId]);
+  const devNonce = useCustomComponentPreviewStore((state) =>
+    devPreview ? state.devBundleUpdatedAt?.[libraryId] : undefined
+  );
+
   const devBadge = devPreview ? <DevBadge label={devEmail ?? devPreview.replace('dev:', '')} /> : null;
+
+  // A dev-bundle push can remove/rename a `useStateX` variable; setExposedVariable is
+  // additive-only (nothing else ever deletes a key from currentState), so a removed
+  // variable's last value would otherwise linger forever in the left-sidebar Inspector.
+  const isFirstDevNonce = useRef(true);
+
+  useEffect(() => {
+    if (isFirstDevNonce.current) {
+      isFirstDevNonce.current = false;
+      return;
+    }
+
+    resetExposedVariables?.();
+  }, [devNonce, resetExposedVariables]);
 
   const effectiveRevision = useEffectiveLibraryRevision(libraryId, revisionId);
   const configured = Boolean(libraryId && componentName && effectiveRevision);
@@ -184,7 +203,7 @@ export const LibraryComponent = ({
   return (
     <div style={{ position: 'relative', width: '100%', height: safeHeight }}>
       <iframe
-        key={`${libraryId}|${effectiveRevision}|${componentName}`}
+        key={`${libraryId}|${effectiveRevision}|${componentName}|${devNonce ?? ''}`}
         ref={iframeRef}
         src="/assets/custom-components/shell.html"
         title={componentName}
