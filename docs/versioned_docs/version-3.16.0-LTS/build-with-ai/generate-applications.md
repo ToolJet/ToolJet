@@ -14,9 +14,9 @@ To create an application, follow these steps:
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/specs.png" alt="tooljet generate apps" />
 3. **Design Layout** - Once you accept the specs then a Design Layout will be generated, you can either accept it or modify it in the visual builder.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/ui.png" alt="tooljet generate apps" />
-4. **Select Data Source** - After approving the design layout, you need to select the data source, ToolJet AI Builder currently supports two data sources - PostgreSQL and MongoDB.
+4. **Select System of Record** - After approving the design layout, you select the data source your application will be built on. An application connects to one data source at a time, so this step refers to your core data source - your system of record. ToolJet AI Builder currently supports two data sources - PostgreSQL and MongoDB. This step is pre-filled if you named a data source in your prompt, and skipped entirely if you [@mentioned](/docs/build-with-ai/referencing-app-resources) one.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/ds.png" alt="tooljet generate apps" />
-5. **Database Schema** - After selecting the data source you can approve or modify the database schema.
+5. **Database Schema** - After selecting the data source you can approve or modify the database schema. Tables you mentioned in your prompt are pre-filled here. This step applies to databases only - data sources that expose endpoints, such as OpenAPI, skip it.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/schema.png" alt="tooljet generate apps" />
 6. **App Generation** – Once you confirm all the requirements then a fully fucntional app will be generated.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/generate-app/app.png" alt="tooljet generate apps" />
