@@ -186,8 +186,6 @@ function SettingsPage(props) {
               scrolls even slightly. */}
           <div style={{ height: `calc(100vh - 2.5rem - 48px)`, overflowY: 'auto', paddingTop: '1px' }}>
             <div className="container-xl">
-              {/* <div className="container-xl mt-2 mb-2"> */}
-
               <div className="card profile-page-card">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-profile">
