@@ -14,6 +14,13 @@ export type BindingTooltipProps = {
   title?: string;
   bindings?: TooltipBinding[];
   placement?: TooltipSide | `${TooltipSide}-start` | `${TooltipSide}-end`;
+  /**
+   * The card's colours come from the `--*-inverse` tokens, whose dark values are only
+   * defined under `.dark-theme`. That class sits on inner wrappers, never on <body>, and
+   * this content is portalled to <body> — so the class has to travel with it or the card
+   * stays light in dark mode.
+   */
+  darkMode?: boolean;
   /** A single element — TooltipTrigger clones it via asChild. */
   children: React.ReactElement;
 };
@@ -36,6 +43,7 @@ export const BindingTooltip = ({
   title,
   bindings,
   placement = 'right',
+  darkMode = false,
   children,
 }: BindingTooltipProps): React.ReactElement => {
   const resolved = (bindings ?? []).filter((binding) => binding.expression);
@@ -49,7 +57,9 @@ export const BindingTooltip = ({
           id={id}
           side={sideOf(placement)}
           sideOffset={8}
-          className="dependency-binding-tooltip tw-bg-transparent tw-p-0 tw-shadow-none tw-overflow-visible tw-text-inherit"
+          className={`dependency-binding-tooltip tw-bg-transparent tw-p-0 tw-shadow-none tw-overflow-visible tw-text-inherit ${
+            darkMode ? 'dark-theme' : ''
+          }`}
         >
           <div className="dependency-binding-card">
             <div className="dependency-binding-title">{title}</div>

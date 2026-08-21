@@ -41,7 +41,16 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
   const pageComponents = useStore((state: any) => state.getCurrentPageComponents(moduleId), shallow);
   const queries = useStore((state: any) => state.dataQuery.queries.modules[moduleId]);
   const events = useStore((state: any) => state.eventsSlice.module[moduleId]?.events);
+  // The graph itself. It is a class instance mutated in place, so nothing above changes
+  // identity when an edge is added — and graph writes are batched, landing a tick after the
+  // definition write that triggered them. Without this the panel renders against the graph
+  // as it was before the flush and never recomputes, which is why it went stale on pages
+  // large enough for construction to actually batch. DependencyGraph#version is a plain
+  // number, so the selector's value changes even though the instance's identity does not.
+  const graphVersion = useStore((state: any) => state.dependencyGraph?.modules?.[moduleId]?.graph?.version);
   const selectedComponent = useStore((state: any) => state.selectedComponents?.[0]);
+  const requestedSelection = useStore((state: any) => state.dependencyPanelSelection);
+  const clearRequestedSelection = useStore((state: any) => state.clearDependencyPanelSelection);
   const navigateToEntity = useEntityNavigation();
 
   const selectedComponentId = typeof selectedComponent === 'string' ? selectedComponent : selectedComponent?.id;
@@ -49,7 +58,7 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
   const sections = useMemo<DependencySections>(
     () => getDependencySections(useStore.getState(), moduleId),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pageComponents, queries, events, moduleId]
+    [pageComponents, queries, events, graphVersion, moduleId]
   );
 
   const queriesById = useMemo<QueriesById>(
@@ -58,12 +67,24 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
   );
   const componentsById: ComponentsById = pageComponents ?? {};
 
-  // Selecting a component on canvas opens its detail tab, when it has relationships.
-  // Keyed off the id alone so that later edits to bindings don't yank the panel back
-  // to the canvas selection while the user is browsing something else.
   const sectionsRef = useRef<DependencySections>(sections);
   sectionsRef.current = sections;
   const lastSyncedComponentId = useRef<string | null>(null);
+
+  // An explicit request (config handle, query card menu) wins over the canvas sync below,
+  // and is consumed immediately so asking for the same entity twice still works.
+  useEffect(() => {
+    if (!requestedSelection?.kind || !requestedSelection?.id) return;
+    setSelected({ kind: requestedSelection.kind, id: requestedSelection.id });
+    // The canvas sync is keyed on the last id it acted on; align it so it does not
+    // immediately overwrite this selection with the current canvas selection.
+    lastSyncedComponentId.current = selectedComponentId ?? null;
+    clearRequestedSelection?.();
+  }, [requestedSelection, clearRequestedSelection, selectedComponentId]);
+
+  // Selecting a component on canvas opens its detail tab, when it has relationships.
+  // Keyed off the id alone so that later edits to bindings don't yank the panel back
+  // to the canvas selection while the user is browsing something else.
   useEffect(() => {
     if (!selectedComponentId || selectedComponentId === lastSyncedComponentId.current) return;
     lastSyncedComponentId.current = selectedComponentId;
@@ -78,10 +99,7 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
   );
 
   return (
-    <div
-      className={`left-sidebar-dependency-viewer ${darkMode ? 'dark-theme' : ''}`}
-      style={{ resize: 'horizontal', minWidth: 288 }}
-    >
+    <div className={`left-sidebar-dependency-viewer ${darkMode ? 'dark-theme' : ''}`}>
       <div className={`inspector-header ${darkMode ? 'dark-theme' : ''}`}>
         <div className="inspector-header-top">
           <span className="inspector-header-title" data-cy="dependency-viewer-title">
@@ -123,7 +141,13 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
 
       <div className="dependency-viewer-body">
         {detail ? (
-          <DetailTab subject={detail.subject} groups={detail.groups} moduleId={moduleId} onSelect={setSelected} />
+          <DetailTab
+            subject={detail.subject}
+            groups={detail.groups}
+            moduleId={moduleId}
+            onSelect={setSelected}
+            darkMode={darkMode}
+          />
         ) : (
           <MainTab
             sections={sections}

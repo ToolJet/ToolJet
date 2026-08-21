@@ -12,6 +12,10 @@ const initialState = {
   selectedSidebarItem: storedIsSidebarPinned ? storedSelectedSidebarItem : null,
   isSidebarOpen: storedIsSidebarPinned,
   pathToBeInspected: null,
+  // One-shot deep link into the Dependencies panel: { kind: 'component' | 'query' | 'variable', id }.
+  // The panel owns its own selection, so this only seeds it — DependencyViewer clears the
+  // field once consumed, which is what lets the same entity be requested twice in a row.
+  dependencyPanelSelection: null,
 };
 
 export const createLeftSideBarSlice = (set, get) => ({
@@ -24,7 +28,14 @@ export const createLeftSideBarSlice = (set, get) => ({
     set(() => ({ selectedSidebarItem }), false, 'setSelectedSidebarItem'),
   toggleLeftSidebar: (isSidebarOpen) =>
     set(
-      () => ({ isSidebarOpen, ...(!isSidebarOpen && { selectedSidebarItem: null, pathToBeInspected: null }) }),
+      () => ({
+        isSidebarOpen,
+        ...(!isSidebarOpen && {
+          selectedSidebarItem: null,
+          pathToBeInspected: null,
+          dependencyPanelSelection: null,
+        }),
+      }),
       false,
       'setIsSidebarOpen'
     ),
@@ -43,6 +54,21 @@ export const createLeftSideBarSlice = (set, get) => ({
       setSelectedSidebarItem('inspect');
       toggleLeftSidebar(true);
     }
+  },
+  clearDependencyPanelSelection: () =>
+    set(() => ({ dependencyPanelSelection: null }), false, 'clearDependencyPanelSelection'),
+  /**
+   * Open the Dependencies panel focused on one entity. Mirrors setComponentToInspect,
+   * which does the same for the state inspector.
+   *
+   * An entity with no relationships is filtered out of the panel's lists by design, so the
+   * panel falls back to the full list — the deep link is a request, not a guarantee.
+   */
+  setEntityToViewDependencies: (selection) => {
+    const { setSelectedSidebarItem, toggleLeftSidebar } = get();
+    set(() => ({ dependencyPanelSelection: selection }), false, 'setEntityToViewDependencies');
+    setSelectedSidebarItem('dependencies');
+    toggleLeftSidebar(true);
   },
   getComponentIdToAutoScroll: (componentId, moduleId = 'canvas') => {
     const { getCurrentPageComponents, getAllExposedValues, modalsOpenOnCanvas, getComponentTypeFromId } = get();

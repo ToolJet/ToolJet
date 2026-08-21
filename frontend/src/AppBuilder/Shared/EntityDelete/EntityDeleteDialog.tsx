@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { decodeEntities } from '@/_helpers/utils';
@@ -58,19 +58,66 @@ type BlockerCardProps = {
   subject: DeleteSubject;
   collapsible: boolean;
   defaultExpanded: boolean;
+  /**
+   * Sole card — it takes the whole scroll region and its body is the only thing that
+   * scrolls, so a heavily-referenced single subject never produces nested scrollbars.
+   */
+  fill?: boolean;
   queriesById?: QueriesById;
   componentsById?: ComponentsById;
 };
 
-/** One blocked subject: header with its dependent count, body with the dependents. */
-const BlockerCard = ({ subject, collapsible, defaultExpanded, queriesById, componentsById }: BlockerCardProps) => {
+/**
+ * One blocked subject: a header carrying its dependent count, and a scrolling body of
+ * dependents.
+ *
+ * The header is a sibling of the scroll region rather than `position: sticky` inside it.
+ * Sticky needs an opaque backdrop to hide what passes under it, and this header's
+ * `--interactive-default` is 8% alpha — rows showed straight through it. Keeping the
+ * header outside the scrolling element makes overlap impossible by construction.
+ */
+const BlockerCard = ({
+  subject,
+  collapsible,
+  defaultExpanded,
+  fill = false,
+  queriesById,
+  componentsById,
+}: BlockerCardProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const isOpen = !collapsible || expanded;
   const Chevron = isOpen ? ChevronUpIcon : ChevronDownIcon;
   const name = decodeEntities(subject.name);
 
+  // Overlay scrollbars stay hidden until you scroll, so a clipped list reads as a complete
+  // one. This drives a bottom fade that shows only while there is more below.
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const [hasMoreBelow, setHasMoreBelow] = useState(false);
+  const updateScrollState = useCallback(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    // 1px of slack: fractional scroll offsets otherwise leave the fade on at the very end.
+    setHasMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 1);
+  }, []);
+
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) {
+      setHasMoreBelow(false);
+      return undefined;
+    }
+    updateScrollState();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(updateScrollState);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [updateScrollState, isOpen, subject.dependents]);
+
   return (
-    <div className="entity-delete-card" data-cy={`entity-delete-card-${String(subject.name).toLowerCase()}`}>
+    <div
+      className={`entity-delete-card ${fill ? 'fill' : ''}`}
+      data-cy={`entity-delete-card-${String(subject.name).toLowerCase()}`}
+    >
       <div
         className={`entity-delete-card-header ${collapsible ? 'clickable' : ''}`}
         onClick={collapsible ? () => setExpanded((prev) => !prev) : undefined}
@@ -91,33 +138,36 @@ const BlockerCard = ({ subject, collapsible, defaultExpanded, queriesById, compo
         </span>
       </div>
       {isOpen && (
-        <div className="entity-delete-card-body">
-          {subject.dependents.map((entry) => {
-            const key = `${entry.kind}:${entry.id ?? entry.name}`;
-            const descendant = subject.viaDescendant?.[key];
-            return (
-              <React.Fragment key={key}>
-                {descendant && (
-                  <div className="entity-delete-nested-note" data-cy="entity-delete-nested-note">
-                    {nestedChildNote(decodeEntities(descendant), name)}
-                  </div>
-                )}
-                <DependencyEntityRow
-                  icon={
-                    <EntityIcon
-                      kind={entry.kind}
-                      entityId={entry.id}
-                      queriesById={queriesById}
-                      componentsById={componentsById}
-                    />
-                  }
-                  name={entry.kind === 'action' ? formatActionLabel(entry.name) : entry.name}
-                  subtitle={subtitleOf(entry, componentsById)}
-                  dataCy={`entity-delete-dependent-${String(entry.name).toLowerCase()}`}
-                />
-              </React.Fragment>
-            );
-          })}
+        <div className="entity-delete-card-body-wrap">
+          <div className="entity-delete-card-body" ref={bodyRef} onScroll={updateScrollState}>
+            {subject.dependents.map((entry) => {
+              const key = `${entry.kind}:${entry.id ?? entry.name}`;
+              const descendant = subject.viaDescendant?.[key];
+              return (
+                <React.Fragment key={key}>
+                  {descendant && (
+                    <div className="entity-delete-nested-note" data-cy="entity-delete-nested-note">
+                      {nestedChildNote(decodeEntities(descendant), name)}
+                    </div>
+                  )}
+                  <DependencyEntityRow
+                    icon={
+                      <EntityIcon
+                        kind={entry.kind}
+                        entityId={entry.id}
+                        queriesById={queriesById}
+                        componentsById={componentsById}
+                      />
+                    }
+                    name={entry.kind === 'action' ? formatActionLabel(entry.name) : entry.name}
+                    subtitle={subtitleOf(entry, componentsById)}
+                    dataCy={`entity-delete-dependent-${String(entry.name).toLowerCase()}`}
+                  />
+                </React.Fragment>
+              );
+            })}
+          </div>
+          {hasMoreBelow && <div className="entity-delete-scroll-fade" data-cy="entity-delete-scroll-fade" />}
         </div>
       )}
     </div>
@@ -161,11 +211,21 @@ export const EntityDeleteDialog = ({
   // A lone card is always open — there is nothing to compare it against. With several,
   // everything starts collapsed so the subject names stay scannable.
   const collapsible = blockers.length > 1;
+  // Sole blocker: give the card the whole region and let only its body scroll, so the
+  // common "one component, many dependents" case has a single scrollbar rather than a
+  // list-scroll wrapped around a body-scroll.
+  const singleBlocker = blockers.length === 1;
 
   return (
     <Modal
       show={show}
       onHide={onCancel}
+      // The canvas registers a global `esc` hotkey that calls preventDefault() on every
+      // key it handles (useKeyHooks), and its listener is installed before this modal's.
+      // @restart/ui only calls onHide() when the keydown was not already default-prevented,
+      // so Escape would never close the dialog. onEscapeKeyDown is invoked unconditionally,
+      // ahead of that check, which is why closing is wired here rather than through onHide.
+      onEscapeKeyDown={() => onCancel?.()}
       animation={false}
       centered
       contentClassName={`entity-delete-modal ${darkMode ? 'dark-theme' : ''}`}
@@ -195,6 +255,7 @@ export const EntityDeleteDialog = ({
                 subject={subject}
                 collapsible={collapsible}
                 defaultExpanded={!collapsible}
+                fill={singleBlocker}
                 queriesById={queriesById}
                 componentsById={componentsById}
               />

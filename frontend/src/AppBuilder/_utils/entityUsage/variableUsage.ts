@@ -22,6 +22,9 @@ export type VariableUsage = {
   readBy: UsageEntry[];
 };
 
+/** Per-component usage the caller has already computed, keyed by component id. */
+export type ComponentUsageById = Record<string, ReturnType<typeof getComponentUsage>>;
+
 /**
  * Variable-centric view: who sets / reads each app and page variable.
  * Sources: script analyses (RunJS + JS transformations), {{}} refs in query
@@ -29,8 +32,12 @@ export type VariableUsage = {
  * variable writes. Runtime-only variables (set but never referenced
  * statically) are included via exposedValues keys.
  * Current values are NOT returned — the UI reads them live via selectors.
+ *
+ * `componentUsageById` lets a caller that has already walked every component (see
+ * getDependencySections) hand those results in. Recomputing them here would double the
+ * graph traversals for the whole page, which is the dominant cost of a panel refresh.
  */
-export function getVariableUsage(state: any, moduleId = 'canvas') {
+export function getVariableUsage(state: any, moduleId = 'canvas', componentUsageById?: ComponentUsageById) {
   type Row = { name: string; scope: 'app' | 'page'; setBy: Map<string, UsageEntry>; readBy: Map<string, UsageEntry> };
   const rows = new Map<string, Row>();
 
@@ -73,7 +80,7 @@ export function getVariableUsage(state: any, moduleId = 'canvas') {
 
   const pageComponents = state.getCurrentPageComponents?.(moduleId) ?? {};
   Object.keys(pageComponents).forEach((componentId) => {
-    const usage = getComponentUsage(state, componentId, moduleId);
+    const usage = componentUsageById?.[componentId] ?? getComponentUsage(state, componentId, moduleId);
     usage.uses.forEach((entry) => {
       if (entry.kind === 'variable') {
         addComponentEntry(state, moduleId, row('app', entry.name).readBy, componentId, entry.details[0]);

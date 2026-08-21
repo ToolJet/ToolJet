@@ -1,6 +1,6 @@
 import { getComponentUsage } from './componentUsage';
 import { getPageLoadQueries, getQueryOwnEvents, getQueryUsage, type RunsOnLoadSections } from './queryUsage';
-import { getVariableUsage, type VariableUsage } from './variableUsage';
+import { getVariableUsage, type ComponentUsageById, type VariableUsage } from './variableUsage';
 import { getQueries } from './internals';
 
 export type QuerySection = {
@@ -59,8 +59,13 @@ export function getDependencySections(state: any, moduleId = 'canvas'): Dependen
 
   const components: ComponentSection[] = [];
   const pageComponents = state.getCurrentPageComponents?.(moduleId) ?? {};
+  // Kept for every component, not just the ones that survive the relationship filter:
+  // getVariableUsage needs the full set, and computing it twice per component was the
+  // dominant cost of a refresh.
+  const componentUsageById: ComponentUsageById = {};
   Object.entries(pageComponents).forEach(([id, definition]: [string, any]) => {
     const usage = getComponentUsage(state, id, moduleId);
+    componentUsageById[id] = usage;
     if (usage.uses.length + usage.usedBy.length + usage.triggers.length === 0) return;
     components.push({
       id,
@@ -72,7 +77,7 @@ export function getDependencySections(state: any, moduleId = 'canvas'): Dependen
   });
   components.sort((a, b) => a.name.localeCompare(b.name));
 
-  const { variables: allVariables } = getVariableUsage(state, moduleId);
+  const { variables: allVariables } = getVariableUsage(state, moduleId, componentUsageById);
   const relatedVariables = allVariables.filter((v) => v.setBy.length + v.readBy.length > 0);
 
   return {

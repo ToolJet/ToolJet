@@ -11,7 +11,7 @@
  */
 
 export type { UsageEntryKind, UsageDetail, UsageEntry, EventTarget } from './types';
-export type { VariableUsage } from './variableUsage';
+export type { ComponentUsageById, VariableUsage } from './variableUsage';
 export type { DeleteTargets, DeleteSubject } from './deleteBlockers';
 export type { QuerySection, ComponentSection, DependencySections } from './sections';
 export type { RunsOnLoadSections } from './queryUsage';

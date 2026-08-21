@@ -1,4 +1,13 @@
 .left-sidebar-dependency-viewer {
+  // Fills the popover that hosts it rather than carrying a width of its own. The host is
+  // `.PopoverContent` (350px, with its padding removed by the `p-0` class the sidebar
+  // passes), so any fixed width here just leaves dead space down the right-hand edge —
+  // a 300px panel in a 350px popover left a 50px gutter.
+  //
+  // Was `resize: horizontal` inline before that, which made the browser paint its own grip
+  // in the bottom-right corner — pointing the wrong way for a horizontal-only resize, with
+  // no max bound and no persistence.
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;

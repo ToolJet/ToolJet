@@ -8,6 +8,7 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import { debounce } from 'lodash';
+import { Waypoints } from 'lucide-react';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
@@ -25,6 +26,7 @@ const QueryCardMenu = ({ darkMode }) => {
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
   const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
+  const setEntityToViewDependencies = useStore((state) => state.setEntityToViewDependencies);
 
   const QUERY_MENU_OPTIONS = [
     {
@@ -36,6 +38,11 @@ const QueryCardMenu = ({ darkMode }) => {
       label: 'Duplicate',
       value: 'duplicate',
       icon: <Copy width={16} />,
+    },
+    {
+      label: 'View dependencies',
+      value: 'view-dependencies',
+      icon: <Waypoints size={16} color="var(--icon-strong)" />,
     },
     {
       label: 'Query permission',
@@ -71,6 +78,9 @@ const QueryCardMenu = ({ darkMode }) => {
     }
     if (value === 'duplicate') {
       debouncedDuplicateQuery(selectedQuery?.id, appId);
+    }
+    if (value === 'view-dependencies') {
+      setEntityToViewDependencies?.({ kind: 'query', id: selectedQuery?.id });
     }
     if (value === 'permission') {
       if (!hasAppPermissionQuery) return;

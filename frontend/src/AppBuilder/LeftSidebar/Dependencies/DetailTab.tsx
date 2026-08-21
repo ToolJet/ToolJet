@@ -117,13 +117,15 @@ export type DetailTabProps = {
   groups: DetailGroup[];
   moduleId: string;
   onSelect: (selection: DependencySelection) => void;
+  /** Only needed for the portalled binding tooltip — see BindingTooltip. */
+  darkMode?: boolean;
 };
 
 /**
  * Detail view for a single entity: who triggers it, what it uses, who uses it,
  * and the events it owns. Rows drill into the entity they point at.
  */
-export const DetailTab = ({ subject, groups, moduleId, onSelect }: DetailTabProps) => {
+export const DetailTab = ({ subject, groups, moduleId, onSelect, darkMode }: DetailTabProps) => {
   const renderEntry = (entry: DependencyEntry, group: DetailGroup) => {
     const componentType = entry.kind === 'component' ? group.componentTypeOf?.(entry.id) : undefined;
     const subtitle =
@@ -177,6 +179,7 @@ export const DetailTab = ({ subject, groups, moduleId, onSelect }: DetailTabProp
             ? () => onSelect({ kind: entry.kind as DependencySelection['kind'], id: entry.id as string })
             : undefined
         }
+        darkMode={darkMode}
         dataCy={`dependency-detail-row-${String(name).toLowerCase()}`}
       />
     );

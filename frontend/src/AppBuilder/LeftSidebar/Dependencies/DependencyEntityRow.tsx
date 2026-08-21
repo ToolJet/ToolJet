@@ -42,6 +42,8 @@ export type DependencyEntityRowProps = {
   selected?: boolean;
   onClick?: () => void;
   dataCy?: string;
+  /** Forwarded to the portalled tooltip, which cannot inherit the panel's theme class. */
+  darkMode?: boolean;
 };
 
 export const DependencyEntityRow = ({
@@ -54,6 +56,7 @@ export const DependencyEntityRow = ({
   selected = false,
   onClick,
   dataCy,
+  darkMode = false,
 }: DependencyEntityRowProps) => {
   const stacked = Boolean(subtitle) || tags.length > 0;
   const label = decodeEntities(name);
@@ -87,7 +90,7 @@ export const DependencyEntityRow = ({
 
   if (!tooltip) return row;
   return (
-    <BindingTooltip id={tooltip.id} title={tooltip.title} bindings={tooltip.bindings}>
+    <BindingTooltip id={tooltip.id} title={tooltip.title} bindings={tooltip.bindings} darkMode={darkMode}>
       {row}
     </BindingTooltip>
   );
