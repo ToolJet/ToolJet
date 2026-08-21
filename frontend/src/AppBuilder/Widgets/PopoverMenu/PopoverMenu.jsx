@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
 import * as Popover from '@radix-ui/react-popover';
@@ -58,6 +58,32 @@ export const PopoverMenu = function PopoverMenu(props) {
       [key]: value,
     }));
   };
+
+  // Grace period so moving the pointer between the trigger and the portalled content
+  // doesn't close the popover before it lands on the other one.
+  const HOVER_CLOSE_DELAY = 100;
+  const hoverCloseTimeoutRef = useRef(null);
+
+  const clearHoverCloseTimeout = () => {
+    if (hoverCloseTimeoutRef.current) {
+      clearTimeout(hoverCloseTimeoutRef.current);
+      hoverCloseTimeoutRef.current = null;
+    }
+  };
+
+  const openPopoverOnHover = () => {
+    clearHoverCloseTimeout();
+    updateExposedVariablesState('showPopover', true);
+  };
+
+  const scheduleClosePopoverOnHover = () => {
+    clearHoverCloseTimeout();
+    hoverCloseTimeoutRef.current = setTimeout(() => {
+      updateExposedVariablesState('showPopover', false);
+    }, HOVER_CLOSE_DELAY);
+  };
+
+  useEffect(() => clearHoverCloseTimeout, []);
 
   const formatOptions = (options) => {
     return Array.isArray(options)
@@ -167,6 +193,8 @@ export const PopoverMenu = function PopoverMenu(props) {
             height,
             exposedVariablesTemporaryState,
             updateExposedVariablesState,
+            openPopoverOnHover,
+            scheduleClosePopoverOnHover,
             transformedOptions,
             trigger,
             id,
@@ -199,12 +227,8 @@ export const PopoverMenu = function PopoverMenu(props) {
                 updateExposedVariablesState('showPopover', false);
               }}
               {...(trigger === 'hover' && {
-                onMouseEnter: () => {
-                  updateExposedVariablesState('showPopover', true);
-                },
-                onMouseLeave: () => {
-                  updateExposedVariablesState('showPopover', false);
-                },
+                onMouseEnter: openPopoverOnHover,
+                onMouseLeave: scheduleClosePopoverOnHover,
               })}
               role="dialog"
               aria-label="Menu options"
