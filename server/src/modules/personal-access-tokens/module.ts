@@ -1,5 +1,8 @@
 import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
+import { SessionModule } from '@modules/session/module';
+import { UserRepository } from '@modules/users/repositories/repository';
+import { OrganizationRepository } from '@modules/organizations/repository';
 import { FeatureAbilityFactory } from './ability';
 
 export class PersonalAccessTokensModule extends SubModule {
@@ -12,7 +15,9 @@ export class PersonalAccessTokensModule extends SubModule {
 
     return {
       module: PersonalAccessTokensModule,
-      providers: [PersonalAccessTokensService, FeatureAbilityFactory],
+      // SessionModule: the PAT -> session exchange mints a normal session via SessionUtilService.
+      imports: [await SessionModule.register(configs)],
+      providers: [PersonalAccessTokensService, FeatureAbilityFactory, UserRepository, OrganizationRepository],
       controllers: isMainImport ? [PersonalAccessTokensController] : [],
       exports: [PersonalAccessTokensService],
     };

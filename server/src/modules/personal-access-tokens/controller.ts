@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Req, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { User } from '@modules/app/decorators/user.decorator';
 import { IPersonalAccessTokensController } from './interface/IController';
 
@@ -23,6 +24,11 @@ export class PersonalAccessTokensController implements IPersonalAccessTokensCont
 
   @Delete(':id')
   async delete(@User() user, @Param('id') id: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  @Post('session')
+  async createSession(@Req() request, @Res({ passthrough: true }) response: Response): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }
