@@ -121,6 +121,31 @@
     }
   }
 
+  .navigation-vertical-menu:not(.nav-equal-width) .accordion-content {
+    align-items: flex-start;
+
+    &.nav-subalign-center {
+      align-items: center;
+    }
+    &.nav-subalign-right {
+      align-items: flex-end;
+    }
+  }
+
+  .navigation-vertical-menu.nav-equal-width .accordion-content {
+    &.nav-subalign-left .tj-list-item {
+      justify-content: flex-start !important;
+    }
+    &.nav-subalign-center .tj-list-item {
+      width: 100%;
+      justify-content: center !important;
+    }
+    &.nav-subalign-right .tj-list-item {
+      width: 100%;
+      justify-content: flex-end !important;
+    }
+  }
+
   // Nav item styles - matches .tj-list-item from page navigation
   // More button - matches .more-pages-btn from page navigation
   .more-pages-btn {
@@ -167,6 +192,46 @@
       width: 32px !important;
       padding: 6px;
       gap: 0;
+    }
+  }
+
+  // Accordion item for vertical groups
+  .accordion-item {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none;
+
+    .accordion-body {
+      padding: 0 0 0 32px !important;
+      border-bottom: 0px !important;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+      min-width: 0;
+
+      &.expanded {
+        display: flex;
+      }
+
+      &.collapsed {
+        display: none;
+      }
+
+      .accordion-content {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .tj-list-item {
+        margin-top: 0 !important;
+      }
     }
   }
 
@@ -217,6 +282,10 @@
         width: auto;
         gap: 10px;
       }
+    }
+
+    .accordion-item {
+      width: auto;
     }
   }
 }
@@ -465,6 +534,30 @@
 
       .nav-chevron {
         color: var(--selected-nav-item-icon-color);
+      }
+    }
+  }
+
+  .accordion-item {
+    width: 100%;
+    margin: 0 !important;
+    border: none;
+
+    .accordion-body {
+      padding: 0 0 0 20px !important;
+      margin-top: 4px;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+
+      &.expanded {
+        display: flex;
+      }
+
+      .accordion-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
       }
     }
   }
