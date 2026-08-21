@@ -23,7 +23,7 @@
 .fields-container .code-hinter-wrapper,
 .fields-container .code-editor-basic-wrapper,
 .fields-container .codehinter-container {
-  overflow: visible !important;
+  overflow: auto;
   border-radius: inherit;
 }
 .fields-container > .codehinter-plugins:first-child .cm-editor {
