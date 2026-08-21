@@ -107,11 +107,12 @@ You can modify the entity mapping before approving it:
     - OpenAI
     - ServiceNow
     - Quickbooks
+    - Dayabricks
 
     </div>
 
     </div>
-    
+
 - Currently, ToolJet AI can connect to only one data source per application. 
 
 <br/>
