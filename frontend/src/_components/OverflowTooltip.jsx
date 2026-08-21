@@ -22,7 +22,6 @@ export default function OverflowTooltip({
   childrenClassName,
   style,
   width,
-  alwaysShowTooltip = false,
   ...domProps
 }) {
   const [isOverflowed, setIsOverflowed] = useState(false);
@@ -70,7 +69,7 @@ export default function OverflowTooltip({
       tooltipClassName={`overflow-tooltip ${tooltipClassName}`}
       placement={placement}
       message={children}
-      show={alwaysShowTooltip || !!isOverflowed}
+      show={!!isOverflowed}
       width={width}
     >
       <div
