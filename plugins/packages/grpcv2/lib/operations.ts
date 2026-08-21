@@ -24,6 +24,15 @@ const getDefaultProtoDirectory = (): string => {
   return path.join(os.homedir(), 'protos');
 };
 
+// writers and readers must derive identical discoveryCache keys
+export const resolveFilesystemConfig = (sourceOptions: SourceOptions): { directory: string; pattern: string } => {
+  const directory = isEmpty(sourceOptions.proto_files_directory)
+    ? getDefaultProtoDirectory()
+    : sourceOptions.proto_files_directory;
+  const pattern = isEmpty(sourceOptions.proto_files_pattern) ? '**/*.proto' : sourceOptions.proto_files_pattern;
+  return { directory, pattern };
+};
+
 export const validateFilesystemAccess = (directory: string): string => {
   // Expand ~ to home directory if needed
   const expandedDir = expandPath(directory);
@@ -134,20 +143,12 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
 
 export const buildFilesystemClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const directory =
-      isEmpty(sourceOptions.proto_files_directory) ?
-        getDefaultProtoDirectory() :
-        sourceOptions.proto_files_directory;
-
-    const protoFilePattern =
-      isEmpty(sourceOptions.proto_files_pattern) ?
-        '**/*.proto' :
-        sourceOptions.proto_files_pattern;
+    const { directory, pattern: protoFilePattern } = resolveFilesystemConfig(sourceOptions);
 
     let packageDefinition: protoLoader.PackageDefinition;
 
     // Try to use the mapping from last discovery to load only the specific file
-    const protoFile = lastServiceToFileMap.get(serviceName);
+    const protoFile = cachedProtoFileForService(directory, protoFilePattern, serviceName);
 
     if (protoFile && fs.existsSync(protoFile)) {
       // Load only the specific file containing this service
@@ -380,30 +381,62 @@ export const discoverServicesUsingProtoUrl = async (sourceOptions: SourceOptions
   }
 };
 
-// Module-level storage for service-to-file mapping (not cached with TTL, just per-discovery)
-let lastServiceToFileMap = new Map<string, string>();
+type FilesystemDiscovery = {
+  serviceNames: string[];
+  serviceToFileMap: Map<string, string>;
+  failures: Array<{ file: string; error: string }>;
+};
+
+// keyed by dir+pattern; reused only while the dir fingerprint holds
+const discoveryCache = new Map<string, { fingerprint: string; result: FilesystemDiscovery }>();
+
+const discoveryCacheKey = (directory: string, pattern: string): string => `${directory}::${pattern}`;
+
+// glob is cheap, the per-file parse it guards is not
+const fingerprintProtoFiles = (entries: Array<{ path: string; stats?: fs.Stats }>): string =>
+  entries
+    .map((entry) => `${entry.path}:${entry.stats?.mtimeMs ?? 0}`)
+    .sort()
+    .join('|');
+
+// lookup only — keeps the query path off the filesystem
+const cachedProtoFileForService = (directory: string, pattern: string, serviceName: string): string | undefined =>
+  discoveryCache.get(discoveryCacheKey(directory, pattern))?.result.serviceToFileMap.get(serviceName);
+
+// Yield between files so long sweeps don't starve the event loop (health probes, other requests)
+const yieldEventLoop = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
 
 /**
  * Lightweight service name discovery using protobufjs.parse().
+ * Re-parses only when the proto directory's file list or mtimes have changed.
  */
 export const discoverServiceNamesFromFilesystem = async (
   directory: string,
   pattern: string
-): Promise<{ serviceNames: string[]; serviceToFileMap: Map<string, string>; failures: Array<{ file: string; error: string }> }> => {
+): Promise<FilesystemDiscovery> => {
   const expandedDir = validateFilesystemAccess(directory);
 
-  const protoFiles = await fg(pattern, {
+  const entries = await fg(pattern, {
     cwd: expandedDir,
     onlyFiles: true,
-    absolute: true
+    absolute: true,
+    stats: true
   });
 
-  if (protoFiles.length === 0) {
+  if (entries.length === 0) {
     throw new GrpcOperationError(
       `No .proto files found in directory: ${expandedDir} with pattern: ${pattern}`
     );
   }
 
+  const cacheKey = discoveryCacheKey(directory, pattern);
+  const fingerprint = fingerprintProtoFiles(entries);
+  const cached = discoveryCache.get(cacheKey);
+  if (cached?.fingerprint === fingerprint) {
+    return cached.result;
+  }
+
+  const protoFiles = entries.map((entry) => entry.path);
   const serviceNames: string[] = [];
   const failures: Array<{ file: string; error: string }> = [];
   const serviceToFileMap = new Map<string, string>();
@@ -435,12 +468,14 @@ export const discoverServiceNamesFromFilesystem = async (
       const fileName = path.basename(protoFile);
       failures.push({ file: fileName, error: err.message });
     }
+
+    await yieldEventLoop();
   }
 
-  // Store mapping for use in buildFilesystemClient
-  lastServiceToFileMap = serviceToFileMap;
+  const result = { serviceNames, serviceToFileMap, failures };
+  discoveryCache.set(cacheKey, { fingerprint, result });
 
-  return { serviceNames, serviceToFileMap, failures };
+  return result;
 };
 
 /**
@@ -452,15 +487,12 @@ export const discoverMethodsForSelectedServices = async (
   pattern: string,
   selectedServiceNames: string[]
 ): Promise<{ services: GrpcService[]; failures: Array<{ file: string; error: string }> }> => {
-  // If we don't have a mapping yet, discover service names first to build it
-  if (lastServiceToFileMap.size === 0) {
-    await discoverServiceNamesFromFilesystem(directory, pattern);
-  }
+  const { serviceToFileMap: fileMap } = await discoverServiceNamesFromFilesystem(directory, pattern);
 
   // Find the proto files for requested services, de-duplicate
   const filesToParse = new Set<string>();
   for (const serviceName of selectedServiceNames) {
-    const file = lastServiceToFileMap.get(serviceName);
+    const file = fileMap.get(serviceName);
     if (file) {
       filesToParse.add(file);
     }
