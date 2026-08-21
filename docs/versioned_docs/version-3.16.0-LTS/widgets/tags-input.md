@@ -25,6 +25,7 @@ The **Tags Input** component allows users to create, select, and delete tags fro
 | Allow new tags | When enabled, users can create new tags by typing values not in the predefined list. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tags loading state | When enabled, shows a loading indicator while options are being loaded. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Turn on search | When enabled, users can search/filter tags in the dropdown. When disabled, the dropdown menu does not appear and the component acts as a simple input field. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Search type | Sets whether the tag list is filtered in the browser (**Client side**) or by a query (**Server side**). Only visible when **Turn on search** is enabled. | `Client side` or `Server side`, or click on **fx** and enter an expression that resolves to a boolean (`{{true}}` for **Server side**). |
 
 ### Dynamic Tags
 
@@ -46,12 +47,59 @@ When Dynamic tags is enabled, use this schema format:
 | default | Whether the option is pre-selected |
 | disable | Whether the option is disabled (not selectable) |
 
+## Search
+
+Turn on **Turn on search** in the **Tags** section to let users search the tag list, then use **Search type** to choose where the filtering happens. When search is turned off, the dropdown menu does not appear and the component acts as a simple input field.
+
+#### Client Side Search
+
+This is the default search option. The component filters the tags it already holds, in the browser. The complete tag list has to be loaded into the component for this to work.
+
+#### Server Side Search
+
+Use Server side search when the tag list is too large to load into the browser. The component stops filtering locally, and you bind its options to a query that returns only the matching rows.
+
+:::warning
+Server side mode does not fetch anything on its own, it only stops the component from filtering. If you enable it without binding the tag options to a query, the menu shows the full unfiltered list while the user types.
+:::
+
+To set up server side search:
+
+1. Turn on **Turn on search**, then set **Search type** to **Server side**.
+
+2. Create a query that filters on the component's `searchText`:
+
+   ```sql
+   SELECT name AS label, id AS value
+   FROM public.sample_data_orders
+   WHERE name ILIKE '%{{components.tagsinput1.searchText || ""}}%'
+   LIMIT 50
+   ```
+
+   Replace `tagsinput1` with the name of your component.
+
+3. Turn on **Dynamic tags** and bind the **Schema** to the query's data. For example, `{{queries.searchTags.data.map(t => ({ label: t.label, value: t.value }))}}`.
+
+4. Add an event handler to the component:<br/>
+   Event: **On search text changed**<br/>
+   Action: **Run Query**<br/>
+   Query: the query you created in step 2
+
+5. Optionally, click on **fx** next to **Tags loading state** and enter `{{queries.searchTags.isLoading}}` so that the menu shows a loading indicator while the query runs.
+
+:::info
+**On search text changed** fires on every keystroke, so each keystroke runs the query. Keep a `LIMIT` in the query to bound the number of rows returned.
+:::
+
+**Sort tags** still applies in Server side mode and re-sorts whatever the query returned, in the browser. Set it to `none` if your query already sorts the results.
+
 ## Events
 
 | Event | Description |
 |:------|:------------|
 | On tag added | Triggered when a tag is selected or a new tag is created. |
 | On tag deleted | Triggered when a tag is removed from the selection. |
+| On search text changed | Triggered whenever the search text is changed. |
 | On focus | Triggered when the input field receives focus. |
 | On blur | Triggered when the input field loses focus. |
 
@@ -120,6 +168,7 @@ components.tagsInput1.setVisibility(false)
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 |:---------|:-----|:------------|
+| searchText | This variable is initially empty and holds the value whenever the user searches in the tag list. | `components.tagsinput1.searchText` |
 | values | Returns the array of values of selected tags. | `components.tagsinput1.values` |
 | tags | Returns the array of all the available tags. | `components.tagsinput1.tags` |
 | newTagsAdded | Returns the array of all the newly added tags. | `components.tagsinput1.newTagsAdded` |
