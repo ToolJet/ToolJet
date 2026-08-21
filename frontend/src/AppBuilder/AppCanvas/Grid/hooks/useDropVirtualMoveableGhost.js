@@ -87,13 +87,17 @@ export const useDropVirtualMoveableGhost = () => {
     const ghost = createGhostMoveElement(componentSize);
     if (!ghost) return;
 
-    isActiveRef.current = true;
     if (ghost && mousePosition) {
       updateMoveableGhostPosition(mousePosition, canvasRef);
 
-      // Trigger moveable drag on the ghost element to show guidelines
+      // Trigger moveable drag on the ghost element to show guidelines.
+      // getMoveableRef can still be null on the very first hover of a drag (ref not
+      // attached yet) - only latch isActiveRef once dragStart is actually kicked off,
+      // so a later hover retries instead of silently leaving the ghost's position
+      // never tracked (Grid.jsx's onDrag/setGhostDragPosition would then never fire).
       const moveableInstance = getMoveableRef;
       if (moveableInstance && ghost) {
+        isActiveRef.current = true;
         try {
           const fakeEvent = new MouseEvent('mousedown', {
             clientX: mousePosition.x,
