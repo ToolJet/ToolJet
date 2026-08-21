@@ -1,0 +1,256 @@
+
+.access-tokens-card {
+  border: 1px solid var(--border-weak, #e4e7eb);
+  border-radius: 12px;
+  padding: 0; // rows are full-bleed; header carries its own p-16
+  margin-bottom: 3rem;
+
+  .access-tokens-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+
+    .access-tokens-header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .access-tokens-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 24px;
+      color: var(--text-default, #1b1f24);
+    }
+
+    .access-tokens-subtitle {
+      margin: 0;
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--text-placeholder, #6a727c);
+    }
+  }
+
+  /* ── list (users-table look, flex rows per design) ─────────────────── */
+  .access-tokens-list-header {
+    display: flex;
+    height: 40px;
+    align-items: center;
+    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+
+    .access-tokens-cell {
+      font-weight: 500;
+      color: var(--text-default, #1b1f24);
+    }
+
+    /* design 52:7697: "Actions" header exists but is invisible (text-[transparent]) */
+    .access-tokens-cell-actions {
+      color: transparent;
+      user-select: none;
+    }
+  }
+
+  .access-tokens-row {
+    display: flex;
+    height: 52px;
+    align-items: center;
+    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: var(--interactive-default, rgba(136, 144, 153, 0.08))
+    }
+
+    /* frame 02: revoke action appears on row hover */
+    .access-token-revoke-btn {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover .access-token-revoke-btn {
+      opacity: 1;
+    }
+  }
+
+  .access-tokens-cell {
+    flex: 1 0 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 100%;
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--text-default, #1b1f24);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .access-token-name {
+    font-weight: 400; /* rows are 12px regular per 52:7489 */
+  }
+
+  .access-tokens-cell-actions {
+    justify-content: flex-end;
+  }
+
+  .access-token-expired-pill {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-danger, #d72d39);
+    background: var(--background-error-weak, #fceeef);
+  }
+
+  .access-tokens-empty {
+    padding: 24px 16px;
+    text-align: center;
+
+    .access-tokens-empty-title {
+      margin: 0 0 4px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-default, #1b1f24);
+    }
+
+    .access-tokens-empty-subtitle {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-placeholder, #6a727c);
+    }
+  }
+}
+
+/* ── dialog skin over ModalBase (design 52:8677 overlay 'dialog/action') ── */
+.access-token-modal {
+  border-radius: 8px !important;
+
+  .modal-header {
+    justify-content: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-default, #1b1f24);
+    }
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+}
+
+/* dialog width: Bootstrap sizes via .modal-dialog — pin to the design's 444px */
+.modal-dialog:has(.access-token-modal) {
+  max-width: 444px;
+}
+
+.access-token-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.access-token-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .access-token-field-label {
+    padding-left: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .access-token-field-input {
+    height: 32px;
+    padding: 7px 8px;
+    border: 1px solid var(--border-default, #ccd1d5);
+    border-radius: 6px;
+    background: var(--surfaces-surface-01, #fff);
+    font-size: 12px;
+    color: var(--text-default, #1b1f24);
+    width: 100%;
+
+    &::placeholder {
+      color: var(--text-placeholder, #6a727c);
+    }
+
+    &:focus {
+      outline: none;
+      border: 2px solid var(--primary-accent-strong, #4368e3); /* design focus: border-2 #4368e3 */
+      padding: 6px 7px; /* compensate the extra border px so content doesn't shift */
+    }
+
+    &.has-error {
+      border-color: var(--text-danger, #d72d39);
+    }
+  }
+
+  .access-token-field-error {
+    font-size: 11px;
+    color: var(--text-danger, #d72d39);
+  }
+}
+
+.access-token-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.access-token-created {
+  .access-token-created-warning {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .access-token-created-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .access-token-created-value {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid var(--border-weak, #e4e7eb);
+      border-radius: 6px;
+      background: var(--surfaces-surface-02, #f6f8fa);
+      font-size: 12px;
+      word-break: break-all;
+      color: var(--text-default, #1b1f24);
+    }
+  }
+}
+
+.access-token-revoke-confirm p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-default, #1b1f24);
+}
+
+.access-tokens-retry-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 12px;
+  color: var(--primary-accent-strong, #4368e3);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
