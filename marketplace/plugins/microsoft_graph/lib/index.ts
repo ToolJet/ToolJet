@@ -152,6 +152,23 @@ export default class Microsoft_graph implements QueryService {
           body: Buffer.from(base64Data, 'base64'),
           searchParams: queryParams,
         };
+      } else if (this.isHtmlUpload(operation, path)) {
+        requestOptions = {
+          method: operation,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'text/html',
+          },
+          body: this.parseHtmlContent(bodyParams),
+          searchParams: queryParams,
+        };
+      } else if (this.isOneNoteContentPatch(operation, path)) {
+        requestOptions = {
+          method: operation,
+          headers: this.authHeader(accessToken),
+          json: this.parseOneNotePatchCommands(bodyParams),
+          searchParams: queryParams,
+        };
       } else {
         requestOptions = {
           method: operation,
@@ -217,7 +234,39 @@ export default class Microsoft_graph implements QueryService {
   }
 
   private isBinaryDownload(operation: string, path: string): boolean {
-    return operation === 'get' && path.endsWith('/content') && !path.includes(':/');
+    return operation === 'get' && path.endsWith('/content') && !path.includes(':/') && !this.isOneNotePageContent(path);
+  }
+
+  // OneNote page content is HTML, not a binary payload, so it is returned as text. Scoped to pages so
+  // that /onenote/resources/{resource-id}/content (embedded images and files) still downloads as binary.
+  private isOneNotePageContent(path: string): boolean {
+    return path.includes('/onenote/pages/') && path.endsWith('/content');
+  }
+
+  // Creating a OneNote page takes the page as a text/html body rather than JSON.
+  private isHtmlUpload(operation: string, path: string): boolean {
+    return operation === 'post' && path.includes('/onenote/') && path.endsWith('/pages');
+  }
+
+  // Updating OneNote page content takes a JSON array of patch commands as the request body.
+  private isOneNoteContentPatch(operation: string, path: string): boolean {
+    return operation === 'patch' && this.isOneNotePageContent(path);
+  }
+
+  private parseHtmlContent(params: Record<string, any>): string {
+    return String(params?.['htmlContent'] ?? '');
+  }
+
+  private parseOneNotePatchCommands(params: Record<string, any>): Array<Record<string, any>> {
+    const commands = this.parseBodyParams(params)?.['commands'];
+    if (!Array.isArray(commands)) {
+      throw new QueryError(
+        'Query could not be completed',
+        'OneNote page content updates expect "commands" to be a JSON array of patch commands',
+        {}
+      );
+    }
+    return commands;
   }
 
   private parseBodyParams(params: Record<string, any>): Record<string, any> {
@@ -317,6 +366,11 @@ export default class Microsoft_graph implements QueryService {
         const base64Data = fileContent.includes(',') ? fileContent.split(',')[1] : fileContent;
         result.body = Buffer.from(base64Data, 'base64');
         result.headers['Content-Type'] = mimeType;
+      } else if (this.isHtmlUpload(result.method, queryOptions.path ?? '')) {
+        result.body = this.parseHtmlContent(params.request);
+        result.headers['Content-Type'] = 'text/html';
+      } else if (this.isOneNoteContentPatch(result.method, queryOptions.path ?? '')) {
+        result.json = this.parseOneNotePatchCommands(params.request);
       } else {
         result.json = this.parseBodyParams(params.request);
       }
