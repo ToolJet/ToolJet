@@ -60,7 +60,7 @@ export class TooljetDbController {
   }
 
   @InitFeature(FEATURE_KEY.PROXY_POSTGREST)
-  @All('/proxy/*')
+  @All('/proxy/{*splat}')
   @UseGuards(OrganizationAuthGuard, FeatureAbilityGuard)
   async proxy(@Req() req, @Res() res, @Next() next) {
     return this.postgrestProxyService.proxy(req, res, next);
