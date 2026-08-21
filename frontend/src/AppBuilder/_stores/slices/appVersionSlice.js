@@ -89,4 +89,14 @@ export const createAppVersionSlice = (set, get) => ({
       'setRestoredAppHistoryId'
     );
   },
+
+  triggerHotReload: () => {
+    set(
+      (state) => {
+        state.restoreTimestamp = Date.now();
+      },
+      false,
+      'triggerHotReload'
+    );
+  },
 });

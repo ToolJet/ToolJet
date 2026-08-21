@@ -758,9 +758,9 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
-    const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
+    const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
 
-    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
+    if (isEnvChanged || isVersionChanged || isForceRefreshTriggered) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
