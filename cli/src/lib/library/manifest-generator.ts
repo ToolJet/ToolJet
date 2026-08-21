@@ -20,6 +20,8 @@ export interface ManifestActionParam {
   handle: string;
   displayName?: string;
   defaultValue?: unknown;
+  type?: 'text' | 'toggle' | 'select';
+  options?: { name: string; value: string }[]; // only present when type === 'select'
 }
 
 export interface ManifestAction {
@@ -226,10 +228,50 @@ function walkComponentDeclaration(
                     }
                     const paramDisplayName = getStringProp(el, 'displayName');
                     const defaultValueNode = getPropNode(el, 'defaultValue');
+                    const type = getStringProp(el, 'type');
+                    if (type && type !== 'text' && type !== 'toggle' && type !== 'select') {
+                      throw new Error(
+                        `Invalid params in component "${componentName}", action "${name}": param "${handle}" has type "${type}", expected "text", "toggle", or "select".`
+                      );
+                    }
+
+                    const optionsNode = getPropNode(el, 'options');
+                    let options: { name: string; value: string }[] | undefined;
+                    if (optionsNode) {
+                      if (!ts.isArrayLiteralExpression(optionsNode)) {
+                        throw new Error(
+                          `Invalid params in component "${componentName}", action "${name}": param "${handle}"'s "options" must be an array literal.`
+                        );
+                      }
+                      options = optionsNode.elements.map((optEl) => {
+                        if (
+                          !ts.isObjectLiteralExpression(optEl) ||
+                          typeof getStringProp(optEl, 'name') !== 'string' ||
+                          typeof getStringProp(optEl, 'value') !== 'string'
+                        ) {
+                          throw new Error(
+                            `Invalid params in component "${componentName}", action "${name}": param "${handle}"'s "options" entries must be object literals with string "name" and "value".`
+                          );
+                        }
+                        return {
+                          name: getStringProp(optEl, 'name') as string,
+                          value: getStringProp(optEl, 'value') as string,
+                        };
+                      });
+                    }
+
+                    if (type === 'select' && !options?.length) {
+                      throw new Error(
+                        `Invalid params in component "${componentName}", action "${name}": param "${handle}" has type "select" but no non-empty "options" array.`
+                      );
+                    }
+
                     params.push({
                       handle,
                       ...(paramDisplayName ? { displayName: paramDisplayName } : {}),
                       ...(defaultValueNode ? { defaultValue: evalLiteralNode(defaultValueNode) } : {}),
+                      ...(type ? { type: type as ManifestActionParam['type'] } : {}),
+                      ...(options ? { options } : {}),
                     });
                   }
                 }
