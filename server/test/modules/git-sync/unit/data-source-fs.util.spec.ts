@@ -6,6 +6,7 @@ import {
   canonicalStringify,
   dataSourceFilePath,
   readDataSourceEntries,
+  pruneStaleDataSourceFolders,
   DATA_SOURCE_FILE,
 } from '@ee/git-sync/data-source-fs.util';
 
@@ -89,6 +90,73 @@ describe('data-source-fs.util', () => {
 
       // malformed + id-less were skipped
       expect([...byId.keys()].sort()).toEqual(['corel-1', 'corel-2', 'corel-3']);
+    });
+  });
+
+  // Partial (scope='datasource') pushes skip the full-push ensureCleanDir, so this sweep
+  // is what keeps the data-sources/ tree from accumulating stale folders. Identity is the
+  // co_relation_id inside data-source.json — a rename must not leave the old-name folder
+  // behind (the datasource would be duplicated at both names).
+  describe('pruneStaleDataSourceFolders', () => {
+    let dir: string;
+    const writeFolder = (name: string, content: any) => {
+      const d = path.join(dir, name);
+      fs.mkdirSync(d, { recursive: true });
+      fs.writeFileSync(path.join(d, DATA_SOURCE_FILE), typeof content === 'string' ? content : JSON.stringify(content));
+    };
+    const names = () => fs.readdirSync(dir).sort();
+
+    beforeEach(() => {
+      dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ds-prune-'));
+    });
+    afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+    it('returns [] for a non-existent directory', () => {
+      expect(pruneStaleDataSourceFolders(path.join(dir, 'nope'), new Map())).toEqual([]);
+    });
+
+    it('removes the old-name folder after a rename, keeping only the current-name folder', () => {
+      // A partial push wrote the new name but left the old one on disk; both carry the same id.
+      writeFolder('Foo', { id: 'co-1', name: 'Foo' });
+      writeFolder('Bar', { id: 'co-1', name: 'Bar' });
+
+      const removed = pruneStaleDataSourceFolders(dir, new Map([['co-1', 'Bar']]));
+
+      expect(names()).toEqual(['Bar']);
+      expect(removed).toEqual(['data-sources/Foo']);
+    });
+
+    it('removes a deleted datasource folder (co_relation_id no longer active)', () => {
+      writeFolder('Gone', { id: 'co-1', name: 'Gone' });
+      const removed = pruneStaleDataSourceFolders(dir, new Map());
+      expect(names()).toEqual([]);
+      expect(removed).toEqual(['data-sources/Gone']);
+    });
+
+    it('keeps an unchanged, still-active folder and only prunes the stale sibling', () => {
+      writeFolder('Keep', { id: 'co-1', name: 'Keep' });
+      writeFolder('OldA', { id: 'co-2', name: 'OldA' });
+      writeFolder('NewA', { id: 'co-2', name: 'NewA' });
+
+      pruneStaleDataSourceFolders(
+        dir,
+        new Map([
+          ['co-1', 'Keep'],
+          ['co-2', 'NewA'],
+        ])
+      );
+
+      expect(names()).toEqual(['Keep', 'NewA']);
+    });
+
+    it('leaves legacy flat files and malformed folders untouched', () => {
+      writeFolder('Live', { id: 'co-1', name: 'Live' });
+      writeFolder('bad', 'not json {'); // unreadable id → skipped
+      fs.writeFileSync(path.join(dir, 'co-9.json'), JSON.stringify({ id: 'co-9' })); // legacy flat file
+
+      pruneStaleDataSourceFolders(dir, new Map([['co-1', 'Live']]));
+
+      expect(names()).toEqual(['Live', 'bad', 'co-9.json']);
     });
   });
 });

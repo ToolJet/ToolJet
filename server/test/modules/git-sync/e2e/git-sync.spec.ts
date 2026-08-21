@@ -15,6 +15,7 @@ import {
   createFolder,
 } from 'test-helper';
 import * as request from 'supertest';
+import { randomUUID as genRepoUUID } from 'crypto';
 import { WorkspaceBranchService } from '@ee/workspace-branches/service';
 import { GitSyncQueueService } from '@ee/workspace-branches/git-sync-queue.service';
 
@@ -38,7 +39,12 @@ function requireEnv(name: string): string {
 // enterprise URL, API URL, reset/merge admin endpoints, the {owner, repo}
 // pair used in admin merges) is derived from these two values.
 const GIT_BASE_URL = requireEnv('TEST_GIT_BASE_URL').replace(/\/$/, '');
-const GIT_REPO_PATH = (process.env.TEST_GIT_REPO_PATH || 'gsmithun4/e2e').replace(/^\/|\/$/g, '');
+// Default to a throwaway, per-run ephemeral repo under the simulator's `run-ci`
+// owner (URL shape `run-ci/<uuid>`). The simulator auto-creates it on first git
+// access (AUTO_INIT) and its CI cleaner reaps it after the idle TTL, so parallel
+// runs never collide on shared state. Override with TEST_GIT_REPO_PATH to pin a
+// specific pre-provisioned repo instead.
+const GIT_REPO_PATH = (process.env.TEST_GIT_REPO_PATH || `run-ci/${genRepoUUID()}`).replace(/^\/|\/$/g, '');
 const [GIT_REPO_OWNER, GIT_REPO_NAME] = GIT_REPO_PATH.split('/');
 
 // GitHub App credentials — read from env, no fallbacks.
