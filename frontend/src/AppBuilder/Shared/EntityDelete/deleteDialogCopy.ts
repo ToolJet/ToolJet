@@ -97,11 +97,14 @@ export function buildDeleteDialogCopy({
   const blocked = blockers.length > 0;
   const noun = pluralizeEntity(entityLabel, total);
   const singleName = subjects[0]?.name ?? '';
+  // A subject whose name will not resolve is named by its kind rather than by an empty
+  // string or an internal id — quoting a UUID at the user tells them nothing.
+  const single = singleName ? `"${singleName}"` : `this ${entityLabel}`;
 
   if (!blocked) {
     return {
       blocked: false,
-      title: total === 1 ? `Delete "${singleName}"?` : `Delete ${total} ${noun}?`,
+      title: total === 1 ? `Delete ${single}?` : `Delete ${total} ${noun}?`,
       subtitle:
         total === 1
           ? 'Nothing outside this selection depends on it.'
@@ -111,7 +114,7 @@ export function buildDeleteDialogCopy({
 
   return {
     blocked: true,
-    title: total === 1 ? `Can't delete "${singleName}"` : `Can't delete ${total} ${noun}`,
+    title: total === 1 ? `Can't delete ${single}` : `Can't delete ${total} ${noun}`,
     subtitle: blockedSubtitle(entityLabel, subjects, blockers),
   };
 }

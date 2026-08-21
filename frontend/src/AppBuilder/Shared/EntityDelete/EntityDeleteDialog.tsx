@@ -263,7 +263,14 @@ export const EntityDeleteDialog = ({
           </div>
         )}
       </Modal.Body>
-      <Modal.Footer className="entity-delete-footer">
+      {/*
+        Confirm state mirrors the pre-existing delete-query modal from lts-3.16
+        (`.query-folder-delete-modal`, styles in _styles/queryManager.scss): Cancel tertiary
+        on the left, a `dangerPrimary` Delete carrying the trash glyph on the right, pushed
+        apart by space-between. The blocked state has a single button and keeps it trailing,
+        since space-between would strand a lone "Got it" against the left edge.
+      */}
+      <Modal.Footer className={`entity-delete-footer ${blocked ? 'single-action' : ''}`}>
         {blocked ? (
           <ButtonSolid size="sm" variant="primary" onClick={onCancel} data-cy="entity-delete-got-it">
             Got it
@@ -273,7 +280,8 @@ export const EntityDeleteDialog = ({
             <ButtonSolid size="sm" variant="tertiary" onClick={onCancel} data-cy="entity-delete-cancel">
               Cancel
             </ButtonSolid>
-            <ButtonSolid size="sm" variant="primary" onClick={onConfirm} data-cy="entity-delete-confirm">
+            <ButtonSolid size="sm" variant="dangerPrimary" onClick={onConfirm} data-cy="entity-delete-confirm">
+              <SolidIcon name="trash" width="14" fill="#fff" />
               Delete
             </ButtonSolid>
           </>

@@ -196,11 +196,23 @@
     color: var(--text-placeholder);
   }
 
+  // Matches `.query-folder-delete-modal .modal-footer` in _styles/queryManager.scss — the
+  // delete-query modal this dialog replaced. Cancel and Delete are pushed to opposite ends
+  // rather than both trailing.
   .entity-delete-footer {
-    gap: 8px;
     border-top: none;
     padding: 24px;
     flex-shrink: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+
+    // Blocked state has only "Got it"; space-between would pin it to the left edge.
+    &.single-action {
+      justify-content: flex-end;
+    }
   }
 }
 

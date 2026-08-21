@@ -127,6 +127,20 @@ describe('buildDeleteDialogCopy — clear', () => {
     const copy = buildDeleteDialogCopy({ entityLabel: 'query', subjects: named('listUsers'), blockers: [] });
     expect(copy.title).toBe('Delete "listUsers"?');
   });
+
+  // A nameless subject used to render its internal id, so the dialog read
+  // `Delete "e99186a0-1589-4f67-96cc-703f07b23252"?`.
+  it('names an unresolvable subject by its kind rather than quoting nothing', () => {
+    expect(buildDeleteDialogCopy({ subjects: [{}], blockers: [] }).title).toBe('Delete this component?');
+    expect(buildDeleteDialogCopy({ entityLabel: 'query', subjects: [{}], blockers: [] }).title).toBe(
+      'Delete this query?'
+    );
+  });
+
+  it('names an unresolvable subject by its kind when blocked too', () => {
+    const copy = buildDeleteDialogCopy({ subjects: [{}], blockers: [subject('x', 2)] });
+    expect(copy.title).toBe("Can't delete this component");
+  });
 });
 
 describe('labels', () => {
