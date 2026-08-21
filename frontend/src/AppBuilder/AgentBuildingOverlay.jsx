@@ -37,6 +37,28 @@ const AgentBuildingOverlay = () => {
     return () => window.removeEventListener('beforeunload', warn);
   }, [isBuilding]);
 
+  // Disable the surrounding editor chrome IN PLACE — the left icon toolbar, the right properties
+  // panel, and the queries panel — by fading them and blocking clicks, instead of laying a dark
+  // rectangle over each (which read as odd). Toggled imperatively because these are separate React
+  // subtrees from this overlay. The canvas itself keeps its dim layer below.
+  useEffect(() => {
+    if (!isBuilding) return undefined;
+    const selectors = ['.left-sidebar', '.right-sidebar', '[class*="query-manager"]'];
+    const restore = [];
+    selectors.forEach((sel) => {
+      document.querySelectorAll(sel).forEach((el) => {
+        restore.push([el, el.style.opacity, el.style.pointerEvents]);
+        el.style.opacity = '0.45';
+        el.style.pointerEvents = 'none';
+      });
+    });
+    return () =>
+      restore.forEach(([el, opacity, pointerEvents]) => {
+        el.style.opacity = opacity;
+        el.style.pointerEvents = pointerEvents;
+      });
+  }, [isBuilding]);
+
   if (!isBuilding) return null;
 
   const block = (e) => {
@@ -53,14 +75,6 @@ const AgentBuildingOverlay = () => {
 
   return (
     <>
-      {/* Left toolbar layer — above the toolbar (z-10), clamped to the strip so it never covers the chat */}
-      <div
-        style={{ ...dim, left: 0, width: TOOLBAR_W, zIndex: 11 }}
-        onClickCapture={block}
-        onMouseDownCapture={block}
-        data-cy="agent-building-overlay-toolbar"
-      />
-
       {/* Canvas layer — below the AI chat popover (z-2), so the chat stays usable; carries the message.
           The card is centered in the canvas region to the RIGHT of the chat panel (which the chat, at
           z-2, overlays on the left) so it stays clear of the open chat instead of being clipped by it. */}
