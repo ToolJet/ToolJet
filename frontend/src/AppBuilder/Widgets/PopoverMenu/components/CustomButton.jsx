@@ -59,7 +59,11 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       : textColor;
 
   const computedLoaderColor =
-    '#FFFFFF' === loaderColor ? (buttonType === 'primary' ? loaderColor : 'var(--cc-primary-brand)') : loaderColor;
+    'var(--cc-surface1-surface)' === loaderColor
+      ? buttonType === 'primary'
+        ? loaderColor
+        : 'var(--cc-primary-brand)'
+      : loaderColor;
 
   const computedBgColor =
     '#4368E3' === backgroundColor
