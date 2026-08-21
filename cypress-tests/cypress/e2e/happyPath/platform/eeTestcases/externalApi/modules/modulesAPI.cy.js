@@ -322,7 +322,10 @@ describe("ToolJet: Modules API", () => {
 
     importModule(workspaceId, { ...requestData, appName: duplicateName }).then(
       (response) => {
-        expect(response.status).to.eq(500);
+        expect(response.status).to.eq(400);
+        expect(response.body.message).to.include(
+          "This app name is already taken.",
+        );
       },
     );
   });

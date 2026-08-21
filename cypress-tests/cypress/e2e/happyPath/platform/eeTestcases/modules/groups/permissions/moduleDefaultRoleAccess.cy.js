@@ -12,7 +12,6 @@ describe('Modules — Coarse Permissions: Default Role Access', () => {
 
   before(() => {
     cy.apiLogin();
-    
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);
@@ -31,6 +30,7 @@ describe('Modules — Coarse Permissions: Default Role Access', () => {
 
   beforeEach(() => {
     cy.apiLogin();
+    cy.viewport(2000, 1900);
   });
 
   it('admin can create a module by default', () => {

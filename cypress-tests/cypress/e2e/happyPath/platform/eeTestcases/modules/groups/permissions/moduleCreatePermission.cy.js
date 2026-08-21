@@ -20,6 +20,7 @@ describe('Modules — Coarse Permissions: Custom Group Create Override', () => {
       Cypress.env('workspaceSlug', wsSlug);
     });
     cy.apiUpdateGroupPermission('builder', { moduleCreate: false });
+    cy.viewport(2000, 1900);
   });
 
   it('custom group with moduleCreate OFF blocks the builder from creating a module, and moduleCreate ON allows it', () => {

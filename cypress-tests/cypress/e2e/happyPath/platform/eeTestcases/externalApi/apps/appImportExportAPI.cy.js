@@ -99,12 +99,11 @@ describe("ToolJet: Apps Import Export API", () => {
       expect(response.status).to.eq(201);
     });
 
-    //need to update for non gitsync flow
     importApp(workspaceId, namedApp).then((response) => {
-      expect(response.status).to.eq(500);
-      // expect(response.body.message).to.include(
-      //   "This app name is already taken.",
-      // );
+      expect(response.status).to.eq(400);
+      expect(response.body.message).to.include(
+        "This app name is already taken.",
+      );
     });
   });
 

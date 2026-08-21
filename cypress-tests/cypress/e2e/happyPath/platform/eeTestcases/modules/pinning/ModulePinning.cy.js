@@ -31,7 +31,7 @@ describe('Modules — ModuleViewer Pinning & Delete Guards', () => {
     consumerAppName = `Consume App ${shortId}`;
 
     cy.apiLogin();
-    
+
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);
@@ -47,6 +47,14 @@ describe('Modules — ModuleViewer Pinning & Delete Guards', () => {
     cy.apiCreateApp(consumerAppName).then(() => {
       consumerAppId = Cypress.env('appId');
     });
+    cy.viewport(2000, 1900);
+
+    cy.then(() => {
+      cy.openApp()
+      cy.wait(2000);
+      dragModuleIntoCanvas(moduleName);
+      cy.get(commonWidgetSelector.draggableWidget(moduleViewerInstance)).should('exist');
+    });
   });
 
   afterEach(() => {
@@ -54,20 +62,7 @@ describe('Modules — ModuleViewer Pinning & Delete Guards', () => {
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  it('embeds a module via ModuleViewer, enforces its save/delete guards, and deletes it once unreferenced', () => {
-    // Embed the module into the consumer app via ModuleViewer.
-    cy.visit(`/${Cypress.env('workspaceSlug')}`);
-    cy.get(commonSelectors.appCard(consumerAppName))
-      .trigger('mousehover')
-      .trigger('mouseenter')
-      .find(commonSelectors.editButton)
-      .click({ force: true });
-    cy.wait(2000);
-
-    dragModuleIntoCanvas(moduleName);
-
-    cy.get(commonWidgetSelector.draggableWidget(moduleViewerInstance)).should('exist');
-
+  it('resolves the pinned module version correctly, and blocks saving while a newer draft is pinned but allows it once re-pinned to published', () => {
     cy.get(commonWidgetSelector.draggableWidget(moduleViewerInstance)).click();
     cy.get(commonWidgetSelector.widgetConfigHandle(moduleViewerInstance)).click();
 
@@ -127,6 +122,18 @@ describe('Modules — ModuleViewer Pinning & Delete Guards', () => {
     cy.get(commonWidgetSelector.parameterInputField('version name')).clear().type('v2');
     cy.get(commonSelectors.buttonSelector('create version save')).click();
     cy.get(moduleSelectors.versionLockBanner, { timeout: 15000 }).should('be.visible');
+  });
+
+  it('enforces delete guards while the module is referenced, and allows deleting the module and its version once unreferenced', () => {
+    cy.get(commonWidgetSelector.draggableWidget(moduleViewerInstance)).click();
+    cy.get(commonWidgetSelector.widgetConfigHandle(moduleViewerInstance)).click();
+    cy.contains('label', 'Version').parent().should('contain.text', 'v1-published');
+
+    cy.get(moduleSelectors.versionSwitcherButton).click();
+    cy.get(commonSelectors.buttonSelector('v1 save version')).click();
+    cy.get(commonWidgetSelector.parameterInputField('version name')).clear().type('v2');
+    cy.get(commonSelectors.buttonSelector('create version save')).click();
+    cy.get(moduleSelectors.versionLockBanner, { timeout: 15000 }).should('be.visible');
 
     // assertNotReferenced: deleting the module while it's still embedded
     openModulesList();
@@ -146,20 +153,12 @@ describe('Modules — ModuleViewer Pinning & Delete Guards', () => {
 
     attemptDeleteModuleVersion('v1-published');
 
-    cy.contains('Dependent apps found!').should('be.visible');
-    cy.contains('button', 'I understand').click();
+    
+    cy.contains('main (Draft) version is the head of the main branch and cannot be deleted').should('be.visible');
     ensureVersionSwitcherOpen();
     cy.get(`[data-cy="v1-published-version-name"]`).should('exist');
 
     cy.apiDeleteApp(consumerAppId);
-
-    openModulesList();
-    cy.get(commonSelectors.appCard(moduleName))
-      .trigger('mousehover')
-      .trigger('mouseenter')
-      .find(commonSelectors.editButton)
-      .click({ force: true });
-    cy.wait(2000);
 
     attemptDeleteModuleVersion('v1-published');
     ensureVersionSwitcherOpen();

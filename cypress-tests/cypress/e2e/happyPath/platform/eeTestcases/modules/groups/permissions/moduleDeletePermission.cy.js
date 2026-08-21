@@ -18,9 +18,8 @@ describe('Modules — Coarse Permissions: Custom Group Delete Override & Ownersh
       Cypress.env('workspaceSlug', wsSlug);
     });
 
-    // Strip the builder ROLE's own moduleDelete — delete access for a module
-    // a test user doesn't own comes only from that test's own custom group.
     cy.apiUpdateGroupPermission('builder', { moduleDelete: false });
+    cy.viewport(2000, 1900);
   });
 
   afterEach(() => {
@@ -48,10 +47,6 @@ describe('Modules — Coarse Permissions: Custom Group Delete Override & Ownersh
 
     cy.apiLogin(userEmail, 'password');
 
-    // Non-owner without moduleDelete cannot delete the admin's module — the
-    // "Delete module" menu ITEM is correctly gated by canDeleteApp with no
-    // module override (AppMenu.jsx), so the option is absent, not
-    // shown-then-blocked.
     openModulesList();
     openDeleteMenu(adminModuleName);
     cy.get(commonSelectors.appCardOptions('delete module')).should('not.exist');
