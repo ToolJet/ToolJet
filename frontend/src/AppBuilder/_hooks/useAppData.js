@@ -321,7 +321,17 @@ const useAppData = (
         }
       } else if (versionId) {
         // Pinned: call the by-correlation endpoint with the module_reference_id ref.
-        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode, parentAppId);
+        // If the pin is stale/orphaned — the server 404s "Module version not found" because the
+        // pinned version isn't on this branch (e.g. an imported pin, or a version that was
+        // deleted/renamed) — fall back to the UNPINNED resolution (the module's current-branch
+        // draft) instead of blanking the embed. This auto-does what the "re-select the version"
+        // hint used to require by hand, and matches the inspector, which already folds a stale
+        // pin to "Current branch". Only a 404 falls back; other errors still surface.
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode, parentAppId).catch((err) => {
+          const is404 = err?.data?.statusCode === 404 || err?.statusCode === 404;
+          if (!is404) throw err;
+          return appVersionService.getModuleVersionData(appId, '', mode, parentAppId);
+        });
       } else {
         // Unpinned: always hit the backend — cached definition may be from the default branch,
         // not the consumer's feature branch. Server resolver correctly returns the current

@@ -15,6 +15,7 @@ import {
   createFolder,
 } from 'test-helper';
 import * as request from 'supertest';
+import { randomUUID as genRepoUUID } from 'crypto';
 import { WorkspaceBranchService } from '@ee/workspace-branches/service';
 import { GitSyncQueueService } from '@ee/workspace-branches/git-sync-queue.service';
 
@@ -47,8 +48,13 @@ const describeGitLab = GITLAB_E2E_ENABLED ? describe : describe.skip;
 // tolerate undefined (fall back to empty/placeholder) because when the env is
 // missing the suite is skipped before any of these values are used.
 const GIT_BASE_URL = (process.env.TEST_GIT_BASE_URL || '').replace(/\/$/, '');
-// GitLab-specific repo path so it doesn't collide with the GitHub e2e repo on the shared simulator.
-const GIT_REPO_PATH = (process.env.TEST_GITLAB_REPO_PATH || 'gsmithun4/gitlab-e2e').replace(/^\/|\/$/g, '');
+// Default to a throwaway, per-run ephemeral repo under the simulator's `run-ci`
+// owner (URL shape `run-ci/<uuid>`), regenerated on every run. The random name
+// guarantees it never collides with the GitHub e2e repo (or a parallel GitLab
+// run) on the shared simulator; the simulator auto-creates it on first git
+// access (AUTO_INIT) and reaps it via the CI cleaner. Override with
+// TEST_GITLAB_REPO_PATH to pin a specific pre-provisioned project instead.
+const GIT_REPO_PATH = (process.env.TEST_GITLAB_REPO_PATH || `run-ci/${genRepoUUID()}`).replace(/^\/|\/$/g, '');
 const [GIT_REPO_OWNER, GIT_REPO_NAME] = GIT_REPO_PATH.split('/');
 // Must equal the simulator's EXPECTED_GITLAB_TOKEN.
 const GITLAB_TOKEN = process.env.TEST_GITLAB_TOKEN || '';
@@ -5770,6 +5776,86 @@ describeGitLab('GitSyncController — GitLab', () => {
         const hostModules = hostHydrateResp.body?.modules || [];
         const linked = hostModules.find((m: any) => (m.co_relation_id || m.coRelationId) === moduleCoRel);
         expect(linked).toBeDefined();
+      }, 300000);
+
+      it('carries a connected global data source into the feature branch on module push, and re-hydrates it on open', async () => {
+        // Regression for the module counterpart of the front-end-app case above: pushing a
+        // MODULE directly used to skip serializeLinkedDataSourcesForApp entirely (it was gated
+        // to APP_TYPES.FRONT_END only), so a global DS connected solely via a module's query
+        // never rode into the commit and was left permanently unsynced on other branches.
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-dep-ds-module';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a module + global data source on the feature branch, link the DS via a query');
+        const moduleAppId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'dep-ds-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const versionId = await editingVersionId(moduleAppId, featBranchId);
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'dep-carry-module-ds',
+              kind: 'restapi',
+              options: dsOptions('http://dep-carry-module.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            kind: 'restapi',
+            name: 'q_dep_carry_module',
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          })
+          .expect(201);
+        const dsName = await dsvName(dsId, featBranchId);
+
+        step(3, 'gitpush the module to the feature branch → its connected DS rides into the same commit');
+        await gitpushApp(moduleAppId, versionId, 'dep-ds-module', FEAT, featBranchId).expect(201);
+
+        step(4, 'the connected data source is present in git on the feature branch');
+        const dsFile = await readGitFile(FEAT, `data-sources/${dsName}/data-source.json`);
+        expect(dsFile).not.toBeNull();
+        const dsJson = JSON.parse(dsFile as string);
+        expect(dsJson.id).toBe(await dsCoRelId(dsId));
+        expect(dsJson.kind).toBe('restapi');
+
+        step(5, 'drop the branch DSV, then force a fresh open → hydrate re-creates it from git (no dummy)');
+        await depDs.query(
+          `DELETE FROM data_source_version_options
+             WHERE data_source_version_id IN (
+               SELECT id FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2)`,
+          [dsId, featBranchId]
+        );
+        await depDs.query(`DELETE FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+          dsId,
+          featBranchId,
+        ]);
+        expect(await dsvCount(dsId, featBranchId)).toBe(0);
+
+        // Force the open-path re-hydrate: a git_tree_sha mismatch makes GET /apps/:id re-import.
+        await depDs.query(
+          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
+             WHERE app_id = $1 AND branch_id = $2`,
+          [moduleAppId, featBranchId]
+        );
+
+        const hydrateResp = await auth(agent().get(`/api/apps/${moduleAppId}`))
+          .query({ branch_id: featBranchId })
+          .expect(200);
+        expect(hydrateResp.body.is_hydration_tried).toBe(true);
+        expect(hydrateResp.body.hydration_status).toBe('success');
+
+        step(6, 'the branch DSV is back — the connected data source populated on open');
+        expect(await dsvCount(dsId, featBranchId)).toBeGreaterThan(0);
       }, 300000);
     });
 

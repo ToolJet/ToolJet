@@ -1,5 +1,5 @@
 import { User as UserEntity } from '@entities/user.entity';
-import { ProviderConfigDTO } from '../dto/provider-config.dto';
+import { ProviderConfigDTO } from '@modules/git-sync/providers/dto/provider-config.dto';
 
 // Strategy-only contract after the DB-only endpoints moved to GitSyncConfigsController.
 export interface IGitSyncController {
