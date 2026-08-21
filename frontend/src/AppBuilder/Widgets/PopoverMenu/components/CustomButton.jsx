@@ -13,6 +13,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
     height,
     exposedVariablesTemporaryState,
     updateExposedVariablesState,
+    openPopoverOnHover,
+    scheduleClosePopoverOnHover,
     transformedOptions,
     trigger,
     label,
@@ -145,9 +147,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       disabled={exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading}
       ref={forwardedRef}
       {...(trigger === 'hover' && {
-        onMouseOver: () => {
-          updateExposedVariablesState('showPopover', true);
-        },
+        onMouseEnter: openPopoverOnHover,
+        onMouseLeave: scheduleClosePopoverOnHover,
       })}
     >
       <button
