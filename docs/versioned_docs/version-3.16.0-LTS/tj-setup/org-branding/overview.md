@@ -57,7 +57,7 @@ Because components reference theme tokens rather than fixed colors, changing the
 }
 ```
 
-Custom Styles can be applied two ways:
+Custom Styles can be applied globally or per component:
 
 - **Globally**, by targeting a component type's default class (e.g., `._tooljet-Button`) to restyle every instance of that component across apps.
 - **Per component**, by targeting the specific name given to a component instance in an app (e.g., `._tooljet-addIncomeButton`) to restyle just that one.
