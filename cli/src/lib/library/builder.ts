@@ -19,10 +19,10 @@ export interface BuildResult {
 const tooljetSdkPlugin: esbuild.Plugin = {
   name: 'tooljet-sdk-proxy',
   setup(build) {
-    build.onResolve(
-      { filter: /^@tooljet\/custom-component-sdk$/ },
-      () => ({ path: 'tooljet-sdk-proxy', namespace: 'tooljet-sdk-proxy' })
-    );
+    build.onResolve({ filter: /^@tooljet\/custom-component-sdk$/ }, () => ({
+      path: 'tooljet-sdk-proxy',
+      namespace: 'tooljet-sdk-proxy',
+    }));
     build.onLoad({ filter: /.*/, namespace: 'tooljet-sdk-proxy' }, () => ({
       contents: `export const ToolJet = window.__tj_ToolJet;`,
       loader: 'js',

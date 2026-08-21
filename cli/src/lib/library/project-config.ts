@@ -38,9 +38,12 @@ export class ProjectConfig {
 
     const { workspaceId, libraryId, libraryName } = data as Record<string, string>;
     return (
-      typeof workspaceId === 'string' && !!workspaceId &&
-      typeof libraryId === 'string' && !!libraryId &&
-      typeof libraryName === 'string' && !!libraryName
+      typeof workspaceId === 'string' &&
+      !!workspaceId &&
+      typeof libraryId === 'string' &&
+      !!libraryId &&
+      typeof libraryName === 'string' &&
+      !!libraryName
     );
   }
 }

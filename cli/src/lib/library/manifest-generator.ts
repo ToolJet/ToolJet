@@ -8,11 +8,13 @@ export interface ManifestProp {
   label?: string;
   description?: string;
   inspector?: string;
-  enumValues?: string[];  // only present when type === 'enumeration'
-  enumLabels?: Record<string, string>;  // only present when type === 'enumeration'
+  enumValues?: string[]; // only present when type === 'enumeration'
+  enumLabels?: Record<string, string>; // only present when type === 'enumeration'
 }
 
-export interface ManifestEvent { name: string; }
+export interface ManifestEvent {
+  name: string;
+}
 
 export interface ManifestActionParam {
   handle: string;
@@ -51,9 +53,7 @@ const HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
   useStateEnumeration: 'enumeration',
 };
 
-export async function generateManifest(
-  projectRoot: string
-): Promise<{ manifest: Manifest; tsErrorCount: number }> {
+export async function generateManifest(projectRoot: string): Promise<{ manifest: Manifest; tsErrorCount: number }> {
   const entryFile = path.join(projectRoot, 'src/index.ts');
   const tsConfigPath = path.join(projectRoot, 'tsconfig.json');
 

@@ -20,7 +20,7 @@ export class DevWatcher {
     let pendingLabel = '';
 
     const watcher = chokidar.watch(path.join(projectRoot, 'src'), {
-      ignored: /(^|[/\\])\../,   // ignore dotfiles
+      ignored: /(^|[/\\])\../, // ignore dotfiles
       persistent: true,
       // Initial build is triggered explicitly on 'ready' below (with its own label) instead of
       // relying on chokidar's per-file 'add' events for the startup scan — otherwise every

@@ -66,11 +66,15 @@ export default class Dev extends Command {
       process.exit(0);
     };
 
-    process.once('SIGINT', () => { void shutdown(); });
-    process.once('SIGTERM', () => { void shutdown(); });
+    process.once('SIGINT', () => {
+      void shutdown();
+    });
+    process.once('SIGTERM', () => {
+      void shutdown();
+    });
 
     // Keep process alive
-    await new Promise(() => { });
+    await new Promise(() => {});
   }
 
   private readConfigOrExit(): ProjectConfigData {
