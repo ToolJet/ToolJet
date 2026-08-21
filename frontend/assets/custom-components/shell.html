@@ -86,6 +86,10 @@
           const ref = React.useRef(handler);
           ref.current = handler;
           React.useEffect(() => {
+            if (!name) {
+              console.warn('[useAction] called without a "name" — this action will not be reachable.');
+              return;
+            }
             actionHandlers[name] = (...args) => ref.current?.(...args);
             return () => delete actionHandlers[name];
           }, [name]);
@@ -134,6 +138,9 @@
         if (type === 'invokeAction') {
           
           const { id, name, args } = e.data;
+          if (!actionHandlers[name]) {
+            console.warn(`[invokeAction] no handler registered for action "${name}".`);
+          }
           Promise.resolve()
             .then(() => (actionHandlers[name] ? actionHandlers[name](...(args ?? [])) : undefined))
             .then((result) => {
