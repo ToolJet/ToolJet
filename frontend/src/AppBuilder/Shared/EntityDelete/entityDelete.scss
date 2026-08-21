@@ -1,0 +1,225 @@
+// Exactly two scroll regions live in this dialog, and never a third:
+//   1. .entity-delete-scroll     — the list of blocked subjects (several components at once)
+//   2. .entity-delete-card-body  — one subject's dependents (one component, many references)
+//
+// Bootstrap's `.modal` is `height: 100%; overflow-y: auto`, so anything taller than the
+// viewport made the whole dialog scroll and clipped the title off the top. Capping the
+// dialog to the viewport is the fix; Bootstrap's own overflow is deliberately left alone,
+// because at that point it has nothing left to scroll and still serves as the escape hatch
+// on a viewport too short even for the minimums below — a page scroll beats content that
+// cannot be reached at all.
+.entity-delete-modal-dialog {
+  max-width: 505px;
+  // .modal-dialog-centered is already display:flex; align-items:center.
+  // --bs-modal-margin is applied as the dialog's margin, top and bottom.
+  max-height: calc(100% - var(--bs-modal-margin, 0.5rem) * 2);
+}
+
+.entity-delete-modal {
+  border-radius: 8px;
+  border: none;
+  background: var(--base);
+  // .modal-content is already display:flex; flex-direction:column.
+  //
+  // Deliberately viewport units, not `100%`. A percentage max-height resolves against the
+  // containing block's *height* property, and .modal-dialog only ever has min/max-height —
+  // its height is auto, so `max-height: 100%` here computes to `none` and the content grows
+  // straight past the dialog. --bs-modal-margin is set on .modal and inherits, so this
+  // tracks Bootstrap's own responsive dialog margin.
+  max-height: calc(100vh - var(--bs-modal-margin, 0.5rem) * 2);
+  max-height: calc(100dvh - var(--bs-modal-margin, 0.5rem) * 2);
+  overflow: hidden;
+
+  .entity-delete-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px 24px 0;
+    // Takes the space the heading and footer leave, and passes it down rather than
+    // scrolling itself — the body scrolling is what would create a third scrollbar.
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .entity-delete-warning-icon {
+    display: flex;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .entity-delete-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    word-break: break-word;
+    flex-shrink: 0;
+  }
+
+  .entity-delete-title {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: var(--text-default);
+  }
+
+  .entity-delete-subtitle {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+  }
+
+  // SCROLL REGION 1 — the blocked subjects. No pixel cap: it takes whatever height the
+  // heading and footer leave, so the dialog fits any viewport.
+  .entity-delete-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .entity-delete-card {
+    border: 1px solid var(--border-weak);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    // Rigid on purpose. Letting the card shrink meant nested flex-shrink squeezed it below
+    // header + body, and `overflow: hidden` clipped the difference instead of the list
+    // scrolling. At `0 0 auto` each card keeps its natural height — header plus a body
+    // capped at 40vh — and the overflow lands on region 1, which is where it belongs.
+    flex: 0 0 auto;
+
+    // Sole card: take the region and shrink to it, so only its body scrolls.
+    &.fill {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+  }
+
+  .entity-delete-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px;
+    // 8% alpha — deliberately not opaque, which is why this header must never be `position:
+    // sticky`. It sits outside the scrolling body instead, so nothing passes beneath it.
+    background: var(--interactive-default);
+    border-bottom: 1px solid var(--border-weak);
+    flex-shrink: 0;
+
+    &.clickable {
+      cursor: pointer;
+    }
+  }
+
+  .entity-delete-card-subject {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .entity-delete-card-name {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-default);
+  }
+
+  .entity-delete-card-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default);
+  }
+
+  .entity-delete-card-chevron {
+    color: var(--icon-default);
+  }
+
+  // Holds the fade; the scroll itself is on .entity-delete-card-body.
+  .entity-delete-card-body-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  // Several subjects: every card sits at its natural height and region 1 does all the
+  // scrolling. Capping the body here too would put a second scrollbar right beside the
+  // first, which is the thing to avoid — the two regions are alternatives, one per case,
+  // never both at once.
+  .entity-delete-card-body {
+    padding: 6px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+
+  // SCROLL REGION 2 — the sole subject's dependents, and the only inner scroll there is.
+  // Region 1 has a single natural-height card to lay out, so it never scrolls here.
+  .entity-delete-card.fill .entity-delete-card-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    // Floor, so flex shrinking cannot squeeze the list to a sliver on a short window (it
+    // reached 12px at a 300px viewport). Self-limiting via min(): the floor never claims
+    // more than a quarter of the screen, so on a tiny viewport it yields rather than
+    // shoving the footer out of reach.
+    min-height: min(132px, 25vh);
+    min-height: min(132px, 25dvh);
+  }
+
+  .entity-delete-scroll-fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 32px;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--base), transparent);
+  }
+
+  .entity-delete-nested-note {
+    margin: 0 0 2px;
+    padding: 8px 10px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+  }
+
+  // Matches `.query-folder-delete-modal .modal-footer` in _styles/queryManager.scss — the
+  // delete-query modal this dialog replaced. Cancel and Delete are pushed to opposite ends
+  // rather than both trailing.
+  .entity-delete-footer {
+    border-top: none;
+    padding: 24px;
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+
+    // Blocked state has only "Got it"; space-between would pin it to the left edge.
+    &.single-action {
+      justify-content: flex-end;
+    }
+  }
+}
+
+.entity-delete-modal.dark-theme {
+  background: var(--base);
+
+  .entity-delete-card-header {
+    background: var(--interactive-default);
+  }
+}
