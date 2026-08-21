@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+    </style>
+   
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "./vendor/react.js",
+          "react/jsx-runtime": "./vendor/jsx-runtime.js",
+          "react-dom": "./vendor/react-dom.js",
+          "react-dom/client": "./vendor/react-dom-client.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import * as React from 'react';
+      import * as ReactDOMClient from 'react-dom/client';
+      import * as ReactJSXRuntime from 'react/jsx-runtime';
+
+      // LLD §6 documented globals.
+      window.__tj_React = React;
+      window.__tj_ReactDOM = ReactDOMClient;
+      window.__tj_ReactJSXRuntime = ReactJSXRuntime;
+
+      let root = null;
+      let Component = null;
+      let currentProps = {};
+      
+      const actionHandlers = {};
+
+      const post = (msg) => window.parent.postMessage(msg, '*');
+
+     
+      const makeStateHook = () =>
+        function useTjState({ name, initialValue } = {}) {
+          const external = currentProps[name];
+          const [value, setValue] = React.useState(external !== undefined ? external : initialValue);
+          const valueRef = React.useRef(value); // sync-readable current value (function-updater support)
+          const lastExternal = React.useRef(external);
+          if (lastExternal.current !== external) {
+            lastExternal.current = external;
+            if (external !== undefined && external !== value) {
+              valueRef.current = external; // parent sent it — no post-back needed
+              setValue(external);
+            }
+          }
+          
+          React.useEffect(() => {
+            post({ type: 'stateChange', key: name, value: valueRef.current });
+          }, [name]);
+          const setAndSync = React.useCallback(
+            (next) => {
+              const resolved = typeof next === 'function' ? next(valueRef.current) : next;
+              valueRef.current = resolved;
+              // Crosses the iframe NOW — before the author's next line can fire an event.
+              post({ type: 'stateChange', key: name, value: resolved });
+              setValue(resolved);
+            },
+            [name]
+          );
+          return [value, setAndSync];
+        };
+
+      window.__tj_ToolJet = {
+        useStateString: makeStateHook(),
+        useStateNumber: makeStateHook(),
+        useStateBoolean: makeStateHook(),
+        useStateObject: makeStateHook(),
+        useStateArray: makeStateHook(),
+        useStateEnumeration: makeStateHook(),
+        // useEventCallback({ name: 'onSave' }) → stable fn that fires the ToolJet event
+        useEventCallback: function useTjEvent({ name } = {}) {
+          return React.useCallback(() => post({ type: 'event', name }), [name]);
+        },
+        
+        useAction: function useTjAction({ name } = {}, handler) {
+          const ref = React.useRef(handler);
+          ref.current = handler;
+          React.useEffect(() => {
+            if (!name) {
+              console.warn('[useAction] called without a "name" — this action will not be reachable.');
+              return;
+            }
+            actionHandlers[name] = (...args) => ref.current?.(...args);
+            return () => delete actionHandlers[name];
+          }, [name]);
+        },
+        // Build-time only (manifest-generator reads defaultWidth/Height); no runtime effect.
+        useComponentSettings: () => {},
+      };
+
+      const render = () => {
+        if (!Component) return;
+        root = root ?? ReactDOMClient.createRoot(document.getElementById('root'));
+        root.render(React.createElement(Component, currentProps));
+      };
+
+      window.addEventListener('message', async (e) => {
+        const { type, bundleUrl, componentName, cssUrl, data } = e.data ?? {};
+
+        if (type === 'load') {
+          try {
+            if (cssUrl) {
+             
+              fetch(cssUrl, { mode: 'cors' })
+                .then((r) => (r.ok ? r.text() : null))
+                .then((css) => {
+                  if (!css) return;
+                  const style = document.createElement('style');
+                  style.textContent = css;
+                  document.head.appendChild(style);
+                })
+                .catch(() => {});
+            }
+            const mod = await import(bundleUrl);
+            Component = mod[componentName];
+            if (!Component) throw new Error(`export "${componentName}" not found in bundle`);
+            render();
+          } catch (err) {
+            post({ type: 'error', message: String(err?.message ?? err) });
+          }
+        }
+
+        if (type === 'props') {
+          currentProps = data ?? {};
+          render();
+        }
+
+        if (type === 'invokeAction') {
+          
+          const { id, name, args } = e.data;
+          if (!actionHandlers[name]) {
+            console.warn(`[invokeAction] no handler registered for action "${name}".`);
+          }
+          Promise.resolve()
+            .then(() => (actionHandlers[name] ? actionHandlers[name](...(args ?? [])) : undefined))
+            .then((result) => {
+              if (id) post({ type: 'actionResult', id, result });
+            })
+            .catch((err) => {
+              const message = String(err?.message ?? err);
+              if (id) post({ type: 'actionResult', id, error: message });
+              else post({ type: 'error', message });
+            });
+        }
+      });
+
+      post({ type: 'ready' });
+    </script>
+  </body>
+</html>

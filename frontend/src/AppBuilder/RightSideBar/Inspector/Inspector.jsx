@@ -13,6 +13,7 @@ import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
 import { Modal } from './Components/Modal';
 import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
+import { LibraryComponent } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
@@ -953,6 +954,9 @@ const GetAccordion = React.memo(
 
       case 'CustomComponent':
         return <CustomComponent {...restProps} />;
+
+      case 'LibraryComponent':
+        return <LibraryComponent {...restProps} />;
 
       case 'Icon':
         return <Icon {...restProps} />;

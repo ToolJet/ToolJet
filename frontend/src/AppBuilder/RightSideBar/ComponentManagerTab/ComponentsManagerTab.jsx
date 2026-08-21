@@ -6,6 +6,7 @@ import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetM
 import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
+import { CustomComponentsTab } from './CustomComponentsTab';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
@@ -58,6 +59,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       hasModuleAccess: state.hasModuleAccess,
     }),
     shallow
+  );
+
+  const hasCustomComponentLibrariesAccess = useStore(
+    (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
   const componentList = useMemo(() => {
@@ -232,6 +237,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
           placeholder={
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
+              : activeTab === 'custom'
+              ? t('globals.searchCustomComponents', 'Search components')
               : t('globals.searchModules', 'Search modules')
           }
           customClass={`tj-widgets-search-input tj-text-xsm`}
@@ -304,6 +311,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
                   {searchBox()}
                   <ModuleManager searchQuery={searchQuery} />
                 </ModuleErrorBoundary>
+              </Tab>
+            )}
+            {hasCustomComponentLibrariesAccess && (
+              <Tab eventKey="custom" title={t('globals.custom', 'Custom')} darkMode={darkMode}>
+                {searchBox()}
+                <CustomComponentsTab searchQuery={searchQuery} />
               </Tab>
             )}
           </Tabs>

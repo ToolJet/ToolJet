@@ -27,23 +27,65 @@ export function snapToGrid(canvasWidth, x, y) {
   return [snappedX, snappedY];
 }
 
+// Mirrors LibraryComponent Inspector's fieldMeta() type→field mapping so the stamped
+// value matches what that field type expects (dropdown.js/checkbox.js precedent):
+// toggle → '{{bool}}', select → raw string, code → raw string (string) or '{{json}}' (else).
+function manifestDefaultToDefinitionValue(prop) {
+  // TODO: prop.default is undefined both when
+  // the author never set a useStateX initialValue AND when they set one the CLI's manifest
+  // generator can't statically resolve (template literal, computed expr, imported constant
+  // — evalLiteralNode in manifest-generator.ts). The '' /'{{false}}' fallback below is
+  // correct for the former and silently wrong for the latter (it permanently overrides the
+  // shell's real runtime initialValue for that prop). Decided to keep current behavior for
+  // now rather than risk downstream undefined-handling issues; future fix is to have the
+  // generator distinguish "not set" from "unresolved" (e.g. a `defaultUnresolved` flag) and
+  // surface a warning icon/tooltip on the Inspector field for the latter case, rather than
+  // silently guessing a fallback value.
+  if (prop.default === undefined) return prop.type === 'boolean' ? '{{false}}' : '';
+  if (prop.type === 'boolean') return `{{${prop.default}}}`;
+  if (prop.type === 'enumeration' || prop.type === 'string') return prop.default;
+  return `{{${JSON.stringify(prop.default)}}}`; // number | object | array
+}
+
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
 export const addNewWidgetToTheEditor = (
   componentType,
   currentLayout,
   realCanvasRef,
   parentId,
-  moduleInfo = undefined
+  moduleInfo = undefined,
+  libraryComponentInfo = undefined
 ) => {
   const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
+  // Custom-tab drops are named after the ACTUAL library component (currencyinput1),
+  // not the host widget type (librarycomponent1).
   const componentName = computeComponentName(
-    componentType,
+    libraryComponentInfo?.componentName ?? componentType,
     useStore.getState().getCurrentPageComponents(),
     moduleInfo?.moduleName
   );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
+
+  // Custom tab (LibraryComponent host widget): stamp WHICH library component this
+  // instance renders — mirrors the moduleInfo pattern below. Must run before the
+  // defaultWidth/Height reads so a manifest-declared size wins.
+  if (libraryComponentInfo) {
+    componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
+    componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
+    componentData.definition.properties.revisionId = { value: libraryComponentInfo.revisionId };
+    // Manifest prop defaults land as instance values so the Inspector's fields arrive
+    // pre-filled (module input_items precedent below).
+    for (const prop of libraryComponentInfo.props ?? []) {
+      componentData.definition.properties[prop.name] = { value: manifestDefaultToDefinitionValue(prop) };
+    }
+    if (libraryComponentInfo.defaultSize?.width)
+      componentData.defaultSize.width = libraryComponentInfo.defaultSize.width;
+    if (libraryComponentInfo.defaultSize?.height)
+      componentData.defaultSize.height = libraryComponentInfo.defaultSize.height;
+  }
+
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
@@ -267,7 +309,10 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
 }
 
 export function computeComponentName(componentType, currentComponents, moduleName) {
-  const widgetConfigName = componentTypes.find((component) => component?.component === componentType)?.name;
+  // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
+  // instances after the LIBRARY component: 'HelloWorld' → helloworld1)
+  const widgetConfigName =
+    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType;
   const rawBase = moduleName || widgetConfigName || '';
   let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
 
@@ -281,6 +326,7 @@ export function computeComponentName(componentType, currentComponents, moduleNam
   let currentNumber = matchingCount + 1;
 
   let found = false;
+
   let _componentName = '';
   while (!found) {
     _componentName = `${sanitizedBase}${currentNumber}`;

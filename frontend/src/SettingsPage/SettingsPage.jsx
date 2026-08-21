@@ -7,6 +7,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
 import { decodeEntities } from '@/_helpers/utils';
 import { TwoFactorAuthCard } from './TwoFactorAuthCard';
+import { AccessTokensCard } from './AccessTokensCard';
 import ProfileNotificationsCard from '@/modules/AiBuilder/components/ProfileNotificationsCard';
 
 function SettingsPage(props) {
@@ -344,6 +345,7 @@ function SettingsPage(props) {
               </div>
               <TwoFactorAuthCard darkMode={props.darkMode} />
               <ProfileNotificationsCard />
+              <AccessTokensCard darkMode={props.darkMode} />
             </div>
           </div>
         </div>

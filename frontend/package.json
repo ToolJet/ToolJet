@@ -290,6 +290,9 @@
     }
   },
   "scripts": {
+    "build:vendor": "node scripts/build-vendor-bundle.js",
+    "prestart": "npm run build:vendor",
+    "prebuild": "npm run build:vendor",
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
     "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
     "build:cloud": "webpack --mode=production && cp -a ./assets/. ./build/assets/ && rm -rf ./build/assets/libs/pyodide-0.23.2",
