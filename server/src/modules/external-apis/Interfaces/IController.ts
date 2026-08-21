@@ -10,6 +10,8 @@ import {
   SaveVersionBodyDto,
   CreateAppV2Dto,
   RenameAppV2Dto,
+  ListAppsV2QueryDto,
+  ImportAppV2Dto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -69,4 +71,25 @@ export interface IExternalApisAppsControllerV2 {
 
   // Renames/updates an app's name, slug, or folder within the given workspace
   renameApp(workspaceIdentifier: string, appIdentifier: string, dto: RenameAppV2Dto): Promise<any>;
+
+  // Lists apps in the given workspace, with search/folder filters and pagination
+  listApps(workspaceIdentifier: string, query: ListAppsV2QueryDto): Promise<any>;
+
+  // Retrieves a single app's curated details within the given workspace
+  getApp(workspaceIdentifier: string, appIdentifier: string): Promise<any>;
+
+  // Deletes an app within the given workspace
+  deleteApp(workspaceIdentifier: string, appIdentifier: string): Promise<void>;
+
+  // Imports an app into the given workspace from an exported definition
+  importApp(workspaceIdentifier: string, dto: ImportAppV2Dto): Promise<any>;
+
+  // Exports an app's definition from the given workspace
+  exportApp(
+    workspaceIdentifier: string,
+    appIdentifier: string,
+    exportTjdb?: boolean,
+    appVersion?: string,
+    exportAllVersions?: boolean
+  ): Promise<any>;
 }

@@ -16,6 +16,7 @@ import {
   IsUrl,
   IsInt,
   Min,
+  Max,
   IsNumber,
   IsPositive,
   registerDecorator,
@@ -625,4 +626,36 @@ export class RenameAppV2Dto {
   @IsString()
   @IsNotEmpty()
   folder_id?: string | null;
+}
+
+export class ListAppsV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // accepts the folder's id, its name, or the literal string "null" for "apps not in any folder"
+  @IsOptional()
+  @IsString()
+  folder_id?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportAppV2Dto {
+  // Matches the shape Export App v2 returns ({ definition: {...} }), so an export
+  // can be re-imported directly without any reshaping by the caller.
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
 }

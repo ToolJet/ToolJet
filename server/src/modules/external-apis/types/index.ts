@@ -42,6 +42,11 @@ interface Features {
   [FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS]: FeatureConfig;
   [FEATURE_KEY.CREATE_APP_V2]: FeatureConfig;
   [FEATURE_KEY.RENAME_APP_V2]: FeatureConfig;
+  [FEATURE_KEY.LIST_APPS_V2]: FeatureConfig;
+  [FEATURE_KEY.GET_APP_V2]: FeatureConfig;
+  [FEATURE_KEY.DELETE_APP_V2]: FeatureConfig;
+  [FEATURE_KEY.IMPORT_APP_V2]: FeatureConfig;
+  [FEATURE_KEY.EXPORT_APP_V2]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
