@@ -166,8 +166,8 @@ function ConflictRow({
                       {group.conflictField === 'slug' || group.conflictField === 'invalid_name'
                         ? item.name
                         : item.coRelationId
-                          ? `#${item.coRelationId.slice(0, 8)}`
-                          : item.name}
+                        ? `#${item.coRelationId.slice(0, 8)}`
+                        : item.name}
                     </span>
 
                     {!hideBadges && (
@@ -241,12 +241,16 @@ export function PullConflictModal({
 
   const manualGroups = isSyncEligible ? conflictGroups.filter((g) => !isSyncableGroup(g)) : conflictGroups;
   const syncableGroups = isSyncEligible ? conflictGroups.filter(isSyncableGroup) : [];
-  // 'in_use' conflicts aren't a duplicate-name/slug issue — they're an existing
-  // module/datasource that git no longer has but a local app still references.
-  // Split them out of the generic "duplicate data" manual bucket so the section
-  // title/subtext stays accurate for both kinds.
-  const manualDuplicateGroups = manualGroups.filter((g) => g.conflictField !== 'in_use');
+  // 'in_use' and 'invalid_name' aren't duplicate-name/slug issues — split them out of
+  // the generic "duplicate data" manual bucket so each section's title/subtext stays
+  // accurate: 'in_use' is a still-referenced local resource, 'invalid_name' is a
+  // legacy '/' in the name (pre-dates name validation) that must be renamed at the
+  // source, on either side of a push or pull.
+  const manualDuplicateGroups = manualGroups.filter(
+    (g) => g.conflictField !== 'in_use' && g.conflictField !== 'invalid_name'
+  );
   const manualInUseGroups = manualGroups.filter((g) => g.conflictField === 'in_use');
+  const manualInvalidNameGroups = manualGroups.filter((g) => g.conflictField === 'invalid_name');
 
   const toggleInSet = (setState, idx) => {
     setState((prev) => {
@@ -320,6 +324,12 @@ export function PullConflictModal({
                 reference before pulling, or they&apos;ll be kept as-is.
               </li>
             )}
+            {manualInvalidNameGroups.length > 0 && (
+              <li>
+                Some resources have an <strong>invalid name</strong> containing &apos;/&apos;. Rename them before trying
+                again.
+              </li>
+            )}
           </ul>
 
           <div className="conflict-categories-list">
@@ -363,6 +373,35 @@ export function PullConflictModal({
                 </p>
                 <div className="conflict-list-card">
                   {manualInUseGroups.map((group) => {
+                    const idx = manualGroups.indexOf(group);
+                    return (
+                      <ConflictRow
+                        key={idx}
+                        group={group}
+                        isExpanded={expandedManual.has(idx)}
+                        isSyncable={false}
+                        hideBadges={hideBadges}
+                        onToggleExpanded={() => toggleInSet(setExpandedManual, idx)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {manualInvalidNameGroups.length > 0 && (
+              <div className="conflict-category">
+                <div className="conflict-category-header">
+                  <span className="conflict-category-title">Invalid name: Requires manual resolution</span>
+                  <span className="conflict-count-badge conflict-count-badge--danger">
+                    {manualInvalidNameGroups.length}
+                  </span>
+                </div>
+                <p className="conflict-category-subtext">
+                  Rename the resource(s) listed below to remove &apos;/&apos;, then try again
+                </p>
+                <div className="conflict-list-card">
+                  {manualInvalidNameGroups.map((group) => {
                     const idx = manualGroups.indexOf(group);
                     return (
                       <ConflictRow

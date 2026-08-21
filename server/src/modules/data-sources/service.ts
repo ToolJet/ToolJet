@@ -25,6 +25,7 @@ import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 
@@ -242,13 +243,23 @@ export class DataSourcesService implements IDataSourcesService {
         if (effectiveBranchId === defaultBranchId) {
           // Default branch: hard-delete the DSV row (no soft-delete).
           await manager.delete(DataSourceVersion, { dataSourceId, branchId: effectiveBranchId });
+          // Clear both change tokens: lastSyncedCommit defeats the whole-pull skip,
+          // dataSourcesGitTreeSha defeats the category-level skip. The row is gone
+          // entirely (not just inactive), so the category skip's reconcile (an UPDATE)
+          // has nothing to touch — only a full deserialize re-creates it.
+          await manager.update(
+            WorkspaceBranch,
+            { id: effectiveBranchId },
+            { lastSyncedCommit: null, dataSourcesGitTreeSha: null }
+          );
         } else {
           // Feature branch: soft-delete so the deletion stays branch-scoped.
           await manager.update(
             DataSourceVersion,
             { dataSourceId, branchId: effectiveBranchId },
-            { isActive: false, updatedAt: new Date() }
+            { isActive: false, gitTreeSha: null, updatedAt: new Date() }
           );
+          await manager.update(WorkspaceBranch, { id: effectiveBranchId }, { lastSyncedCommit: null });
         }
       });
     } else {
