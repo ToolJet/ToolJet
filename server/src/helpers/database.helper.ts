@@ -3,7 +3,7 @@ import { updateTimestampForAppVersion } from './utils.helper';
 import { createLogger } from './bootstrap.helper';
 
 let CONNECTION_INSTANCE: DataSource;
-const getConnectionInstance = (): DataSource => {
+export const getConnectionInstance = (): DataSource => {
   if (!CONNECTION_INSTANCE) {
     throw new Error('Database connection not initialized');
   }
@@ -26,6 +26,11 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
       return await operation(manager);
     });
   }
+}
+
+export function getDBConnection(): EntityManager {
+  const connection = getConnectionInstance();
+  return connection.manager;
 }
 
 export async function dbTransactionForAppVersionAssociationsUpdate(
