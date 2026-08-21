@@ -10,7 +10,7 @@ import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
 import { TransactionLogger } from '@modules/logging/service';
-import { trackUserActivity } from '@otel/tracing';
+import { trackUserActivity, extractAppIdFromPath } from '@otel/tracing';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -120,7 +120,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             trackUserActivity({
               workspaceId: user.organizationId,
               userId: user.id,
-              sessionId: payload.sessionId,
+              /* App-scoped requests only; PAT sessions carry the app id on the token itself */
+              appId: extractAppIdFromPath(req.originalUrl || req.url) || payload.appId,
             });
           } catch (error) {
             // Don't let metrics tracking failures affect authentication

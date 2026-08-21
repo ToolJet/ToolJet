@@ -62,7 +62,8 @@ export const addNewWidgetToTheEditor = (
   // not the host widget type (librarycomponent1).
   const componentName = computeComponentName(
     libraryComponentInfo?.componentName ?? componentType,
-    useStore.getState().getCurrentPageComponents()
+    useStore.getState().getCurrentPageComponents(),
+    moduleInfo?.moduleName
   );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
@@ -307,20 +308,28 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
   return childrenWidgets;
 }
 
-export function computeComponentName(componentType, currentComponents) {
-  const currentComponentsForKind = Object.values(currentComponents).filter(
-    (component) => component.component.component === componentType
-  );
-  let found = false;
+export function computeComponentName(componentType, currentComponents, moduleName) {
   // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
-  // instances after the LIBRARY component: 'HelloWorld' → helloworld1). Without the
-  // fallback an unknown seed produced the literal name "undefined1".
-  const componentName =
+  // instances after the LIBRARY component: 'HelloWorld' → helloworld1)
+  const widgetConfigName =
     componentTypes.find((component) => component?.component === componentType)?.name ?? componentType;
-  let currentNumber = currentComponentsForKind.length + 1;
+  const rawBase = moduleName || widgetConfigName || '';
+  let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+
+  if (!sanitizedBase) {
+    sanitizedBase = (widgetConfigName || 'component').toLowerCase();
+  }
+
+  const matchingCount = Object.values(currentComponents).filter((component) =>
+    component?.component?.name?.startsWith(sanitizedBase)
+  ).length;
+  let currentNumber = matchingCount + 1;
+
+  let found = false;
+
   let _componentName = '';
   while (!found) {
-    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
+    _componentName = `${sanitizedBase}${currentNumber}`;
     if (
       Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {

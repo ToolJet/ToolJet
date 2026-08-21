@@ -145,7 +145,7 @@ export const AccessTokensCard = ({ darkMode }) => {
   };
 
   return (
-    <div className="card profile-page-card tw-mt-16 access-tokens-card">
+    <div className="card profile-page-card tw-my-16 access-tokens-card">
       {/* header: p-16, title 16/500 + subtitle 12 placeholder, primary button (design 52:7675-7679) */}
       <div className="access-tokens-header">
         <div className="access-tokens-header-text">

@@ -8,6 +8,7 @@ import { BreadCrumbContext } from '@/App/App';
 import { decodeEntities } from '@/_helpers/utils';
 import { TwoFactorAuthCard } from './TwoFactorAuthCard';
 import { AccessTokensCard } from './AccessTokensCard';
+import ProfileNotificationsCard from '@/modules/AiBuilder/components/ProfileNotificationsCard';
 
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
@@ -179,8 +180,14 @@ function SettingsPage(props) {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
-          <div style={{ height: `calc(100vh - 2.5rem - 48px)`, overflowY: 'auto' }}>
-            <div className="container-xl mt-2 mb-2">
+          {/* The 1px of top padding is load-bearing: the page's 40px of spacing sits on the
+              wrapper outside this scroller, so the first card starts flush at the scroll
+              edge and the top 1px of its border gets shaved off the moment the user
+              scrolls even slightly. */}
+          <div style={{ height: `calc(100vh - 2.5rem - 48px)`, overflowY: 'auto', paddingTop: '1px' }}>
+            <div className="container-xl">
+              {/* <div className="container-xl mt-2 mb-2"> */}
+
               <div className="card profile-page-card">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-profile">
@@ -339,6 +346,7 @@ function SettingsPage(props) {
                 </div>
               </div>
               <TwoFactorAuthCard darkMode={props.darkMode} />
+              <ProfileNotificationsCard />
               <AccessTokensCard darkMode={props.darkMode} />
             </div>
           </div>
