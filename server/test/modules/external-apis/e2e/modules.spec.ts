@@ -430,8 +430,7 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       expect(names).toContain('Renamed Module');
     });
 
-    // skip: dead branch_id IS NULL pre-flight, 500 not 400 — src bug, #17333 (6)
-    it.skip('returns 400 when the target module name already exists in the workspace', async () => {
+    it('returns 400 when the target module name already exists in the workspace', async () => {
       const { user } = await createUser(app, { email: 'admin@tooljet.io' });
       const orgId = user.defaultOrganizationId;
 
@@ -460,9 +459,7 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       expect(res.body.message).toContain('already taken');
     });
 
-    // Skipped: cross-workspace import throws 500 on app_versions_default_branch_slug_unique —
-    // slug preservation (commit f643adb520) isn't scoped per-workspace. Feature owner to fix.
-    it.skip('imports into a different workspace than the source', async () => {
+    it('imports into a different workspace than the source', async () => {
       const { user: user1 } = await createUser(app, { email: 'user1@tooljet.io' });
       const { user: user2 } = await createUser(app, { email: 'user2@tooljet.io' });
 
