@@ -91,6 +91,31 @@ describe('data-source-fs.util', () => {
       // malformed + id-less were skipped
       expect([...byId.keys()].sort()).toEqual(['corel-1', 'corel-2', 'corel-3']);
     });
+
+    it('derives `name` from the DIRECTORY for folder layout (not content.name), and from content.name for legacy flat', () => {
+      const byId = new Map(readDataSourceEntries(dir).map((e) => [e.coRelationId, e]));
+
+      // folder layout → name is the directory, not content.name
+      expect(byId.get('corel-1')?.name).toBe('my-ds');
+      expect(byId.get('corel-3')?.name).toBe('dup-folder'); // folder entry wins over legacy twin
+
+      // legacy flat file → no directory, so fall back to content.name
+      expect(byId.get('corel-2')?.name).toBe('legacy');
+    });
+
+    it('uses the directory name even when a stale content.name disagrees (directory is the source of truth)', () => {
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ds-name-'));
+      try {
+        const d = path.join(tmp, 'renamed-dir');
+        fs.mkdirSync(d, { recursive: true });
+        // content.name is stale ('old-json-name') — the directory ('renamed-dir') must win.
+        fs.writeFileSync(path.join(d, DATA_SOURCE_FILE), JSON.stringify({ id: 'corel-x', name: 'old-json-name' }));
+        const entry = readDataSourceEntries(tmp).find((e) => e.coRelationId === 'corel-x');
+        expect(entry?.name).toBe('renamed-dir');
+      } finally {
+        fs.rmSync(tmp, { recursive: true, force: true });
+      }
+    });
   });
 
   // Partial (scope='datasource') pushes skip the full-push ensureCleanDir, so this sweep
