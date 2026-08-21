@@ -107,7 +107,7 @@ You can modify the entity mapping before approving it:
     - OpenAI
     - ServiceNow
     - Quickbooks
-    - Dayabricks
+    - Databricks
 
     </div>
 
