@@ -19,7 +19,10 @@ export default function OverflowTooltip({
   boxWidth,
   maxLetters,
   tooltipClassName,
-  ...rest
+  childrenClassName,
+  style,
+  width,
+  ...domProps
 }) {
   const [isOverflowed, setIsOverflowed] = useState(false);
   const textContentRef = useRef(null);
@@ -67,17 +70,18 @@ export default function OverflowTooltip({
       placement={placement}
       message={children}
       show={!!isOverflowed}
-      width={rest?.width}
+      width={width}
     >
       <div
         ref={textContentRef}
-        className={rest.childrenClassName}
+        className={childrenClassName}
         style={{
           whiteSpace,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          ...rest.style,
+          ...style,
         }}
+        {...domProps}
       >
         {displayText}
       </div>

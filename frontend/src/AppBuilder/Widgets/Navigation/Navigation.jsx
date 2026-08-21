@@ -13,6 +13,9 @@ import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
+// max length for label and caption
+const NAV_TEXT_MAX_LENGTH = 25;
+
 // Render individual nav item - uses tj-list-item class like page navigation
 const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientation, isNested }) => {
   if (!isItemVisible(item)) return null;
@@ -56,11 +59,17 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientatio
       )}
       {showLabel && (
         <div className="nav-item-text">
-          <div className="page-name" data-cy={`nav-label-${item.id}`}>
+          <OverflowTooltip
+            childrenClassName="page-name"
+            maxLetters={NAV_TEXT_MAX_LENGTH}
+            data-cy={`nav-label-${item.id}`}
+          >
             {item.label}
-          </div>
+          </OverflowTooltip>
           {showInlineCaption ? (
-            <OverflowTooltip childrenClassName="nav-item-caption">{item.caption}</OverflowTooltip>
+            <OverflowTooltip childrenClassName="nav-item-caption" maxLetters={NAV_TEXT_MAX_LENGTH}>
+              {item.caption}
+            </OverflowTooltip>
           ) : null}
         </div>
       )}
@@ -86,6 +95,7 @@ const RenderNavGroup = ({
   orientation,
   darkMode,
   childAlignment,
+  popupThemeVars,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -125,7 +135,11 @@ const RenderNavGroup = ({
           />
         </div>
       )}
-      {showLabel && <div className="page-name">{group.label}</div>}
+      {showLabel && (
+        <OverflowTooltip childrenClassName="page-name" maxLetters={NAV_TEXT_MAX_LENGTH}>
+          {group.label}
+        </OverflowTooltip>
+      )}
     </div>
   );
 
@@ -157,29 +171,34 @@ const RenderNavGroup = ({
 
     return (
       <NavigationMenuItem key={group.id}>
-        <DropdownMenu.Root>
+        {/* modal={false}: default modal Radix menu disables page-wide pointer-events while open. */}
+        <DropdownMenu.Root modal={false}>
           <DropdownMenu.Trigger asChild>{triggerButton}</DropdownMenu.Trigger>
-          <DropdownMenu.Content
-            className={cx('page-menu-popup', childAlignment && `nav-subalign-${childAlignment}`, {
-              'dark-theme': darkMode,
-            })}
-            sideOffset={6}
-            align="start"
-            collisionPadding={8}
-          >
-            {deduplicatedChildren.map((child) => (
-              <RenderNavItem
-                key={child.id}
-                item={child}
-                isSelected={child.id === selectedItemId}
-                onItemClick={onItemClick}
-                styles={styles}
-                displayStyle={displayStyle}
-                orientation={orientation}
-                isNested={true}
-              />
-            ))}
-          </DropdownMenu.Content>
+          {/* Portal escapes the widget's transformed wrapper for correct z-index/positioning. */}
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              className={cx('page-menu-popup', childAlignment && `nav-subalign-${childAlignment}`, {
+                'dark-theme': darkMode,
+              })}
+              style={popupThemeVars}
+              sideOffset={6}
+              align="start"
+              collisionPadding={8}
+            >
+              {deduplicatedChildren.map((child) => (
+                <RenderNavItem
+                  key={child.id}
+                  item={child}
+                  isSelected={child.id === selectedItemId}
+                  onItemClick={onItemClick}
+                  styles={styles}
+                  displayStyle={displayStyle}
+                  orientation={orientation}
+                  isNested={true}
+                />
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
         </DropdownMenu.Root>
       </NavigationMenuItem>
     );
@@ -449,6 +468,9 @@ export const Navigation = function Navigation(props) {
     shallow
   );
 
+  // Below 3 grid columns the "More" button's fixed width no longer fits its label — show icon only.
+  const isCompactMoreBtn = gridColumns != null && gridColumns < 3;
+
   const [viewerMaxWidth, setViewerMaxWidth] = useState(undefined);
   useLayoutEffect(() => {
     if (currentMode !== 'view' || orientation !== 'horizontal') {
@@ -504,6 +526,17 @@ export const Navigation = function Navigation(props) {
     viewerMaxWidth,
   ]);
 
+  // Theming CSS vars set on .navigation-widget don't inherit into the portaled popup content;
+  // re-declare them here to pass as inline style on the popup.
+  const popupThemeVars = useMemo(
+    () => ({
+      ...navItemStyles,
+      '--nav-container-bg': containerStyle['--nav-container-bg'],
+      '--nav-container-border': containerStyle['--nav-container-border'],
+    }),
+    [navItemStyles, containerStyle]
+  );
+
   // Loading state
   if (exposedVariablesTemporaryState.isLoading) {
     return (
@@ -549,6 +582,7 @@ export const Navigation = function Navigation(props) {
                     orientation={orientation}
                     darkMode={darkMode}
                     childAlignment={childAlignment}
+                    popupThemeVars={popupThemeVars}
                   />
                 );
               }
@@ -565,58 +599,60 @@ export const Navigation = function Navigation(props) {
                 </NavigationMenuItem>
               );
             })}
-            {/* More button for overflow items — Radix DropdownMenu provides
-                auto-positioning (flips above when no space below). align="end"
-                keeps the dropdown's right edge aligned with the button, since
-                the More button sits at the end of the nav bar. Portal is
-                skipped so content renders inside .navigation-widget (existing
-                SCSS nesting stays intact). */}
+            {/* align="end" keeps the dropdown's right edge aligned with the button. */}
             {links.overflow.length > 0 && (
               <NavigationMenuItem>
-                <DropdownMenu.Root>
+                <DropdownMenu.Root modal={false}>
                   <DropdownMenu.Trigger asChild>
-                    <button type="button" className="more-pages-btn">
+                    <button
+                      type="button"
+                      className={cx('more-pages-btn', { 'more-pages-btn-icon-only': isCompactMoreBtn })}
+                      aria-label="More"
+                    >
                       <TablerIcon iconName="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
-                      More
+                      {!isCompactMoreBtn && 'More'}
                     </button>
                   </DropdownMenu.Trigger>
-                  <DropdownMenu.Content
-                    className={cx('page-menu-popup', { 'dark-theme': darkMode })}
-                    sideOffset={6}
-                    align="end"
-                    collisionPadding={8}
-                  >
-                    {links.overflow.map((item) => {
-                      if (item.isGroup) {
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content
+                      className={cx('page-menu-popup', { 'dark-theme': darkMode })}
+                      style={popupThemeVars}
+                      sideOffset={6}
+                      align="end"
+                      collisionPadding={8}
+                    >
+                      {links.overflow.map((item) => {
+                        if (item.isGroup) {
+                          return (
+                            <RenderNavGroup
+                              key={item.id}
+                              group={item}
+                              selectedItemId={selectedItemId}
+                              onItemClick={handleItemClick}
+                              styles={styles}
+                              displayStyle={displayStyle}
+                              orientation="vertical"
+                              darkMode={darkMode}
+                              isInOverflow={true}
+                              childAlignment={childAlignment}
+                            />
+                          );
+                        }
                         return (
-                          <RenderNavGroup
+                          <RenderNavItem
                             key={item.id}
-                            group={item}
-                            selectedItemId={selectedItemId}
+                            item={item}
+                            isSelected={item.id === selectedItemId}
                             onItemClick={handleItemClick}
                             styles={styles}
                             displayStyle={displayStyle}
                             orientation="vertical"
-                            darkMode={darkMode}
                             isInOverflow={true}
-                            childAlignment={childAlignment}
                           />
                         );
-                      }
-                      return (
-                        <RenderNavItem
-                          key={item.id}
-                          item={item}
-                          isSelected={item.id === selectedItemId}
-                          onItemClick={handleItemClick}
-                          styles={styles}
-                          displayStyle={displayStyle}
-                          orientation="vertical"
-                          isInOverflow={true}
-                        />
-                      );
-                    })}
-                  </DropdownMenu.Content>
+                      })}
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
                 </DropdownMenu.Root>
               </NavigationMenuItem>
             )}
