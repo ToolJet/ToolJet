@@ -15,7 +15,7 @@ export function DeleteBranchConfirmModal({ branchToDelete, onCancel, onDelete, o
 
   const wasDeletingRef = useRef(false);
 
-  // Auto-close on successful enqueue — the delete-success notification drives any reconciliation
+  // Auto-close on successful deletion
   useEffect(() => {
     if (wasDeletingRef.current && !isDeletingBranch && !deleteBranchError && branchToDelete) {
       const deletedName = branchToDelete.name;

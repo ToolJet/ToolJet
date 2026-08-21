@@ -3,6 +3,7 @@ import {
   appVersionService,
   authenticationService,
   dataqueryService,
+  gitSyncService,
   orgEnvironmentConstantService,
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
@@ -230,6 +231,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       displayName: newVersion.display_name || newVersion.displayName || newVersion.name,
       current_environment_id: newVersion.current_environment_id,
       status: newVersion.status,
+      isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
     };
     set((state) => ({
       ...state,
@@ -254,7 +256,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     versionDescription = '',
     onSuccess,
     onFailure,
-    versionType = 'version'
+    versionType = 'version',
+    replace = false
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -264,12 +267,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionDescription,
         selectedVersionId,
         editorEnvironment,
-        versionType
+        versionType,
+        replace
       );
       const editorVersion = {
         id: newVersion.id,
         name: newVersion.name,
         current_environment_id: newVersion.current_environment_id,
+        // Use the created version's actual sync state (git-off/normal drafts are unsynced; a
+        // git single-branch replace draft stays synced), not a hardcoded false.
+        isSynced: newVersion.isSynced ?? newVersion.is_synced ?? false,
       };
       set((state) => ({
         ...state,
@@ -322,10 +329,18 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }
   },
 
-  deleteVersionAction: async (appId, versionId, onSuccess, onFailure) => {
+  deleteVersionAction: async (appId, versionId, onSuccess, onFailure, moduleId = 'canvas') => {
     try {
-      // Delete versions
-      await appVersionService.del(appId, versionId);
+      // Delete the version. In a git-enabled workspace the app-git endpoint performs the DB delete
+      // AND removes the git tag in one server-side call; non-git workspaces (incl. CE) use the
+      // versions endpoint. (This replaces the old versions→app-git moduleRef git-tag cleanup.)
+      const orgGit = useStore.getState().orgGit;
+      const isGitSyncEnabled = !!(orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled);
+      if (isGitSyncEnabled) {
+        await gitSyncService.deleteVersion(appId, versionId);
+      } else {
+        await appVersionService.del(appId, versionId);
+      }
 
       // Delete version from every environment
       const response = await appEnvironmentService.postVersionDeleteAction({
@@ -335,6 +350,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         editorEnvironmentId: get().selectedEnvironment.id,
       });
       const editorVersion = response.editorVersion;
+      const wasSelectedVersionDeleted = get().selectedVersion?.id === versionId;
 
       set((state) => {
         const newState = {
@@ -345,14 +361,19 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           environments: response?.environments?.length ? response.environments : get().environments,
         };
 
-        if (state.selectedVersion?.id === versionId) {
-          const newSelectedVersion = editorVersion; // last version can't be deleted
-          newState.selectedVersion = newSelectedVersion;
-          newState.currentVersionId = newSelectedVersion.id;
+        if (wasSelectedVersionDeleted) {
+          newState.selectedVersion = editorVersion; // last version can't be deleted
+          newState.currentVersionId = editorVersion.id;
         }
 
         return newState;
       });
+
+      const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
+      if (isModuleApp && wasSelectedVersionDeleted) {
+        get().changeEditorVersionAction(appId, editorVersion.id, onSuccess, onFailure, moduleId);
+        return;
+      }
 
       onSuccess();
     } catch (error) {
@@ -367,6 +388,20 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     moduleId = moduleId || 'canvas';
     try {
       const data = await appVersionService.getAppVersionData(appId, versionId, get().getCurrentMode(moduleId));
+      // getAppVersionData doesn't include the resolved branchName/branchId (those come from the
+      // environment-versions fetch). Carry them over from the already-enriched entry so the version
+      // selector keeps showing the branch name instead of falling back to the raw UUID version name.
+      const prevVersionEntry = get().versionsPromotedToEnvironment.find((v) => v.id === data?.editing_version?.id);
+      const branchId =
+        data.editing_version.branchId ??
+        data.editing_version.branch_id ??
+        prevVersionEntry?.branchId ??
+        prevVersionEntry?.branch_id;
+      const branchName =
+        data.editing_version.branchName ??
+        data.editing_version.branch_name ??
+        prevVersionEntry?.branchName ??
+        prevVersionEntry?.branch_name;
       const selectedVersion = {
         id: data.editing_version.id,
         name: data.editing_version.name,
@@ -374,6 +409,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         status: data.editing_version.status,
         // Preserve versionType from API response to distinguish between regular versions and branch versions
         versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
+        isSynced: data.editing_version.isSynced ?? data.editing_version.is_synced ?? false,
+        branchId,
+        branchName,
       };
       // A version's own current_environment_id is how far it's been promoted (e.g. production),
       // not necessarily the environment the user is currently viewing it under (e.g. browsing
@@ -391,10 +429,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let updatedVersionsArray = [...get().versionsPromotedToEnvironment];
       const versionIndex = get().versionsPromotedToEnvironment.findIndex((v) => v.id === data?.editing_version?.id);
       if (versionIndex !== -1 && data?.editing_version) {
-        updatedVersionsArray[versionIndex] = data?.editing_version;
+        updatedVersionsArray[versionIndex] = { ...data.editing_version, branchId, branchName };
       }
       let optionsToUpdate = {
         selectedVersion,
+        currentVersionId: selectedVersion.id,
         appVersionEnvironment,
         versionsPromotedToEnvironment: [...updatedVersionsArray],
         ...calculatePromoteAndReleaseButtonVisibility(
@@ -473,8 +512,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
               'is_maintenance_on' in data
                 ? data.is_maintenance_on
                 : 'isMaintenanceOn' in data
-                ? data.isMaintenanceOn
-                : false,
+                  ? data.isMaintenanceOn
+                  : false,
             homePageId: data.editing_version?.homePageId || data.editing_version?.home_page_id,
           },
           moduleId
@@ -535,8 +574,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           get().globalSettings?.appMode && get().globalSettings.appMode !== 'auto'
             ? get().globalSettings.appMode
             : localStorage.getItem('darkMode') === 'true'
-            ? 'dark'
-            : 'light';
+              ? 'dark'
+              : 'light';
         get().setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
         get().setResolvedGlobals(
           'urlparams',
@@ -584,8 +623,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           // Event handlers are cloned with new ids per version too — without this, click/
           // onPageLoad actions stay wired to the previous version's event definitions.
           get().eventsSlice.updateEventsField('events', data.events || [], moduleId);
-          // "Go to app" link targets — stale otherwise.
-          get().setLinkedApps(data.linkedApps ?? {}, moduleId);
 
           // Queries are cloned with new ids per version too (mirrors pages above), but
           // getAppVersionData doesn't return them — without this refetch, queryNameIdMapping/
@@ -704,7 +741,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }
   },
 
-  promoteAppVersionAction: async (versionId, onSuccess, onFailure) => {
+  promoteAppVersionAction: async (versionId, onSuccess, onFailure, moduleId = 'canvas') => {
     try {
       const modules = useStore.getState().appStore.modules;
       const appId = modules.canvas?.app?.appId || modules.workflow?.app?.appId;
@@ -728,6 +765,41 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       }));
+      get().setResolvedGlobals(
+        'environment',
+        { id: response.editorEnvironment?.id, name: response.editorEnvironment?.name },
+        moduleId
+      );
+
+      const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
+      if (isModuleApp) {
+        get().fetchGlobalDataSources(
+          get().appStore?.modules?.[moduleId]?.app?.organizationId,
+          versionId,
+          response.editorEnvironment?.id
+        );
+
+        if (response.editorEnvironment?.id) {
+          const { constants } = await orgEnvironmentConstantService.getConstantsFromEnvironment(
+            response.editorEnvironment.id
+          );
+          const orgConstants = {};
+          const orgSecrets = {};
+          constants.forEach((constant) => {
+            if (constant.type !== 'Secret') {
+              orgConstants[constant.name] = constant.value;
+            } else {
+              orgSecrets[constant.name] = constant.value;
+            }
+          });
+          get().setResolvedConstants(orgConstants, moduleId);
+          get().setSecrets(orgSecrets, moduleId);
+        }
+
+        get().initDependencyGraph(moduleId);
+        get().dataQuery.runOnLoadQueries(moduleId);
+      }
+
       onSuccess({
         selectedEnvironment: response.editorEnvironment,
         hasAccessToPromotedEnvironment: hasAccessToPromotedEnv,
@@ -760,14 +832,22 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       isReleaseVersionEnabled: !isEditorReadOnly && (isModuleApp || hasReleasePermission),
     };
   },
-  createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {
+  createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure, replace = false) => {
     // Callers must follow up with changeEditorVersionAction to actually switch the editor
     // onto the new version — it applies the full state (selectedVersion, freeze status,
     // pages/currentPageId) from a fresh getAppVersionData fetch, so only selectedEnvironment
     // is set provisionally here (changeEditorVersionAction doesn't touch it).
+    // `replace` — git single-branch mode already has one synced draft tied to the default
+    // branch; pass true to swap it instead of hitting the backend's single-draft guard.
     try {
       const editorEnvironment = get().selectedEnvironment.id;
-      const newVersion = await appVersionService.createDraftVersion(appId, selectedVersionId, editorEnvironment);
+      const newVersion = await appVersionService.createDraftVersion(
+        appId,
+        selectedVersionId,
+        editorEnvironment,
+        '',
+        replace
+      );
       // A new draft always starts on development, regardless of which environment its
       // source version was on — sync the header's environment display to match.
       set((state) => ({

@@ -299,9 +299,9 @@ export const verifyGranularPermissionModalUI = (
     }
 
     if (resourceType === "workflow") {
-        cy.verifyElement(groupsSelector.workflowsBuildLabel, "Build");
+        cy.verifyElement(groupsSelector.workflowsEditLabel, "Edit");
         cy.verifyElement(
-            groupsSelector.workflowsBuildHelperText,
+            groupsSelector.workflowsEditHelperText,
             "Access to workflow builder"
         );
         cy.verifyElement(groupsSelector.workflowsExecuteLabel, "Execute");
@@ -744,7 +744,7 @@ export const verifyGranularAccessByRole = (role) => {
             appEditRadio: { checked: true, enabled: false },
             appViewRadio: { checked: false, enabled: false },
             appHideCheckbox: { enabled: false },
-            workflowBuildRadio: { checked: true, enabled: false },
+            workflowEditRadio: { checked: true, enabled: false },
             workflowExecuteRadio: { checked: false, enabled: false },
             datasourceConfigureRadio: { checked: true, enabled: false },
             datasourceBuildWithRadio: { checked: false, enabled: false },
@@ -760,7 +760,7 @@ export const verifyGranularAccessByRole = (role) => {
             appEditRadio: { checked: true, enabled: true },
             appViewRadio: { checked: false, enabled: true },
             appHideCheckbox: { enabled: true },
-            workflowBuildRadio: { checked: true, enabled: true },
+            workflowEditRadio: { checked: true, enabled: true },
             workflowExecuteRadio: { checked: false, enabled: true },
             datasourceConfigureRadio: { checked: true, enabled: true },
             datasourceBuildWithRadio: { checked: false, enabled: true },
@@ -776,7 +776,7 @@ export const verifyGranularAccessByRole = (role) => {
             appEditRadio: { checked: false, enabled: false },
             appViewRadio: { checked: true, enabled: false },
             appHideCheckbox: { enabled: true },
-            workflowBuildRadio: { checked: false, enabled: false },
+            workflowEditRadio: { checked: false, enabled: false },
             workflowExecuteRadio: { checked: true, enabled: false },
             environments: enduserEnvTags,
             folderEditRadio: { checked: false, enabled: false },
@@ -859,12 +859,12 @@ export const verifyGranularAccessByRole = (role) => {
 
         cy.verifyElement(groupsSelector.workflowsText, "Workflows");
 
-        cy.get(groupsSelector.workflowsBuildRadio)
+        cy.get(groupsSelector.workflowsEditRadio)
             .should("be.visible")
-            .and(config.workflowBuildRadio.checked ? "be.checked" : "not.be.checked")
+            .and(config.workflowEditRadio.checked ? "be.checked" : "not.be.checked")
             .and(
-                config.workflowBuildRadio.enabled ? "be.enabled" : "have.attr",
-                config.workflowBuildRadio.enabled ? "" : "disabled"
+                config.workflowEditRadio.enabled ? "be.enabled" : "have.attr",
+                config.workflowEditRadio.enabled ? "" : "disabled"
             );
 
         cy.get(groupsSelector.workflowsExecuteRadio)
@@ -875,9 +875,9 @@ export const verifyGranularAccessByRole = (role) => {
             );
 
         if (config.verifyHelperTexts) {
-            cy.verifyElement(groupsSelector.workflowsBuildLabel, "Build");
+            cy.verifyElement(groupsSelector.workflowsEditLabel, "Edit");
             cy.verifyElement(
-                groupsSelector.workflowsBuildHelperText,
+                groupsSelector.workflowsEditHelperText,
                 "Access to workflow builder"
             );
             cy.verifyElement(groupsSelector.workflowsExecuteLabel, "Execute");

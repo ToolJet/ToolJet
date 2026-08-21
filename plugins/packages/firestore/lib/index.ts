@@ -57,9 +57,9 @@ export default class FirestoreQueryService implements QueryService {
           break;
       }
     } catch (error) {
-      const errorMessage = error.message || "An unknown error occurred.";
-      let errorDetails: any = {};
-      
+      const errorMessage = error.message || 'An unknown error occurred.';
+      const errorDetails: any = {};
+
       if (error && error instanceof Error) {
         const firestoreError = error as any;
         const { code, name } = firestoreError;

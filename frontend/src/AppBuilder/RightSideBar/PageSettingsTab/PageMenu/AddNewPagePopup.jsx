@@ -1,7 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
-import { AlertTriangle } from 'lucide-react';
-import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
@@ -10,7 +8,7 @@ import { kebabCase } from 'lodash';
 import Select from '@/_ui/Select';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import { appsService } from '@/_services';
+import { appService } from '@/_services';
 import { ToolTip } from '@/_components';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -67,11 +65,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
   const togglePageHeader = useStore((state) => state.togglePageHeader);
   const togglePageFooter = useStore((state) => state.togglePageFooter);
-  const updatePageTargetApp = useStore((state) => state.updatePageTargetApp);
+  const updatePageAppId = useStore((state) => state.updatePageAppId);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
-  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const [page, setPage] = useState(editingPage || props?.page);
 
@@ -108,14 +106,6 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   //Nav item with app
   const [appOptions, setAppOptions] = useState([]);
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
-
-  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
-  const { isValid: isLinkValid, errorMessage: linkedAppErrorMessage } = isLinkedAppValid(
-    page?.targetCorelationId,
-    linkedAppsMap
-  );
-  const isInvalid = type === 'app' && !isLinkValid;
-  const isTargetMissing = page?.targetCorelationId && !appOptions.some((opt) => opt.value === page?.targetCorelationId);
 
   useEffect(() => {
     setError(null);
@@ -172,8 +162,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
 
   //Nav item with app hooks
   useEffect(() => {
-    const fetchApps = async () => {
-      const { apps } = await appsService.getAllAddableApps();
+    const fetchApps = async (page) => {
+      const { apps } = await appService.getAll(page);
       return apps;
     };
 
@@ -182,13 +172,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
       const apps = await fetchApps(0);
       let appsOptionsList = [];
       apps
-        .filter((item) => item.slug !== undefined && item.id !== appId)
+        .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
         .forEach((item) => {
           appsOptionsList.push({
-            label: item.name,
-            value: item.co_relation_id,
-            slug: item.slug,
-            currentVersionId: item.current_version_id,
+            name: item.name,
+            value: item.slug,
           });
         });
       return appsOptionsList;
@@ -418,40 +406,19 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <Select
                 options={appOptions}
                 search={true}
-                value={
-                  isTargetMissing
-                    ? { label: 'Undefined app', value: page?.targetCorelationId }
-                    : page?.targetCorelationId
-                }
+                value={page?.appId}
                 onChange={(value) => {
-                  const selected = appOptions.find((opt) => opt.value === value);
-                  updatePageTargetApp(
-                    page?.id,
-                    value,
-                    selected?.slug ?? null,
-                    selected?.currentVersionId ?? null,
-                    moduleId
-                  );
+                  updatePageAppId(page?.id, value);
                 }}
                 isLoading={appOptionsLoading}
                 placeholder={'Select...'}
                 useMenuPortal={false}
                 width={'168px'}
                 borderRadius="6px"
-                styles={{
-                  border: `1px solid ${isInvalid ? 'var(--border-danger-strong)' : 'var(--border-default)'} !important`,
-                }}
+                styles={{ border: '1px solid var(--border-default) !important' }}
                 className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
-            {isInvalid && (
-              <div className="tw-mt-1 tw-flex tw-items-center tw-gap-1">
-                <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
-                <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
-                  {linkedAppErrorMessage}
-                </span>
-              </div>
-            )}
           </div>
         )}
         {['url', 'app'].includes(type) && (

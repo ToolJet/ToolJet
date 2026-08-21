@@ -14,7 +14,7 @@ export default class Textract implements QueryService {
         case Operation.AnalyzeDocument:
           result = await analyzeDocument(
             queryOptions?.document,
-            (queryOptions?.feature_types as string[]).map(ft => ft as FeatureType),
+            (queryOptions?.feature_types as string[]).map((ft) => ft as FeatureType),
             client
           );
           break;
@@ -23,7 +23,7 @@ export default class Textract implements QueryService {
           result = await analyzeS3Document(
             queryOptions?.bucket,
             queryOptions?.key,
-            (queryOptions?.feature_types as string[]).map(ft => ft as FeatureType),
+            (queryOptions?.feature_types as string[]).map((ft) => ft as FeatureType),
             client
           );
           break;

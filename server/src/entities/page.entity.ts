@@ -102,7 +102,6 @@ export class Page {
   @Column({ name: 'target_corelation_id', type: 'uuid', nullable: true })
   targetCorelationId: string | null;
 
-  // Co relation id for the page
   @Column({ name: 'co_relation_id', nullable: true })
   co_relation_id: string;
 
