@@ -37,6 +37,8 @@ export const setLibraryComponentActions = (componentId, actions) => {
         handle: p.handle,
         displayName: p.displayName ?? p.handle,
         defaultValue: p.defaultValue,
+        ...(p.type ? { type: p.type } : {}),
+        ...(p.options ? { options: p.options } : {}),
       })),
     }))
   );
