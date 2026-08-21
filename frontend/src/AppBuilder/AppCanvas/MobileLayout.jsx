@@ -1,7 +1,10 @@
 import React, { Suspense, useRef, lazy } from 'react';
 import cx from 'classnames';
+import { shallow } from 'zustand/shallow';
 
+import useStore from '@/AppBuilder/_stores/store';
 import { CANVAS_WIDTHS, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
+import { computeViewerBackgroundColor } from './appCanvasUtils';
 import MobileNavigationHeader from './PageMenu/MobileNavigationHeader';
 import { CanvasContentTail } from './CanvasContentTail';
 
@@ -30,6 +33,12 @@ export const MobileLayout = ({
 }) => {
   const mobileCanvasFrameRef = useRef(null);
   const mobileNavSheetContainerRef = useRef(null);
+
+  // Mirrors Container.jsx's canvas background. Diverge from it and a seam appears around the canvas.
+  const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', isAppDarkMode), shallow);
+  const frameBgColor =
+    currentMode === 'view' ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor) : canvasBgColor;
+
   return (
     <div
       key={pageKey}
@@ -39,13 +48,18 @@ export const MobileLayout = ({
         position: 'relative',
         transform: 'translateZ(0)',
         maxWidth: CANVAS_WIDTHS.deviceWindowWidth,
+        // Edit mode: pin the frame so only its canvas region scrolls, not the frame itself.
+        ...(currentMode === 'edit'
+          ? { height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+          : {}),
       }}
       className={cx('tj-canvas-area tw-w-full tw-mx-auto')}
     >
       <div
         ref={mobileNavSheetContainerRef}
         data-cy="mobile-nav-sheet-container"
-        className={cx('tw-absolute tw-inset-0 tw-overflow-hidden tw-pointer-events-none')}
+        style={{ marginBottom: '-100dvh', zIndex: 1050 }}
+        className={cx('tw-sticky tw-top-0 tw-inset-x-0 tw-h-dvh tw-overflow-hidden tw-pointer-events-none')}
       />
       {/* Canvas header — sticky at top of scroll */}
       <Suspense fallback={null}>
@@ -81,7 +95,28 @@ export const MobileLayout = ({
         isAppDarkMode={isAppDarkMode}
         pageLoader={pageLoader}
       >
-        {mainCanvasContainer}
+        {currentMode === 'edit' ? (
+          <div
+            className="tj-mobile-canvas-scroll"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden auto',
+              // Containing block for Moveable's control boxes; drop it and resize handles drift by scrollTop.
+              position: 'relative',
+              // No gutter: stacked components carry their own side inset.
+              boxSizing: 'border-box',
+              backgroundColor: frameBgColor,
+            }}
+          >
+            {mainCanvasContainer}
+            {/* Must stay inside the scroll port: Moveable's control boxes detach from widgets otherwise. */}
+            {gridContent}
+          </div>
+        ) : (
+          // Matches the editor gutter so preview and the published app frame the canvas identically.
+          <div style={{ boxSizing: 'border-box', backgroundColor: frameBgColor }}>{mainCanvasContainer}</div>
+        )}
       </CanvasContentTail>
       <Suspense fallback={null}>
         <PageCanvasFooter
@@ -90,7 +125,7 @@ export const MobileLayout = ({
           currentMode={currentMode}
         />
       </Suspense>
-      {gridContent}
+      {currentMode !== 'edit' && gridContent}
     </div>
   );
 };
