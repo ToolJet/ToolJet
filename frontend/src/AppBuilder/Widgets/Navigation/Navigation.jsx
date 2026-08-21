@@ -67,7 +67,7 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientatio
             {item.label}
           </OverflowTooltip>
           {showInlineCaption ? (
-            <OverflowTooltip childrenClassName="nav-item-caption" maxLetters={NAV_TEXT_MAX_LENGTH} alwaysShowTooltip>
+            <OverflowTooltip childrenClassName="nav-item-caption" maxLetters={NAV_TEXT_MAX_LENGTH}>
               {item.caption}
             </OverflowTooltip>
           ) : null}
