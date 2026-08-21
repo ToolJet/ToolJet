@@ -199,6 +199,40 @@ describe('GitSyncController', () => {
       });
     });
 
+    // Standalone block — do not fold into "App git life cycle" (server/src/modules/git-sync/AGENTS.md:
+    // "don't extend the monolithic git-sync lifecycle it() block ... write standalone specs instead").
+    describe('Cross-tenant isolation', () => {
+      it('does not return git status for a session scoped to a different organization', async () => {
+        const { organization: otherOrg } = await createUser(app, {
+          email: 'git-status-other-org@tooljet.io',
+          firstName: 'user',
+          lastName: 'name',
+        });
+
+        await request
+          .agent(app.getHttpServer())
+          .get(`/api/git-sync/${otherOrg.id}/status`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', otherOrg.id)
+          .expect(401);
+      });
+
+      it('does not list workspace branches for a session scoped to a different organization', async () => {
+        const { organization: otherOrg } = await createUser(app, {
+          email: 'branches-other-org@tooljet.io',
+          firstName: 'user',
+          lastName: 'name',
+        });
+
+        await request
+          .agent(app.getHttpServer())
+          .get('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', otherOrg.id)
+          .expect(401);
+      });
+    });
+
     describe('POST /api/git-sync | Create organization git', () => {
       it('should return 401 if the auth token is missing', async () => {
         await request

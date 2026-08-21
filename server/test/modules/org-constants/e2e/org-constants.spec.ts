@@ -142,6 +142,38 @@ describe('OrgConstantsController', () => {
           expect(orgConstant).toEqual(expectedConstant);
         });
       });
+
+      it("does not list another organization's constants — scoping comes from the session, not a request param", async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const anotherOrgAdminUserData = await createUser(app, {
+          email: 'another@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        let loggedUser = await login(app, adminUserData.user.email);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+        loggedUser = await login(app, anotherOrgAdminUserData.user.email);
+        anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        await createConstant(app, adminUserData, {
+          constant_name: 'org_a_only_secret',
+          value: 'super-secret',
+          type: 'Global',
+          environments: [],
+        });
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/organization-constants/decrypted`)
+          .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', anotherOrgAdminUserData['tokenCookie'])
+          .send()
+          .expect(200);
+
+        expect(response.body.constants.map((c: any) => c.name)).not.toContain('org_a_only_secret');
+      });
     });
 
     describe('POST /api/organization-constants | Create constant', () => {

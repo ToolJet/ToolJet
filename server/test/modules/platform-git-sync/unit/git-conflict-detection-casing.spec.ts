@@ -54,6 +54,11 @@ describe('GitConflictDetectionService — name casing (case-sensitive)', () => {
   const spyExistingModules = (entries: Array<[string, { name: string; slug: string | null }]>) =>
     jest.spyOn(service as any, 'loadExistingAppsOnBranch').mockResolvedValue(new Map(entries));
 
+  // gatherDataSourceConflicts' in-use orphan sweep hits the DB directly; these casing
+  // tests don't exercise that path, so stub it to a no-op (no orphans) by default.
+  const spyOrphanCandidates = (entries: unknown[] = []) =>
+    jest.spyOn(service as any, 'loadOrphanCandidateDataSources').mockResolvedValue(entries);
+
   // ── PUSH: data sources ────────────────────────────────────────────────
   describe('push (detectPushConflicts, scope=datasource)', () => {
     it('does NOT flag a local data source whose name differs only in casing from a remote one', async () => {
@@ -104,6 +109,7 @@ describe('GitConflictDetectionService — name casing (case-sensitive)', () => {
     it('does NOT flag a case-only difference between incoming and existing DS', async () => {
       writeDataSourceFile('Analytics', 'ds-remote-1', 'Analytics');
       spyExistingDataSources([['ds-local-1', 'analytics']]);
+      spyOrphanCandidates();
 
       const groups = await (service as any).gatherDataSourceConflicts(ORG, BRANCH, repoPath);
       expect(groups).toEqual([]);
@@ -112,6 +118,7 @@ describe('GitConflictDetectionService — name casing (case-sensitive)', () => {
     it('flags an exact-case duplicate (control)', async () => {
       writeDataSourceFile('Analytics', 'ds-remote-1', 'Analytics');
       spyExistingDataSources([['ds-local-1', 'Analytics']]);
+      spyOrphanCandidates();
 
       const groups = await (service as any).gatherDataSourceConflicts(ORG, BRANCH, repoPath);
       expect(groups.length).toBeGreaterThan(0);
