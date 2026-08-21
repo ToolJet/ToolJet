@@ -235,10 +235,28 @@ export async function resolveModuleRef(
     // id present but no match — orphan fallback below.
   }
 
-  // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
-  // If a ref was provided but no tier matched, return null — don't silently load the wrong version.
-  if (moduleReferenceId) return null;
+  // Orphaned pin: a ref was given but matched no tier (the pinned version was deleted, lives
+  // on a branch this resolver doesn't scope to, or predates a rename). Fall back ONLY to the
+  // consumer's own FEATURE-branch row: a feature-branch draft is always servable on its own
+  // branch, so this safely rescues a stale import/branch pin (mirroring the app-load resolver
+  // resolveAllModuleViewersForVersion's 'orphan-fallback'). Without it the two resolvers
+  // disagree — app-load shows the ModuleViewer via its fallback while this endpoint (the
+  // module's own content fetch) 404s, blanking the embed even though the module exists on the
+  // branch. A pin that can't be honored on the DEFAULT branch still fails loud (returns null):
+  // an explicit pin there must resolve to a servable row (default PUBLISHED / legacy unsynced),
+  // never silently swap to a different/non-servable version (e.g. a synced draft).
+  if (moduleReferenceId) {
+    if (consumerBranchId && defaultBranch && consumerBranchId !== defaultBranch.id) {
+      const onConsumerBranch = await manager.findOne(AppVersion, {
+        where: { appId: moduleApp.id, branchId: consumerBranchId, isStub: false },
+        order: { createdAt: 'DESC' },
+      });
+      if (onConsumerBranch) return onConsumerBranch;
+    }
+    return null;
+  }
 
+  // Unpinned: latest non-stub on the consumer's branch (or default).
   const targetBranchId = consumerBranchId ?? defaultBranch?.id;
   if (!targetBranchId) {
     // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.

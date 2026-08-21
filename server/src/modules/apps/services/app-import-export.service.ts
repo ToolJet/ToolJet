@@ -1030,7 +1030,33 @@ export class AppImportExportService {
           if (importedModule?.appV2?.id) {
             moduleResourceMappings.moduleApps[importedModule.appV2.id] = targetAppKey;
           }
-          if (shouldHydrateBranchStub) moduleAppIdsForStub.push(existingModule.id);
+          // When set, the module_reference_id of the module's row on the consumer's own
+          // (non-default) branch — the pin MUST aim here, see the version remap below.
+          let branchPinKey: string | null = null;
+          if (shouldHydrateBranchStub) {
+            if (isGitApp) {
+              // Git imports hydrate the branch content from git later, so an empty
+              // stub row is the correct placeholder here.
+              moduleAppIdsForStub.push(existingModule.id);
+            } else {
+              // File/clone imports carry the module's full content in the payload and
+              // were NEVER pushed to git — so an empty stub would send app-open into
+              // hydrateStubApp (a git pull) that fails ("hydration error"). Instead
+              // materialize real, non-stub content on the consumer's branch, exactly
+              // like the create-path does for a brand-new module. Runs BEFORE the
+              // version remap below so the freshly created branch DRAFT is included in
+              // existingVersions and the pin resolves to it (prefers the branch row).
+              branchPinKey = await this.materializeReusedModuleOnBranch(
+                manager,
+                user,
+                importedModule,
+                existingModule,
+                branchId,
+                externalResourceMappings,
+                tooljetVersion
+              );
+            }
+          }
 
           // Fetch existing module's versions to remap the ModuleViewer's pinned
           // version reference. A pin (moduleVersionId.value) is resolved at runtime by
@@ -1052,12 +1078,18 @@ export class AppImportExportService {
           const fallbackVersionKey = versionKeyOf(preferredExistingVersion);
 
           for (const importedVersion of importedModuleVersions) {
+            // When the module was materialized onto the consumer's own branch, every pin to
+            // it MUST target that branch row — it's the only row resolveModuleRef can serve
+            // for this consumer (feature branches hold a single draft). A name/co_relation
+            // match would instead point at the module's default-branch copy, which the
+            // runtime refuses to serve for a UUID pin → "Module version not found".
+            // branchPinKey is null on the default branch, preserving multi-version pinning.
             // Match by co_relation_id first (survives renames), fall back to name.
             const matchingVersion =
               existingVersions.find(
                 (v) => importedVersion.co_relation_id && v.co_relation_id === importedVersion.co_relation_id
               ) ?? existingVersions.find((v) => v.name === importedVersion.name);
-            const targetVersionKey = versionKeyOf(matchingVersion) ?? fallbackVersionKey;
+            const targetVersionKey = branchPinKey ?? versionKeyOf(matchingVersion) ?? fallbackVersionKey;
             if (!targetVersionKey) continue;
 
             // Map every value a ModuleViewer could have stored for this version:
@@ -1067,12 +1099,13 @@ export class AppImportExportService {
             }
           }
 
-          // Also map the editingVersion if not already mapped
+          // Also map the editingVersion if not already mapped — same branch-row preference.
           const editingVersion = importedModule?.appV2?.editingVersion;
-          if (editingVersion && fallbackVersionKey) {
+          const editingFallbackKey = branchPinKey ?? fallbackVersionKey;
+          if (editingVersion && editingFallbackKey) {
             for (const sourceKey of [editingVersion.co_relation_id, editingVersion.id, editingVersion.name]) {
               if (sourceKey && !moduleResourceMappings.moduleVersions[sourceKey]) {
-                moduleResourceMappings.moduleVersions[sourceKey] = fallbackVersionKey;
+                moduleResourceMappings.moduleVersions[sourceKey] = editingFallbackKey;
               }
             }
           }
@@ -1167,10 +1200,27 @@ export class AppImportExportService {
       });
       const alreadyOnBranch = new Set(existingRows.map((r) => r.appId));
 
+      // The stub carries a branch_id, so chk_app_versions_branch_metadata requires a non-null
+      // app_name AND slug. Source the module's real name from an existing (non-stub) version so
+      // the Modules tab shows it correctly; slug is a fresh placeholder (branch stubs aren't
+      // routed to). Read metadata for every module in one query.
+      const metaRows = await manager.find(AppVersion, {
+        where: uniqueAppIds.map((appId) => ({ appId, isStub: false })),
+        select: ['appId', 'appName', 'icon', 'isPublic'],
+        order: { createdAt: 'ASC' },
+      });
+      const metaByApp = new Map<string, { appName: string | null; icon: string | null; isPublic: boolean }>();
+      for (const r of metaRows) {
+        if (r.appName && !metaByApp.has(r.appId)) {
+          metaByApp.set(r.appId, { appName: r.appName, icon: r.icon ?? null, isPublic: r.isPublic ?? false });
+        }
+      }
+
       // moduleAppIdsForStub holds module app ids only — moduleReferenceId is safe
       // to set unconditionally here.
       for (const appId of uniqueAppIds) {
         if (alreadyOnBranch.has(appId)) continue;
+        const meta = metaByApp.get(appId);
         const stub = manager.create(AppVersion, {
           name: uuid(),
           appId,
@@ -1183,12 +1233,100 @@ export class AppImportExportService {
           pageSettings: {},
           showViewerNavigation: false,
           moduleReferenceId: uuid(),
+          // Required by chk_app_versions_branch_metadata (app_name + slug non-null when branch_id set).
+          appName: meta?.appName ?? appId,
+          slug: uuid(),
+          icon: meta?.icon ?? null,
+          isPublic: meta?.isPublic ?? false,
         } as DeepPartial<AppVersion>);
         await manager.save(AppVersion, stub);
       }
     }
 
     return moduleResourceMappings;
+  }
+
+  /**
+   * Materialize a reused module's real content on the consumer's (non-default) branch
+   * during a file/clone import.
+   *
+   * Why: the branch-stub mechanism exists for git imports, where a module's branch
+   * content is pulled from git on demand (hydrateStubApp). A file/clone import carries
+   * the module's full content in the payload and was never pushed to git, so leaving an
+   * empty `isStub:true` row makes app-open attempt a git hydration that has nothing to
+   * pull — surfacing as a module "hydration error". Deduping the module across the two
+   * imports is correct (one App per identity); the missing piece is that the SECOND
+   * consumer's branch had no real content for it. This gives that branch the same
+   * non-stub DRAFT the create-path produces for a brand-new module.
+   *
+   * Idempotent: no-op when the module already has a non-stub row on the branch (consumer
+   * and module imported onto the same branch). Targets the existing App row via
+   * `existingAppId`, so no duplicate module is created.
+   *
+   * Returns the branch row's pin key (module_reference_id, falling back to id) so the caller
+   * can point the consumer's ModuleViewer pin at THIS branch row. That's required for
+   * correctness, not just tidiness: for a UUID pin, resolveModuleRef only serves a
+   * default-branch PUBLISHED/legacy-unsynced row or the exact row on the consumer's branch —
+   * so a pin left aimed at the module's default-branch synced DRAFT (e.g. the other consumer
+   * imported onto main) resolves to nothing → "Module version not found".
+   *
+   * EE-only in practice: `shouldHydrateBranchStub` requires a non-default WorkspaceBranch,
+   * which only exists with git multi-branching (EE). `createImportedAppForUser`'s
+   * `existingAppId` short-circuit lives in the EE override.
+   */
+  private async materializeReusedModuleOnBranch(
+    manager: EntityManager,
+    user: User,
+    importedModule: any,
+    existingModule: App,
+    branchId: string,
+    externalResourceMappings: any,
+    tooljetVersion: string
+  ): Promise<string | null> {
+    const branchPinKeyOf = (v?: AppVersion | null): string | null => v?.moduleReferenceId ?? v?.id ?? null;
+    const alreadyOnBranch = await manager.findOne(AppVersion, {
+      where: { appId: existingModule.id, branchId, isStub: false },
+      select: ['id', 'moduleReferenceId'],
+      order: { createdAt: 'DESC' },
+    });
+    if (alreadyOnBranch) return branchPinKeyOf(alreadyOnBranch);
+
+    // Reuse the full create-path import against the existing App row (existingAppId),
+    // so the module gets a real BRANCH DRAFT with its pages/components/queries on this
+    // branch without minting a second module App.
+    //
+    // The `existingAppId` short-circuit in createImportedAppForUser skips the
+    // __importMetadata staging that a fresh import gets, and the export strips app_name
+    // off the version rows — so carry the module's display name on the version rows
+    // here, else createAppVersionsForImportedApp falls back to the App id for app_name
+    // and the Modules tab shows a UUID.
+    const moduleName = importedModule?.appV2?.name;
+    const payload = { ...importedModule, existingAppId: existingModule.id };
+    if (moduleName && Array.isArray(payload.appV2?.appVersions)) {
+      payload.appV2 = {
+        ...payload.appV2,
+        appVersions: payload.appV2.appVersions.map((v: any) => ({ ...v, appName: v.appName ?? moduleName })),
+      };
+    }
+
+    await this.import(
+      user,
+      payload,
+      moduleName,
+      externalResourceMappings,
+      false, // isGitApp — file/clone path only
+      tooljetVersion,
+      false, // cloning
+      manager,
+      branchId
+    );
+
+    const materialized = await manager.findOne(AppVersion, {
+      where: { appId: existingModule.id, branchId, isStub: false },
+      select: ['id', 'moduleReferenceId'],
+      order: { createdAt: 'DESC' },
+    });
+    return branchPinKeyOf(materialized);
   }
 
   removeTimestamps = (entity: any) => {

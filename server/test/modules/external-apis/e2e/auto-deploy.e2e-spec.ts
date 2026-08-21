@@ -9,10 +9,15 @@ import {
   createApplication,
   createApplicationVersion,
   getDefaultDataSource,
+  findEntityOrFail,
+  saveEntity,
+  updateEntity,
 } from 'test-helper';
 import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { App } from 'src/entities/app.entity';
+import { Page } from 'src/entities/page.entity';
+import { Component } from 'src/entities/component.entity';
 import { Repository } from 'typeorm';
 
 /**
@@ -24,7 +29,7 @@ import { Repository } from 'typeorm';
  *   - Auth: missing header, wrong token
  *   - 404: app not found, versionId not found for app
  *   - 400: versionId/versionName is a draft, versionName not found, no target
- *     resolvable because the app isn't git-synced
+ *     resolvable because the app isn't git-synced, released version pins a draft module
  *   - 201 happy path: by versionId, by versionName, by slug, redeploy of an
  *     already-published version
  *   - DB persistence + isolation from other versions on the same app
@@ -89,6 +94,25 @@ describe('External API — POST /ext/apps/:appIdOrSlug/git-sync/release', () => 
 
   async function prodEnvFor(organizationId: string) {
     return envRepo.findOne({ where: { organizationId }, order: { priority: 'DESC' } });
+  }
+
+  // Pins a ModuleViewer component on the app's home page directly at a module
+  // version's id (UUID pin, resolves via the byId clause regardless of branch).
+  async function embedModule(consumerVersionId: string, moduleCoRelationId: string, moduleVersionId: string) {
+    const homePage = await findEntityOrFail(Page, { appVersionId: consumerVersionId } as any);
+    await saveEntity(Component, {
+      name: 'module1',
+      type: 'ModuleViewer',
+      pageId: homePage.id,
+      properties: {
+        moduleAppId: { value: moduleCoRelationId },
+        moduleVersionId: { value: moduleVersionId },
+      },
+      general: {},
+      styles: {},
+      generalStyles: {},
+      validation: {},
+    } as any);
   }
 
   // ---------------------------------------------------------------------------
@@ -213,14 +237,39 @@ describe('External API — POST /ext/apps/:appIdOrSlug/git-sync/release', () => 
 
       expect(response.body.message).toBe('App is not synced with Git');
     });
+
+    // Regression: the manual/UI promote flow blocks promoting a version whose pinned
+    // module hasn't reached the target environment yet — e.g. still a fresh DRAFT
+    // sitting in dev (VersionService.promoteVersion -> checkModulesPromotableToEnvironment).
+    // autoDeployApp went straight to versionUtilService.publishVersionWithEnvironment
+    // without that check, so the same app could be released to prod via the External
+    // API despite carrying an unreleased module pin.
+    it('returns 400 when the released version pins a module version not yet promoted to production', async () => {
+      const { user } = await seedOrg();
+
+      const moduleApp = await createApplication(nestApp, { user, name: `Module-${Date.now()}`, type: 'module' });
+      await updateEntity(App, moduleApp.id, { co_relation_id: moduleApp.id } as any);
+      const moduleDraft = await createApplicationVersion(nestApp, moduleApp as any, { name: 'm1' });
+
+      const app = await seedApp(user);
+      const published = await seedVersion(app as any, 'v1', AppVersionStatus.PUBLISHED);
+      await embedModule(published.id, moduleApp.id, moduleDraft.id);
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/git-sync/release`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ versionId: published.id })
+        .expect(400);
+
+      expect(response.body.message.error ?? response.body.message).toContain('not promoted');
+    });
   });
 
   // ---------------------------------------------------------------------------
   // 201 — happy path
   // ---------------------------------------------------------------------------
 
-  // skip: publish detaches branch_id, 422s every deploy — src bug, #17333 (1)
-  describe.skip('201 — happy path', () => {
+  describe('201 — happy path', () => {
     it('deploys the version by versionId to the production environment', async () => {
       const { user, organization } = await seedOrg();
       const app = await seedApp(user);

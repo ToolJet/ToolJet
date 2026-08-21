@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined } from 'class-validator';
+import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined, Matches } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
@@ -17,6 +17,7 @@ export class CreateDataSourceDto {
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
+  @Matches(/^[^/]*$/, { message: "Name should not contain '/'" })
   name: string;
 
   @IsDefined()
