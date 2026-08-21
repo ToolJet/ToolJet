@@ -1,7 +1,7 @@
 {
   "name": "@tooljet/cli",
   "description": "tooljet cli tool",
-  "version": "0.0.14",
+  "version": "0.0.15-beta.0",
   "bin": {
     "tooljet": "./bin/run"
   },
@@ -38,6 +38,7 @@
     "globby": "^11",
     "mocha": "^9",
     "oclif": "^4.14.14",
+    "prettier": "^2.8.7",
     "shx": "^0.3.3",
     "ts-node": "^10.2.1",
     "tslib": "^2.3.1"

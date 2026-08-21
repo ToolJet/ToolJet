@@ -7,8 +7,7 @@ import { ProjectConfig, ProjectConfigData } from '../../lib/library/project-conf
 import { formatError, formatSuccess, formatDuration } from '../../lib/log';
 
 export default class ComponentDeploy extends Command {
-  static description =
-    'Build and publish a new immutable production revision of a component library';
+  static description = 'Build and publish a new immutable production revision of a component library';
 
   static aliases = ['lib:deploy'];
 

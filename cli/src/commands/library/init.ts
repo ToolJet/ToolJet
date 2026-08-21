@@ -16,10 +16,7 @@ export default class ComponentInit extends Command {
 
   static aliases = ['lib:init'];
 
-  static examples = [
-    `$ tooljet library init <library_directory_name>`,
-    `$ tooljet lib init <library_directory_name>`,
-  ];
+  static examples = [`$ tooljet library init <library_directory_name>`, `$ tooljet lib init <library_directory_name>`];
 
   static args = [
     { name: 'library_directory_name', description: 'Directory name for the new component library', required: true },
@@ -57,7 +54,7 @@ export default class ComponentInit extends Command {
 
           return true;
         },
-      }
+      },
     ]);
 
     const displayName = answers.display_name.trim();
@@ -90,7 +87,9 @@ export default class ComponentInit extends Command {
     } catch (err) {
       this.log(
         formatError(
-          `Library "${displayName}" (ID: ${library.id}) was registered on ${workspaceId}, but writing ./${libraryDirectoryName}/.tooljet/config.json failed: ${
+          `Library "${displayName}" (ID: ${
+            library.id
+          }) was registered on ${workspaceId}, but writing ./${libraryDirectoryName}/.tooljet/config.json failed: ${
             (err as Error).message
           }. The project directory is otherwise valid — retry writing the config manually or contact support.`
         )

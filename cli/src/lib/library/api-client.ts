@@ -24,7 +24,7 @@ export class ApiClient {
     const res = await fetch(`${this.baseUrl}/api${path}`, {
       method,
       headers: {
-        Authorization:  `Bearer ${this.apiToken}`,
+        Authorization: `Bearer ${this.apiToken}`,
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
