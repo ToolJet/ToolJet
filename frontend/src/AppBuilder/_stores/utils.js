@@ -4,6 +4,7 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import useStore from '@/AppBuilder/_stores/store';
 
 var _ = require('lodash');
 
@@ -15,7 +16,18 @@ export function debounce(func) {
   return (...args) => {
     const event = args[0] || {};
     const moduleId = args[3] || 'canvas';
-    const eventId = moduleId + '-' + (event?.id || uuidv4());
+    const eventNameId = event?.eventId || event?.event?.eventId;
+
+    const exposedValue = useStore.getState().getExposedValueOfComponent(event.sourceId, moduleId);
+    let rowIndex = exposedValue?.['selectedRowId'] ?? null;
+    if (eventNameId == 'onRowHovered') {
+      rowIndex = exposedValue?.['hoveredRowId'] ?? null;
+    }
+
+    let eventId = moduleId + '-' + (event?.id || uuidv4());
+    if (rowIndex !== undefined && rowIndex !== null) {
+      eventId += `-${rowIndex}`;
+    }
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
