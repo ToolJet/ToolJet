@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { randomUUID as genRepoUUID } from 'crypto';
 import { AppVersion } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import {
@@ -35,7 +36,11 @@ function requireEnv(name: string): string {
 }
 
 const GIT_BASE_URL = requireEnv('TEST_GIT_BASE_URL').replace(/\/$/, '');
-const GIT_REPO_PATH = (process.env.TEST_GIT_REPO_PATH || 'gsmithun4/e2e').replace(/^\/|\/$/g, '');
+// Default to a throwaway per-run repo under the simulator's `run-ci` owner
+// (`run-ci/<uuid>`), auto-created on first git access. scripts/run-e2e.sh pins a
+// shared TEST_GIT_REPO_PATH for full runs; this fallback only applies to direct
+// spec runs. Override TEST_GIT_REPO_PATH to pin a specific repo.
+const GIT_REPO_PATH = (process.env.TEST_GIT_REPO_PATH || `run-ci/${genRepoUUID()}`).replace(/^\/|\/$/g, '');
 
 const GITHUB_HTTPS_PAYLOAD = {
   gitUrl: `${GIT_BASE_URL}/${GIT_REPO_PATH}`,

@@ -388,7 +388,13 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const isGitSyncConfigured = useWorkspaceBranchesStore((state) => state.isGitSyncConfigured);
   const isBranchLockedOnDefault = useWorkspaceBranchesStore((state) => {
     if (!state.isInitialized || !state.orgGitConfig) return false;
-    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    // orgGitConfig.is_branching_enabled is the stored flag and is license-unaware — on a license
+    // downgrade it stays true even though the workspace is now single-branch. isMultiBranchingEnabled
+    // (from the workspace-branches list endpoint) already folds in the multi-branch license, so gate
+    // on it to keep the default branch editable (no lock) when multi-branch isn't licensed.
+    const isBranchingEnabled =
+      (state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled) &&
+      state.isMultiBranchingEnabled !== false;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && isDefault);
   });

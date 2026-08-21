@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as request from 'supertest';
+import { randomUUID as genRepoUUID } from 'crypto';
 import { createUser, initTestApp, login, closeTestApp, ensureAppEnvironments } from 'test-helper';
 import { WorkspaceBranchService } from '@ee/workspace-branches/service';
 import { GitSyncQueueService } from '@ee/workspace-branches/git-sync-queue.service';
@@ -44,10 +45,11 @@ if (!GITSYNC_E2E_ENABLED) {
 const describeGitsync = GITSYNC_E2E_ENABLED ? describe : describe.skip;
 
 const GIT_BASE_URL = (process.env.TEST_GIT_BASE_URL || '').replace(/\/$/, '');
-// Own repo, distinct from git-sync.spec.ts's `TEST_GIT_REPO_PATH` (or its static
-// `gsmithun4/e2e` fallback) — same base, `-ext-api` suffix, so a shared per-run
-// TEST_GIT_REPO_PATH (minted by scripts/run-e2e.sh) still yields a private repo here.
-const GIT_REPO_PATH = `${(process.env.TEST_GIT_REPO_PATH || 'gsmithun4/e2e').replace(/^\/|\/$/g, '')}-ext-api`;
+// Own repo, distinct from git-sync.spec.ts's `TEST_GIT_REPO_PATH` — same base,
+// `-ext-api` suffix, so a shared per-run TEST_GIT_REPO_PATH (minted by
+// scripts/run-e2e.sh) still yields a private repo here. The fallback (direct spec
+// runs) is a throwaway `run-ci/<uuid>` the simulator auto-creates on first access.
+const GIT_REPO_PATH = `${(process.env.TEST_GIT_REPO_PATH || `run-ci/${genRepoUUID()}`).replace(/^\/|\/$/g, '')}-ext-api`;
 const [GIT_REPO_OWNER, GIT_REPO_NAME] = GIT_REPO_PATH.split('/');
 
 const GITHUB_HTTPS_PAYLOAD = {
