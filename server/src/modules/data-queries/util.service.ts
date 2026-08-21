@@ -21,7 +21,6 @@ import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
 import { AppVersion } from '@entities/app_version.entity';
-import { APP_TYPES } from '@modules/apps/constants';
 import { ListTablesDto } from './dto';
 
 @Injectable()
@@ -109,13 +108,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       // default branch version type is version
       const branchId = dataQuery?.appVersion?.branchId || undefined;
 
-      // Workflows carry isPublic/name on apps.*; apps and modules carry them on every
-      // version row (default branch uses VERSION-type, sub-branches BRANCH-type, all
-      // carry the metadata). Use the dataQuery's own version row directly.
-      const isWorkflow = appToUse?.type === APP_TYPES.WORKFLOW;
+      // Every type carries isPublic/appName on its own app_versions row now — use the
+      // dataQuery's own version row directly.
       const metaSource: { isPublic?: boolean; appName?: string } | undefined = dataQuery?.appVersion;
-      effectiveIsPublic = isWorkflow ? appToUse?.isPublic : metaSource?.isPublic;
-      effectiveAppName = isWorkflow ? appToUse?.name : metaSource?.appName;
+      effectiveIsPublic = metaSource?.isPublic;
+      effectiveAppName = metaSource?.appName;
       // Removed: appVersionId path — released (VERSION-type) versions now use is_default DSV.
       // const appVersionId = dataQuery?.appVersion?.versionType !== AppVersionType.BRANCH ? dataQuery?.appVersion?.id : undefined;
 

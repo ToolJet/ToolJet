@@ -103,7 +103,6 @@ async function createTooljetDb(envVars, dbName): Promise<void> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createSampleDb(envVars, dbName): Promise<void> {
   if (isEmpty(dbName)) {
     throw new Error('Database name cannot be empty');

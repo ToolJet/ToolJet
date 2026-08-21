@@ -33,7 +33,13 @@ export interface GrpcErrorDetails extends Record<string, unknown> {
   httpStatus?: number;
   httpStatusText?: string;
   networkCode?: string;
-  errorType: 'ServiceError' | 'ReflectionException' | 'ReflectionRequestException' | 'NetworkError' | 'ParseError' | 'QueryError';
+  errorType:
+    | 'ServiceError'
+    | 'ReflectionException'
+    | 'ReflectionRequestException'
+    | 'NetworkError'
+    | 'ParseError'
+    | 'QueryError';
 }
 
 export type SourceOptions = {
@@ -104,7 +110,7 @@ export class GrpcOperationError extends Error {
     const baseDetails: GrpcErrorDetails = {
       grpcCode: 0,
       grpcStatus: 'UNKNOWN',
-      errorType: 'QueryError'
+      errorType: 'QueryError',
     };
 
     if (this.isGrpcServiceError(error)) {
@@ -144,7 +150,9 @@ export class GrpcOperationError extends Error {
     return baseDetails;
   }
 
-  private isGrpcServiceError(error: unknown): error is { code: number; message: string; details: string; metadata: any } {
+  private isGrpcServiceError(
+    error: unknown
+  ): error is { code: number; message: string; details: string; metadata: any } {
     return (
       isRecord(error) &&
       hasProperty(error, 'code') &&
@@ -156,21 +164,15 @@ export class GrpcOperationError extends Error {
   }
 
   private isReflectionException(error: unknown): boolean {
-    return error !== null &&
-      typeof error === 'object' &&
-      error.constructor?.name === 'ReflectionException';
+    return error !== null && typeof error === 'object' && error.constructor?.name === 'ReflectionException';
   }
 
   private isReflectionRequestException(error: unknown): boolean {
-    return error !== null &&
-      typeof error === 'object' &&
-      error.constructor?.name === 'ReflectionRequestException';
+    return error !== null && typeof error === 'object' && error.constructor?.name === 'ReflectionRequestException';
   }
 
   private isNetworkError(error: unknown): error is Record<string, unknown> {
-    return error !== null &&
-      typeof error === 'object' &&
-      ('response' in error || 'code' in error);
+    return error !== null && typeof error === 'object' && ('response' in error || 'code' in error);
   }
 
   private getGrpcStatusName(code: number): string {
@@ -191,7 +193,7 @@ export class GrpcOperationError extends Error {
       13: 'INTERNAL',
       14: 'UNAVAILABLE',
       15: 'DATA_LOSS',
-      16: 'UNAUTHENTICATED'
+      16: 'UNAUTHENTICATED',
     };
     return statusNames[code] || `UNKNOWN_STATUS_${code}`;
   }
@@ -203,5 +205,3 @@ export class GrpcConnectionError extends Error {
     this.name = 'GrpcConnectionError';
   }
 }
-
-

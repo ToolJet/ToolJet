@@ -36,7 +36,7 @@ export const QueryPanel = ({ darkMode }) => {
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight >= 95
       ? 50
-      : queryManagerPreferences.current?.queryPanelHeight ?? 70
+      : (queryManagerPreferences.current?.queryPanelHeight ?? 70)
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
   const [windowSize, isWindowResizing] = useWindowResize();

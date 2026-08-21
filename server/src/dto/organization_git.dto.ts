@@ -51,3 +51,10 @@ export class OrganizationGitStatusUpdateDto {
   @IsNotEmpty()
   gitType: GITConnectionType;
 }
+
+// Payload for the dedicated PUT /git-sync/:id/is-branching-enabled endpoint that toggles
+// only the workspace branching mode (organization_git_sync.is_branching_enabled).
+export class UpdateBranchingEnabledDto {
+  @IsBoolean()
+  isBranchingEnabled: boolean;
+}

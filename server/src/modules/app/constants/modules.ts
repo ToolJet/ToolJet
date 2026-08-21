@@ -43,10 +43,13 @@ export enum MODULES {
   MODULES = 'Modules',
   APP_GIT = 'AppGit',
   GIT_SYNC = 'GitSync',
+  GIT_SYNC_CONFIGS = 'GitSyncConfigs',
   WORKSPACE_BRANCHES = 'WorkspaceBranches',
   APP_HISTORY = 'AppHistory',
   CRM = 'CRM',
   SCIM = 'SCIM',
   CUSTOM_DOMAINS = 'customDomains',
   DATA_QUERY_FOLDERS = 'DataQueryFolders',
+  WORKFLOW_FOLDER = 'WorkflowFolder',
+  MODULE_FOLDER = 'ModuleFolder',
 }

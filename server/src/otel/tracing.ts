@@ -20,6 +20,9 @@ import {
 } from '@opentelemetry/semantic-conventions';
 import { getTooljetEdition } from '../helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '../modules/app/constants';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
@@ -570,10 +573,6 @@ export const decrementActiveSessions = (attributes: {
 // Load .env file before checking ENABLE_OTEL
 // ConfigModule hasn't loaded yet, so we need to manually load .env
 // Use the same pattern as the rest of the codebase (from database-config-utils.ts)
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
-
 function loadEnvVars() {
   const envFilePath =
     process.env.NODE_ENV === 'test'

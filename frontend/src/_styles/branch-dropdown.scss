@@ -60,6 +60,50 @@
   }
 }
 
+// Single-branch mode: the selector reads as a plain label at rest (no border/background,
+// muted text + icon) since there are no branches to switch between. On hover and when the
+// popover is open it takes on the normal bordered-button appearance to signal it's clickable.
+.branch-dropdown-container.single-branch {
+  .branch-dropdown-button {
+    border-color: transparent;
+    background-color: transparent;
+
+    .branch-name {
+      color: var(--slate11);
+    }
+
+    svg path {
+      fill: var(--slate11);
+    }
+
+    &:hover {
+      background-color: var(--slate3);
+      border-color: var(--slate7);
+
+      .branch-name {
+        color: var(--text-default);
+      }
+
+      svg path {
+        fill: var(--slate12);
+      }
+    }
+  }
+
+  &.selected .branch-dropdown-button {
+    background-color: var(--slate3);
+    border-color: var(--slate7);
+
+    .branch-name {
+      color: var(--text-default);
+    }
+
+    svg path {
+      fill: var(--slate12);
+    }
+  }
+}
+
 // Old styles - keeping for backward compatibility
 .branch-dropdown-header {
   display: flex;
@@ -1148,6 +1192,60 @@
 
     svg {
       flex-shrink: 0;
+    }
+
+    &.split {
+      width: auto;
+      border: none;
+      border-radius: 0;
+
+      &:hover {
+        background: var(--slate3);
+      }
+    }
+  }
+
+  .branch-dropdown-split-row {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    overflow: hidden;
+
+    .save-version-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+      padding: 5px 10px;
+      background: var(--slate1);
+      border: none;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--slate12);
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--slate3);
+      }
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+
+    .switch-branch-btn.split {
+      flex: 1;
+    }
+
+    .branch-dropdown-split-divider {
+      width: 1px;
+      background: var(--slate7);
     }
   }
 }

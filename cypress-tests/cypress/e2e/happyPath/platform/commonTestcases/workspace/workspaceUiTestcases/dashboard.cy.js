@@ -92,11 +92,6 @@ describe("dashboard", () => {
           commonText.emptyNotificationSubtitle
         );
       });
-    // cy.get(commonSelectors.notificationsCardFooter).verifyVisibleElement(
-    //   "have.text",
-    //   commonText.viewReadNotifications
-    // );
-
     cy.get(dashboardSelector.modeToggle).should("be.visible").click();
     cy.get(commonSelectors.mainWrapper)
       .should("have.attr", "class")
@@ -173,7 +168,7 @@ describe("dashboard", () => {
       commonSelectors.workspaceConstantsIcon,
       "Workspace constants"
     );
-    verifyTooltip(commonSelectors.notificationsIcon, "Notifications");
+    verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
   });
 

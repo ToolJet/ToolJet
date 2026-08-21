@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type SourceOptions = {};
+export type SourceOptions = Record<string, never>;
 export type QueryOptions = {
   operation: string;
 };
