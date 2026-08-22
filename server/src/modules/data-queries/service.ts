@@ -198,7 +198,11 @@ export class DataQueriesService implements IDataQueriesService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
-      await this.dataQueryRepository.deleteOne(dataQueryId);
+      // Same transaction: deleteOne without the manager falls back to the
+      // repository's auto-commit connection, so a rollback of the outer
+      // transaction left the query permanently deleted with orphaned
+      // event handlers surviving it.
+      await this.dataQueryRepository.deleteOne(dataQueryId, manager);
     });
 
     const operationTimestamp = Date.now();
