@@ -410,6 +410,7 @@ Cypress.Commands.add(
         const isEnterprise = Cypress.env("environment") === "Enterprise";
         const typeMap = {
           app: { type: "app", endpoint: "app" },
+          module: { type: "module", endpoint: "data-source" },
           workflow: { type: "workflow", endpoint: "data-source" },
           datasource: { type: "data_source", endpoint: "data-source" },
           folder: { type: "folder", endpoint: "folder" },
@@ -494,6 +495,9 @@ Cypress.Commands.add(
               workflow: "app",
               data_source: "data-source",
               folder: "folder",
+              modules:"data-source",
+              workflow_folder: "workflow-folder",
+              module_folder: "module-folder",
             };
             const endpoint = typeEndpointMap[permission.type] || "app";
 
@@ -1347,6 +1351,7 @@ Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
       });
   });
 });
+
 
 Cypress.Commands.add("apiAddModuleToFolder", (moduleId, folderId) => {
   return cy.getAuthHeaders().then((headers) => {

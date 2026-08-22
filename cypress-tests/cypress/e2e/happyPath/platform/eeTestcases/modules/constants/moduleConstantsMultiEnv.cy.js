@@ -1,14 +1,12 @@
+import { Environments } from 'Constants/constants/multiEnv';
 import { commonSelectors, commonWidgetSelector } from 'Selectors/common';
 import { commonEeSelectors, multiEnvSelector } from 'Selectors/eeCommon';
-import { moduleSelectors } from 'Selectors/platform/modules';
 import { importSelectors } from 'Selectors/exportImport';
-import { Environments } from 'Constants/constants/multiEnv';
-import { openModulesList, dragModuleIntoCanvas } from 'Support/utils/platform/modules';
+import { moduleSelectors } from 'Selectors/platform/modules';
+import { dragModuleIntoCanvas, openModulesList } from 'Support/utils/platform/modules';
 
-describe('Modules — Workspace Constants Across Environments', { retries: 0 }, () => {
+describe('Modules — Workspace Constants Across Environments', () => {
   const testId = Date.now();
-  const wsName = `modules-constants-${testId}`;
-  const wsSlug = wsName;
   const moduleFile = 'cypress/fixtures/templates/modules/one version module.json';
   // Filename-derived, same convention as moduleImport.cy.js (readAndImport
   // strips only the ".json" extension — the space stays as-is).
@@ -19,16 +17,19 @@ describe('Modules — Workspace Constants Across Environments', { retries: 0 }, 
   const HEADER_KEY_VALUE = 'customHeader';
   const UI_CONST_GLOBAL_VALUE = 'sample-ui-constant-value';
 
-  let workspaceId;
-  let moduleAppId;
+  let workspaceId, wsName, wsSlug;
+  let moduleAppId, moduleEditingVersionId, moduleDevEnvironmentId;
   let consumerAppId;
 
-  // after(() => {
-  //   cy.apiLogin();
-  //   cy.then(() => cy.apiArchiveWorkspace(workspaceId));
-  // });
+  afterEach(() => {
+    cy.apiLogin();
+    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
+  });
 
   beforeEach(() => {
+    wsName = `modules-constants-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
@@ -63,10 +64,17 @@ describe('Modules — Workspace Constants Across Environments', { retries: 0 }, 
       moduleAppId = url.split('/apps/')[1].split('/')[0];
       Cypress.env('appId', moduleAppId);
       cy.intercept('GET', `/api/apps/${moduleAppId}`).as('getModuleData');
+      cy.reload();
       cy.wait('@getModuleData').then((interception) => {
-        Cypress.env('editingVersionId', interception.response.body.editing_version.id);
+        moduleEditingVersionId = interception.response.body.editing_version.id;
+        moduleDevEnvironmentId = interception.response.body.editorEnvironment.id;
+        Cypress.env('editingVersionId', moduleEditingVersionId);
+        Cypress.env('environmentId', moduleDevEnvironmentId);
       });
     });
+     cy.apiPublishDraftVersion('v1');
+    cy.reload();
+    cy.wait(2000);
   });
 
   const promoteEnv = (fromEnv) => {
@@ -98,10 +106,7 @@ describe('Modules — Workspace Constants Across Environments', { retries: 0 }, 
   };
 
   it('imports a module and verifies its secrets/constants resolve correctly across dev/staging/production', () => {
-    cy.apiPublishDraftVersion('v1');
-    cy.reload();
-    cy.wait(2000);
-
+  
     verifyResolvedForEnv('Development');
 
     promoteEnv(Environments.development);
@@ -111,7 +116,7 @@ describe('Modules — Workspace Constants Across Environments', { retries: 0 }, 
     verifyResolvedForEnv('Production');
   });
 
-  it.only('embeds the module in a consuming app and verifies its constants still resolve correctly across dev/staging/production', () => {
+  it('embeds the module in a consuming app and verifies its constants still resolve correctly across dev/staging/production', () => {
     const consumerAppName = `Constants Consumer ${testId}`;
 
     cy.apiCreateApp(consumerAppName).then(() => {
@@ -130,14 +135,32 @@ describe('Modules — Workspace Constants Across Environments', { retries: 0 }, 
 
     verifyResolvedForEnv('Development');
 
-    // Save/lock this version before promoting — same rule as the module
-    // itself in the previous test, confirmed working for a consuming app via
-    // this exact sequence in ModulePinning.cy.js.
+    // Save/lock this version before promoting 
     cy.get(moduleSelectors.versionSwitcherButton).click();
     cy.get(commonSelectors.buttonSelector('v1 save version')).click();
     cy.get(commonWidgetSelector.parameterInputField('version name')).clear().type('v1');
     cy.get(commonSelectors.buttonSelector('create version save')).click();
     cy.get(moduleSelectors.versionLockBanner, { timeout: 15000 }).should('be.visible');
+
+   
+    cy.then(() => {
+      Cypress.env('editingVersionId', moduleEditingVersionId);
+      cy.apiPromoteAppVersion(moduleDevEnvironmentId, moduleAppId).then(() => {
+        cy.apiPromoteAppVersion(Cypress.env('stagingEnvId'), moduleAppId);
+      });
+    });
+    cy.then(() => {
+      cy.getAuthHeaders().then((headers) => {
+        cy.request({
+          method: 'PUT',
+          url: `${Cypress.env('server_host')}/api/apps/${moduleAppId}/release`,
+          headers,
+          body: { versionToBeReleased: moduleEditingVersionId },
+        }).then((res) => {
+          expect(res.status).to.eq(200);
+        });
+      });
+    });
 
     promoteEnv(Environments.development);
     verifyResolvedForEnv('Staging');

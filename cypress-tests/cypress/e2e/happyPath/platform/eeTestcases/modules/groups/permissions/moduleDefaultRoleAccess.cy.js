@@ -1,7 +1,7 @@
 import { commonSelectors } from 'Selectors/common';
 import { openModulesList } from 'Support/utils/platform/modules';
 
-describe('Modules — Coarse Permissions: Default Role Access', { retries: 0 }, () => {
+describe('Modules — Coarse Permissions: Default Role Access', () => {
   const testId = Date.now();
   const wsName = `modules-coarse-role-${testId}`;
   const wsSlug = wsName;
@@ -12,7 +12,6 @@ describe('Modules — Coarse Permissions: Default Role Access', { retries: 0 }, 
 
   before(() => {
     cy.apiLogin();
-    
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);
@@ -20,6 +19,7 @@ describe('Modules — Coarse Permissions: Default Role Access', { retries: 0 }, 
     });
 
     cy.apiFullUserOnboarding('QA Coarse Builder', builderEmail, 'builder', 'password', wsName);
+    cy.apiLogin();
     cy.apiFullUserOnboarding('QA Coarse End User', endUserEmail, 'end-user', 'password', wsName);
   });
 
@@ -30,6 +30,7 @@ describe('Modules — Coarse Permissions: Default Role Access', { retries: 0 }, 
 
   beforeEach(() => {
     cy.apiLogin();
+    cy.viewport(2000, 1900);
   });
 
   it('admin can create a module by default', () => {

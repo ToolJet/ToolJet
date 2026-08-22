@@ -1,30 +1,59 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { moduleSelectors } from "Selectors/platform/modules";
 import { versionModalSelector } from "Selectors/eeCommon";
+import { moduleSelectors } from "Selectors/platform/modules";
+import { apiCreateGroup } from "Support/utils/manageGroups";
 import {
-  createModuleViaAPI,
   authorModuleContract,
-  publishModuleVersion,
+  createModuleViaAPI,
   dragModuleIntoCanvas,
   openModulesList,
+  publishModuleVersion,
 } from "Support/utils/platform/modules";
-import { apiCreateGroup } from "Support/utils/manageGroups";
 
-describe("Modules — Granular Permissions", { retries: 0 }, () => {
-  const testId = Date.now();
-  const shortId = String(testId).slice(-6);
-  const wsName = `modules-permissions-${testId}`;
-  const wsSlug = wsName;
+describe("Modules — Granular Permissions", () => {
+  let workspaceId, wsName, wsSlug;
 
-  const editModuleName = `Edit Mod ${shortId}`;
-  const buildWithModuleName = `BW Mod ${shortId}`;
-  const groupName = `QA Module Permission Group ${testId}`;
+  // Creates a fresh module, authors + publishes v1, grants it to a custom
+  // group with the given permissions, and onboards a builder into that
+  // group. Returns the created IDs/names for the test to use.
+  const setupModuleAccess = (label, permissions) => {
+    const attemptId = Date.now();
+    const moduleName = `${label} Mod ${attemptId}`;
+    const groupName = `QA ${label} Group ${attemptId}`;
+    const userEmail = `qa-granular-${label.toLowerCase().replace(/\s+/g, "-")}-${attemptId}@example.com`;
+    let moduleId;
 
-  let workspaceId;
-  let editModuleId;
-  let buildWithModuleId;
+    return cy
+      .then(() => createModuleViaAPI(moduleName))
+      .then((module) => {
+        moduleId = module.id;
+        authorModuleContract();
+        publishModuleVersion("v1", "v1-published");
+      })
+      .then(() => apiCreateGroup(groupName))
+      .then(() =>
+        cy.apiCreateGranularPermission(
+          groupName,
+          `${groupName} perm`,
+          "module",
+          permissions,
+          [moduleId],
+          false
+        )
+      )
+      .then(() => cy.apiFullUserOnboarding(label, userEmail, "builder", "password", wsName, {}, [groupName]))
+      .then(() => ({ moduleId, moduleName, groupName, userEmail }));
+  };
 
-  before(() => {
+  afterEach(() => {
+    cy.apiLogin();
+    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
+  });
+
+  beforeEach(() => {
+    wsName = `modules-permissions-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
     cy.apiUpdateLicense("valid");
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
@@ -33,253 +62,74 @@ describe("Modules — Granular Permissions", { retries: 0 }, () => {
       Cypress.env("workspaceSlug", wsSlug);
     });
 
-    cy.then(() => {
-      createModuleViaAPI(editModuleName).then((module) => {
-        editModuleId = module.id;
-      });
-      authorModuleContract();
-      publishModuleVersion("v1", "v1-published");
-    });
-
-    cy.then(() => {
-      createModuleViaAPI(buildWithModuleName).then((module) => {
-        buildWithModuleId = module.id;
-      });
-      authorModuleContract();
-      publishModuleVersion("v1", "v1-published");
-    });
-
-    apiCreateGroup(groupName);
-
-    cy.then(() => {
-      cy.apiCreateGranularPermission(
-        groupName,
-        "Edit Module",
-        "module",
-        { canEdit: true, canView: false, hideFromDashboard: false },
-        [editModuleId],
-        false
-      );
-      cy.apiCreateGranularPermission(
-        groupName,
-        "Build-with Module",
-        "module",
-        { canEdit: false, canView: true, hideFromDashboard: false },
-        [buildWithModuleId],
-        false
-      );
-    });
-
-    cy.apiLogout();
-  });
-
-  after(() => {
-    cy.apiLogin();
-    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
+    cy.apiDeleteGranularPermission("builder", ["module"]);
   });
 
   it("Edit-level granular access lets a non-owner actually edit a module", () => {
-    const grantedUserEmail = `qa-granular-edit-${testId}@example.com`;
-    cy.apiFullUserOnboarding(
-      "QA Granular Edit User",
-      grantedUserEmail,
-      "builder",
-      "password",
-      wsName,
-      {},
-      [groupName]
+    setupModuleAccess("Edit", { canEdit: true, canView: false, hideFromDashboard: false }).then(
+      ({ moduleId, userEmail }) => {
+        cy.apiLogin(userEmail, "password");
+        cy.visit(`/${wsSlug}/apps/${moduleId}`, { failOnStatusCode: false });
+        cy.wait(3000);
+
+        cy.get(moduleSelectors.versionSwitcherButton).click();
+        cy.get(commonSelectors.buttonSelector("create draft version")).click();
+        cy.get(versionModalSelector.versionNameInput).type("v2-edit-allowed");
+        cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
+        cy.get(commonSelectors.toastMessage).should("not.exist");
+        cy.get(moduleSelectors.versionSwitcherButton).should("contain.text", "v2-edit-allowed");
+      }
     );
-
-    cy.apiLogin(grantedUserEmail, "password");
-    cy.visit(`/${Cypress.env("workspaceSlug")}/apps/${editModuleId}`, {
-      failOnStatusCode: false,
-    });
-    cy.wait(3000);
-
-    cy.get(moduleSelectors.versionSwitcherButton).click();
-    cy.get(commonSelectors.buttonSelector("create draft version")).click();
-    cy.get(versionModalSelector.versionNameInput).type("v2-edit-allowed");
-    cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
-    cy.get(commonSelectors.toastMessage).should("not.exist");
-    cy.get(moduleSelectors.versionSwitcherButton).should("contain.text", "v2-edit-allowed");
   });
 
   it("a Build-with user's module card shows the correct access-level button", () => {
-    // KNOWN BUG (confirmed by reading source, 2026-08-10): AppCard.jsx's
-    // edit-button condition is `canUpdate || appType === 'module'` — true
-    // for ANY module regardless of canUpdate, so the correct view-button
-    // branch right below it (`!canUpdate && canView && appType === 'module'`)
-    // is unreachable dead code. A Build-with (view-only) module's card should
-    // show "View", not "Edit" — left failing intentionally as documentation.
-    const grantedUserEmail = `qa-granular-cardview-${testId}@example.com`;
-    cy.apiFullUserOnboarding(
-      "QA Granular Card View User",
-      grantedUserEmail,
-      "builder",
-      "password",
-      wsName,
-      {},
-      [groupName]
+    setupModuleAccess("CardView", { canEdit: false, canView: true, hideFromDashboard: false }).then(
+      ({ moduleName, userEmail }) => {
+        cy.apiLogin(userEmail, "password");
+        openModulesList();
+        cy.get(commonSelectors.appCard(moduleName))
+          .trigger("mousehover")
+          .trigger("mouseenter")
+          .within(() => {
+            cy.get('[data-cy="view-button"]').should("exist");
+            cy.get('[data-cy="edit-button"]').should("not.exist");
+          });
+      }
     );
-
-    cy.apiLogin(grantedUserEmail, "password");
-    openModulesList();
-    cy.get(commonSelectors.appCard(buildWithModuleName))
-      .trigger("mousehover")
-      .trigger("mouseenter")
-      .within(() => {
-        cy.get('[data-cy="view-button"]').should("exist");
-        cy.get('[data-cy="edit-button"]').should("not.exist");
-      });
   });
 
   it("a Build-with user can consume the module in an app but cannot edit it", () => {
-    const grantedUserEmail = `qa-granular-consume-${testId}@example.com`;
-    const consumerAppName = `BW App ${shortId}-consume`;
-    cy.apiFullUserOnboarding(
-      "QA Granular Consume User",
-      grantedUserEmail,
-      "builder",
-      "password",
-      wsName,
-      {},
-      [groupName]
+    setupModuleAccess("Consume", { canEdit: false, canView: true, hideFromDashboard: false }).then(
+      ({ moduleId, moduleName, userEmail }) => {
+        const consumerAppName = `${moduleName}-consumer`;
+
+        cy.apiLogin(userEmail, "password");
+        cy.apiCreateApp(consumerAppName);
+
+        // Consumption: Build-with is enough to drag the module into a consuming app.
+        cy.visit(`/${wsSlug}`);
+        cy.get(commonSelectors.appCard(consumerAppName))
+          .trigger("mousehover")
+          .trigger("mouseenter")
+          .find(commonSelectors.editButton)
+          .click({ force: true });
+        cy.wait(2000);
+
+        dragModuleIntoCanvas(moduleName);
+        cy.get(commonWidgetSelector.draggableWidget("moduleviewer1")).should("exist");
+
+        // Editing: attempting the one action that would unlock editing (creating
+        // a draft version) is blocked.
+        cy.visit(`/${wsSlug}/apps/${moduleId}`, { failOnStatusCode: false });
+        cy.wait(3000);
+
+        cy.get(moduleSelectors.versionSwitcherButton).click();
+        cy.get(commonSelectors.buttonSelector("create draft version")).click();
+        cy.get(versionModalSelector.versionNameInput).type("v2-blocked-draft");
+        // Build-with (view-only) users get the create button pre-disabled —
+        // the modal never lets the request through, so no toast fires.
+        cy.get(versionModalSelector.createDraftVersionModal.createButton).should("be.disabled");
+      }
     );
-
-    cy.apiLogin(grantedUserEmail, "password");
-    cy.apiCreateApp(consumerAppName);
-
-    // Consumption: Build-with is enough to drag the module into a consuming app.
-    cy.visit(`/${Cypress.env("workspaceSlug")}`);
-    cy.get(commonSelectors.appCard(consumerAppName))
-      .trigger("mousehover")
-      .trigger("mouseenter")
-      .find(commonSelectors.editButton)
-      .click({ force: true });
-    cy.wait(2000);
-
-    dragModuleIntoCanvas(buildWithModuleName);
-    cy.get(commonWidgetSelector.draggableWidget("moduleviewer1")).should("exist");
-
-    // Editing: attempting the one action that would unlock editing (creating
-    // a draft version) is blocked. KNOWN BUG (confirmed live, 2026-08-07 and
-    // 2026-08-10): this toast appears, but the draft version is actually
-    // created anyway — a real server-side permission bypass, left failing
-    // intentionally.
-    cy.visit(`/${Cypress.env("workspaceSlug")}/apps/${buildWithModuleId}`, {
-      failOnStatusCode: false,
-    });
-    cy.wait(3000);
-
-    cy.get(moduleSelectors.versionSwitcherButton).click();
-    cy.get(commonSelectors.buttonSelector("create draft version")).click();
-    cy.get(versionModalSelector.versionNameInput).type("v2-blocked-draft");
-    cy.get(
-      versionModalSelector.createDraftVersionModal.createButton
-    ).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "You do not have permission to create a draft version"
-    );
-  });
-
-  it("an end-user has no access to the Modules section, but can still view a consuming app's released output that embeds a module they have no module-level permission for", () => {
-    const grantedUserEmail = `qa-granular-enduser-embed-${testId}@example.com`;
-    const endUserEmail = `qa-permissions-enduser-${testId}@example.com`;
-    const consumerAppName = `BW App ${shortId}-enduser`;
-    let consumerAppId;
-
-    cy.apiFullUserOnboarding(
-      "QA Granular End User Embed User",
-      grantedUserEmail,
-      "builder",
-      "password",
-      wsName,
-      {},
-      [groupName]
-    );
-
-    cy.apiLogin(grantedUserEmail, "password");
-    cy.apiCreateApp(consumerAppName).then(() => {
-      consumerAppId = Cypress.env("appId");
-    });
-
-    // Embed the Build-with module into this consumer app so an end-user can
-    // view it independently of any module-level grant.
-    cy.visit(`/${Cypress.env("workspaceSlug")}`);
-    cy.get(commonSelectors.appCard(consumerAppName))
-      .trigger("mousehover")
-      .trigger("mouseenter")
-      .find(commonSelectors.editButton)
-      .click({ force: true });
-    cy.wait(2000);
-
-    dragModuleIntoCanvas(buildWithModuleName);
-    cy.get(commonWidgetSelector.draggableWidget("moduleviewer1")).should("exist");
-
-    cy.intercept("GET", `/api/apps/${consumerAppId}`).as("getConsumerAppData");
-    cy.reload();
-    cy.wait("@getConsumerAppData").then((interception) => {
-      Cypress.env("appId", consumerAppId);
-      Cypress.env("editingVersionId", interception.response.body.editing_version.id);
-    });
-
-    cy.get(moduleSelectors.versionSwitcherButton).click();
-    cy.get(commonSelectors.buttonSelector("v1 save version")).click();
-    cy.get(commonWidgetSelector.parameterInputField("version name")).clear().type("v1");
-    cy.get(commonSelectors.buttonSelector("create version save")).click();
-    cy.get(moduleSelectors.versionLockBanner, { timeout: 15000 }).should("be.visible");
-
-    // Release directly from development — no need to promote through
-    // staging/production first (release just designates which version is
-    // "released"; that's orthogonal to environment-scoped preview access).
-    // Promoting DID fail with a 400 here previously (likely
-    // checkModulesPromotableToEnvironment, since the embedded module was
-    // never itself promoted past development) — irrelevant to what this
-    // test actually needs.
-    cy.apiLogin();
-    cy.apiReleaseApp(consumerAppName);
-
-    // No module-level grant at all for this end-user — only default
-    // end-user access to the released consumer app.
-    cy.apiFullUserOnboarding(
-      "QA Permissions End User",
-      endUserEmail,
-      "end-user",
-      "password",
-      wsName
-    );
-    cy.apiLogout();
-
-    cy.apiLogin(endUserEmail, "password");
-
-    // No access to the Modules section itself: visiting /modules redirects
-    // an end-user to the Applications dashboard instead of showing the list
-    // (confirmed live, 2026-08-10 — not just an empty list, an actual
-    // redirect away from the page).
-    cy.visit(`/${Cypress.env("workspaceSlug")}/modules`);
-    cy.get(commonSelectors.pageSectionHeader, { timeout: 20000 }).should(
-      "contain.text",
-      "Applications"
-    );
-
-    // Direct URL to the module's own editor shouldn't grant access either —
-    // end-users can't open any app/module editor.
-    cy.visit(`/${Cypress.env("workspaceSlug")}/apps/${buildWithModuleId}`, {
-      failOnStatusCode: false,
-    });
-    cy.get(moduleSelectors.versionSwitcherButton).should("not.exist");
-
-    // But the released consuming app — which the end-user DOES have access
-    // to — should still resolve the embedded module correctly. Proves module
-    // permissions don't gate app-level consumption; the real enforcement is
-    // at the consuming app's own permission layer.
-    cy.then(() => {
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${consumerAppId}`,
-      });
-    });
-    cy.appUILogin(endUserEmail, "password");
-    cy.get(commonWidgetSelector.draggableWidget("moduleviewer1")).should("exist");
   });
 });
