@@ -4,17 +4,7 @@ import { groupsSelector } from 'Selectors/manageGroups';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { openGroupThreeDotMenu } from 'Support/utils/platform/customGroups';
 
-// Section 1 (Permission Configuration) scope note: the other config checks in the
-// manual doc — the Edit Folder/Edit Modules/View Modules radios existing & being
-// mutually exclusive, All Folders vs Custom Folders resource selection, and the
-// End-user tooltip — all require driving the "Add permission" dropdown
-// (AddResourcePermissionsMenu.jsx's Bootstrap OverlayTrigger), which proved
-// unreliable in headless Electron across many attempts earlier in this session
-// (see moduleGranularPermissions.cy.js's header comment). Their underlying
-// *behavior* is already proven indirectly by moduleFolderGranularAccess.cy.js and
-// moduleFolderPermissionInheritance.cy.js (effective access matches each permission
-// level, union/highest-wins across grants) — this file only covers what's safely
-// verifiable without that dropdown: group duplication.
+
 describe('Modules — Folder Granular Permission Configuration', () => {
   const testId = Date.now();
 

@@ -202,11 +202,12 @@ describe('Modules — Folder Permission Inheritance & Aggregation', () => {
       cy.apiLogin(userEmail, 'password');
       cy.visit(`/${wsSlug}/apps/${moduleId}`, { failOnStatusCode: false });
       cy.wait(3000);
-      attemptCreateDraft('v2-view-only-after-removal');
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        'You do not have permission to create a draft version'
-      );
+      // Left with View-only access after the Edit-granting group membership is
+      // removed — the create button is pre-disabled, so no toast fires.
+      cy.get(moduleSelectors.versionSwitcherButton).click();
+      cy.get(commonSelectors.buttonSelector('create draft version')).click();
+      cy.get(versionModalSelector.versionNameInput).type('v2-view-only-after-removal');
+      cy.get(versionModalSelector.createDraftVersionModal.createButton).should('be.disabled');
     });
   });
 });

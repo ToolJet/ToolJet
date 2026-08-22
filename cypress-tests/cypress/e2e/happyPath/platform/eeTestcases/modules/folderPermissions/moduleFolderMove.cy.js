@@ -5,10 +5,14 @@ import { moduleSelectors } from 'Selectors/platform/modules';
 import { viewAppCardOptions } from 'Support/utils/common';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { openModulesList } from 'Support/utils/platform/modules';
+import {
+  getGroupPermissionInput
+} from "Support/utils/userPermissions";
 import { commonText } from 'Texts/common';
 import { dashboardText } from 'Texts/dashboard';
 
 describe('Modules — Moving Modules Between Folders', () => {
+  const isEnterprise = Cypress.env('environment') === 'Enterprise';
   let workspaceId, wsName, wsSlug;
 
   afterEach(() => {
@@ -27,7 +31,11 @@ describe('Modules — Moving Modules Between Folders', () => {
       Cypress.env('workspaceSlug', wsSlug);
     });
 
-    cy.apiDeleteGranularPermission('builder', ['module_folder']);
+    // Strip every default the builder ROLE ships with — coarse flags and all
+    // granular grants (including the module/module_folder "All" defaults) — so
+    // each test's custom-group grant is the only source of access being verified.
+    cy.apiUpdateGroupPermission('builder', getGroupPermissionInput(isEnterprise, false));
+    cy.apiDeleteGranularPermission('builder', []);
   });
 
   it('user with Edit Folder access sees only authorized folders in the move picker, and can move a module they can edit into one', () => {
