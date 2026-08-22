@@ -6,8 +6,16 @@ type SpreadsheetResponseBody = {
   sheets?: Array<any>;
 };
 
+export function readValuesUrl(spreadSheetId: string, sheet: string, range: string): string {
+  // A blank range means "the whole sheet": the values API reads a sheet's
+  // entire used range when the range names only the sheet, so no `!` suffix.
+  return range
+    ? `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''}!${range}`
+    : `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''}`;
+}
+
 async function makeRequestToReadValues(spreadSheetId: string, sheet: string, range: string, authHeader: any,majorDimension?: string,valueRenderOption?: string,dateTimeRenderOption?: string ){
-  let url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''}!${range}`;
+  let url = readValuesUrl(spreadSheetId, sheet, range);
 
   const params = new URLSearchParams();
   if (majorDimension) params.append('majorDimension', majorDimension);
