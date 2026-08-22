@@ -255,17 +255,22 @@ export class VersionRepository extends Repository<AppVersion> {
     return m.delete(AppVersion, { id: versionId });
   }
 
-  async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App> {
+  async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App | null> {
     const m = manager ?? this.manager;
-    const appVersion = await m.findOneOrFail(AppVersion, {
+    // Null-returning contract: every guard checks for a falsy app to throw
+    // its own NotFoundException (404). findOneOrFail would throw a raw
+    // EntityNotFoundError first, turning a cross-org or unknown versionId
+    // into an unhandled 500 and leaving those guards' checks dead.
+    const appVersion = await m.findOne(AppVersion, {
       where: { id, app: { organizationId } },
       relations: ['app'],
     });
-    const app = appVersion.app;
+    const app = appVersion?.app;
+    if (!app) return null;
     // Workflows keep metadata on apps.*; non-workflows must overlay from the
     // canonical version row resolved by git-sync state. Forward the loaded
     // version's branchId so the overlay picks that branch's row directly.
-    if (app && app.type !== APP_TYPES.WORKFLOW) {
+    if (app.type !== APP_TYPES.WORKFLOW) {
       const metadataVersion = await this.resolveMetadataVersion(m, app, {
         branchId: appVersion.branchId ?? undefined,
       });
