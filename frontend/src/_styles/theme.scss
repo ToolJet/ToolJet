@@ -12066,6 +12066,9 @@ tbody {
   }
 
   input.dynamic-form-encrypted-field[type="password"] {
+    // The eye toggle sits absolutely at right: 8px -- reserve room for it in
+    // every state, or the masked value renders underneath the icon.
+    padding-right: 35px !important;
     &:disabled {
       padding-right: 35px !important;
     }
