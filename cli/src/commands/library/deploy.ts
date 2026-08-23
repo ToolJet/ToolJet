@@ -20,11 +20,15 @@ export default class ComponentDeploy extends Command {
 
   static flags = {
     message: Flags.string({ description: 'Optional label for the revision (shown in app builder revision picker)' }),
+    force: Flags.boolean({
+      description: 'Publish even if the build reports TypeScript errors',
+      default: false,
+    }),
   };
 
   async run(): Promise<void> {
     const { flags } = await this.parse(ComponentDeploy);
-    const { message } = flags;
+    const { message, force } = flags;
 
     const { workspaceId, apiToken, url } = Auth.resolveOrExit();
     const config = this.readConfigOrExit();
@@ -43,6 +47,20 @@ export default class ComponentDeploy extends Command {
       this.log(formatSuccess(`Bundle built: dist/index.js (${result.bundleSizeKb} KB)`));
 
       if (result.hasCss) this.log(formatSuccess(`CSS output: dist/index.css (${result.cssSizeKb} KB)`));
+
+      const tsCompiledMsg = `TypeScript compiled (${result.tsErrors} errors)`;
+      result.tsErrors === 0 && this.log(formatSuccess(tsCompiledMsg));
+      
+      if (result.tsErrors > 0 && !force) {
+        this.log(formatError(tsCompiledMsg));
+        this.log(`\n${result.tsErrorReport}`);
+        this.log(
+          formatError(
+            `Aborting - build reported ${result.tsErrors} TypeScript error(s). Fix them, or re-run with --force to publish anyway.`
+          )
+        );
+        process.exit(1);
+      }
 
       this.log(formatSuccess(`Built successfully in ${formatDuration(result.buildMs)}`));
 
