@@ -147,7 +147,30 @@ export class SeedWorkspaceBranchData1773229179000 implements MigrationInterface 
         AND av.branch_id IS NULL;
     `);
 
+    // 4a-bis. Heal non-workflow rows missing app_name/slug BEFORE attaching a branch_id.
+    //     chk_app_versions_branch_metadata (added by 1778000000000) requires every branched
+    //     row to carry app_name AND slug. Real data has rows whose source apps.name was NULL
+    //     / apps.slug was zeroed to app.id, leaving app_versions metadata NULL — 1778000000000
+    //     step 2a can't heal them because branch_id is still NULL at schema-migration time.
+    //     Fall back to apps.slug (non-null) then app.id. Mirrors the identical heal in
+    //     1781741000000; done here because 4b attaches branch_id below.
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET slug = COALESCE(av.slug, a.slug, a.id::text),
+          app_name = COALESCE(av.app_name, a.name, a.slug, a.id::text)
+      FROM apps a
+      WHERE av.app_id = a.id
+        AND a.type <> 'workflow'
+        AND av.branch_id IS NULL
+        AND (av.slug IS NULL OR av.app_name IS NULL);
+    `);
+
     // 4b. Assign remaining app_versions (version-type, or any unmatched) to the default branch.
+    //     Workflows are excluded: they don't participate in branching (their metadata
+    //     lives on apps.*, so app_versions.app_name/slug is NULL and attaching a branch_id
+    //     would trip chk_app_versions_branch_metadata). Workflow branch_id is backfilled
+    //     later by 1782400000000, after 1782250000000 copies workflow metadata onto the
+    //     version rows. Matches the workflow-exclusion in 1778000000000 / 1781741000000.
     await queryRunner.query(`
       UPDATE app_versions av
       SET branch_id = wb.id
@@ -155,7 +178,8 @@ export class SeedWorkspaceBranchData1773229179000 implements MigrationInterface 
       JOIN organization_git_sync_branches wb
         ON wb.organization_id = a.organization_id AND wb.is_default = true
       WHERE av.app_id = a.id
-        AND av.branch_id IS NULL;
+        AND av.branch_id IS NULL
+        AND a.type <> 'workflow';
     `);
   }
 

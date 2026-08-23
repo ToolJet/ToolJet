@@ -10,8 +10,6 @@ export class CreateWorkspaceBranchTables1772568626000 implements MigrationInterf
         branch_name             VARCHAR(255) NOT NULL,
         is_default              BOOLEAN NOT NULL DEFAULT false,
         source_branch_id        UUID REFERENCES organization_git_sync_branches(id) ON DELETE SET NULL,
-        app_meta_hash           VARCHAR(64) DEFAULT NULL,
-        data_source_meta_hash   VARCHAR(64) DEFAULT NULL,
         created_at              TIMESTAMP NOT NULL DEFAULT now(),
         updated_at              TIMESTAMP NOT NULL DEFAULT now(),
         UNIQUE(organization_id, branch_name)
@@ -28,7 +26,6 @@ export class CreateWorkspaceBranchTables1772568626000 implements MigrationInterf
         name             VARCHAR(255) NOT NULL,
         is_active        BOOLEAN NOT NULL DEFAULT true,
         app_version_id   UUID REFERENCES app_versions(id) ON DELETE CASCADE,
-        meta_timestamp   NUMERIC(15) DEFAULT NULL,
         branch_id        UUID REFERENCES organization_git_sync_branches(id) ON DELETE CASCADE,
         pulled_at        TIMESTAMP DEFAULT NULL,
         created_at       TIMESTAMP NOT NULL DEFAULT now(),

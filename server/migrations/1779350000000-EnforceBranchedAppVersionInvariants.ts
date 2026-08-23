@@ -1,30 +1,32 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Enforces two invariants on `app_versions` at the DB level:
+ * Enforces one invariant on `app_versions` at the DB level:
  *
- *   1. `version_type='branch'` implies `status='DRAFT'` AND `branch_id IS NOT NULL`.
- *      Sub-branch BRANCH-type rows must be branched DRAFTs.
- *   2. `branch_id IS NOT NULL` implies `status='DRAFT'`.
- *      Any branched row must be a DRAFT. Strictly stronger than the existing
- *      `chk_app_versions_published_branch_id_null` (which only forbade
- *      PUBLISHED on a branch) — this also forbids RELEASED on a branch.
+ *   `version_type='branch'` implies `status='DRAFT'` AND `branch_id IS NOT NULL`.
+ *   Sub-branch BRANCH-type rows must be branched DRAFTs.
  *
- * The old `chk_app_versions_published_branch_id_null` is dropped because the
- * new "branched → DRAFT" constraint is the contrapositive and strictly
- * stronger. Keeping both would mean two CHECKs saying the same thing.
+ * It also DROPS the older `chk_app_versions_published_branch_id_null` CHECK
+ * (PUBLISHED ⇒ branch_id IS NULL): the final branch model attaches PUBLISHED and
+ * RELEASED version rows to the default branch, so that constraint no longer holds.
+ *
+ * Deliberately does NOT add a "branch_id IS NOT NULL ⇒ status='DRAFT'" CHECK.
+ * An earlier design did (chk_app_versions_branched_implies_draft), but the final
+ * model branches PUBLISHED/RELEASED rows too — adding it in the schema phase made
+ * the later data-phase branch_id backfill (SeedWorkspaceBranchData 4b,
+ * MakeAppVersionBranchIdNotNullAndGitSyncFlags 1781741000000) fail. See the note
+ * next to step 5a.
  *
  * Workflows are unaffected — their version rows always have `branch_id=NULL`
- * (workflows don't participate in branching) so neither new constraint bites.
+ * (workflows don't participate in branching) so the surviving CHECK never bites.
  *
- * The "branch_id IS NULL → status=PUBLISHED AND version_type=version" rule is
- * intentionally NOT added. Workflows and any other legitimate branchless
- * DRAFT rows are preserved.
- *
- * Data migration runs FIRST (steps 1-3) so the ALTER TABLE in steps 4-5
- * doesn't reject existing rows that violate the new predicates.
+ * NOTE ON PHASE: this file lives in server/migrations (schema phase), so it runs
+ * before ANY data migration — while every branch_id is still NULL. Steps 1-3
+ * therefore no-op on a fresh lts upgrade (nothing is branched yet); they only
+ * matter if a prior schema step populated branch_id. The surviving CHECK (5a) is
+ * validated against the all-NULL-branch_id state and passes.
  */
-export class EnforceBranchedAppVersionInvariants1779300000000 implements MigrationInterface {
+export class EnforceBranchedAppVersionInvariants1779350000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // The cleanup UPDATEs and the ADD CONSTRAINT validations below each scan the
     // whole app_versions table — slow enough to trip statement_timeout (57014) on a
@@ -131,21 +133,15 @@ export class EnforceBranchedAppVersionInvariants1779300000000 implements Migrati
       END $$;
     `);
 
-    // Step 5b: Any branched row must be a DRAFT (replaces the dropped CHECK).
-    await queryRunner.query(`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM pg_constraint
-          WHERE conname = 'chk_app_versions_branched_implies_draft'
-            AND conrelid = 'app_versions'::regclass
-        ) THEN
-          ALTER TABLE app_versions
-          ADD CONSTRAINT chk_app_versions_branched_implies_draft
-          CHECK (branch_id IS NULL OR status = 'DRAFT');
-        END IF;
-      END $$;
-    `);
+    // NOTE: the earlier "branch_id IS NOT NULL => status='DRAFT'" CHECK
+    // (chk_app_versions_branched_implies_draft) is intentionally NOT added. The final
+    // branch model attaches PUBLISHED (and RELEASED) version rows to the default branch
+    // (see SeedWorkspaceBranchData step 4b and MakeAppVersionBranchIdNotNullAndGitSyncFlags
+    // 1781741000000, which backfills branch_id onto every non-workflow row regardless of
+    // status). Adding that CHECK here — in the schema phase, before the data phase populates
+    // branch_id — made the later PUBLISHED backfill fail with a check-constraint violation.
+    // Only chk_app_versions_branch_type_implies_draft_branched (5a) survives: it constrains
+    // version_type='branch' sub-branch rows, which are always branched DRAFTs.
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
