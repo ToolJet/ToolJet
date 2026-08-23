@@ -18,7 +18,10 @@ export default class Login extends Command {
         type: 'input',
         validate: (input: string) => {
           try {
-            new URL(input.trim());
+            const { protocol } = new URL(input.trim());
+
+            if (!['http:', 'https:'].includes(protocol)) throw new Error();
+
             return true;
           } catch {
             return 'Enter a valid URL, including the protocol (e.g. https://app.tooljet.ai)';

@@ -51,6 +51,11 @@ export default class Dev extends Command {
 
         this.log(`  ${formatSuccess(`Built in ${formatDuration(result.buildMs)}`)}`);
 
+        if (result.tsErrors > 0) {
+          this.log(`  ${formatError(`TypeScript compiled (${result.tsErrors} errors)`)}`);
+          this.log(`\n${result.tsErrorReport}`);
+        }
+
         try {
           await client.uploadDev(config.libraryId, result.distDir);
           this.log(`  ${formatSuccess('Uploaded to dev track')}`);

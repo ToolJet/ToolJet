@@ -55,7 +55,13 @@ const HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
   useStateEnumeration: 'enumeration',
 };
 
-export async function generateManifest(projectRoot: string): Promise<{ manifest: Manifest; tsErrorCount: number }> {
+export interface ManifestResult {
+  manifest: Manifest;
+  tsErrorCount: number;
+  tsErrorReport: string;
+}
+
+export async function generateManifest(projectRoot: string): Promise<ManifestResult> {
   const entryFile = path.join(projectRoot, 'src/index.ts');
   const tsConfigPath = path.join(projectRoot, 'tsconfig.json');
 
@@ -64,9 +70,9 @@ export async function generateManifest(projectRoot: string): Promise<{ manifest:
     throw new Error(`Invalid tsconfig.json: ${ts.flattenDiagnosticMessageText(error.messageText, '\n')}`);
   }
 
-  const { options } = ts.convertCompilerOptionsFromJson(config.compilerOptions, projectRoot);
+  const parsedConfig = ts.parseJsonConfigFileContent(config, ts.sys, projectRoot);
 
-  const program = ts.createProgram([entryFile], options);
+  const program = ts.createProgram(parsedConfig.fileNames, parsedConfig.options);
   const checker = program.getTypeChecker();
 
   const components: Record<string, ManifestComponent> = {};
@@ -100,11 +106,18 @@ export async function generateManifest(projectRoot: string): Promise<{ manifest:
     if (component) components[componentName] = component;
   }
 
-  const tsErrorCount = ts
-    .getPreEmitDiagnostics(program)
-    .filter((d) => d.category === ts.DiagnosticCategory.Error).length;
+  const tsErrors = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error);
 
-  return { manifest: { components }, tsErrorCount };
+  const tsErrorReport =
+    tsErrors.length > 0
+      ? ts.formatDiagnosticsWithColorAndContext(tsErrors, {
+          getCurrentDirectory: () => projectRoot,
+          getCanonicalFileName: (f) => f,
+          getNewLine: () => '\n',
+        })
+      : '';
+
+  return { manifest: { components }, tsErrorCount: tsErrors.length, tsErrorReport };
 }
 
 function walkComponentDeclaration(
@@ -400,6 +413,17 @@ function evalLiteralNode(node: ts.Node): unknown {
   if (ts.isStringLiteral(node)) return node.text;
 
   if (ts.isNumericLiteral(node)) return parseFloat(node.text);
+
+  // TypeScript represents negative/positive numeric literals (`-1`, `+1`) as a
+  // PrefixUnaryExpression wrapping a NumericLiteral, not as a NumericLiteral itself.
+  if (
+    ts.isPrefixUnaryExpression(node) &&
+    (node.operator === ts.SyntaxKind.MinusToken || node.operator === ts.SyntaxKind.PlusToken) &&
+    ts.isNumericLiteral(node.operand)
+  ) {
+    const value = parseFloat(node.operand.text);
+    return node.operator === ts.SyntaxKind.MinusToken ? -value : value;
+  }
 
   if (node.kind === ts.SyntaxKind.TrueKeyword) return true;
 

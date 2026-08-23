@@ -12,7 +12,6 @@ to: <%= name %>/tsconfig.json
     "strict": true,
     "module": "esnext",
     "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
     "noEmit": true,
     "noImplicitReturns": true,

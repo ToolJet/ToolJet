@@ -19,13 +19,16 @@ export default class Build extends Command {
       const tsCompiledMsg = `TypeScript compiled (${result.tsErrors} errors)`;
       const buildTime = formatDuration(result.buildMs);
 
-      this.log(result.tsErrors > 0 ? tsCompiledMsg : formatSuccess(tsCompiledMsg));
+      this.log(result.tsErrors > 0 ? formatError(tsCompiledMsg) : formatSuccess(tsCompiledMsg));
+      if (result.tsErrors > 0) this.log(`\n${result.tsErrorReport}`);
       this.log(formatSuccess(`Manifest generated: dist/manifest.json (${result.componentCount} components)`));
       this.log(formatSuccess(`Bundle built: dist/index.js (${result.bundleSizeKb} KB)`));
 
       if (result.hasCss) this.log(formatSuccess(`CSS output: dist/index.css (${result.cssSizeKb} KB)`));
 
       this.log(`\n Build completed in ${buildTime}`);
+
+      if (result.tsErrors > 0) process.exitCode = 1;
     } catch (err) {
       this.log(formatError((err as Error).message));
       process.exit(1);
