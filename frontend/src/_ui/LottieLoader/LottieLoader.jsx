@@ -29,8 +29,12 @@ export const LottieLoader = () => {
   }, [darkModeEnabled]);
 
   return (
-    <div className={`tj-app-loader${darkModeEnabled ? ' dark-loader' : ''}`}>
-      <div className="loader-animation" ref={containerRef} />
+    <div
+      className={`tj-app-loader${darkModeEnabled ? ' dark-loader' : ''}`}
+      role="status"
+      aria-label="Loading"
+    >
+      <div className="loader-animation" ref={containerRef} aria-hidden="true" />
     </div>
   );
 };
