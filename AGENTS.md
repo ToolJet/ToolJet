@@ -37,6 +37,24 @@ Edition pattern: **composition** via registries + webpack module replacement.
 
 Frontend conventions, App Builder architecture and glossary: `frontend/AGENTS.md`.
 
+## Product and system orientation
+
+Use these maps to get oriented before tracing unfamiliar behavior:
+
+- `.agents/context/product-map.md` — users, capabilities, user journeys, confirmed business rules, inferences, and open product questions
+- `.agents/context/architecture-map.md` — runtime components, data stores, authentication/authorization, integrations, deployment, failure modes, and end-to-end technical flows
+
+The maps are indexes, not substitutes for current code. Follow their path and symbol references, then verify the relevant implementation, tests, migrations, and recent history. Treat sections labeled **Inference** as hypotheses and **Unanswered questions** as unresolved; never silently promote either to fact.
+
+### Public/private boundary
+
+This root repository is public; `server/ee/` and `frontend/ee/` are separate private submodules. For public issues, PRs, documentation, and support responses:
+
+- Base claims and reproduction steps only on public-repository evidence.
+- Do not disclose private source, repository links, customer data, internal deployment details, or private issue/Slack context.
+- If private context motivates a public fix, restate the problem as a publicly reproducible invariant and add a public regression test.
+- Do not inspect or modify private submodules unless the task explicitly includes them and the current user is authorized.
+
 ## Project structure
 
 ```
@@ -57,6 +75,20 @@ deploy/          # K8s, Helm, Docker deploy configs
 - **Widget** (legacy) = **Component**.
 - **Module** is overloaded: NestJS module (backend) vs reusable app building block (frontend/EE feature). Qualify which you mean.
 - Never abbreviate `data_source` as `ds`.
+
+## Evidence-first investigation
+
+For product questions, bug reports, regressions, and root-cause analysis:
+
+1. Normalize the report: expected behavior, observed behavior, edition, version/commit, environment, role, app state, and reproducible inputs. State what is missing.
+2. Locate the capability and user journey in `.agents/context/product-map.md`; use `UBIQUITOUS_LANGUAGE.md` for canonical terms.
+3. Trace the complete path using `.agents/context/architecture-map.md`: frontend route/state → API controller and guards → service/repository → data store, queue, or connector → response and UI update.
+4. Read the closest applicable `AGENTS.md` before reasoning about a module. Inspect relevant tests, migrations, configuration, and recent git history; do not diagnose from filenames or symptoms alone.
+5. Write down competing hypotheses and try to falsify them. Distinguish **Confirmed**, **Inference**, and **Unknown** conclusions.
+6. Cite concrete repository paths and symbols for technical claims. Include commands, test results, logs, and commit SHAs when they materially support the conclusion.
+7. Do not modify code for an analysis-only request. When a fix is requested, reproduce first where feasible, add a regression test, implement the smallest fix, and run the narrowest relevant checks before broader suites.
+
+An investigation handoff should contain: problem statement, scope/impact, reproduction status, evidence, root cause or ranked hypotheses, owning module, recommended next action, and confidence/unknowns.
 
 ## Node version
 
@@ -83,7 +115,7 @@ cd plugins && npm install && npm run build
 ## Key conventions
 
 - Database name convention: `tooljet_{edition}` (see `PG_DB` in `.env`)
-- TypeORM schema migrations in `server/src/migrations/` (and `server/ee/migrations/` for EE); data migrations in `server/data-migrations/`
+- TypeORM schema migrations in `server/migrations/` (and `server/ee/migrations/` for EE); data migrations in `server/data-migrations/`
 - Never import `@ee/` or `@cloud/` from CE code — webpack enforces this at compile time
 - Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
 - Lint before committing. Pre-commit hooks are in the repo (husky + lint-staged, activated by root `npm install`); the hook only lint-fixes frontend files — backend needs `cd server && npm run lint` manually. CI lints all three folders and blocks the PR on failure. Never `--no-verify` unless the user explicitly asks
@@ -105,6 +137,8 @@ Context is layered — the closest file to the code you're changing wins:
 | File | Scope |
 |---|---|
 | `AGENTS.md` (this file) | Repo-wide architecture, editions, structure |
+| `.agents/context/product-map.md` | Public product capabilities, users, journeys, and business rules |
+| `.agents/context/architecture-map.md` | Public system components, data flows, integrations, and failure modes |
 | `UBIQUITOUS_LANGUAGE.md` | Canonical domain glossary |
 | `server/AGENTS.md` | Backend + testing conventions |
 | `server/src/modules/<module>/AGENTS.md` | Per-module purpose, key files, invariants |
@@ -112,4 +146,6 @@ Context is layered — the closest file to the code you're changing wins:
 | `frontend/AGENTS.md` | Frontend conventions, App Builder architecture, glossary |
 | `server/docs/testing.md` | Backend testing — what to test, then how to write it |
 
-**Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature. Stale context is worse than no context.
+**Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature.
+
+Update `.agents/context/product-map.md` when a public capability, user journey, role, or business rule changes. Update `.agents/context/architecture-map.md` when a runtime component, data store, integration boundary, authentication path, deployment topology, or major failure mode changes. Keep evidence links current, preserve explicit inference/unknown labels, and review map changes with the same owners as the code. Stale context is worse than no context.
