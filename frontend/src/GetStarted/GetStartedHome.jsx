@@ -7,50 +7,28 @@ import HomePagePromptSection from './HomePagePromptSection';
 import { authenticationService } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
 import toast from 'react-hot-toast';
+import { LINE_TOP, LINE_BOTTOM } from './homeBackgroundAssets';
 
-// Scattered decorative diamonds (top-right / bottom-left) + a faint grid behind the hero, matching
-// the AI-interface home. Purely cosmetic and non-interactive.
-const DIAMONDS = [
-  { top: '10%', left: '68%', size: 12, opacity: 0.5 },
-  { top: '16%', left: '86%', size: 10, opacity: 0.35 },
-  { top: '22%', left: '78%', size: 14, opacity: 0.6 },
-  { top: '28%', left: '60%', size: 8, opacity: 0.3 },
-  { top: '74%', left: '10%', size: 12, opacity: 0.5 },
-  { top: '82%', left: '24%', size: 10, opacity: 0.35 },
-  { top: '68%', left: '6%', size: 8, opacity: 0.3 },
-];
-
+// The two decorative grid + diamond clusters from the Figma AI-interface home (nodes 20887:95166 /
+// 20887:95168), placed in opposite corners — top-right and bottom-left — behind the hero. These are
+// the exact Figma vectors (inlined in homeBackgroundAssets), not an approximation. Purely cosmetic
+// and non-interactive. `tw-max-w-none` opts out of the global `img { max-width: 100% }` reset so the
+// clusters keep their intended 606x364 footprint.
 function HomeDecorativeBackground() {
   return (
     <div aria-hidden="true" className="tw-pointer-events-none tw-absolute tw-inset-0 tw-overflow-hidden">
-      <div
-        className="tw-absolute tw-inset-0"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, var(--border-weak, #e4e7eb) 1px, transparent 1px),' +
-            'linear-gradient(to bottom, var(--border-weak, #e4e7eb) 1px, transparent 1px)',
-          backgroundSize: '64px 64px',
-          opacity: 0.4,
-          maskImage: 'radial-gradient(ellipse 80% 70% at center, #000 20%, transparent 78%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at center, #000 20%, transparent 78%)',
-        }}
+      <img
+        src={LINE_TOP}
+        alt=""
+        className="tw-absolute tw-select-none tw-max-w-none"
+        style={{ top: 48, right: 0, width: 606, height: 364 }}
       />
-      {DIAMONDS.map((diamond, index) => (
-        <span
-          key={index}
-          className="tw-absolute tw-block"
-          style={{
-            top: diamond.top,
-            left: diamond.left,
-            width: diamond.size,
-            height: diamond.size,
-            background: '#e75c80',
-            opacity: diamond.opacity,
-            transform: 'rotate(45deg)',
-            borderRadius: 2,
-          }}
-        />
-      ))}
+      <img
+        src={LINE_BOTTOM}
+        alt=""
+        className="tw-absolute tw-select-none tw-max-w-none"
+        style={{ bottom: 0, left: 0, width: 606, height: 364 }}
+      />
     </div>
   );
 }
