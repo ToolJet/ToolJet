@@ -181,6 +181,11 @@
     font-size: 12px;
     color: var(--text-default, #1b1f24);
     width: 100%;
+    color-scheme: light;
+
+    .theme-dark & {
+      color-scheme: dark;
+    }
 
     &::placeholder {
       color: var(--text-placeholder, #6a727c);
