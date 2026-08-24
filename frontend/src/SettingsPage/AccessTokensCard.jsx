@@ -109,14 +109,16 @@ export const AccessTokensCard = ({ darkMode }) => {
     setCreateInProgress(false);
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (text, label) => {
     try {
-      await navigator.clipboard.writeText(createdToken);
-      toast.success('Token copied to clipboard', { duration: 2000 });
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied to clipboard`, { duration: 2000 });
     } catch {
-      // clipboard API can be denied (permissions / non-secure context) — the token is
+      // clipboard API can be denied (permissions / non-secure context) — the value is
       // still on screen, so tell the user to grab it manually instead of failing silently.
-      toast.error('Could not copy automatically — select and copy the token manually', { duration: 3000 });
+      toast.error(`Could not copy automatically — select and copy the ${label.toLowerCase()} manually`, {
+        duration: 3000,
+      });
     }
   };
 
@@ -253,7 +255,7 @@ export const AccessTokensCard = ({ darkMode }) => {
                 leadingIcon="copy"
                 className="tw-shrink-0"
                 fill="var(--icon-strong)"
-                onClick={handleCopy}
+                onClick={() => handleCopy(createdToken, 'Token')}
               />
             </div>
 
@@ -270,7 +272,7 @@ export const AccessTokensCard = ({ darkMode }) => {
                 leadingIcon="copy"
                 className="tw-shrink-0"
                 fill="var(--icon-strong)"
-                onClick={handleCopy}
+                onClick={() => handleCopy(organizationId, 'Workspace ID')}
               />
             </div>
           </div>
