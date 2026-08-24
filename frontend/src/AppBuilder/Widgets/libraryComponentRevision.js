@@ -1,17 +1,18 @@
 import config from 'config';
 import useStore from '@/AppBuilder/_stores/store';
-import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
 
 export const pinKey = (libraryId) => libraryId?.replace(/-/g, '');
 export const normalizePin = (pin) => (typeof pin === 'string' ? pin : pin?.revisionId ?? pin?.revision_id);
 
+// F5+: the pin IS the selection now — VersionPicker writes it immediately whether the
+// chosen entry is a revision ('v3') or a dev bundle ('dev:{userId}'); there is no
+// separate session-local preview layer anymore (see invariant #14, HANDOFF-NISHIDH.md).
 export const useEffectiveLibraryRevision = (libraryId, instanceRevisionId) => {
   const pin = useStore((state) => {
     const pins = state.globalSettings?.customComponentLibraries;
     return normalizePin(pins?.[pinKey(libraryId)] ?? pins?.[libraryId]);
   });
-  const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[libraryId]);
-  return devPreview ?? pin ?? instanceRevisionId;
+  return pin ?? instanceRevisionId;
 };
 
 // Builds bundle/css/manifest URLs for either a published revision ('v2') or a

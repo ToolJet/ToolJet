@@ -8,6 +8,7 @@ import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
 import { normalizePin, pinKey, libraryFileUrl } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
@@ -24,16 +25,27 @@ const initials = (name = '') => (name.match(/[A-Z]/g) || []).slice(0, 2).join(''
 
 // Single source of truth for "what revision is this library showing" — shared by the
 // palette (LibrarySection) and the dropdown (VersionPicker) so they can't disagree.
-// `current` is for DISPLAY (may be `dev:{userId}`); `pinRevision` is for a fresh drop's
-// auto-pin and must never be the dev preview — pinning it would write the session-local
-// preview into globalSettings and violate invariant #14 (dev preview must never persist).
+// The pin IS the selection now (revision or dev bundle, written immediately on pick —
+// see invariant #14, HANDOFF-NISHIDH.md), so `current` is `pin ?? latest`. A dev-only
+// library (no revisions, no pin yet) falls back to the LOGGED-IN USER'S OWN dev bundle
+// if they have one — regardless of how many other developers also have one — same
+// scoping as the live-reload stream (customComponentPreviewStore.syncDevPinStreams):
+// your own bundle is the only default that's actually live for you, so it's the only
+// safe thing to show without an explicit pick. Note this makes `current` genuinely
+// viewer-dependent before any pin exists (each developer previews their own WIP by
+// default) — once anyone actually drags a component, auto-pin-on-drop writes a real
+// pin and `pin` wins for every subsequent viewer, same as it always has. A teammate
+// with no dev bundle of their own still falls through to an explicit VersionPicker
+// pick. This is a DISPLAY default only — nothing is written to globalSettings until
+// an actual drag happens (the existing auto-pin-on-drop path).
 const useLibraryCurrentRevision = (library) => {
   const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
-  const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[library.id]);
   const latest = library.revisions[0]?.version;
   const pin = normalizePin(pins?.[pinKey(library.id)] ?? pins?.[library.id]);
-  const pinRevision = pin ?? latest;
-  return { current: devPreview ?? pinRevision, pin, latest, devPreview, pinRevision };
+  const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
+  const ownDevBundle = !latest ? library.devBundles?.find((d) => d.userId === currentUserId) : null;
+  const current = pin ?? latest ?? (ownDevBundle ? `dev:${ownDevBundle.userId}` : undefined);
+  return { current, pin, latest };
 };
 
 // Fetches manifest.json for whatever revision the palette should currently display,
@@ -142,24 +154,26 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
 const VersionPicker = ({ library }) => {
   const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
   const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
-  const setDevPreview = useCustomComponentPreviewStore((state) => state.setDevPreview);
-  const clearDevPreview = useCustomComponentPreviewStore((state) => state.clearDevPreview);
 
-  const { current, pin, latest, devPreview } = useLibraryCurrentRevision(library);
+  const { current, pin, latest } = useLibraryCurrentRevision(library);
+  const isDevPin = Boolean(current?.startsWith?.('dev:'));
   const hasUpdate = Boolean(pin && pin !== latest);
 
   const normalizedPins = () =>
     Object.fromEntries(Object.entries(pins ?? {}).map(([libId, value]) => [pinKey(libId), normalizePin(value)]));
 
   const selectRevision = (version) => {
-    clearDevPreview(library.id);
     globalSettingsChanged({
       customComponentLibraries: { ...normalizedPins(), [pinKey(library.id)]: version },
     });
   };
 
-  const selectDevPreview = (userId, userEmail) => {
-    setDevPreview(library.id, `dev:${userId}`, userEmail);
+  // Selecting a dev bundle now pins it immediately, same as a revision — no separate
+  // private-preview step (see invariant #14, HANDOFF-NISHIDH.md).
+  const selectDevPreview = (userId) => {
+    globalSettingsChanged({
+      customComponentLibraries: { ...normalizedPins(), [pinKey(library.id)]: `dev:${userId}` },
+    });
   };
 
   return (
@@ -179,7 +193,7 @@ const VersionPicker = ({ library }) => {
             className="custom-library-version-chip"
             data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
           >
-            {devPreview ? 'dev' : current}
+            {isDevPin ? 'dev' : current ?? 'Select version'}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="custom-library-version-menu" onClick={(e) => e.stopPropagation()}>
@@ -210,14 +224,10 @@ const VersionPicker = ({ library }) => {
           ))}
           {library?.devBundles?.length > 0 && <DropdownMenuSeparator className="version-menu-divider" />}
           {library?.devBundles?.map(({ userId, userEmail }) => (
-            <DropdownMenuItem
-              key={userId}
-              className="version-menu-row"
-              onSelect={() => selectDevPreview(userId, userEmail)}
-            >
+            <DropdownMenuItem key={userId} className="version-menu-row" onSelect={() => selectDevPreview(userId)}>
               <span className="version-menu-main">
                 <span className="version-menu-check">
-                  {devPreview === `dev:${userId}` && (
+                  {current === `dev:${userId}` && (
                     <TablerIcon
                       iconName="IconCheck"
                       color="var(--primary-accent-strong)"
@@ -231,7 +241,10 @@ const VersionPicker = ({ library }) => {
                     Dev preview
                     <span className="version-menu-live-dot" />
                   </span>
-                  <span className="version-menu-subtitle">@{userEmail ?? userId} · preview only</span>
+                  <span className="version-menu-subtitle">
+                    @{userEmail ?? userId}
+                    {current === `dev:${userId}` ? ' · current' : ''}
+                  </span>
                 </span>
               </span>
             </DropdownMenuItem>
@@ -244,7 +257,7 @@ const VersionPicker = ({ library }) => {
 
 const LibrarySection = ({ library, searchQuery = '' }) => {
   const [open, setOpen] = useState(true);
-  const { current, latest, pinRevision } = useLibraryCurrentRevision(library);
+  const { current, latest } = useLibraryCurrentRevision(library);
   const manifest = useResolvedManifest(library, current, latest);
   // manifest.components: Record<exportName, { displayName?, description?, defaultWidth?, defaultHeight? }>
   // Filtered here (against whatever revision is actually displayed) rather than upstream,
@@ -255,7 +268,11 @@ const LibrarySection = ({ library, searchQuery = '' }) => {
     ([exportName]) => !q || matchesLibraryName || exportName.toLowerCase().includes(q)
   );
 
-  if (!components.length) return null; // library with no published revision yet, or the selected revision is still loading
+  // Hide only when there's truly nothing to offer (no revisions AND no dev bundles).
+  // A dev-only library with nothing picked yet still renders its header + VersionPicker
+  // so it's discoverable — the card list itself stays empty until a dev entry is chosen.
+  if (!library.revisions.length && !library.devBundles?.length) return null;
+  if (q && !matchesLibraryName && !components.length) return null; // search: no matches at all
 
   return (
     <div className="custom-library-section">
@@ -281,7 +298,7 @@ const LibrarySection = ({ library, searchQuery = '' }) => {
             <CustomComponentCard
               key={exportName}
               libraryId={library.id}
-              revisionId={pinRevision}
+              revisionId={current}
               name={exportName} // the bundle's export — what the shell resolves
               displayName={comp.displayName}
               description={comp.description}
@@ -306,14 +323,17 @@ export const CustomComponentsTab = ({ searchQuery = '' }) => {
 
   const filtered = useMemo(() => {
     if (!libraries) return null;
-    const withRevisions = libraries.filter((lib) => lib.revisions.length > 0);
+    // A dev-only library (no revisions yet, only a `component dev` push) is still worth
+    // showing — its header + VersionPicker are discoverable even before anyone picks a
+    // dev entry (LibrarySection gates the actual card list on that separately).
+    const withContent = libraries.filter((lib) => lib.revisions.length > 0 || lib.devBundles?.length > 0);
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return withRevisions;
+    if (!q) return withContent;
     // match on library name OR component name — component-name matching is against the
     // latest-revision manifest (the only one we have without a fetch); a matching library
     // keeps everything regardless. LibrarySection re-applies this same query against
     // whichever revision it actually ends up displaying (see its own filtering).
-    return withRevisions.filter((lib) => {
+    return withContent.filter((lib) => {
       if (lib.name.toLowerCase().includes(q)) return true;
       return Object.keys(lib.manifest?.components ?? {}).some((name) => name.toLowerCase().includes(q));
     });
