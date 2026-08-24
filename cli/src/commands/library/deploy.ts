@@ -30,8 +30,8 @@ export default class ComponentDeploy extends Command {
     const { flags } = await this.parse(ComponentDeploy);
     const { message, force } = flags;
 
-    const { workspaceId, apiToken, url } = Auth.resolveOrExit();
     const config = this.readConfigOrExit();
+    const { workspaceId, apiToken, url } = Auth.resolveOrExit({ workspaceId: config.workspaceId });
 
     const currentDir = process.cwd();
     const client = new ApiClient(url, apiToken);
