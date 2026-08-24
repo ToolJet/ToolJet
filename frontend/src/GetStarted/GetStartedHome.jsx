@@ -5,7 +5,55 @@ import GetStartedCard from './GetStartedCard';
 import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
 import HomePagePromptSection from './HomePagePromptSection';
 import { authenticationService } from '@/_services';
+import useStore from '@/AppBuilder/_stores/store';
 import toast from 'react-hot-toast';
+
+// Scattered decorative diamonds (top-right / bottom-left) + a faint grid behind the hero, matching
+// the AI-interface home. Purely cosmetic and non-interactive.
+const DIAMONDS = [
+  { top: '10%', left: '68%', size: 12, opacity: 0.5 },
+  { top: '16%', left: '86%', size: 10, opacity: 0.35 },
+  { top: '22%', left: '78%', size: 14, opacity: 0.6 },
+  { top: '28%', left: '60%', size: 8, opacity: 0.3 },
+  { top: '74%', left: '10%', size: 12, opacity: 0.5 },
+  { top: '82%', left: '24%', size: 10, opacity: 0.35 },
+  { top: '68%', left: '6%', size: 8, opacity: 0.3 },
+];
+
+function HomeDecorativeBackground() {
+  return (
+    <div aria-hidden="true" className="tw-pointer-events-none tw-absolute tw-inset-0 tw-overflow-hidden">
+      <div
+        className="tw-absolute tw-inset-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, var(--border-weak, #e4e7eb) 1px, transparent 1px),' +
+            'linear-gradient(to bottom, var(--border-weak, #e4e7eb) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+          opacity: 0.4,
+          maskImage: 'radial-gradient(ellipse 80% 70% at center, #000 20%, transparent 78%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at center, #000 20%, transparent 78%)',
+        }}
+      />
+      {DIAMONDS.map((diamond, index) => (
+        <span
+          key={index}
+          className="tw-absolute tw-block"
+          style={{
+            top: diamond.top,
+            left: diamond.left,
+            width: diamond.size,
+            height: diamond.size,
+            background: '#e75c80',
+            opacity: diamond.opacity,
+            transform: 'rotate(45deg)',
+            borderRadius: 2,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 const WIDGET_TYPES = {
   APP: {
@@ -136,11 +184,22 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
 }
 
 function GetStartedHome({ edition, isToolJetCloud }) {
+  // When AI is enabled, the hero's own "OR USE TOOLJET IN ANY EDITOR" cards replace these
+  // app-creation shortcuts (per the redesign); without AI the shortcuts remain the primary CTAs.
+  const isAiEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
+
   return (
-    <div className="tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-relative tw-size-full tw-max-w-[896px]">
-      <HomePagePromptSection />
-      <DividerWithText />
-      <GetStartedOptionsRow edition={edition} isToolJetCloud={isToolJetCloud} />
+    <div className="tw-relative tw-size-full tw-overflow-hidden">
+      <HomeDecorativeBackground />
+      <div className="tw-relative tw-z-[1] tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-size-full tw-max-w-[896px]">
+        <HomePagePromptSection />
+        {!isAiEnabled && (
+          <>
+            <DividerWithText />
+            <GetStartedOptionsRow edition={edition} isToolJetCloud={isToolJetCloud} />
+          </>
+        )}
+      </div>
     </div>
   );
 }
