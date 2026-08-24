@@ -14,7 +14,7 @@ export default class Login extends Command {
     const answers: any = await inquirer.prompt([
       {
         name: 'origin_url',
-        message: 'ToolJet instance URL (e.g. https://app.tooljet.ai)',
+        message: 'ToolJet origin URL (e.g. https://app.tooljet.ai)',
         type: 'input',
         validate: (input: string) => {
           try {
@@ -29,18 +29,6 @@ export default class Login extends Command {
         },
       },
       {
-        name: 'workspace_id',
-        message: 'ToolJet workspace ID',
-        type: 'input',
-        validate: (input: string) => {
-          try {
-            return input && input.trim().length > 0;
-          } catch {
-            return 'Workspace ID is required';
-          }
-        },
-      },
-      {
         name: 'api_access_token',
         message: 'API token (from your ToolJet profile → API tokens)',
         type: 'password',
@@ -49,11 +37,11 @@ export default class Login extends Command {
       },
     ]);
 
-    const { origin_url: originUrl, workspace_id: workspaceId, api_access_token: apiToken } = answers;
+    const { origin_url: originUrl, api_access_token: apiToken } = answers;
 
     const client = new ApiClient(originUrl.trim(), apiToken);
 
-    let me: { email: string };
+    let me: { email: string; organizationId: string };
     try {
       me = await client.login();
     } catch (err) {
@@ -61,7 +49,7 @@ export default class Login extends Command {
       process.exit(1);
     }
 
-    Auth.save(workspaceId, originUrl.trim(), apiToken, me.email);
+    Auth.save(me.organizationId, originUrl.trim(), apiToken, me.email);
 
     this.log(`✓ Authenticated as ${me.email}`);
     // this.log(`✓ Saved credentials for ${workspaceId} workspace on ${originUrl.trim()}`);

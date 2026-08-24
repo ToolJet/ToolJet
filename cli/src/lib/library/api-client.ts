@@ -76,7 +76,7 @@ export class ApiClient {
     return this.sendForm('POST', `/custom-component-libraries/${libraryId}/revisions`, form);
   }
 
-  async login(): Promise<{ email: string }> {
+  async login(): Promise<{ email: string; organizationId: string }> {
     return this.request('GET', '/custom-component-libraries/validate-token');
   }
 }

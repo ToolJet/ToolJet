@@ -125,6 +125,14 @@ function walkComponentDeclaration(
   checker: ts.TypeChecker,
   componentName: string
 ): ManifestComponent | null {
+  // Only treat exports that look like React components as components — anything
+  // else (types, constants, plain helper functions) is skipped rather than showing
+  // up as a phantom, prop-less component in the manifest.
+  const fnNode = getFunctionLikeNode(decl);
+  if (!fnNode || !fnNode.body || !containsJsx(fnNode.body)) {
+    return null;
+  }
+
   // Find the function body of the exported component
   // Walk call expressions matching ToolJet.useStateXxx / useEventCallback / useComponentSettings
   // Constraint: only top-level calls in function body (not inside nested functions/callbacks)
@@ -324,10 +332,7 @@ function walkComponentDeclaration(
     }
   };
 
-  const fnNode = getFunctionLikeNode(decl);
-  const bodyNode = fnNode?.body ?? decl;
-
-  ts.forEachChild(bodyNode, visitor);
+  ts.forEachChild(fnNode.body, visitor);
 
   return {
     displayName: toDisplayName(componentName),
@@ -337,6 +342,15 @@ function walkComponentDeclaration(
     events,
     actions,
   };
+}
+
+// Searches the whole subtree (including nested helper closures, e.g. a component
+// that builds its JSX via nested renderX() functions before returning it) for any
+// JSX node — used as a lightweight signal that a declaration is a React component.
+function containsJsx(node: ts.Node): boolean {
+  if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node)) return true;
+
+  return !!ts.forEachChild(node, (child) => (containsJsx(child) ? true : undefined));
 }
 
 function isFunctionLike(node: ts.Node): boolean {
