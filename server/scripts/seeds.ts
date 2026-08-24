@@ -1,16 +1,15 @@
 import { DataSource } from 'typeorm';
 import { ormconfig } from '../ormconfig';
-import { User } from '../src/entities/user.entity';
-import { Organization } from '../src/entities/organization.entity';
-import { OrganizationUser } from '../src/entities/organization_user.entity';
-import { SSOType, ConfigScope } from '../src/entities/sso_config.entity';
-import { AppEnvironment } from '../src/entities/app_environments.entity';
-import { GroupPermissions } from '../src/entities/group_permissions.entity';
-import { GroupUsers } from '../src/entities/group_users.entity';
-import { Metadata } from '../src/entities/metadata.entity';
-import { defaultAppEnvironments } from '../src/helpers/utils.helper';
-import { OnboardingStatus } from '../src/modules/onboarding/constants';
-import { DEFAULT_GROUP_PERMISSIONS } from '../src/modules/group-permissions/constants';
+import { User } from '@entities/user.entity';
+import { Organization } from '@entities/organization.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import { SSOType, ConfigScope } from '@entities/sso_config.entity';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GroupUsers } from '@entities/group_users.entity';
+import { Metadata } from '@entities/metadata.entity';
+import { seedOrgEnvironmentsAndDefaultBranch } from '@helpers/utils.helper';
+import { OnboardingStatus } from '@modules/onboarding/constants';
+import { DEFAULT_GROUP_PERMISSIONS } from '@modules/group-permissions/constants';
 
 const SEED_DEFAULTS = {
   email: 'dev@tooljet.io',
@@ -91,16 +90,8 @@ async function bootstrap() {
     });
     await txManager.save(organizationUser);
 
-    // 4. Create default app environments
-    for (const env of defaultAppEnvironments) {
-      const appEnv = txManager.create(AppEnvironment, {
-        organizationId: organization.id,
-        name: env.name,
-        isDefault: env.isDefault,
-        priority: env.priority,
-      });
-      await txManager.save(appEnv);
-    }
+    // 4. Create default app environments + default workspace branch
+    await seedOrgEnvironmentsAndDefaultBranch(organization.id, txManager);
 
     // 5. Create default permission groups (admin, builder, end_user)
     for (const groupKey of Object.keys(DEFAULT_GROUP_PERMISSIONS)) {
