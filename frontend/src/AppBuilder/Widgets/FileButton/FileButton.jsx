@@ -59,6 +59,7 @@ export const FileButton = (props) => {
 
   const buttonText = properties.buttonText ?? 'Upload file';
   const enableClearSelection = properties.enableClearSelection ?? false;
+  const isMandatory = validation?.enableValidation ?? false;
 
   const DEFAULT_SURFACE_COLOR = 'var(--cc-surface1-surface)';
 
@@ -205,6 +206,7 @@ export const FileButton = (props) => {
                   className={clsx('tw-truncate', fontWeightClass[labelWeight] ?? 'tw-font-medium')}
                 >
                   {selectedFiles.length === 0 ? buttonText : selectedSummary}
+                  {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)' }}>*</span>}
                 </span>
                 {selectedFiles.length > 0 && enableClearSelection && (
                   <Button
