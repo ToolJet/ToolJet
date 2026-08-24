@@ -1215,6 +1215,13 @@ export class TooljetDbTableOperationsService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
+    // Guarded here, before the transactions open: the catch block below wraps whatever it
+    // catches into a TooljetDatabaseError assuming a QueryFailedError shape (it indexes
+    // errorObj.driverError), so throwing NotFoundException from inside that try would itself
+    // crash on the wrap instead of surfacing "Column not found".
+    const columnUuid = internalTable.configurations.columns.column_names[column.column_name];
+    if (!columnUuid) throw new NotFoundException('Column not found: ' + column.column_name);
+
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     const queryRunner = this.manager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
@@ -1227,7 +1234,6 @@ export class TooljetDbTableOperationsService {
     try {
       const columnNames = internalTable.configurations.columns.column_names;
       const columnConfigurations = internalTable.configurations.columns.configurations;
-      const columnUuid = columnNames[column.column_name];
       columnConfigurations[columnUuid] = {
         ...columnConfigurations[columnUuid],
         ...(column?.configurations || {}),

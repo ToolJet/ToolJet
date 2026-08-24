@@ -107,6 +107,10 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Query Editor** | The right section of the Query Panel for writing/configuring a query | — |
 | **ToolJet Database** | ToolJet's built-in PostgreSQL-backed database offering | TJDB (informal shorthand in docs) |
 | **Internal Table** | A table within ToolJet Database | — |
+| **Internal Table Relation** | An Internal Table's physical presence at one (Environment, Workspace Branch) pair — carries the physical Postgres relation's identity and per-relation configuration (`internal_table_relations`) | Relation (short form, context-dependent) |
+| **Internal Table Migration** | An immutable recorded schema change for an Internal Table — authored (`structured`/`raw_sql`) or synthesized for a pre-existing table (`baseline`) (`internal_table_migrations`) | — |
+| **Baseline** | A synthesized `internal_table_migration` recording the shape a pre-existing physical table already has, so it has a migration history to promote/replay from without ever running DDL | — |
+| **Internal Table Migration Application** | The record that one Internal Table Migration has been applied to one Internal Table Relation (`internal_table_migration_applications`) | — |
 | **Run JavaScript** | A special query type that executes JavaScript code instead of querying a data source | RunJS (code shorthand) |
 | **Run Python** | A special query type that executes Python code instead of querying a data source | RunPy (code shorthand) |
 | **REST API** | Built-in data source type for making HTTP requests to external APIs | — |
