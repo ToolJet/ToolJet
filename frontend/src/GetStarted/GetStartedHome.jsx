@@ -21,7 +21,7 @@ function HomeDecorativeBackground() {
         src={LINE_TOP}
         alt=""
         className="tw-absolute tw-select-none tw-max-w-none"
-        style={{ top: 48, right: 0, width: 606, height: 364 }}
+        style={{ top: 0, right: 0, width: 606, height: 364 }}
       />
       <img
         src={LINE_BOTTOM}
