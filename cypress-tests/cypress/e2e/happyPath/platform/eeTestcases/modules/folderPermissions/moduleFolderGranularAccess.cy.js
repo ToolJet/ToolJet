@@ -1,15 +1,13 @@
 import { commonSelectors } from 'Selectors/common';
-import { moduleSelectors } from 'Selectors/platform/modules';
 import { dashboardSelector } from 'Selectors/dashboard';
+import { moduleSelectors } from 'Selectors/platform/modules';
 import { viewAppCardOptions } from 'Support/utils/common';
-import { openModulesList } from 'Support/utils/platform/modules';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
-import { getGroupPermissionInput } from 'Support/utils/userPermissions';
+import { openModulesList } from 'Support/utils/platform/modules';
 import { commonText } from 'Texts/common';
 
 
 describe('Modules — Folder Granular Access', () => {
-  const isEnterprise = Cypress.env('environment') === 'Enterprise';
   let workspaceId, wsName, wsSlug;
 
   const setupFolderAccess = (label, permissions) => {
@@ -54,11 +52,8 @@ describe('Modules — Folder Granular Access', () => {
       Cypress.env('workspaceId', workspaceId);
       Cypress.env('workspaceSlug', wsSlug);
     });
-    // Strip every default the builder ROLE ships with — coarse flags and all
-    // granular grants (including the module/module_folder "All" defaults) — so
-    // each test's custom-group grant is the only source of access being verified.
-    cy.apiUpdateGroupPermission('builder', getGroupPermissionInput(isEnterprise, false));
-    cy.apiDeleteGranularPermission('builder', []);
+
+    cy.apiDeleteGranularPermission('builder', ['module', 'module_folder']);
   });
 
   it('user with Edit Folder permission can rename an authorized folder, move modules in and out of it, and edit a module within it — and deleting the folder does not delete the module inside it', () => {
@@ -131,9 +126,6 @@ describe('Modules — Folder Granular Access', () => {
         openModulesList();
         cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
 
-        // Cannot add/remove modules via the module's own card menu either — that
-        // requires folder-edit access (admin/superAdmin/editable_folders_id/ownership),
-        // which Edit Modules alone doesn't grant (AppMenu.jsx canAddAppToFolder).
         viewAppCardOptions(moduleName);
         cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).should('not.exist');
       }

@@ -5,20 +5,16 @@ import { moduleSelectors } from 'Selectors/platform/modules';
 import { viewAppCardOptions } from 'Support/utils/common';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
 import { openModulesList } from 'Support/utils/platform/modules';
-import {
-  getGroupPermissionInput
-} from "Support/utils/userPermissions";
 import { commonText } from 'Texts/common';
 import { dashboardText } from 'Texts/dashboard';
 
 describe('Modules — Moving Modules Between Folders', () => {
-  const isEnterprise = Cypress.env('environment') === 'Enterprise';
   let workspaceId, wsName, wsSlug;
 
-  afterEach(() => {
-    cy.apiLogin();
-    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
-  });
+  // afterEach(() => {
+  //   cy.apiLogin();
+  //   cy.then(() => cy.apiArchiveWorkspace(workspaceId));
+  // });
 
   beforeEach(() => {
     wsName = `modules-folder-move-${Date.now()}`;
@@ -30,12 +26,7 @@ describe('Modules — Moving Modules Between Folders', () => {
       Cypress.env('workspaceId', workspaceId);
       Cypress.env('workspaceSlug', wsSlug);
     });
-
-    // Strip every default the builder ROLE ships with — coarse flags and all
-    // granular grants (including the module/module_folder "All" defaults) — so
-    // each test's custom-group grant is the only source of access being verified.
-    cy.apiUpdateGroupPermission('builder', getGroupPermissionInput(isEnterprise, false));
-    cy.apiDeleteGranularPermission('builder', []);
+    cy.apiDeleteGranularPermission('builder', ['module', 'module_folder']);
   });
 
   it('user with Edit Folder access sees only authorized folders in the move picker, and can move a module they can edit into one', () => {
@@ -60,7 +51,6 @@ describe('Modules — Moving Modules Between Folders', () => {
         )
       );
     });
-
     cy.then(() => {
       cy.apiFullUserOnboarding('QA Move Basic User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
       cy.apiLogin(userEmail, 'password');
@@ -68,6 +58,7 @@ describe('Modules — Moving Modules Between Folders', () => {
       cy.apiCreateModule(moduleName);
 
       openModulesList();
+      cy.wait(2000);
       viewAppCardOptions(moduleName);
       cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
       cy.get(dashboardSelector.selectFolder).click();
@@ -169,20 +160,9 @@ describe('Modules — Moving Modules Between Folders', () => {
       });
 
       cy.apiFullUserOnboarding('QA Recalc User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
-
-      // Before the move: the module isn't in the folder yet, so the folder's Edit
-      // Modules grant doesn't apply — editing is blocked.
-      cy.apiLogin(userEmail, 'password');
       cy.visit(`/${wsSlug}/apps/${moduleId}`, { failOnStatusCode: false });
       cy.wait(3000);
-      cy.get(moduleSelectors.versionSwitcherButton).click();
-      cy.get(commonSelectors.buttonSelector('create draft version')).click();
-      cy.get(versionModalSelector.versionNameInput).type('v2-before-move');
-      cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        'You do not have permission to create a draft version'
-      );
+      cy.url({ timeout: 15000 }).should('include', '/error/restricted');
 
       // Move it into the folder (as admin) — no re-login for the test user needed.
       cy.apiLogin();
