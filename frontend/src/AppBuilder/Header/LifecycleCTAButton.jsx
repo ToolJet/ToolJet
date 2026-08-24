@@ -210,6 +210,7 @@ const LifecycleCTAButton = () => {
           fromEditor
           onSuccess={() => {
             setShowPushModal(false);
+            fetchDevelopmentVersions(appId);
           }}
         />
       )}
