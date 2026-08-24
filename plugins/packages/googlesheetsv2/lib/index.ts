@@ -306,9 +306,11 @@ export default class Googlesheetsv2QueryService implements QueryService {
             throw new Error('Sheet is required for read operation');
           }
 
+          // An empty range reads the sheet's entire used range; the A1:Z500
+          // fallback above stays for operations that need a concrete range.
           result = await readData(
             spreadsheetId,
-            spreadsheetRange,
+            queryOptions.spreadsheet_range ?? '',
             queryOptions.sheet,
             this.authHeader(accessToken),
             queryOptions.majorDimension,
