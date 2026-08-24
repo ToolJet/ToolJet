@@ -3074,14 +3074,15 @@ describe('GitSyncController', () => {
             throw new Error(`no resource found under ${resourceFolder}`);
           });
 
-        // Return the first datasource's name (data-sources/<dir>/data-source.json → content.name).
+        // Return the first datasource's name — the DIRECTORY name (the name is no longer
+        // stored inside data-source.json).
         const firstDataSourceName = (): Promise<string> =>
           scanMain((dir) => {
             const base = cfPath.join(dir, 'data-sources');
             for (const e of cfFs.readdirSync(base, { withFileTypes: true })) {
               if (!e.isDirectory()) continue;
               const f = cfPath.join(base, e.name, 'data-source.json');
-              if (cfFs.existsSync(f)) return JSON.parse(cfFs.readFileSync(f, 'utf8')).name;
+              if (cfFs.existsSync(f)) return e.name;
             }
             throw new Error('no datasource found under data-sources/');
           });
@@ -3227,22 +3228,19 @@ describe('GitSyncController', () => {
         await writeGitFile(moduleFolderConflictPath, {}, 'restore: neutralize injected cross-folder module conflict');
 
         step(59, 'pull main with a git datasource whose name collides with an existing DS → 409');
-        // 59. Same shape as step 55 for data sources. Conflict detection enumerates
-        //     data-sources/<dir>/data-source.json and keys on the file's `name`.
+        // 59. Same shape as step 55 for data sources. The DS NAME is the DIRECTORY
+        //     (data-sources/<name>/) — no `name` is stored in the file — so a name
+        //     collision is a directory whose name matches an existing DB data source but
+        //     carries a DIFFERENT co_relation_id. Re-point the existing DS's directory at
+        //     a fresh co_relation_id (git side only; the 409 blocks the pull, so the DB DS
+        //     keeps its real id → same name, different identity → conflict), then restore.
         const existingDsName = await firstDataSourceName();
-        const fakeDsCorid = randomUUIDForMeta();
-        const dsConflictPath = 'data-sources/e2e-conflict-ds/data-source.json';
-        await writeGitFile(
-          dsConflictPath,
-          {
-            id: fakeDsCorid,
-            name: existingDsName,
-            kind: 'restapi',
-            type: 'default',
-            options: {},
-          },
-          'inject ds name conflict'
+        const dsConflictPath = `data-sources/${existingDsName}/data-source.json`;
+        const originalDsContent = await scanMain((dir) =>
+          JSON.parse(cfFs.readFileSync(cfPath.join(dir, dsConflictPath), 'utf8'))
         );
+        const fakeDsCorid = randomUUIDForMeta();
+        await writeGitFile(dsConflictPath, { ...originalDsContent, id: fakeDsCorid }, 'inject ds name conflict');
 
         const dsConflictGroups = await pullMainExpect409();
         const dsConflictGroup = dsConflictGroups.find((g: any) => g.type === 'datasource');
@@ -3251,7 +3249,8 @@ describe('GitSyncController', () => {
         expect(dsConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
         expect(dsConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeDsCorid);
 
-        await writeGitFile(dsConflictPath, {}, 'restore: neutralize injected ds conflict');
+        // Restore the real DS file exactly so later steps see clean git.
+        await writeGitFile(dsConflictPath, originalDsContent, 'restore: revert injected ds conflict');
 
         step(60, 'delete data source A on a branch, then rename B → A → succeeds (branch-aware name check)');
         // 63. Regression for the CRUD rename check. Deleting a global DS on a
@@ -5621,6 +5620,8 @@ describe('GitSyncController', () => {
         const dsJson = JSON.parse(dsFile as string);
         expect(dsJson.id).toBe(await dsCoRelId(dsId));
         expect(dsJson.kind).toBe('restapi');
+        // The name lives in the directory (data-sources/<name>/), never in the file.
+        expect(dsJson.name).toBeUndefined();
 
         step(5, 'drop the branch DSV, then force a fresh open → hydrate re-creates it from git (no dummy)');
         // Simulate the target-branch state where the DS row isn't populated yet. Deleting the
@@ -5815,6 +5816,8 @@ describe('GitSyncController', () => {
         const dsJson = JSON.parse(dsFile as string);
         expect(dsJson.id).toBe(await dsCoRelId(dsId));
         expect(dsJson.kind).toBe('restapi');
+        // The name lives in the directory (data-sources/<name>/), never in the file.
+        expect(dsJson.name).toBeUndefined();
 
         step(5, 'drop the branch DSV, then force a fresh open → hydrate re-creates it from git (no dummy)');
         await depDs.query(
@@ -5844,6 +5847,248 @@ describe('GitSyncController', () => {
 
         step(6, 'the branch DSV is back — the connected data source populated on open');
         expect(await dsvCount(dsId, featBranchId)).toBeGreaterThan(0);
+      }, 300000);
+
+      it('pushes app, module and data source with NO `name` field — the directory name is the sole source of truth', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-no-name-files';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a front-end app, a module, and a global data source linked via a query');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'no-name-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const appVersionId = await editingVersionId(appId, featBranchId);
+        const moduleAppId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'no-name-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleVersionId = await editingVersionId(moduleAppId, featBranchId);
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'no-name-ds',
+              kind: 'restapi',
+              options: dsOptions('http://no-name.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${appVersionId}`))
+          .query({ branch_id: featBranchId })
+          .send({
+            kind: 'restapi',
+            name: 'q_no_name',
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          })
+          .expect(201);
+        const dsName = await dsvName(dsId, featBranchId);
+
+        step(3, 'push the app (carries the DS) and the module to the feature branch');
+        await gitpushApp(appId, appVersionId, 'no-name-app', FEAT, featBranchId).expect(201);
+        await gitpushApp(moduleAppId, moduleVersionId, 'no-name-module', FEAT, featBranchId).expect(201);
+
+        step(4, 'no pushed resource file carries a `name` key — identity is `id`, the name is the directory');
+        // App: apps/<name>/app/app.json exists AT the directory named for the app, with no `name` key.
+        const appFile = await readGitFile(FEAT, 'apps/no-name-app/app/app.json');
+        expect(appFile).not.toBeNull();
+        const appJson = JSON.parse(appFile as string);
+        expect(appJson.name).toBeUndefined();
+        expect(appJson.id).toBeTruthy(); // co_relation_id — identity still present
+
+        // Module: modules/<name>/app/app.json — same shape.
+        const moduleFile = await readGitFile(FEAT, 'modules/no-name-module/app/app.json');
+        expect(moduleFile).not.toBeNull();
+        expect(JSON.parse(moduleFile as string).name).toBeUndefined();
+
+        // Data source: data-sources/<name>/data-source.json — no `name`; the directory carries it.
+        expect(dsName).toBe('no-name-ds');
+        const dsFile = await readGitFile(FEAT, `data-sources/${dsName}/data-source.json`);
+        expect(dsFile).not.toBeNull();
+        const dsJson = JSON.parse(dsFile as string);
+        expect(dsJson.name).toBeUndefined();
+        expect(dsJson.id).toBe(await dsCoRelId(dsId));
+      }, 300000);
+
+      // An app push carries its referenced modules into the same commit, bootstrapping each
+      // never-synced module from its default-branch draft (writeReferencedModules). If such a
+      // module has MULTIPLE drafts, an arbitrary one would be committed silently. The push must
+      // instead fail with the same class of error the app itself raises for multiple drafts —
+      // MODULES_NOT_READY, naming the offending module — so the user resolves it first. The
+      // sibling "carries a referenced module" test above (single-draft module → 201) is the
+      // positive control proving this guard doesn't over-fire.
+      it('blocks an app push when a connected (unsynced) module has multiple drafts → MODULES_NOT_READY', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const { randomUUID } = await import('crypto');
+        const FEAT = 'feat-mod-multidraft';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { mainBranchId, featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create an (unsynced) module on the feature branch, capture its co_relation_id');
+        const moduleAppId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'multidraft-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleCoRel: string = (
+          await depDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [moduleAppId])
+        )[0]?.co_relation_id;
+        expect(moduleCoRel).toBeTruthy();
+
+        step(3, 'give the module TWO default-branch drafts — the ambiguous state a bootstrap cannot resolve');
+        // Inject two VERSION-type (default-branch) non-stub, unsynced drafts by copying an
+        // existing module version row (satisfies NOT NULL columns). VERSION-type allows multiple
+        // drafts per branch (only name/slug/app_name uniqueness applies) — same technique the app
+        // MULTIPLE_DRAFTS test uses. Distinct name/slug/app_name avoid the uniqueness constraints.
+        for (const sfx of ['md1', 'md2']) {
+          await depDs.query(
+            `INSERT INTO app_versions (
+               name, definition, global_settings, page_settings, show_viewer_navigation,
+               version_type, app_id, current_environment_id, status, is_stub, is_synced,
+               branch_id, slug, app_name, icon, is_public
+             )
+             SELECT
+               name || '-' || $2, definition, global_settings, page_settings, show_viewer_navigation,
+               'version', app_id, current_environment_id, 'DRAFT', false, false,
+               $3, COALESCE(slug, '') || '-' || $2, 'multidraft-module-' || $2, icon, is_public
+             FROM app_versions WHERE app_id = $1 LIMIT 1`,
+            [moduleAppId, sfx, mainBranchId]
+          );
+        }
+        const modDraftCount: number = (
+          await depDs.query(
+            `SELECT COUNT(*)::int AS c FROM app_versions
+               WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT' AND is_stub = false`,
+            [moduleAppId, mainBranchId]
+          )
+        )[0].c;
+        expect(modDraftCount).toBeGreaterThan(1);
+
+        step(4, 'create a host app that references the module via a ModuleViewer');
+        const hostAppId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'multidraft-host', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const hostVersionId = await editingVersionId(hostAppId, featBranchId);
+        const hostDetail = await auth(agent().get(`/api/apps/${hostAppId}`))
+          .query({ branch_id: featBranchId })
+          .expect(200);
+        const hostEv =
+          hostDetail.body?.editing_version || hostDetail.body?.editingVersion || hostDetail.body?.app?.editing_version;
+        const hostPageId: string =
+          hostEv.home_page_id || hostEv.homePageId || hostEv.pages?.[0]?.id || hostDetail.body?.pages?.[0]?.id;
+        expect(hostPageId).toBeDefined();
+
+        const moduleViewerId = randomUUID();
+        const mvResp = await auth(agent().post(`/api/v2/apps/${hostAppId}/versions/${hostVersionId}/components`))
+          .query({ branch_id: featBranchId })
+          .send({
+            is_user_switched_version: false,
+            pageId: hostPageId,
+            diff: {
+              [moduleViewerId]: {
+                name: 'mv_multidraft',
+                layouts: {
+                  desktop: { top: 70, left: 5, width: 38, height: 400 },
+                  mobile: { top: 70, left: 5, width: 38, height: 400 },
+                },
+                type: 'ModuleViewer',
+                general: {},
+                generalStyles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: {
+                  moduleAppId: { value: moduleCoRel },
+                  moduleVersionId: { value: '' },
+                  visibility: { value: true },
+                },
+                styles: { backgroundColor: { value: '#fff' }, padding: { value: 'default' } },
+                parent: null,
+              },
+            },
+          });
+        if (mvResp.status !== 201) {
+          throw new Error(`POST host components failed: ${mvResp.status} ${JSON.stringify(mvResp.body)}`);
+        }
+
+        step(5, 'push the host app → blocked because the connected module has multiple drafts');
+        // The push carries the connected module, bootstrapping it from its (multiple) default-branch
+        // drafts — an ambiguous state. The server guard blocks it with a 400. AllExceptionsFilter
+        // forwards only `message` (errorType/affectedResources are dropped there — same as the app's
+        // own MULTIPLE_DRAFTS push), so the offending module names ride in the message; assert that.
+        const pushResp = await gitpushApp(hostAppId, hostVersionId, 'multidraft-host', FEAT, featBranchId);
+        expect(pushResp.status).toBe(400);
+        expect(pushResp.body.message).toMatch(/not ready to sync/i);
+        expect(pushResp.body.message).toContain('multidraft-module');
+      }, 300000);
+
+      // Counterpart to the module case above, for the APP's own drafts: git allows exactly one
+      // draft (the tip of the default branch), so a push of an app carrying multiple non-stub
+      // drafts on the pushed branch is rejected with the app-level MULTIPLE_DRAFTS guard
+      // (AppGitService.gitPushApp). validate-push already covers the pre-flight advisory (step 72);
+      // this exercises the server-side push guard itself, which nothing else does.
+      it('blocks an app push when the app itself has multiple drafts → 400', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-app-multidraft';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create an app on the feature branch (one draft)');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'app-multidraft', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const versionId = await editingVersionId(appId, featBranchId);
+
+        step(3, 'inject a second non-stub draft on the same branch — the state the push must reject');
+        // Copy the pushed version row into a second non-stub DRAFT on the same branch. version_type
+        // is forced to 'version' so the branch-scoped partial unique indexes (WHERE version_type=
+        // 'branch') don't apply — only (name, branch_id) / (app_name, branch_id, type) uniqueness
+        // does, hence the '-copy' suffixes. The push guard counts drafts by branch_id + status,
+        // regardless of version_type, so this lands as a second draft on the pushed branch.
+        await depDs.query(
+          `INSERT INTO app_versions (
+             name, definition, global_settings, page_settings, show_viewer_navigation,
+             version_type, app_id, current_environment_id, status, is_stub, is_synced,
+             branch_id, slug, app_name, icon, is_public
+           )
+           SELECT
+             name || '-copy', definition, global_settings, page_settings, show_viewer_navigation,
+             'version', app_id, current_environment_id, 'DRAFT', false, false,
+             branch_id, COALESCE(slug, '') || '-copy', COALESCE(app_name, 'app-multidraft') || '-copy', icon, is_public
+           FROM app_versions WHERE id = $1`,
+          [versionId]
+        );
+        const appDraftCount: number = (
+          await depDs.query(
+            `SELECT COUNT(*)::int AS c FROM app_versions
+               WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT' AND is_stub = false`,
+            [appId, featBranchId]
+          )
+        )[0].c;
+        expect(appDraftCount).toBeGreaterThan(1);
+
+        step(4, 'push the app → blocked by the app-level multiple-drafts guard');
+        // AllExceptionsFilter forwards only `message`, so assert on it (same as the module case).
+        const pushResp = await gitpushApp(appId, versionId, 'app-multidraft', FEAT, featBranchId);
+        expect(pushResp.status).toBe(400);
+        expect(pushResp.body.message).toMatch(/multiple drafts/i);
       }, 300000);
     });
 
@@ -10715,6 +10960,228 @@ describe('GitSyncController', () => {
         expect(await ctx.versionSynced(appCtx.versionId)).toBe(true);
         expect(await ctx.versionSynced(moduleCtx.versionId)).toBe(true);
         expect(await ctx.dsvSynced(dsId, featBranchId)).toBe(true);
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Locally-deleted data source is RESTORED on the next workspace pull (#783).
+    //
+    // A local-only DB delete never changes git content, so all three pull skip layers
+    // (whole-pull HEAD token → data-sources/ category tree SHA → per-DSV tree SHA) would
+    // otherwise say "nothing changed" and the DS would stay gone. The delete() now clears
+    // the relevant skip tokens so the reconcile/deserialize path runs and re-adds the DS.
+    // The delete SHAPE — and thus the restore PATH — differs by branch mode:
+    //   • FEATURE branch (multi-branch): soft-delete (DSV is_active=false, row kept) →
+    //     pull's category-skip fast path (reconcileSyncedDataSourceVersions) reactivates
+    //     the SAME DSV row.
+    //   • DEFAULT branch (single-branch): hard-delete (DSV row removed; data_sources row
+    //     kept) → pull runs the full deserialize, which re-INSERTs a fresh DSV row.
+    // Flow per case: enable git → push apps + data sources → pull (baseline) → delete a
+    // data source → pull → the data source is back. Each `it` uses a FRESH org and resets
+    // the shared repo. Against the real Gitea (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('locally-deleted data source is restored on pull (#783)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+
+      let restDs: DataSource;
+      beforeAll(() => {
+        restDs = app.get<DataSource>(getDataSourceToken('default'));
+      });
+
+      const step = (n: number, label: string) =>
+        process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+
+      const dsOptions = (url: string) => [
+        { key: 'url', value: url },
+        { key: 'auth_type', value: 'none' },
+        { key: 'headers', value: [['', '']] },
+        { key: 'ssl_certificate', value: 'none', encrypted: false },
+      ];
+
+      const makeCtx = async (email: string) => {
+        const { organization } = await createUser(app, { email, firstName: 'del', lastName: 'restore' });
+        const orgId = organization.id;
+        const { tokenCookie } = await login(app, email);
+        const cookie = tokenCookie;
+        await ensureAppEnvironments(app, orgId);
+
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', cookie).set('tj-workspace-id', orgId);
+
+        const pull = (branchId: string) =>
+          auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+        const pushWorkspace = (branchId: string, commitMessage: string) =>
+          auth(agent().post('/api/workspace-branches/push'))
+            .query({ branch_id: branchId })
+            .send({ commitMessage, branchId });
+        const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+          (
+            await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+          ).body.branches.find((b: any) => b.name === name)?.id;
+
+        // Configure git, seed the default branch row under `branchName`, set branching, pull.
+        const configureGit = async (branchName: string, branching: boolean): Promise<string> => {
+          await fetch(RESET_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+            body: '{}',
+          });
+          await restDs.query(
+            `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+             VALUES ($1, $2, true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+            [orgId, branchName]
+          );
+          await auth(agent().post('/api/git-sync/configs'))
+            .send({ ...GITHUB_HTTPS_PAYLOAD, branchName, useEnvConfig: false })
+            .expect(201);
+          const orgGitId: string = (await auth(agent().get(`/api/git-sync/${orgId}`)).expect(200)).body.organization_git
+            .id;
+          await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+            .send({ isBranchingEnabled: branching })
+            .expect(200);
+          const defaultBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+            .activeBranchId;
+          await pull(defaultBranchId).expect(201);
+          return defaultBranchId;
+        };
+
+        const createApp = async (name: string, branchId: string): Promise<string> =>
+          (
+            await auth(agent().post('/api/apps'))
+              .query({ branch_id: branchId })
+              .send({ icon: 'home', name, type: 'front-end', branchId })
+              .expect(201)
+          ).body.id;
+        // Standalone global data source (no linked query → API delete is allowed).
+        const createDataSource = async (name: string, branchId: string): Promise<string> =>
+          (
+            await auth(agent().post(`/api/data-sources?branch_id=${branchId}`))
+              .send({ name, kind: 'restapi', options: dsOptions(`http://${name}.example.com`), scope: 'global' })
+              .expect(201)
+          ).body.id;
+        const deleteDataSource = (dsId: string, branchId: string) =>
+          auth(agent().delete(`/api/data-sources/${dsId}`).query({ branch_id: branchId }));
+
+        // DB reads — the source of truth for restore.
+        const dsvRowCount = async (dsId: string, branchId: string): Promise<number> =>
+          (
+            await restDs.query(
+              `SELECT COUNT(*)::int AS c FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+              [dsId, branchId]
+            )
+          )[0].c;
+        const dsvActiveCount = async (dsId: string, branchId: string): Promise<number> =>
+          (
+            await restDs.query(
+              `SELECT COUNT(*)::int AS c FROM data_source_versions
+                 WHERE data_source_id = $1 AND branch_id = $2 AND is_active = true`,
+              [dsId, branchId]
+            )
+          )[0].c;
+        const dsvSynced = async (dsId: string, branchId: string): Promise<boolean> =>
+          (
+            await restDs.query(
+              `SELECT bool_and(is_synced) AS synced FROM data_source_versions
+                 WHERE data_source_id = $1 AND branch_id = $2 AND is_active = true`,
+              [dsId, branchId]
+            )
+          )[0]?.synced;
+        // User-facing view: is the DS listed on the branch?
+        const dsInList = async (dsId: string, branchId: string): Promise<boolean> => {
+          const resp = await auth(agent().get(`/api/data-sources/${orgId}?branch_id=${branchId}`)).expect(200);
+          const list = resp.body.data_sources || resp.body.dataSources || [];
+          return list.some((d: any) => d.id === dsId);
+        };
+
+        return {
+          orgId,
+          auth,
+          agent,
+          pull,
+          pushWorkspace,
+          branchIdByName,
+          configureGit,
+          createApp,
+          createDataSource,
+          deleteDataSource,
+          dsvRowCount,
+          dsvActiveCount,
+          dsvSynced,
+          dsInList,
+        };
+      };
+
+      // MULTI-BRANCH — soft-delete on a feature branch, then pull reactivates the same DSV row.
+      it('multi-branch: a data source deleted on a feature branch is restored (reactivated) on pull', async () => {
+        const ctx = await makeCtx('del-restore-mb@tooljet.io');
+
+        step(1, 'configure git + branching, create a feature branch');
+        const mainBranchId = await ctx.configureGit('main', true);
+        await ctx
+          .auth(ctx.agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-del-restore', sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await ctx.branchIdByName('feat-del-restore', mainBranchId);
+        expect(featBranchId).toBeDefined();
+
+        step(2, 'create an app + a global data source on the feature branch');
+        await ctx.createApp('del-mb-app', featBranchId);
+        const dsId = await ctx.createDataSource('del-mb-ds', featBranchId);
+
+        step(3, 'workspace push (apps + data sources) to the feature branch, then pull to settle');
+        await ctx.pushWorkspace(featBranchId, 'push apps + data sources').expect(201);
+        await ctx.pull(featBranchId).expect(201);
+
+        step(4, 'baseline: the data source is active, synced, and listed');
+        expect(await ctx.dsvActiveCount(dsId, featBranchId)).toBe(1);
+        expect(await ctx.dsvSynced(dsId, featBranchId)).toBe(true);
+        expect(await ctx.dsInList(dsId, featBranchId)).toBe(true);
+
+        step(5, 'delete the data source on the feature branch → soft-delete (row kept, is_active=false)');
+        await ctx.deleteDataSource(dsId, featBranchId).expect(200);
+        expect(await ctx.dsvActiveCount(dsId, featBranchId)).toBe(0);
+        expect(await ctx.dsvRowCount(dsId, featBranchId)).toBe(1); // row kept — soft delete
+        expect(await ctx.dsInList(dsId, featBranchId)).toBe(false);
+
+        step(6, 'workspace pull → the data source is restored (same DSV row reactivated)');
+        await ctx.pull(featBranchId).expect(201);
+        expect(await ctx.dsvActiveCount(dsId, featBranchId)).toBe(1);
+        expect(await ctx.dsvRowCount(dsId, featBranchId)).toBe(1); // still the same single row
+        expect(await ctx.dsvSynced(dsId, featBranchId)).toBe(true);
+        expect(await ctx.dsInList(dsId, featBranchId)).toBe(true);
+      }, 300000);
+
+      // SINGLE-BRANCH — hard-delete on the (unprotected) default branch, then pull re-creates the DSV.
+      it('single-branch: a data source deleted on the default branch is restored (re-created) on pull', async () => {
+        const ctx = await makeCtx('del-restore-sb@tooljet.io');
+
+        step(1, 'configure git (single-branch, unprotected default) — branching OFF');
+        const defaultBranchId = await ctx.configureGit('single-branch-main', false);
+
+        step(2, 'create an app + a global data source on the default branch');
+        await ctx.createApp('del-sb-app', defaultBranchId);
+        const dsId = await ctx.createDataSource('del-sb-ds', defaultBranchId);
+
+        step(3, 'workspace push (apps + data sources) to the default branch, then pull to settle');
+        await ctx.pushWorkspace(defaultBranchId, 'push apps + data sources').expect(201);
+        await ctx.pull(defaultBranchId).expect(201);
+
+        step(4, 'baseline: the data source is active, synced, and listed');
+        expect(await ctx.dsvActiveCount(dsId, defaultBranchId)).toBe(1);
+        expect(await ctx.dsvSynced(dsId, defaultBranchId)).toBe(true);
+        expect(await ctx.dsInList(dsId, defaultBranchId)).toBe(true);
+
+        step(5, 'delete the data source on the default branch → hard-delete (DSV row removed)');
+        await ctx.deleteDataSource(dsId, defaultBranchId).expect(200);
+        expect(await ctx.dsvRowCount(dsId, defaultBranchId)).toBe(0); // hard delete — row gone
+        expect(await ctx.dsInList(dsId, defaultBranchId)).toBe(false);
+
+        step(6, 'workspace pull → the data source is restored (a fresh DSV row is re-created)');
+        await ctx.pull(defaultBranchId).expect(201);
+        expect(await ctx.dsvActiveCount(dsId, defaultBranchId)).toBe(1);
+        expect(await ctx.dsvSynced(dsId, defaultBranchId)).toBe(true);
+        expect(await ctx.dsInList(dsId, defaultBranchId)).toBe(true);
       }, 300000);
     });
 

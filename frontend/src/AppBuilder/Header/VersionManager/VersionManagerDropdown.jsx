@@ -389,10 +389,18 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   // Delete version modal state
-  const [deleteVersion, setDeleteVersion] = useState({ versionId: '', versionName: '', showModal: false });
+  const [deleteVersion, setDeleteVersion] = useState({
+    versionId: '',
+    versionName: '',
+    isSynced: true,
+    showModal: false,
+  });
   const [inUseWarning, setInUseWarning] = useState({ show: false, versionName: '' });
 
-  const deleteModalMessage = isGitSyncEnabled ? (
+  // Git-specific delete messaging only for versions actually synced to git
+  const isGitTrackedDelete = isGitSyncEnabled && deleteVersion.isSynced !== false;
+
+  const deleteModalMessage = isGitTrackedDelete ? (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <p className="tj-text-sm" style={{ lineHeight: '18px', color: 'var(--text-default)', margin: 0 }}>
         {"The version '"}
@@ -432,11 +440,24 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   );
 
   const openDeleteModal = (version) => {
-    setDeleteVersion({ versionId: version.id, versionName: version.name, showModal: true });
+    // Last synced draft can't be deleted while git sync is on (mirrors backend guard) — toast, no modal
+    const isSyncedDraft = version.status === 'DRAFT' && version.isSynced !== false;
+    const otherDraftCount = draftVersions.filter((v) => v.id !== version.id).length;
+    if (isGitSyncEnabled && isSyncedDraft && otherDraftCount === 0) {
+      toast.error('Cannot delete the last draft version while git sync is enabled');
+      return;
+    }
+
+    setDeleteVersion({
+      versionId: version.id,
+      versionName: version.name,
+      isSynced: version.isSynced,
+      showModal: true,
+    });
   };
 
   const resetDeleteModal = () => {
-    setDeleteVersion({ versionId: '', versionName: '', showModal: false });
+    setDeleteVersion({ versionId: '', versionName: '', isSynced: true, showModal: false });
   };
 
   const confirmDeleteVersion = () => {
@@ -564,8 +585,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
               {searchQuery
                 ? 'No versions found'
                 : gitVersionStatus.size === 0 && isGitSyncEnabled
-                  ? 'No versions available — click Refresh to check git'
-                  : 'No versions available'}
+                ? 'No versions available — click Refresh to check git'
+                : 'No versions available'}
             </div>
           ) : (
             mergedVersions.map((version) => {
@@ -717,11 +738,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         message={deleteModalMessage}
         onConfirm={confirmDeleteVersion}
         onCancel={resetDeleteModal}
-        confirmButtonText={isGitSyncEnabled ? 'Delete and commit' : 'Delete version'}
+        confirmButtonText={isGitTrackedDelete ? 'Delete and commit' : 'Delete version'}
         cancelButtonText={'Cancel'}
         cancelButtonType="secondary"
-        hideCloseIcon={isGitSyncEnabled}
-        staticBackdrop={isGitSyncEnabled}
+        hideCloseIcon={isGitTrackedDelete}
+        staticBackdrop={isGitTrackedDelete}
       />
 
       {/* In-use warning modal — portalled to body to escape stacking contexts */}
