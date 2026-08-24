@@ -1,5 +1,25 @@
 import React, { useEffect, useRef } from 'react';
 
+interface LottieAnimationInstance {
+  destroy: () => void;
+}
+
+interface LottiePlayer {
+  loadAnimation: (params: {
+    container: Element;
+    renderer: 'svg';
+    loop: boolean;
+    autoplay: boolean;
+    path: string;
+  }) => LottieAnimationInstance;
+}
+
+declare global {
+  interface Window {
+    lottie?: LottiePlayer;
+  }
+}
+
 /**
  * Full page loading animation, identical to the pre-boot loader in index.ejs.
  *
@@ -11,7 +31,7 @@ import React, { useEffect, useRef } from 'react';
  * without leaking anything into the isolated viewer bundle.
  */
 export const LottieLoader = () => {
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
