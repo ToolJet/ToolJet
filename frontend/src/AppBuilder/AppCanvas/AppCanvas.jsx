@@ -152,12 +152,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   });
 
   const canvasContainerStyles = useMemo(() => {
-    const canvasBgColor =
-      currentMode === 'view'
-        ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
-        : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+    // NOTE: this used to read `computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)`,
+    // a self-reference that ES5 transpilation silently evaluated as `undefined` (and the
+    // function returns its second arg unchanged). Modern output throws on the TDZ access,
+    // so the historical result (no background override in view mode) is written out
+    // explicitly. If the viewer should honor the app's configured canvas background here,
+    // read it from the store like Container.jsx does — that's a deliberate visual change.
+    const canvasBgColor = currentMode === 'view' ? undefined : !isAppDarkMode ? '#EBEBEF' : '#2F3C4C';
 
     if (isModuleMode) {
       return {

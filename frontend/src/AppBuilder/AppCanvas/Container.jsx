@@ -82,6 +82,21 @@ const Container = React.memo(
     );
     const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
 
+    function getContainerCanvasWidth() {
+      if (canvasWidth !== undefined) {
+        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
+        if (id === 'canvas') return canvasWidth;
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
+      }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
+      }
+      return realCanvasRef?.current?.offsetWidth;
+    }
+
+    const containerCanvasWidth = getContainerCanvasWidth();
+    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
+
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
 
@@ -204,21 +219,6 @@ const Container = React.memo(
       (id === 'canvas' || componentType === 'ModuleContainer') &&
       components.length === 0 &&
       !isDragging;
-
-    function getContainerCanvasWidth() {
-      if (canvasWidth !== undefined) {
-        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
-      }
-      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
-        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
-      }
-      return realCanvasRef?.current?.offsetWidth;
-    }
-
-    const containerCanvasWidth = getContainerCanvasWidth();
-    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
 
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);

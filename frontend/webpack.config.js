@@ -338,6 +338,17 @@ module.exports = {
           environment === 'production' ? MiniCssExtractPlugin.loader : { loader: 'style-loader' },
           {
             loader: 'css-loader',
+            options: {
+              // css-loader 7 defaults *.module.css to named exports only; the app
+              // imports CSS modules as a default export (`import styles from ...`).
+              // `auto` must be set explicitly: passing `modules` as an object leaves
+              // it undefined, which turns EVERY stylesheet into a CSS module and
+              // hashes the class names of the global styles.
+              // `exportLocalsConvention` also has to be pinned: with `namedExport`
+              // off, css-loader 7 defaults it to 'camel-case-only', which lowercases
+              // PascalCase class names (`styles.Wrapper` -> undefined).
+              modules: { auto: true, namedExport: false, exportLocalsConvention: 'as-is' },
+            },
           },
         ],
       },
@@ -347,6 +358,17 @@ module.exports = {
           environment === 'production' ? MiniCssExtractPlugin.loader : { loader: 'style-loader' },
           {
             loader: 'css-loader',
+            options: {
+              // css-loader 7 defaults *.module.css to named exports only; the app
+              // imports CSS modules as a default export (`import styles from ...`).
+              // `auto` must be set explicitly: passing `modules` as an object leaves
+              // it undefined, which turns EVERY stylesheet into a CSS module and
+              // hashes the class names of the global styles.
+              // `exportLocalsConvention` also has to be pinned: with `namedExport`
+              // off, css-loader 7 defaults it to 'camel-case-only', which lowercases
+              // PascalCase class names (`styles.Wrapper` -> undefined).
+              modules: { auto: true, namedExport: false, exportLocalsConvention: 'as-is' },
+            },
           },
           {
             loader: 'postcss-loader',
