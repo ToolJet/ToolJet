@@ -262,23 +262,6 @@ export const AccessTokensCard = ({ darkMode }) => {
                 onClick={() => handleCopy(createdToken)}
               />
             </div>
-
-            <div className="tw-flex tw-items-center tw-gap-4 tw-rounded-md tw-p-3 tw-border tw-border-solid tw-border-border-weak tw-mt-4">
-              <div className="tw-min-w-0 tw-flex-1">
-                <p className="tw-mb-1 tw-font-medium tw-text-text-placeholder tw-text-base">Workspace ID</p>
-                <p className="tw-mb-0 tw-font-medium tw-text-text-default tw-text-base tw-truncate">{organizationId}</p>
-              </div>
-
-              <Button
-                isLucid
-                iconOnly
-                variant="ghost"
-                leadingIcon="copy"
-                className="tw-shrink-0"
-                fill="var(--icon-strong)"
-                onClick={() => handleCopy(organizationId)}
-              />
-            </div>
           </div>
         ) : (
           <div className="access-token-form">
