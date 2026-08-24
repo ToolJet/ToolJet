@@ -8,5 +8,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.LIST_PATS]: {},
     [FEATURE_KEY.DELETE_PAT]: {},
     [FEATURE_KEY.VALIDATE_PAT]: {},
+    [FEATURE_KEY.CREATE_PAT_SESSION]: {},
   },
 };

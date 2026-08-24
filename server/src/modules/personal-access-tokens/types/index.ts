@@ -7,6 +7,7 @@ interface Features {
   [FEATURE_KEY.LIST_PATS]: FeatureConfig;
   [FEATURE_KEY.DELETE_PAT]: FeatureConfig;
   [FEATURE_KEY.VALIDATE_PAT]: FeatureConfig;
+  [FEATURE_KEY.CREATE_PAT_SESSION]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

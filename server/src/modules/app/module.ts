@@ -1,3 +1,5 @@
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { OnModuleInit, DynamicModule, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
@@ -192,6 +194,10 @@ export class AppModule implements OnModuleInit, NestModule {
       imports: [...modules, ...imports],
       controllers: [AppController],
       providers: [
+        /* Bound here rather than in main.ts so enforcement is part of the module graph: any
+           consumer that builds this module gets it, including the e2e harness, which never runs
+           main.ts. Registering it only at bootstrap made the check depend on the entry point. */
+        { provide: APP_INTERCEPTOR, useClass: PatScopeInterceptor },
         ShutdownHook,
         GetConnection,
         ClearSSOResponseScheduler,
