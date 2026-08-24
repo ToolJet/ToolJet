@@ -26,6 +26,7 @@
     "typescript": "^4.9.5"
   },
   "scripts": {
+    "test": "jest",
     "start:watch": "lerna run watch --stream --parallel",
     "build": "npm run build --workspaces",
     "start:dev": "npm run build && npm run start:watch",
