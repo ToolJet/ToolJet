@@ -14,7 +14,7 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
   }
 
   @Get('validate-token')
-  async validateToken(@User() user): Promise<{ email: string }> {
+  async validateToken(@User() user): Promise<{ email: string; organizationId: string }> {
     throw new Error('Method not implemented.');
   }
 
