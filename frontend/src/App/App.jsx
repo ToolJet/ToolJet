@@ -130,7 +130,10 @@ class AppComponent extends React.Component {
         showBanner: false, // show banner when required for ee or cloud
       });
     }
-    setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+    // Store the handle: an uncleared interval survives unmount/remount
+    // (HMR, routing changes) and keeps issuing authenticated metadata
+    // requests after logout. ViewerApp.jsx clears its interval the same way.
+    this._metadataInterval = setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
     let counter = 0;
     let interval;
@@ -493,6 +496,10 @@ class AppComponent extends React.Component {
         </div>
       </>
     );
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._metadataInterval);
   }
 }
 
