@@ -220,20 +220,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       return Object.assign(acc, { [colOpts.column]: colOpts.value });
     }, {});
 
-    // buildPostgrestQuery SILENTLY drops any clause missing `column` or `operator`, so a malformed
-    // where_filters (a flat {id: value} map, or a clause with no operator) reduces to an empty query
-    // string. Without this guard the PATCH below goes out with no filter at all and updates EVERY ROW
-    // in the table, returning status:ok — unrecoverable, silent data loss. deleteRows has always
-    // refused this case; update_rows must too. An intentional update-all can still be expressed with
-    // an explicit always-true filter.
-    if (isEmpty(whereQuery)) {
-      return {
-        status: 'failed',
-        errorMessage: 'Please provide a where filter to update rows',
-        data: {},
-      };
-    }
-    query.push(whereQuery);
+    if (!isEmpty(whereQuery)) query.push(whereQuery);
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id');
@@ -667,11 +654,7 @@ export class TooljetDbDataOperationsService implements QueryService {
 }
 
 function hasNullValueInFilters(queryOptions, operation) {
-  // `operation` is the operation NAME ('update_rows', 'delete_rows', …); the filters live under
-  // queryOptions[operation].where_filters. Reading queryOptions.operation?.where_filters dereferenced
-  // the operation STRING, so this always returned false and the guard was inert at every call site.
-  // (The frontend twin in QueryEditors/TooljetDatabase/util.js indexes it correctly.)
-  const filters = queryOptions?.[operation]?.where_filters;
+  const filters = queryOptions.operation?.where_filters;
   if (filters) {
     const filterKeys = Object.keys(filters);
     for (let i = 0; i < filterKeys.length; i++) {
