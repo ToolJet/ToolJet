@@ -20,44 +20,28 @@
       margin: 0;
     }
 
-    .load {
-      display: none;
+    /* Boot loader. Also used by the LottieLoader React component, which renders the
+       same animation once the app bundle takes over. */
+    .tj-app-loader {
+      display: flex;
       justify-content: center;
       align-items: center;
+      width: 100vw;
       height: 100vh;
-    }
-    .load.dark-loader {
-      display: flex;
-      background-color: #1E2226;
+      background-color: var(--base, #FCFCFD);
       margin: 0;
+      overflow: hidden;
     }
 
-    .load div {
-      width: 20px;
-      height: 20px;
-      background-color: #3E63DD;
-      border-radius: 50%;
-      margin: 0 5px;
-      animation-name: up-and-down;
-      animation-duration: 0.8s;
-      animation-iteration-count: infinite;
-      animation-direction: alternate;
+    .tj-app-loader.dark-loader {
+      background-color: #1E2226;
     }
 
-    .load .two {
-      animation-delay: 0.3s;
-    }
-
-    .load .three {
-      animation-delay: 0.6s;
-    }
-
-    @keyframes up-and-down {
-      to {
-        opacity: 0.2;
-        transform: translateY(-20px);
-
-      }
+    /* The animation is authored at 1920x1080 and scales to fit its box, so resizing
+       the box resizes the animation and flex keeps it centred on the backdrop. */
+    .tj-app-loader .loader-animation {
+      width: 30%;
+      height: 30%;
     }
 
     /* roboto-100 - latin */
@@ -126,24 +110,41 @@
 
 <body>
   <div id="app">
-    <div style="width: 100%">
-      <div id="app-loader" class="load">
-        <div class="one"></div>
-        <div class="two"></div>
-        <div class="three"></div>
-      </div>
+    <div id="app-loader" class="tj-app-loader">
+      <div id="app-loader-animation" class="loader-animation"></div>
     </div>
   </div>
 </body>
+<script src="assets/libs/lottie-5.13.0/lottie_light.min.js"></script>
 <script>
-  if (typeof localStorage !== 'undefined') {
-      const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-      const loaderElement = document.getElementById('app-loader');
-      if (darkModeEnabled) {
-        loaderElement.classList.add('dark-loader');
-      } else {
-        loaderElement.style.display = 'flex';
+  (function () {
+    const darkModeEnabled = typeof localStorage !== 'undefined' && localStorage.getItem('darkMode') === 'true';
+    const loaderElement = document.getElementById('app-loader');
+    if (darkModeEnabled) {
+      loaderElement.classList.add('dark-loader');
+    }
+
+    const container = document.getElementById('app-loader-animation');
+    if (!container || !window.lottie) return;
+
+    const animation = window.lottie.loadAnimation({
+      container: container,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: darkModeEnabled ? 'assets/lottie/app-loader-dark.json' : 'assets/lottie/app-loader-light.json',
+    });
+
+    // React renders into #app and wipes the loader markup on mount. Without this the
+    // animation keeps ticking on a detached DOM node for the rest of the session.
+    const appElement = document.getElementById('app');
+    const observer = new MutationObserver(function () {
+      if (!document.getElementById('app-loader')) {
+        animation.destroy();
+        observer.disconnect();
       }
-  }
+    });
+    observer.observe(appElement, { childList: true });
+  })();
 </script>
 </html>

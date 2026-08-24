@@ -1,18 +1,13 @@
 import React, { Component, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { LottieLoader } from '@/_ui/LottieLoader';
 
 // Lazy load ENTIRE APP ROUTERS (not just pages)
 // This is CRITICAL for bundle isolation - each router imports completely different code
 const ViewerApp = lazy(() => import('./ViewerApp'));
 const MainApp = lazy(() => import('./App').then((module) => ({ default: module.App })));
 
-const LoadingFallback = () => (
-  <div class="load" style={{ display: 'flex' }}>
-    <div class="one"></div>
-    <div class="two"></div>
-    <div class="three"></div>
-  </div>
-);
+const LoadingFallback = () => <LottieLoader />;
 
 /**
  * ChunkErrorBoundary — Catches ChunkLoadError from stale webpack chunks after deployments.

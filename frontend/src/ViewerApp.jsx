@@ -11,6 +11,7 @@ import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import Toast from '@/_ui/Toast';
+import { LottieLoader } from '@/_ui/LottieLoader';
 import '@/_styles/theme.scss';
 import 'react-tooltip/dist/react-tooltip.css';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -149,15 +150,7 @@ const ViewerApp = () => {
             <Route
               path="/:slug/login"
               element={
-                <Suspense
-                  fallback={
-                    <div className="load" style={{ display: 'flex' }}>
-                      <div className="one"></div>
-                      <div className="two"></div>
-                      <div className="three"></div>
-                    </div>
-                  }
-                >
+                <Suspense fallback={<LottieLoader />}>
                   <AppLoginPage />
                 </Suspense>
               }
@@ -165,15 +158,7 @@ const ViewerApp = () => {
             <Route
               path="/:slug/signup"
               element={
-                <Suspense
-                  fallback={
-                    <div className="load" style={{ display: 'flex' }}>
-                      <div className="one"></div>
-                      <div className="two"></div>
-                      <div className="three"></div>
-                    </div>
-                  }
-                >
+                <Suspense fallback={<LottieLoader />}>
                   <AppSignupPage />
                 </Suspense>
               }
@@ -181,15 +166,7 @@ const ViewerApp = () => {
             <Route
               path="/:slug/forgot-password"
               element={
-                <Suspense
-                  fallback={
-                    <div className="load" style={{ display: 'flex' }}>
-                      <div className="one"></div>
-                      <div className="two"></div>
-                      <div className="three"></div>
-                    </div>
-                  }
-                >
+                <Suspense fallback={<LottieLoader />}>
                   <AppForgotPasswordPage />
                 </Suspense>
               }
@@ -197,15 +174,7 @@ const ViewerApp = () => {
             <Route
               path="/:slug/reset-password/:token"
               element={
-                <Suspense
-                  fallback={
-                    <div className="load" style={{ display: 'flex' }}>
-                      <div className="one"></div>
-                      <div className="two"></div>
-                      <div className="three"></div>
-                    </div>
-                  }
-                >
+                <Suspense fallback={<LottieLoader />}>
                   <AppResetPasswordPage />
                 </Suspense>
               }
