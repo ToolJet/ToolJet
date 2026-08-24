@@ -113,3 +113,17 @@ Context is layered — the closest file to the code you're changing wins:
 | `server/docs/testing.md` | Backend testing — what to test, then how to write it |
 
 **Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature. Stale context is worse than no context.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on this repo (`ToolJet/ToolJet`); skills use the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles map to default label strings of the same name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout (`CONTEXT.md` + `docs/adr/` at root); the existing canonical glossary is `UBIQUITOUS_LANGUAGE.md`. See `docs/agents/domain.md`.
