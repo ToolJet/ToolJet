@@ -1,87 +1,88 @@
 import { create, zustandDevTools } from './utils';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { streamKey, resolveDevPins, diffStreamKeys } from '@/_helpers/customComponentPreviewStoreUtils';
 
 // Module-scoped, NOT zustand state — one AbortController per active (libraryId, userId) SSE
 // connection. Deliberately kept outside the store so it's never touched by devtools/persist
-// machinery (invariant #14: dev preview stays session-local, never persisted).
+// machinery — dev bundle bytes still never persist into app state, only the pin (a plain
+// version-style string, `dev:{userId}`) does; see invariant #14 in HANDOFF-NISHIDH.md.
 const activeStreams = new Map(); // `${libraryId}:${userId}` -> AbortController
 
-const userIdFromDevValue = (value) => value?.slice(4); // 'dev:{userId}' -> '{userId}'
-const streamKey = (libraryId, userId) => `${libraryId}:${userId}`;
+function closeAllStreams() {
+  activeStreams.forEach((controller) => controller?.abort());
+  activeStreams.clear();
+}
 
-function closeStream(libraryId, value) {
-  if (!value) return;
-  const key = streamKey(libraryId, userIdFromDevValue(value));
+function closeStream(key) {
   activeStreams.get(key)?.abort();
   activeStreams.delete(key);
 }
 
+function openStream(libraryId, userId, onMessage) {
+  const key = streamKey(libraryId, userId);
+  // Reserve the slot synchronously so a second reconcile pass (e.g. another
+  // globalSettings write landing before this promise resolves) can't open a duplicate.
+  activeStreams.set(key, null);
+  customComponentLibrariesService
+    .streamDevBundleUpdates(libraryId, userId, { onMessage, onError: () => {} }) // fetchEventSource auto-retries
+    .then((controller) => {
+      if (activeStreams.has(key)) activeStreams.set(key, controller);
+      else controller.abort(); // slot was closed before the connection finished opening
+    });
+}
+
 export const useCustomComponentPreviewStore = create(
   zustandDevTools(
-    (set, get) => ({
-      devPreviews: {}, // { [libraryId]: 'dev:{userId}' }
-      devPreviewEmails: {}, // { [libraryId]: email } — feeds the canvas "dev: email" badge (P8)
+    (set) => ({
+      devPreviewEmails: {}, // { [libraryId]: email } — feeds the canvas "dev: email" badge
       devBundleUpdatedAt: {}, // { [libraryId]: number } — nonce bumped on each live-reload push
 
-      setDevPreview: (libraryId, value, email) => {
-        const prevValue = get().devPreviews?.[libraryId];
-
-        if (prevValue !== value) {
-          closeStream(libraryId, prevValue);
-
-          const userId = userIdFromDevValue(value);
-          const key = streamKey(libraryId, userId);
-          if (!activeStreams.has(key)) {
-            // Reserve the slot synchronously so a second widget instance of the same library
-            // rendering before the promise resolves doesn't open a duplicate connection.
-            activeStreams.set(key, null);
-            customComponentLibrariesService
-              .streamDevBundleUpdates(libraryId, userId, {
-                onMessage: () =>
-                  set(
-                    (state) => ({ devBundleUpdatedAt: { ...state.devBundleUpdatedAt, [libraryId]: Date.now() } }),
-                    false,
-                    'devBundleUpdated'
-                  ),
-                onError: () => {}, // fetchEventSource auto-retries; nothing to do here
-              })
-              .then((controller) => {
-                if (activeStreams.has(key)) activeStreams.set(key, controller);
-                else controller.abort(); // slot was closed before the connection finished opening
-              });
-          }
+      // Reconciles emails/streams against the CURRENT set of dev-pinned libraries.
+      // Only opens a live-reload stream for pins where the viewer IS the pinned developer
+      // (see resolveDevPins) — everyone else still gets the correct dev content/badge from
+      // this same resolve, just without hot reload. Driven by the persisted pin
+      // (globalSettings), not a UI click - a teammate who never opened VersionPicker still
+      // sees the right dev bundle, they just don't get pushed updates for someone else's work.
+      syncDevPinStreams: async (devPinKeys) => {
+        if (!Object.keys(devPinKeys).length) {
+          closeAllStreams();
+          set({ devBundleUpdatedAt: {}, devPreviewEmails: {} }, false, 'syncDevPinStreams:empty');
+          return;
         }
 
-        set(
-          (state) => ({
-            devPreviews: { ...state.devPreviews, [libraryId]: value },
-            devPreviewEmails: { ...state.devPreviewEmails, [libraryId]: email ?? null },
-          }),
-          false,
-          'setDevPreview'
+        let libraries;
+        try {
+          libraries = await customComponentLibrariesService.list();
+        } catch {
+          return; // transient failure — next globalSettings/pin change retries
+        }
+
+        const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
+        const { emails, ownPins } = resolveDevPins(libraries, devPinKeys, currentUserId);
+        const { toClose, toOpen } = diffStreamKeys(Array.from(activeStreams.keys()), ownPins);
+
+        toClose.forEach(closeStream);
+        toOpen.forEach(([libraryId, userId]) =>
+          openStream(libraryId, userId, () =>
+            set(
+              (state) => ({ devBundleUpdatedAt: { ...state.devBundleUpdatedAt, [libraryId]: Date.now() } }),
+              false,
+              'devBundleUpdated'
+            )
+          )
         );
+
+        set((state) => ({ devPreviewEmails: { ...state.devPreviewEmails, ...emails } }), false, 'syncDevPinStreams');
       },
 
-      clearDevPreview: (libraryId) =>
-        set(
-          (state) => {
-            closeStream(libraryId, state.devPreviews?.[libraryId]);
-            const { [libraryId]: _removed, ...rest } = state.devPreviews;
-            const { [libraryId]: _removedEmail, ...restEmails } = state.devPreviewEmails;
-            const { [libraryId]: _removedNonce, ...restNonce } = state.devBundleUpdatedAt;
-            return { devPreviews: rest, devPreviewEmails: restEmails, devBundleUpdatedAt: restNonce };
-          },
-          false,
-          'clearDevPreview'
-        ),
-
       // Closes every active stream and clears all dev-preview state — call on app switch/
-      // unmount so connections don't leak across apps (see PENDING.md P8 verification note).
+      // unmount so connections don't leak across apps.
       resetAllDevPreviews: () =>
         set(
-          (state) => {
-            Object.entries(state.devPreviews ?? {}).forEach(([libraryId, value]) => closeStream(libraryId, value));
-            return { devPreviews: {}, devPreviewEmails: {}, devBundleUpdatedAt: {} };
+          () => {
+            closeAllStreams();
+            return { devPreviewEmails: {}, devBundleUpdatedAt: {} };
           },
           false,
           'resetAllDevPreviews'

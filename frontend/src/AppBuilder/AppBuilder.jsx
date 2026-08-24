@@ -17,7 +17,7 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
-import { useCustomComponentPreviewStore } from '@/_stores/customComponentPreviewStore';
+import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -50,13 +50,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     }
   }, [hasModuleAccess, isModuleEditor]);
 
-  // The editor tree isn't remounted when navigating between apps in the same tab (AppLoader
-  // persists across the route's :slug param change), so CCL dev-preview state and its live
-  // SSE connections would otherwise leak from one app into the next. Reset on every appId
-  // change/unmount.
-  useEffect(() => {
-    return () => useCustomComponentPreviewStore.getState().resetAllDevPreviews();
-  }, [appId]);
+  useCustomComponentDevPreviewSync(appId);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {

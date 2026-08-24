@@ -46,13 +46,15 @@ export const LibraryComponent = ({
   const { libraryId, componentName, revisionId } = properties;
   const safeHeight = Math.max(height ?? 0, 0);
 
-  const devPreview = useCustomComponentPreviewStore((state) => state.devPreviews?.[libraryId]);
+  const effectiveRevision = useEffectiveLibraryRevision(libraryId, revisionId);
+  const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
+
   const devEmail = useCustomComponentPreviewStore((state) => state.devPreviewEmails?.[libraryId]);
   const devNonce = useCustomComponentPreviewStore((state) =>
-    devPreview ? state.devBundleUpdatedAt?.[libraryId] : undefined
+    isDevPin ? state.devBundleUpdatedAt?.[libraryId] : undefined
   );
 
-  const devBadge = devPreview ? <DevBadge label={devEmail ?? devPreview.replace('dev:', '')} /> : null;
+  const devBadge = isDevPin ? <DevBadge label={devEmail ?? effectiveRevision.slice(4)} /> : null;
 
   // A dev-bundle push can remove/rename a `useStateX` variable; setExposedVariable is
   // additive-only (nothing else ever deletes a key from currentState), so a removed
@@ -68,7 +70,6 @@ export const LibraryComponent = ({
     resetExposedVariables?.();
   }, [devNonce, resetExposedVariables]);
 
-  const effectiveRevision = useEffectiveLibraryRevision(libraryId, revisionId);
   const configured = Boolean(libraryId && componentName && effectiveRevision);
 
   const iframeRef = useRef(null);
