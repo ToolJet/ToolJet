@@ -164,14 +164,18 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
 function GetStartedHome({ edition, isToolJetCloud }) {
   // When AI is enabled, the hero's own "OR USE TOOLJET IN ANY EDITOR" cards replace these
   // app-creation shortcuts (per the redesign); without AI the shortcuts remain the primary CTAs.
-  const isAiEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
+  // Read the raw flag (null until the gateway responds) and render the shortcuts ONLY once we know
+  // AI is disabled — checking `=== false`, not `!enabled`. Otherwise, on an AI-enabled instance, the
+  // flag is momentarily null/false during load and the shortcuts flash in before the redesign replaces
+  // them. Rendering nothing until the flag resolves avoids that flash.
+  const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled);
 
   return (
     <div className="tw-relative tw-size-full tw-overflow-hidden">
       <HomeDecorativeBackground />
       <div className="tw-relative tw-z-[1] tw-box-border tw-content-stretch tw-flex tw-flex-col tw-gap-9 tw-items-center tw-justify-center tw-mx-auto tw-py-6 tw-size-full tw-max-w-[896px]">
         <HomePagePromptSection />
-        {!isAiEnabled && (
+        {aiFeaturesEnabled === false && (
           <>
             <DividerWithText />
             <GetStartedOptionsRow edition={edition} isToolJetCloud={isToolJetCloud} />
