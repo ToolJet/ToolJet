@@ -1,5 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
+const MIGRATION_NAME = 'FinalizeBranchModelConstraints1786800000000';
+
 /**
  * Final half of the consolidated branch-model setup: adds the
  * chk_app_versions_branch_metadata CHECK constraint.
@@ -16,19 +18,23 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class FinalizeBranchModelConstraints1786800000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+    console.log(`${MIGRATION_NAME}: [START] Finalizing branch-model metadata constraint.`);
 
     // Heal branched rows that still carry NULL app_name/slug — stub / cloned draft rows from
     // EnsureDefaultBranchDraftVersion & CloneDefaultBranchDraftFromPublished (branch_id IS NOT
     // NULL, so SET-2's branch_id-IS-NULL heal doesn't reach them). av.app_id::text is a
     // globally-unique placeholder, so it cannot collide across apps and won't trip the name/slug
     // uniqueness triggers. Matches main's AddMetadataColumns step 2a.
-    await queryRunner.query(`
+    console.log(`${MIGRATION_NAME}: [START] Healing branched rows with NULL app_name/slug.`);
+    const [, healed] = await queryRunner.query(`
       UPDATE app_versions
       SET app_name = COALESCE(app_name, app_id::text),
           slug     = COALESCE(slug, app_id::text)
       WHERE branch_id IS NOT NULL AND (app_name IS NULL OR slug IS NULL)
     `);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Healed ${healed ?? 0} rows.`);
 
+    console.log(`${MIGRATION_NAME}: [START] Adding chk_app_versions_branch_metadata (if absent).`);
     await queryRunner.query(`
       DO $$
       BEGIN
@@ -43,6 +49,7 @@ export class FinalizeBranchModelConstraints1786800000000 implements MigrationInt
         END IF;
       END $$;
     `);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Branch-model metadata constraint finalized.`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

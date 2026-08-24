@@ -3103,7 +3103,8 @@ describeGitLab('GitSyncController — GitLab', () => {
             for (const e of cfFs.readdirSync(base, { withFileTypes: true })) {
               if (!e.isDirectory()) continue;
               const f = cfPath.join(base, e.name, 'data-source.json');
-              if (cfFs.existsSync(f)) return JSON.parse(cfFs.readFileSync(f, 'utf8')).name;
+              // Name is the DIRECTORY, not content.name (no longer pushed to git).
+              if (cfFs.existsSync(f)) return e.name;
             }
             throw new Error('no datasource found under data-sources/');
           });
@@ -3249,22 +3250,20 @@ describeGitLab('GitSyncController — GitLab', () => {
         await writeGitFile(moduleFolderConflictPath, {}, 'restore: neutralize injected cross-folder module conflict');
 
         step(59, 'pull main with a git datasource whose name collides with an existing DS → 409');
-        // 59. Same shape as step 55 for data sources. Conflict detection enumerates
-        //     data-sources/<dir>/data-source.json and keys on the file's `name`.
+        // 59. Same shape as step 55 for data sources. Conflict detection derives a
+        //     datasource's NAME from its DIRECTORY (data-sources/<name>/data-source.json),
+        //     not from content.name (no longer pushed) — so to collide we must write into
+        //     the existing DS's own directory with a DIFFERENT co_relation_id (git side
+        //     only; the 409 blocks the pull, so the DB DS keeps its real id → same name,
+        //     different identity → conflict), then restore. (Writing a NEW directory like
+        //     e2e-conflict-ds with content.name set does NOT collide — the name is the dir.)
         const existingDsName = await firstDataSourceName();
-        const fakeDsCorid = randomUUIDForMeta();
-        const dsConflictPath = 'data-sources/e2e-conflict-ds/data-source.json';
-        await writeGitFile(
-          dsConflictPath,
-          {
-            id: fakeDsCorid,
-            name: existingDsName,
-            kind: 'restapi',
-            type: 'default',
-            options: {},
-          },
-          'inject ds name conflict'
+        const dsConflictPath = `data-sources/${existingDsName}/data-source.json`;
+        const originalDsContent = await scanMain((dir) =>
+          JSON.parse(cfFs.readFileSync(cfPath.join(dir, dsConflictPath), 'utf8'))
         );
+        const fakeDsCorid = randomUUIDForMeta();
+        await writeGitFile(dsConflictPath, { ...originalDsContent, id: fakeDsCorid }, 'inject ds name conflict');
 
         const dsConflictGroups = await pullMainExpect409();
         const dsConflictGroup = dsConflictGroups.find((g: any) => g.type === 'datasource');
@@ -3273,7 +3272,8 @@ describeGitLab('GitSyncController — GitLab', () => {
         expect(dsConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
         expect(dsConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeDsCorid);
 
-        await writeGitFile(dsConflictPath, {}, 'restore: neutralize injected ds conflict');
+        // Restore the real DS file exactly so later steps see clean git.
+        await writeGitFile(dsConflictPath, originalDsContent, 'restore: revert injected ds conflict');
 
         step(60, 'delete data source A on a branch, then rename B → A → succeeds (branch-aware name check)');
         // 63. Regression for the CRUD rename check. Deleting a global DS on a

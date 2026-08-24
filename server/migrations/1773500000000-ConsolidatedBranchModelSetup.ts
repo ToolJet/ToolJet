@@ -1,4 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationProgress } from '@helpers/migration.helper';
+
+const MIGRATION_NAME = 'ConsolidatedBranchModelSetup1773500000000';
+const TOTAL_STEPS = 12;
 
 /**
  * Consolidated branch-model / git-sync setup (lts -> final state).
@@ -27,19 +31,29 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
     );
     if (exists) {
       // Beta customer (already on main) — branch model present, nothing to consolidate.
+      console.log(`${MIGRATION_NAME}: [SKIP] organization_git_sync_branches exists (beta/main install) — no-op.`);
       return;
     }
+
+    // Bulk set-based SQL below (no per-row loops), but the backfill touches every
+    // app_version / data_source; MigrationProgress reports step-level progress %.
+    const progress = new MigrationProgress(MIGRATION_NAME, TOTAL_STEPS);
+    console.log(`${MIGRATION_NAME}: [START] Consolidated branch-model setup (lts/fresh upgrade path).`);
 
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
     // 1. Wipe git-sync configuration (customers reconfigure post-upgrade)
+    console.log(`${MIGRATION_NAME}: [START] Step 1/12 - wiping git-sync configuration.`);
     await queryRunner.query(`DELETE FROM organization_git_https`);
     await queryRunner.query(`DELETE FROM organization_git_ssh`);
     await queryRunner.query(`DELETE FROM organization_gitlab`);
-    await queryRunner.query(`DELETE FROM organization_git_sync`);
+    const [, wipedConfigs] = await queryRunner.query(`DELETE FROM organization_git_sync`);
     await queryRunner.query(`DROP TABLE IF EXISTS app_git_sync`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 1/12 - git-sync config wiped (${wipedConfigs ?? 0} org configs).`);
+    progress.show();
 
     // 2. Enum + config columns on organization_git_sync
+    console.log(`${MIGRATION_NAME}: [START] Step 2/12 - enum + organization_git_sync columns.`);
     await queryRunner.query(`
       DO $$ BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname='app_version_type') THEN
@@ -55,8 +69,11 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
         ADD COLUMN IF NOT EXISTS webhook_secret character varying(64) DEFAULT NULL,
         ADD COLUMN IF NOT EXISTS webhook_events jsonb NOT NULL DEFAULT '["push", "pull_request", "delete"]'::jsonb
     `);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 2/12 - enum + config columns added.`);
+    progress.show();
 
     // 3. Branch-model tables (final structure)
+    console.log(`${MIGRATION_NAME}: [START] Step 3/12 - creating branch-model tables.`);
     await queryRunner.query(`
       CREATE TABLE public.organization_git_sync_branches (
         id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -136,8 +153,11 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
     await queryRunner.query(`CREATE INDEX idx_webhook_events_org_status ON public.git_sync_webhook_events USING btree (organization_id, status, created_at DESC)`);
     await queryRunner.query(`CREATE UNIQUE INDEX idx_webhook_events_org_delivery ON public.git_sync_webhook_events USING btree (organization_id, delivery_id)`);
     await queryRunner.query(`CREATE UNIQUE INDEX idx_unique_active_name_branch ON public.data_source_versions USING btree (name, branch_id) WHERE (is_active = true)`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 3/12 - branch-model tables created (branches, DSV, DSVO, webhook_events).`);
+    progress.show();
 
     // 4. app_versions branch-model columns (branch_id nullable during backfill)
+    console.log(`${MIGRATION_NAME}: [START] Step 4/12 - adding branch-model columns to app_versions / folder_apps.`);
     await queryRunner.query(`
       ALTER TABLE app_versions
         ADD COLUMN IF NOT EXISTS version_type public.app_version_type NOT NULL DEFAULT 'version',
@@ -156,19 +176,37 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
     // pulled_at / remote_updated_at are transitional: kept migrations (CleanupStaleDraftVersions,
     // EnsureDefaultBranchDraftVersion, CloneDefaultBranchDraftFromPublished) read them, and the
     // kept SET-2 migration DropPulledAtAndRemoteUpdatedAt (1785600000000) drops them at the end.
-    await queryRunner.query(`ALTER TABLE folder_apps ADD COLUMN IF NOT EXISTS branch_id uuid`);
     // organization_users.last_branch_id is added by the kept SET-2 migration
     // AddLastBranchIdToOrganizationUsers (1782200000000) — leave it to that migration.
+    //
+    // folder_apps.branch_id (column + unique-index swap + FK + backfill) is intentionally NOT
+    // done here. It lives in the kept data-phase migration AddBranchIdToFolderApps (1777100000000),
+    // which must run AFTER NormalizeFolderAppsKeepFirstCreatedMappingPerApp (1769151383974) dedupes
+    // folder_apps and creates uniq_folder_apps_app_id — the unique indexes can't build on the
+    // still-duplicated LTS data at schema-migration time. Only the non-unique folder_id index
+    // (from the folded 1779800000000) is safe to create here.
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_folder_apps_folder_id ON folder_apps (folder_id)`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 4/12 - branch-model columns added.`);
+    progress.show();
 
     // 5. Default branch for EVERY organization (universal branch model)
+    console.log(`${MIGRATION_NAME}: [START] Step 5/12 - creating default branch per organization.`);
     await queryRunner.query(`
       INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
       SELECT id, 'main', true FROM organizations
       ON CONFLICT (organization_id, branch_name) DO NOTHING
     `);
+    // INSERT rowCount isn't surfaced by queryRunner.query the way UPDATE/DELETE is; the
+    // table was just created empty, so a COUNT gives the exact number inserted.
+    const [{ count: defaultBranches }] = await queryRunner.query(
+      `SELECT count(*)::int AS count FROM organization_git_sync_branches`
+    );
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 5/12 - created ${defaultBranches} default branches.`);
+    progress.show();
 
     // 6. App metadata backfill from apps (+ defensive null heal)
-    await queryRunner.query(`
+    console.log(`${MIGRATION_NAME}: [START] Step 6/12 - backfilling app_versions metadata from apps.`);
+    const [, metaBackfilled] = await queryRunner.query(`
       UPDATE app_versions av
       SET icon = a.icon, is_public = a.is_public, slug = a.slug, app_name = a.name
       FROM apps a WHERE av.app_id = a.id
@@ -179,24 +217,27 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
           slug     = COALESCE(av.slug, a.slug, a.id::text)
       FROM apps a WHERE av.app_id = a.id AND (av.app_name IS NULL OR av.slug IS NULL)
     `);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 6/12 - metadata backfilled on ${metaBackfilled ?? 0} app_versions.`);
+    progress.show();
 
     // 7. Wire up branch_id -> org default branch
-    await queryRunner.query(`
+    console.log(`${MIGRATION_NAME}: [START] Step 7/12 - wiring app_versions / folder_apps to default branch.`);
+    const [, avBranched] = await queryRunner.query(`
       UPDATE app_versions av SET branch_id = wb.id
       FROM apps a JOIN organization_git_sync_branches wb ON wb.organization_id = a.organization_id AND wb.is_default = true
       WHERE av.app_id = a.id
     `);
-    await queryRunner.query(`
-      UPDATE folder_apps fa SET branch_id = wb.id
-      FROM apps a JOIN organization_git_sync_branches wb ON wb.organization_id = a.organization_id AND wb.is_default = true
-      WHERE fa.app_id = a.id
-    `);
+    // folder_apps.branch_id backfill is handled by the kept data migration AddBranchIdToFolderApps
+    // (1777100000000), together with its column add + unique-index swap + FK (see Step 4 note).
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 7/12 - branch_id set on ${avBranched ?? 0} app_versions.`);
+    progress.show();
 
     // 7b. Dedup DRAFT version rows: at most one non-stub DRAFT per (app_id, branch_id).
     //     Extra drafts (legacy) become PUBLISHED snapshots (branch_id kept). Mirrors the
     //     folded AddDefaultBranchDraftUniquePerApp step 1 — required so the kept SET-2
     //     migration MakeAppVersionBranchIdNotNull can build its single-synced-draft index.
-    await queryRunner.query(`
+    console.log(`${MIGRATION_NAME}: [START] Step 7b - deduping extra DRAFT versions per (app, branch).`);
+    const [, draftsConverted] = await queryRunner.query(`
       WITH ranked AS (
         SELECT id, ROW_NUMBER() OVER (
                  PARTITION BY app_id, branch_id ORDER BY updated_at DESC, id ASC
@@ -207,11 +248,13 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
       UPDATE app_versions SET status = 'PUBLISHED'
       WHERE id IN (SELECT id FROM ranked WHERE rn > 1)
     `);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 7b - ${draftsConverted ?? 0} duplicate drafts converted to PUBLISHED.`);
 
     // 8. Data source versions + options for global data sources.
     //    Self-contained DS-name dedup (per org) — the branch model requires unique
     //    (name, branch_id); we cannot rely on the data-phase enforce-unique-data-source-names
     //    migration since schema migrations run before all data migrations.
+    console.log(`${MIGRATION_NAME}: [START] Step 8/12 - deduping DS names + seeding data_source_versions.`);
     await queryRunner.query(`
       DO $$
       DECLARE rec RECORD; new_name text; suffix int;
@@ -256,8 +299,18 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
     // NB: data_source_options is NOT dropped here — kept data-phase migrations
     // (e.g. BackfillMssqlDatasourceAuthType) still read it; the kept
     // DropDataSourceOptionsTable (1773300000000, data phase) drops it after them.
+    // Both tables were just created empty, so a COUNT is the exact inserted total.
+    const [{ count: dsvCreated }] = await queryRunner.query(`SELECT count(*)::int AS count FROM data_source_versions`);
+    const [{ count: dsvoCreated }] = await queryRunner.query(
+      `SELECT count(*)::int AS count FROM data_source_version_options`
+    );
+    console.log(
+      `${MIGRATION_NAME}: [SUCCESS] Step 8/12 - created ${dsvCreated} data_source_versions, ${dsvoCreated} options.`
+    );
+    progress.show();
 
     // 9. NOT NULL + FKs + CHECK constraints (data now satisfies them)
+    console.log(`${MIGRATION_NAME}: [START] Step 9/12 - adding FKs + CHECK constraints.`);
     await queryRunner.query(`ALTER TABLE app_versions ADD CONSTRAINT fk_app_versions_branch FOREIGN KEY (branch_id) REFERENCES organization_git_sync_branches(id) ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE app_versions ADD CONSTRAINT chk_app_versions_branch_type_implies_draft_branched CHECK ((version_type <> 'branch'::public.app_version_type) OR ((status = 'DRAFT'::public.version_status_enum) AND (branch_id IS NOT NULL)))`);
     // branch_id NOT NULL is set later by the kept SET-2 migration
@@ -269,19 +322,25 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
     // metadata that SET-2 (MakeAppVersionBranchIdNotNullAndGitSyncFlags) later heals. The
     // constraint is added at the end by 1786800000000-FinalizeBranchModelConstraints, after
     // that heal — matching main's ordering (AddMetadataColumns added it after those inserts).
-    // folder_apps.branch_id NOT NULL is set later by the kept SET-2 migration
-    // BackfillFolderAppsDefaultBranchIdAndEnforceNotNull (1785700000000).
-    await queryRunner.query(`ALTER TABLE folder_apps ADD CONSTRAINT fk_folder_apps_branch_id FOREIGN KEY (branch_id) REFERENCES organization_git_sync_branches(id) ON DELETE CASCADE`);
+    // folder_apps.branch_id FK (and NOT NULL) are handled by the kept data migrations
+    // AddBranchIdToFolderApps (1777100000000, FK) and BackfillFolderAppsDefaultBranchIdAndEnforceNotNull
+    // (1785700000000, NOT NULL) — see the Step 4 note.
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 9/12 - FKs + CHECK constraints added.`);
+    progress.show();
 
     // 10. Indexes on app_versions (+ the new LOWER(slug) lookup index)
+    console.log(`${MIGRATION_NAME}: [START] Step 10/12 - creating app_versions indexes (incl. LOWER(slug)).`);
     await queryRunner.query(`CREATE INDEX idx_app_versions_app_id_branch_id ON app_versions USING btree (app_id, branch_id)`);
     await queryRunner.query(`CREATE INDEX idx_app_versions_branch_id ON app_versions USING btree (branch_id) WHERE (branch_id IS NOT NULL)`);
     await queryRunner.query(`CREATE INDEX idx_app_versions_module_ref_branch ON app_versions USING btree (module_reference_id, branch_id) WHERE (module_reference_id IS NOT NULL)`);
     await queryRunner.query(`CREATE UNIQUE INDEX app_versions_app_default_branch_draft_unique ON app_versions USING btree (app_id, branch_id) WHERE ((status = 'DRAFT'::public.version_status_enum) AND (version_type = 'version'::public.app_version_type) AND (is_stub = false) AND (is_synced = true))`);
     await queryRunner.query(`CREATE UNIQUE INDEX app_versions_app_default_branch_draft_unique_ensure_single_stub ON app_versions USING btree (app_id, branch_id) WHERE ((status = 'DRAFT'::public.version_status_enum) AND (version_type = 'version'::public.app_version_type) AND (is_stub = true) AND (is_synced = true))`);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_app_versions_lower_slug ON app_versions USING btree (LOWER(slug)) WHERE (slug IS NOT NULL)`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 10/12 - indexes created.`);
+    progress.show();
 
     // 11. Trigger functions (created after backfill so backfill UPDATEs don't fire them)
+    console.log(`${MIGRATION_NAME}: [START] Step 11/12 - creating trigger functions.`);
     await queryRunner.query(`
       CREATE OR REPLACE FUNCTION public.bump_app_updated_at_from_version() RETURNS trigger LANGUAGE plpgsql AS $$
         BEGIN IF NEW.app_id IS NOT NULL THEN UPDATE apps SET updated_at = NOW() WHERE id = NEW.app_id; END IF; RETURN NEW; END; $$
@@ -385,12 +444,20 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
     //     migration MakeAppVersionBranchIdNotNullAndGitSyncFlags (1781741000000) — it drops and
     //     recreates them, and creates propagate/sync without a preceding DROP, so creating them
     //     here would collide. The functions above are CREATE OR REPLACE, which SET-2 re-replaces.
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 11/12 - trigger functions created.`);
+    progress.show();
+
+    console.log(`${MIGRATION_NAME}: [START] Step 12/12 - creating bump-updated-at triggers.`);
     await queryRunner.query(`CREATE TRIGGER trg_app_versions_bump_apps_updated_at AFTER INSERT OR UPDATE ON app_versions FOR EACH ROW EXECUTE FUNCTION public.bump_app_updated_at_from_version()`);
     await queryRunner.query(`CREATE TRIGGER trg_components_bump_app_version_updated_at AFTER INSERT OR UPDATE ON components FOR EACH ROW EXECUTE FUNCTION public.bump_app_version_updated_at_via_page()`);
     await queryRunner.query(`CREATE TRIGGER trg_data_queries_bump_app_version_updated_at AFTER INSERT OR UPDATE ON data_queries FOR EACH ROW EXECUTE FUNCTION public.bump_app_version_updated_at_direct()`);
     await queryRunner.query(`CREATE TRIGGER trg_event_handlers_bump_app_version_updated_at AFTER INSERT OR UPDATE ON event_handlers FOR EACH ROW EXECUTE FUNCTION public.bump_app_version_updated_at_direct()`);
     await queryRunner.query(`CREATE TRIGGER trg_layouts_bump_app_version_updated_at AFTER INSERT OR UPDATE ON layouts FOR EACH ROW EXECUTE FUNCTION public.bump_app_version_updated_at_via_component()`);
     await queryRunner.query(`CREATE TRIGGER trg_pages_bump_app_version_updated_at AFTER INSERT OR UPDATE ON pages FOR EACH ROW EXECUTE FUNCTION public.bump_app_version_updated_at_direct()`);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 12/12 - bump triggers created.`);
+    progress.show();
+
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Consolidated branch-model setup complete.`);
   }
 
   public async down(): Promise<void> {
