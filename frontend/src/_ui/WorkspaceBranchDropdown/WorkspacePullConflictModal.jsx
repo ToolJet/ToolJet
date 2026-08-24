@@ -26,9 +26,10 @@ const CONFLICT_SECTION_HEADER_MAP = {
   'datasource-in_use': 'Data source in use',
   // Legacy name containing '/', pushed before name validation existed — always
   // manual-resolution only (nothing to sync, the name must be fixed at the source).
-  'app-invalid_name': 'App invalid naming',
-  'module-invalid_name': 'Module invalid naming',
-  'datasource-invalid_name': 'Data source invalid naming',
+  // Just the resource type: the section heading already says "Invalid name".
+  'app-invalid_name': 'App',
+  'module-invalid_name': 'Module',
+  'datasource-invalid_name': 'Data source',
 };
 
 const LOCAL_STATUSES = ['existing', 'local'];
