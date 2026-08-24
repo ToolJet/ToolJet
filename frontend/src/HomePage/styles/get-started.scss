@@ -48,6 +48,15 @@
       max-height: 180px;
     }
 
+    // The footer (model picker + build button) sits absolutely across the bottom of this box with a
+    // transparent background (see .ai-builder-footer below), so without reserved space the growing
+    // input renders its last lines straight through it. Pad the CodeMirror content by the footer's
+    // height (32px) plus a small gap so typed text always stops above the footer row and scrolls
+    // cleanly beneath it. Scoped to .cm-content so it also reserves the space when the editor scrolls.
+    .cm-content {
+      padding-bottom: 2.5rem;
+    }
+
     // CodeMirror's own cursor for the empty doc isn't reliably aligned with the absolutely-
     // positioned placeholder overlay text (varies by device/DPR) — hide it and use our own
     // caret (.slot-placeholder-caret) instead, which is laid out inline with the overlay text.
