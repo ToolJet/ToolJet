@@ -169,7 +169,14 @@ export const FileButton = (props) => {
   return (
     <div className="fileButton-widget tw-flex tw-flex-col tw-w-full" data-cy={dataCy}>
       <div className="tw-flex tw-items-center" style={{ height, width: '100%' }}>
-        <input {...inputProps} className="tw-hidden" />
+        <input
+          {...inputProps}
+          aria-required={isMandatory}
+          aria-disabled={disabledState}
+          aria-busy={isLoading}
+          aria-labelledby={`${id}-label`}
+          className="tw-hidden"
+        />
         <Button
           ref={browseButtonRef}
           variant={buttonVariant}
@@ -202,6 +209,7 @@ export const FileButton = (props) => {
                 )}
               >
                 <span
+                  id={`${id}-label`}
                   style={{ fontSize: `${labelSize}px`, color: computedLabelColor }}
                   className={clsx('tw-truncate', fontWeightClass[labelWeight] ?? 'tw-font-medium')}
                 >
