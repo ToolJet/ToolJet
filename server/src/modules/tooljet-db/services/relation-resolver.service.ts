@@ -58,9 +58,15 @@ export class TooljetDbRelationResolverService {
     const environmentId = await this.resolveEnvironment(organizationId, requestedEnvironmentId, entityManager);
     const branchId = await this.resolveBranch(organizationId, entityManager);
 
-    const relation = await entityManager.findOne(InternalTableRelation, {
-      where: { internalTableId, environmentId, branchId },
-    });
+    const relation = await entityManager
+      .createQueryBuilder(InternalTableRelation, 'relation')
+      .innerJoin('internal_tables', 'it', 'it.id = relation.internal_table_id')
+      .where('relation.internal_table_id = :internalTableId', { internalTableId })
+      .andWhere('relation.environment_id = :environmentId', { environmentId })
+      .andWhere('relation.branch_id = :branchId', { branchId })
+      .andWhere('it.organization_id = :organizationId', { organizationId })
+      .andWhere('it.deleted_at IS NULL')
+      .getOne();
 
     if (!relation) throw new NotFoundException('Table not found in this environment');
     return relation;
