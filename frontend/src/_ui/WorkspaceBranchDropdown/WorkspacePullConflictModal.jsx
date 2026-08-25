@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import '@/_styles/workspace-pull-conflict-modal.scss';
 
 const TYPE_ICON_MAP = {
@@ -26,9 +27,10 @@ const CONFLICT_SECTION_HEADER_MAP = {
   'datasource-in_use': 'Data source in use',
   // Legacy name containing '/', pushed before name validation existed — always
   // manual-resolution only (nothing to sync, the name must be fixed at the source).
-  'app-invalid_name': 'App invalid naming',
-  'module-invalid_name': 'Module invalid naming',
-  'datasource-invalid_name': 'Data source invalid naming',
+  // Just the resource type: the section heading already says "Invalid name".
+  'app-invalid_name': 'App',
+  'module-invalid_name': 'Module',
+  'datasource-invalid_name': 'Data source',
 };
 
 const LOCAL_STATUSES = ['existing', 'local'];
@@ -131,12 +133,13 @@ function ConflictRow({
               </span>
             </ToolTip>
           )}
-          <span>
-            {CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label}
-            {group.conflictKey
-              ? ` - '${group.conflictKey}'`
-              : group.conflicts?.[0]?.name && ` - '${group.conflicts[0].name}'`}
-          </span>
+          <OverflowTooltip placement="top" style={{ flex: 1, minWidth: 0, maxWidth: 260, textAlign: 'left' }}>
+            {(() => {
+              const label = CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label;
+              const name = group.conflictKey || group.conflicts?.[0]?.name;
+              return name ? `${label} - '${name}'` : label;
+            })()}
+          </OverflowTooltip>
         </span>
         <SolidIcon name="cheverondown" width="14" fill="var(--slate9)" />
       </button>

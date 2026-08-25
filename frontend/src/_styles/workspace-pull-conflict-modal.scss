@@ -149,6 +149,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex: 1;
+    min-width: 0;
   }
 
   .conflict-row-checkbox {
@@ -188,26 +190,27 @@
 
   .conflict-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
     padding: 10px 14px 10px 36px;
     font-size: 13px;
     color: var(--slate12);
 
+    // Expanding a row is exactly how the user asks to see the full name — no
+    // truncation here, unlike the collapsed header (OverflowTooltip above).
     .conflict-item-name {
-      max-width: 220px;
-      flex-shrink: 0;
+      flex: 1;
+      min-width: 0;
       font-size: 13px;
       color: var(--slate12);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      word-break: break-word;
     }
   }
 
   .conflict-badge {
     display: inline-flex;
     align-items: center;
+    flex-shrink: 0;
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 11px;
@@ -288,9 +291,10 @@
   }
 
   .conflict-list-card {
+    max-height: 480px;
     border: 1px solid var(--slate6);
     border-radius: 8px;
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   .conflict-row {
