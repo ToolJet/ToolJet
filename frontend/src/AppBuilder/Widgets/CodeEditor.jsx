@@ -30,6 +30,7 @@ const CodeEditor = ({
   properties,
   styles,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
   currentLayout,
   width,
@@ -39,9 +40,26 @@ const CodeEditor = ({
 }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
-  const { visibility, disabledState } = styles;
+  const [visibility, setVisibility] = useState(properties?.visibility ?? true);
+  const [disabledState, setIsDisabled] = useState(properties?.disabledState ?? false);
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const [value, setValue] = useState('');
+
+  useEffect(() => {
+    if (visibility !== properties?.visibility) setVisibility(properties?.visibility ?? true);
+    if (disabledState !== properties?.disabledState) setIsDisabled(properties?.disabledState ?? false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties?.visibility, properties?.disabledState]);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -98,6 +116,16 @@ const CodeEditor = ({
       }
     };
     setExposedVariable('setValue', _setValue);
+    setExposedVariables({
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
+      },
+      setDisable: async function (value) {
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
+      },
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

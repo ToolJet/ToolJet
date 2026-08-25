@@ -235,6 +235,7 @@ export const baseComponentProperties = (
       'SvgImage',
       'Spinner',
       'Timer',
+      'CodeEditor',
     ],
     Layout: [],
   };
