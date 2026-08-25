@@ -140,7 +140,8 @@ type NewRevampedComponent =
   | 'Pagination'
   | 'Timeline'
   | 'Map'
-  | 'Chart';
+  | 'Chart'
+  | 'BoundedBox';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -197,6 +198,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Timeline',
   'Map',
   'Chart',
+  'BoundedBox',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -318,6 +320,7 @@ const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Accordion',
   'AudioRecorder',
+  'BoundedBox',
   'Button',
   'ButtonGroupV2',
   'Camera',
