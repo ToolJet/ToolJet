@@ -548,6 +548,18 @@ export class ExportTjdbTableAsCsvDto {
   offset?: number;
 }
 
+export class ExportAppAdminDto {
+  @ValidateIf((o) => !o.appSlug)
+  @IsNotEmpty()
+  @IsUUID()
+  appId?: string;
+
+  @ValidateIf((o) => !o.appId)
+  @IsNotEmpty()
+  @IsString()
+  appSlug?: string;
+}
+
 export class BanUserDto {
   @IsEmail()
   email: string;

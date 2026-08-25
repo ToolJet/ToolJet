@@ -1,0 +1,38 @@
+.mfa-verify-form {
+    .form-header {
+        margin-bottom: 0px;
+    }
+
+    .form-input-area {
+        margin-top: 16px;
+        margin-bottom: 0px;
+    }
+
+    .mfa-qr-wrapper {
+        display: flex;
+        justify-content: center;
+        margin: 16px 0;
+
+        img {
+            width: 180px;
+            height: 180px;
+        }
+    }
+
+    .mfa-secret {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-placeholder, #6A727C);
+        word-break: break-all;
+    }
+
+    .mfa-trouble-link {
+        display: inline-block;
+        margin-top: 12px;
+        font-size: 12px;
+        line-height: 18px;
+        color: var(--text-placeholder, #6A727C);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+}
