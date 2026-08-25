@@ -27,8 +27,10 @@ import {
 } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
-import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { findHighestLevelofSelection, computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
+// calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
+const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
 import {
   TOP_ALIGNMENT_HEIGHT_INCREMENT,
   ROW_SCOPED_WIDGET_TYPES,
@@ -625,6 +627,7 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponentByProperty,
       getAllExposedValues,
       getCustomResolvables,
+      getCustomResolvableReference,
       findNearestSubcontainerAncestor,
       getComponentDefinition,
       getBaseParentId,
@@ -681,6 +684,19 @@ export const createComponentsSlice = (set, get) => ({
     // Get the innermost (immediate parent) ListView's customResolvables
     const innermostListview = listviewAncestors[listviewAncestors.length - 1];
     const baseCustomResolvables = getCustomResolvables(innermostListview, null, moduleId, []);
+
+    // No rows announced yet, so the per-row walk below would drop the value. Write it flat instead;
+    // updateChildComponentsLength seeds the rows from it.
+    if (!baseCustomResolvables || Object.keys(baseCustomResolvables).length === 0) {
+      // Row-referencing values resolve to nothing without rows, and seeding every row from that
+      // garbage is worse than waiting: the listItem announcement rewrites them per row.
+      if (shouldResolve && getCustomResolvableReference(unResolvedValue, parentId, moduleId).length > 0) return;
+      const resolvedValue = shouldResolve
+        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
+        : value;
+      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
+      return;
+    }
 
     // Helper function to recursively iterate through all index combinations
     const iterateNestedIndices = (resolvables, currentIndices, depth) => {
@@ -1802,7 +1818,7 @@ export const createComponentsSlice = (set, get) => ({
     componentLayouts,
     newParentId,
     moduleId = 'canvas',
-    { skipUndoRedo = false, updateParent = false, saveAfterAction = true } = {}
+    { skipUndoRedo = false, updateParent = false, saveAfterAction = true, targetLayout } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -1819,6 +1835,8 @@ export const createComponentsSlice = (set, get) => ({
       addToDependencyGraph,
       removeNode,
     } = get();
+    // Undo/redo replays a patch captured in another layout, so the caller can name the target.
+    const layoutKey = targetLayout || currentLayout;
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
@@ -1854,8 +1872,8 @@ export const createComponentsSlice = (set, get) => ({
       Object.keys(componentLayouts).forEach((componentId) => {
         const comp = pageComponents[componentId];
         oldParentByComponentId[componentId] = comp?.component?.parent ?? null;
-        if (comp?.layouts?.[currentLayout]) {
-          oldLayoutByComponentId[componentId] = { ...comp.layouts[currentLayout] };
+        if (comp?.layouts?.[layoutKey]) {
+          oldLayoutByComponentId[componentId] = { ...comp.layouts[layoutKey] };
         }
       });
     }
@@ -1894,14 +1912,14 @@ export const createComponentsSlice = (set, get) => ({
                 if (fillWidth !== undefined) flexLayout.fillWidth = fillWidth;
                 if (widthPx !== undefined) flexLayout.widthPx = widthPx;
                 if (height !== undefined) flexLayout.height = height;
-                component.layouts[currentLayout] = {
-                  ...component.layouts[currentLayout],
+                component.layouts[layoutKey] = {
+                  ...component.layouts[layoutKey],
                   ...flexLayout,
                 };
                 // Strip absolute-grid position/width fields when moving into FlexContainer.
-                delete component.layouts[currentLayout].top;
-                delete component.layouts[currentLayout].left;
-                delete component.layouts[currentLayout].width;
+                delete component.layouts[layoutKey].top;
+                delete component.layouts[layoutKey].left;
+                delete component.layouts[layoutKey].width;
               } else if (
                 oldParentComponentType === 'FlexContainer' &&
                 newParentComponentType !== 'FlexContainer' &&
@@ -1909,18 +1927,18 @@ export const createComponentsSlice = (set, get) => ({
               ) {
                 // Moving OUT of FlexContainer: strip flex fields, write grid fields
                 const { top, left, width, height } = layout;
-                component.layouts[currentLayout] = {
-                  ...component.layouts[currentLayout],
+                component.layouts[layoutKey] = {
+                  ...component.layouts[layoutKey],
                   top,
                   left,
                   width,
                   height,
                 };
-                delete component.layouts[currentLayout].fillWidth;
-                delete component.layouts[currentLayout].widthPx;
+                delete component.layouts[layoutKey].fillWidth;
+                delete component.layouts[layoutKey].widthPx;
               } else {
-                component.layouts[currentLayout] = {
-                  ...component.layouts[currentLayout],
+                component.layouts[layoutKey] = {
+                  ...component.layouts[layoutKey],
                   ...layout,
                 };
               }
@@ -2062,7 +2080,7 @@ export const createComponentsSlice = (set, get) => ({
             }
           : {}),
         layouts: {
-          [currentLayout]: {
+          [layoutKey]: {
             ...layout,
           },
         },
@@ -2115,7 +2133,7 @@ export const createComponentsSlice = (set, get) => ({
                 // old parent, which renders in the wrong spot.
                 const restoredLayout = oldLayoutByComponentId[componentId];
                 if (restoredLayout && component.layouts) {
-                  component.layouts[currentLayout] = { ...restoredLayout };
+                  component.layouts[layoutKey] = { ...restoredLayout };
                 }
                 const currentParent = component.component.parent;
                 if (currentParent === restoredParent) return;
@@ -2581,6 +2599,47 @@ export const createComponentsSlice = (set, get) => ({
     );
 
     await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: false });
+  },
+  turnOnAutoComputeLayout: async (moduleId = 'canvas') => {
+    const { appStore, getCurrentPageId, currentVersionId, getCurrentPageComponents, withUndoRedo, setComponentLayout } =
+      get();
+    const app = appStore.modules[moduleId].app;
+    const currentPageId = getCurrentPageId(moduleId);
+    const updatedBoxes = computeAutoMobileLayout(getCurrentPageComponents(moduleId));
+
+    // One producer, so immer's inverse patches carry the pre-stack layouts and one undo restores both.
+    set(
+      withUndoRedo((state) => {
+        const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
+        state.modules[moduleId].pages[currentPageIndex].autoComputeLayout = true;
+        Object.entries(updatedBoxes).forEach(([id, box]) => {
+          const component = state.modules[moduleId].pages[currentPageIndex].components[id];
+          if (component?.layouts?.mobile) {
+            component.layouts.mobile = { ...component.layouts.mobile, ...box };
+          }
+        });
+      }),
+      false,
+      'turnOnAutoComputeLayout'
+    );
+    await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: true });
+    setComponentLayout(updatedBoxes, undefined, moduleId, { skipUndoRedo: true });
+  },
+  setAutoComputeLayout: async (value, moduleId = 'canvas') => {
+    const { appStore, getCurrentPageId, currentVersionId, getShouldFreeze } = get();
+    // The undo hotkey only checks isEditorReadOnly, which is narrower than the freeze check.
+    if (getShouldFreeze()) return;
+    const app = appStore.modules[moduleId].app;
+    const currentPageId = getCurrentPageId(moduleId);
+    set(
+      (state) => {
+        const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === currentPageId);
+        state.modules[moduleId].pages[currentPageIndex].autoComputeLayout = value;
+      },
+      false,
+      'setAutoComputeLayout'
+    );
+    await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: value });
   },
   setWidgetDeleteConfirmation: (value, isModuleEditor = false) => {
     set((state) => {
@@ -3165,7 +3224,7 @@ export const createComponentsSlice = (set, get) => ({
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (![...INPUT_COMPONENTS_FOR_FORM].includes(componentType)) {
+    if (!INPUT_COMPONENTS_FOR_FORM_SET.has(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, auto = { value: null } } = stylesDefinition ?? {};

@@ -457,15 +457,24 @@ export const createResolvedSlice = (set, get) => {
             // Write back to state (this replaces any stale array structure)
             current[lastIdx] = componentObj;
           } else {
-            // index is null — component is not inside a ListView/Kanban
-            // If the stored data is still an array (stale from a previous parent), reset it
-            if (Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
-              state.resolvedStore.modules[moduleId].components[componentId] = { ...DEFAULT_COMPONENT_STRUCTURE };
+            // Unindexed write on a row-shaped entry applies to every row. Overwriting it flat here
+            // dropped the rows and left later indexed writes to staple numeric keys back on.
+            const entry = state.resolvedStore.modules[moduleId].components[componentId];
+            if (Array.isArray(entry) && entry.length === 0) {
+              // No rows to write into, so the loop below would drop the value. Go flat and let
+              // updateChildComponentsLength seed the rows from it.
+              state.resolvedStore.modules[moduleId].components[componentId] = {
+                ...DEFAULT_COMPONENT_STRUCTURE,
+                [type]: { ...DEFAULT_COMPONENT_STRUCTURE[type], [property]: value },
+              };
+            } else if (Array.isArray(entry)) {
+              for (let i = 0; i < entry.length; i++) {
+                if (!entry[i]) entry[i] = { ...DEFAULT_COMPONENT_STRUCTURE };
+                entry[i][type] = { ...entry[i][type], [property]: value };
+              }
+            } else {
+              entry[type] = { ...entry[type], [property]: value };
             }
-            state.resolvedStore.modules[moduleId].components[componentId][type] = {
-              ...state.resolvedStore.modules[moduleId].components[componentId][type],
-              [property]: value,
-            };
           }
         },
         false,
@@ -624,19 +633,22 @@ export const createResolvedSlice = (set, get) => {
     },
 
     updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas', parentIndices = []) => {
-      const { getContainerChildrenMapping, copyResolvedDataFromFirstIndex } = get();
+      const { getContainerChildrenMapping } = get();
       const childComponents = getContainerChildrenMapping(parentId, moduleId);
       if (parentIndices.length === 0) {
-        // Flat case: set length and copy (existing behavior — kept as single set to preserve
-        // the length-check optimization inside copyResolvedDataFromFirstIndex)
+        // Seed rows in the same set() as the array conversion. A helper opening its own set() from
+        // in here reads pre-draft state and leaves a hybrid { 0: {...}, properties: {...} }.
         set((state) => {
           childComponents.forEach((componentId) => {
-            // Ensure component is an array (might be object if transitioning from non-ListView parent)
-            if (!Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
-              state.resolvedStore.modules[moduleId].components[componentId] = [];
+            const existing = state.resolvedStore.modules[moduleId].components[componentId];
+            const template = Array.isArray(existing) ? existing[0] : existing;
+            const rows = [];
+            for (let i = 0; i < length; i++) {
+              rows[i] =
+                (Array.isArray(existing) && existing[i]) ||
+                (template ? { ...template } : { ...DEFAULT_COMPONENT_STRUCTURE });
             }
-            state.resolvedStore.modules[moduleId].components[componentId].length = length;
-            copyResolvedDataFromFirstIndex(componentId, parentId, data, moduleId);
+            state.resolvedStore.modules[moduleId].components[componentId] = rows;
           });
         });
       } else {
@@ -679,19 +691,6 @@ export const createResolvedSlice = (set, get) => {
           });
         });
       }
-    },
-
-    copyResolvedDataFromFirstIndex: (componentId, parentId, data = [], moduleId = 'canvas') => {
-      const dataLength = get().getCustomResolvables(parentId, null, moduleId).length ?? data.length;
-      if (get().resolvedStore.modules[moduleId]['components'][componentId].length === dataLength) return;
-      set((state) => {
-        for (let i = 0; i < dataLength; i++) {
-          if (!state.resolvedStore.modules[moduleId]['components'][componentId][i])
-            state.resolvedStore.modules[moduleId]['components'][componentId][i] = {
-              ...state.resolvedStore.modules[moduleId]['components'][componentId][0],
-            };
-        }
-      });
     },
 
     getCustomResolvables: (componentId, index = null, moduleId = 'canvas', parentIndices = []) => {

@@ -17,6 +17,7 @@ export function useAppPreviewLink() {
     slug,
     currentVersionId,
     selectedVersion,
+    currentLayout,
   } = useStore(
     (state) => ({
       featureAccess: state.license?.featureAccess,
@@ -27,6 +28,7 @@ export function useAppPreviewLink() {
       slug: state.appStore.modules[moduleId].app.slug,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
+      currentLayout: state.currentLayout,
     }),
     shallow
   );
@@ -51,6 +53,8 @@ export function useAppPreviewLink() {
       version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
       ...(suppressBranchId ? { is_branch: false } : {}),
+      // Carry the editor's mobile view into preview so it opens in mobile too.
+      ...(currentLayout === 'mobile' ? { layout: 'mobile' } : {}),
     });
 
     const link = editingVersion
@@ -70,6 +74,7 @@ export function useAppPreviewLink() {
     selectedVersion?.name,
     selectedVersion?.versionType,
     currentBranch,
+    currentLayout,
   ]);
 
   return appPreviewLink;
