@@ -107,9 +107,9 @@ export const DropdownV2 = ({
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(schema));
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
+  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(advanced ? schema : options));
   const [validationStatus, setValidationStatus] = useState(validate(currentValue));
   const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
