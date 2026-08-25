@@ -1,4 +1,5 @@
 import React from 'react';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import {
   Tooltip,
   TooltipContent,
@@ -6,6 +7,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/Rocket/shadcn/tooltip';
 import type { TooltipBinding } from './types';
+
+const TypedTooltipContent = TooltipContent as React.ComponentType<
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>;
 
 type TooltipSide = 'top' | 'right' | 'bottom' | 'left';
 
@@ -53,7 +58,7 @@ export const BindingTooltip = ({
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent
+        <TypedTooltipContent
           id={id}
           side={sideOf(placement)}
           sideOffset={8}
@@ -72,7 +77,7 @@ export const BindingTooltip = ({
               ))}
             </div>
           </div>
-        </TooltipContent>
+        </TypedTooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
