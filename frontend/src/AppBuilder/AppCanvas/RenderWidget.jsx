@@ -71,6 +71,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Map',
   'Chart',
   'BoundedBox',
+  'Calendar',
 ];
 
 const RenderWidget = ({

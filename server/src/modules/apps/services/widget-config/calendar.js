@@ -32,6 +32,34 @@ export const calendarConfig = {
       type: 'toggle',
       displayName: 'Show popover when event is clicked',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   events: {
     onCalendarEventSelect: { displayName: 'On Event Select' },
@@ -40,7 +68,6 @@ export const calendarConfig = {
     onCalendarViewChange: { displayName: 'On View Change' },
   },
   styles: {
-    visibility: { type: 'toggle', displayName: 'Visibility' },
     cellSizeInViewsClassifiedByResource: {
       type: 'select',
       displayName: 'Cell size in views classified by resource',
@@ -48,10 +75,12 @@ export const calendarConfig = {
         { name: 'Compact', value: 'compact' },
         { name: 'Spacious', value: 'spacious' },
       ],
+      accordian: 'Calendar',
     },
     weekDateFormat: {
       type: 'code',
       displayName: 'Header date format on week view',
+      accordian: 'Calendar',
     },
     borderColor: {
       type: 'colorSwatches',
@@ -60,6 +89,7 @@ export const calendarConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-weak-border)',
       },
+      accordian: 'Container',
     },
     borderRadius: {
       type: 'numberInput',
@@ -68,6 +98,16 @@ export const calendarConfig = {
         schema: { type: 'number' },
         defaultValue: 6,
       },
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
     },
   },
   exposedVariables: {
@@ -76,6 +116,13 @@ export const calendarConfig = {
     currentView: 'month',
     currentDate: undefined,
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -116,14 +163,17 @@ export const calendarConfig = {
       showPopOverOnEventClick: {
         value: false,
       },
+      visibility: { value: '{{true}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
       cellSizeInViewsClassifiedByResource: { value: 'spacious' },
       weekDateFormat: { value: 'DD MMM' },
       borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: 6 },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

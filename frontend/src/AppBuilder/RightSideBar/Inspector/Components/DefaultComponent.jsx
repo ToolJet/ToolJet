@@ -61,6 +61,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Timeline',
   'Map',
   'BoundedBox',
+  'Calendar',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -221,6 +222,7 @@ export const baseComponentProperties = (
       'Timeline',
       'Map',
       'BoundedBox',
+      'Calendar',
     ],
     Layout: [],
   };
