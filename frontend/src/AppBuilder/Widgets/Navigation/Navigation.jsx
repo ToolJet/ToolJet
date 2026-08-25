@@ -7,7 +7,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ToolTip } from '@/_components';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useCalculateOverflow } from './hooks/useCalculateOverflow';
-import { findItemById, findParentGroup, isItemVisible, isItemDisabled } from './utils';
+import { findItemById, findParentGroup, isItemVisible, isItemDisabled, toDisplayText } from './utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
@@ -64,11 +64,11 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientatio
             maxLetters={NAV_TEXT_MAX_LENGTH}
             data-cy={`nav-label-${item.id}`}
           >
-            {item.label}
+            {toDisplayText(item.label)}
           </OverflowTooltip>
           {showInlineCaption ? (
             <OverflowTooltip childrenClassName="nav-item-caption" maxLetters={NAV_TEXT_MAX_LENGTH}>
-              {item.caption}
+              {toDisplayText(item.caption)}
             </OverflowTooltip>
           ) : null}
         </div>
@@ -79,7 +79,7 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle, orientatio
   if (!showTooltip) return buttonEl;
 
   return (
-    <ToolTip message={item.caption} placement="top">
+    <ToolTip message={toDisplayText(item.caption)} placement="top">
       {buttonEl}
     </ToolTip>
   );
@@ -137,7 +137,7 @@ const RenderNavGroup = ({
       )}
       {showLabel && (
         <OverflowTooltip childrenClassName="page-name" maxLetters={NAV_TEXT_MAX_LENGTH}>
-          {group.label}
+          {toDisplayText(group.label)}
         </OverflowTooltip>
       )}
     </div>
@@ -747,7 +747,7 @@ export const Navigation = function Navigation(props) {
                 fontWeight: 500,
               }}
             >
-              {item.label}
+              {toDisplayText(item.label)}
             </div>
           ))}
         </div>

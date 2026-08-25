@@ -1,3 +1,6 @@
+// Guards against non-primitive fx-resolved values crashing JSX rendering.
+export const toDisplayText = (value) => (typeof value === 'string' || typeof value === 'number' ? value : '');
+
 export const isItemVisible = (item) =>
   typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
 

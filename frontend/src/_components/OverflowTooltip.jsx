@@ -53,10 +53,13 @@ export default function OverflowTooltip({
     };
   }, [children, checkOverflow, maxLetters]);
 
+  // Guard against non-primitive `children` (e.g. an unresolved fx binding) crashing rendering.
+  const safeChildren = typeof children === 'string' || typeof children === 'number' ? children : '';
+
   const displayText =
-    maxLetters && typeof children === 'string' && children.length > maxLetters
-      ? `${children.substring(0, maxLetters)}...`
-      : children;
+    maxLetters && typeof safeChildren === 'string' && safeChildren.length > maxLetters
+      ? `${safeChildren.substring(0, maxLetters)}...`
+      : safeChildren;
 
   useEffect(() => {
     checkOverflow();
@@ -68,7 +71,7 @@ export default function OverflowTooltip({
       delay={{ show: '0', hide: '0' }}
       tooltipClassName={`overflow-tooltip ${tooltipClassName}`}
       placement={placement}
-      message={children}
+      message={safeChildren}
       show={!!isOverflowed}
       width={width}
     >
