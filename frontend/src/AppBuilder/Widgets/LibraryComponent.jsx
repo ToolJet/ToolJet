@@ -85,6 +85,7 @@ export const LibraryComponent = ({
     [properties]
   );
 
+  // Sends a message from this parent widget down into the widget's iframe.
   const postToShell = (msg) => iframeRef.current?.contentWindow?.postMessage(msg, '*');
 
   const invokeInShell = (msg) => {
@@ -111,7 +112,8 @@ export const LibraryComponent = ({
   };
 
   useEffect(() => {
-    const onMessage = (e) => {
+    // Handles a message sent up from the widget's iframe (ready/stateChange/event/actionResult/error).
+    const handleMessageFromShell = (e) => {
       if (e.source !== iframeRef.current?.contentWindow) return;
       const { type, key, value, name, message } = e.data ?? {};
       if (type === 'ready') {
@@ -137,8 +139,8 @@ export const LibraryComponent = ({
         console.error(`[LibraryComponent] ${message}`);
       }
     };
-    window.addEventListener('message', onMessage);
-    return () => window.removeEventListener('message', onMessage);
+    window.addEventListener('message', handleMessageFromShell);
+    return () => window.removeEventListener('message', handleMessageFromShell);
   }, [setExposedVariable, fireEvent]);
 
   useEffect(() => {
