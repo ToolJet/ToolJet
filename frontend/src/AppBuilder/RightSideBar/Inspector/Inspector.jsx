@@ -154,6 +154,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'PDF',
   'QrScanner',
   'RichTextEditor',
+  'SvgImage',
 ];
 
 export const Inspector = ({
