@@ -693,7 +693,7 @@ export default class LicenseBase {
   }
 
   public get appHistory(): boolean {
-    if (this.IsBasicPlan) {
+    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
 
