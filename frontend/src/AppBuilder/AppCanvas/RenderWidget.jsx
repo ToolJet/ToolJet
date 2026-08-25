@@ -82,6 +82,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'CustomComponent',
   'Chat',
   'Html',
+  'Navigation',
 ];
 
 const RenderWidget = ({
