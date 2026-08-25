@@ -2,11 +2,16 @@ name: Frontend unit tests
 
 on:
   pull_request:
-    paths:
-      - 'frontend/**'
+    # `labeled`/`unlabeled` are required on top of the defaults, otherwise adding
+    # the label would not re-trigger the run.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    # Deliberately NO paths filter. This check is required to merge, and a
+    # path-filtered workflow never reports at all on a PR it skips — which would
+    # leave every server-only PR pending forever. Whether the frontend actually
+    # changed is decided inside the job instead.
   push:
     branches:
-      - develop
+      - main
       - lts-3.16
     paths:
       - 'frontend/**'
@@ -24,25 +29,66 @@ jobs:
       run:
         working-directory: frontend
     steps:
+      # Asked FIRST, before any checkout: a server-only PR should satisfy this
+      # required check in seconds without cloning anything or needing a frontend
+      # label. Uses the PR files API rather than a git diff, which would need
+      # fetch-depth: 0 — a full history clone of a repo this size.
+      - name: Does this PR touch the frontend?
+        id: scope
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+               --paginate --jq '.[].filename' | grep -q '^frontend/'; then
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend=false" >> "$GITHUB_OUTPUT"
+            echo "No frontend/ changes in this PR — nothing to run."
+          fi
+
+      # The suite runs ON DEMAND, but a frontend PR must not merge without having
+      # run it. So this step FAILS while the label is absent, rather than the job
+      # being skipped — a skipped job reports SUCCESS and would let the PR merge
+      # unscreened. Mark this check as required in branch protection.
+      - name: Require the run-frontend-tests label
+        if: >-
+          github.event_name == 'pull_request' &&
+          steps.scope.outputs.frontend == 'true' &&
+          !contains(github.event.pull_request.labels.*.name, 'run-frontend-tests')
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "::error title=Frontend tests not run::This PR changes frontend/ but does not carry the 'run-frontend-tests' label, so the suite has not run. Add the label to run it. This check must pass before the PR can be merged."
+          exit 1
+
       - uses: actions/checkout@v4
+        if: steps.scope.outputs.frontend == 'true'
 
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.frontend == 'true'
         with:
           node-version: 22.15.1
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        if: steps.scope.outputs.frontend == 'true'
         run: npm ci
 
       # Layout first: a misfiled or *.test.* spec silently never runs, so this
       # must fail the build before the suite reports a misleading green.
       - name: Validate test layout
+        if: steps.scope.outputs.frontend == 'true'
         run: npm run test:layout
 
       # The whole suite runs in seconds, so there is no reason to scope it to
       # changed files — doing that let PRs pass green without running a test.
       - name: Run full test suite with coverage
+        if: steps.scope.outputs.frontend == 'true'
         run: npm run test:ci
 
       # Fails if an App Builder source file is not assigned to a subsystem in
@@ -50,4 +96,5 @@ jobs:
       # here — testMatch already picks it up in the full suite above, so running
       # `test:app-builder:contracts` would execute it a second time.
       - name: Validate App Builder coverage manifest
+        if: steps.scope.outputs.frontend == 'true'
         run: npm run validate:app-builder-coverage-manifest
