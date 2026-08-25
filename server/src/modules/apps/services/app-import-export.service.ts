@@ -148,7 +148,8 @@ type NewRevampedComponent =
   | 'Chart'
   | 'BoundedBox'
   | 'Calendar'
-  | 'PDF';
+  | 'PDF'
+  | 'QrScanner';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -208,6 +209,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'BoundedBox',
   'Calendar',
   'PDF',
+  'QrScanner',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -370,6 +372,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'PhoneInput',
   'PopoverMenu',
   'ProgressBar',
+  'QrScanner',
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',

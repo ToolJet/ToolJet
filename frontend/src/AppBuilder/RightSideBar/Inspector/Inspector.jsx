@@ -157,6 +157,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'BoundedBox',
   'Calendar',
   'PDF',
+  'QrScanner',
 ];
 
 export const Inspector = ({

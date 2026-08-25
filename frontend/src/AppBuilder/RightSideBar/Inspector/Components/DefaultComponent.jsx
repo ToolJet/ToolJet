@@ -63,6 +63,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'BoundedBox',
   'Calendar',
   'PDF',
+  'QrScanner',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -226,6 +227,7 @@ export const baseComponentProperties = (
       'BoundedBox',
       'Calendar',
       'PDF',
+      'QrScanner',
     ],
     Layout: [],
   };
