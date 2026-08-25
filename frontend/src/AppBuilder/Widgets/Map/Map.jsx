@@ -29,8 +29,8 @@ export default function Map({
 
   const canAddNewMarkers = properties?.addNewMarkers ?? false;
   const canSearch = properties?.canSearch ?? false;
-  const widgetVisibility = styles?.visibility ?? true;
-  const disabledState = styles?.disabledState ?? false;
+  const widgetVisibility = properties?.visibility ?? true;
+  const disabledState = properties?.disabledState ?? false;
 
   // const parsedDisabledState =
   //   typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
