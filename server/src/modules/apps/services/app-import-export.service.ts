@@ -151,7 +151,8 @@ type NewRevampedComponent =
   | 'Timer'
   | 'Kanban'
   | 'CodeEditor'
-  | 'CustomComponent';
+  | 'CustomComponent'
+  | 'Navigation';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -219,6 +220,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Kanban',
   'CodeEditor',
   'CustomComponent',
+  'Navigation',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -379,6 +381,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Map',
   'ModalV2',
   'MultiselectV2',
+  'Navigation',
   'NumberInput',
   'PasswordInput',
   'PDF',
