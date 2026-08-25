@@ -251,7 +251,7 @@ export class TooljetDbTableOperationsService {
         AND c.TABLE_SCHEMA = uk.TABLE_SCHEMA
         AND c.TABLE_NAME = uk.TABLE_NAME
         AND c.COLUMN_NAME = uk.COLUMN_NAME
-    WHERE c.TABLE_NAME = '${internalTable.id}'
+    WHERE c.TABLE_NAME = '${internalTable.id}' AND c.TABLE_SCHEMA = '${tenantSchema}'
     ORDER BY
         c.TABLE_SCHEMA,
         c.TABLE_NAME,
@@ -946,19 +946,22 @@ export class TooljetDbTableOperationsService {
     if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");
     const joinQueryJson = this.normalizeJoinQueryJsonToNewFormat(rawJoinQueryJson);
 
-    const tjdbTenantConfigs = isSQLModeDisabled()
-      ? {
-          pgUser: this.configService.get<string>('TOOLJET_DB_USER'),
-          pgPassword: this.configService.get<string>('TOOLJET_DB_PASS'),
-        }
-      : await this.manager.findOne(OrganizationTjdbConfigurations, {
-          where: { organizationId },
-        });
+    if (isSQLModeDisabled()) {
+      // No workspace-scoped connection exists in this configuration; the TOOLJET_DB_USER admin
+      // role can reach every workspace's schema, so there is no safe fallback to make here.
+      throw new BadRequestException('Join queries are not available when SQL mode is disabled');
+    }
+
+    const tjdbTenantConfigs = await this.manager.findOne(OrganizationTjdbConfigurations, {
+      where: { organizationId },
+    });
 
     if (!tjdbTenantConfigs) throw new NotFoundException(`Tooljet database schema configuration doesn't exists`);
 
     // Gathering tables used, from Join coditions
     const tableSet = new Set();
+    // The from-table reaches buildJoinQuery's .from() unvalidated otherwise, so it must join the rest here.
+    if (joinQueryJson?.from?.name) tableSet.add(joinQueryJson.from.name);
     const joinOptions = joinQueryJson?.['joins'];
     (joinOptions || []).forEach((join) => {
       const { table, conditions } = join;

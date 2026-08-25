@@ -1,7 +1,7 @@
 /**
  * @group database
  */
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, NotFoundException } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
@@ -25,6 +25,7 @@ import { App } from '@entities/app.entity';
 import { LicenseService } from '@modules/licensing/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('TooljetDbTableOperationsService', () => {
   describe('EE (plan: enterprise)', () => {
@@ -138,6 +139,56 @@ describe('TooljetDbTableOperationsService', () => {
           where: { internalTableId: usersTable.id },
         });
         expect(relation.configurations.columns.configurations['undefined']).toBeUndefined();
+      });
+    });
+
+    describe('.joinTable | join_tables action', () => {
+      it('should reject a join whose from-table belongs to another workspace', async () => {
+        const otherUser = await createUser(app, {
+          email: 'other-join@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const foreignTable = await appManager.save(
+          appManager.create(InternalTable, {
+            organizationId: otherUser.organization.id,
+            tableName: 'foreign_table',
+            co_relation_id: uuidv4(),
+          })
+        );
+
+        await expect(
+          service.perform(organizationId, 'join_tables', {
+            joinQueryJson: {
+              from: { name: foreignTable.id },
+              joins: [],
+              fields: [],
+            },
+          })
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('.viewTable | view_table action', () => {
+      it('should not report columns from an identically named table in another schema', async () => {
+        // A second workspace schema holding a table with the same physical name proves the
+        // INFORMATION_SCHEMA.COLUMNS query is filtered by table_schema, not just table_name.
+        const otherUser = await createUser(app, {
+          email: 'other-view@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const otherOrganizationId = otherUser.organization.id;
+        const usersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+
+        await tjDbManager.query(`CREATE SCHEMA IF NOT EXISTS "workspace_${otherOrganizationId}"`);
+        await tjDbManager.query(
+          `CREATE TABLE "workspace_${otherOrganizationId}"."${usersTable.id}" (decoy_column text)`
+        );
+
+        const result = await service.perform(organizationId, 'view_table', { table_name: 'users' });
+
+        expect(result.columns.map((column) => column.column_name)).not.toContain('decoy_column');
       });
     });
   });
