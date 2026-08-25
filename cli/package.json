@@ -64,6 +64,7 @@
     "bin": "tooljet",
     "commands": "./dist/commands",
     "plugins": [],
+    "repositoryPrefix": "<%- repo %>/blob/v<%- version %>/cli/<%- commandPath %>",
     "topicSeparator": " ",
     "topics": {
       "plugin": {

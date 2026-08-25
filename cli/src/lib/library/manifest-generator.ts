@@ -313,10 +313,18 @@ function walkComponentDeclaration(
               for (const prop of settingsArg.properties) {
                 if (ts.isPropertyAssignment(prop)) {
                   const key = (prop.name as ts.Identifier).text;
-                  const val = evalLiteralNode(prop.initializer);
 
-                  if (key === 'defaultWidth') defaultWidth = val as number;
-                  if (key === 'defaultHeight') defaultHeight = val as number;
+                  if (key === 'defaultWidth' || key === 'defaultHeight') {
+                    const val = evalLiteralNode(prop.initializer);
+                    if (typeof val !== 'number' || !Number.isFinite(val)) {
+                      throw new Error(
+                        `Invalid "${key}" in component "${componentName}": must be a numeric literal.`
+                      );
+                    }
+
+                    if (key === 'defaultWidth') defaultWidth = val;
+                    else defaultHeight = val;
+                  }
                 }
               }
             }
