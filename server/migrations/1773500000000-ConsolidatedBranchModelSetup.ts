@@ -232,23 +232,15 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
     console.log(`${MIGRATION_NAME}: [SUCCESS] Step 7/12 - branch_id set on ${avBranched ?? 0} app_versions.`);
     progress.show();
 
-    // 7b. Dedup DRAFT version rows: at most one non-stub DRAFT per (app_id, branch_id).
-    //     Extra drafts (legacy) become PUBLISHED snapshots (branch_id kept). Mirrors the
-    //     folded AddDefaultBranchDraftUniquePerApp step 1 — required so the kept SET-2
-    //     migration MakeAppVersionBranchIdNotNull can build its single-synced-draft index.
-    console.log(`${MIGRATION_NAME}: [START] Step 7b - deduping extra DRAFT versions per (app, branch).`);
-    const [, draftsConverted] = await queryRunner.query(`
-      WITH ranked AS (
-        SELECT id, ROW_NUMBER() OVER (
-                 PARTITION BY app_id, branch_id ORDER BY updated_at DESC, id ASC
-               ) AS rn
-        FROM app_versions
-        WHERE status = 'DRAFT' AND version_type = 'version' AND is_stub = false
-      )
-      UPDATE app_versions SET status = 'PUBLISHED'
-      WHERE id IN (SELECT id FROM ranked WHERE rn > 1)
-    `);
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 7b - ${draftsConverted ?? 0} duplicate drafts converted to PUBLISHED.`);
+    // 7b. INTENTIONALLY no draft dedup / status rewrite. The lts->latest flow preserves every
+    //     version's DRAFT/PUBLISHED status exactly as-is and only attaches it to the default
+    //     branch. Nothing is synced yet (config wiped; is_synced stays false), so the
+    //     single-draft unique index (… WHERE is_synced = true) is empty and multiple drafts are
+    //     allowed. The customer creates/collapses drafts themselves when they configure git sync.
+    //     (Kept migrations that used to dedup/create drafts are neutralised on this path:
+    //      MakeAppVersionBranchIdNotNull no longer flags lts rows is_synced=true;
+    //      EnsureDefaultBranchDraftVersion / CloneDefaultBranchDraftFromPublished no longer create
+    //      drafts; UpdateAppVersionStatusAndFields only backfills a NULL status.)
 
     // 8. Data source versions + options for global data sources.
     //    Self-contained DS-name dedup (per org) — the branch model requires unique
