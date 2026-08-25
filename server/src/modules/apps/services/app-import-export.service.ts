@@ -146,7 +146,8 @@ type NewRevampedComponent =
   | 'Timeline'
   | 'Map'
   | 'Chart'
-  | 'BoundedBox';
+  | 'BoundedBox'
+  | 'Calendar';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -204,6 +205,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Map',
   'Chart',
   'BoundedBox',
+  'Calendar',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -328,6 +330,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'BoundedBox',
   'Button',
   'ButtonGroupV2',
+  'Calendar',
   'Camera',
   'Cascader',
   'Chart',

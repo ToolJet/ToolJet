@@ -155,6 +155,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Map',
   'Chart',
   'BoundedBox',
+  'Calendar',
 ];
 
 export const Inspector = ({
