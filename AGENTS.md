@@ -88,6 +88,12 @@ cd plugins && npm install && npm run build
 - Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
 - Lint before committing. Pre-commit hooks are in the repo (husky + lint-staged, activated by root `npm install`); the hook only lint-fixes frontend files — backend needs `cd server && npm run lint` manually. CI lints all three folders and blocks the PR on failure. Never `--no-verify` unless the user explicitly asks
 
+## Context efficiency
+
+- Before re-reading a file, check if it was already read earlier in this session. If so, reference that content instead of re-reading it.
+- When reading files over ~200 lines, use the Read tool's `offset`/`limit` arguments to read only the relevant section first. Only read the full file if the targeted read isn't enough.
+- For open-ended exploration (searching for usages, understanding a module, tracing a bug across files), delegate to an `Explore` subagent via the `Agent` tool rather than reading files directly in the main thread.
+
 ## Skills
 
 Procedures live in `.agents/skills/` (symlinked into `.claude/skills/`). Load the one matching the task instead of improvising — ToolJet is a superproject with two submodules, and every git operation has to fan out across all three in a fixed order.
