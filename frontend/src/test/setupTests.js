@@ -1,5 +1,25 @@
 require('@testing-library/jest-dom');
 
+// Mirror src/index.jsx's i18next init (minus the http backend — tests never fetch
+// translation files) so useTranslation() has a real instance instead of warning
+// "You will need to pass in an i18next instance" on every render.
+require('i18next')
+  .use(require('react-i18next').initReactI18next)
+  .init({
+    lng: 'en',
+    fallbackLng: 'en',
+    resources: { en: { translation: {} } },
+    interpolation: { escapeValue: false },
+    react: { useSuspense: false },
+  });
+
+// The resolver (src/AppBuilder/_stores/utils.js and src/_helpers/utils.js)
+// deliberately console.logs inside its own catch blocks on expected error
+// paths (see utils.resolver.spec.js) — that floods CI output for tests that
+// intentionally exercise those paths. Silence console.log during tests;
+// console.warn/console.error stay visible since those still surface real issues.
+jest.spyOn(console, 'log').mockImplementation(() => {});
+
 // The bundlers inline these as build-time constants via DefinePlugin; under jest
 // they're live process.env reads, so give them the same defaults the bundlers use.
 // Keep the edition default in sync with jest.config.js (ee when the submodule
