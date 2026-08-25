@@ -23,7 +23,11 @@ concurrency:
 
 jobs:
   unit-tests:
-    name: Full suite + App Builder coverage
+    # This string is the STATUS CHECK name GitHub reports, and the rulesets
+    # "CI Gate required" entry matches on it exactly. Renaming it silently stops
+    # the required check from ever reporting, which leaves every PR pending
+    # forever — so change the ruleset in the same breath if you change this.
+    name: Frontend tests
     runs-on: ubuntu-latest
     defaults:
       run:
