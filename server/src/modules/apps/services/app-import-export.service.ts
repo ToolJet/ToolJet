@@ -126,7 +126,8 @@ type NewRevampedComponent =
   | 'RichTextEditor'
   | 'SvgImage'
   | 'Spinner'
-  | 'Timer';
+  | 'Timer'
+  | 'Kanban';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -191,6 +192,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'SvgImage',
   'Spinner',
   'Timer',
+  'Kanban',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -3369,17 +3371,6 @@ function migrateProperties(
   if (INPUT_WIDGET_TYPES.includes(componentType)) {
     if (!styles.widthType) {
       styles.widthType = { value: 'ofField' };
-    }
-  }
-
-  // TODO: Once the Kanban component is revamped, remove this logic and add 'Kanban' to the NewRevampedComponent array.
-  // The migration for Kanban will then be handled automatically along with other revamped components.
-  if (['Kanban'].includes(componentType)) {
-    if (general?.tooltip) {
-      if (properties.tooltip === undefined) {
-        properties.tooltip = general?.tooltip;
-      }
-      delete general?.tooltip;
     }
   }
 
