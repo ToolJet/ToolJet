@@ -2,7 +2,7 @@
 // PostgrestProxyService, which decides what a missing resolution means.
 //
 // Only UUID-shaped tokens are candidates. Physical table names are always uuids today
-// (internal_tables.id, and after H3 internal_table_relations.id), while physical COLUMN names are
+// (internal_tables.id — eventually internal_table_relations.id), while physical COLUMN names are
 // human — prepareColumnListForCreateTable uses column.column_name. So a uuid in an embed position
 // is a table reference and nothing else, and a blanket substitution would be wrong only for
 // filter VALUES, which this file never touches.

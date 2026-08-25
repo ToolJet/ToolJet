@@ -9,7 +9,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
  *
  * Real in CE, not a stub: a relation id is the only way to name a physical table, so an EE-only
  * resolver would leave CE nothing to resolve to. CE pins the priority-1 environment, which is also
- * the licence-lapse behaviour. EE (H5) overrides resolveEnvironment to honour the requested id.
+ * the licence-lapse behaviour. EE overrides resolveEnvironment to honour the requested id.
  *
  * Fail-closed contract: an id the caller does not own, or that has no relation in this
  * (environment, branch), is OMITTED from the returned map. It is never passed through unrewritten.

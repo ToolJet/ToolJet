@@ -187,7 +187,7 @@ export const ceAppEnvironments = [{ name: 'production', isDefault: true, priorit
 
 /**
  * Every organization needs the 3 app_environments rows and a default workspace branch to have
- * anything to key an internal_table_relations row against (TJDB environments, H0). Idempotent so
+ * anything to key an internal_table_relations row against. Idempotent so
  * it's safe to call from every organization-creation path and from a backfill migration alike —
  * no license check here, gating happens at read time, not at creation.
  */

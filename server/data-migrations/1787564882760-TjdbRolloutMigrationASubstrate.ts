@@ -6,12 +6,12 @@ import { findTenantSchema } from '@helpers/tooljet_db.helper';
 
 const MIGRATION_NAME = 'TjdbRolloutMigrationASubstrate1787564882760';
 
-// TJDB environments H1 (DEV-85), "migration A": pure substrate. Every existing internal_tables
-// row gets an internal_table_relations row at the priority-1 (development) environment on the
-// org's default branch, plus a synthesized baseline recording what the physical table already
-// looks like. No licence check anywhere here — assigning licensed workspaces' data to production
-// is migration B, a separate later ticket. See ~/Documents/Obsidian/.mind/feature/tjdb-environments-
-// architecture.md ("Data model", "The baseline") for the schema and design this implements.
+// "Migration A": pure substrate. Every existing internal_tables row gets an
+// internal_table_relations row at the priority-1 (development) environment on the org's default
+// branch, plus a synthesized baseline recording what the physical table already looks like. No
+// licence check anywhere here — assigning licensed workspaces' data to production is a separate
+// later migration. See ~/Documents/Obsidian/.mind/feature/tjdb-environments-architecture.md
+// ("Data model", "The baseline") for the schema and design this implements.
 type InternalTableRow = { id: string; organization_id: string; configurations: any };
 
 export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInterface {
@@ -67,7 +67,8 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     await queryRunner.dropTable('internal_table_relations');
   }
 
-  // --- Schema: the three new tables (H1 scope — no entities yet, see handoff) ---
+  // --- Schema: the three new tables. Raw SQL only — nothing in this migration reads through
+  // TypeORM entities, it only creates the tables. ---
 
   private async createRelationsTable(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
@@ -80,8 +81,8 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
           { name: 'environment_id', type: 'uuid', isNullable: false },
           { name: 'branch_id', type: 'uuid', isNullable: false },
           { name: 'configurations', type: 'jsonb', isNullable: true },
-          // Not in the architecture doc's ERD — added during H0/H1 scoping to record why a table
-          // couldn't be baselined instead of failing the whole migration. NULL = baselined fine.
+          // Not in the architecture doc's ERD — records why a table couldn't be baselined instead
+          // of failing the whole migration. NULL = baselined fine.
           { name: 'baseline_error', type: 'text', isNullable: true },
           { name: 'created_at', type: 'timestamp', default: 'now()' },
         ],

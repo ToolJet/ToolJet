@@ -2,9 +2,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const MIGRATION_NAME = 'SeedMissingAppEnvironments1787563359142';
 
-// TJDB environments H0 (DEV-84): every organization needs the 3 app_environments rows
-// (development/staging/production) to have anything to key an internal_table_relations row
-// against later. Organizations created through a path that bypasses
+// Every organization needs the 3 app_environments rows (development/staging/production) to have
+// anything to key an internal_table_relations row against later. Organizations created through a
+// path that bypasses
 // SetupOrganizationsUtilService.create() (see seedOrgEnvironmentsAndDefaultBranch,
 // src/helpers/utils.helper.ts) can have zero rows here. Mirrors the shape of the sibling
 // EnsureDefaultBranchForAllOrganizations1781740800000 migration, which already backfills the

@@ -377,9 +377,9 @@ export class TooljetDbTableOperationsService {
 
       await queryRunner.manager.save(internalTable);
 
-      // H2 invariant: relation id === logical id, so the physical table name below is unchanged.
-      // H3 is where these diverge. Development-only at create_table; higher environments are
-      // created by the first promote (H6).
+      // Relation id currently always equals the logical table id, so the physical table name below
+      // is unchanged. create_table only creates the development-environment relation; higher
+      // environments get their own relation when the table is first promoted (not yet built).
       const environmentId = await this.relationResolverService.resolveEnvironmentIdFor(
         organizationId,
         queryRunner.manager

@@ -154,7 +154,7 @@ describe('TooljetDbDataController', () => {
         if (!schemaReady) tooljetDbAvailable = false;
       }
 
-      // A freshly created test org has no app_environments row — the H0 backfill migration only
+      // A freshly created test org has no app_environments row — the backfill migration only
       // covered pre-existing orgs, and createUser() (unlike real signup) doesn't seed one either.
       // createTable/create-relation need it (resolveEnvironmentId), same as a real signup flow provides.
       await ensureAppEnvironments(app, adminOrgId);
@@ -430,7 +430,8 @@ describe('TooljetDbDataController', () => {
           .set('Cookie', adminCookie)
           .set('tj-workspace-id', adminOrgId);
 
-        // H2 invariant: relation id === logical id, so the rewritten value equals the input.
+        // Relation id currently always equals the logical table id, so the rewritten value equals
+        // the input.
         expect(pollyRequests()[0].url).toContain(`${ordersTableId}.total=gt.5`);
       });
 

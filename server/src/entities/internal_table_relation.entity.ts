@@ -3,8 +3,8 @@ import { InternalTable } from './internal_table.entity';
 
 @Entity({ name: 'internal_table_relations' })
 export class InternalTableRelation extends BaseEntity {
-  // Not generated: every writer sets this explicitly. Through H2 it equals internalTableId;
-  // H3 is where a relation stops sharing the logical table's id.
+  // Not generated: every writer sets this explicitly. Currently always equals internalTableId —
+  // a relation does not yet have an identity independent of the logical table it belongs to.
   @PrimaryColumn({ type: 'uuid' })
   id: string;
 

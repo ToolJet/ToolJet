@@ -3,9 +3,9 @@ import { seedOrgEnvironmentsAndDefaultBranch } from '@helpers/utils.helper';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
-// TJDB environments H0 (DEV-84): every organization needs the 3 app_environments rows and a
-// default WorkspaceBranch to have anything to key an internal_table_relations row against later.
-// This is the one function all 4 callers (golden path, the 2 bypass paths, the backfill
+// Every organization needs the 3 app_environments rows and a default WorkspaceBranch to have
+// anything to key an internal_table_relations row against later. This is the one function all 4
+// callers (golden path, the 2 bypass paths, the backfill
 // migration) route through, so it's the seam that actually owns the branching worth pinning.
 describe('seedOrgEnvironmentsAndDefaultBranch', () => {
   const organizationId = 'org-1';

@@ -128,7 +128,7 @@ describe('TooljetDbRelationResolverService', () => {
     }, 60_000);
 
     describe('substrate entities', () => {
-      it('should load the relation row H1 backfilled for a seeded table', async () => {
+      it('should load the relation row backfilled for a seeded table', async () => {
         const table = await appManager.findOne(InternalTable, {
           where: { organizationId, tableName: 'users' },
         });
@@ -138,7 +138,7 @@ describe('TooljetDbRelationResolverService', () => {
         });
 
         expect(relation).toMatchObject({
-          id: table.id, // H2 invariant: relation id === logical id
+          id: table.id, // relation id currently always equals the logical table id
           internalTableId: table.id,
           environmentId: expect.any(String),
           branchId: expect.any(String),
@@ -156,7 +156,7 @@ describe('TooljetDbRelationResolverService', () => {
 
         const resolved = await service.resolve(organizationId, [table.id]);
 
-        expect(resolved.get(table.id)).toBe(table.id); // H2 invariant
+        expect(resolved.get(table.id)).toBe(table.id); // relation id currently equals logical id
       });
 
       it('should omit a table belonging to another workspace', async () => {
