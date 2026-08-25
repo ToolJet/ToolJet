@@ -47,7 +47,7 @@ export const iconConfig = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Show loading state',
+      displayName: 'Loading state',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
