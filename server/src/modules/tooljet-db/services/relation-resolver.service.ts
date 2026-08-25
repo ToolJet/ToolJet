@@ -97,4 +97,13 @@ export class TooljetDbRelationResolverService {
     if (!branch) throw new NotFoundException('Workspace has no default branch');
     return branch.id;
   }
+
+  // Thin wrappers so create_table can place a new relation without duplicating the rules above.
+  async resolveEnvironmentIdFor(organizationId: string, manager?: EntityManager): Promise<string> {
+    return this.resolveEnvironment(organizationId, undefined, manager || this.manager);
+  }
+
+  async resolveBranchIdFor(organizationId: string, manager?: EntityManager): Promise<string> {
+    return this.resolveBranch(organizationId, manager || this.manager);
+  }
 }

@@ -42,8 +42,11 @@ export class TooljetDbImportExportService {
       internalTable.co_relation_id = coRelationId;
     }
 
-    const { configurations = {} } = internalTable;
-    const { columns, foreign_keys } = await this.tableOperationsService.perform(organizationId, 'view_table', {
+    const {
+      columns,
+      foreign_keys,
+      configurations = {},
+    } = await this.tableOperationsService.perform(organizationId, 'view_table', {
       id: tjDbDto.table_id,
     });
 

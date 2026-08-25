@@ -12,6 +12,8 @@ import {
 } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
+import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
+import { TooljetDbRelationResolverService } from './relation-resolver.service';
 import { formatJoinsJSONBPath, formatJSONB, getTooljetEdition } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -80,7 +82,8 @@ export class TooljetDbTableOperationsService {
     protected readonly tooljetDbManager: EntityManager,
     protected eventEmitter: EventEmitter2,
     protected licenseTermsService: LicenseTermsService,
-    protected readonly configService: ConfigService
+    protected readonly configService: ConfigService,
+    protected readonly relationResolverService: TooljetDbRelationResolverService
   ) {}
 
   async perform(
@@ -262,10 +265,17 @@ export class TooljetDbTableOperationsService {
       };
     });
 
+    const relation = await this.relationResolverService.getRelation(
+      organizationId,
+      internalTable.id,
+      undefined,
+      appManager
+    );
+
     return {
       foreign_keys,
       columns: transformedColumnDefaultValues,
-      configurations: internalTable.configurations,
+      configurations: relation.configurations,
     };
   }
 
@@ -362,10 +372,29 @@ export class TooljetDbTableOperationsService {
       const internalTable = queryRunner.manager.create(InternalTable, {
         tableName,
         organizationId,
-        configurations,
+        co_relation_id: uuidv4(),
       });
 
       await queryRunner.manager.save(internalTable);
+
+      // H2 invariant: relation id === logical id, so the physical table name below is unchanged.
+      // H3 is where these diverge. Development-only at create_table; higher environments are
+      // created by the first promote (H6).
+      const environmentId = await this.relationResolverService.resolveEnvironmentIdFor(
+        organizationId,
+        queryRunner.manager
+      );
+      const branchId = await this.relationResolverService.resolveBranchIdFor(organizationId, queryRunner.manager);
+
+      await queryRunner.manager.save(
+        queryRunner.manager.create(InternalTableRelation, {
+          id: internalTable.id,
+          internalTableId: internalTable.id,
+          environmentId,
+          branchId,
+          configurations,
+        })
+      );
 
       await tjdbQueryRunner.createTable(
         new Table({
@@ -629,8 +658,14 @@ export class TooljetDbTableOperationsService {
         }
       });
 
-      const columnNames = internalTable.configurations.columns.column_names;
-      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const relation = await this.relationResolverService.getRelation(
+        organizationId,
+        internalTable.id,
+        undefined,
+        queryRunner.manager
+      );
+      const columnNames = relation.configurations.columns.column_names;
+      const columnConfigurations = relation.configurations.columns.configurations;
 
       columnstoBeUpdated.forEach((column) => {
         const newColumn = column.newColumn;
@@ -663,14 +698,14 @@ export class TooljetDbTableOperationsService {
         columnConfigurations[columnUuid] = columnConfigurationMap[column.name];
       });
 
-      const configurations = {
+      relation.configurations = {
         columns: {
           column_names: columnNames,
           configurations: columnConfigurations,
         },
       };
 
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+      await queryRunner.manager.save(relation);
 
       if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
 
@@ -742,19 +777,25 @@ export class TooljetDbTableOperationsService {
 
     try {
       const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
-      const columnNames = internalTable.configurations.columns.column_names;
-      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const relation = await this.relationResolverService.getRelation(
+        organizationId,
+        internalTable.id,
+        undefined,
+        queryRunner.manager
+      );
+      const columnNames = relation.configurations.columns.column_names;
+      const columnConfigurations = relation.configurations.columns.configurations;
       const columnUuid = uuidv4();
       columnNames[column['column_name']] = columnUuid;
       columnConfigurations[columnUuid] = column?.configurations || {};
-      const configurations = {
+      relation.configurations = {
         columns: {
           column_names: columnNames,
           configurations: columnConfigurations,
         },
       };
 
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+      await queryRunner.manager.save(relation);
 
       await tjdbQueryRunnner.addColumn(
         tableName,
@@ -830,18 +871,24 @@ export class TooljetDbTableOperationsService {
     const tenantSchema = findTenantSchema(organizationId);
 
     try {
-      const columnNames = internalTable.configurations.columns.column_names;
-      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const relation = await this.relationResolverService.getRelation(
+        organizationId,
+        internalTable.id,
+        undefined,
+        queryRunner.manager
+      );
+      const columnNames = relation.configurations.columns.column_names;
+      const columnConfigurations = relation.configurations.columns.configurations;
       const columnUuid = columnNames[column['column_name']];
       delete columnNames[column['column_name']];
       delete columnConfigurations[columnUuid];
-      const configurations = {
+      relation.configurations = {
         columns: {
           column_names: columnNames,
           configurations: columnConfigurations,
         },
       };
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+      await queryRunner.manager.save(relation);
 
       const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
       const result = await tjdbQueryRunnner.dropColumn(tableName, column['column_name']);
@@ -1219,7 +1266,13 @@ export class TooljetDbTableOperationsService {
     // catches into a TooljetDatabaseError assuming a QueryFailedError shape (it indexes
     // errorObj.driverError), so throwing NotFoundException from inside that try would itself
     // crash on the wrap instead of surfacing "Column not found".
-    const columnUuid = internalTable.configurations.columns.column_names[column.column_name];
+    const relation = await this.relationResolverService.getRelation(
+      organizationId,
+      internalTable.id,
+      undefined,
+      this.manager
+    );
+    const columnUuid = relation.configurations.columns.column_names[column.column_name];
     if (!columnUuid) throw new NotFoundException('Column not found: ' + column.column_name);
 
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
@@ -1232,8 +1285,8 @@ export class TooljetDbTableOperationsService {
     const tenantSchema = findTenantSchema(organizationId);
 
     try {
-      const columnNames = internalTable.configurations.columns.column_names;
-      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const columnNames = relation.configurations.columns.column_names;
+      const columnConfigurations = relation.configurations.columns.configurations;
       columnConfigurations[columnUuid] = {
         ...columnConfigurations[columnUuid],
         ...(column?.configurations || {}),
@@ -1243,14 +1296,14 @@ export class TooljetDbTableOperationsService {
         delete columnNames[column.column_name];
       }
 
-      const configurations = {
+      relation.configurations = {
         columns: {
           column_names: columnNames,
           configurations: columnConfigurations,
         },
       };
 
-      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+      await queryRunner.manager.save(relation);
 
       const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
       if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(tableName, foreign_key_id_to_delete);

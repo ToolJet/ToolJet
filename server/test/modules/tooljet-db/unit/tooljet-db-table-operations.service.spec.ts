@@ -4,9 +4,12 @@
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
-import { resetDB, createUser, setDataSources, closeTestApp } from 'test-helper';
+import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments } from 'test-helper';
 import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
+import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, getDataSourceToken } from '@nestjs/typeorm';
@@ -54,10 +57,13 @@ describe('TooljetDbTableOperationsService', () => {
             GroupPermission,
             UserGroupPermission,
             InternalTable,
+            InternalTableRelation,
           ]),
         ],
         providers: [
           TooljetDbTableOperationsService,
+          TooljetDbRelationResolverService,
+          AppEnvironmentUtilService,
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
           EventEmitter2,
@@ -91,6 +97,7 @@ describe('TooljetDbTableOperationsService', () => {
         groups: ['all_users', 'admin'],
       });
       organizationId = adminUserData.organization.id;
+      await ensureAppEnvironments(app, organizationId);
 
       const schemaName = `workspace_${organizationId}`;
       await tjDbManager.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
@@ -127,7 +134,10 @@ describe('TooljetDbTableOperationsService', () => {
         const usersTable = await appManager.findOneOrFail(InternalTable, {
           where: { organizationId, tableName: 'users' },
         });
-        expect(usersTable.configurations.columns.configurations['undefined']).toBeUndefined();
+        const relation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: usersTable.id },
+        });
+        expect(relation.configurations.columns.configurations['undefined']).toBeUndefined();
       });
     });
   });
