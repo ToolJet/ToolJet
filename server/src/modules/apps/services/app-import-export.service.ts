@@ -145,7 +145,8 @@ type NewRevampedComponent =
   | 'Calendar'
   | 'PDF'
   | 'QrScanner'
-  | 'RichTextEditor';
+  | 'RichTextEditor'
+  | 'SvgImage';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -207,6 +208,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PDF',
   'QrScanner',
   'RichTextEditor',
+  'SvgImage',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -375,6 +377,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RichTextEditor',
   'StarRating',
   'Statistics',
+  'SvgImage',
   'Tabs',
   'Tags',
   'TagsInput',
