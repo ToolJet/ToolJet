@@ -152,6 +152,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Pagination',
   'Timeline',
   'Map',
+  'Chart',
 ];
 
 export const Inspector = ({
