@@ -64,6 +64,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Calendar',
   'PDF',
   'QrScanner',
+  'RichTextEditor',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -228,6 +229,7 @@ export const baseComponentProperties = (
       'Calendar',
       'PDF',
       'QrScanner',
+      'RichTextEditor',
     ],
     Layout: [],
   };
