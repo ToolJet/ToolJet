@@ -46,35 +46,57 @@ export const richtextareaConfig = {
       },
       section: 'additionalActions',
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
-  },
-  events: {},
-  styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: true,
-      },
-    },
-
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
+  },
+  events: {},
+  styles: {
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
       validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
+      accordian: 'General',
     },
   },
   exposedVariables: {
@@ -112,12 +134,15 @@ export const richtextareaConfig = {
       defaultValue: { value: '' },
       loadingState: { value: `{{false}}` },
       dynamicHeight: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
