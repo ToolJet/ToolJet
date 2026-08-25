@@ -112,6 +112,7 @@ export interface CreateAppWithDependenciesOptions {
   dsKind?: string;
   dsOptions?: Array<Partial<DataSourceOptionInput>>;
   name?: string;
+  queryOptions?: Record<string, unknown>;
 }
 
 export interface CreateGroupPermissionParams {
@@ -928,6 +929,7 @@ export const createAppWithDependencies = async (
     dsKind = 'restapi',
     dsOptions = [{}],
     name = 'name',
+    queryOptions,
   }: CreateAppWithDependenciesOptions
 ) => {
   const application = await createApplication(
@@ -962,7 +964,7 @@ export const createAppWithDependencies = async (
       dataQuery = await createDataQuery(app, {
         dataSource,
         appVersion,
-        options: {
+        options: queryOptions ?? {
           method: 'get',
           url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
           url_params: [],

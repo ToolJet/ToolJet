@@ -123,13 +123,24 @@ describe('DataQueriesController', () => {
         expect(response.statusCode).toBe(201);
       });
 
-      // QUARANTINE(data-queries): failing since main CI rehab — see #17259
-      it.skip('should be able to run queries of an app if a public app ( even if an unauthenticated user )', async () => {
+      it('should be able to run queries of an app if a public app ( even if an unauthenticated user )', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['all_users', 'admin'],
         });
-        const { dataQuery } = await createAppWithDependencies(app, adminUserData.user, { isAppPublic: true });
+        // jsonplaceholder (not GitHub) on purpose: GitHub's stargazers endpoint now requires
+        // auth for unauthenticated callers, which made this test fail regardless of ToolJet's
+        // own auth logic. jsonplaceholder needs no auth and `_limit` pins the array size.
+        const { dataQuery } = await createAppWithDependencies(app, adminUserData.user, {
+          isAppPublic: true,
+          queryOptions: {
+            method: 'get',
+            url: 'https://jsonplaceholder.typicode.com/posts?_limit=30',
+            url_params: [],
+            headers: [],
+            body: [],
+          },
+        });
 
         const response = await request(app.getHttpServer()).post(`/api/data-queries/${dataQuery.id}/run`);
 
