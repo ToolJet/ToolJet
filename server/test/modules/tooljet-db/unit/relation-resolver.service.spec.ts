@@ -1,13 +1,16 @@
 /**
  * @group database
  */
-import { INestApplication } from '@nestjs/common';
+import { ForbiddenException, INestApplication, NotFoundException } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
-import { resetDB, createUser, setDataSources, closeTestApp } from 'test-helper';
+import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments } from 'test-helper';
 import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, getDataSourceToken } from '@nestjs/typeorm';
@@ -23,19 +26,23 @@ import { App } from '@entities/app.entity';
 import { LicenseService } from '@modules/licensing/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('TooljetDbRelationResolverService', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
     let appManager: EntityManager;
     let tjDbManager: EntityManager;
-    let service: TooljetDbTableOperationsService;
+    let tableOperationsService: TooljetDbTableOperationsService;
+    let service: TooljetDbRelationResolverService;
     let organizationId: string;
+    let getLicenseTerms: jest.Mock;
 
     beforeAll(async () => {
       const mockLicenseService = { getLicenseTerms: jest.fn() };
       const mockLicenseTermsService = { getLicenseTerms: jest.fn() };
       const mockEventEmitter = { emit: jest.fn(), on: jest.fn() };
+      getLicenseTerms = mockLicenseTermsService.getLicenseTerms;
 
       const moduleFixture: TestingModule = await Test.createTestingModule({
         imports: [
@@ -60,6 +67,8 @@ describe('TooljetDbRelationResolverService', () => {
         ],
         providers: [
           TooljetDbTableOperationsService,
+          TooljetDbRelationResolverService,
+          AppEnvironmentUtilService,
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
           EventEmitter2,
@@ -82,22 +91,25 @@ describe('TooljetDbRelationResolverService', () => {
       const tooljetDbDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('tooljetDb'));
       tjDbManager = tooljetDbDataSource.manager;
 
-      service = moduleFixture.get<TooljetDbTableOperationsService>(TooljetDbTableOperationsService);
+      tableOperationsService = moduleFixture.get<TooljetDbTableOperationsService>(TooljetDbTableOperationsService);
+      service = app.get(TooljetDbRelationResolverService);
     });
 
     beforeEach(async () => {
       await resetDB();
+      getLicenseTerms.mockResolvedValue(true); // MULTI_ENVIRONMENT on by default
 
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
       });
       organizationId = adminUserData.organization.id;
+      await ensureAppEnvironments(app, organizationId);
 
       const schemaName = `workspace_${organizationId}`;
       await tjDbManager.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
 
-      await setupTestTables(appManager, tjDbManager, service, organizationId);
+      await setupTestTables(appManager, tjDbManager, tableOperationsService, organizationId);
     });
 
     afterEach(async () => {
@@ -133,6 +145,81 @@ describe('TooljetDbRelationResolverService', () => {
           configurations: expect.objectContaining({ columns: expect.any(Object) }),
           baselineError: null,
         });
+      });
+    });
+
+    describe('.resolve | environment-blind resolution', () => {
+      it('should map a logical table id to its development relation id', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+
+        const resolved = await service.resolve(organizationId, [table.id]);
+
+        expect(resolved.get(table.id)).toBe(table.id); // H2 invariant
+      });
+
+      it('should omit a table belonging to another workspace', async () => {
+        const otherUser = await createUser(app, {
+          email: 'other@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const foreignTable = await appManager.save(
+          appManager.create(InternalTable, {
+            organizationId: otherUser.organization.id,
+            tableName: 'foreign_table',
+            co_relation_id: uuidv4(),
+          })
+        );
+
+        const resolved = await service.resolve(organizationId, [foreignTable.id]);
+
+        expect(resolved.has(foreignTable.id)).toBe(false);
+      });
+
+      it('should omit a soft-deleted table', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'orders' },
+        });
+        await appManager.update(InternalTable, { id: table.id }, { deletedAt: new Date() });
+
+        const resolved = await service.resolve(organizationId, [table.id]);
+
+        expect(resolved.has(table.id)).toBe(false);
+      });
+
+      it('should resolve every id in one call without dropping any', async () => {
+        const tables = await appManager.find(InternalTable, { where: { organizationId } });
+
+        const resolved = await service.resolve(
+          organizationId,
+          tables.map((t) => t.id)
+        );
+
+        expect(resolved.size).toBe(tables.length);
+      });
+    });
+
+    describe('.getRelation | single lookup', () => {
+      it('should throw NotFoundException for a table with no relation in the environment', async () => {
+        const orphan = await appManager.save(
+          appManager.create(InternalTable, {
+            organizationId,
+            tableName: 'orphan',
+            co_relation_id: uuidv4(),
+          })
+        );
+
+        await expect(service.getRelation(organizationId, orphan.id)).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('CE', () => {
+      it('should refuse a request that names a non-development environment', async () => {
+        getLicenseTerms.mockResolvedValue(false); // MULTI_ENVIRONMENT off
+        const stagingEnvId = (await appManager.findOne(AppEnvironment, { where: { organizationId, priority: 2 } })).id;
+
+        await expect(service.resolve(organizationId, [], stagingEnvId)).rejects.toThrow(ForbiddenException);
       });
     });
   });

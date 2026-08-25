@@ -14,6 +14,7 @@ import { AbilityUtilService } from '@modules/ability/util.service';
 import { RolesRepository } from '@modules/roles/repository';
 import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
+import { AppEnvironmentsModule } from '@modules/app-environments/module';
 
 export class TooljetDbModule extends SubModule {
   constructor(
@@ -37,6 +38,7 @@ export class TooljetDbModule extends SubModule {
       TooljetDbDataOperationsService,
       TooljetDbImportExportService,
       PostgrestProxyService,
+      TooljetDbRelationResolverService,
     } = await this.getProviders(configs, 'tooljet-db', [
       'controller',
       'services/tooljet-db-table-operations.service',
@@ -44,6 +46,7 @@ export class TooljetDbModule extends SubModule {
       'services/tooljet-db-data-operations.service',
       'services/tooljet-db-import-export.service',
       'services/postgrest-proxy.service',
+      'services/relation-resolver.service',
     ]);
 
     return this.cacheModule(cacheKey, {
@@ -57,6 +60,7 @@ export class TooljetDbModule extends SubModule {
           InternalTableMigration,
           InternalTableMigrationApplication,
         ]),
+        AppEnvironmentsModule.register(configs),
       ],
       controllers: isMainImport ? [TooljetDbController] : [],
       providers: [
@@ -67,6 +71,7 @@ export class TooljetDbModule extends SubModule {
         TooljetDbDataOperationsService,
         TooljetDbImportExportService,
         PostgrestProxyService,
+        TooljetDbRelationResolverService,
         TableCountGuard,
         FeatureAbilityFactory,
       ],
@@ -75,6 +80,7 @@ export class TooljetDbModule extends SubModule {
         TooljetDbBulkUploadService,
         TooljetDbDataOperationsService,
         TooljetDbImportExportService,
+        TooljetDbRelationResolverService,
       ],
     });
   }
