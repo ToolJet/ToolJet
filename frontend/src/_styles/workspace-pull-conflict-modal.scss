@@ -288,9 +288,10 @@
   }
 
   .conflict-list-card {
+    max-height: 480px;
     border: 1px solid var(--slate6);
     border-radius: 8px;
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   .conflict-row {
