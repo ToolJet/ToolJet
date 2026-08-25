@@ -59,6 +59,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FileButton',
   'FlexContainer',
   'Timeline',
+  'Map',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -217,6 +218,7 @@ export const baseComponentProperties = (
       'ModalV2',
       'Container',
       'Timeline',
+      'Map',
     ],
     Layout: [],
   };

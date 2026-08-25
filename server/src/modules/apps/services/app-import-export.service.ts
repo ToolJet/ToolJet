@@ -116,7 +116,8 @@ type NewRevampedComponent =
   | 'ModalV2'
   | 'PopoverMenu'
   | 'Pagination'
-  | 'Timeline';
+  | 'Timeline'
+  | 'Map';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -171,6 +172,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PopoverMenu',
   'Pagination',
   'Timeline',
+  'Map',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -308,6 +310,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'KeyValuePair',
   'Link',
   'Listview',
+  'Map',
   'ModalV2',
   'MultiselectV2',
   'NumberInput',

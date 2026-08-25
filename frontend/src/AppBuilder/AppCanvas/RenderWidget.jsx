@@ -68,6 +68,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ModalV2',
   'Container',
   'Timeline',
+  'Map',
 ];
 
 const RenderWidget = ({
