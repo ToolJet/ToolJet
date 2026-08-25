@@ -4,6 +4,12 @@ on:
   pull_request:
     paths:
       - 'frontend/**'
+  push:
+    branches:
+      - develop
+      - lts-3.16
+    paths:
+      - 'frontend/**'
   workflow_dispatch:
 
 concurrency:
@@ -11,18 +17,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  changed-tests:
-    name: Tests for changed files
-    if: github.event_name == 'pull_request'
+  unit-tests:
+    name: Full suite + App Builder coverage
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-        with:
-          # --changedSince needs the full history to diff against the base branch.
-          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -33,33 +35,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests related to changed files
-        run: npx jest --ci --coverage --changedSince=origin/${{ github.base_ref }}
+      # Layout first: a misfiled or *.test.* spec silently never runs, so this
+      # must fail the build before the suite reports a misleading green.
+      - name: Validate test layout
+        run: npm run test:layout
+
+      # The whole suite runs in seconds, so there is no reason to scope it to
+      # changed files — doing that let PRs pass green without running a test.
+      - name: Run full test suite with coverage
+        run: npm run test:ci
 
       - name: Validate App Builder coverage manifest and harness contracts
         run: npm run validate:app-builder-coverage-manifest && npm run test:app-builder:contracts
-
-  full-suite:
-    name: Full suite + App Builder coverage
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.15.1
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run full test suite with coverage
-        run: npm run test:ci
 
       - name: Upload coverage report
         if: always()
