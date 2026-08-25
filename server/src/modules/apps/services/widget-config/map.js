@@ -136,6 +136,16 @@ export const mapConfig = {
         { handle: 'lng', displayName: 'Longitude' },
       ],
     },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
   ],
   styles: {
     boxShadow: {
