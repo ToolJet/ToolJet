@@ -1,10 +1,15 @@
 /**
  * @jest-environment node
  *
- * T4 — isEditorReadOnly flag unit tests
+ * `isEditorReadOnly` — appVersionSlice
  *
- * Tests createAppVersionSlice in isolation via a minimal zustand store.
- * Covers TC1–TC6 from the task brief.
+ * Exercises createAppVersionSlice in isolation via a minimal zustand store, so
+ * no React and no composed store are involved.
+ *
+ * The flag exists for the module editor: when a user opens a module they cannot
+ * edit, the editor is frozen without being marked as a released version. So the
+ * behaviour that matters is how it combines with the OTHER freeze reasons in
+ * getShouldFreeze — that is what the last two tests pin down.
  */
 
 const { createStore } = require('zustand/vanilla');
@@ -25,121 +30,61 @@ describe('isEditorReadOnly flag — appVersionSlice', () => {
     store = makeStore();
   });
 
-  // TC3: initial state → isEditorReadOnly is false
-  test('TC3: initial state has isEditorReadOnly=false', () => {
+  test('defaults to false, so a fresh editor is never read-only by accident', () => {
     expect(store.getState().isEditorReadOnly).toBe(false);
   });
 
-  // TC1: setIsEditorReadOnly(true) → isEditorReadOnly becomes true
-  test('TC1: setIsEditorReadOnly(true) sets flag to true', () => {
+  test('setIsEditorReadOnly(true) sets the flag', () => {
     store.getState().setIsEditorReadOnly(true);
     expect(store.getState().isEditorReadOnly).toBe(true);
   });
 
-  // TC2: setIsEditorReadOnly(false) after true → isEditorReadOnly becomes false
-  test('TC2: setIsEditorReadOnly(false) clears flag', () => {
+  test('setIsEditorReadOnly(false) clears a previously set flag', () => {
     store.getState().setIsEditorReadOnly(true);
     store.getState().setIsEditorReadOnly(false);
     expect(store.getState().isEditorReadOnly).toBe(false);
   });
 
-  // TC4: getShouldFreeze returns true when isEditorReadOnly=true (module editor + canEdit=false seam)
-  test('TC4: getShouldFreeze()=true when isEditorReadOnly=true', () => {
+  test('the editor freezes while the flag is set', () => {
     store.getState().setIsEditorReadOnly(true);
     expect(store.getState().getShouldFreeze()).toBe(true);
   });
 
-  // TC5: getShouldFreeze returns false when isEditorReadOnly=false and no other freeze conditions
-  test('TC5: getShouldFreeze()=false when isEditorReadOnly=false (canEdit=true path)', () => {
-    // Ensure no other freeze conditions
+  test('the editor does not freeze when the flag is clear and nothing else freezes it', () => {
+    // Asserted explicitly, because getShouldFreeze ORs several reasons together
+    // and a false pass here would otherwise be indistinguishable from one of the
+    // others happening to be false.
     expect(store.getState().isVersionReleased).toBe(false);
     expect(store.getState().isEditorFreezed).toBe(false);
     expect(store.getState().isEditorReadOnly).toBe(false);
     expect(store.getState().getShouldFreeze()).toBe(false);
   });
 
-  // TC6: non-module editor path — isEditorReadOnly stays false → getShouldFreeze unaffected
-  test('TC6: isEditorReadOnly stays false for non-module editors (getShouldFreeze not affected)', () => {
-    // Simulate non-module editor: setIsEditorReadOnly is never called (canEdit defaults to true)
-    // Flag stays at initial false
-    expect(store.getState().isEditorReadOnly).toBe(false);
-    expect(store.getState().getShouldFreeze()).toBe(false);
-  });
-
-  // Regression: isEditorFreezed and isEditorReadOnly are independent
-  test('isEditorFreezed true does not affect isEditorReadOnly', () => {
+  test('isEditorFreezed freezes the editor without touching the read-only flag', () => {
+    // The two reasons must stay independent: a frozen (released) version and a
+    // read-only module are different states, and code that reads one must not
+    // see the other.
     store.getState().setIsEditorFreezed(true);
     expect(store.getState().isEditorReadOnly).toBe(false);
-    // getShouldFreeze still true because of isEditorFreezed
     expect(store.getState().getShouldFreeze()).toBe(true);
   });
 
-  test('isEditorReadOnly true does not affect isEditorFreezed', () => {
+  test('the read-only flag does not imply isEditorFreezed', () => {
     store.getState().setIsEditorReadOnly(true);
     expect(store.getState().isEditorFreezed).toBe(false);
   });
 });
 
-/**
- * useAppData flag derivation — TC4/TC5/TC6
+/*
+ * REMOVED: a second describe block, "useAppData flag derivation — moduleMode +
+ * canEdit permutations".
  *
- * Tests the branching logic from useAppData:
- *   if (moduleMode) {
- *     if (!canEdit) setIsEditorReadOnly(true);
- *     else           setIsEditorReadOnly(false);
- *   }
+ * It copied useAppData's `if (moduleMode) { if (!canEdit) ... }` branch into the
+ * test body and then asserted on the copy. Nothing in production was executed,
+ * so all three tests would still have passed if useAppData had been deleted
+ * outright — they tested the test.
  *
- * We exercise this inline at the slice level (no React/hook environment needed).
+ * Covering that derivation for real means driving useAppData itself, which needs
+ * the React hook environment. Worth doing separately; a placeholder that looks
+ * like coverage is worse than an acknowledged gap.
  */
-describe('useAppData flag derivation — moduleMode + canEdit permutations', () => {
-  let store;
-
-  beforeEach(() => {
-    store = makeStore();
-  });
-
-  // TC4: moduleMode=true + canEdit=false → setIsEditorReadOnly called with true
-  test('TC4: moduleMode=true, canEdit=false → isEditorReadOnly becomes true', () => {
-    const moduleMode = true;
-    const canEdit = false;
-    if (moduleMode) {
-      if (!canEdit) {
-        store.getState().setIsEditorReadOnly(true);
-      } else {
-        store.getState().setIsEditorReadOnly(false);
-      }
-    }
-    expect(store.getState().isEditorReadOnly).toBe(true);
-  });
-
-  // TC5: moduleMode=true + canEdit=true → setIsEditorReadOnly called with false (explicit reset)
-  test('TC5: moduleMode=true, canEdit=true → isEditorReadOnly becomes false (stale true is reset)', () => {
-    // Pre-seed stale true to confirm the reset path fires
-    store.getState().setIsEditorReadOnly(true);
-
-    const moduleMode = true;
-    const canEdit = true;
-    if (moduleMode) {
-      if (!canEdit) {
-        store.getState().setIsEditorReadOnly(true);
-      } else {
-        store.getState().setIsEditorReadOnly(false);
-      }
-    }
-    expect(store.getState().isEditorReadOnly).toBe(false);
-  });
-
-  // TC6: moduleMode=false + canEdit=false → setIsEditorReadOnly is NOT called → stays false
-  test('TC6: moduleMode=false, canEdit=false → isEditorReadOnly stays false (branch never entered)', () => {
-    const moduleMode = false;
-    const canEdit = false;
-    if (moduleMode) {
-      if (!canEdit) {
-        store.getState().setIsEditorReadOnly(true);
-      } else {
-        store.getState().setIsEditorReadOnly(false);
-      }
-    }
-    expect(store.getState().isEditorReadOnly).toBe(false);
-  });
-});
