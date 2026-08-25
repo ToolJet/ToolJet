@@ -79,6 +79,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Spinner',
   'Timer',
   'CodeEditor',
+  'CustomComponent',
 ];
 
 const RenderWidget = ({

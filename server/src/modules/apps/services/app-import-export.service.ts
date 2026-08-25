@@ -128,7 +128,8 @@ type NewRevampedComponent =
   | 'Spinner'
   | 'Timer'
   | 'Kanban'
-  | 'CodeEditor';
+  | 'CodeEditor'
+  | 'CustomComponent';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -195,6 +196,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Timer',
   'Kanban',
   'CodeEditor',
+  'CustomComponent',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -317,6 +319,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'ColorPicker',
   'Container',
   'CurrencyInput',
+  'CustomComponent',
   'DatePickerV2',
   'DaterangePicker',
   'DatetimePickerV2',
