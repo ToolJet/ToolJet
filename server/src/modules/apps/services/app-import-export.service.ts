@@ -152,7 +152,8 @@ type NewRevampedComponent =
   | 'QrScanner'
   | 'RichTextEditor'
   | 'SvgImage'
-  | 'Spinner';
+  | 'Spinner'
+  | 'Timer';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -216,6 +217,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'RichTextEditor',
   'SvgImage',
   'Spinner',
+  'Timer',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -395,6 +397,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextInput',
   'TimePicker',
   'Timeline',
+  'Timer',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
