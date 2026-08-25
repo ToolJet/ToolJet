@@ -9,7 +9,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
-import { ToolTip } from '@/_components/ToolTip';
 import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
@@ -462,28 +461,16 @@ const CreateVersionModal = ({
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
-              <ToolTip
-                message={
-                  isEditorReadOnly
-                    ? "You don't have access to save this version. Contact admin to know more."
-                    : 'Save this version'
-                }
-                placement="top"
-                width="280px"
+              <ButtonSolid
+                size="lg"
+                variant="primary"
+                className=""
+                type="submit"
+                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
+                data-cy="create-version-save-button"
               >
-                <span>
-                  <ButtonSolid
-                    size="lg"
-                    variant="primary"
-                    className=""
-                    type="submit"
-                    disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
-                    data-cy="create-version-save-button"
-                  >
-                    {t('editor.appVersionManager.saveVersion', 'Save version')}
-                  </ButtonSolid>
-                </span>
-              </ToolTip>
+                {t('editor.appVersionManager.saveVersion', 'Save version')}
+              </ButtonSolid>
             </div>
           </div>
         </form>
