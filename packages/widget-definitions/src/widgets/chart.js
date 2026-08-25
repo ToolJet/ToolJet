@@ -121,11 +121,55 @@ export const chartConfig = {
         defaultValue: 'group',
       },
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   actions: [
     {
       handle: 'clearClickedPoint',
       displayName: 'Clear clicked point',
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
     },
   ],
   events: {
@@ -137,6 +181,7 @@ export const chartConfig = {
       type: 'colorSwatches',
       displayName: 'Background color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      accordian: 'container',
     },
     borderColor: {
       type: 'colorSwatches',
@@ -157,6 +202,7 @@ export const chartConfig = {
         },
         defaultValue: 50,
       },
+      accordian: 'container',
     },
     borderRadius: {
       type: 'number',
@@ -165,26 +211,16 @@ export const chartConfig = {
         schema: { type: 'number' },
         defaultValue: 6,
       },
+      accordian: 'container',
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
       validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: true,
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
-      },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -234,15 +270,18 @@ export const chartConfig = {
     { "x": "Mar", "y": 40}
   ]`,
       },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       padding: { value: '50' },
       borderRadius: { value: '{{6}}' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       borderColor: { value: 'var(--cc-default-border)' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

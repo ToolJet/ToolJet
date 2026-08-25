@@ -33,9 +33,30 @@ export default function Chart({
     return '#fff';
   };
 
-  const { padding, visibility, disabledState, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
+  const { padding, boxShadow, backgroundColor, borderRadius, borderColor } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
     properties;
+
+  const [isVisible, setVisibility] = useState(properties?.visibility ?? true);
+  const [isDisabled, setIsDisabled] = useState(properties?.disabledState ?? false);
+
+  useEffect(() => {
+    if (isVisible !== properties?.visibility) setVisibility(properties?.visibility ?? true);
+    if (isDisabled !== properties?.disabledState) setIsDisabled(properties?.disabledState ?? false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties?.visibility, properties?.disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', isVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', isDisabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDisabled]);
 
   const modifiedBackgroundColor = getModifiedColor(backgroundColor, 0);
   const modifiedMarkerColor = getModifiedColor(markerColor, 0);
@@ -53,7 +74,7 @@ export default function Chart({
   const computedStyles = {
     width: width - 4,
     height,
-    display: visibility ? '' : 'none',
+    display: isVisible ? '' : 'none',
     // background: darkMode ? '#1f2936' : 'white',
     border: `1px solid ${borderColor}`,
     boxShadow,
@@ -226,7 +247,7 @@ export default function Chart({
   }, [plotFromJson, memoizedChartData, jsonChartData, layout]);
 
   const handleClick = useCallback((data) => {
-    if (!disabledState && data.length > 0) {
+    if (!isDisabled && data.length > 0) {
       const {
         x: xAxisLabel,
         y: yAxisLabel,
@@ -248,7 +269,7 @@ export default function Chart({
   }, []);
 
   const handleDoubleClick = useCallback(() => {
-    if (!disabledState) {
+    if (!isDisabled) {
       fireEvent('onDoubleClick');
     }
   }, []);
@@ -270,6 +291,16 @@ export default function Chart({
       clearClickedPoint: () => {
         setExposedVariable('clickedDataPoint', {});
       },
+      isVisible,
+      isDisabled,
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
+      },
+      setDisable: async function (value) {
+        setExposedVariable('isDisabled', !!value);
+        setIsDisabled(!!value);
+      },
     };
 
     setExposedVariables(exposedVariables);
@@ -279,7 +310,7 @@ export default function Chart({
   }, []);
 
   return (
-    <div class="widget-chart" data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
+    <div class="widget-chart" data-disabled={isDisabled} style={computedStyles} data-cy={dataCy}>
       {loadingState === true ? (
         <div style={{ width }} className="p-2 loader-main-container">
           <center>
@@ -304,7 +335,7 @@ export default function Chart({
           }}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
-          disabledState={disabledState}
+          disabledState={isDisabled}
         />
       )}
     </div>
