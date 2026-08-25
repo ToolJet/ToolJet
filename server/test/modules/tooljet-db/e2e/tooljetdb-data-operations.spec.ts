@@ -16,7 +16,15 @@ import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
 import * as path from 'path';
-import { createUser, initTestApp, login, getTooljetDbDataSource, closeTestApp } from 'test-helper';
+import { v4 as uuidv4 } from 'uuid';
+import {
+  createUser,
+  initTestApp,
+  login,
+  getTooljetDbDataSource,
+  closeTestApp,
+  ensureAppEnvironments,
+} from 'test-helper';
 
 describe('TooljetDbDataController', () => {
   describe('EE (plan: enterprise)', () => {
@@ -25,8 +33,18 @@ describe('TooljetDbDataController', () => {
     let adminOrgId: string;
     let tooljetDbAvailable: boolean;
     let tableId: string;
+    let ordersTableId: string;
+    let foreignTableId: string;
 
     const TABLE_NAME = 'test_data_ops';
+    const ORDERS_TABLE_NAME = 'test_data_ops_orders';
+    const FOREIGN_TABLE_NAME = 'test_data_ops_foreign';
+
+    // Requests Polly actually forwarded to PostgREST — reset per test in beforeEach.
+    let interceptedRequests: { method: string; url: string }[] = [];
+    function pollyRequests() {
+      return interceptedRequests;
+    }
 
     // In-memory store for mock PostgREST data
     const mockRows: Record<number, any>[] = [];
@@ -136,6 +154,11 @@ describe('TooljetDbDataController', () => {
         if (!schemaReady) tooljetDbAvailable = false;
       }
 
+      // A freshly created test org has no app_environments row — the H0 backfill migration only
+      // covered pre-existing orgs, and createUser() (unlike real signup) doesn't seed one either.
+      // createTable/create-relation need it (resolveEnvironmentId), same as a real signup flow provides.
+      await ensureAppEnvironments(app, adminOrgId);
+
       const auth = await login(app);
       adminCookie = auth.tokenCookie;
 
@@ -151,10 +174,47 @@ describe('TooljetDbDataController', () => {
         expect([200, 201]).toContain(res.statusCode);
         tableId = res.body?.result?.id;
         expect(tableId).toBeDefined();
+
+        // A second table in the SAME workspace, for the <rel>. filter-key rewrite case.
+        const ordersRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload(ORDERS_TABLE_NAME));
+
+        expect([200, 201]).toContain(ordersRes.statusCode);
+        ordersTableId = ordersRes.body?.result?.id;
+        expect(ordersTableId).toBeDefined();
+
+        // A table owned by a DIFFERENT workspace — must never resolve for adminOrgId.
+        const { user: otherUser } = await createUser(app, {
+          email: 'other-admin@tooljet.io',
+          firstName: 'Other',
+          lastName: 'Admin',
+          groups: ['admin', 'end-user'],
+        });
+        const otherOrgId = otherUser.defaultOrganizationId;
+        await ensureWorkspaceSchema(otherOrgId);
+        await ensureAppEnvironments(app, otherOrgId);
+        const otherAuth = await login(app, 'other-admin@tooljet.io');
+
+        const foreignRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${otherOrgId}/table`)
+          .set('Cookie', otherAuth.tokenCookie)
+          .set('tj-workspace-id', otherOrgId)
+          .send(buildCreateTablePayload(FOREIGN_TABLE_NAME));
+
+        expect([200, 201]).toContain(foreignRes.statusCode);
+        foreignTableId = foreignRes.body?.result?.id;
+        expect(foreignTableId).toBeDefined();
       }
     });
 
     beforeEach(() => {
+      interceptedRequests = [];
+
       // Passthrough requests to the NestJS test server (127.0.0.1).
       context.polly.server
         .any()
@@ -162,6 +222,12 @@ describe('TooljetDbDataController', () => {
         .intercept((_req, _res, interceptor) => {
           interceptor.passthrough();
         });
+
+      // Record every request Polly actually forwarded to PostgREST — the fail-closed matrix
+      // asserts on this directly, since "never reached PostgREST" is the point of the guard.
+      context.polly.server.any('http://localhost:3001/*').on('request', (req) => {
+        interceptedRequests.push({ method: req.method, url: req.url });
+      });
 
       // Intercept PostgREST requests (localhost:3001) with mock responses.
       // POST | create a row
@@ -307,6 +373,79 @@ describe('TooljetDbDataController', () => {
       const rows = parseProxyBody(res);
       expect(Array.isArray(rows)).toBe(true);
       expect(rows.length).toBe(0);
+    });
+
+    // -------------------------------------------------------------------------
+    // Fail-closed matrix — every table reference in the path or querystring must
+    // resolve against the caller's own workspace before anything reaches PostgREST.
+    // -------------------------------------------------------------------------
+    describe('GET /api/tooljet-db/proxy/:tableId | fail-closed resolution', () => {
+      // Uses the <rel>. filter-key-prefix form rather than select=*,<rel>(...) — both feed the
+      // same `embedded` extraction/resolution path, and Polly's passthrough leg to the app
+      // itself percent-encodes `(`, `)`, `,`, `*` in-flight, which would mask the assertion.
+      it('should return 400 when another workspace uuid appears as an embedded reference', async function () {
+        if (!tooljetDbAvailable) return;
+
+        const res = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/proxy/${tableId}?${foreignTableId}.title=eq.x`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(res.statusCode).toBe(400);
+        expect(pollyRequests()).toHaveLength(0);
+      });
+
+      it('should return 404 for an unowned uuid in the path', async function () {
+        if (!tooljetDbAvailable) return;
+
+        const res = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/proxy/${foreignTableId}?select=name`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(res.statusCode).toBe(404);
+        expect(pollyRequests()).toHaveLength(0);
+      });
+
+      it('should forward a uuid-shaped filter value byte identical', async function () {
+        if (!tooljetDbAvailable) return;
+
+        await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/proxy/${tableId}?owner_id=eq.${foreignTableId}`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(pollyRequests()[0].url).toContain(`owner_id=eq.${foreignTableId}`);
+      });
+
+      it('should rewrite a <rel>. filter-key prefix to the resolved relation', async function () {
+        if (!tooljetDbAvailable) return;
+
+        await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/proxy/${tableId}?${ordersTableId}.total=gt.5`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        // H2 invariant: relation id === logical id, so the rewritten value equals the input.
+        expect(pollyRequests()[0].url).toContain(`${ordersTableId}.total=gt.5`);
+      });
+
+      it('should return 400 for a uuid-shaped embedded reference that resolves to nothing', async function () {
+        if (!tooljetDbAvailable) return;
+
+        const res = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/proxy/${tableId}?${uuidv4()}.x=eq.1`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(res.statusCode).toBe(400);
+        expect(pollyRequests()).toHaveLength(0);
+      });
     });
   });
 });
