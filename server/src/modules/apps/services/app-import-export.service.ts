@@ -146,7 +146,8 @@ type NewRevampedComponent =
   | 'PDF'
   | 'QrScanner'
   | 'RichTextEditor'
-  | 'SvgImage';
+  | 'SvgImage'
+  | 'Spinner';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -209,6 +210,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'QrScanner',
   'RichTextEditor',
   'SvgImage',
+  'Spinner',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -375,6 +377,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RangeSliderV2',
   'ReorderableList',
   'RichTextEditor',
+  'Spinner',
   'StarRating',
   'Statistics',
   'SvgImage',

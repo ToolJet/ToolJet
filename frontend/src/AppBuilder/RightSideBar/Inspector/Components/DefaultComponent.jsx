@@ -66,6 +66,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'QrScanner',
   'RichTextEditor',
   'SvgImage',
+  'Spinner',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -231,6 +232,7 @@ export const baseComponentProperties = (
       'QrScanner',
       'RichTextEditor',
       'SvgImage',
+      'Spinner',
     ],
     Layout: [],
   };
