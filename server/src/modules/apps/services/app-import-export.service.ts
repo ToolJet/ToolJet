@@ -399,6 +399,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Statistics',
   'Steps',
   'SvgImage',
+  'Table',
   'Tabs',
   'Tags',
   'TagsInput',
