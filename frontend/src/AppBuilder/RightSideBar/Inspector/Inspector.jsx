@@ -149,6 +149,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Timeline',
   'Map',
   'Chart',
+  'BoundedBox',
 ];
 
 export const Inspector = ({

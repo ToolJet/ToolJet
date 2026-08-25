@@ -60,6 +60,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FlexContainer',
   'Timeline',
   'Map',
+  'BoundedBox',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -219,6 +220,7 @@ export const baseComponentProperties = (
       'Container',
       'Timeline',
       'Map',
+      'BoundedBox',
     ],
     Layout: [],
   };

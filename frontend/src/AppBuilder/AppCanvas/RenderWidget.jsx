@@ -70,6 +70,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Timeline',
   'Map',
   'Chart',
+  'BoundedBox',
 ];
 
 const RenderWidget = ({
