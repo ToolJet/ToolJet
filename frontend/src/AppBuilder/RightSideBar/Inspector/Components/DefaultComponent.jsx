@@ -67,6 +67,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RichTextEditor',
   'SvgImage',
   'Spinner',
+  'Timer',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -233,6 +234,7 @@ export const baseComponentProperties = (
       'RichTextEditor',
       'SvgImage',
       'Spinner',
+      'Timer',
     ],
     Layout: [],
   };

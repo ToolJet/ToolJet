@@ -32,11 +32,45 @@ export const timerConfig = {
         defaultValue: 'countUp',
       },
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   validation: {},
@@ -48,23 +82,28 @@ export const timerConfig = {
     onReset: { displayName: 'On Reset' },
   },
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
       validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
       },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
+      accordian: 'General',
     },
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+  ],
   exposedVariables: {
     value: '',
   },
@@ -81,7 +120,11 @@ export const timerConfig = {
       type: {
         value: 'countUp',
       },
+      visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     defaults: [
       {
@@ -97,8 +140,7 @@ export const timerConfig = {
     ],
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
