@@ -417,17 +417,20 @@
 /* ---------- binding tooltip ---------- */
 
 .dependency-binding-tooltip {
-  width: 228px;
-  max-width: calc(100vw - 16px);
+  width: max-content;
+  max-width: min(353px, calc(100vw - 16px));
   border: none;
   background: transparent;
 }
 
 .dependency-binding-card {
   width: 100%;
+  max-height: calc(var(--radix-tooltip-content-available-height, 100vh) - 16px);
   border-radius: 8px;
   background: var(--background-inverse);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .dependency-binding-title {
@@ -476,6 +479,4 @@
   color: var(--text-inverse);
   opacity: 0.54;
   word-break: break-word;
-  max-height: 200px;
-  overflow-y: auto;
 }
