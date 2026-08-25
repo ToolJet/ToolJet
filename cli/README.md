@@ -77,9 +77,10 @@ Build and publish a new immutable production revision of a component library
 
 ```
 USAGE
-  $ tooljet lib deploy [--message <value>]
+  $ tooljet lib deploy [--message <value>] [--force]
 
 FLAGS
+  --force            Publish even if the build reports TypeScript errors
   --message=<value>  Optional label for the revision (shown in app builder revision picker)
 
 DESCRIPTION
@@ -176,9 +177,10 @@ Build and publish a new immutable production revision of a component library
 
 ```
 USAGE
-  $ tooljet library deploy [--message <value>]
+  $ tooljet library deploy [--message <value>] [--force]
 
 FLAGS
+  --force            Publish even if the build reports TypeScript errors
   --message=<value>  Optional label for the revision (shown in app builder revision picker)
 
 DESCRIPTION

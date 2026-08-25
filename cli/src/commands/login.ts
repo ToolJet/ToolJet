@@ -37,9 +37,10 @@ export default class Login extends Command {
       },
     ]);
 
-    const { origin_url: originUrl, api_access_token: apiToken } = answers;
+    const originUrl = answers.origin_url.trim();
+    const apiToken = answers.api_access_token.trim();
 
-    const client = new ApiClient(originUrl.trim(), apiToken);
+    const client = new ApiClient(originUrl, apiToken);
 
     let me: { email: string; organizationId: string };
     try {
@@ -49,7 +50,7 @@ export default class Login extends Command {
       process.exit(1);
     }
 
-    Auth.save(me.organizationId, originUrl.trim(), apiToken, me.email);
+    Auth.save(me.organizationId, originUrl, apiToken, me.email);
 
     this.log(`✓ Authenticated as ${me.email}`);
     // this.log(`✓ Saved credentials for ${workspaceId} workspace on ${originUrl.trim()}`);
