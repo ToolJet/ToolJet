@@ -46,9 +46,12 @@ if (typeof window !== 'undefined') {
     value: URL.revokeObjectURL || jest.fn(),
   });
 
-  if (!HTMLCanvasElement.prototype.getContext) {
-    HTMLCanvasElement.prototype.getContext = jest.fn();
-  }
+  // Assign unconditionally. jsdom DOES define getContext — it just throws
+  // "Not implemented: HTMLCanvasElement.prototype.getContext" when called, so
+  // the old `if (!...)` guard never fired and plotly/chart widgets flooded
+  // stderr. Stubbing the method is cheaper than mapping plotly to a stub,
+  // and keeps the real chart component under test.
+  HTMLCanvasElement.prototype.getContext = jest.fn(() => null);
 }
 
 afterEach(async () => {
