@@ -76,6 +76,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'QrScanner',
   'RichTextEditor',
   'SvgImage',
+  'Spinner',
 ];
 
 const RenderWidget = ({
