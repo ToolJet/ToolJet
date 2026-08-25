@@ -37,9 +37,9 @@
       
       const actionHandlers = {};
 
-      const post = (msg) => window.parent.postMessage(msg, '*');
+      // Sends a message from this iframe up to the app builder (the parent window).
+      const postToParent = (msg) => window.parent.postMessage(msg, '*');
 
-     
       const makeStateHook = () =>
         function useTjState({ name, initialValue } = {}) {
           const external = currentProps[name];
@@ -49,20 +49,21 @@
           if (lastExternal.current !== external) {
             lastExternal.current = external;
             if (external !== undefined && external !== value) {
-              valueRef.current = external; // parent sent it — no post-back needed
+              valueRef.current = external; // parent sent it — the effect below reports it back
               setValue(external);
             }
           }
-          
+
           React.useEffect(() => {
-            post({ type: 'stateChange', key: name, value: valueRef.current });
-          }, [name]);
+            postToParent({ type: 'stateChange', key: name, value: valueRef.current });
+          }, [value]); //now also fires when the parent pushes a new value in above
+
           const setAndSync = React.useCallback(
             (next) => {
               const resolved = typeof next === 'function' ? next(valueRef.current) : next;
               valueRef.current = resolved;
               // Crosses the iframe NOW — before the author's next line can fire an event.
-              post({ type: 'stateChange', key: name, value: resolved });
+              postToParent({ type: 'stateChange', key: name, value: resolved });
               setValue(resolved);
             },
             [name]
@@ -79,7 +80,7 @@
         useStateEnumeration: makeStateHook(),
         // useEventCallback({ name: 'onSave' }) → stable fn that fires the ToolJet event
         useEventCallback: function useTjEvent({ name } = {}) {
-          return React.useCallback(() => post({ type: 'event', name }), [name]);
+          return React.useCallback(() => postToParent({ type: 'event', name }), [name]);
         },
         
         useAction: function useTjAction({ name } = {}, handler) {
@@ -104,13 +105,14 @@
         root.render(React.createElement(Component, currentProps));
       };
 
-      window.addEventListener('message', async (e) => {
+      // Handles a message sent down from the parent window (load/props/invokeAction).
+      const handleMessageFromParent = async (e) => {
         const { type, bundleUrl, componentName, cssUrl, data } = e.data ?? {};
 
         if (type === 'load') {
           try {
             if (cssUrl) {
-             
+
               fetch(cssUrl, { mode: 'cors' })
                 .then((r) => (r.ok ? r.text() : null))
                 .then((css) => {
@@ -126,7 +128,7 @@
             if (!Component) throw new Error(`export "${componentName}" not found in bundle`);
             render();
           } catch (err) {
-            post({ type: 'error', message: String(err?.message ?? err) });
+            postToParent({ type: 'error', message: String(err?.message ?? err) });
           }
         }
 
@@ -136,7 +138,7 @@
         }
 
         if (type === 'invokeAction') {
-          
+
           const { id, name, args } = e.data;
           if (!actionHandlers[name]) {
             console.warn(`[invokeAction] no handler registered for action "${name}".`);
@@ -144,17 +146,19 @@
           Promise.resolve()
             .then(() => (actionHandlers[name] ? actionHandlers[name](...(args ?? [])) : undefined))
             .then((result) => {
-              if (id) post({ type: 'actionResult', id, result });
+              if (id) postToParent({ type: 'actionResult', id, result });
             })
             .catch((err) => {
               const message = String(err?.message ?? err);
-              if (id) post({ type: 'actionResult', id, error: message });
-              else post({ type: 'error', message });
+              if (id) postToParent({ type: 'actionResult', id, error: message });
+              else postToParent({ type: 'error', message });
             });
         }
-      });
+      };
 
-      post({ type: 'ready' });
+      window.addEventListener('message', handleMessageFromParent);
+
+      postToParent({ type: 'ready' });
     </script>
   </body>
 </html>
