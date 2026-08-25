@@ -40,7 +40,7 @@ export const textConfig = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Show loading state',
+      displayName: 'Loading state',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
