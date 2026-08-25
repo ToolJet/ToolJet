@@ -154,7 +154,8 @@ type NewRevampedComponent =
   | 'SvgImage'
   | 'Spinner'
   | 'Timer'
-  | 'Kanban';
+  | 'Kanban'
+  | 'CodeEditor';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -220,6 +221,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Spinner',
   'Timer',
   'Kanban',
+  'CodeEditor',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -350,6 +352,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Chart',
   'Checkbox',
   'CircularProgressBar',
+  'CodeEditor',
   'ColorPicker',
   'Container',
   'CurrencyInput',
