@@ -73,6 +73,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'BoundedBox',
   'Calendar',
   'PDF',
+  'QrScanner',
 ];
 
 const RenderWidget = ({
