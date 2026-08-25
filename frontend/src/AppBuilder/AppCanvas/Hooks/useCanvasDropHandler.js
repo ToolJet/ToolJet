@@ -47,6 +47,17 @@ const pickDefaultVersion = (appVersions = []) => {
   );
 };
 
+// Mirrors modules/Modules/utils.js#getIsModuleSynced (ee). Duplicated locally because CE code
+// can't import from @ee/ — keep both in sync if the sync rule changes. A module is "synced"
+// only when EVERY draft it has (main-branch AND branch-type) is in git; checking a single
+// picked version here would miss an unsynced sibling draft and unpin a module that isn't
+// actually fully synced.
+const isModuleSynced = (appVersions = []) => {
+  const draftVersions = appVersions.filter((v) => v.status === 'DRAFT');
+  if (draftVersions.length === 0) return appVersions.some((v) => (v.is_synced ?? v.isSynced) === true);
+  return draftVersions.every((v) => (v.is_synced ?? v.isSynced) === true);
+};
+
 export const useCanvasDropHandler = () => {
   const { isModuleEditor } = useModuleContext();
 
@@ -124,9 +135,8 @@ export const useCanvasDropHandler = () => {
             toast.error('Module is still not ready. Please try again.', { id: toastId });
             return;
           }
-          const isModuleSynced = (hydratedVersion.is_synced ?? hydratedVersion.isSynced) === true;
           const isDraft = hydratedVersion.status === 'DRAFT';
-          const shouldUnpin = isGitSyncEnabled && isModuleSynced && isDraft;
+          const shouldUnpin = isGitSyncEnabled && isDraft && isModuleSynced(hydrated.app_versions);
           dropComponent = {
             ...dropComponent,
             isStub: false,
