@@ -77,7 +77,13 @@ export const BaseLeftSidebar = ({
     if (item === 'debugger') resetUnreadErrorCount();
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
-    if (item === selectedSidebarItem && !pinned) {
+    // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
+    // themselves (the AI chat's X, and every other onClose handler) call toggleLeftSidebar(false)
+    // without clearing selectedSidebarItem, so it still points at that panel. Without the
+    // isSidebarOpen check the next click matches this branch and closes an already-closed sidebar,
+    // making the nav button look permanently disabled — the AI chat could not be reopened at all
+    // once dismissed mid-generation.
+    if (item === selectedSidebarItem && isSidebarOpen && !pinned) {
       return toggleLeftSidebar(false);
     }
     if (!isSidebarOpen) toggleLeftSidebar(true);
