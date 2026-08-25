@@ -362,6 +362,7 @@ const RenderWidget = ({
         canReport={currentMode === 'edit'}
         darkMode={darkMode}
         resetKeys={[id]}
+        widgetType={componentType}
       >
         <WidgetTooltip
           content={userTooltipContent}
@@ -384,6 +385,7 @@ const RenderWidget = ({
       canReport={currentMode === 'edit'}
       darkMode={darkMode}
       resetKeys={[id]}
+      widgetType={componentType}
     >
       <OverlayTrigger
         placement="top"
