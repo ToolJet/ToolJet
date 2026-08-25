@@ -298,7 +298,7 @@ const RenderWidget = ({
   const userTooltipFormat = isShadowedWidget
     ? resolvedProperties?.tooltipFormat
     : resolvedGeneralProperties?.tooltipFormat;
-  const hasUserTooltip = !!userTooltipContent?.toString().trim();
+  const hasUserTooltip = !!String(userTooltipContent ?? '').trim();
 
   // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
   const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';
