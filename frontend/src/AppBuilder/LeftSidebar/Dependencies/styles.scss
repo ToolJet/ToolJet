@@ -417,24 +417,42 @@
 /* ---------- binding tooltip ---------- */
 
 .dependency-binding-tooltip {
-  max-width: 340px;
+  width: 228px;
+  max-width: calc(100vw - 16px);
   border: none;
   background: transparent;
 }
 
 .dependency-binding-card {
+  width: 100%;
   border-radius: 8px;
   background: var(--background-inverse);
   overflow: hidden;
 }
 
 .dependency-binding-title {
+  position: relative;
   padding: 16px;
-  border-bottom: 1px solid var(--border-weak);
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
   color: var(--text-inverse);
+  word-break: break-word;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    background: var(--text-inverse);
+    opacity: 0.06;
+  }
+}
+
+.dependency-binding-title-text {
+  opacity: 0.6;
 }
 
 .dependency-binding-body {
@@ -448,7 +466,7 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
-  color: var(--icon-inverse);
+  color: var(--text-inverse);
 }
 
 .dependency-binding-expression {
@@ -456,6 +474,7 @@
   font-weight: 500;
   line-height: 18px;
   color: var(--text-inverse);
+  opacity: 0.54;
   word-break: break-word;
   max-height: 200px;
   overflow-y: auto;
