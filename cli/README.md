@@ -19,7 +19,9 @@ USAGE
 ```
 <!-- usagestop -->
 
-Command should be executed inside `Tooljet` directory
+`tooljet plugin create/delete/install` must be run from inside a clone of the [ToolJet](https://github.com/tooljet/tooljet) repository — they read and write marketplace plugin files relative to the repo root (`marketplace/`, `docs/`, `server/src/assets/marketplace/plugins.json`).
+
+`tooljet login` and `tooljet library init` don't require any particular working directory. `tooljet library build/dev/deploy` must be run from inside a component-library directory previously created with `tooljet library init` (i.e. one containing a `.tooljet/config.json`).
 
 # Commands
 <!-- commands -->
@@ -49,7 +51,7 @@ DESCRIPTION
   This command returns the information about where tooljet is being run
 ```
 
-_See code: [src/commands/info.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/src/commands/info.ts)_
+_See code: [src/commands/info.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/info.ts)_
 
 ## `tooljet lib build`
 
@@ -169,7 +171,7 @@ EXAMPLES
   $ tooljet lib build
 ```
 
-_See code: [src/commands/library/build.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/src/commands/library/build.ts)_
+_See code: [src/commands/library/build.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/library/build.ts)_
 
 ## `tooljet library deploy`
 
@@ -199,7 +201,7 @@ EXAMPLES
   $ tooljet lib deploy --message "Add dark mode support"
 ```
 
-_See code: [src/commands/library/deploy.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/src/commands/library/deploy.ts)_
+_See code: [src/commands/library/deploy.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/library/deploy.ts)_
 
 ## `tooljet library dev`
 
@@ -228,7 +230,7 @@ EXAMPLES
   $ tooljet lib dev --debounce 500
 ```
 
-_See code: [src/commands/library/dev.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/src/commands/library/dev.ts)_
+_See code: [src/commands/library/dev.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/library/dev.ts)_
 
 ## `tooljet library init LIBRARY_DIRECTORY_NAME`
 
@@ -253,7 +255,7 @@ EXAMPLES
   $ tooljet lib init <library_directory_name>
 ```
 
-_See code: [src/commands/library/init.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/src/commands/library/init.ts)_
+_See code: [src/commands/library/init.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/library/init.ts)_
 
 ## `tooljet login`
 
@@ -270,7 +272,7 @@ EXAMPLES
   $ tooljet login
 ```
 
-_See code: [src/commands/login.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/src/commands/login.ts)_
+_See code: [src/commands/login.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/login.ts)_
 
 ## `tooljet plugin create PLUGIN_NAME`
 
@@ -278,15 +280,14 @@ Create a new tooljet plugin
 
 ```
 USAGE
-  $ tooljet plugin create [PLUGIN_NAME] [--type database|api|cloud-storage] [-b] [-m]
+  $ tooljet plugin create PLUGIN_NAME [--type database|api|cloud-storage] [-b]
 
 ARGUMENTS
   PLUGIN_NAME  Name of the plugin
 
 FLAGS
   -b, --build
-  -m, --marketplace
-  --type=<option>    <options: database|api|cloud-storage>
+      --type=<option>  <options: database|api|cloud-storage>
 
 DESCRIPTION
   Create a new tooljet plugin
@@ -295,19 +296,22 @@ EXAMPLES
   $ tooljet plugin create <name> --type=<database | api | cloud-storage> [--build]
 ```
 
+_See code: [src/commands/plugin/create.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/plugin/create.ts)_
+
 ## `tooljet plugin delete PLUGIN_NAME`
 
 Delete a tooljet plugin
 
 ```
 USAGE
-  $ tooljet plugin delete [PLUGIN_NAME] [-b]
+  $ tooljet plugin delete PLUGIN_NAME [-b] [-m]
 
 ARGUMENTS
   PLUGIN_NAME  Name of the plugin
 
 FLAGS
   -b, --build
+  -m, --marketplace
 
 DESCRIPTION
   Delete a tooljet plugin
@@ -316,13 +320,15 @@ EXAMPLES
   $ tooljet plugin delete <name> [--build]
 ```
 
+_See code: [src/commands/plugin/delete.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/plugin/delete.ts)_
+
 ## `tooljet plugin install NPM_MODULE`
 
 Installs a new npm module inside a tooljet plugin
 
 ```
 USAGE
-  $ tooljet plugin install [NPM_MODULE] --plugin <value>
+  $ tooljet plugin install NPM_MODULE --plugin <value>
 
 ARGUMENTS
   NPM_MODULE  Name of the npm module
@@ -336,4 +342,6 @@ DESCRIPTION
 EXAMPLES
   $ tooljet plugin install <npm_module> --plugin <plugin_name>
 ```
+
+_See code: [src/commands/plugin/install.ts](https://github.com/tooljet/tooljet/blob/v0.0.15-beta.0/cli/src/commands/plugin/install.ts)_
 <!-- commandsstop -->
