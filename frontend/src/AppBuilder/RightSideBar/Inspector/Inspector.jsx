@@ -162,6 +162,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'SvgImage',
   'Spinner',
   'Timer',
+  'Kanban',
 ];
 
 export const Inspector = ({
