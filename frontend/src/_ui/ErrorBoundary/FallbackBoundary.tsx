@@ -6,12 +6,16 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ErrorReportModal from './ErrorReportModal';
 import { getErrorContext } from './errorReport';
+import { recordWidgetError } from '@/_services/frontend-metrics.service';
 import './FallbackBoundary.scss';
 
 interface FallbackBoundaryProps extends Partial<WithTranslation> {
   children?: React.ReactNode;
   /** Human name of the unit, e.g. "Query manager", "Inspector · Columns". */
   label?: string;
+  /** Canvas widget component type, e.g. "Table", "Button". When set, the catch is also
+   *  reported as an OTel `widget_error` metric (frontend-metrics.service) keyed by type. */
+  widgetType?: string;
   /** 'panel' (default, fills container) | 'inline' (compact one-liner). */
   variant?: 'panel' | 'inline';
   /** When any value changes, the boundary auto-resets. */
@@ -60,7 +64,10 @@ class FallbackBoundary extends React.Component<FallbackBoundaryProps, FallbackBo
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    const { label, location, source = 'AppBuilder', tags } = this.props;
+    const { label, location, source = 'AppBuilder', tags, widgetType } = this.props;
+    if (widgetType) {
+      recordWidgetError(widgetType, error?.message);
+    }
     // AppBuilder context (app/version/org/page) only makes sense for AppBuilder
     // boundaries — other sources pass their own context via `tags`.
     const isAppBuilder = source === 'AppBuilder';
