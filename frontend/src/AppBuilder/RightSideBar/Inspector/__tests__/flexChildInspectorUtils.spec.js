@@ -1,4 +1,4 @@
-jest.mock('../Components/FlexChildLayoutPanel', () => ({
+jest.mock('../Components/FlexContainer/FlexChildLayoutPanel', () => ({
   FlexChildLayoutPanel: () => null,
 }));
 
