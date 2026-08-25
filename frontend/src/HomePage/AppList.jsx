@@ -42,6 +42,7 @@ const AppList = (props) => {
                     deleteApp={props.deleteApp}
                     exportApp={props.exportApp}
                     appActionModal={props.appActionModal}
+                    refreshApps={props.refreshApps}
                     appType={props.appType}
                     basicPlan={props?.basicPlan || false}
                     moduleEnabled={props?.moduleEnabled || false}

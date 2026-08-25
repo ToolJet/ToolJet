@@ -26,9 +26,10 @@ const CONFLICT_SECTION_HEADER_MAP = {
   'datasource-in_use': 'Data source in use',
   // Legacy name containing '/', pushed before name validation existed — always
   // manual-resolution only (nothing to sync, the name must be fixed at the source).
-  'app-invalid_name': 'App invalid naming',
-  'module-invalid_name': 'Module invalid naming',
-  'datasource-invalid_name': 'Data source invalid naming',
+  // Just the resource type: the section heading already says "Invalid name".
+  'app-invalid_name': 'App',
+  'module-invalid_name': 'Module',
+  'datasource-invalid_name': 'Data source',
 };
 
 const LOCAL_STATUSES = ['existing', 'local'];
@@ -170,7 +171,8 @@ function ConflictRow({
                         : item.name}
                     </span>
 
-                    {!hideBadges && (
+                    {/* invalid_name is one-sided — no counterpart for the badge to contrast against. */}
+                    {!hideBadges && group.conflictField !== 'invalid_name' && (
                       <span className={`conflict-badge conflict-badge--${badge.variant}`}>{badge.label}</span>
                     )}
                   </div>
@@ -197,13 +199,17 @@ export function PullConflictModal({
   if (!show) return null;
 
   const isImport = context === 'import';
-  const isPushNameConflict = context === 'push-name';
+  const isBranchCreation = context === 'branch-creation';
+  const isBranchSwitch = context === 'branch-switch';
+  // Detect the push_name_conflict shape ('unsynced'/'on-branch' statuses) directly, since
+  // some push call sites forward this 409 without setting context === 'push-name'.
+  const isPushNameConflict =
+    context === 'push-name' ||
+    conflictGroups.some((g) => g.conflicts?.some((c) => c.status === 'unsynced' || c.status === 'on-branch'));
   const isPushConflict =
     !isImport &&
     !isPushNameConflict &&
     conflictGroups.some((g) => g.conflicts?.some((c) => c.status === 'local' || c.status === 'remote'));
-  const isBranchCreation = context === 'branch-creation';
-  const isBranchSwitch = context === 'branch-switch';
   const isPullOnly = !isBranchCreation && !isBranchSwitch && !isPushConflict && !isImport && !isPushNameConflict;
   // Pull and import both bring in resources from git and can selectively sync a
   // conflicting one; push/branch-creation/branch-switch have no "remote version to
@@ -212,12 +218,12 @@ export function PullConflictModal({
   // Show badges for push-name conflicts so Unsynced/On-branch labels are visible.
   const hideBadges = !isSyncEligible && !isPushNameConflict;
 
+  // Branch-creation/switch/import checked first so the more specific title wins on overlap.
   const title = (() => {
-    if (isPushNameConflict) return 'Cannot push duplicate data';
     if (isBranchCreation) return 'Cannot create branch';
     if (isBranchSwitch) return 'Cannot open branch';
     if (isImport) return 'Cannot import resources';
-    if (isPushConflict) return 'Cannot push resources';
+    if (isPushNameConflict || isPushConflict) return 'Cannot push resources';
     return 'Cannot pull branch';
   })();
 
@@ -301,36 +307,44 @@ export function PullConflictModal({
           <h3 className="conflict-title">{title}</h3>
 
           <p className="conflict-description">
-            {isPushNameConflict
-              ? 'Due to the following errors, this cannot be pushed:'
-              : 'Due to the following errors, this branch cannot be pulled:'}
+            {/* Push gets one generic line regardless of category — always all-manual, nothing to differentiate. */}
+            {isPushNameConflict || isPushConflict
+              ? 'The following resources have errors and cannot be pushed to git remote. Read docs to resolve the errors and try again.'
+              : (() => {
+                  if (isBranchCreation) return 'Due to the following errors, this branch cannot be created:';
+                  if (isBranchSwitch) return 'Due to the following errors, this branch cannot be opened:';
+                  if (isImport) return 'Due to the following errors, these resources cannot be imported:';
+                  return 'Due to the following errors, this branch cannot be pulled:';
+                })()}
           </p>
-          <ul className="conflict-description-list">
-            {multiDraftResources.length > 0 && (
-              <li>
-                Git allows only <strong>one draft version</strong> per resource which becomes the tip of your default
-                branch. There are resources with more or less than one draft version.
-              </li>
-            )}
-            {(manualDuplicateGroups.length > 0 || syncableGroups.length > 0) && (
-              <li>
-                There are resources with the <strong>duplicate data</strong> on this branch. ToolJet requires unique
-                names &amp; slug for apps, data sources, modules, and folders within a branch.
-              </li>
-            )}
-            {manualInUseGroups.length > 0 && (
-              <li>
-                Some modules/data sources removed from git are <strong>still in use</strong> locally. Remove the
-                reference before pulling, or they&apos;ll be kept as-is.
-              </li>
-            )}
-            {manualInvalidNameGroups.length > 0 && (
-              <li>
-                Some resources have an <strong>invalid name</strong> containing &apos;/&apos;. Rename them before trying
-                again.
-              </li>
-            )}
-          </ul>
+          {!isPushNameConflict && !isPushConflict && (
+            <ul className="conflict-description-list">
+              {multiDraftResources.length > 0 && (
+                <li>
+                  Git allows only <strong>one draft version</strong> per resource which becomes the tip of your default
+                  branch. There are resources with more or less than one draft version.
+                </li>
+              )}
+              {(manualDuplicateGroups.length > 0 || syncableGroups.length > 0) && (
+                <li>
+                  There are resources with the <strong>duplicate data</strong> on this branch. ToolJet requires unique
+                  names &amp; slug for apps, data sources, modules, and folders within a branch.
+                </li>
+              )}
+              {manualInUseGroups.length > 0 && (
+                <li>
+                  Some modules/data sources removed from git are <strong>still in use</strong> locally. Remove the
+                  reference before pulling, or they&apos;ll be kept as-is.
+                </li>
+              )}
+              {manualInvalidNameGroups.length > 0 && (
+                <li>
+                  Some resources have an <strong>invalid name</strong> containing &apos;/&apos;. Rename them before
+                  trying again.
+                </li>
+              )}
+            </ul>
+          )}
 
           <div className="conflict-categories-list">
             {multiDraftResources.length > 0 && <MultiDraftSection resources={multiDraftResources} />}
@@ -338,12 +352,12 @@ export function PullConflictModal({
             {manualDuplicateGroups.length > 0 && (
               <div className="conflict-category">
                 <div className="conflict-category-header">
-                  <span className="conflict-category-title">Duplicate data: Requires manual resolution</span>
+                  <span className="conflict-category-title">Duplicate data (requires manual resolution)</span>
                   <span className="conflict-count-badge conflict-count-badge--danger">
                     {manualDuplicateGroups.length}
                   </span>
                 </div>
-                <p className="conflict-category-subtext">Read docs to resolve the conflict before trying again</p>
+                <p className="conflict-category-subtext">Resource name &amp; slug must be unique</p>
                 <div className="conflict-list-card">
                   {manualDuplicateGroups.map((group) => {
                     const idx = manualGroups.indexOf(group);
@@ -365,7 +379,7 @@ export function PullConflictModal({
             {manualInUseGroups.length > 0 && (
               <div className="conflict-category">
                 <div className="conflict-category-header">
-                  <span className="conflict-category-title">Still in use: Requires manual resolution</span>
+                  <span className="conflict-category-title">Still in use (requires manual resolution)</span>
                   <span className="conflict-count-badge conflict-count-badge--danger">{manualInUseGroups.length}</span>
                 </div>
                 <p className="conflict-category-subtext">
@@ -392,14 +406,12 @@ export function PullConflictModal({
             {manualInvalidNameGroups.length > 0 && (
               <div className="conflict-category">
                 <div className="conflict-category-header">
-                  <span className="conflict-category-title">Invalid name: Requires manual resolution</span>
+                  <span className="conflict-category-title">Invalid name (requires manual resolution)</span>
                   <span className="conflict-count-badge conflict-count-badge--danger">
                     {manualInvalidNameGroups.length}
                   </span>
                 </div>
-                <p className="conflict-category-subtext">
-                  Rename the resource(s) listed below to remove &apos;/&apos;, then try again
-                </p>
+                <p className="conflict-category-subtext">Resources cannot include &apos;/&apos; in the name</p>
                 <div className="conflict-list-card">
                   {manualInvalidNameGroups.map((group) => {
                     const idx = manualGroups.indexOf(group);
