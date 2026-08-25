@@ -79,6 +79,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Spinner',
   'Timer',
   'CodeEditor',
+  'CustomComponent',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
