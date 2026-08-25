@@ -74,6 +74,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Calendar',
   'PDF',
   'QrScanner',
+  'RichTextEditor',
 ];
 
 const RenderWidget = ({

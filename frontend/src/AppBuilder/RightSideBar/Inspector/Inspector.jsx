@@ -153,6 +153,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Calendar',
   'PDF',
   'QrScanner',
+  'RichTextEditor',
 ];
 
 export const Inspector = ({

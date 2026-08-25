@@ -122,7 +122,8 @@ type NewRevampedComponent =
   | 'BoundedBox'
   | 'Calendar'
   | 'PDF'
-  | 'QrScanner';
+  | 'QrScanner'
+  | 'RichTextEditor';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -183,6 +184,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Calendar',
   'PDF',
   'QrScanner',
+  'RichTextEditor',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -336,6 +338,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
+  'RichTextEditor',
   'StarRating',
   'Statistics',
   'Tabs',

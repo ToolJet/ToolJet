@@ -20,7 +20,9 @@ export default function RichTextEditor({
   componentType,
 }) {
   const isInitialRender = useRef(true);
-  const { visibility, disabledState, boxShadow } = styles;
+  const { boxShadow } = styles;
+  const visibility = properties?.visibility;
+  const disabledState = properties?.disabledState;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -46,7 +48,7 @@ export default function RichTextEditor({
     if (isDisabled !== disabledState) setIsDisabled(disabledState);
     if (isVisible !== visibility) setIsVisible(visibility);
     if (isLoading !== properties.loadingState) setIsLoading(properties.loadingState);
-  }, [properties.loadingState, styles.visibility, styles.disabledState]);
+  }, [properties.loadingState, properties.visibility, properties.disabledState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
