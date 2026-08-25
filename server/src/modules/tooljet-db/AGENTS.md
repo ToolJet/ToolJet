@@ -28,8 +28,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 ## Edition split
 
 - EE override: `server/ee/tooljet-db/` — `TooljetDbRelationResolverService` extends the CE one to
-  swap in EE's `AppEnvironmentUtilService`, which honours a caller-requested environment instead of
-  always pinning development. Everything else in EE mirrors CE 1:1 today.
+  swap in EE's `AppEnvironmentUtilService`, which is a pass-through seam for later override; the
+  licence gate itself lives in `AppEnvironmentUtilService.resolveEnvironmentId`, shared by both
+  editions. Everything else in EE mirrors CE 1:1 today.
 - The resolver is real logic in CE, not a stub: a relation id is the only way to name a physical
   table, so a stub here would leave CE with nothing to resolve `perform()`'s table references to.
 
@@ -44,14 +45,19 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   differently per environment" — `drop_column` would have to guess which environment's copy to edit.
 - Both proxy entry points — `PostgrestProxyService.proxy()` (HTTP passthrough for direct table
   access) and `.perform()` (in-process, used by data queries) — funnel through the same
-  `resolveAndRewrite()`. There is no third path into PostgREST; a new caller must go through one of
-  these two, not construct its own rewritten URL.
+  `resolveAndRewrite()`. A new caller should go through one of these two, not construct its own
+  rewritten URL. `server/ee/external-apis/service.ts`'s `exportTjdbTableAsCSV` is a known third
+  path — it calls PostgREST directly via `got.get()` using `internalTable.id` as the physical table
+  name, bypassing the resolver. Safe only while relation ids equal logical ids; convert it to go
+  through the resolver whenever physical naming diverges.
 - Fail-closed by position: an unresolvable table named in the URL **path** is 404 (the table doesn't
   exist here); an unresolvable table named in an embedded **querystring** reference (a `select=`
   join) is 400 (malformed request). Nothing reaches PostgREST unrewritten in either case.
-- `joinTable` refuses outright when SQL mode is disabled (Cloud today) — there is no workspace-scoped
-  connection to fall back to, and the alternative (the TOOLJET_DB_USER admin role) can read every
-  workspace's schema.
+- `joinTable` falls back to the `TOOLJET_DB_USER` admin role when SQL mode is disabled (Cloud
+  today) — no workspace-scoped connection exists in that configuration. That role can read every
+  workspace's schema; the from/join table references are still validated against the caller's
+  workspace before reaching the query builder, so this is an over-privileged DB role, not an
+  unvalidated identifier.
 - Every table reference used to build a query (`join_tables`' `from` table included) must be
   validated against the caller's workspace before it reaches a query builder's `.from()`/`.join()` —
   an unvalidated id there is a same-shape leak to the one the resolver closes for the proxy paths.

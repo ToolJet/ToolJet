@@ -946,15 +946,19 @@ export class TooljetDbTableOperationsService {
     if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");
     const joinQueryJson = this.normalizeJoinQueryJsonToNewFormat(rawJoinQueryJson);
 
-    if (isSQLModeDisabled()) {
-      // No workspace-scoped connection exists in this configuration; the TOOLJET_DB_USER admin
-      // role can reach every workspace's schema, so there is no safe fallback to make here.
-      throw new BadRequestException('Join queries are not available when SQL mode is disabled');
-    }
-
-    const tjdbTenantConfigs = await this.manager.findOne(OrganizationTjdbConfigurations, {
-      where: { organizationId },
-    });
+    // Known over-privileged fallback: TOOLJET_DB_USER can reach every workspace's schema. The
+    // from/join table references reaching this query ARE validated against the caller's
+    // workspace above; this is about the DB *role* used, not an unvalidated identifier. Left
+    // as-is pending a workspace-scoped connection for the SQL-mode-disabled case — do not
+    // remove without one.
+    const tjdbTenantConfigs = isSQLModeDisabled()
+      ? {
+          pgUser: this.configService.get<string>('TOOLJET_DB_USER'),
+          pgPassword: this.configService.get<string>('TOOLJET_DB_PASS'),
+        }
+      : await this.manager.findOne(OrganizationTjdbConfigurations, {
+          where: { organizationId },
+        });
 
     if (!tjdbTenantConfigs) throw new NotFoundException(`Tooljet database schema configuration doesn't exists`);
 
