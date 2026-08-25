@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import '@/_styles/workspace-pull-conflict-modal.scss';
 
 const TYPE_ICON_MAP = {
@@ -132,12 +133,13 @@ function ConflictRow({
               </span>
             </ToolTip>
           )}
-          <span>
-            {CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label}
-            {group.conflictKey
-              ? ` - '${group.conflictKey}'`
-              : group.conflicts?.[0]?.name && ` - '${group.conflicts[0].name}'`}
-          </span>
+          <OverflowTooltip placement="top" style={{ flex: 1, minWidth: 0, maxWidth: 260, textAlign: 'left' }}>
+            {(() => {
+              const label = CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label;
+              const name = group.conflictKey || group.conflicts?.[0]?.name;
+              return name ? `${label} - '${name}'` : label;
+            })()}
+          </OverflowTooltip>
         </span>
         <SolidIcon name="cheverondown" width="14" fill="var(--slate9)" />
       </button>

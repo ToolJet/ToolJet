@@ -146,7 +146,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                       <VersionManagerDropdown darkMode={darkMode} />
                     </VersionManagerErrorBoundary>
                   )}
-                  <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
+                  <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
                 </div>
               </div>
             </div>
