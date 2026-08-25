@@ -7,6 +7,7 @@ interface Features {
   [FEATURE_KEY.GET]: FeatureConfig;
   [FEATURE_KEY.UPDATE]: FeatureConfig;
   [FEATURE_KEY.UPDATE_PASSWORD]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_PREFERENCES]: FeatureConfig;
   [FEATURE_KEY.MFA_SETUP]: FeatureConfig;
   [FEATURE_KEY.MFA_CONFIRM]: FeatureConfig;
   [FEATURE_KEY.MFA_DISABLE]: FeatureConfig;
