@@ -81,6 +81,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'CodeEditor',
   'CustomComponent',
   'Chat',
+  'Html',
 ];
 
 const RenderWidget = ({
