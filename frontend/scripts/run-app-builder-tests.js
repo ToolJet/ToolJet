@@ -16,8 +16,8 @@ if (edition === 'ee' && !fs.existsSync(path.resolve(__dirname, '../ee/modules'))
 
 const patterns = {
   all: ['src/AppBuilder', 'src/test/app-builder'],
-  contracts: ['src/test/app-builder/__tests__/contracts.test.js'],
-  parity: ['src/test/app-builder/__tests__/parity.test.js'],
+  contracts: ['src/test/app-builder/__tests__/contracts.spec.js'],
+  parity: ['src/test/app-builder/__tests__/parity.spec.js'],
 };
 const jestArgs = [...(patterns[mode] || patterns.all), ...forwarded];
 if (mode === 'watch') jestArgs.push('--watch');
