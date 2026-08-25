@@ -366,6 +366,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'FilePicker',
   'FlexContainer',
   'Form',
+  'Html',
   'Icon',
   'IFrame',
   'Image',

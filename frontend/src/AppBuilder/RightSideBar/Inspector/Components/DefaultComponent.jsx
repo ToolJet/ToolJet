@@ -236,6 +236,7 @@ export const baseComponentProperties = (
       'Spinner',
       'Timer',
       'CodeEditor',
+      'Html',
     ],
     Layout: [],
   };

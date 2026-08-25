@@ -81,6 +81,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'CodeEditor',
   'CustomComponent',
   'Chat',
+  'Html',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
