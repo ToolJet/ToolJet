@@ -11,7 +11,7 @@ to: <%= name %>/tsconfig.json
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "noEmit": true,
     "noImplicitReturns": true,

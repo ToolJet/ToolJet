@@ -50,7 +50,7 @@ export default class ComponentDeploy extends Command {
 
       const tsCompiledMsg = `TypeScript compiled (${result.tsErrors} errors)`;
       result.tsErrors === 0 && this.log(formatSuccess(tsCompiledMsg));
-      
+
       if (result.tsErrors > 0 && !force) {
         this.log(formatError(tsCompiledMsg));
         this.log(`\n${result.tsErrorReport}`);
