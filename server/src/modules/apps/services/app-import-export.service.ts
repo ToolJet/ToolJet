@@ -363,6 +363,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Spinner',
   'StarRating',
   'Statistics',
+  'Steps',
   'SvgImage',
   'Tabs',
   'Tags',
