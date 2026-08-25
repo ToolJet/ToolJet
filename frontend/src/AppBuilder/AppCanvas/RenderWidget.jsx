@@ -80,6 +80,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Timer',
   'CodeEditor',
   'CustomComponent',
+  'Chat',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];

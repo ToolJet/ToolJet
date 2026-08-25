@@ -347,6 +347,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Camera',
   'Cascader',
   'Chart',
+  'Chat',
   'Checkbox',
   'CircularProgressBar',
   'CodeEditor',
