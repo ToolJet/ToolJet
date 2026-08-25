@@ -45,13 +45,9 @@ jobs:
       - name: Run full test suite with coverage
         run: npm run test:ci
 
-      - name: Validate App Builder coverage manifest and harness contracts
-        run: npm run validate:app-builder-coverage-manifest && npm run test:app-builder:contracts
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-coverage
-          path: frontend/coverage/app-builder/**/jest/
-          retention-days: 30
+      # Fails if an App Builder source file is not assigned to a subsystem in
+      # app-builder-coverage-manifest.json. The harness contract spec is NOT run
+      # here — testMatch already picks it up in the full suite above, so running
+      # `test:app-builder:contracts` would execute it a second time.
+      - name: Validate App Builder coverage manifest
+        run: npm run validate:app-builder-coverage-manifest
