@@ -388,6 +388,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'MultiselectV2',
   'Navigation',
   'NumberInput',
+  'Pagination',
   'PasswordInput',
   'PDF',
   'PhoneInput',
