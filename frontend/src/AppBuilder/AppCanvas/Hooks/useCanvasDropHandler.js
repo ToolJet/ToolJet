@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
 import { appsService } from '@/_services';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 
 const BUFFER_OFFSET = 15;
 
@@ -57,6 +58,7 @@ export const useCanvasDropHandler = () => {
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
   const setModulesList = useStore((state) => state.setModulesList, shallow) || noop;
   const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
+  const { isGitSyncEnabled } = useGitSyncConfig();
 
   const handleDrop = async ({ componentType: draggedComponentType, component }, canvasId) => {
     const realCanvasRef =
@@ -122,11 +124,16 @@ export const useCanvasDropHandler = () => {
             toast.error('Module is still not ready. Please try again.', { id: toastId });
             return;
           }
+          const isModuleSynced = (hydratedVersion.is_synced ?? hydratedVersion.isSynced) === true;
+          const isDraft = hydratedVersion.status === 'DRAFT';
+          const shouldUnpin = isGitSyncEnabled && isModuleSynced && isDraft;
           dropComponent = {
             ...dropComponent,
             isStub: false,
-            versionId: hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId,
-            versionName: hydratedVersion.name ?? '',
+            versionId: shouldUnpin
+              ? ''
+              : (hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId ?? ''),
+            versionName: shouldUnpin ? '' : (hydratedVersion.name ?? ''),
             environmentId: hydratedVersion.current_environment_id,
             moduleContainer: hydrated.module_container,
             defaultSize: {
