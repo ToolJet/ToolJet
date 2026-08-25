@@ -478,5 +478,7 @@
   line-height: 18px;
   color: var(--text-inverse);
   opacity: 0.54;
-  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
