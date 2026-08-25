@@ -83,6 +83,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'CustomComponent',
   'Chat',
   'Html',
+  'Navigation',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
