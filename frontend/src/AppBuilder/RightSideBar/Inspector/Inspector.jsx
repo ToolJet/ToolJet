@@ -162,6 +162,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Spinner',
   'Timer',
   'Kanban',
+  'Listview',
 ];
 
 export const Inspector = ({
