@@ -77,6 +77,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'RichTextEditor',
   'SvgImage',
   'Spinner',
+  'Timer',
 ];
 
 const RenderWidget = ({

@@ -156,6 +156,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'RichTextEditor',
   'SvgImage',
   'Spinner',
+  'Timer',
 ];
 
 export const Inspector = ({
