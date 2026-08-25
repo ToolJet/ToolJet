@@ -69,6 +69,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Container',
   'Timeline',
   'Map',
+  'Chart',
 ];
 
 const RenderWidget = ({

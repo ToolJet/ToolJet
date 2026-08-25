@@ -117,7 +117,8 @@ type NewRevampedComponent =
   | 'PopoverMenu'
   | 'Pagination'
   | 'Timeline'
-  | 'Map';
+  | 'Map'
+  | 'Chart';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -173,6 +174,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Pagination',
   'Timeline',
   'Map',
+  'Chart',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -286,6 +288,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'ButtonGroupV2',
   'Camera',
   'Cascader',
+  'Chart',
   'Checkbox',
   'CircularProgressBar',
   'ColorPicker',
