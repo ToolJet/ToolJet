@@ -10,6 +10,8 @@ import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironment
 import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { OrganizationTjdbConfigurations } from '@entities/organization_tjdb_configurations.entity';
+import { encryptTooljetDatabasePassword } from '@helpers/tooljet_db.helper';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, getDataSourceToken } from '@nestjs/typeorm';
@@ -143,7 +145,11 @@ describe('TooljetDbTableOperationsService', () => {
     });
 
     describe('.joinTable | join_tables action', () => {
-      it('should reject a join whose from-table belongs to another workspace', async () => {
+      it('should reject a join whose from-table belongs to another workspace, even when every joined-to table is legitimately owned', async () => {
+        // The `from` table is the only foreign one here. `joins` carries a real join against
+        // `orders`, a table this workspace legitimately owns (seeded by setupTestTables) - that's
+        // what populates the pre-fix tableSet at all, letting the foreign `from.name` slip past the
+        // "Tables are not chosen" guard and reach buildJoinQuery's unvalidated `.from()` unchecked.
         const otherUser = await createUser(app, {
           email: 'other-join@tooljet.io',
           groups: ['all_users', 'admin'],
@@ -155,13 +161,45 @@ describe('TooljetDbTableOperationsService', () => {
             co_relation_id: uuidv4(),
           })
         );
+        const ordersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'orders' },
+        });
+
+        // join_tables needs a tenant DB config to get past the earlier "schema configuration
+        // doesn't exist" guard and actually reach tableSet validation - setupTestTables never
+        // provisions one (that's done by the real org-onboarding flow, not exercised here). The
+        // role/password don't need to work: pre-fix, validation lets the query through and the
+        // bogus credentials fail at connection time (a distinct, later error); post-fix, the
+        // foreign from-table is rejected before a connection is ever attempted.
+        await appManager.save(
+          appManager.create(OrganizationTjdbConfigurations, {
+            organizationId,
+            pgUser: 'nonexistent_tjdb_test_role',
+            pgPassword: await encryptTooljetDatabasePassword('bogus-password'),
+          })
+        );
 
         await expect(
           service.perform(organizationId, 'join_tables', {
             joinQueryJson: {
               from: { name: foreignTable.id },
-              joins: [],
-              fields: [],
+              fields: [{ name: 'id', table: ordersTable.id }],
+              joins: [
+                {
+                  joinType: 'INNER',
+                  table: ordersTable.id,
+                  conditions: {
+                    operator: 'AND',
+                    conditionsList: [
+                      {
+                        operator: '=',
+                        leftField: { type: 'Column', table: ordersTable.id, columnName: 'id' },
+                        rightField: { type: 'Column', table: ordersTable.id, columnName: 'id' },
+                      },
+                    ],
+                  },
+                },
+              ],
             },
           })
         ).rejects.toThrow(NotFoundException);
