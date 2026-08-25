@@ -21,8 +21,13 @@ export class InternalTable extends BaseEntity {
   @Column({ name: 'table_name' })
   tableName: string;
 
-  @Column({ name: 'co_relation_id', nullable: true })
+  @Column({ name: 'co_relation_id' })
   co_relation_id: string;
+
+  // Soft delete: drop_table is a migration in the chain, so hard-deleting the registry row would
+  // CASCADE the chain away — including the drop itself. Nothing sets this yet (H7 does).
+  @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+  deletedAt: Date | null;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

@@ -6,6 +6,9 @@ import { Logger } from 'nestjs-pino';
 import { Credential } from '../../../src/entities/credential.entity';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { AppUser } from 'src/entities/app_user.entity';
+import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
+import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
+import { InternalTableMigrationApplication } from 'src/entities/internal_table_migration_application.entity';
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
 import { AbilityUtilService } from '@modules/ability/util.service';
 import { RolesRepository } from '@modules/roles/repository';
@@ -45,7 +48,16 @@ export class TooljetDbModule extends SubModule {
 
     return this.cacheModule(cacheKey, {
       module: TooljetDbModule,
-      imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser])],
+      imports: [
+        TypeOrmModule.forFeature([
+          Credential,
+          InternalTable,
+          AppUser,
+          InternalTableRelation,
+          InternalTableMigration,
+          InternalTableMigrationApplication,
+        ]),
+      ],
       controllers: isMainImport ? [TooljetDbController] : [],
       providers: [
         AbilityUtilService,
