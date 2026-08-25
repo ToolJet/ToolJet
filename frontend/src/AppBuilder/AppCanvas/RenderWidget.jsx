@@ -72,6 +72,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Chart',
   'BoundedBox',
   'Calendar',
+  'PDF',
 ];
 
 const RenderWidget = ({

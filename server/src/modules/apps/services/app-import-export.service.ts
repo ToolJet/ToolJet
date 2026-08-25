@@ -120,7 +120,8 @@ type NewRevampedComponent =
   | 'Map'
   | 'Chart'
   | 'BoundedBox'
-  | 'Calendar';
+  | 'Calendar'
+  | 'PDF';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -179,6 +180,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Chart',
   'BoundedBox',
   'Calendar',
+  'PDF',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -324,6 +326,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'MultiselectV2',
   'NumberInput',
   'PasswordInput',
+  'PDF',
   'PhoneInput',
   'PopoverMenu',
   'ProgressBar',

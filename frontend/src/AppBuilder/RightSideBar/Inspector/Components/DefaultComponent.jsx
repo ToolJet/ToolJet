@@ -62,6 +62,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Map',
   'BoundedBox',
   'Calendar',
+  'PDF',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -223,6 +224,7 @@ export const baseComponentProperties = (
       'Map',
       'BoundedBox',
       'Calendar',
+      'PDF',
     ],
     Layout: [],
   };
