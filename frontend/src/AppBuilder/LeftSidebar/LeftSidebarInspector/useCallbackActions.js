@@ -6,7 +6,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const useCallbackActions = () => {
   const { isModuleEditor } = useModuleContext();
-  const deleteComponents = useStore((state) => state.deleteComponents, shallow);
+  const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const currentPageComponents = useStore((state) => state?.getCurrentPageComponents(), shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
@@ -17,10 +17,12 @@ const useCallbackActions = () => {
   const getQueryIdFromName = useStore((state) => state.getQueryIdFromName, shallow);
   const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded, shallow);
 
+  // Goes through the confirmation dialog rather than deleting outright, so the
+  // reference check that guards every other delete path applies here too.
   const handleRemoveComponent = (component) => {
     const { nodeName } = component;
     const componentId = getComponentIdFromName(nodeName);
-    deleteComponents([componentId]);
+    if (componentId) setWidgetDeleteConfirmation(true, [componentId]);
   };
 
   const handleSelectComponentOnEditor = (component) => {
