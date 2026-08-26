@@ -259,6 +259,10 @@
 
 /* ---------- detail tab ---------- */
 
+.dependency-detail-body {
+  padding-right: 16px;
+}
+
 // Sits inside .inspector-header (which already supplies the 16px padding),
 // in place of the search input on the main tab.
 .dependency-breadcrumb-bar {

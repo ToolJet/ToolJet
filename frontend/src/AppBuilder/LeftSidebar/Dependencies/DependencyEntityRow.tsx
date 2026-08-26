@@ -74,7 +74,7 @@ export const DependencyEntityRow = ({
     >
       <span className="dependency-row-icon">{icon}</span>
       <span className="dependency-row-content">
-        <span className="dependency-row-name text-truncate" title={label}>
+        <span className="dependency-row-name text-truncate">
           {withHighlight(label, highlight)}
         </span>
         {subtitle && <span className="dependency-row-subtitle text-truncate">{subtitle}</span>}
