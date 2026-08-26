@@ -603,13 +603,12 @@ export default function generateColumnsData({
         },
       };
 
-      // Disable sorting, filtering, and resizing for button columns; auto-size to content
+      // Button columns: no sorting/filtering, auto-size to content unless a width is set explicitly
       if (columnType === 'button') {
         columnDef.enableSorting = false;
         columnDef.enableColumnFilter = false;
-        columnDef.enableResizing = false;
         const buttons = column.buttons || [];
-        columnDef.size = calculateButtonColumnWidth(buttons, getResolvedValue);
+        columnDef.size = columnSize || calculateButtonColumnWidth(buttons, getResolvedValue);
       }
 
       // Add sorting configuration for specific column types
