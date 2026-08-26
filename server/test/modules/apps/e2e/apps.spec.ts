@@ -857,6 +857,42 @@ describe('AppsController', () => {
 
         await logout(app, loggedUser.tokenCookie, anotherOrgAdminUserData.user.defaultOrganizationId);
       });
+
+      it('should clone an app with a custom data source in the same workspace', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        const loggedUser = await login(app);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const { application } = await createAppWithDependencies(app, adminUserData.user, {
+          dsOptions: [{ key: 'host', value: 'localhost', encrypted: false }],
+          name: 'App with custom DS',
+          dsKind: 'restapi',
+        });
+
+        const payload = {
+          app: [{ id: application.id, name: 'App with custom DS (clone)' }],
+          organization_id: adminUserData.user.defaultOrganizationId,
+        };
+
+        const response = await request(app.getHttpServer())
+          .post('/api/v2/resources/clone')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send(payload);
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.success).toBe(true);
+
+        const clonedAppId = response.body['imports']['app'][0]['id'];
+        const clonedApplication = await App.findOneOrFail({ where: { id: clonedAppId } });
+        expect(clonedApplication.name).toContain('App with custom DS');
+
+        await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+      });
     });
 
     describe('PUT /api/apps/:id | Update application', () => {
