@@ -460,10 +460,11 @@ describe('TooljetDbImportExportService', () => {
         expect(ordersTable).toBeDefined();
 
         // Verify foreign key. The physical table is named by the relation id, not the logical
-        // table id - those are independent for anything created after import.
-        const ordersRelation = await appManager.findOne(InternalTableRelation, {
+        // table id - import goes through create_table, which mints an independent relation id.
+        const ordersRelation = await appManager.findOneOrFail(InternalTableRelation, {
           where: { internalTableId: ordersTable.id },
         });
+        expect(ordersRelation.id).not.toBe(ordersTable.id);
 
         const foreignKeys = await tjDbManager.query(
           'SELECT * FROM information_schema.table_constraints WHERE table_name = $1 AND constraint_type = $2',

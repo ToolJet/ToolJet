@@ -129,9 +129,9 @@ export class TooljetDbTableOperationsService {
   /**
    * Single door from a display name to the physical table it currently means. Every DDL handler
    * that names an existing table funnels through here instead of building
-   * concatSchemaAndTableName(tenantSchema, internalTable.id) itself — that construction only
-   * happens to be correct while relation ids and logical table ids coincide. Public: the bulk
-   * upload service, which is not a subclass, needs to resolve tables too.
+   * concatSchemaAndTableName(tenantSchema, internalTable.id) itself — that construction names a
+   * table that does not exist, because a relation id is independent of its logical table id.
+   * Public: the bulk upload service, which is not a subclass, needs to resolve tables too.
    */
   async resolveTable(
     organizationId: string,

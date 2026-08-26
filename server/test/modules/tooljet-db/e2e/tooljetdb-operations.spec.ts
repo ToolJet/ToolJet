@@ -126,9 +126,9 @@ describe('TooljetDbController', () => {
         expect([200, 201]).toContain(res.statusCode);
       });
 
-      // The horizon's proof: create_table mints an independent relation id, so the physical table
-      // name is NOT the logical table id. Rows written by the backfill migration still satisfy the
-      // old equality - this pins only that newly created tables diverge.
+      // create_table mints an independent relation id, so the physical table name is NOT the
+      // logical table id. Rows written by the relation backfill migration still have the two equal,
+      // so this pins only that newly created tables diverge.
       it('creates the relation with an id independent of the logical table id, and builds the physical table under it', async function () {
         if (!tooljetDbAvailable) return;
 
@@ -589,9 +589,10 @@ describe('TooljetDbController', () => {
 
     // ---------------------------------------------------------------------------
     // Bulk upload | pins bulkUploadCsv/bulkUpsertRows naming the INSERT's target by relation id,
-    // not the logical internal_table id. relation.id === internal_table_id for every row today, so
-    // without deliberately moving the relation id off the logical id first, this would pass whether
-    // or not the resolver was ever consulted (the same vacuity the horizon's earlier tasks hit).
+    // not the logical internal_table id. The relation id is moved off the logical id explicitly
+    // rather than relying on create_table to have minted an independent one, so the assertion stays
+    // non-vacuous however the fixture was built: were the two equal, it would pass whether or not
+    // the resolver was ever consulted.
     // ---------------------------------------------------------------------------
     describe('Bulk upload | POST /table/:tableName/bulk-upload', () => {
       it('inserts CSV rows into the table named by the relation id and advances its serial sequence', async function () {

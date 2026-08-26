@@ -3,8 +3,12 @@ import { InternalTable } from './internal_table.entity';
 
 @Entity({ name: 'internal_table_relations' })
 export class InternalTableRelation extends BaseEntity {
-  // Not generated: every writer sets this explicitly. Currently always equals internalTableId —
-  // a relation does not yet have an identity independent of the logical table it belongs to.
+  // Not generated: every writer sets this explicitly. This is the physical Postgres table name,
+  // and it is an identity of its own — independent of internalTableId. Never assume a relation
+  // between the two: rows written by the relation backfill migration have them equal, while
+  // create_table mints a fresh uuid, so nothing created since has them equal. Both shapes coexist
+  // permanently. Resolve a physical name through TooljetDbRelationResolverService; never use a
+  // logical internal_tables id as a table name.
   @PrimaryColumn({ type: 'uuid' })
   id: string;
 

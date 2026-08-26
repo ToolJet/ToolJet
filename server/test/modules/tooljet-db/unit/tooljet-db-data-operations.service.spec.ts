@@ -138,9 +138,10 @@ describe('TooljetDbDataOperationsService', () => {
 
     describe('.resolveTableNameToRelationIdMap', () => {
       it('should map display names to relation ids, not logical internal_table ids', async () => {
-        // Every relation ships with id === internal_table_id, so without moving the relation id
-        // off the logical id first, this assertion would pass whether or not the resolver was
-        // consulted at all - the exact vacuity R10 caught in Task 3. Move it first.
+        // The relation ids are moved off the logical ids here rather than relying on create_table
+        // to have minted independent ones, so the assertion stays non-vacuous no matter how these
+        // fixtures were built: if the two ids were equal it would pass whether or not the resolver
+        // was consulted at all.
         const usersTable = await appManager.findOneOrFail(InternalTable, {
           where: { organizationId, tableName: 'users' },
         });

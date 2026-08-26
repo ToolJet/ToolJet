@@ -211,9 +211,10 @@ describe('TooljetDbTableOperationsService', () => {
         // through, while .from() and the join target name a *physical* table. Only the latter
         // resolves to a relation id.
         //
-        // The relation ids are deliberately moved off the logical ids first. Every relation row
-        // ships with id === internal_table_id, so without this the assertion below would pass
-        // whether or not the resolver was consulted at all.
+        // The relation ids are deliberately moved off the logical ids first, rather than relying on
+        // create_table to have minted independent ones. That keeps the assertion below non-vacuous
+        // however these fixtures were built: were the two ids equal, it would pass whether or not
+        // the resolver was consulted at all.
         //
         // This asserts the generated SQL rather than running the query: join_tables is the only
         // handler that opens its own Postgres connection, and every spec runs inside an uncommitted

@@ -169,7 +169,7 @@ describe('TooljetDbRelationResolverService', () => {
     }, 60_000);
 
     describe('substrate entities', () => {
-      it('should load the relation row backfilled for a seeded table', async () => {
+      it('should load the relation row created for a seeded table', async () => {
         const table = await appManager.findOne(InternalTable, {
           where: { organizationId, tableName: 'users' },
         });
@@ -204,6 +204,27 @@ describe('TooljetDbRelationResolverService', () => {
         const resolved = await service.resolve(organizationId, [table.id]);
 
         expect(resolved.get(table.id)).toBe(relation.id);
+      });
+
+      // The other coexisting shape: the relation backfill migration set id = internal_table_id, so
+      // rows predating create_table's independent ids still have the two equal. Nothing may assume
+      // the ids always differ any more than it may assume they are always equal.
+      it('should resolve a relation whose id equals its logical table id', async () => {
+        const table = await appManager.save(
+          appManager.create(InternalTable, { organizationId, tableName: 'legacy_table', co_relation_id: uuidv4() })
+        );
+        await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: table.id, // migration-A shape: relation id === internal_table_id
+            internalTableId: table.id,
+            environmentId: adminEnvironmentId,
+            branchId: adminBranchId,
+          })
+        );
+
+        expect(await service.resolve(organizationId, [table.id])).toEqual(new Map([[table.id, table.id]]));
+        expect((await service.getRelation(organizationId, table.id)).id).toBe(table.id);
+        expect(await service.resolveLogicalIds(organizationId, [table.id])).toEqual(new Map([[table.id, table.id]]));
       });
 
       it('should omit a table belonging to another workspace', async () => {
