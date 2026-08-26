@@ -120,6 +120,36 @@ export class TooljetDbTableOperationsService {
     return actionHandlers[action];
   }
 
+  /**
+   * Single door from a display name to the physical table it currently means. Every DDL handler
+   * that names an existing table funnels through here instead of building
+   * concatSchemaAndTableName(tenantSchema, internalTable.id) itself — that construction only
+   * happens to be correct while relation ids and logical table ids coincide. Public: the bulk
+   * upload service, which is not a subclass, needs to resolve tables too.
+   */
+  async resolveTable(
+    organizationId: string,
+    tableName: string,
+    manager?: EntityManager
+  ): Promise<{ internalTable: InternalTable; relation: InternalTableRelation; physicalName: string }> {
+    const entityManager = manager || this.manager;
+    const internalTable = await entityManager.findOne(InternalTable, {
+      where: { organizationId, tableName },
+    });
+
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+
+    const relation = await this.relationResolverService.getRelation(
+      organizationId,
+      internalTable.id,
+      undefined,
+      manager
+    );
+    const physicalName = concatSchemaAndTableName(findTenantSchema(organizationId), relation.id);
+
+    return { internalTable, relation, physicalName };
+  }
+
   protected async viewTable(
     organizationId: string,
     params,
@@ -144,6 +174,12 @@ export class TooljetDbTableOperationsService {
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+    const relation = await this.relationResolverService.getRelation(
+      organizationId,
+      internalTable.id,
+      undefined,
+      appManager
+    );
     const tenantSchema = findTenantSchema(organizationId);
     let foreign_keys = await tjdbManager.query(`
       select
@@ -169,7 +205,7 @@ export class TooljetDbTableOperationsService {
       from pg_constraint as pgc 
       join pg_class as cls on cls.oid = pgc.conrelid
       join pg_namespace as ns on ns.oid = cls.relnamespace
-      where cls.relname = '${internalTable.id}' and pgc.contype = 'f' and ns.nspname = '${tenantSchema}'
+      where cls.relname = '${relation.id}' and pgc.contype = 'f' and ns.nspname = '${tenantSchema}'
     `);
 
     // Transforming the Query response
@@ -231,6 +267,7 @@ export class TooljetDbTableOperationsService {
             INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
         INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
           where tc.constraint_type = 'PRIMARY KEY'
+            and ku.TABLE_SCHEMA = '${tenantSchema}' and ku.TABLE_NAME = '${relation.id}'
     ) pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
         AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
         AND c.TABLE_NAME = pk.TABLE_NAME
@@ -247,11 +284,12 @@ export class TooljetDbTableOperationsService {
             INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
         INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
           where tc.constraint_type = 'UNIQUE'
+            and ku.TABLE_SCHEMA = '${tenantSchema}' and ku.TABLE_NAME = '${relation.id}'
     ) as uk ON c.TABLE_CATALOG = uk.TABLE_CATALOG
         AND c.TABLE_SCHEMA = uk.TABLE_SCHEMA
         AND c.TABLE_NAME = uk.TABLE_NAME
         AND c.COLUMN_NAME = uk.COLUMN_NAME
-    WHERE c.TABLE_NAME = '${internalTable.id}' AND c.TABLE_SCHEMA = '${tenantSchema}'
+    WHERE c.TABLE_NAME = '${relation.id}' AND c.TABLE_SCHEMA = '${tenantSchema}'
     ORDER BY
         c.TABLE_SCHEMA,
         c.TABLE_NAME,
@@ -264,13 +302,6 @@ export class TooljetDbTableOperationsService {
         column_default: column.data_type === 'jsonb' ? JSON.parse(column.column_default) : column.column_default,
       };
     });
-
-    const relation = await this.relationResolverService.getRelation(
-      organizationId,
-      internalTable.id,
-      undefined,
-      appManager
-    );
 
     return {
       foreign_keys,
@@ -386,7 +417,7 @@ export class TooljetDbTableOperationsService {
       );
       const branchId = await this.relationResolverService.resolveBranchIdFor(organizationId, queryRunner.manager);
 
-      await queryRunner.manager.save(
+      const relation = await queryRunner.manager.save(
         queryRunner.manager.create(InternalTableRelation, {
           id: internalTable.id,
           internalTableId: internalTable.id,
@@ -399,7 +430,7 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunner.createTable(
         new Table({
           schema: tenantSchema,
-          name: internalTable.id,
+          name: relation.id,
           columns: this.prepareColumnListForCreateTable(params.columns),
           ...(foreign_keys.length && {
             foreignKeys: this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema),
@@ -407,10 +438,10 @@ export class TooljetDbTableOperationsService {
         })
       );
 
-      const tableNameWithSchema = concatSchemaAndTableName(tenantSchema, internalTable.id);
+      const tableNameWithSchema = concatSchemaAndTableName(tenantSchema, relation.id);
       await tjdbQueryRunner.createPrimaryKey(tableNameWithSchema, primaryKeyColumnList);
       // await tjdbQueryRunner.createPrimaryKey(
-      //   new Table({ schema: tenantSchema, name: internalTable.id }),
+      //   new Table({ schema: tenantSchema, name: relation.id }),
       //   primaryKeyColumnList
       // );
 
@@ -450,11 +481,7 @@ export class TooljetDbTableOperationsService {
 
   protected async dropTable(organizationId: string, params) {
     const { table_name: tableName } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
-
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName);
 
     const isTableInUse = await this.findQueriesLinkedToTable(internalTable.id);
 
@@ -474,7 +501,7 @@ export class TooljetDbTableOperationsService {
 
     try {
       await queryRunner.manager.delete(InternalTable, { id: internalTable.id });
-      await tjdbQueryRunner.dropTable(new Table({ schema: tenantSchema, name: internalTable.id }));
+      await tjdbQueryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }));
 
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
@@ -523,12 +550,6 @@ export class TooljetDbTableOperationsService {
   protected async editTable(organizationId: string, params) {
     const { table_name: tableName, columns } = params;
 
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
-
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -536,10 +557,16 @@ export class TooljetDbTableOperationsService {
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
-    const tenantSchema = findTenantSchema(organizationId);
 
+    // Resolved inside the transaction (queryRunner.manager), same manager the original code used
+    // for its own getRelation call - reading the relation outside the transaction here would be a
+    // read-your-own-writes hazard for any future write this handler makes before this point.
+    let internalTable: InternalTable;
     try {
-      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
+      const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
+      internalTable = resolved.internalTable;
+      const relation = resolved.relation;
+      const physicalName = resolved.physicalName;
       const updatedPrimaryKeys = [];
       const columnstoBeUpdated = [];
       const columnsToBeInserted = [];
@@ -658,12 +685,6 @@ export class TooljetDbTableOperationsService {
         }
       });
 
-      const relation = await this.relationResolverService.getRelation(
-        organizationId,
-        internalTable.id,
-        undefined,
-        queryRunner.manager
-      );
       const columnNames = relation.configurations.columns.column_names;
       const columnConfigurations = relation.configurations.columns.configurations;
 
@@ -709,9 +730,9 @@ export class TooljetDbTableOperationsService {
 
       if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
 
-      if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(tableName, columnsToBeDeleted);
-      if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(tableName, columnsToBeInserted);
-      if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(tableName, columnstoBeUpdated);
+      if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(physicalName, columnsToBeDeleted);
+      if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(physicalName, columnsToBeInserted);
+      if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(physicalName, columnstoBeUpdated);
 
       if (params.new_table_name) {
         const { new_table_name } = params;
@@ -734,17 +755,17 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunner.release();
       await queryRunner.release();
 
+      // resolveTable's "not found" is not a QueryFailedError - TooljetDatabaseError's constructor
+      // assumes one (it indexes error.driverError) and would crash on the wrap instead of
+      // surfacing the real "not found" message.
+      if (error instanceof NotFoundException) throw error;
+
       throw new TooljetDatabaseError(error.message, { origin: 'edit_table', internalTables: [internalTable] }, error);
     }
   }
 
   protected async addColumn(organizationId: string, params) {
     const { table_name: tableName, column, foreign_keys } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
-
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     let referenced_tables_info = {};
     if (foreign_keys.length) {
@@ -775,14 +796,15 @@ export class TooljetDbTableOperationsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    // Resolved inside the transaction (queryRunner.manager), same manager the original code used
+    // for its own getRelation call - reading the relation outside the transaction here would be a
+    // read-your-own-writes hazard for any future write this handler makes before this point.
+    let internalTable: InternalTable;
     try {
-      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
-      const relation = await this.relationResolverService.getRelation(
-        organizationId,
-        internalTable.id,
-        undefined,
-        queryRunner.manager
-      );
+      const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
+      internalTable = resolved.internalTable;
+      const relation = resolved.relation;
+      const physicalName = resolved.physicalName;
       const columnNames = relation.configurations.columns.column_names;
       const columnConfigurations = relation.configurations.columns.configurations;
       const columnUuid = uuidv4();
@@ -798,7 +820,7 @@ export class TooljetDbTableOperationsService {
       await queryRunner.manager.save(relation);
 
       await tjdbQueryRunnner.addColumn(
-        tableName,
+        physicalName,
         new TableColumn({
           name: column['column_name'],
           type: column['data_type'],
@@ -818,7 +840,7 @@ export class TooljetDbTableOperationsService {
         const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
           (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
         );
-        await tjdbQueryRunnner.createForeignKeys(tableName, foreignKeys);
+        await tjdbQueryRunnner.createForeignKeys(physicalName, foreignKeys);
       }
 
       await queryRunner.commitTransaction();
@@ -831,6 +853,12 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunnner.release();
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
+
+      // resolveTable's "not found" is not a QueryFailedError - TooljetDatabaseError's constructor
+      // assumes one (it indexes error.driverError) and would crash on the wrap instead of
+      // surfacing the real "not found" message.
+      if (err instanceof NotFoundException) throw err;
+
       const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
         ([tableName, tableId]): { id: string; tableName: string } => {
           return {
@@ -853,11 +881,6 @@ export class TooljetDbTableOperationsService {
 
   protected async dropColumn(organizationId: string, params) {
     const { table_name: tableName, column } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
-
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     const queryRunner = this.manager.connection.createQueryRunner();
@@ -868,15 +891,15 @@ export class TooljetDbTableOperationsService {
     await queryRunner.startTransaction();
     await tjdbQueryRunnner.startTransaction();
 
-    const tenantSchema = findTenantSchema(organizationId);
-
+    // Resolved inside the transaction (queryRunner.manager), same manager the original code used
+    // for its own getRelation call - reading the relation outside the transaction here would be a
+    // read-your-own-writes hazard for any future write this handler makes before this point.
+    let internalTable: InternalTable;
     try {
-      const relation = await this.relationResolverService.getRelation(
-        organizationId,
-        internalTable.id,
-        undefined,
-        queryRunner.manager
-      );
+      const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
+      internalTable = resolved.internalTable;
+      const relation = resolved.relation;
+      const physicalName = resolved.physicalName;
       const columnNames = relation.configurations.columns.column_names;
       const columnConfigurations = relation.configurations.columns.configurations;
       const columnUuid = columnNames[column['column_name']];
@@ -890,8 +913,7 @@ export class TooljetDbTableOperationsService {
       };
       await queryRunner.manager.save(relation);
 
-      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
-      const result = await tjdbQueryRunnner.dropColumn(tableName, column['column_name']);
+      const result = await tjdbQueryRunnner.dropColumn(physicalName, column['column_name']);
 
       await tjdbQueryRunnner.commitTransaction();
       await queryRunner.commitTransaction();
@@ -901,6 +923,12 @@ export class TooljetDbTableOperationsService {
     } catch (error) {
       await tjdbQueryRunnner.rollbackTransaction();
       await queryRunner.rollbackTransaction();
+
+      // resolveTable's "not found" is not a QueryFailedError - TooljetDatabaseError's constructor
+      // assumes one (it indexes error.driverError) and would crash on the wrap instead of
+      // surfacing the real "not found" message.
+      if (error instanceof NotFoundException) throw error;
+
       throw new TooljetDatabaseError(error.message, { origin: 'drop_column', internalTables: [internalTable] }, error);
     } finally {
       await queryRunner.release();
@@ -1263,22 +1291,12 @@ export class TooljetDbTableOperationsService {
 
   protected async editColumn(organizationId: string, params) {
     const { table_name: tableName, column, foreign_key_id_to_delete } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
-    });
 
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-
-    // Guarded here, before the transactions open: the catch block below wraps whatever it
+    // Resolved here, before the transactions open: the catch block below wraps whatever it
     // catches into a TooljetDatabaseError assuming a QueryFailedError shape (it indexes
-    // errorObj.driverError), so throwing NotFoundException from inside that try would itself
+    // errorObj.driverError), so throwing NotFoundException from inside the try would itself
     // crash on the wrap instead of surfacing "Column not found".
-    const relation = await this.relationResolverService.getRelation(
-      organizationId,
-      internalTable.id,
-      undefined,
-      this.manager
-    );
+    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, tableName);
     const columnUuid = relation.configurations.columns.column_names[column.column_name];
     if (!columnUuid) throw new NotFoundException('Column not found: ' + column.column_name);
 
@@ -1289,7 +1307,6 @@ export class TooljetDbTableOperationsService {
 
     await tjdbQueryRunner.startTransaction();
     await queryRunner.startTransaction();
-    const tenantSchema = findTenantSchema(organizationId);
 
     try {
       const columnNames = relation.configurations.columns.column_names;
@@ -1312,10 +1329,9 @@ export class TooljetDbTableOperationsService {
 
       await queryRunner.manager.save(relation);
 
-      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
-      if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(tableName, foreign_key_id_to_delete);
+      if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(physicalName, foreign_key_id_to_delete);
       await tjdbQueryRunner.changeColumn(
-        tableName,
+        physicalName,
         column.column_name,
         new TableColumn({
           name: column.column_name,
@@ -1333,7 +1349,7 @@ export class TooljetDbTableOperationsService {
       );
 
       if (column?.column_name && column?.new_column_name) {
-        await tjdbQueryRunner.renameColumn(tableName, column?.column_name, column?.new_column_name);
+        await tjdbQueryRunner.renameColumn(physicalName, column?.column_name, column?.new_column_name);
       }
 
       await tjdbQueryRunner.commitTransaction();

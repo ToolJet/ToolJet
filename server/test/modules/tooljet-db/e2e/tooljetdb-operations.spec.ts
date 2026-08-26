@@ -12,7 +12,15 @@
  */
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { createUser, initTestApp, login, logout, getTooljetDbDataSource, closeTestApp } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  login,
+  logout,
+  getTooljetDbDataSource,
+  closeTestApp,
+  ensureAppEnvironments,
+} from 'test-helper';
 
 describe('TooljetDbController', () => {
   describe('EE (plan: enterprise)', () => {
@@ -44,6 +52,10 @@ describe('TooljetDbController', () => {
         groups: ['admin', 'end-user'],
       });
       adminOrgId = user.defaultOrganizationId;
+
+      // The relation resolver pins the priority-1 environment for every DDL call - without a
+      // seeded environment row, create_table 500s before it ever reaches the tooljetDb query.
+      await ensureAppEnvironments(app, adminOrgId);
 
       // Ensure the tooljetDb workspace schema exists for DDL tests
       if (tooljetDbAvailable) {
@@ -149,6 +161,187 @@ describe('TooljetDbController', () => {
           .set('tj-workspace-id', adminOrgId);
 
         expect(res.statusCode).toBe(200);
+      });
+    });
+
+    // ---------------------------------------------------------------------------
+    // Column and table DDL round trip | pins editTable/addColumn/editColumn/dropColumn
+    // naming through the resolver - each op below only succeeds if the handler resolved
+    // the physical table it just renamed/altered, not a stale internal_table_id.
+    // ---------------------------------------------------------------------------
+    describe('Table and column DDL round trip | edit_table, add_column, edit_column, drop_column', () => {
+      it('admin can rename a table, add a column, rename that column, then drop a different column', async function () {
+        if (!tooljetDbAvailable) return;
+
+        // is_unique: false here matches the physical column: prepareColumnListForCreateTable
+        // ignores is_unique when is_primary_key is true, so the actual column was never built
+        // with a standalone UNIQUE constraint for changeColumns to diff against.
+        const idColumn = {
+          column_name: 'id',
+          data_type: 'integer',
+          constraints_type: { is_not_null: true, is_primary_key: true, is_unique: false },
+        };
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('round_trip_tbl'));
+
+        // edit_table: rename the table. The primary key column is carried through unchanged -
+        // editTable requires at least one updated primary key column or it rejects the request.
+        const renameRes = await request
+          .agent(app.getHttpServer())
+          .patch(`/api/tooljet-db/organizations/${adminOrgId}/table/round_trip_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'round_trip_tbl',
+            new_table_name: 'round_trip_tbl_renamed',
+            columns: [{ old_column: idColumn, new_column: idColumn }],
+          });
+
+        expect(renameRes.statusCode).toBe(200);
+
+        // add_column
+        const addColumnRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/round_trip_tbl_renamed/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'extra',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+            foreign_keys: [],
+          });
+
+        expect([200, 201]).toContain(addColumnRes.statusCode);
+
+        // edit_column: rename the column just added
+        const editColumnRes = await request
+          .agent(app.getHttpServer())
+          .patch(`/api/tooljet-db/organizations/${adminOrgId}/table/round_trip_tbl_renamed/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'extra',
+              new_column_name: 'extra_renamed',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+          });
+
+        expect(editColumnRes.statusCode).toBe(200);
+
+        // drop_column: remove the original non-key column ('name', from buildCreateTablePayload)
+        const dropColumnRes = await request
+          .agent(app.getHttpServer())
+          .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/round_trip_tbl_renamed/column/name`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(dropColumnRes.statusCode).toBe(200);
+
+        const viewRes = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/round_trip_tbl_renamed`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(viewRes.statusCode).toBe(200);
+        const columnNames = viewRes.body.result.columns.map((column) => column.column_name);
+        expect(columnNames).toEqual(expect.arrayContaining(['id', 'extra_renamed']));
+        expect(columnNames).not.toContain('name');
+        expect(columnNames).not.toContain('extra');
+      });
+    });
+
+    // ---------------------------------------------------------------------------
+    // view_table | this is the committed form of the 1e evidence: the pk/uk subqueries
+    // are now scoped to (schema, relation id) instead of scanning every constraint in the
+    // database, and this pins that the scoping did not change which flags come back.
+    // ---------------------------------------------------------------------------
+    describe('view_table | primary key and unique constraint reporting', () => {
+      it('reports is_primary_key and is_unique correctly for a table with both', async function () {
+        if (!tooljetDbAvailable) return;
+
+        // A second table in the same schema with a same-named column ('email') that is NOT
+        // unique - without the pushed-down TABLE_NAME predicate (or if it were ever mistargeted
+        // at the wrong relation), the join could pick up this row instead of pk_uk_tbl's own.
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'pk_uk_decoy_tbl',
+            columns: [
+              {
+                column_name: 'id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: true, is_primary_key: true, is_unique: false },
+              },
+              {
+                column_name: 'email',
+                data_type: 'character varying',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            ],
+            foreign_keys: [],
+          });
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'pk_uk_tbl',
+            columns: [
+              {
+                column_name: 'id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: true, is_primary_key: true, is_unique: true },
+              },
+              {
+                column_name: 'email',
+                data_type: 'character varying',
+                constraints_type: { is_not_null: true, is_primary_key: false, is_unique: true },
+              },
+              {
+                column_name: 'name',
+                data_type: 'character varying',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            ],
+            foreign_keys: [],
+          });
+
+        const res = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/pk_uk_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(res.statusCode).toBe(200);
+        const byName = Object.fromEntries(res.body.result.columns.map((column) => [column.column_name, column]));
+
+        // is_unique here reflects a standalone UNIQUE constraint, not "no duplicates possible" -
+        // a PRIMARY KEY constraint doesn't register as one, so the primary key column is false.
+        expect(byName.id).toMatchObject({
+          constraints_type: expect.objectContaining({ is_primary_key: true, is_unique: false }),
+        });
+        expect(byName.email).toMatchObject({
+          constraints_type: expect.objectContaining({ is_primary_key: false, is_unique: true }),
+        });
+        expect(byName.name).toMatchObject({
+          constraints_type: expect.objectContaining({ is_primary_key: false, is_unique: false }),
+        });
       });
     });
 
