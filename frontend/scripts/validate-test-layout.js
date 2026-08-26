@@ -22,7 +22,14 @@ const srcRoot = path.join(frontendRoot, 'src');
 // Must match an actual IMPORT of the store, not a `jest.mock('.../store')` call —
 // a spec that stubs the store is a unit spec, and the opposite of an integration
 // one. Matching the bare path treats those two as the same thing.
-const REAL_STORE_IMPORT = /(?:from\s+['"]@\/AppBuilder\/_stores\/store['"]|require\(\s*['"]@\/AppBuilder\/_stores\/store['"])/;
+//
+// Also matches a sibling `./widgetHarness` import: AppBuilder/Widgets/__tests__/
+// integration/widgetHarness.js is a shared per-directory harness that imports
+// the real store on every spec's behalf, so a spec built on it never writes
+// the store's own import path — checking only the direct form would misfile
+// every widget behaviour spec as a unit test.
+const REAL_STORE_IMPORT =
+  /(?:from\s+['"]@\/AppBuilder\/_stores\/store['"]|require\(\s*['"]@\/AppBuilder\/_stores\/store['"]|from\s+['"]\.\/widgetHarness['"])/;
 // Harness self-tests describe the test infrastructure itself, not product code.
 const EXEMPT_PREFIXES = ['src/test/'];
 
