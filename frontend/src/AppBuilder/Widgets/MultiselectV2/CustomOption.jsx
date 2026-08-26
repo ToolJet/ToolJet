@@ -11,6 +11,7 @@ const CustomOption = (props) => {
   const hasCaption = caption !== null && caption !== undefined && caption !== '';
   const captionText = hasCaption ? String(caption) : '';
   const isSelectAll = labelText.includes('Select all');
+  const accentColor = props.selectProps.accentColor;
   // Server-side search: results come pre-filtered from the backend, so skip client-side highlighting.
   const serverSideSearch = props.selectProps.serverSideSearch === true;
   const renderWithHighlight = (text) => (serverSideSearch ? text : highlightText(text, props.selectProps.inputValue));
@@ -23,7 +24,13 @@ const CustomOption = (props) => {
       }}
     >
       <div className="d-flex multiselct-widget-option" style={{ alignItems: 'flex-start' }}>
-        <FormCheck checked={props.isSelected} disabled={props?.isDisabled} />
+        <FormCheck.Input
+          checked={props.isSelected}
+          disabled={props?.isDisabled}
+          style={
+            props.isSelected && accentColor ? { backgroundColor: accentColor, borderColor: accentColor } : undefined
+          }
+        />
         <div className="tw-min-w-0 tw-flex-1 tw-flex tw-flex-col" style={{ marginLeft: '5px' }}>
           <span className="tw-truncate" title={labelText}>
             {isSelectAll ? 'Select all' : renderWithHighlight(labelText)}
