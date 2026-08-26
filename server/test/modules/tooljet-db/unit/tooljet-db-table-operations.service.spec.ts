@@ -204,6 +204,100 @@ describe('TooljetDbTableOperationsService', () => {
           })
         ).rejects.toThrow(NotFoundException);
       });
+
+      it('should name the from/join targets by relation id while keeping the SQL aliases as display names', async () => {
+        // buildJoinQuery uses one map for two jobs: the display name is the SQL *alias* that select
+        // fields, aggregates, group-bys, order-bys and filter conditions all address columns
+        // through, while .from() and the join target name a *physical* table. Only the latter
+        // resolves to a relation id.
+        //
+        // The relation ids are deliberately moved off the logical ids first. Every relation row
+        // ships with id === internal_table_id, so without this the assertion below would pass
+        // whether or not the resolver was consulted at all.
+        //
+        // This asserts the generated SQL rather than running the query: join_tables is the only
+        // handler that opens its own Postgres connection, and every spec runs inside an uncommitted
+        // transaction (test/jest-transaction-setup.ts), so a second connection cannot see tables
+        // this suite created. The naming is a property of the emitted SQL regardless.
+        const usersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const ordersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'orders' },
+        });
+
+        const usersRelationId = uuidv4();
+        const ordersRelationId = uuidv4();
+        await appManager.update(InternalTableRelation, { internalTableId: usersTable.id }, { id: usersRelationId });
+        await appManager.update(InternalTableRelation, { internalTableId: ordersTable.id }, { id: ordersRelationId });
+
+        const resolver = app.get(TooljetDbRelationResolverService);
+        const relationIdByLogicalId = await resolver.resolve(organizationId, [usersTable.id, ordersTable.id]);
+
+        const queryBuilder = (
+          service as unknown as {
+            buildJoinQuery: (
+              queryJson: unknown,
+              internalTableIdToNameMap: Record<string, string>,
+              relationIdByLogicalId: Map<string, string>,
+              connection: unknown
+            ) => { getQuery: () => string };
+          }
+        ).buildJoinQuery(
+          {
+            from: { name: usersTable.id, type: 'Table' },
+            fields: [],
+            joins: [
+              {
+                joinType: 'INNER',
+                table: ordersTable.id,
+                conditions: {
+                  operator: 'AND',
+                  conditionsList: [
+                    {
+                      operator: '=',
+                      leftField: { type: 'Column', table: usersTable.id, columnName: 'id' },
+                      rightField: { type: 'Column', table: ordersTable.id, columnName: 'user_id' },
+                    },
+                  ],
+                },
+              },
+            ],
+            conditions: {
+              operator: 'AND',
+              conditionsList: [
+                {
+                  operator: '>',
+                  leftField: { type: 'Column', table: ordersTable.id, columnName: 'total' },
+                  rightField: { type: 'Value', value: 20 },
+                },
+              ],
+            },
+            group_by: { [usersTable.id]: ['name'] },
+            aggregates: { total_spent: { aggFx: 'sum', column: 'total', table_id: ordersTable.id } },
+            order_by: [{ table: usersTable.id, columnName: 'name', direction: 'ASC' }],
+          },
+          { [usersTable.id]: 'users', [ordersTable.id]: 'orders' },
+          relationIdByLogicalId,
+          tjDbManager.connection
+        );
+
+        const sql = queryBuilder.getQuery();
+
+        // Physical targets are the relation ids...
+        expect(sql).toContain(`"${usersRelationId}" "users"`);
+        expect(sql).toContain(`"${ordersRelationId}" "orders"`);
+        // ...and the logical ids appear nowhere, which is what would happen if .from()/the join
+        // target had been left naming the table by internal_tables.id.
+        expect(sql).not.toContain(usersTable.id);
+        expect(sql).not.toContain(ordersTable.id);
+        // Aliases stay display names, and every other clause still addresses columns through them.
+        expect(sql).toContain('"users"."id" = "orders"."user_id"');
+        expect(sql).toContain('"orders"."total" >');
+        expect(sql).toContain('SUM("orders"."total") AS "orders_total_sum"');
+        expect(sql).toContain('GROUP BY "users"."name"');
+        expect(sql).toContain('ORDER BY "users"."name" ASC');
+      });
     });
 
     describe('.viewTable | view_table action', () => {

@@ -1067,6 +1067,9 @@ export class TooljetDbTableOperationsService {
       .map((filteredTable) => filteredTable.name);
 
     const internalTables = await this.findOrFailInternalTableFromTableId(tableIdList, organizationId);
+    // Alias map: logical id -> display name. Select fields, aggregates, group-bys, order-bys and
+    // filter conditions all address columns through this alias, never the physical table name, so
+    // these must stay display names. Only .from() and the join targets name a physical table.
     const internalTableIdToNameMap = tableIdList.reduce((acc, tableId) => {
       return {
         ...acc,
@@ -1074,13 +1077,28 @@ export class TooljetDbTableOperationsService {
       };
     }, {});
 
+    // Physical-name map: logical id -> relation id, resolved once for the whole table set.
+    const relationIdByLogicalId = await this.relationResolverService.resolve(organizationId, tableIdList);
+    const logicalIdsWithoutRelation = tableIdList.filter((tableId) => !relationIdByLogicalId.has(tableId));
+    if (logicalIdsWithoutRelation.length) {
+      const namesWithoutRelation = logicalIdsWithoutRelation.map((tableId) => internalTableIdToNameMap[tableId]);
+      throw new BadRequestException(
+        `Table(s) "${namesWithoutRelation.join('", "')}" have no relation in this environment`
+      );
+    }
+
     const { pgPassword, pgUser } = tjdbTenantConfigs;
     const tjdbPassKey = await decryptTooljetDatabasePassword(pgPassword);
     const tenantSchema = findTenantSchema(organizationId);
     const { tooljetDbTenantConnection } = await createTooljetDatabaseConnection(tjdbPassKey, pgUser, tenantSchema);
 
     try {
-      const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap, tooljetDbTenantConnection);
+      const queryBuilder = this.buildJoinQuery(
+        joinQueryJson,
+        internalTableIdToNameMap,
+        relationIdByLogicalId,
+        tooljetDbTenantConnection
+      );
       return await queryBuilder.getRawMany();
     } catch (error) {
       const errorObj = new QueryFailedError(error, [], new PostgrestError(error));
@@ -1088,7 +1106,10 @@ export class TooljetDbTableOperationsService {
         error.message,
         {
           origin: 'join_tables',
-          internalTables: internalTables,
+          internalTables: internalTables.map((table) => ({
+            id: relationIdByLogicalId.get(table.id),
+            tableName: table.tableName,
+          })),
         },
         errorObj
       );
@@ -1167,7 +1188,7 @@ export class TooljetDbTableOperationsService {
   protected buildJoinQuery(
     queryJson,
     internalTableIdToNameMap,
-
+    relationIdByLogicalId: Map<string, string>,
     tooljetDbTenantConnection: Connection
   ): SelectQueryBuilder<any> {
     const queryBuilder: SelectQueryBuilder<any> = tooljetDbTenantConnection.createQueryBuilder();
@@ -1227,7 +1248,8 @@ export class TooljetDbTableOperationsService {
     }
 
     // from table
-    queryBuilder.from(queryJson.from.name, internalTableIdToNameMap[queryJson.from.name]);
+    // Physical name is the relation id; the alias stays the display name every other clause reads.
+    queryBuilder.from(relationIdByLogicalId.get(queryJson.from.name), internalTableIdToNameMap[queryJson.from.name]);
 
     // join tables with conditions
     queryJson.joins.forEach((join) => {
@@ -1235,7 +1257,13 @@ export class TooljetDbTableOperationsService {
       const conditions = this.constructFilterConditions(join.conditions, internalTableIdToNameMap);
 
       const joinFunction = queryBuilder[camelCase(join.joinType) + 'Join'];
-      joinFunction.call(queryBuilder, join.table, joinAlias, conditions.query, conditions.params);
+      joinFunction.call(
+        queryBuilder,
+        relationIdByLogicalId.get(join.table),
+        joinAlias,
+        conditions.query,
+        conditions.params
+      );
     });
 
     // conditions
