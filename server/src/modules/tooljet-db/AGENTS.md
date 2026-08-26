@@ -36,10 +36,13 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 
 ## Invariants & gotchas
 
-- `internal_table_relations.id === internal_table_id` holds everywhere today. Every `perform()` call
-  site still names tables by the logical id, not a resolved relation id — this equality is what makes
-  that safe. The day a relation's physical name stops matching its logical table's id, every one of
-  those call sites needs the resolver in the loop, not just `viewTable`/`joinTable`/the proxy.
+- **Never assume any relation between `internal_table_relations.id` and `internal_table_id`.** Both
+  shapes coexist permanently: rows inserted by migration A satisfy the equality, while `create_table`
+  mints an independent relation id, so nothing created after that change does. A physical table name
+  is only ever a relation id obtained from `TooljetDbRelationResolverService` (or the
+  `resolveTable`/`resolveTableById` helpers on `TooljetDbTableOperationsService`) — never a logical id.
+  A new call site that names a table by a logical id will fail immediately on any table created after
+  the divergence landed, which is the point.
 - `configurations` (column metadata) lives on the relation row, not on `internal_tables`. It moved
   there because a workspace-global settings map has no way to represent "this column was configured
   differently per environment" — `drop_column` would have to guess which environment's copy to edit.
@@ -47,9 +50,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   access) and `.perform()` (in-process, used by data queries) — funnel through the same
   `resolveAndRewrite()`. A new caller should go through one of these two, not construct its own
   rewritten URL. `server/ee/external-apis/service.ts`'s `exportTjdbTableAsCSV` is a known third
-  path — it calls PostgREST directly via `got.get()` using `internalTable.id` as the physical table
-  name, bypassing the resolver. Safe only while relation ids equal logical ids; convert it to go
-  through the resolver whenever physical naming diverges.
+  path — it calls PostgREST directly via `got.get()` because it needs `Accept: text/csv` and a raw
+  text body, which `perform()` cannot return. It resolves the relation id itself via
+  `TooljetDbRelationResolverService`; if you touch it, keep that resolve in place.
 - Fail-closed by position: an unresolvable table named in the URL **path** is 404 (the table doesn't
   exist here); an unresolvable table named in an embedded **querystring** reference (a `select=`
   join) is 400 (malformed request). Nothing reaches PostgREST unrewritten in either case.

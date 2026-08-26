@@ -126,6 +126,41 @@ describe('TooljetDbController', () => {
         expect([200, 201]).toContain(res.statusCode);
       });
 
+      // The horizon's proof: create_table mints an independent relation id, so the physical table
+      // name is NOT the logical table id. Rows written by the backfill migration still satisfy the
+      // old equality - this pins only that newly created tables diverge.
+      it('creates the relation with an id independent of the logical table id, and builds the physical table under it', async function () {
+        if (!tooljetDbAvailable) return;
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('diverged_id_tbl'));
+
+        const manager = getDefaultDataSource().manager;
+        const internalTable = await manager.findOne(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'diverged_id_tbl' },
+        });
+        expect(internalTable).toBeTruthy();
+
+        const relations = await manager.find(InternalTableRelation, {
+          where: { internalTableId: internalTable.id },
+        });
+        expect(relations).toHaveLength(1);
+        expect(relations[0].id).not.toBe(internalTable.id);
+
+        // The physical table exists under the relation id, and not under the logical id.
+        const tableNames = await getTooljetDbDataSource().query(
+          `SELECT table_name FROM information_schema.tables WHERE table_schema = $1`,
+          [`workspace_${adminOrgId}`]
+        );
+        const names = tableNames.map((row) => row.table_name);
+        expect(names).toContain(relations[0].id);
+        expect(names).not.toContain(internalTable.id);
+      });
+
       it('admin can list tables', async function () {
         if (!tooljetDbAvailable) return;
 

@@ -178,8 +178,10 @@ describe('TooljetDbRelationResolverService', () => {
           where: { internalTableId: table.id },
         });
 
+        // The relation id is independent of the logical table id. Only rows written by the backfill
+        // migration coincide; this table was built by createTable, so its ids diverge.
+        expect(relation.id).not.toBe(table.id);
         expect(relation).toMatchObject({
-          id: table.id, // relation id currently always equals the logical table id
           internalTableId: table.id,
           environmentId: expect.any(String),
           branchId: expect.any(String),
@@ -195,9 +197,13 @@ describe('TooljetDbRelationResolverService', () => {
           where: { organizationId, tableName: 'users' },
         });
 
+        const relation = await appManager.findOne(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+
         const resolved = await service.resolve(organizationId, [table.id]);
 
-        expect(resolved.get(table.id)).toBe(table.id); // relation id currently equals logical id
+        expect(resolved.get(table.id)).toBe(relation.id);
       });
 
       it('should omit a table belonging to another workspace', async () => {

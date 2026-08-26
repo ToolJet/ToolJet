@@ -22,9 +22,11 @@ import {
   initTestApp,
   login,
   getTooljetDbDataSource,
+  getDefaultDataSource,
   closeTestApp,
   ensureAppEnvironments,
 } from 'test-helper';
+import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 
 describe('TooljetDbDataController', () => {
   describe('EE (plan: enterprise)', () => {
@@ -430,9 +432,14 @@ describe('TooljetDbDataController', () => {
           .set('Cookie', adminCookie)
           .set('tj-workspace-id', adminOrgId);
 
-        // Relation id currently always equals the logical table id, so the rewritten value equals
-        // the input.
-        expect(pollyRequests()[0].url).toContain(`${ordersTableId}.total=gt.5`);
+        // The relation id is independent of the logical table id, so the rewrite is observable:
+        // the forwarded key carries the relation id and the logical id is gone.
+        const ordersRelation = await getDefaultDataSource().manager.findOne(InternalTableRelation, {
+          where: { internalTableId: ordersTableId },
+        });
+        expect(ordersRelation.id).not.toBe(ordersTableId);
+        expect(pollyRequests()[0].url).toContain(`${ordersRelation.id}.total=gt.5`);
+        expect(pollyRequests()[0].url).not.toContain(ordersTableId);
       });
 
       it('should return 400 for a uuid-shaped embedded reference that resolves to nothing', async function () {
