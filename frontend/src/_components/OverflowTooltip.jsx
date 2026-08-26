@@ -53,13 +53,16 @@ export default function OverflowTooltip({
     };
   }, [children, checkOverflow, maxLetters]);
 
-  // Guard against non-primitive `children` (e.g. an unresolved fx binding) crashing rendering.
-  const safeChildren = typeof children === 'string' || typeof children === 'number' ? children : '';
+  const isPrimitiveChildren = typeof children === 'string' || typeof children === 'number';
 
   const displayText =
-    maxLetters && typeof safeChildren === 'string' && safeChildren.length > maxLetters
-      ? `${safeChildren.substring(0, maxLetters)}...`
-      : safeChildren;
+    maxLetters && typeof children === 'string' && children.length > maxLetters
+      ? `${children.substring(0, maxLetters)}...`
+      : children;
+
+  // The tooltip message must be a plain string; non-primitive children (e.g. an unresolved fx binding
+  // or a React node like a highlighter) have no safe text representation, so fall back to empty.
+  const tooltipMessage = isPrimitiveChildren ? children : '';
 
   useEffect(() => {
     checkOverflow();
@@ -71,7 +74,7 @@ export default function OverflowTooltip({
       delay={{ show: '0', hide: '0' }}
       tooltipClassName={`overflow-tooltip ${tooltipClassName}`}
       placement={placement}
-      message={safeChildren}
+      message={tooltipMessage}
       show={!!isOverflowed}
       width={width}
     >
