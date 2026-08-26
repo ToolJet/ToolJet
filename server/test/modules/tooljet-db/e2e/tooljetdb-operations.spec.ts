@@ -346,6 +346,134 @@ describe('TooljetDbController', () => {
     });
 
     // ---------------------------------------------------------------------------
+    // Foreign key DDL round trip | create, update, delete a foreign key between two tables -
+    // pins that createForeignKey/updateForeignKey/deleteForeignKey resolve both the owning table
+    // and the referenced table to physical names, and that the constraint they build really lands
+    // in Postgres and really goes away, not just that the request returned 200.
+    // ---------------------------------------------------------------------------
+    describe('Foreign key DDL round trip | create_foreign_key, update_foreign_key, delete_foreign_key', () => {
+      it('creates, updates, then deletes a foreign key between two tables', async function () {
+        if (!tooljetDbAvailable) return;
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('fk_parent_tbl'));
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'fk_child_tbl',
+            columns: [
+              {
+                column_name: 'id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: true, is_primary_key: true, is_unique: true },
+              },
+              {
+                column_name: 'parent_id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            ],
+            foreign_keys: [],
+          });
+
+        const createRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/fk_child_tbl/foreignkey`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            foreign_keys: [
+              {
+                column_names: ['parent_id'],
+                referenced_table_name: 'fk_parent_tbl',
+                referenced_column_names: ['id'],
+                on_delete: 'CASCADE',
+                on_update: 'NO ACTION',
+              },
+            ],
+          });
+
+        expect([200, 201]).toContain(createRes.statusCode);
+
+        const afterCreate = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/fk_child_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(afterCreate.statusCode).toBe(200);
+        expect(afterCreate.body.result.foreign_keys).toHaveLength(1);
+        expect(afterCreate.body.result.foreign_keys[0]).toMatchObject({
+          referenced_table_name: 'fk_parent_tbl',
+          constraint_name: expect.any(String),
+          column_names: ['parent_id'],
+          referenced_column_names: ['id'],
+          on_delete: 'CASCADE',
+        });
+        const foreignKeyId = afterCreate.body.result.foreign_keys[0].constraint_name;
+
+        const updateRes = await request
+          .agent(app.getHttpServer())
+          .put(`/api/tooljet-db/organizations/${adminOrgId}/table/fk_child_tbl/foreignkey`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            foreign_key_id: foreignKeyId,
+            foreign_keys: [
+              {
+                column_names: ['parent_id'],
+                referenced_table_name: 'fk_parent_tbl',
+                referenced_column_names: ['id'],
+                on_delete: 'SET NULL',
+                on_update: 'NO ACTION',
+              },
+            ],
+          });
+
+        expect(updateRes.statusCode).toBe(200);
+
+        const afterUpdate = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/fk_child_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(afterUpdate.statusCode).toBe(200);
+        expect(afterUpdate.body.result.foreign_keys).toHaveLength(1);
+        expect(afterUpdate.body.result.foreign_keys[0]).toMatchObject({
+          referenced_table_name: 'fk_parent_tbl',
+          on_delete: 'SET NULL',
+        });
+        const updatedForeignKeyId = afterUpdate.body.result.foreign_keys[0].constraint_name;
+
+        const deleteRes = await request
+          .agent(app.getHttpServer())
+          .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/fk_child_tbl/foreignkey/${updatedForeignKeyId}`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(deleteRes.statusCode).toBe(200);
+
+        const afterDelete = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/fk_child_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(afterDelete.statusCode).toBe(200);
+        expect(afterDelete.body.result.foreign_keys).toHaveLength(0);
+      });
+    });
+
+    // ---------------------------------------------------------------------------
     // End-user denial | this test does NOT require the tooljetDb connection
     // because the guard rejects before the service layer touches TJDB.
     // ---------------------------------------------------------------------------

@@ -513,7 +513,9 @@ export class TooljetDbTableOperationsService {
         err.message,
         {
           origin: 'drop_table',
-          internalTables: [internalTable],
+          // Raw Postgres error text names the physical relation, not the logical table - key on
+          // relation.id so the translation actually matches what the driver reported.
+          internalTables: [{ id: relation.id, tableName: internalTable.tableName }],
         },
         err
       );
@@ -562,10 +564,11 @@ export class TooljetDbTableOperationsService {
     // for its own getRelation call - reading the relation outside the transaction here would be a
     // read-your-own-writes hazard for any future write this handler makes before this point.
     let internalTable: InternalTable;
+    let relation: InternalTableRelation;
     try {
       const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
       internalTable = resolved.internalTable;
-      const relation = resolved.relation;
+      relation = resolved.relation;
       const physicalName = resolved.physicalName;
       const updatedPrimaryKeys = [];
       const columnstoBeUpdated = [];
@@ -760,7 +763,13 @@ export class TooljetDbTableOperationsService {
       // surfacing the real "not found" message.
       if (error instanceof NotFoundException) throw error;
 
-      throw new TooljetDatabaseError(error.message, { origin: 'edit_table', internalTables: [internalTable] }, error);
+      // Raw Postgres error text names the physical relation, not the logical table - key on
+      // relation.id so the translation actually matches what the driver reported.
+      throw new TooljetDatabaseError(
+        error.message,
+        { origin: 'edit_table', internalTables: [{ id: relation.id, tableName: internalTable.tableName }] },
+        error
+      );
     }
   }
 
@@ -800,10 +809,11 @@ export class TooljetDbTableOperationsService {
     // for its own getRelation call - reading the relation outside the transaction here would be a
     // read-your-own-writes hazard for any future write this handler makes before this point.
     let internalTable: InternalTable;
+    let relation: InternalTableRelation;
     try {
       const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
       internalTable = resolved.internalTable;
-      const relation = resolved.relation;
+      relation = resolved.relation;
       const physicalName = resolved.physicalName;
       const columnNames = relation.configurations.columns.column_names;
       const columnConfigurations = relation.configurations.columns.configurations;
@@ -872,7 +882,9 @@ export class TooljetDbTableOperationsService {
         err.message,
         {
           origin: 'add_column',
-          internalTables: [internalTable, ...referencedColumnInfoForError],
+          // Raw Postgres error text names the physical relation, not the logical table - key on
+          // relation.id so the translation actually matches what the driver reported.
+          internalTables: [{ id: relation.id, tableName: internalTable.tableName }, ...referencedColumnInfoForError],
         },
         err
       );
@@ -895,10 +907,11 @@ export class TooljetDbTableOperationsService {
     // for its own getRelation call - reading the relation outside the transaction here would be a
     // read-your-own-writes hazard for any future write this handler makes before this point.
     let internalTable: InternalTable;
+    let relation: InternalTableRelation;
     try {
       const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
       internalTable = resolved.internalTable;
-      const relation = resolved.relation;
+      relation = resolved.relation;
       const physicalName = resolved.physicalName;
       const columnNames = relation.configurations.columns.column_names;
       const columnConfigurations = relation.configurations.columns.configurations;
@@ -929,7 +942,13 @@ export class TooljetDbTableOperationsService {
       // surfacing the real "not found" message.
       if (error instanceof NotFoundException) throw error;
 
-      throw new TooljetDatabaseError(error.message, { origin: 'drop_column', internalTables: [internalTable] }, error);
+      // Raw Postgres error text names the physical relation, not the logical table - key on
+      // relation.id so the translation actually matches what the driver reported.
+      throw new TooljetDatabaseError(
+        error.message,
+        { origin: 'drop_column', internalTables: [{ id: relation.id, tableName: internalTable.tableName }] },
+        error
+      );
     } finally {
       await queryRunner.release();
       await tjdbQueryRunnner.release();
@@ -1362,7 +1381,13 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunner.release();
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
-      throw new TooljetDatabaseError(error.message, { origin: 'edit_column', internalTables: [internalTable] }, error);
+      // Raw Postgres error text names the physical relation, not the logical table - key on
+      // relation.id so the translation actually matches what the driver reported.
+      throw new TooljetDatabaseError(
+        error.message,
+        { origin: 'edit_column', internalTables: [{ id: relation.id, tableName: internalTable.tableName }] },
+        error
+      );
     }
   }
 
@@ -1457,7 +1482,7 @@ export class TooljetDbTableOperationsService {
       select: ['tableName', 'id'],
     });
 
-    const referenced_tables_info = {};
+    const referenced_tables_info: Record<string, string> = {};
     const validReferencedTableSet = new Set(
       valid_referenced_table_details.map((referenced_table_detail) => {
         if (type === 'TABLEID') {
@@ -1483,6 +1508,30 @@ export class TooljetDbTableOperationsService {
           : `Tables: ${invalid_tables.join(',')} - used for Foreign key reference was not found`;
       throw new BadRequestException(errorMessage);
     }
+
+    // TABLENAME: referenced_tables_info maps display name -> logical id at this point, but every
+    // consumer (prepareForeignKeyDetailsJSON, the referencedColumnInfoForError translation) treats
+    // the value as a physical table name. Resolve logical ids to this (environment, branch)'s
+    // relation ids before returning, in one batch call rather than per foreign key.
+    if (type === 'TABLENAME') {
+      const logicalIds = Object.values(referenced_tables_info);
+      const relationIdsByLogicalId = await this.relationResolverService.resolve(
+        organisation_id,
+        logicalIds,
+        undefined,
+        manager
+      );
+      for (const tableName of Object.keys(referenced_tables_info)) {
+        const logicalId = referenced_tables_info[tableName];
+        const relationId = relationIdsByLogicalId.get(logicalId);
+        // Tenancy validation above already proved this table belongs to the caller; a missing
+        // relation here means it has no relation in this (environment, branch) - fail closed rather
+        // than let a logical id leak through as a physical name.
+        if (!relationId) throw new BadRequestException(`Table "${tableName}" has no relation in this environment`);
+        referenced_tables_info[tableName] = relationId;
+      }
+    }
+
     return referenced_tables_info;
   }
 
@@ -1498,10 +1547,7 @@ export class TooljetDbTableOperationsService {
     const { appManager, tjdbManager } = connectionManagers;
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
 
-    const internalTable = await appManager.findOne(InternalTable, {
-      where: { organizationId: organizationId, tableName: table_name },
-    });
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name, appManager);
 
     let referenced_tables_info = {};
     const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
@@ -1529,11 +1575,10 @@ export class TooljetDbTableOperationsService {
     const tenantSchema = findTenantSchema(organizationId);
 
     try {
-      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
       const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
         (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
       );
-      await tjdbQueryRunner.createForeignKeys(tableName, foreignKeys);
+      await tjdbQueryRunner.createForeignKeys(physicalName, foreignKeys);
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
@@ -1566,7 +1611,9 @@ export class TooljetDbTableOperationsService {
           err.message,
           {
             origin: 'create_foreign_key',
-            internalTables: [internalTable, ...referencedColumnInfoForError],
+            // Raw Postgres error text names the physical relation, not the logical table - key on
+            // relation.id so the translation actually matches what the driver reported.
+            internalTables: [{ id: relation.id, tableName: internalTable.tableName }, ...referencedColumnInfoForError],
           },
           err
         );
@@ -1579,10 +1626,7 @@ export class TooljetDbTableOperationsService {
     if (!foreign_key_id) throw new BadRequestException('Foreign key id is mandatory');
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
 
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId: organizationId, tableName: table_name },
-    });
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name);
 
     let referenced_tables_info = {};
     const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
@@ -1608,13 +1652,12 @@ export class TooljetDbTableOperationsService {
     const tenantSchema = findTenantSchema(organizationId);
 
     try {
-      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
-      await tjdbQueryRunner.dropForeignKey(tableName, foreign_key_id);
+      await tjdbQueryRunner.dropForeignKey(physicalName, foreign_key_id);
 
       const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
         (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
       );
-      await tjdbQueryRunner.createForeignKeys(tableName, foreignKeys);
+      await tjdbQueryRunner.createForeignKeys(physicalName, foreignKeys);
 
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
@@ -1639,7 +1682,9 @@ export class TooljetDbTableOperationsService {
         err.message,
         {
           origin: 'update_foreign_key',
-          internalTables: [internalTable, ...referencedColumnInfoForError],
+          // Raw Postgres error text names the physical relation, not the logical table - key on
+          // relation.id so the translation actually matches what the driver reported.
+          internalTables: [{ id: relation.id, tableName: internalTable.tableName }, ...referencedColumnInfoForError],
         },
         err
       );
@@ -1648,17 +1693,12 @@ export class TooljetDbTableOperationsService {
 
   protected async deleteForeignKey(organizationId: string, params) {
     const { table_name, foreign_key_id } = params;
-    const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId: organizationId, tableName: table_name },
-    });
-    if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
+    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name);
     try {
-      const tenantSchema = findTenantSchema(organizationId);
-      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
       const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
 
       await tjdbQueryRunner.connect();
-      await tjdbQueryRunner.dropForeignKey(tableName, foreign_key_id);
+      await tjdbQueryRunner.dropForeignKey(physicalName, foreign_key_id);
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       return {
         statusCode: 200,
@@ -1669,7 +1709,9 @@ export class TooljetDbTableOperationsService {
         error.message,
         {
           origin: 'delete_foreign_key',
-          internalTables: [internalTable],
+          // Raw Postgres error text names the physical relation, not the logical table - key on
+          // relation.id so the translation actually matches what the driver reported.
+          internalTables: [{ id: relation.id, tableName: internalTable.tableName }],
         },
         error
       );
