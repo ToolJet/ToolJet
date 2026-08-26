@@ -148,7 +148,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   let resolvedStr = str;
 
   // Resolve {{object}}
-  const codeRegex = /(\{\{.+?\}\})/g;
+  const codeRegex = /(\{\{.+?\}\})/gs;
   const codeMatches = resolvedStr.match(codeRegex);
 
   if (codeMatches) {
