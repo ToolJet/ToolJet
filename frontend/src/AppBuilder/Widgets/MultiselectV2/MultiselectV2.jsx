@@ -633,6 +633,7 @@ export const MultiselectV2 = ({
             containerRef={valueContainerRef}
             showAllSelectedLabel={showAllSelectedLabel}
             iconColor={iconColor}
+            accentColor={accentColor}
             optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
             menuBackgroundColor={menuBackgroundColor}
