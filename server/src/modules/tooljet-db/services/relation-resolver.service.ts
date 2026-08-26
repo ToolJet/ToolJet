@@ -48,6 +48,31 @@ export class TooljetDbRelationResolverService {
     return new Map(relations.map((relation) => [relation.internalTableId, relation.id]));
   }
 
+  /**
+   * Reverse of resolve(): relation id -> logical table id. No environment/branch predicate — a
+   * relation id is already unique and implies both, so adding them would reject exactly the
+   * cross-environment foreign keys this exists to report. Same fail-closed contract as resolve():
+   * a relation id the workspace does not own is omitted from the map, never passed through.
+   */
+  async resolveLogicalIds(
+    organizationId: string,
+    relationIds: string[],
+    manager?: EntityManager
+  ): Promise<Map<string, string>> {
+    const entityManager = manager || this.manager;
+    if (!relationIds.length) return new Map();
+
+    const relations = await entityManager
+      .createQueryBuilder(InternalTableRelation, 'relation')
+      .innerJoin('internal_tables', 'it', 'it.id = relation.internal_table_id')
+      .where('relation.id IN (:...ids)', { ids: relationIds })
+      .andWhere('it.organization_id = :organizationId', { organizationId })
+      .andWhere('it.deleted_at IS NULL')
+      .getMany();
+
+    return new Map(relations.map((relation) => [relation.id, relation.internalTableId]));
+  }
+
   async getRelation(
     organizationId: string,
     internalTableId: string,

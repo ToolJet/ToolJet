@@ -200,6 +200,53 @@ describe('TooljetDbRelationResolverService', () => {
       });
     });
 
+    describe('.resolveLogicalIds | reverse resolution', () => {
+      it('should map a relation id back to its logical table id', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const relation = await appManager.findOne(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+
+        const resolved = await service.resolveLogicalIds(organizationId, [relation.id]);
+
+        expect(resolved.get(relation.id)).toBe(table.id);
+      });
+
+      it('should omit a relation belonging to another workspace', async () => {
+        const otherUser = await createUser(app, {
+          email: 'other-reverse@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const foreignTable = await appManager.save(
+          appManager.create(InternalTable, {
+            organizationId: otherUser.organization.id,
+            tableName: 'foreign_table_reverse',
+            co_relation_id: uuidv4(),
+          })
+        );
+
+        const resolved = await service.resolveLogicalIds(organizationId, [foreignTable.id]);
+
+        expect(resolved.has(foreignTable.id)).toBe(false);
+      });
+
+      it('should omit the relation of a soft-deleted table', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'orders' },
+        });
+        const relation = await appManager.findOne(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+        await appManager.update(InternalTable, { id: table.id }, { deletedAt: new Date() });
+
+        const resolved = await service.resolveLogicalIds(organizationId, [relation.id]);
+
+        expect(resolved.has(relation.id)).toBe(false);
+      });
+    });
+
     describe('.getRelation | single lookup', () => {
       it('should throw NotFoundException for a table with no relation in the environment', async () => {
         const orphan = await appManager.save(

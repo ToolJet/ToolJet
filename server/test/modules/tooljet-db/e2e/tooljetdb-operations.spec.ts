@@ -18,9 +18,11 @@ import {
   login,
   logout,
   getTooljetDbDataSource,
+  getDefaultDataSource,
   closeTestApp,
   ensureAppEnvironments,
 } from 'test-helper';
+import { InternalTable } from '@entities/internal_table.entity';
 
 describe('TooljetDbController', () => {
   describe('EE (plan: enterprise)', () => {
@@ -470,6 +472,81 @@ describe('TooljetDbController', () => {
 
         expect(afterDelete.statusCode).toBe(200);
         expect(afterDelete.body.result.foreign_keys).toHaveLength(0);
+      });
+
+      it('view_table reports the referenced table by its logical internal_tables.id, not a relation id echoed back from the response', async function () {
+        if (!tooljetDbAvailable) return;
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('fk_r6_parent_tbl'));
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'fk_r6_child_tbl',
+            columns: [
+              {
+                column_name: 'id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: true, is_primary_key: true, is_unique: true },
+              },
+              {
+                column_name: 'parent_id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            ],
+            foreign_keys: [],
+          });
+
+        const createRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/fk_r6_child_tbl/foreignkey`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            foreign_keys: [
+              {
+                column_names: ['parent_id'],
+                referenced_table_name: 'fk_r6_parent_tbl',
+                referenced_column_names: ['id'],
+                on_delete: 'CASCADE',
+                on_update: 'NO ACTION',
+              },
+            ],
+          });
+        expect([200, 201]).toContain(createRes.statusCode);
+
+        // Read the referenced table's logical id independently from the database, not from
+        // anything the view_table response itself echoes back - the whole trap of this test is
+        // that a relation id substituted for the logical id would still pass a self-comparison.
+        const parentTable = await getDefaultDataSource().manager.findOne(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'fk_r6_parent_tbl' },
+        });
+
+        const viewRes = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/fk_r6_child_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+
+        expect(viewRes.statusCode).toBe(200);
+        expect(viewRes.body.result.foreign_keys).toHaveLength(1);
+        expect(viewRes.body.result.foreign_keys[0]).toMatchObject({
+          referenced_table_id: parentTable.id,
+          referenced_table_name: 'fk_r6_parent_tbl',
+          constraint_name: expect.any(String),
+          column_names: ['parent_id'],
+          referenced_column_names: ['id'],
+          on_delete: 'CASCADE',
+        });
       });
     });
 

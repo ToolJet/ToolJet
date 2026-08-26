@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import {
   Connection,
   EntityManager,
@@ -221,18 +227,39 @@ export class TooljetDbTableOperationsService {
       };
     });
 
-    const referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+    // pg_class only knows the physical relation name; recover the logical table id it belongs to
+    // before handing the list to the workspace-ownership check below, which looks up by logical id.
+    const logicalIdsByRelationId = await this.relationResolverService.resolveLogicalIds(
+      organizationId,
       referenced_table_list,
+      appManager
+    );
+    const referenced_table_logical_id_list = referenced_table_list.map((relationId) => {
+      const logicalId = logicalIdsByRelationId.get(relationId);
+      // A relname pg_class just handed back that doesn't map to one of this workspace's internal
+      // tables means a foreign key to something outside internal_tables entirely - not reachable
+      // via the API today. Raise rather than silently dropping the constraint from the response.
+      if (!logicalId) {
+        throw new InternalServerErrorException(
+          `Foreign key references relation "${relationId}", which does not resolve to a known internal table`
+        );
+      }
+      return logicalId;
+    });
+
+    const referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
+      referenced_table_logical_id_list,
       organizationId,
       'TABLEID',
       appManager
     );
 
     foreign_keys = foreign_keys.map((foreign_key_detail) => {
+      const logicalId = logicalIdsByRelationId.get(foreign_key_detail.referenced_table_name);
       return {
         ...foreign_key_detail,
-        referenced_table_id: foreign_key_detail.referenced_table_name,
-        referenced_table_name: referenced_tables_info[foreign_key_detail.referenced_table_name],
+        referenced_table_id: logicalId,
+        referenced_table_name: referenced_tables_info[logicalId],
       };
     });
 
