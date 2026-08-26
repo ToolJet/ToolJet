@@ -242,6 +242,57 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
     //      EnsureDefaultBranchDraftVersion / CloneDefaultBranchDraftFromPublished no longer create
     //      drafts; UpdateAppVersionStatusAndFields only backfills a NULL status.)
 
+    // 7c. RELEASE modules. MODULES are the one exception to "preserve status as-is": LTS has no
+    //     module versioning — a module is a single 'v1' DRAFT that was never released. The new
+    //     model can only EMBED a module that has a released (PUBLISHED) version; an unreleased
+    //     module errors with "Release the module first" and its consumers' version pins can't
+    //     resolve. So promote each module's canonical (non-stub, default-branch) 'v1' version to
+    //     PUBLISHED and point apps.current_version_id at it (mirrors the original
+    //     PromoteAndReleaseExistingModuleVersions, which we keep neutralised because it is a
+    //     data-phase migration — too late).
+    //
+    //     ORDERING IS THE POINT: this runs here (consolidated, ts 1773500000000) BEFORE
+    //     GenerateCoRelationIdForModules (schema, ts 1776470400000). That later migration rewrites
+    //     each consuming ModuleViewer's moduleVersionId pin to the module's RELEASED version's
+    //     module_reference_id (linking consumers to the v1 release); if the module were still a
+    //     DRAFT at that point it would instead collapse the pin to '' (unpinned). Releasing here
+    //     is what makes the version-level linkage land on the v1 release. (moduleAppId ->
+    //     co_relation_id is handled entirely by that later migration.)
+    //
+    //     LTS invariant: exactly one non-stub 'version' row per module. If a beta edge ever had
+    //     several, all its non-stub default-branch version rows publish and current_version_id
+    //     takes the latest — still a valid released state.
+    console.log(`${MIGRATION_NAME}: [START] Step 7c - releasing modules (v1 DRAFT -> PUBLISHED + current_version_id).`);
+    const [, modulesReleased] = await queryRunner.query(`
+      UPDATE app_versions av
+      SET status = 'PUBLISHED',
+          current_environment_id = COALESCE((
+            SELECT e.id FROM app_environments e
+            WHERE e.organization_id = a.organization_id
+            ORDER BY (e."default" IS TRUE) DESC, e.priority ASC
+            LIMIT 1
+          ), av.current_environment_id)
+      FROM apps a
+      JOIN organization_git_sync_branches wb ON wb.organization_id = a.organization_id AND wb.is_default = true
+      WHERE av.app_id = a.id
+        AND a.type = 'module'
+        AND av.version_type = 'version'
+        AND av.is_stub = false
+        AND av.branch_id = wb.id
+    `);
+    await queryRunner.query(`
+      UPDATE apps a
+      SET current_version_id = (
+        SELECT av.id FROM app_versions av
+        JOIN organization_git_sync_branches wb ON wb.id = av.branch_id AND wb.is_default = true
+        WHERE av.app_id = a.id AND av.version_type = 'version' AND av.is_stub = false AND av.status = 'PUBLISHED'
+        ORDER BY av.updated_at DESC, av.id
+        LIMIT 1
+      )
+      WHERE a.type = 'module'
+    `);
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Step 7c - released ${modulesReleased ?? 0} module versions (named v1).`);
+
     // 8. Data source versions + options for global data sources.
     //    Self-contained DS-name dedup (per org) — the branch model requires unique
     //    (name, branch_id); we cannot rely on the data-phase enforce-unique-data-source-names
