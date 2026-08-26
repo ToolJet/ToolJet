@@ -23,6 +23,8 @@ import {
   ensureAppEnvironments,
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
+import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('TooljetDbController', () => {
   describe('EE (plan: enterprise)', () => {
@@ -547,6 +549,95 @@ describe('TooljetDbController', () => {
           referenced_column_names: ['id'],
           on_delete: 'CASCADE',
         });
+      });
+    });
+
+    // ---------------------------------------------------------------------------
+    // Bulk upload | pins bulkUploadCsv/bulkUpsertRows naming the INSERT's target by relation id,
+    // not the logical internal_table id. relation.id === internal_table_id for every row today, so
+    // without deliberately moving the relation id off the logical id first, this would pass whether
+    // or not the resolver was ever consulted (the same vacuity the horizon's earlier tasks hit).
+    // ---------------------------------------------------------------------------
+    describe('Bulk upload | POST /table/:tableName/bulk-upload', () => {
+      it('inserts CSV rows into the table named by the relation id and advances its serial sequence', async function () {
+        if (!tooljetDbAvailable) return;
+
+        const tableName = 'bulk_upload_tbl';
+        const createRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: tableName,
+            columns: [
+              {
+                column_name: 'id',
+                data_type: 'serial',
+                constraints_type: { is_not_null: true, is_primary_key: true, is_unique: true },
+              },
+              {
+                column_name: 'name',
+                data_type: 'character varying',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            ],
+            foreign_keys: [],
+          });
+        expect([200, 201]).toContain(createRes.statusCode);
+
+        const appManager = getDefaultDataSource().manager;
+        const tjDbManager = getTooljetDbDataSource();
+        const tenantSchema = `workspace_${adminOrgId}`;
+
+        const internalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName },
+        });
+        const originalRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: internalTable.id },
+        });
+
+        // Move the relation id off the logical id, and physically rename the table to match - this
+        // is what keeps the "physical name is always the relation id" invariant true, and is the
+        // only way a real INSERT can distinguish resolver-consulted code from code still using the
+        // logical id: pre-fix code targets the (now renamed-away) old id and errors; post-fix code
+        // targets the new id and succeeds.
+        const newRelationId = uuidv4();
+        await tjDbManager.query(`ALTER TABLE "${tenantSchema}"."${originalRelation.id}" RENAME TO "${newRelationId}"`);
+        await appManager.update(InternalTableRelation, { internalTableId: internalTable.id }, { id: newRelationId });
+
+        try {
+          // The 'id' header must be present (even blank) - bulkUploadCsv only recognizes a row's
+          // primary key value as "let Postgres auto-generate this" when the column is present with
+          // an empty value; a column absent from the CSV entirely isn't treated as a primary key at
+          // all, and every row then collides as a false "duplicate primary key".
+          const csvBuffer = Buffer.from('id,name\n,Alice\n,Bob\n');
+          const uploadRes = await request
+            .agent(app.getHttpServer())
+            .post(`/api/tooljet-db/organizations/${adminOrgId}/table/${tableName}/bulk-upload`)
+            .set('Cookie', adminCookie)
+            .set('tj-workspace-id', adminOrgId)
+            .attach('file', csvBuffer, 'rows.csv');
+
+          expect(uploadRes.statusCode).toBe(201);
+          expect(uploadRes.body.result).toMatchObject({ processed_rows: 2 });
+
+          const rows = await tjDbManager.query(`SELECT * FROM "${tenantSchema}"."${newRelationId}" ORDER BY id`);
+          expect(rows).toHaveLength(2);
+          expect(rows.map((row) => row.name)).toEqual(['Alice', 'Bob']);
+          expect(rows.map((row) => row.id)).toEqual([1, 2]);
+
+          const [{ seq: seqName }] = await tjDbManager.query(
+            `SELECT pg_get_serial_sequence('"${tenantSchema}"."${newRelationId}"', 'id') as seq`
+          );
+          const [{ last_value: sequenceValue }] = await tjDbManager.query(`SELECT last_value FROM ${seqName}`);
+          expect(Number(sequenceValue)).toBe(2);
+        } finally {
+          // The rename ran on the tooljetDb data source, outside the app-DB suite transaction that
+          // rolls the InternalTable/relation rows back - without this the physical table (now named
+          // by newRelationId) would leak in the tenant schema on every run.
+          await tjDbManager.query(`DROP TABLE IF EXISTS "${tenantSchema}"."${newRelationId}"`);
+        }
       });
     });
 

@@ -156,6 +156,26 @@ export class TooljetDbTableOperationsService {
     return { internalTable, relation, physicalName };
   }
 
+  /**
+   * Id-based sibling to resolveTable, for callers that already have the internal table's logical
+   * id rather than its display name (e.g. bulk upload, which is not a subclass and can't reach
+   * relationResolverService directly - it's protected on this service).
+   */
+  async resolveTableById(
+    organizationId: string,
+    internalTableId: string,
+    manager?: EntityManager
+  ): Promise<{ relation: InternalTableRelation }> {
+    const relation = await this.relationResolverService.getRelation(
+      organizationId,
+      internalTableId,
+      undefined,
+      manager
+    );
+
+    return { relation };
+  }
+
   protected async viewTable(
     organizationId: string,
     params,
