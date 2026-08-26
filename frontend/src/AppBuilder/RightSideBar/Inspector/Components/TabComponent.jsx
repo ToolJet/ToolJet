@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
-import { renderElement } from '../Utils';
+import { renderElement, validateStaticId } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
@@ -238,26 +238,17 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     updateAllTabItemsParams(updatedTabItems);
   };
 
-  const validateTabId = (value, currentItemId) => {
-    if (value === null || value === undefined || value === '') {
-      return [false, 'Tab ID cannot be empty'];
-    }
-
-    const stringValue = String(value);
-    const trimmedValue = stringValue.trim();
-
-    if (!trimmedValue) {
-      return [false, 'Tab ID cannot be empty'];
-    }
-
-    const duplicateTab = tabItems.find((tabItem) => tabItem.id === trimmedValue && tabItem.id !== currentItemId);
-
-    if (duplicateTab) {
-      return [false, 'Tab ID must be unique. This ID is already used by another tab.'];
-    }
-
-    return [true, null];
-  };
+  const validateTabId = (value, currentItemId) =>
+    validateStaticId(
+      value,
+      tabItems.map((tab) => tab.id),
+      currentItemId,
+      {
+        emptyMessage: 'Tab ID cannot be empty',
+        bindingMessage: 'Tab ID cannot contain a dynamic binding ({{ }}). Use a plain, static value.',
+        duplicateMessage: 'Tab ID must be unique. This ID is already used by another tab.',
+      }
+    );
 
   const areAllTabIdsValid = () => {
     const ids = tabItems.map((tab) => tab.id);
