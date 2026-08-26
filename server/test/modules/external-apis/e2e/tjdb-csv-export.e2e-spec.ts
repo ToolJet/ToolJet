@@ -88,7 +88,7 @@ describe('ExternalApisTjdbController', () => {
     });
 
     afterEach(() => {
-      jest.restoreAllMocks();
+      jest.resetAllMocks();
     });
 
     afterAll(async () => {
