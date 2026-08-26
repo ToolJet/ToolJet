@@ -365,6 +365,12 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     if (pastedLabel?.value === `{{components.${component.id}.value}}%`) {
       pastedLabel.value = `{{components.${newComponentId}.value}}%`;
     }
+    // Same array-index-merge issue affects any widget storing options as an array of objects
+    // (RadioButtonV2, DropdownV2, MultiselectV2) - override with the pasted value directly.
+    const pastedOptions = component.component?.definition?.properties?.options;
+    if (Array.isArray(pastedOptions?.value) && componentData?.definition?.properties?.options) {
+      componentData.definition.properties.options = deepClone(pastedOptions);
+    }
     if (targetParentId && !componentData.parent) {
       isChild = component.component.parent;
     }
