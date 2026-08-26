@@ -6,7 +6,14 @@ import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
-import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments } from 'test-helper';
+import {
+  resetDB,
+  createUser,
+  setDataSources,
+  closeTestApp,
+  ensureAppEnvironments,
+  resolveOrSeedDefaultBranch,
+} from 'test-helper';
 import { setupTestTables } from '../../../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
@@ -36,6 +43,8 @@ describe('TooljetDbRelationResolverService', () => {
     let tableOperationsService: TooljetDbTableOperationsService;
     let service: TooljetDbRelationResolverService;
     let organizationId: string;
+    let adminEnvironmentId: string;
+    let adminBranchId: string;
     let getLicenseTerms: jest.Mock;
 
     beforeAll(async () => {
@@ -104,13 +113,45 @@ describe('TooljetDbRelationResolverService', () => {
         groups: ['all_users', 'admin'],
       });
       organizationId = adminUserData.organization.id;
-      await ensureAppEnvironments(app, organizationId);
+      const environments = await ensureAppEnvironments(app, organizationId);
+      adminEnvironmentId = environments.find((env) => env.priority === 1).id;
+      adminBranchId = (await resolveOrSeedDefaultBranch(organizationId)).id;
 
       const schemaName = `workspace_${organizationId}`;
       await tjDbManager.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
 
       await setupTestTables(appManager, tjDbManager, tableOperationsService, organizationId);
     });
+
+    /**
+     * Builds a relation for another workspace's table, using THIS workspace's own environment
+     * and branch ids. That is deliberately the wrong org's relation pointing at the right
+     * environment/branch - it isolates the Workspace predicate as the only thing standing between
+     * a cross-workspace id and a match, since resolve()'s environment/branch predicates would
+     * otherwise also filter a normally-shaped foreign relation out for an unrelated reason.
+     */
+    async function createForeignTableWithRelation(tableName: string) {
+      const otherUser = await createUser(app, {
+        email: `${tableName}@tooljet.io`,
+        groups: ['all_users', 'admin'],
+      });
+      const table = await appManager.save(
+        appManager.create(InternalTable, {
+          organizationId: otherUser.organization.id,
+          tableName,
+          co_relation_id: uuidv4(),
+        })
+      );
+      const relation = await appManager.save(
+        appManager.create(InternalTableRelation, {
+          id: uuidv4(),
+          internalTableId: table.id,
+          environmentId: adminEnvironmentId,
+          branchId: adminBranchId,
+        })
+      );
+      return { table, relation };
+    }
 
     afterEach(async () => {
       if (organizationId && tjDbManager) {
@@ -160,17 +201,7 @@ describe('TooljetDbRelationResolverService', () => {
       });
 
       it('should omit a table belonging to another workspace', async () => {
-        const otherUser = await createUser(app, {
-          email: 'other@tooljet.io',
-          groups: ['all_users', 'admin'],
-        });
-        const foreignTable = await appManager.save(
-          appManager.create(InternalTable, {
-            organizationId: otherUser.organization.id,
-            tableName: 'foreign_table',
-            co_relation_id: uuidv4(),
-          })
-        );
+        const { table: foreignTable } = await createForeignTableWithRelation('foreign_table');
 
         const resolved = await service.resolve(organizationId, [foreignTable.id]);
 
@@ -211,25 +242,17 @@ describe('TooljetDbRelationResolverService', () => {
 
         const resolved = await service.resolveLogicalIds(organizationId, [relation.id]);
 
+        // Holds under either resolution direction while relation id === logical table id; revisit
+        // this assertion once the two diverge, same caveat as the .resolve base case above.
         expect(resolved.get(relation.id)).toBe(table.id);
       });
 
       it('should omit a relation belonging to another workspace', async () => {
-        const otherUser = await createUser(app, {
-          email: 'other-reverse@tooljet.io',
-          groups: ['all_users', 'admin'],
-        });
-        const foreignTable = await appManager.save(
-          appManager.create(InternalTable, {
-            organizationId: otherUser.organization.id,
-            tableName: 'foreign_table_reverse',
-            co_relation_id: uuidv4(),
-          })
-        );
+        const { relation: foreignRelation } = await createForeignTableWithRelation('foreign_table_reverse');
 
-        const resolved = await service.resolveLogicalIds(organizationId, [foreignTable.id]);
+        const resolved = await service.resolveLogicalIds(organizationId, [foreignRelation.id]);
 
-        expect(resolved.has(foreignTable.id)).toBe(false);
+        expect(resolved.has(foreignRelation.id)).toBe(false);
       });
 
       it('should omit the relation of a soft-deleted table', async () => {
