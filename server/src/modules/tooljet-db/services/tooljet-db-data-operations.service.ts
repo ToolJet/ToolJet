@@ -385,27 +385,25 @@ export class TooljetDbDataOperationsService implements QueryService {
       await tooljetDbTenantConnection.query(`SET search_path TO "${tenantSchema}"`);
 
       const { tablesUsedInQuery, tableAndSchemaList } = this.parseTableListFromASTParser(tableList);
-      // Validate tables are exists in workspace.
-      const tableDetailsInList = await this.verifyTablesExistInWorkspace(tablesUsedInQuery, organizationId);
-      const internalTableNameToIdMap = tablesUsedInQuery.reduce((acc, tableName) => {
-        const tableId = tableDetailsInList.find((table) => table.tableName === tableName).id;
-        internalTableInfo.push({ id: tableId, tableName: tableName });
-
-        return {
-          ...acc,
-          [tableName]: tableId,
-        };
-      }, {});
+      // Validate tables exist in workspace before resolving physical names - this owns the
+      // "table doesn't exist" error message, and resolveTable's own NotFoundException (thrown by
+      // its internal findOne, redone below) would replace that message with a worse one.
+      await this.verifyTablesExistInWorkspace(tablesUsedInQuery, organizationId);
+      const internalTableNameToRelationIdMap = await this.resolveTableNameToRelationIdMap(
+        tablesUsedInQuery,
+        organizationId,
+        internalTableInfo
+      );
 
       await this.validateSchemaAndTablePrivileges(
         this.tooljetDbManager,
         tenantSchema,
         pgUser,
         tableAndSchemaList,
-        internalTableNameToIdMap
+        internalTableNameToRelationIdMap
       );
 
-      this.parseTableNameInAST(ast, internalTableNameToIdMap);
+      this.parseTableNameInAST(ast, internalTableNameToRelationIdMap);
       const validSql = await sqlParser.sqlify(ast);
       const results = await tooljetDbTenantConnection.query(validSql);
       return { status: 'ok', data: { results } };
@@ -428,23 +426,55 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   /**
-   * Helper function to UPDATE TableName with TableId in the parsed sql (AST)
+   * Helper function to UPDATE TableName with its relation id in the parsed sql (AST)
    * @param parsedSql - AST Json for SQL
-   * @param internalTableNameToIdMap - Object which holds tablename and its respective tableId
+   * @param internalTableNameToRelationIdMap - Object which holds tablename and its respective relation id
    */
-  protected parseTableNameInAST(parsedSql, internalTableNameToIdMap) {
+  protected parseTableNameInAST(parsedSql, internalTableNameToRelationIdMap) {
     if (Array.isArray(parsedSql)) {
-      parsedSql.forEach((item) => this.parseTableNameInAST(item, internalTableNameToIdMap));
+      parsedSql.forEach((item) => this.parseTableNameInAST(item, internalTableNameToRelationIdMap));
     } else if (typeof parsedSql === 'object' && parsedSql !== null) {
-      if (parsedSql['table'] && !isEmpty(internalTableNameToIdMap)) {
-        parsedSql.table = internalTableNameToIdMap[parsedSql.table]
-          ? internalTableNameToIdMap[parsedSql.table]
+      if (parsedSql['table'] && !isEmpty(internalTableNameToRelationIdMap)) {
+        parsedSql.table = internalTableNameToRelationIdMap[parsedSql.table]
+          ? internalTableNameToRelationIdMap[parsedSql.table]
           : parsedSql.table;
       }
       Object.keys(parsedSql).forEach((key) => {
-        this.parseTableNameInAST(parsedSql[key], internalTableNameToIdMap);
+        this.parseTableNameInAST(parsedSql[key], internalTableNameToRelationIdMap);
       });
     }
+  }
+
+  /**
+   * Resolves each display name used in a SQL-mode query to the relation id naming its current
+   * physical table, via TooljetDbTableOperationsService.resolveTable - the single door from a
+   * display name to a physical name. Kept as its own method (rather than inline in sqlExecution)
+   * so the map construction can be unit-tested without going through AST parsing or opening a
+   * Postgres connection.
+   *
+   * Call only after verifyTablesExistInWorkspace has confirmed every name in tablesUsedInQuery
+   * belongs to this workspace - resolveTable does its own (redundant, accepted) existence check
+   * and would surface a worse-worded NotFoundException first otherwise.
+   *
+   * @param tablesUsedInQuery - display names, from parseTableListFromASTParser
+   * @param organizationId - Workspace id
+   * @param internalTableInfo - accumulator mutated in place with { id: relationId, tableName } as
+   *   each table resolves, so it is populated for TooljetDatabaseError's error-translation context
+   *   even if resolution fails partway through the list
+   * @returns display name -> relation id
+   */
+  protected async resolveTableNameToRelationIdMap(
+    tablesUsedInQuery: Array<string>,
+    organizationId: string,
+    internalTableInfo: Array<{ id: string; tableName: string }>
+  ): Promise<Record<string, string>> {
+    const internalTableNameToRelationIdMap: Record<string, string> = {};
+    for (const tableName of tablesUsedInQuery) {
+      const { relation } = await this.tableOperationsService.resolveTable(organizationId, tableName, this.manager);
+      internalTableInfo.push({ id: relation.id, tableName });
+      internalTableNameToRelationIdMap[tableName] = relation.id;
+    }
+    return internalTableNameToRelationIdMap;
   }
 
   /**
@@ -511,23 +541,23 @@ export class TooljetDbDataOperationsService implements QueryService {
    * @param tenantSchema - Schema for specific workspace.
    * @param pgUser - Tenant user
    * @param tableAndSchemaList
-   * @param internalTableNameToIdMap
+   * @param internalTableNameToRelationIdMap
    */
   protected async validateSchemaAndTablePrivileges(
     tooljetDbManager: EntityManager,
     tenantSchema: string,
     pgUser: string,
     tableAndSchemaList: Array<{ schema: string; table: string }>,
-    internalTableNameToIdMap
+    internalTableNameToRelationIdMap
   ) {
     // Validates if Tenant User has access to Workspace Schema.
     await this.validateSchemaPrivileges(tooljetDbManager, pgUser, tenantSchema);
     for (const tableAndSchema of tableAndSchemaList) {
       const { schema, table } = tableAndSchema;
       if (schema) await this.validateSchemaPrivileges(tooljetDbManager, pgUser, schema);
-      if (!isEmpty(internalTableNameToIdMap[table]))
+      if (!isEmpty(internalTableNameToRelationIdMap[table]))
         await this.validateUserHasTablePrivileges(
-          internalTableNameToIdMap,
+          internalTableNameToRelationIdMap,
           tooljetDbManager,
           pgUser,
           schema,
@@ -545,7 +575,7 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   protected async validateUserHasTablePrivileges(
-    internalTableNameToIdMap,
+    internalTableNameToRelationIdMap,
     tooljetDbManager: EntityManager,
     pgUser: string,
     schema: string,
@@ -553,8 +583,8 @@ export class TooljetDbDataOperationsService implements QueryService {
     tenantSchema: string
   ) {
     const queryToExecute = schema
-      ? `SELECT has_table_privilege('${pgUser}', '${schema}.${internalTableNameToIdMap[tableName]}', 'SELECT')`
-      : `SELECT has_table_privilege('${pgUser}', '${tenantSchema}.${internalTableNameToIdMap[tableName]}', 'SELECT')`;
+      ? `SELECT has_table_privilege('${pgUser}', '${schema}.${internalTableNameToRelationIdMap[tableName]}', 'SELECT')`
+      : `SELECT has_table_privilege('${pgUser}', '${tenantSchema}.${internalTableNameToRelationIdMap[tableName]}', 'SELECT')`;
     const [{ has_table_privilege }] = await tooljetDbManager.query(queryToExecute);
     if (!has_table_privilege) throw new Error('TJDB table permission denied');
   }
