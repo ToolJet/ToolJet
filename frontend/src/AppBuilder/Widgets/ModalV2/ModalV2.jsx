@@ -17,6 +17,7 @@ import '@/AppBuilder/Widgets/ModalV2/style.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import WidgetTooltip from '@/AppBuilder/AppCanvas/WidgetTooltip';
 
 export const ModalV2 = function Modal({
   id,
@@ -34,6 +35,7 @@ export const ModalV2 = function Modal({
   componentCount,
   subContainerIndex,
   componentType,
+  tooltipProps,
 }) {
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
@@ -262,48 +264,50 @@ export const ModalV2 = function Modal({
       }}
     >
       {useDefaultButton && isVisible && (
-        <button
-          disabled={isDisabledTrigger}
-          className="jet-btn btn btn-primary overflow-hidden"
-          style={customStyles.buttonStyles}
-          onClick={(event) => {
-            /**** Start - Logic to reduce the zIndex of modal control box ****/
-            controlBoxRef.current = document.querySelector(`.selected-component.sc-${id}`)?.parentElement;
-            if (mode === 'edit' && controlBoxRef.current) {
-              controlBoxRef.current.classList.add('modal-moveable');
-            }
-            /**** End - Logic to reduce the zIndex of modal control box ****/
+        <WidgetTooltip {...tooltipProps} darkMode={darkMode}>
+          <button
+            disabled={isDisabledTrigger}
+            className="jet-btn btn btn-primary overflow-hidden"
+            style={customStyles.buttonStyles}
+            onClick={(event) => {
+              /**** Start - Logic to reduce the zIndex of modal control box ****/
+              controlBoxRef.current = document.querySelector(`.selected-component.sc-${id}`)?.parentElement;
+              if (mode === 'edit' && controlBoxRef.current) {
+                controlBoxRef.current.classList.add('modal-moveable');
+              }
+              /**** End - Logic to reduce the zIndex of modal control box ****/
 
-            event.stopPropagation();
-            setShowModal(true);
-          }}
-          data-cy={`${dataCy}-launch-button`}
-        >
-          {/* To maintain backward compatibility, apply class only if icon is visible */}
-          <span
-            className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}
-            style={{
-              fontSize: `${computedTriggerButtonFontSize}px`,
-              lineHeight: `${computedTriggerButtonLineHeight}px`,
-              fontWeight: computedTriggerButtonFontWeight,
+              event.stopPropagation();
+              setShowModal(true);
             }}
+            data-cy={`${dataCy}-launch-button`}
           >
-            {triggerButtonLabel ?? 'Show Modal'}
-          </span>
-          {iconVisibility && (
-            <TablerIcon
-              iconName={iconName}
-              fallbackIcon="IconHome2"
+            {/* To maintain backward compatibility, apply class only if icon is visible */}
+            <span
+              className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}
               style={{
-                width: `${computedTriggerButtonIconSize}px`,
-                height: `${computedTriggerButtonIconSize}px`,
-                color: iconColor,
+                fontSize: `${computedTriggerButtonFontSize}px`,
+                lineHeight: `${computedTriggerButtonLineHeight}px`,
+                fontWeight: computedTriggerButtonFontWeight,
               }}
-              className="tw-flex-shrink-0"
-              stroke={1.5}
-            />
-          )}
-        </button>
+            >
+              {triggerButtonLabel ?? 'Show Modal'}
+            </span>
+            {iconVisibility && (
+              <TablerIcon
+                iconName={iconName}
+                fallbackIcon="IconHome2"
+                style={{
+                  width: `${computedTriggerButtonIconSize}px`,
+                  height: `${computedTriggerButtonIconSize}px`,
+                  color: iconColor,
+                }}
+                className="tw-flex-shrink-0"
+                stroke={1.5}
+              />
+            )}
+          </button>
+        </WidgetTooltip>
       )}
 
       <ModalWidget
