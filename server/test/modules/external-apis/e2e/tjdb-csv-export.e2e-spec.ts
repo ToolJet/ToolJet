@@ -97,7 +97,7 @@ describe('ExternalApisTjdbController', () => {
 
     describe('POST /api/ext/workspace/:workspaceId/tooljet-db/tables/:tableName/export | physical table naming', () => {
       it('should request the resolved relation id from PostgREST, never the logical table id', async () => {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         const manager = getDefaultDataSource().manager;
         const internalTable = await manager.findOne(InternalTable, {

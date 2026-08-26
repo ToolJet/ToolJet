@@ -114,7 +114,7 @@ describe('TooljetDbController', () => {
     // ---------------------------------------------------------------------------
     describe('Admin table DDL operations | create, list, delete tables', () => {
       it('admin can create a table', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         const res = await request
           .agent(app.getHttpServer())
@@ -130,7 +130,7 @@ describe('TooljetDbController', () => {
       // logical table id. Rows written by the relation backfill migration still have the two equal,
       // so this pins only that newly created tables diverge.
       it('creates the relation with an id independent of the logical table id, and builds the physical table under it', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         await request
           .agent(app.getHttpServer())
@@ -162,7 +162,7 @@ describe('TooljetDbController', () => {
       });
 
       it('admin can list tables', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         // Create a table first so the list is non-empty
         await request
@@ -183,7 +183,7 @@ describe('TooljetDbController', () => {
       });
 
       it('admin can delete a table', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         // Create then delete
         await request
@@ -210,7 +210,7 @@ describe('TooljetDbController', () => {
     // ---------------------------------------------------------------------------
     describe('Table and column DDL round trip | edit_table, add_column, edit_column, drop_column', () => {
       it('admin can rename a table, add a column, rename that column, then drop a different column', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         // is_unique: false here matches the physical column: prepareColumnListForCreateTable
         // ignores is_unique when is_primary_key is true, so the actual column was never built
@@ -307,7 +307,7 @@ describe('TooljetDbController', () => {
     // ---------------------------------------------------------------------------
     describe('view_table | primary key and unique constraint reporting', () => {
       it('reports is_primary_key and is_unique correctly for a table with both', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         // A second table in the same schema with a same-named column ('email') that is NOT
         // unique - without the pushed-down TABLE_NAME predicate (or if it were ever mistargeted
@@ -392,7 +392,7 @@ describe('TooljetDbController', () => {
     // ---------------------------------------------------------------------------
     describe('Foreign key DDL round trip | create_foreign_key, update_foreign_key, delete_foreign_key', () => {
       it('creates, updates, then deletes a foreign key between two tables', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         await request
           .agent(app.getHttpServer())
@@ -512,7 +512,7 @@ describe('TooljetDbController', () => {
       });
 
       it('view_table reports the referenced table by its logical internal_tables.id, not a relation id echoed back from the response', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         await request
           .agent(app.getHttpServer())
@@ -596,7 +596,7 @@ describe('TooljetDbController', () => {
     // ---------------------------------------------------------------------------
     describe('Bulk upload | POST /table/:tableName/bulk-upload', () => {
       it('inserts CSV rows into the table named by the relation id and advances its serial sequence', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         const tableName = 'bulk_upload_tbl';
         const createRes = await request

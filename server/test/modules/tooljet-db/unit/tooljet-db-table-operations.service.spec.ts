@@ -299,6 +299,112 @@ describe('TooljetDbTableOperationsService', () => {
         expect(sql).toContain('GROUP BY "users"."name"');
         expect(sql).toContain('ORDER BY "users"."name" ASC');
       });
+
+      it('should name the from/join targets by relation id while addressing select fields through display name aliases', async () => {
+        const usersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const ordersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'orders' },
+        });
+
+        const usersRelationId = uuidv4();
+        const ordersRelationId = uuidv4();
+        await appManager.update(InternalTableRelation, { internalTableId: usersTable.id }, { id: usersRelationId });
+        await appManager.update(InternalTableRelation, { internalTableId: ordersTable.id }, { id: ordersRelationId });
+
+        const resolver = app.get(TooljetDbRelationResolverService);
+        const relationIdByLogicalId = await resolver.resolve(organizationId, [usersTable.id, ordersTable.id]);
+
+        const queryBuilder = (
+          service as unknown as {
+            buildJoinQuery: (
+              queryJson: unknown,
+              internalTableIdToNameMap: Record<string, string>,
+              relationIdByLogicalId: Map<string, string>,
+              connection: unknown
+            ) => { getQuery: () => string };
+          }
+        ).buildJoinQuery(
+          {
+            from: { name: usersTable.id, type: 'Table' },
+            fields: [
+              { name: 'id', table: usersTable.id },
+              { name: 'total', table: ordersTable.id },
+            ],
+            joins: [
+              {
+                joinType: 'INNER',
+                table: ordersTable.id,
+                conditions: {
+                  operator: 'AND',
+                  conditionsList: [
+                    {
+                      operator: '=',
+                      leftField: { type: 'Column', table: usersTable.id, columnName: 'id' },
+                      rightField: { type: 'Column', table: ordersTable.id, columnName: 'user_id' },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          { [usersTable.id]: 'users', [ordersTable.id]: 'orders' },
+          relationIdByLogicalId,
+          tjDbManager.connection
+        );
+
+        const sql = queryBuilder.getQuery();
+
+        expect(sql).toContain('"' + usersRelationId + '" "users"');
+        expect(sql).toContain('"' + ordersRelationId + '" "orders"');
+
+        expect(sql).toContain('"users"."id" AS "users_id"');
+        expect(sql).toContain('"orders"."total" AS "orders_total"');
+      });
+
+      it('should fail closed when attempting to join a table without a relation in this environment', async () => {
+        const usersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const ordersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'orders' },
+        });
+
+        await appManager.save(
+          appManager.create(OrganizationTjdbConfigurations, {
+            organizationId,
+            pgUser: 'nonexistent_tjdb_test_role',
+            pgPassword: 'bogus-password',
+          })
+        );
+
+        // Remove relation for orders table to simulate it missing in this environment
+        await appManager.save(
+          appManager.create(OrganizationTjdbConfigurations, {
+            organizationId,
+            pgUser: 'nonexistent_tjdb_test_role',
+            pgPassword: 'bogus-password',
+          })
+        );
+        await appManager.delete(InternalTableRelation, { internalTableId: ordersTable.id });
+
+        await expect(
+          service.perform(organizationId, 'join_tables', {
+            joinQueryJson: {
+              from: { name: usersTable.id },
+              fields: [{ name: 'id', table: usersTable.id }],
+              joins: [
+                {
+                  joinType: 'INNER',
+                  table: ordersTable.id,
+                  conditions: { operator: 'AND', conditionsList: [] },
+                },
+              ],
+            },
+          })
+        ).rejects.toThrow('Table(s) "orders" have no relation in this environment');
+      });
     });
 
     describe('.viewTable | view_table action', () => {

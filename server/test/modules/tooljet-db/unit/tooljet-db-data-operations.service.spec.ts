@@ -179,5 +179,57 @@ describe('TooljetDbDataOperationsService', () => {
         );
       });
     });
+
+    describe('.parseTableNameInAST', () => {
+      it('should mutate the AST to replace logical table names with their relation ids', () => {
+        const ast = {
+          type: 'select',
+          from: [
+            {
+              table: 'users',
+              type: 'table',
+              as: null,
+            },
+          ],
+        };
+        const relationId = 'd19c6721-1ac1-4d9c-9edc-a4592f42e7dc';
+        const map = { users: relationId };
+
+        (
+          dataOperationsService as unknown as {
+            parseTableNameInAST: (parsedSql: unknown, internalTableNameToRelationIdMap: Record<string, string>) => void;
+          }
+        ).parseTableNameInAST(ast, map);
+
+        expect(ast.from[0].table).toBe(relationId);
+      });
+    });
+
+    describe('.resolveTableNameToRelationIdMap | internalTableInfo out-param mutation', () => {
+      it('should partially populate internalTableInfo even when a table fails to resolve', async () => {
+        const usersTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'users' },
+        });
+        const usersRelationId = uuidv4();
+        await appManager.update(InternalTableRelation, { internalTableId: usersTable.id }, { id: usersRelationId });
+
+        const internalTableInfo: Array<{ id: string; tableName: string }> = [];
+
+        await expect(
+          (
+            dataOperationsService as unknown as {
+              resolveTableNameToRelationIdMap: (
+                tablesUsedInQuery: string[],
+                organizationId: string,
+                internalTableInfo: Array<{ id: string; tableName: string }>
+              ) => Promise<Record<string, string>>;
+            }
+          ).resolveTableNameToRelationIdMap(['users', 'non_existent_table'], organizationId, internalTableInfo)
+        ).rejects.toThrow();
+
+        // The successful resolution (users) should still be appended
+        expect(internalTableInfo).toEqual([{ id: usersRelationId, tableName: 'users' }]);
+      });
+    });
   });
 });

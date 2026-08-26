@@ -303,7 +303,7 @@ describe('TooljetDbDataController', () => {
     // ---------------------------------------------------------------------------
 
     it('should create a row', async function () {
-      if (!tooljetDbAvailable) return;
+      expect(tooljetDbAvailable).toBe(true);
 
       const res = await request
         .agent(app.getHttpServer())
@@ -316,7 +316,7 @@ describe('TooljetDbDataController', () => {
     });
 
     it('should list rows', async function () {
-      if (!tooljetDbAvailable) return;
+      expect(tooljetDbAvailable).toBe(true);
 
       const res = await request
         .agent(app.getHttpServer())
@@ -337,7 +337,7 @@ describe('TooljetDbDataController', () => {
     });
 
     it('should update a row', async function () {
-      if (!tooljetDbAvailable) return;
+      expect(tooljetDbAvailable).toBe(true);
 
       const res = await request
         .agent(app.getHttpServer())
@@ -350,7 +350,7 @@ describe('TooljetDbDataController', () => {
     });
 
     it('should delete a row', async function () {
-      if (!tooljetDbAvailable) return;
+      expect(tooljetDbAvailable).toBe(true);
 
       const res = await request
         .agent(app.getHttpServer())
@@ -362,7 +362,7 @@ describe('TooljetDbDataController', () => {
     });
 
     it('should return empty after delete', async function () {
-      if (!tooljetDbAvailable) return;
+      expect(tooljetDbAvailable).toBe(true);
 
       const res = await request
         .agent(app.getHttpServer())
@@ -386,7 +386,7 @@ describe('TooljetDbDataController', () => {
       // same `embedded` extraction/resolution path, and Polly's passthrough leg to the app
       // itself percent-encodes `(`, `)`, `,`, `*` in-flight, which would mask the assertion.
       it('should return 400 when another workspace uuid appears as an embedded reference', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         const res = await request
           .agent(app.getHttpServer())
@@ -399,7 +399,7 @@ describe('TooljetDbDataController', () => {
       });
 
       it('should return 404 for an unowned uuid in the path', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         const res = await request
           .agent(app.getHttpServer())
@@ -412,7 +412,7 @@ describe('TooljetDbDataController', () => {
       });
 
       it('should forward a uuid-shaped filter value byte identical', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         await request
           .agent(app.getHttpServer())
@@ -424,7 +424,7 @@ describe('TooljetDbDataController', () => {
       });
 
       it('should rewrite a <rel>. filter-key prefix to the resolved relation', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         await request
           .agent(app.getHttpServer())
@@ -443,7 +443,7 @@ describe('TooljetDbDataController', () => {
       });
 
       it('should return 400 for a uuid-shaped embedded reference that resolves to nothing', async function () {
-        if (!tooljetDbAvailable) return;
+        expect(tooljetDbAvailable).toBe(true);
 
         const res = await request
           .agent(app.getHttpServer())
