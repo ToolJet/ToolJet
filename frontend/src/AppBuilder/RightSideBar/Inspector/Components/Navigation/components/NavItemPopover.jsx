@@ -110,7 +110,7 @@ const NavItemPopover = forwardRef(
                   onChange={(value) => handleChange('label', value)}
                   componentId={componentId}
                   paramName="label"
-                  fieldMeta={{ type: 'string', displayName: 'Label', validation: { schema: { type: 'string' } } }}
+                  fieldMeta={{ type: 'string', validation: { schema: { type: 'string' }, defaultValue: 'Label' } }}
                 />
               </div>
 
@@ -127,7 +127,7 @@ const NavItemPopover = forwardRef(
                     onChange={(value) => handleChange('caption', value)}
                     componentId={componentId}
                     paramName="caption"
-                    fieldMeta={{ type: 'string', displayName: 'Caption', validation: { schema: { type: 'string' } } }}
+                    fieldMeta={{ type: 'string', validation: { schema: { type: 'string' }, defaultValue: 'Caption' } }}
                   />
                 </div>
               )}
