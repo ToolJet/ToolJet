@@ -11,6 +11,7 @@ const LicenseTooltip = ({
   noTooltipIfValid = false,
   customMessage,
   customTitle = '',
+  className = '',
 }) => {
   const { percentage, licenseStatus, canAddUnlimited } = limits ?? {};
   const { isExpired, isLicenseValid } = licenseStatus ?? {};
@@ -68,7 +69,7 @@ const LicenseTooltip = ({
 
   return message ? (
     <ToolTip message={message} placement={placement}>
-      <div className="license-tooltip">{children}</div>
+      <div className={`license-tooltip ${className}`.trim()}>{children}</div>
     </ToolTip>
   ) : percentage >= 100 || noTooltipIfValid ? (
     <>{children}</>

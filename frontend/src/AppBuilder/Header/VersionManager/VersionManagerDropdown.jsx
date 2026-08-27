@@ -13,6 +13,7 @@ import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
 import { ConfirmDialog } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
@@ -521,19 +522,23 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
               Versions
             </span>
             {(selectedEnvironmentFilter || currentEnvironment)?.name === 'development' && hasSyncedDraft && (
-              <Button
-                variant="outline"
-                size="small"
-                leadingIcon="refresh"
-                fill="var(--icon-strong)"
-                onClick={handleRefreshFromGit}
-                disabled={isRefreshing}
-                loading={isRefreshing}
-                className={cx({ 'dark-theme theme-dark': darkMode })}
-                style={{ padding: '8px 8px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                Refresh
-              </Button>
+              <ToolTip message="See all versions in git remote" placement="top">
+                <span>
+                  <Button
+                    variant="outline"
+                    size="small"
+                    leadingIcon="refresh"
+                    fill="var(--icon-strong)"
+                    onClick={handleRefreshFromGit}
+                    disabled={isRefreshing}
+                    loading={isRefreshing}
+                    className={cx({ 'dark-theme theme-dark': darkMode })}
+                    style={{ padding: '8px 8px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    Refresh
+                  </Button>
+                </span>
+              </ToolTip>
             )}
           </div>
         )}

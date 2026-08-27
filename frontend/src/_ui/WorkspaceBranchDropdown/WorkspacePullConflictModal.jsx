@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import '@/_styles/workspace-pull-conflict-modal.scss';
 
 const TYPE_ICON_MAP = {
@@ -26,9 +27,10 @@ const CONFLICT_SECTION_HEADER_MAP = {
   'datasource-in_use': 'Data source in use',
   // Legacy name containing '/', pushed before name validation existed — always
   // manual-resolution only (nothing to sync, the name must be fixed at the source).
-  'app-invalid_name': 'App invalid naming',
-  'module-invalid_name': 'Module invalid naming',
-  'datasource-invalid_name': 'Data source invalid naming',
+  // Just the resource type: the section heading already says "Invalid name".
+  'app-invalid_name': 'App',
+  'module-invalid_name': 'Module',
+  'datasource-invalid_name': 'Data source',
 };
 
 const LOCAL_STATUSES = ['existing', 'local'];
@@ -131,12 +133,13 @@ function ConflictRow({
               </span>
             </ToolTip>
           )}
-          <span>
-            {CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label}
-            {group.conflictKey
-              ? ` - '${group.conflictKey}'`
-              : group.conflicts?.[0]?.name && ` - '${group.conflicts[0].name}'`}
-          </span>
+          <OverflowTooltip placement="top" style={{ flex: 1, minWidth: 0, maxWidth: 260, textAlign: 'left' }}>
+            {(() => {
+              const label = CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label;
+              const name = group.conflictKey || group.conflicts?.[0]?.name;
+              return name ? `${label} - '${name}'` : label;
+            })()}
+          </OverflowTooltip>
         </span>
         <SolidIcon name="cheverondown" width="14" fill="var(--slate9)" />
       </button>
@@ -306,44 +309,21 @@ export function PullConflictModal({
           <h3 className="conflict-title">{title}</h3>
 
           <p className="conflict-description">
-            {/* Push gets one generic line regardless of category — always all-manual, nothing to differentiate. */}
+            {/* Every category gets one generic line regardless of conflict type — always all-manual, nothing to differentiate. */}
             {isPushNameConflict || isPushConflict
               ? 'The following resources have errors and cannot be pushed to git remote. Read docs to resolve the errors and try again.'
               : (() => {
-                  if (isBranchCreation) return 'Due to the following errors, this branch cannot be created:';
-                  if (isBranchSwitch) return 'Due to the following errors, this branch cannot be opened:';
-                  if (isImport) return 'Due to the following errors, these resources cannot be imported:';
-                  return 'Due to the following errors, this branch cannot be pulled:';
+                  if (isBranchCreation)
+                    return 'The following resources have errors and cannot be created. Read docs to resolve the errors and try again.';
+                  if (isBranchSwitch)
+                    return 'The following resources have errors and cannot be opened. Read docs to resolve the errors and try again.';
+                  if (isImport)
+                    return 'The following resources have errors and cannot be imported. Read docs to resolve the errors and try again.';
+                  return 'The following resources have errors and cannot be pulled from git remote. Read docs to resolve the errors and try again.';
                 })()}
           </p>
-          {!isPushNameConflict && !isPushConflict && (
-            <ul className="conflict-description-list">
-              {multiDraftResources.length > 0 && (
-                <li>
-                  Git allows only <strong>one draft version</strong> per resource which becomes the tip of your default
-                  branch. There are resources with more or less than one draft version.
-                </li>
-              )}
-              {(manualDuplicateGroups.length > 0 || syncableGroups.length > 0) && (
-                <li>
-                  There are resources with the <strong>duplicate data</strong> on this branch. ToolJet requires unique
-                  names &amp; slug for apps, data sources, modules, and folders within a branch.
-                </li>
-              )}
-              {manualInUseGroups.length > 0 && (
-                <li>
-                  Some modules/data sources removed from git are <strong>still in use</strong> locally. Remove the
-                  reference before pulling, or they&apos;ll be kept as-is.
-                </li>
-              )}
-              {manualInvalidNameGroups.length > 0 && (
-                <li>
-                  Some resources have an <strong>invalid name</strong> containing &apos;/&apos;. Rename them before
-                  trying again.
-                </li>
-              )}
-            </ul>
-          )}
+          {/* Bulleted category summary removed — each category section below already carries its own
+              header + subtext conveying the same thing, so the list was pure duplication. */}
 
           <div className="conflict-categories-list">
             {multiDraftResources.length > 0 && <MultiDraftSection resources={multiDraftResources} />}
