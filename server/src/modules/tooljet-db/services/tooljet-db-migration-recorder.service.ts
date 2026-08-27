@@ -232,13 +232,35 @@ export class TooljetDbMigrationRecorderService {
    * error, not whatever this cleanup itself produces.
    */
   async discard(migration: InternalTableMigration, relation: InternalTableRelation): Promise<void> {
+    // `relation` is unused here - kept for symmetry with confirm()'s signature, which every call
+    // site already has both arguments in hand for.
     await this.manager.delete(InternalTableMigration, { id: migration.id });
   }
+
+  /**
+   * How long a pending row is left alone before adjudicatePending will touch it at all. Closes a
+   * cross-request race the same-request problem above doesn't cover: request A commits record()
+   * for a migration, then - before A's own DDL has run - request B touches the same relation and
+   * calls adjudicatePending. Without a grace window B's predicate sees "DDL hasn't happened" and
+   * discards A's migration as if it had crashed; A's DDL then succeeds and A's own confirm() call
+   * becomes a silent no-op update against a row discard() already deleted, permanently losing that
+   * migration from the chain even though its DDL is genuinely applied. A few seconds is enough to
+   * outlast any single request's record()-to-confirm() gap without meaningfully delaying real
+   * crash recovery, which only ever runs "the next time someone touches this relation" - anywhere
+   * from seconds to days later.
+   */
+  private static readonly ADJUDICATION_GRACE_WINDOW = '3 seconds';
 
   /**
    * Crash recovery: resolves every application still pending against this relation by asking each
    * migration's own recorded request whether the live table now matches it. One introspection
    * covers every pending row, since they are all being judged against the same current shape.
+   *
+   * Rows younger than ADJUDICATION_GRACE_WINDOW are skipped entirely - left pending, neither
+   * confirmed nor discarded - on the assumption that whichever request just recorded them is still
+   * running and will confirm or discard them itself. Compared in SQL against the database's own
+   * `now()`, not `Date.now()`: this runs across requests/processes, where wall-clock skew between
+   * this process and whichever one is mid-flight would defeat an in-memory comparison.
    */
   async adjudicatePending(internalTable: InternalTable, relation: InternalTableRelation): Promise<void> {
     const pendingApplications = await this.manager.find(InternalTableMigrationApplication, {
@@ -246,8 +268,20 @@ export class TooljetDbMigrationRecorderService {
     });
     if (!pendingApplications.length) return;
 
+    const eligibleIds: string[] = (
+      await this.manager.query(
+        `SELECT id FROM internal_table_migrations
+         WHERE id = ANY($1) AND created_at <= now() - $2::interval`,
+        [
+          pendingApplications.map((application) => application.migrationId),
+          TooljetDbMigrationRecorderService.ADJUDICATION_GRACE_WINDOW,
+        ]
+      )
+    ).map((row) => row.id);
+    if (!eligibleIds.length) return;
+
     const pendingMigrations = await this.manager.find(InternalTableMigration, {
-      where: { id: In(pendingApplications.map((application) => application.migrationId)) },
+      where: { id: In(eligibleIds) },
     });
 
     const schema = findTenantSchema(internalTable.organizationId);

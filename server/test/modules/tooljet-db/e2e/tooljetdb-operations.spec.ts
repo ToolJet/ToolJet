@@ -1180,8 +1180,15 @@ describe('TooljetDbController', () => {
           })
         );
 
-        // view_table is the second adjudicatePending call site (record()'s own self-adjudication
-        // being the first) - GET here is what resolves both rows.
+        // Back-date both past adjudicatePending's grace window, or the GET below would leave them
+        // pending on the assumption that whichever request just recorded them is still running.
+        await appManager.query(
+          `UPDATE internal_table_migrations SET created_at = now() - interval '1 minute' WHERE id = ANY($1)`,
+          [[confirmedMigration.id, ghostMigration.id]]
+        );
+
+        // view_table calls adjudicatePending right before it reads the relation's shape - the
+        // GET here is what resolves both rows.
         const viewRes = await request
           .agent(app.getHttpServer())
           .get(`/api/tooljet-db/organizations/${adminOrgId}/table/adjudicate_tbl`)

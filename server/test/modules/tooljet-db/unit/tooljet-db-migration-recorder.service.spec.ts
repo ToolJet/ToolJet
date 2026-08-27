@@ -496,6 +496,12 @@ describe('TooljetDbMigrationRecorderService', () => {
         );
         // Simulates a crash after the DDL for `applied` committed but before this service marked it so.
         await tjDbManager.query(`ALTER TABLE "workspace_${organizationId}"."${relation.id}" ADD COLUMN age integer`);
+        // Back-date both past the grace window so adjudicatePending treats them as crash-recovery
+        // candidates rather than "recorded moments ago by a still-running request".
+        await appManager.query(
+          `UPDATE internal_table_migrations SET created_at = now() - interval '1 minute' WHERE id = ANY($1)`,
+          [[applied.id, neverRan.id]]
+        );
 
         await service.adjudicatePending(internalTable, relation);
 
@@ -510,6 +516,46 @@ describe('TooljetDbMigrationRecorderService', () => {
         expect(
           await appManager.findOne(InternalTableMigrationApplication, { where: { migrationId: neverRan.id } })
         ).toBeNull();
+      });
+
+      it('leaves a freshly-recorded migration pending even when its snapshot does not yet match, instead of discarding it', async () => {
+        // The cross-request race: this migration's DDL hasn't run yet from adjudicatePending's
+        // point of view (created just now, snapshot doesn't show it) - indistinguishable from a
+        // migration that will never run without the grace window. Must not be discarded, or the
+        // still-running request's own confirm() call becomes a no-op against a deleted row.
+        const { internalTable, relation } = await usersTableAndRelation();
+        const migration = await service.record(
+          payload('add_column', { column: { column_name: 'age' } }),
+          internalTable,
+          relation
+        );
+
+        await service.adjudicatePending(internalTable, relation);
+
+        const stillPending = await appManager.findOne(InternalTableMigration, { where: { id: migration.id } });
+        expect(stillPending).not.toBeNull();
+        expect(stillPending.resultingSchema).toBeNull();
+        expect(
+          (await appManager.findOne(InternalTableMigrationApplication, { where: { migrationId: migration.id } }))
+            .appliedAt
+        ).toBeNull();
+      });
+
+      it('discards a migration whose snapshot never came to match once it is older than the grace window', async () => {
+        const { internalTable, relation } = await usersTableAndRelation();
+        const migration = await service.record(
+          payload('add_column', { column: { column_name: 'does_not_exist' } }),
+          internalTable,
+          relation
+        );
+        await appManager.query(
+          `UPDATE internal_table_migrations SET created_at = now() - interval '1 minute' WHERE id = $1`,
+          [migration.id]
+        );
+
+        await service.adjudicatePending(internalTable, relation);
+
+        expect(await appManager.findOne(InternalTableMigration, { where: { id: migration.id } })).toBeNull();
       });
 
       it('leaves already-applied migrations untouched', async () => {
