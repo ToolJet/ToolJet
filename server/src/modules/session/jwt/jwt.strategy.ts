@@ -10,7 +10,7 @@ import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
 import { TransactionLogger } from '@modules/logging/service';
-import { trackUserActivity } from '@otel/tracing';
+import { trackUserActivity, extractAppIdFromPath } from '@otel/tracing';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -51,7 +51,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           ? req.headers['tj-workspace-id'][0]
           : req.headers['tj-workspace-id'];
 
-      if (!organizationId && payload?.isPATLogin && payload?.appId) {
+      /* A PAT session is bound to exactly one workspace at mint time, so its single
+         organizationId is unambiguous — no tj-workspace-id header required. Previously gated on
+         payload.appId, which only the app-scoped embed flow sets; workspace PATs have no appId. */
+      if (!organizationId && payload?.isPATLogin && payload?.organizationIds?.length === 1) {
         organizationId = payload.organizationIds[0];
       }
 
@@ -112,6 +115,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.isPATLogin = !!payload.isPATLogin;
+        user.patAppId = payload.appId;
         if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
 
         // Track user activity for metrics (every authenticated request)
@@ -120,7 +125,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             trackUserActivity({
               workspaceId: user.organizationId,
               userId: user.id,
-              sessionId: payload.sessionId,
+              /* App-scoped requests only; PAT sessions carry the app id on the token itself */
+              appId: extractAppIdFromPath(req.originalUrl || req.url) || payload.appId,
             });
           } catch (error) {
             // Don't let metrics tracking failures affect authentication

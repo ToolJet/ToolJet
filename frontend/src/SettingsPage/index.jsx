@@ -8,6 +8,7 @@ import { userService } from '@/_services/user.service';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { TwoFactorAuthCard } from './TwoFactorAuthCard';
+import { AccessTokensCard } from './AccessTokensCard';
 import ProfileNotificationsCard from '@/modules/AiBuilder/components/ProfileNotificationsCard';
 
 function SettingsPage(props) {
@@ -338,6 +339,7 @@ function SettingsPage(props) {
                 </div>
               </div>
               <TwoFactorAuthCard darkMode={props.darkMode} />
+              <AccessTokensCard darkMode={props.darkMode} />
               <ProfileNotificationsCard />
             </div>
           </div>
