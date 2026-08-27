@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
+import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -130,5 +131,36 @@ export class TooljetDbRelationResolverService {
 
   async resolveBranchIdFor(organizationId: string, manager?: EntityManager): Promise<string> {
     return this.resolveBranch(organizationId, manager || this.manager);
+  }
+
+  /**
+   * Given a co_relation_id (git-sync's cross-instance identity for a logical table, not this
+   * table's own environment/branch) and the (environment, branch) of a relation already in hand,
+   * finds that other table's relation in the exact same (environment, branch). This is a direct
+   * sibling lookup, not resolveEnvironment/resolveBranch's priority-1/licence-aware resolution -
+   * for a foreign key embedded in a payload that already pins the environment and branch it targets
+   * (apply() applying create_table/add_column), re-deriving "the current environment" would be
+   * wrong the moment more than one relation exists for a table.
+   */
+  async resolveSiblingByCoRelationId(
+    organizationId: string,
+    coRelationId: string,
+    environmentId: string,
+    branchId: string,
+    manager?: EntityManager
+  ): Promise<InternalTableRelation> {
+    const entityManager = manager || this.manager;
+    const internalTable = await entityManager.findOne(InternalTable, {
+      where: { organizationId, co_relation_id: coRelationId },
+    });
+    if (!internalTable) throw new NotFoundException(`Referenced table not found for reference ${coRelationId}`);
+
+    const relation = await entityManager.findOne(InternalTableRelation, {
+      where: { internalTableId: internalTable.id, environmentId, branchId },
+    });
+    if (!relation)
+      throw new NotFoundException(`Table "${internalTable.tableName}" has no relation in this environment`);
+
+    return relation;
   }
 }

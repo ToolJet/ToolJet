@@ -61,6 +61,17 @@ enum AggregateFunctions {
   count = 'COUNT',
 }
 
+// A foreign key embedded in a create_table/add_column payload, normalized: referenced_table_name
+// (a display name, environment-blind) is replaced with the referenced table's co_relation_id (its
+// portable, cross-environment identity) so apply() can resolve it to whichever relation it targets.
+type NormalizedForeignKeySpec = {
+  column_names: string[];
+  referenced_table: string;
+  referenced_column_names: string[];
+  on_update?: string;
+  on_delete?: string;
+};
+
 // Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
 declare module 'typeorm' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -382,6 +393,89 @@ export class TooljetDbTableOperationsService {
     return value;
   }
 
+  /**
+   * Resolves names and mints identity for create_table: a uuid per column and a co_relation_id per
+   * embedded foreign key's referenced table (the portable identity, not a physical name - apply()
+   * resolves that back to a relation right before it builds the DDL). No writes, no DDL.
+   */
+  protected async normalizeCreateTable(organizationId: string, params, appManager: EntityManager) {
+    const columnNames = {};
+    const columnConfigurations = {};
+    for (const column of params.columns) {
+      const columnUuid = uuidv4();
+      columnNames[column.column_name] = columnUuid;
+      columnConfigurations[columnUuid] = column?.configurations || {};
+    }
+
+    const foreignKeys = await this.resolveForeignKeyCoRelationIds(
+      params.foreign_keys || [],
+      organizationId,
+      appManager
+    );
+
+    return {
+      organizationId,
+      columns: params.columns,
+      columnNames,
+      columnConfigurations,
+      foreignKeys,
+    };
+  }
+
+  /**
+   * Physical DDL for create_table plus the new relation's configurations write. Takes an
+   * already-existing relation - placing the InternalTable/InternalTableRelation rows is the
+   * caller's job, not apply's, so the same apply() shape works once promote/replay create a
+   * relation before calling this instead of createTable() minting one itself.
+   */
+  protected async applyCreateTable(
+    payload: {
+      organizationId: string;
+      columns: TooljetDatabaseColumn[];
+      columnNames: Record<string, string>;
+      columnConfigurations: Record<string, unknown>;
+      foreignKeys: NormalizedForeignKeySpec[];
+    },
+    relation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ) {
+    const { appManager, tjdbManager } = connectionManagers;
+    const tjdbQueryRunner = tjdbManager.queryRunner;
+    const tenantSchema = findTenantSchema(payload.organizationId);
+
+    relation.configurations = {
+      columns: {
+        column_names: payload.columnNames,
+        configurations: payload.columnConfigurations,
+      },
+    };
+    await appManager.save(relation);
+
+    const foreignKeyDetails = await this.resolveForeignKeyDetailsForApply(
+      payload.foreignKeys,
+      payload.organizationId,
+      relation,
+      tenantSchema,
+      appManager
+    );
+
+    const primaryKeyColumnList = payload.columns
+      .filter((column) => column.constraints_type.is_primary_key)
+      .map((column) => column.column_name);
+
+    await tjdbQueryRunner.createTable(
+      new Table({
+        schema: tenantSchema,
+        name: relation.id,
+        columns: this.prepareColumnListForCreateTable(payload.columns),
+        ...(foreignKeyDetails.length && { foreignKeys: foreignKeyDetails }),
+      })
+    );
+
+    const tableNameWithSchema = concatSchemaAndTableName(tenantSchema, relation.id);
+    await tjdbQueryRunner.createPrimaryKey(tableNameWithSchema, primaryKeyColumnList);
+  }
+
   protected async createTable(
     organizationId: string,
     params,
@@ -390,7 +484,6 @@ export class TooljetDbTableOperationsService {
       tjdbManager: this.tooljetDbManager,
     }
   ) {
-    const tenantSchema = findTenantSchema(organizationId);
     const primaryKeyColumnList = params.columns
       .filter((column) => column.constraints_type.is_primary_key)
       .map((column) => column.column_name);
@@ -439,20 +532,7 @@ export class TooljetDbTableOperationsService {
     await tjdbQueryRunner.startTransaction();
 
     try {
-      const columnNames = {};
-      const columnConfigrations = {};
-      for (const column of params.columns) {
-        const columnUuid = uuidv4();
-        columnNames[column.column_name] = columnUuid;
-        columnConfigrations[columnUuid] = column?.configurations || {};
-      }
-
-      const configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigrations,
-        },
-      };
+      const payload = await this.normalizeCreateTable(organizationId, params, queryRunner.manager);
 
       const internalTable = queryRunner.manager.create(InternalTable, {
         tableName,
@@ -479,27 +559,13 @@ export class TooljetDbTableOperationsService {
           internalTableId: internalTable.id,
           environmentId,
           branchId,
-          configurations,
         })
       );
 
-      await tjdbQueryRunner.createTable(
-        new Table({
-          schema: tenantSchema,
-          name: relation.id,
-          columns: this.prepareColumnListForCreateTable(params.columns),
-          ...(foreign_keys.length && {
-            foreignKeys: this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema),
-          }),
-        })
-      );
-
-      const tableNameWithSchema = concatSchemaAndTableName(tenantSchema, relation.id);
-      await tjdbQueryRunner.createPrimaryKey(tableNameWithSchema, primaryKeyColumnList);
-      // await tjdbQueryRunner.createPrimaryKey(
-      //   new Table({ schema: tenantSchema, name: relation.id }),
-      //   primaryKeyColumnList
-      // );
+      await this.applyCreateTable(payload, relation, {
+        appManager: queryRunner.manager,
+        tjdbManager: tjdbQueryRunner.manager,
+      });
 
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
@@ -535,9 +601,27 @@ export class TooljetDbTableOperationsService {
     }
   }
 
+  /** No uuid minting: drop_table just resolves the table name to its relation. */
+  protected async normalizeDropTable(organizationId: string, tableName: string) {
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName);
+    return { organizationId, internalTable, relation };
+  }
+
+  protected async applyDropTable(
+    payload: { organizationId: string; internalTable: InternalTable },
+    relation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ) {
+    const { appManager, tjdbManager } = connectionManagers;
+    const tenantSchema = findTenantSchema(payload.organizationId);
+
+    await appManager.softDelete(InternalTable, { id: payload.internalTable.id });
+    await tjdbManager.queryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }));
+  }
+
   protected async dropTable(organizationId: string, params) {
     const { table_name: tableName } = params;
-    const { internalTable, relation } = await this.resolveTable(organizationId, tableName);
+    const { internalTable, relation } = await this.normalizeDropTable(organizationId, tableName);
 
     const isTableInUse = await this.findQueriesLinkedToTable(internalTable.id);
 
@@ -545,7 +629,6 @@ export class TooljetDbTableOperationsService {
       throw new BadRequestException("Table can't be deleted, it is being used in app queries");
     }
 
-    const tenantSchema = findTenantSchema(organizationId);
     const queryRunner = this.manager.connection.createQueryRunner();
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
 
@@ -556,8 +639,10 @@ export class TooljetDbTableOperationsService {
     await tjdbQueryRunner.startTransaction();
 
     try {
-      await queryRunner.manager.softDelete(InternalTable, { id: internalTable.id });
-      await tjdbQueryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }));
+      await this.applyDropTable({ organizationId, internalTable }, relation, {
+        appManager: queryRunner.manager,
+        tjdbManager: tjdbQueryRunner.manager,
+      });
 
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
@@ -602,9 +687,220 @@ export class TooljetDbTableOperationsService {
     return result[0]?.exists ?? false;
   }
 
-  protected async editTable(organizationId: string, params) {
+  /**
+   * Builds the column diff (insert/update/delete) and resolves a uuid for every column in it: read
+   * from the source relation's own column_names for edits and deletes, minted fresh for inserts.
+   * The rename trap: an updated column's uuid is read here, from the relation normalize resolved -
+   * apply() must use this uuid as-is and never re-index into whatever relation it is handed by name.
+   */
+  protected async normalizeEditTable(organizationId: string, params, appManager: EntityManager) {
     const { table_name: tableName, columns } = params;
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, appManager);
 
+    const updatedPrimaryKeys = [];
+    const columnstoBeUpdated = [];
+    const columnsToBeInserted = [];
+    const columnsToBeDeleted = [];
+    const columnConfigurationMap = {};
+
+    columns.forEach((column) => {
+      const { new_column = {} } = column;
+      columnConfigurationMap[new_column.column_name] = new_column?.configurations || {};
+    });
+
+    columns.forEach((column) => {
+      const { old_column = {}, new_column = {} } = column;
+
+      // Filter Primary Key column
+      if (!isEmpty(new_column) && new_column?.constraints_type.is_primary_key) {
+        updatedPrimaryKeys.push(
+          new TableColumn({
+            name: new_column.column_name,
+            type: new_column.data_type,
+          })
+        );
+      }
+
+      // Columns to be deleted
+      if (!isEmpty(old_column) && isEmpty(new_column)) {
+        if (old_column.column_name) columnsToBeDeleted.push(old_column.column_name);
+      }
+
+      // New columns to be inserted
+      if (isEmpty(old_column) && !isEmpty(new_column)) {
+        const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
+        columnsToBeInserted.push(
+          new TableColumn({
+            name: new_column.column_name,
+            type: new_column.data_type,
+            ...(new_column?.column_default &&
+              new_column.data_type !== 'serial' && {
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
+            isNullable: !new_column?.constraints_type.is_not_null,
+            isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+            isPrimary: new_column?.constraints_type.is_primary_key || false,
+          })
+        );
+
+        // To Sync with Other States - Adding it to the Update Array as well
+        columnstoBeUpdated.push({
+          oldColumn: new TableColumn({
+            name: new_column.column_name,
+            type: new_column.data_type,
+            ...(new_column?.column_default &&
+              new_column.data_type !== 'serial' && {
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
+            isNullable: !new_column?.constraints_type.is_not_null,
+            isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+            isPrimary: new_column?.constraints_type.is_primary_key || false,
+          }),
+          newColumn: new TableColumn({
+            name: new_column.column_name,
+            type: new_column.data_type,
+            ...(new_column?.column_default &&
+              new_column.data_type !== 'serial' && {
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
+            isNullable: !new_column?.constraints_type.is_not_null,
+            isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+            isPrimary: new_column?.constraints_type.is_primary_key || false,
+          }),
+        });
+      }
+
+      // Columns to be updated
+      if (!isEmpty(old_column) && !isEmpty(new_column)) {
+        const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
+        columnstoBeUpdated.push({
+          oldColumn: new TableColumn({
+            name: old_column.column_name,
+            type: old_column.data_type,
+            ...(old_column?.column_default &&
+              old_column.data_type !== 'serial' && {
+                default:
+                  old_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(old_column.column_default)
+                    : old_column.column_default,
+              }),
+            isNullable: !old_column?.constraints_type.is_not_null,
+            isUnique: old_column?.constraints_type.is_unique,
+            isPrimary: old_column?.constraints_type.is_primary_key || false,
+          }),
+          newColumn: new TableColumn({
+            name: new_column.column_name,
+            type: new_column.data_type,
+            ...(new_column?.column_default &&
+              new_column.data_type !== 'serial' && {
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
+            isNullable: !new_column?.constraints_type.is_not_null,
+            isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
+            isPrimary: new_column?.constraints_type.is_primary_key || false,
+          }),
+        });
+      }
+    });
+
+    // Uuids are resolved against the relation normalize just read - the source of the request -
+    // never against whatever relation apply() ends up pointed at.
+    const sourceColumnNames = relation.configurations.columns.column_names;
+
+    const columnUuidPatches = [];
+    columnstoBeUpdated.forEach((column) => {
+      const { newColumn, oldColumn } = column;
+      const columnUuid = sourceColumnNames[oldColumn.name];
+      if (columnUuid) {
+        columnUuidPatches.push({
+          oldName: oldColumn.name,
+          newName: newColumn.name,
+          uuid: columnUuid,
+          typeChanged: newColumn.type !== oldColumn.type,
+          configurations: columnConfigurationMap[newColumn.name],
+        });
+      }
+    });
+
+    const deletedColumns = columnsToBeDeleted.map((name) => ({ name, uuid: sourceColumnNames[name] }));
+
+    const insertedColumns = columnsToBeInserted.map((column) => ({
+      name: column.name,
+      uuid: uuidv4(),
+      configurations: columnConfigurationMap[column.name],
+    }));
+
+    return {
+      organizationId,
+      internalTable,
+      relation,
+      updatedPrimaryKeys,
+      columnsToBeDeleted,
+      columnsToBeInserted,
+      columnstoBeUpdated,
+      columnUuidPatches,
+      deletedColumns,
+      insertedColumns,
+      newTableName: params.new_table_name,
+    };
+  }
+
+  /** Physical DDL for edit_table plus the relation's configurations write, keyed by the payload's uuids. */
+  protected async applyEditTable(
+    payload,
+    relation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ) {
+    const { appManager, tjdbManager } = connectionManagers;
+    const tjdbQueryRunner = tjdbManager.queryRunner;
+    const physicalName = concatSchemaAndTableName(findTenantSchema(payload.organizationId), relation.id);
+
+    const columnNames = relation.configurations.columns.column_names;
+    const columnConfigurations = relation.configurations.columns.configurations;
+
+    payload.columnUuidPatches.forEach(({ oldName, newName, uuid, typeChanged, configurations }) => {
+      columnNames[newName] = uuid;
+      if (typeChanged) columnConfigurations[uuid] = {};
+      columnConfigurations[uuid] = { ...columnConfigurations[uuid], ...configurations };
+      if (oldName !== newName) delete columnNames[oldName];
+    });
+
+    payload.deletedColumns.forEach(({ name, uuid }) => {
+      delete columnNames[name];
+      delete columnConfigurations[uuid];
+    });
+
+    payload.insertedColumns.forEach(({ name, uuid, configurations }) => {
+      columnNames[name] = uuid;
+      columnConfigurations[uuid] = configurations;
+    });
+
+    relation.configurations = {
+      columns: { column_names: columnNames, configurations: columnConfigurations },
+    };
+    await appManager.save(relation);
+
+    if (!isEmpty(payload.columnsToBeDeleted))
+      await tjdbQueryRunner.dropColumns(physicalName, payload.columnsToBeDeleted);
+    if (!isEmpty(payload.columnsToBeInserted))
+      await tjdbQueryRunner.addColumns(physicalName, payload.columnsToBeInserted);
+    if (!isEmpty(payload.columnstoBeUpdated))
+      await tjdbQueryRunner.changeColumns(physicalName, payload.columnstoBeUpdated);
+  }
+
+  protected async editTable(organizationId: string, params) {
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -619,185 +915,24 @@ export class TooljetDbTableOperationsService {
     let internalTable: InternalTable;
     let relation: InternalTableRelation;
     try {
-      const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
-      internalTable = resolved.internalTable;
-      relation = resolved.relation;
-      const physicalName = resolved.physicalName;
-      const updatedPrimaryKeys = [];
-      const columnstoBeUpdated = [];
-      const columnsToBeInserted = [];
-      const columnsToBeDeleted = [];
-      const columnConfigurationMap = {};
+      const payload = await this.normalizeEditTable(organizationId, params, queryRunner.manager);
+      internalTable = payload.internalTable;
+      relation = payload.relation;
 
-      columns.forEach((column) => {
-        const { new_column = {} } = column;
-        columnConfigurationMap[new_column.column_name] = new_column?.configurations || {};
+      if (isEmpty(payload.updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
+
+      await this.applyEditTable(payload, relation, {
+        appManager: queryRunner.manager,
+        tjdbManager: tjdbQueryRunner.manager,
       });
 
-      columns.forEach((column) => {
-        const { old_column = {}, new_column = {} } = column;
-
-        // Filter Primary Key column
-        if (!isEmpty(new_column) && new_column?.constraints_type.is_primary_key) {
-          updatedPrimaryKeys.push(
-            new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-            })
-          );
-        }
-
-        // Columns to be deleted
-        if (!isEmpty(old_column) && isEmpty(new_column)) {
-          if (old_column.column_name) columnsToBeDeleted.push(old_column.column_name);
-        }
-
-        // New columns to be inserted
-        if (isEmpty(old_column) && !isEmpty(new_column)) {
-          const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
-          columnsToBeInserted.push(
-            new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-              ...(new_column?.column_default &&
-                new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
-              isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
-              isPrimary: new_column?.constraints_type.is_primary_key || false,
-            })
-          );
-
-          // To Sync with Other States - Adding it to the Update Array as well
-          columnstoBeUpdated.push({
-            oldColumn: new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-              ...(new_column?.column_default &&
-                new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
-              isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
-              isPrimary: new_column?.constraints_type.is_primary_key || false,
-            }),
-            newColumn: new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-              ...(new_column?.column_default &&
-                new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
-              isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
-              isPrimary: new_column?.constraints_type.is_primary_key || false,
-            }),
-          });
-        }
-
-        // Columns to be updated
-        if (!isEmpty(old_column) && !isEmpty(new_column)) {
-          const is_primary_key_column = new_column?.constraints_type.is_primary_key || false;
-          columnstoBeUpdated.push({
-            oldColumn: new TableColumn({
-              name: old_column.column_name,
-              type: old_column.data_type,
-              ...(old_column?.column_default &&
-                old_column.data_type !== 'serial' && {
-                  default:
-                    old_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(old_column.column_default)
-                      : old_column.column_default,
-                }),
-              isNullable: !old_column?.constraints_type.is_not_null,
-              isUnique: old_column?.constraints_type.is_unique,
-              isPrimary: old_column?.constraints_type.is_primary_key || false,
-            }),
-            newColumn: new TableColumn({
-              name: new_column.column_name,
-              type: new_column.data_type,
-              ...(new_column?.column_default &&
-                new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
-              isNullable: !new_column?.constraints_type.is_not_null,
-              isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
-              isPrimary: new_column?.constraints_type.is_primary_key || false,
-            }),
-          });
-        }
-      });
-
-      const columnNames = relation.configurations.columns.column_names;
-      const columnConfigurations = relation.configurations.columns.configurations;
-
-      columnstoBeUpdated.forEach((column) => {
-        const newColumn = column.newColumn;
-        const oldColumn = column.oldColumn;
-        const columnUuid = columnNames[oldColumn.name];
-        if (columnUuid) {
-          columnNames[newColumn.name] = columnUuid;
-          if (newColumn.type !== oldColumn.type) {
-            columnConfigurations[columnUuid] = {};
-          }
-          columnConfigurations[columnUuid] = {
-            ...columnConfigurations[columnUuid],
-            ...columnConfigurationMap[newColumn.name],
-          };
-          if (oldColumn.name !== newColumn.name) {
-            delete columnNames[oldColumn.name];
-          }
-        }
-      });
-
-      columnsToBeDeleted.forEach((column) => {
-        const columnUuid = columnNames[column];
-        delete columnNames[column];
-        delete columnConfigurations[columnUuid];
-      });
-
-      columnsToBeInserted.forEach((column) => {
-        const columnUuid = uuidv4();
-        columnNames[column.name] = columnUuid;
-        columnConfigurations[columnUuid] = columnConfigurationMap[column.name];
-      });
-
-      relation.configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigurations,
-        },
-      };
-
-      await queryRunner.manager.save(relation);
-
-      if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
-
-      if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(physicalName, columnsToBeDeleted);
-      if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(physicalName, columnsToBeInserted);
-      if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(physicalName, columnstoBeUpdated);
-
-      if (params.new_table_name) {
-        const { new_table_name } = params;
+      if (payload.newTableName) {
         const newInternalTable = await queryRunner.manager.findOne(InternalTable, {
-          where: { organizationId, tableName: new_table_name },
+          where: { organizationId, tableName: payload.newTableName },
         });
 
-        if (newInternalTable) throw new BadRequestException('Table name already exists: ' + new_table_name);
-        await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { tableName: new_table_name });
+        if (newInternalTable) throw new BadRequestException('Table name already exists: ' + payload.newTableName);
+        await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { tableName: payload.newTableName });
       }
 
       await tjdbQueryRunner.commitTransaction();
@@ -826,8 +961,81 @@ export class TooljetDbTableOperationsService {
     }
   }
 
+  /**
+   * Mints a uuid for the new column and converts add_column's embedded foreign_keys (referenced by
+   * display name) into co_relation_id-keyed FkSpecs - the same conversion create_table does.
+   */
+  protected async normalizeAddColumn(organizationId: string, params, appManager: EntityManager) {
+    const { table_name: tableName, column, foreign_keys = [] } = params;
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, appManager);
+
+    const columnUuid = uuidv4();
+    const foreignKeys = await this.resolveForeignKeyCoRelationIds(foreign_keys, organizationId, appManager);
+
+    return { organizationId, internalTable, relation, column, columnUuid, foreignKeys };
+  }
+
+  protected async applyAddColumn(
+    payload: {
+      organizationId: string;
+      column: TooljetDatabaseColumn & { configurations?: Record<string, unknown> };
+      columnUuid: string;
+      foreignKeys: NormalizedForeignKeySpec[];
+    },
+    relation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ) {
+    const { appManager, tjdbManager } = connectionManagers;
+    const tjdbQueryRunner = tjdbManager.queryRunner;
+    const tenantSchema = findTenantSchema(payload.organizationId);
+    const physicalName = concatSchemaAndTableName(tenantSchema, relation.id);
+    const { column, columnUuid, foreignKeys } = payload;
+
+    const columnNames = relation.configurations.columns.column_names;
+    const columnConfigurations = relation.configurations.columns.configurations;
+    columnNames[column['column_name']] = columnUuid;
+    columnConfigurations[columnUuid] = column?.configurations || {};
+    relation.configurations = {
+      columns: {
+        column_names: columnNames,
+        configurations: columnConfigurations,
+      },
+    };
+
+    await appManager.save(relation);
+
+    await tjdbQueryRunner.addColumn(
+      physicalName,
+      new TableColumn({
+        name: column['column_name'],
+        type: column['data_type'],
+        ...(column['column_default'] && {
+          default:
+            column['data_type'] === 'character varying'
+              ? this.addQuotesIfString(column['column_default'])
+              : column['column_default'],
+        }),
+        isNullable: !column?.constraints_type.is_not_null || false,
+        isUnique: column?.constraints_type.is_unique || false,
+        ...(column?.constraints_type.is_primary_key && { isPrimary: true }),
+      })
+    );
+
+    if (foreignKeys.length) {
+      const foreignKeyDetails = await this.resolveForeignKeyDetailsForApply(
+        foreignKeys,
+        payload.organizationId,
+        relation,
+        tenantSchema,
+        appManager
+      );
+      const tableForeignKeys = foreignKeyDetails.map((detail) => new TableForeignKey({ ...detail }));
+      await tjdbQueryRunner.createForeignKeys(physicalName, tableForeignKeys);
+    }
+  }
+
   protected async addColumn(organizationId: string, params) {
-    const { table_name: tableName, column, foreign_keys } = params;
+    const { foreign_keys } = params;
 
     let referenced_tables_info = {};
     if (foreign_keys.length) {
@@ -849,7 +1057,6 @@ export class TooljetDbTableOperationsService {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
 
-    const tenantSchema = findTenantSchema(organizationId);
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunnner.connect();
     await tjdbQueryRunnner.startTransaction();
@@ -864,47 +1071,14 @@ export class TooljetDbTableOperationsService {
     let internalTable: InternalTable;
     let relation: InternalTableRelation;
     try {
-      const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
-      internalTable = resolved.internalTable;
-      relation = resolved.relation;
-      const physicalName = resolved.physicalName;
-      const columnNames = relation.configurations.columns.column_names;
-      const columnConfigurations = relation.configurations.columns.configurations;
-      const columnUuid = uuidv4();
-      columnNames[column['column_name']] = columnUuid;
-      columnConfigurations[columnUuid] = column?.configurations || {};
-      relation.configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigurations,
-        },
-      };
+      const payload = await this.normalizeAddColumn(organizationId, params, queryRunner.manager);
+      internalTable = payload.internalTable;
+      relation = payload.relation;
 
-      await queryRunner.manager.save(relation);
-
-      await tjdbQueryRunnner.addColumn(
-        physicalName,
-        new TableColumn({
-          name: column['column_name'],
-          type: column['data_type'],
-          ...(column['column_default'] && {
-            default:
-              column['data_type'] === 'character varying'
-                ? this.addQuotesIfString(column['column_default'])
-                : column['column_default'],
-          }),
-          isNullable: !column?.constraints_type.is_not_null || false,
-          isUnique: column?.constraints_type.is_unique || false,
-          ...(column?.constraints_type.is_primary_key && { isPrimary: true }),
-        })
-      );
-
-      if (foreign_keys.length) {
-        const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
-          (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
-        );
-        await tjdbQueryRunnner.createForeignKeys(physicalName, foreignKeys);
-      }
+      await this.applyAddColumn(payload, relation, {
+        appManager: queryRunner.manager,
+        tjdbManager: tjdbQueryRunnner.manager,
+      });
 
       await queryRunner.commitTransaction();
       await tjdbQueryRunnner.commitTransaction();
@@ -944,9 +1118,40 @@ export class TooljetDbTableOperationsService {
     }
   }
 
-  protected async dropColumn(organizationId: string, params) {
+  /** Reads the uuid of the column being dropped from the source relation; mints nothing. */
+  protected async normalizeDropColumn(organizationId: string, params, appManager: EntityManager) {
     const { table_name: tableName, column } = params;
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, appManager);
+    const columnName = column['column_name'];
+    const columnUuid = relation.configurations.columns.column_names[columnName];
 
+    return { organizationId, internalTable, relation, columnName, columnUuid };
+  }
+
+  protected async applyDropColumn(
+    payload: { organizationId: string; columnName: string; columnUuid: string },
+    relation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ) {
+    const { appManager, tjdbManager } = connectionManagers;
+    const physicalName = concatSchemaAndTableName(findTenantSchema(payload.organizationId), relation.id);
+
+    const columnNames = relation.configurations.columns.column_names;
+    const columnConfigurations = relation.configurations.columns.configurations;
+    delete columnNames[payload.columnName];
+    delete columnConfigurations[payload.columnUuid];
+    relation.configurations = {
+      columns: {
+        column_names: columnNames,
+        configurations: columnConfigurations,
+      },
+    };
+    await appManager.save(relation);
+
+    return await tjdbManager.queryRunner.dropColumn(physicalName, payload.columnName);
+  }
+
+  protected async dropColumn(organizationId: string, params) {
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     const queryRunner = this.manager.connection.createQueryRunner();
 
@@ -962,24 +1167,14 @@ export class TooljetDbTableOperationsService {
     let internalTable: InternalTable;
     let relation: InternalTableRelation;
     try {
-      const resolved = await this.resolveTable(organizationId, tableName, queryRunner.manager);
-      internalTable = resolved.internalTable;
-      relation = resolved.relation;
-      const physicalName = resolved.physicalName;
-      const columnNames = relation.configurations.columns.column_names;
-      const columnConfigurations = relation.configurations.columns.configurations;
-      const columnUuid = columnNames[column['column_name']];
-      delete columnNames[column['column_name']];
-      delete columnConfigurations[columnUuid];
-      relation.configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigurations,
-        },
-      };
-      await queryRunner.manager.save(relation);
+      const payload = await this.normalizeDropColumn(organizationId, params, queryRunner.manager);
+      internalTable = payload.internalTable;
+      relation = payload.relation;
 
-      const result = await tjdbQueryRunnner.dropColumn(physicalName, column['column_name']);
+      const result = await this.applyDropColumn(payload, relation, {
+        appManager: queryRunner.manager,
+        tjdbManager: tjdbQueryRunnner.manager,
+      });
 
       await tjdbQueryRunnner.commitTransaction();
       await queryRunner.commitTransaction();
@@ -1389,16 +1584,122 @@ export class TooljetDbTableOperationsService {
     throw new NotFoundException('Some tables are not found');
   }
 
-  protected async editColumn(organizationId: string, params) {
+  /**
+   * Resolves the column's uuid from the source relation before any transaction opens - callers
+   * must throw NotFoundException from here, not from inside apply's try block. The rename trap:
+   * this is the only place that reads column_names by name; apply() gets the uuid via the payload
+   * and never re-indexes into whatever relation it is handed.
+   */
+  protected async normalizeEditColumn(organizationId: string, params) {
     const { table_name: tableName, column, foreign_key_id_to_delete } = params;
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName);
+    const columnUuid = relation.configurations.columns.column_names[column.column_name];
+    if (!columnUuid) throw new NotFoundException('Column not found: ' + column.column_name);
+
+    return {
+      organizationId,
+      internalTable,
+      relation,
+      column,
+      columnName: column.column_name,
+      newColumnName: column?.new_column_name,
+      columnUuid,
+      foreignKeyIdToDelete: foreign_key_id_to_delete,
+    };
+  }
+
+  /**
+   * Display-settings-only change - not schema, has nothing to promote, and its pre-feature
+   * behaviour was that one setting applies everywhere. Writes through to every relation of this
+   * internal table that currently holds this column uuid, keyed by uuid rather than by whatever
+   * name that relation happens to use. Never called from apply(): apply only ever touches the one
+   * relation it was handed, and this touches every relation the column has one.
+   */
+  protected async writeThroughColumnConfigurations(
+    internalTableId: string,
+    columnUuid: string,
+    configurationsPatch: Record<string, unknown> | undefined,
+    appManager: EntityManager
+  ): Promise<void> {
+    if (isEmpty(configurationsPatch)) return;
+
+    const relations = await appManager.find(InternalTableRelation, { where: { internalTableId } });
+    for (const rel of relations) {
+      const columnNames = rel.configurations?.columns?.column_names || {};
+      if (!Object.values(columnNames).includes(columnUuid)) continue;
+
+      const columnConfigurations = rel.configurations.columns.configurations || {};
+      columnConfigurations[columnUuid] = { ...columnConfigurations[columnUuid], ...configurationsPatch };
+      rel.configurations = { columns: { column_names: columnNames, configurations: columnConfigurations } };
+      await appManager.save(rel);
+    }
+  }
+
+  /** Physical DDL for edit_column plus the rename bookkeeping on the relation apply was handed. */
+  protected async applyEditColumn(
+    payload: {
+      organizationId: string;
+      column: TooljetDatabaseColumn & { new_column_name?: string };
+      columnName: string;
+      newColumnName?: string;
+      columnUuid: string;
+      foreignKeyIdToDelete?: string;
+    },
+    relation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ) {
+    const { appManager, tjdbManager } = connectionManagers;
+    const tjdbQueryRunner = tjdbManager.queryRunner;
+    const physicalName = concatSchemaAndTableName(findTenantSchema(payload.organizationId), relation.id);
+    const { column, columnName, newColumnName, columnUuid, foreignKeyIdToDelete } = payload;
+
+    if (newColumnName) {
+      // Re-read: writeThroughColumnConfigurations may have just updated this same relation row's
+      // configurations - the rename must build on that, never on a copy taken before that write.
+      const currentRelation = await appManager.findOne(InternalTableRelation, { where: { id: relation.id } });
+      const columnNames = currentRelation.configurations.columns.column_names;
+      columnNames[newColumnName] = columnUuid;
+      delete columnNames[columnName];
+      currentRelation.configurations = {
+        columns: { column_names: columnNames, configurations: currentRelation.configurations.columns.configurations },
+      };
+      await appManager.save(currentRelation);
+    }
+
+    if (foreignKeyIdToDelete) await tjdbQueryRunner.dropForeignKey(physicalName, foreignKeyIdToDelete);
+
+    await tjdbQueryRunner.changeColumn(
+      physicalName,
+      columnName,
+      new TableColumn({
+        name: columnName,
+        type: column['data_type'],
+        ...(column['column_default'] && {
+          default:
+            column['data_type'] === 'character varying'
+              ? this.addQuotesIfString(column['column_default'])
+              : column['column_default'],
+        }),
+        isNullable: !column?.constraints_type.is_not_null || false,
+        isUnique: column?.constraints_type.is_unique || false,
+        isPrimary: column?.constraints_type.is_primary_key || false,
+      })
+    );
+
+    if (columnName && newColumnName) {
+      await tjdbQueryRunner.renameColumn(physicalName, columnName, newColumnName);
+    }
+  }
+
+  protected async editColumn(organizationId: string, params) {
+    const { column } = params;
 
     // Resolved here, before the transactions open: the catch block below wraps whatever it
     // catches into a TooljetDatabaseError assuming a QueryFailedError shape (it indexes
     // errorObj.driverError), so throwing NotFoundException from inside the try would itself
     // crash on the wrap instead of surfacing "Column not found".
-    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, tableName);
-    const columnUuid = relation.configurations.columns.column_names[column.column_name];
-    if (!columnUuid) throw new NotFoundException('Column not found: ' + column.column_name);
+    const payload = await this.normalizeEditColumn(organizationId, params);
+    const { internalTable, relation } = payload;
 
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     const queryRunner = this.manager.connection.createQueryRunner();
@@ -1409,48 +1710,17 @@ export class TooljetDbTableOperationsService {
     await queryRunner.startTransaction();
 
     try {
-      const columnNames = relation.configurations.columns.column_names;
-      const columnConfigurations = relation.configurations.columns.configurations;
-      columnConfigurations[columnUuid] = {
-        ...columnConfigurations[columnUuid],
-        ...(column?.configurations || {}),
-      };
-      if (column?.new_column_name) {
-        columnNames[column.new_column_name] = columnUuid;
-        delete columnNames[column.column_name];
-      }
-
-      relation.configurations = {
-        columns: {
-          column_names: columnNames,
-          configurations: columnConfigurations,
-        },
-      };
-
-      await queryRunner.manager.save(relation);
-
-      if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(physicalName, foreign_key_id_to_delete);
-      await tjdbQueryRunner.changeColumn(
-        physicalName,
-        column.column_name,
-        new TableColumn({
-          name: column.column_name,
-          type: column['data_type'],
-          ...(column['column_default'] && {
-            default:
-              column['data_type'] === 'character varying'
-                ? this.addQuotesIfString(column['column_default'])
-                : column['column_default'],
-          }),
-          isNullable: !column?.constraints_type.is_not_null || false,
-          isUnique: column?.constraints_type.is_unique || false,
-          isPrimary: column?.constraints_type.is_primary_key || false,
-        })
+      await this.writeThroughColumnConfigurations(
+        internalTable.id,
+        payload.columnUuid,
+        column?.configurations,
+        queryRunner.manager
       );
 
-      if (column?.column_name && column?.new_column_name) {
-        await tjdbQueryRunner.renameColumn(physicalName, column?.column_name, column?.new_column_name);
-      }
+      await this.applyEditColumn(payload, relation, {
+        appManager: queryRunner.manager,
+        tjdbManager: tjdbQueryRunner.manager,
+      });
 
       await tjdbQueryRunner.commitTransaction();
       await queryRunner.commitTransaction();
@@ -1614,6 +1884,79 @@ export class TooljetDbTableOperationsService {
     }
 
     return referenced_tables_info;
+  }
+
+  /**
+   * Converts the foreign keys embedded in a create_table/add_column payload from
+   * referenced_table_name (a display name) to referenced_table (that table's co_relation_id).
+   * Existence of the referenced tables is validated separately, by the same
+   * fetchAndCheckIfValidForeignKeyTables call every caller already made before normalize runs -
+   * this only re-reads the co_relation_id for names already known to exist.
+   */
+  protected async resolveForeignKeyCoRelationIds(
+    foreignKeys: TooljetDatabaseForeignKey[],
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<NormalizedForeignKeySpec[]> {
+    if (!foreignKeys?.length) return [];
+
+    const tableNames = foreignKeys.map((foreignKey) => foreignKey.referenced_table_name);
+    const referencedTables = await manager.find(InternalTable, {
+      where: { organizationId, tableName: In(tableNames) },
+      select: ['tableName', 'co_relation_id'],
+    });
+    const coRelationIdByTableName = new Map(referencedTables.map((table) => [table.tableName, table.co_relation_id]));
+
+    return foreignKeys.map((foreignKey) => {
+      const { referenced_table_name, column_names, referenced_column_names, on_delete, on_update } = foreignKey;
+      return {
+        column_names,
+        referenced_table: coRelationIdByTableName.get(referenced_table_name),
+        referenced_column_names,
+        on_delete,
+        on_update,
+      };
+    });
+  }
+
+  /**
+   * apply()'s counterpart to resolveForeignKeyCoRelationIds: resolves each FkSpec's co_relation_id
+   * back to a relation in the same (environment, branch) as the relation apply was handed - a
+   * sibling lookup, never the licence-aware "current environment" resolution - and shapes the result
+   * for TypeORM's Table/TableForeignKey DDL. create_foreign_key/update_foreign_key/delete_foreign_key
+   * need the same sibling-lookup shape; reuse relationResolverService.resolveSiblingByCoRelationId
+   * directly rather than re-deriving it.
+   */
+  protected async resolveForeignKeyDetailsForApply(
+    foreignKeys: NormalizedForeignKeySpec[],
+    organizationId: string,
+    relation: InternalTableRelation,
+    tenantSchema: string,
+    manager: EntityManager
+  ) {
+    if (!foreignKeys.length) return [];
+
+    const relationIdByCoRelationId = new Map<string, string>();
+    for (const foreignKey of foreignKeys) {
+      if (relationIdByCoRelationId.has(foreignKey.referenced_table)) continue;
+      const referencedRelation = await this.relationResolverService.resolveSiblingByCoRelationId(
+        organizationId,
+        foreignKey.referenced_table,
+        relation.environmentId,
+        relation.branchId,
+        manager
+      );
+      relationIdByCoRelationId.set(foreignKey.referenced_table, referencedRelation.id);
+    }
+
+    return foreignKeys.map((foreignKey) => ({
+      columnNames: foreignKey.column_names,
+      referencedTableName: relationIdByCoRelationId.get(foreignKey.referenced_table),
+      referencedColumnNames: foreignKey.referenced_column_names,
+      referencedSchema: tenantSchema,
+      ...(foreignKey.on_delete && { onDelete: foreignKey.on_delete }),
+      ...(foreignKey.on_update && { onUpdate: foreignKey.on_update }),
+    }));
   }
 
   protected async createForeignKey(

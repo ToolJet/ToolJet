@@ -71,6 +71,18 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 - Every table reference used to build a query (`join_tables`' `from` table included) must be
   validated against the caller's workspace before it reaches a query builder's `.from()`/`.join()` —
   an unvalidated id there is a same-shape leak to the one the resolver closes for the proxy paths.
+- The six table/column DDL ops on `TooljetDbTableOperationsService` (`create_table`, `drop_table`,
+  `edit_table`, `add_column`, `drop_column`, `edit_column`) split into a `normalize*`/`apply*` pair
+  per op: `normalize` resolves names to ids and mints every column uuid (`uuidv4()` for a column
+  never happens outside a `normalize*` method); `apply` takes `(payload, relation,
+  connectionManagers)`, reads uuids from the payload, and only ever writes DDL and `configurations`
+  for the one relation it was handed — never mints, never touches a sibling relation. A renamed
+  column's uuid always comes from the *source* relation's `column_names` (read in `normalize`, or
+  passed through the payload), never re-derived by indexing into whatever relation `apply` runs
+  against. `editColumn`'s display-settings write-through (`writeThroughColumnConfigurations`) is the
+  one deliberate exception — it is a settings-only change with nothing to promote, so it lives in the
+  handler between `normalize` and `apply`, not inside either, and fans out to every relation holding
+  that column uuid instead of just the one `apply` touches.
 - `drop_table` soft-deletes `internal_tables` (`@DeleteDateColumn`), it never hard-deletes the row.
   The physical `DROP TABLE` still runs — the row is a name allocation and a chain anchor for the
   migration-recording tables (`ON DELETE CASCADE` on `internal_table_id`), not an existence claim.
