@@ -216,15 +216,16 @@ export class TooljetDbMigrationRecorderService {
   }
 
   /**
-   * Removes both rows recorded for a migration that never actually happened. Never wraps or
-   * swallows what it's given - callers invoke this from a DDL catch block and must go on to rethrow
-   * the real Postgres error, not whatever this cleanup itself produces.
+   * Removes the migration row for a migration that never actually happened. Its application row is
+   * not deleted explicitly - `migration_id` has ON DELETE CASCADE onto this table (migration A's
+   * createMigrationApplicationsTable), so one delete removes both atomically. Deleting the
+   * application row first would leave a window where a crash after it but before the migration
+   * delete leaves the migration row orphaned and permanently invisible to adjudicatePending, which
+   * only discovers pending candidates through application rows. Never wraps or swallows what it's
+   * given - callers invoke this from a DDL catch block and must go on to rethrow the real Postgres
+   * error, not whatever this cleanup itself produces.
    */
   async discard(migration: InternalTableMigration, relation: InternalTableRelation): Promise<void> {
-    await this.manager.delete(InternalTableMigrationApplication, {
-      migrationId: migration.id,
-      relationId: relation.id,
-    });
     await this.manager.delete(InternalTableMigration, { id: migration.id });
   }
 
