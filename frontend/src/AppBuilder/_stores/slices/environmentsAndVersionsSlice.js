@@ -512,8 +512,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
               'is_maintenance_on' in data
                 ? data.is_maintenance_on
                 : 'isMaintenanceOn' in data
-                  ? data.isMaintenanceOn
-                  : false,
+                ? data.isMaintenanceOn
+                : false,
             homePageId: data.editing_version?.homePageId || data.editing_version?.home_page_id,
           },
           moduleId
@@ -574,8 +574,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           get().globalSettings?.appMode && get().globalSettings.appMode !== 'auto'
             ? get().globalSettings.appMode
             : localStorage.getItem('darkMode') === 'true'
-              ? 'dark'
-              : 'light';
+            ? 'dark'
+            : 'light';
         get().setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
         get().setResolvedGlobals(
           'urlparams',
@@ -623,6 +623,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           // Event handlers are cloned with new ids per version too — without this, click/
           // onPageLoad actions stay wired to the previous version's event definitions.
           get().eventsSlice.updateEventsField('events', data.events || [], moduleId);
+          // "Go to app" link targets — stale otherwise.
+          get().setLinkedApps(data.linkedApps ?? {}, moduleId);
 
           // Queries are cloned with new ids per version too (mirrors pages above), but
           // getAppVersionData doesn't return them — without this refetch, queryNameIdMapping/
