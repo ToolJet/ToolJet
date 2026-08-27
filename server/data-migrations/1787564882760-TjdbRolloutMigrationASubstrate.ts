@@ -347,7 +347,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     let baselineError: string | null = null;
     let migrations: Array<{ sequence: number; payload: any; resultingSchema: any }> = [];
     try {
-      migrations = await this.synthesizeBaseline(tjdbQueryRunner, schema, row.id, configurations);
+      migrations = await this.synthesizeBaseline(queryRunner, tjdbQueryRunner, schema, row.id, configurations);
     } catch (error) {
       baselineError = error.message;
     }
@@ -436,6 +436,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
    * that shape).
    */
   private async synthesizeBaseline(
+    queryRunner: QueryRunner,
     tjdbQueryRunner: QueryRunner,
     schema: string,
     tableId: string,
@@ -467,7 +468,17 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     const migrations: Array<{ sequence: number; payload: any; resultingSchema: any }> = [
       {
         sequence: 1,
-        payload: { ddl: this.buildCreateTableDdl(tableId, snapshot.columns, snapshot.primary_key), refs: [] },
+        payload: {
+          ddl: this.buildCreateTableDdl(schema, snapshot.columns, snapshot.primary_key),
+          refs: {},
+          // Portability contract (also used by raw-SQL migrations from H7 on): the DDL never bakes
+          // in a physical relation id. "{{self}}" is the relation this migration is replayed onto;
+          // every other placeholder is a key into `refs`, resolved through the FK's co_relation_id
+          // to whichever relation stands for that table in the replay target's own environment.
+          // column_uuids rides alongside the DDL so replay can assign the same column identities
+          // the source table already has, instead of minting fresh ones for the target relation.
+          column_uuids: columnNames,
+        },
         resultingSchema: {
           columns: snapshot.columns,
           primary_key: snapshot.primary_key,
@@ -478,12 +489,11 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
       },
     ];
     if (snapshot.foreign_keys.length) {
+      const refs: Record<string, string> = {};
+      const ddl = await this.buildForeignKeyDdl(queryRunner, schema, snapshot.foreign_keys, refs);
       migrations.push({
         sequence: 2,
-        payload: {
-          ddl: this.buildForeignKeyDdl(tableId, snapshot.foreign_keys),
-          refs: snapshot.foreign_keys.map((fk) => fk.name),
-        },
+        payload: { ddl, refs },
         resultingSchema: {
           columns: snapshot.columns,
           primary_key: snapshot.primary_key,
@@ -497,8 +507,11 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     return migrations;
   }
 
+  // Schema is baked in as a literal, not a placeholder: TJDB's tenant schema is one per
+  // organization, shared by every environment - unlike a relation id, it never differs between
+  // the relation this migration was recorded against and whatever relation replays it.
   private buildCreateTableDdl(
-    tableId: string,
+    schema: string,
     columns: TableSchemaSnapshotColumn[],
     primaryKeyColumns: string[]
   ): string {
@@ -510,19 +523,46 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     if (primaryKeyColumns.length) {
       columnDdl.push(`  PRIMARY KEY (${primaryKeyColumns.map((c) => `"${c}"`).join(', ')})`);
     }
-    return `CREATE TABLE "${tableId}" (\n${columnDdl.join(',\n')}\n)`;
+    return `CREATE TABLE "${schema}"."{{self}}" (\n${columnDdl.join(',\n')}\n)`;
   }
 
-  private buildForeignKeyDdl(tableId: string, foreignKeys: TableSchemaSnapshotForeignKey[]): string {
-    return foreignKeys
-      .map(
-        (fk) =>
-          `ALTER TABLE "${tableId}" ADD CONSTRAINT "${fk.name}" FOREIGN KEY (${fk.column_names
-            .map((c) => `"${c}"`)
-            .join(', ')}) REFERENCES "${fk.referenced_table}" (${fk.referenced_column_names
-            .map((c) => `"${c}"`)
-            .join(', ')})`
-      )
-      .join(';\n');
+  /**
+   * Every row this migration baselines still satisfies relation.id === internal_table.id (the
+   * pre-H3 rollout invariant), including whatever a foreign key references - so a referenced
+   * relation id is looked up as an internal_tables id directly. This shortcut is only safe here;
+   * normal perform()/replay code must go through the relation resolver instead.
+   */
+  private async buildForeignKeyDdl(
+    queryRunner: QueryRunner,
+    schema: string,
+    foreignKeys: TableSchemaSnapshotForeignKey[],
+    refs: Record<string, string>
+  ): Promise<string> {
+    const placeholderByRelationId = new Map<string, string>();
+    const statements: string[] = [];
+
+    for (const fk of foreignKeys) {
+      let placeholder = placeholderByRelationId.get(fk.referenced_table);
+      if (!placeholder) {
+        const [row] = await queryRunner.query(`SELECT co_relation_id FROM internal_tables WHERE id = $1`, [
+          fk.referenced_table,
+        ]);
+        if (!row)
+          throw new Error(`foreign key "${fk.name}" references unknown internal table "${fk.referenced_table}"`);
+        placeholder = `ref_${placeholderByRelationId.size}`;
+        placeholderByRelationId.set(fk.referenced_table, placeholder);
+        refs[placeholder] = row.co_relation_id;
+      }
+
+      statements.push(
+        `ALTER TABLE "${schema}"."{{self}}" ADD CONSTRAINT "${fk.name}" FOREIGN KEY (${fk.column_names
+          .map((c) => `"${c}"`)
+          .join(', ')}) REFERENCES "${schema}"."{{${placeholder}}}" (${fk.referenced_column_names
+          .map((c) => `"${c}"`)
+          .join(', ')})`
+      );
+    }
+
+    return statements.join(';\n');
   }
 }
