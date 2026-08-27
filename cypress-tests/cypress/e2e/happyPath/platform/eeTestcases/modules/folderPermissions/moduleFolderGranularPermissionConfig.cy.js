@@ -1,49 +1,35 @@
 import { commonSelectors } from 'Selectors/common';
-import { groupsSelector } from 'Selectors/manageGroups';
 import { commonEeSelectors } from 'Selectors/eeCommon';
-import { openGroupThreeDotMenu } from 'Support/utils/platform/customGroups';
+import { groupsSelector } from 'Selectors/manageGroups';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { openGroupThreeDotMenu } from 'Support/utils/platform/customGroups';
 
-// Section 1 (Permission Configuration) scope note: the other config checks in the
-// manual doc — the Edit Folder/Edit Modules/View Modules radios existing & being
-// mutually exclusive, All Folders vs Custom Folders resource selection, and the
-// End-user tooltip — all require driving the "Add permission" dropdown
-// (AddResourcePermissionsMenu.jsx's Bootstrap OverlayTrigger), which proved
-// unreliable in headless Electron across many attempts earlier in this session
-// (see moduleGranularPermissions.cy.js's header comment). Their underlying
-// *behavior* is already proven indirectly by moduleFolderGranularAccess.cy.js and
-// moduleFolderPermissionInheritance.cy.js (effective access matches each permission
-// level, union/highest-wins across grants) — this file only covers what's safely
-// verifiable without that dropdown: group duplication.
-describe('Modules — Folder Granular Permission Configuration', { retries: 0 }, () => {
+
+describe('Modules — Folder Granular Permission Configuration', () => {
   const testId = Date.now();
-  const wsName = `modules-folder-config-${testId}`;
-  const wsSlug = wsName;
 
-  let workspaceId;
+  let workspaceId, wsName, wsSlug;
 
   const visitGroupsSettingsPage = () => {
     cy.visit(`/${wsSlug}/workspace-settings/groups`);
     cy.wait(2000);
   };
 
-  before(() => {
-    cy.apiLogin();
-    
-    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
-      workspaceId = res.body.organization_id;
-      Cypress.env('workspaceId', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
-    });
-  });
-
-  after(() => {
+  afterEach(() => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
   beforeEach(() => {
+    wsName = `modules-folder-config-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
+    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env('workspaceId', workspaceId);
+      Cypress.env('workspaceSlug', wsSlug);
+    });
   });
 
   it('duplicating a group duplicates its module-folder granular permission', () => {

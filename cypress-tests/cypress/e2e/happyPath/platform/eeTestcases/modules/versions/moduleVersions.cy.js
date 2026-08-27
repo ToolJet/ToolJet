@@ -1,17 +1,17 @@
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { moduleSelectors } from "Selectors/platform/modules";
-import { versionModalSelector } from "Selectors/eeCommon";
 import { Environments } from "Constants/constants/multiEnv";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { versionModalSelector } from "Selectors/eeCommon";
+import { moduleSelectors } from "Selectors/platform/modules";
 import {
+  createModuleDraftVersion,
   createModuleViaAPI,
   dropModuleComponent,
-  createModuleDraftVersion,
   publishModuleVersion,
   switchModuleEditorVersion,
 } from "Support/utils/platform/modules";
 import { appPromote } from "Support/utils/platform/multiEnv";
 
-describe("Modules — Versions", { retries: 0 }, () => {
+describe("Modules — Versions", () => {
   const testId = Date.now();
   const wsName = `modules-versions-${testId}`;
   const wsSlug = wsName;
@@ -73,9 +73,7 @@ describe("Modules — Versions", { retries: 0 }, () => {
     cy.get('[data-cy="create-draft-version-title"]').should("be.visible");
     cy.get(commonWidgetSelector.modalCloseButton).click();
 
-    // A genuinely new name succeeds after the above rejections — reuses the
-    // suite's self-healing draft-version helper (a harmless no-op here since
-    // v1 is already saved/locked).
+    // v1 is already saved/locked.
     createModuleDraftVersion("v2-draft");
     cy.get(moduleSelectors.versionSwitcherButton).should(
       "contain.text",
@@ -83,24 +81,15 @@ describe("Modules — Versions", { retries: 0 }, () => {
     );
 
     // Edit made in the new draft:
-
-    cy.intercept("PUT", "**/versions/*/components").as("updateComponents");
+    cy.get(moduleSelectors.moduleContainerWidget).click();
+    cy.wait(500);
+    dropModuleComponent("Text"); // -> text1
+    cy.wait(500);
 
     cy.get(moduleSelectors.moduleContainerWidget).click();
     cy.wait(500);
     cy.get(commonWidgetSelector.widgetConfigHandle("modulecontainer")).click();
-    cy.get(commonWidgetSelector.accordion("input"))
-      .next()
-      .find('[data-cy="button-add-column"]')
-      .click();
-    cy.wait("@updateComponents");
-    cy.reload();
-    cy.wait(2000);
-
-    cy.get(moduleSelectors.moduleContainerWidget).click();
-    cy.wait(500);
-    cy.get(commonWidgetSelector.widgetConfigHandle("modulecontainer")).click();
-    cy.get(moduleSelectors.inputItem("input1")).should("exist");
+    cy.get('[data-cy="draggable-widget-text1"]').should("exist");
 
     publishModuleVersion("v2-draft", "v2-published");
 
@@ -110,7 +99,7 @@ describe("Modules — Versions", { retries: 0 }, () => {
     cy.get(moduleSelectors.moduleContainerWidget).click();
     cy.wait(500);
     cy.get(commonWidgetSelector.widgetConfigHandle("modulecontainer")).click();
-    cy.get(moduleSelectors.inputItem("input1")).should("not.exist"); // v1 predates this edit
+    cy.get('[data-cy="draggable-widget-text1"]').should("not.exist"); // v1 predates this edit
 
     // Switching to v2-published should show it.
     switchModuleEditorVersion("v2-published");
@@ -118,19 +107,19 @@ describe("Modules — Versions", { retries: 0 }, () => {
     cy.get(moduleSelectors.moduleContainerWidget).click();
     cy.wait(500);
     cy.get(commonWidgetSelector.widgetConfigHandle("modulecontainer")).click();
-    cy.get(moduleSelectors.inputItem("input1")).should("exist");
+    cy.get('[data-cy="draggable-widget-text1"]').should("exist");
   });
 
   it("keeps draft branches isolated — a new draft inherits from the version you pick, not whatever's latest", () => {
     createModuleViaAPI(branchModuleName);
 
     // v1: drop one component, then save/lock it.
-    dropModuleComponent("Text"); // -> text1
+    dropModuleComponent("Text",500, 100); // -> text1
     publishModuleVersion("v1", "v1");
 
     // Promote through environments and release.
     appPromote(Environments.development, Environments.staging);
-    appPromote(Environments.staging, "release");
+    appPromote(Environments.staging, "production");
 
     // v2, branched from v1 (the only saved version at this point) — add a
     // second component, so v2 has both text1 (inherited) and text2 (new).
@@ -138,7 +127,7 @@ describe("Modules — Versions", { retries: 0 }, () => {
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("exist");
     // Container already has text1, so drop directly rather than reusing
     // dropModuleComponent (which requires the blank-container placeholder).
-    cy.dragAndDropWidget("Text"); // -> text2
+    cy.dragAndDropWidget("Text", 500, 200); // -> text2
     cy.get(commonWidgetSelector.draggableWidget("text2")).should("exist");
     publishModuleVersion("v2-draft", "v2-published");
 

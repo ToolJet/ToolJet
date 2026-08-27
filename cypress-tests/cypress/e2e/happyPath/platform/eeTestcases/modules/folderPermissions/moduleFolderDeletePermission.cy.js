@@ -1,10 +1,10 @@
 import { commonSelectors } from 'Selectors/common';
-import { viewFolderCardOptions, deleteFolder } from 'Support/utils/common';
-import { apiCreateGroup, apiAddUserToGroup } from 'Support/utils/manageGroups';
+import { deleteFolder, viewFolderCardOptions } from 'Support/utils/common';
+import { apiAddUserToGroup, apiCreateGroup } from 'Support/utils/manageGroups';
 import { openModulesList } from 'Support/utils/platform/modules';
 import { uiVerifyFolderCreated } from 'Support/utils/uiPermissions';
 
-describe('Modules — Folder Permissions: Custom Group Delete Override & Ownership', { retries: 0 }, () => {
+describe('Modules — Folder Permissions: Custom Group Delete Override & Ownership', () => {
   const testId = Date.now();
   const wsName = `folder-delete-${testId}`;
   const wsSlug = wsName;

@@ -7,7 +7,7 @@ export const commonSelectors = {
   globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
   createWorkFlowsButton: '[data-cy="+-create-workflow"]',
   workFlowNameInputField: '[data-cy="app-name-input"]',
-  toastMessage: ".go3958317564",
+  toastMessage: ".go4109123758",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage:
