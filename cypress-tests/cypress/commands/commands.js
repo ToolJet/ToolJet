@@ -520,7 +520,7 @@ Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
   cy.intercept("GET", API_ENDPOINT).as("library_apps");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.get(commonSelectors.homePageLogo);
   cy.wait("@library_apps");
   cy.wait(2000);
 });
