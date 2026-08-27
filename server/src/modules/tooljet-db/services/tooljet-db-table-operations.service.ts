@@ -66,6 +66,7 @@ declare module 'typeorm' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface SelectQueryBuilder<Entity> {
     rightJoin(entityOrProperty: string, alias: string, condition?: string, parameters?: ObjectLiteral): this;
+
     fullOuterJoin(entityOrProperty: string, alias: string, condition?: string, parameters?: ObjectLiteral): this;
   }
 }
@@ -79,6 +80,8 @@ SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, 
   this.join('FULL OUTER', entityOrProperty, alias, condition, parameters);
   return this;
 };
+
+type ConnectionManagerKey = 'appManager' | 'tjdbManager';
 
 @Injectable()
 export class TooljetDbTableOperationsService {
@@ -96,7 +99,7 @@ export class TooljetDbTableOperationsService {
     organizationId: string,
     action: string,
     params = {},
-    connectionManagers: Record<string, EntityManager> = {
+    connectionManagers: Record<ConnectionManagerKey, EntityManager> = {
       appManager: this.manager,
       tjdbManager: this.tooljetDbManager,
     }
@@ -158,7 +161,7 @@ export class TooljetDbTableOperationsService {
 
   /**
    * Id-based sibling to resolveTable, for callers that already have the internal table's logical
-   * id rather than its display name (e.g. bulk upload, which is not a subclass and can't reach
+   * id rather than its display name (e.g., bulk upload, which is not a subclass and can't reach
    * relationResolverService directly - it's protected on this service).
    */
   async resolveTableById(
@@ -179,7 +182,7 @@ export class TooljetDbTableOperationsService {
   protected async viewTable(
     organizationId: string,
     params,
-    connectionManagers: Record<string, EntityManager> = {
+    connectionManagers: Record<ConnectionManagerKey, EntityManager> = {
       appManager: this.manager,
       tjdbManager: this.tooljetDbManager,
     }
@@ -208,30 +211,37 @@ export class TooljetDbTableOperationsService {
     );
     const tenantSchema = findTenantSchema(organizationId);
     let foreign_keys = await tjdbManager.query(`
-      select
-        (SELECT pgcls.relname FROM pg_class as pgcls where pgcls.oid = pgc.confrelid) as referenced_table_name,
-        pgc.conname as constraint_name,
-        ARRAY(SELECT attname FROM pg_attribute WHERE attrelid = pgc.conrelid AND attnum = any(pgc.conkey)) AS column_names,
-        ARRAY(select attname from pg_attribute where attrelid = pgc.confrelid and attnum = any(pgc.confkey)) as referenced_column_names,
-        case pgc.confupdtype 
-              WHEN 'a' THEN 'NO ACTION'
-              WHEN 'r' THEN 'RESTRICT'
-              WHEN 'c' THEN 'CASCADE'
-              WHEN 'n' THEN 'SET NULL'
-              WHEN 'd' THEN 'SET DEFAULT'
-              ELSE NULL
-        end as on_update,
-        case pgc.confdeltype 
-          when 'a' then 'NO ACTION'
-          when 'r' then 'RESTRICT'
-          when 'c' then 'CASCADE'
-          when 'n' then 'SET NULL'
-          when 'd' then 'SET DEFAULT'
-        end as on_delete
-      from pg_constraint as pgc 
-      join pg_class as cls on cls.oid = pgc.conrelid
-      join pg_namespace as ns on ns.oid = cls.relnamespace
-      where cls.relname = '${relation.id}' and pgc.contype = 'f' and ns.nspname = '${tenantSchema}'
+      select (SELECT pgcls.relname FROM pg_class as pgcls where pgcls.oid = pgc.confrelid)                         as referenced_table_name,
+             pgc.conname                                                                                           as constraint_name,
+             ARRAY(SELECT attname
+                   FROM pg_attribute
+                   WHERE attrelid = pgc.conrelid
+                     AND attnum = any (pgc.conkey))                                                                AS column_names,
+             ARRAY(select attname
+                   from pg_attribute
+                   where attrelid = pgc.confrelid
+                     and attnum = any (pgc.confkey))                                                               as referenced_column_names,
+             case pgc.confupdtype
+               WHEN 'a' THEN 'NO ACTION'
+               WHEN 'r' THEN 'RESTRICT'
+               WHEN 'c' THEN 'CASCADE'
+               WHEN 'n' THEN 'SET NULL'
+               WHEN 'd' THEN 'SET DEFAULT'
+               ELSE NULL
+               end                                                                                                 as on_update,
+             case pgc.confdeltype
+               when 'a' then 'NO ACTION'
+               when 'r' then 'RESTRICT'
+               when 'c' then 'CASCADE'
+               when 'n' then 'SET NULL'
+               when 'd' then 'SET DEFAULT'
+               end                                                                                                 as on_delete
+      from pg_constraint as pgc
+             join pg_class as cls on cls.oid = pgc.conrelid
+             join pg_namespace as ns on ns.oid = cls.relnamespace
+      where cls.relname = '${relation.id}'
+        and pgc.contype = 'f'
+        and ns.nspname = '${tenantSchema}'
     `);
 
     // Transforming the Query response
@@ -284,63 +294,60 @@ export class TooljetDbTableOperationsService {
     });
 
     const columns = await tjdbManager.query(`
-    SELECT c.COLUMN_NAME,
-        c.DATA_TYPE,
-        CASE
-            WHEN c.Column_default LIKE '%::%' THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
-            ELSE c.Column_default
-        END AS Column_default,
-        c.character_maximum_length,
-        c.numeric_precision,
-        JSON_BUILD_OBJECT(
-            'is_not_null',
-            CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
-            'is_primary_key',
-            CASE WHEN pk.is_primary = true THEN true ELSE false END,
-            'is_unique',
-            CASE WHEN uk.is_unique = true THEN true ELSE false END
-        ) AS constraints_type,
-        CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
-    FROM INFORMATION_SCHEMA.COLUMNS c
-    LEFT JOIN (
-          SELECT
-            ku.TABLE_CATALOG,
-            ku.TABLE_SCHEMA,
-            ku.TABLE_NAME,
-            ku.COLUMN_NAME,
-            tc.CONSTRAINT_TYPE,
-            CASE WHEN tc.constraint_type = 'PRIMARY KEY' THEN true else false END AS is_primary
-        FROM
-            INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-        INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-          where tc.constraint_type = 'PRIMARY KEY'
-            and ku.TABLE_SCHEMA = '${tenantSchema}' and ku.TABLE_NAME = '${relation.id}'
-    ) pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
+      SELECT c.COLUMN_NAME,
+             c.DATA_TYPE,
+             CASE
+               WHEN c.Column_default LIKE '%::%'
+                 THEN REPLACE(SUBSTRING(c.Column_default FROM '^''?(.*?)''?::'), '''', '')
+               ELSE c.Column_default
+               END                                                               AS Column_default,
+             c.character_maximum_length,
+             c.numeric_precision,
+             JSON_BUILD_OBJECT(
+               'is_not_null',
+               CASE WHEN c.is_nullable = 'NO' THEN true ELSE false END,
+               'is_primary_key',
+               CASE WHEN pk.is_primary = true THEN true ELSE false END,
+               'is_unique',
+               CASE WHEN uk.is_unique = true THEN true ELSE false END
+             )                                                                   AS constraints_type,
+             CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
+      FROM INFORMATION_SCHEMA.COLUMNS c
+             LEFT JOIN (SELECT ku.TABLE_CATALOG,
+                               ku.TABLE_SCHEMA,
+                               ku.TABLE_NAME,
+                               ku.COLUMN_NAME,
+                               tc.CONSTRAINT_TYPE,
+                               CASE WHEN tc.constraint_type = 'PRIMARY KEY' THEN true else false END AS is_primary
+                        FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+                               INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
+                                          ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+                        where tc.constraint_type = 'PRIMARY KEY'
+                          and ku.TABLE_SCHEMA = '${tenantSchema}'
+                          and ku.TABLE_NAME = '${relation.id}') pk ON c.TABLE_CATALOG = pk.TABLE_CATALOG
         AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
         AND c.TABLE_NAME = pk.TABLE_NAME
         AND c.COLUMN_NAME = pk.COLUMN_NAME
-    LEFT JOIN (
-          SELECT
-            ku.TABLE_CATALOG,
-            ku.TABLE_SCHEMA,
-            ku.TABLE_NAME,
-            ku.COLUMN_NAME,
-            tc.CONSTRAINT_TYPE,
-            CASE WHEN tc.constraint_type = 'UNIQUE' THEN true else false END AS is_unique
-        FROM
-            INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-        INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-          where tc.constraint_type = 'UNIQUE'
-            and ku.TABLE_SCHEMA = '${tenantSchema}' and ku.TABLE_NAME = '${relation.id}'
-    ) as uk ON c.TABLE_CATALOG = uk.TABLE_CATALOG
+             LEFT JOIN (SELECT ku.TABLE_CATALOG,
+                               ku.TABLE_SCHEMA,
+                               ku.TABLE_NAME,
+                               ku.COLUMN_NAME,
+                               tc.CONSTRAINT_TYPE,
+                               CASE WHEN tc.constraint_type = 'UNIQUE' THEN true else false END AS is_unique
+                        FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+                               INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
+                                          ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+                        where tc.constraint_type = 'UNIQUE'
+                          and ku.TABLE_SCHEMA = '${tenantSchema}'
+                          and ku.TABLE_NAME = '${relation.id}') as uk ON c.TABLE_CATALOG = uk.TABLE_CATALOG
         AND c.TABLE_SCHEMA = uk.TABLE_SCHEMA
         AND c.TABLE_NAME = uk.TABLE_NAME
         AND c.COLUMN_NAME = uk.COLUMN_NAME
-    WHERE c.TABLE_NAME = '${relation.id}' AND c.TABLE_SCHEMA = '${tenantSchema}'
-    ORDER BY
-        c.TABLE_SCHEMA,
-        c.TABLE_NAME,
-        c.ORDINAL_POSITION;
+      WHERE c.TABLE_NAME = '${relation.id}'
+        AND c.TABLE_SCHEMA = '${tenantSchema}'
+      ORDER BY c.TABLE_SCHEMA,
+               c.TABLE_NAME,
+               c.ORDINAL_POSITION;
     `);
 
     const transformedColumnDefaultValues = columns.map((column) => {
@@ -578,19 +585,16 @@ export class TooljetDbTableOperationsService {
   private async findQueriesLinkedToTable(tableId: string): Promise<boolean> {
     const result = await this.manager.query(
       `
-        SELECT EXISTS (
-          SELECT 1
-          FROM data_queries dq
-          INNER JOIN data_sources ds
-            ON dq.data_source_id = ds.id
-          INNER JOIN (
-            SELECT DISTINCT ON (app_id) id
-            FROM app_versions
-            ORDER BY app_id, created_at DESC
-          ) latest_versions ON latest_versions.id = dq.app_version_id
-          WHERE ds.kind = 'tooljetdb'
-            AND dq.options::text LIKE $1
-        ) AS exists
+        SELECT EXISTS (SELECT 1
+                       FROM data_queries dq
+                              INNER JOIN data_sources ds
+                                         ON dq.data_source_id = ds.id
+                              INNER JOIN (SELECT DISTINCT ON (app_id) id
+                                          FROM app_versions
+                                          ORDER BY app_id, created_at DESC) latest_versions
+                                         ON latest_versions.id = dq.app_version_id
+                       WHERE ds.kind = 'tooljetdb'
+                         AND dq.options::text LIKE $1) AS exists
       `,
       [`%${tableId}%`]
     );
