@@ -13,6 +13,7 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   getCurrentToken,
   createQueryBuilder,
+  validateUrlForSSRF,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import * as snowflake from 'snowflake-sdk';
@@ -633,6 +634,9 @@ export default class Snowflake implements QueryService {
     }
 
     const access_token_url = getOptionValue('access_token_url');
+    // SSRF Protection: same shape as the server-core OAuth token exchange
+    // (GHSA-gfwc-3frw-hp8v) — client_id/client_secret go out in this request.
+    await validateUrlForSSRF(access_token_url);
     const client_auth = getOptionValue('client_auth');
     const custom_auth_params = sanitizeParams(getOptionValue('custom_auth_params'));
 
@@ -736,6 +740,9 @@ export default class Snowflake implements QueryService {
     if (!access_token_url) {
       throw new QueryError('Access token URL missing', 'access_token_url is required for token refresh', {});
     }
+
+    // SSRF Protection: same token-refresh sink as fetchOAuthToken's code exchange.
+    await validateUrlForSSRF(access_token_url);
 
     const client_auth = sourceOptions['client_auth'];
     const custom_auth_params = sanitizeParams(sourceOptions['custom_auth_params']);

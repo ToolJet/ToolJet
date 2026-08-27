@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, validateUrlForSSRF, getSSRFProtectionOptions } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 
@@ -33,7 +33,7 @@ export default class N8n implements QueryService {
     const bodyContent = body ? extractJsonData(body) : '';
 
     const constructPayload = (method: string): OptionsOfTextResponseBody => {
-      return {
+      const base: OptionsOfTextResponseBody = {
         method: method === 'post' ? 'POST' : 'GET',
         headers: headers,
         username: authType === 'basic' && sourceOptions.username,
@@ -41,7 +41,13 @@ export default class N8n implements QueryService {
         searchParams: paramsContent,
         json: method === 'post' ? bodyContent : undefined,
       };
+      // Apply SSRF protection options (custom DNS lookup + redirect validation)
+      return getSSRFProtectionOptions(undefined, base);
     };
+
+    // SSRF Protection: Validate URL before making request. GHSA-4cp2-4g48-grwr —
+    // this connector had no check at all, unlike restapi/graphql/openapi.
+    await validateUrlForSSRF(url);
 
     try {
       switch (operation) {
