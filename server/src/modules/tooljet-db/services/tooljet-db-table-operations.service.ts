@@ -1894,33 +1894,6 @@ export class TooljetDbTableOperationsService {
     return columnList;
   }
 
-  protected prepareForeignKeyDetailsJSON(
-    foreign_keys: TooljetDatabaseForeignKey[],
-    referenced_tables_info,
-    tenantSchema
-  ) {
-    if (!foreign_keys.length) return [];
-    const foreignKeyList = foreign_keys.map((foreignKeyDetail) => {
-      const {
-        column_names,
-        referenced_table_name,
-        referenced_column_names,
-        on_delete = '',
-        on_update = '',
-      } = foreignKeyDetail;
-
-      return {
-        columnNames: column_names,
-        referencedTableName: referenced_tables_info[referenced_table_name],
-        referencedColumnNames: referenced_column_names,
-        referencedSchema: tenantSchema,
-        ...(on_delete && { onDelete: on_delete }),
-        ...(on_update && { onUpdate: on_update }),
-      };
-    });
-    return foreignKeyList;
-  }
-
   // Method to check : Tables mentioned in Foreignkey is valid or not ( based on 'type' of input logic differs)
   protected async fetchAndCheckIfValidForeignKeyTables(
     referenced_table_list,
@@ -1965,9 +1938,9 @@ export class TooljetDbTableOperationsService {
     }
 
     // TABLENAME: referenced_tables_info maps display name -> logical id at this point, but every
-    // consumer (prepareForeignKeyDetailsJSON, the referencedColumnInfoForError translation) treats
-    // the value as a physical table name. Resolve logical ids to this (environment, branch)'s
-    // relation ids before returning, in one batch call rather than per foreign key.
+    // consumer (the referencedColumnInfoForError translation) treats the value as a physical table
+    // name. Resolve logical ids to this (environment, branch)'s relation ids before returning, in
+    // one batch call rather than per foreign key.
     if (type === 'TABLENAME') {
       const logicalIds = Object.values(referenced_tables_info);
       const relationIdsByLogicalId = await this.relationResolverService.resolve(
@@ -2633,8 +2606,7 @@ export class TooljetDbTableOperationsService {
    * run in their own committed transaction, same as the live perform() path - they were not
    * refactored to share a transaction here (see AGENTS.md on why their apply* shape differs). A
    * chain that mixes a foreign-key op with a later op that fails therefore leaves that foreign
-   * key's DDL applied even though this call throws; nothing in the DoD or 6c's e2e exercises that
-   * interleaving today.
+   * key's DDL applied even though this call throws; nothing exercises that interleaving today.
    */
   async applyMigrations(
     migrationIds: string[],

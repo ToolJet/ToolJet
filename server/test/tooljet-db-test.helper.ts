@@ -1,5 +1,4 @@
 import { EntityManager } from 'typeorm';
-import { InternalTable } from '@entities/internal_table.entity';
 import { TooljetDatabaseColumn, TooljetDatabaseForeignKey, TooljetDatabaseTable } from 'src/modules/tooljet-db/types';
 
 const mockTableSchemas: Array<TooljetDatabaseTable> = [
@@ -149,16 +148,4 @@ async function createTable(
   params: { table_name: string; columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] }
 ) {
   await tooljetDbService.perform(organizationId, 'create_table', params, { appManager, tjdbManager });
-}
-
-export async function dropTable(
-  appManager: EntityManager,
-  tjdbManager: EntityManager,
-  tooljetDbService: TableOperationsService,
-  organizationId: string,
-  tableName: string
-) {
-  await tooljetDbService.perform(organizationId, 'drop_table', { table_name: tableName }, { appManager, tjdbManager });
-
-  await appManager.delete(InternalTable, { organizationId, tableName });
 }

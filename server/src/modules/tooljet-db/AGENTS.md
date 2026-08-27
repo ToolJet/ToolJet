@@ -119,13 +119,19 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `create_foreign_key`/`update_foreign_key`/`delete_foreign_key` thread `migration` through as an
   explicit parameter to their `apply*` methods instead, since their `normalize*`/`apply*` pair isn't
   called from inside one shared try/catch the way the other six are. `adjudicatePending` is called
-  once per handler, immediately before that handler's own `record()`, and once more in `viewTable()`
-  (before it returns) — never the PostgREST read path. It is deliberately not inside `record()`
-  itself: a single request can call `record()` more than once against the same relation before any
-  of them are applied — `record()` itself makes no such guarantee, only every handler wired into
-  `perform()` happens to call it once — and a migration this same request just recorded is
-  indistinguishable from a crashed one to
-  `adjudicatePending`'s predicate — its DDL simply hasn't run yet.
+  once by each of the eight existing-table handlers, immediately before that handler's own
+  `record()` (`create_table` has no such call - no prior relation exists to adjudicate), and once
+  more in `viewTable()`, right after the relation resolves and before it reads the relation's shape
+  — never the PostgREST read path. It is deliberately not inside `record()` itself: a single
+  request can call `record()` more than once against the same relation before any of them are
+  applied — `record()` itself makes no such guarantee, only every handler wired into `perform()`
+  happens to call it once — and a migration this same request just recorded is indistinguishable
+  from a crashed one to `adjudicatePending`'s predicate — its DDL simply hasn't run yet.
+  `adjudicatePending` also leaves any pending row younger than a 3-second grace window alone
+  entirely (compared against the database's own `now()`, not `Date.now()`), closing the same
+  problem's cross-*request* shape: a different request touching this relation before this one's DDL
+  has run must not discard this one's migration as crashed, or this request's own `confirm()` call
+  becomes a no-op against a row that's already gone.
 - `drop_table`'s `applyDropTable` clears the surviving relation's `configurations` to
   `{ column_names: {}, configurations: {} }` after the physical `DROP TABLE` — without this the
   relation row (which survives as the migration chain's anchor) would keep describing columns of a
@@ -176,7 +182,34 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
     The tenant schema itself is baked in as a literal, not a placeholder — it's one per
     organization, identical for every environment, unlike a relation id. `column_uuids` (the
     baselined table's own `column_names` map) rides alongside the DDL so a replayed baseline
-    assigns the same column identities the source table already had.
+    assigns the same column identities the source table already had. The same rule applies to a
+    `serial`/identity column's default: its introspected `nextval(...)` references the sequence
+    Postgres named after the table being baselined, which `buildCreateTableDdl` detects and rewrites
+    to a `{{self}}`-derived sequence name (created fresh via a `CREATE SEQUENCE` prepended to the
+    DDL) — left as a literal, replay would give the target relation's id column a default pointing
+    at the *source's* sequence object.
+  - `loadMigrationsInOrder` throws if any migration in the requested chain has `resultingSchema ===
+    null` (authoring never confirmed) — every uuid lookup below depends on reading that field, and
+    would otherwise silently resolve to `undefined`.
+  - **Known preconditions/gaps for whichever later module wires replay to a real caller (e.g.
+    promote) — not exercised by any test here since nothing calls `applyMigrations` from a real
+    request path yet:**
+    1. The three foreign-key ops are not atomic with the other six during replay (see above) — a
+       chain mixing a foreign-key op with a later failing op leaves that key's DDL applied even
+       though the whole call throws.
+    2. No `ADJUDICATION_PREDICATES` entry for the `'replay'` action (see above) — a crash between
+       the target's DDL committing and `applyMigrations`'s own `confirm()` is always discarded as
+       "never happened", so a retry re-runs DDL against a relation that already has it.
+    3. Replay's `edit_column` case never calls `writeThroughColumnConfigurations` — that's a
+       settings-only write with nothing to promote, and lives in the *handler* between `normalize`
+       and `apply`, not in either. A promoted/replayed relation gets correct column *identity* but
+       only whatever display-setting configuration was in place at replay time via the *inserting*
+       migration, not every display-setting change ever recorded against the column.
+    4. `applyMigrations` requires `targetRelation` (and any FK sibling relations it references) to
+       already be committed and visible to a fresh read — `record()`'s own transaction and
+       `resolveSiblingByCoRelationId`'s lookup can't see a relation created inside the caller's
+       still-open transaction. The caller must create and commit the target relation before calling
+       replay, not do both in one transaction.
 
 ## Related modules
 
