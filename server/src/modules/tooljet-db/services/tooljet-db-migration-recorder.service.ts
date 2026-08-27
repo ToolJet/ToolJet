@@ -121,6 +121,12 @@ export class TooljetDbMigrationRecorderService {
    * write into it, so its commit and the relation/table-registry writes stay atomic together.
    * Every other structured op records after its own DDL has already committed, so it takes no
    * manager and commits this write immediately.
+   *
+   * Deliberately does not adjudicate on its own: `record` is called more than once against the
+   * same relation within a single request-in-progress (several migrations authored together), and
+   * a migration recorded moments ago by this same request is indistinguishable from a genuinely
+   * crashed one to adjudicatePending's predicate - its DDL simply hasn't run yet. Callers adjudicate
+   * once, immediately before their own first record() for a relation, not on every call.
    */
   async record(
     payload: StructuredMigrationPayload,

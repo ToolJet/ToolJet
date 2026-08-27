@@ -118,9 +118,13 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   saved) — a rollback there erases the migration with everything else, so it needs no `discard()`.
   `create_foreign_key`/`update_foreign_key`/`delete_foreign_key` thread `migration` through as an
   explicit parameter to their `apply*` methods instead, since their `normalize*`/`apply*` pair isn't
-  called from inside one shared try/catch the way the other six are. `adjudicatePending` has exactly
-  two call sites: the start of `record()` (self-adjudicates this relation's own earlier pending rows
-  before recording a new one) and `viewTable()` (before it returns) — never the PostgREST read path.
+  called from inside one shared try/catch the way the other six are. `adjudicatePending` is called
+  once per handler, immediately before that handler's own `record()`, and once more in `viewTable()`
+  (before it returns) — never the PostgREST read path. It is deliberately not inside `record()`
+  itself: a single request can call `record()` more than once against the same relation before any
+  of them are applied (see "several migrations authored in one request" in the horizon's plan), and
+  a migration this same request just recorded is indistinguishable from a crashed one to
+  `adjudicatePending`'s predicate — its DDL simply hasn't run yet.
 - `drop_table`'s `applyDropTable` clears the surviving relation's `configurations` to
   `{ column_names: {}, configurations: {} }` after the physical `DROP TABLE` — without this the
   relation row (which survives as the migration chain's anchor) would keep describing columns of a

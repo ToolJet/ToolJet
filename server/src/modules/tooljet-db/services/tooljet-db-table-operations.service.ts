@@ -665,6 +665,7 @@ export class TooljetDbTableOperationsService {
       throw new BadRequestException("Table can't be deleted, it is being used in app queries");
     }
 
+    await this.migrationRecorderService.adjudicatePending(internalTable, relation);
     const migration = await this.migrationRecorderService.record(
       { action: 'drop_table', request: params },
       internalTable,
@@ -966,6 +967,7 @@ export class TooljetDbTableOperationsService {
 
       if (isEmpty(payload.updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
 
+      await this.migrationRecorderService.adjudicatePending(internalTable, relation);
       migration = await this.migrationRecorderService.record(
         { action: 'edit_table', request: params },
         internalTable,
@@ -1129,6 +1131,7 @@ export class TooljetDbTableOperationsService {
       internalTable = payload.internalTable;
       relation = payload.relation;
 
+      await this.migrationRecorderService.adjudicatePending(internalTable, relation);
       migration = await this.migrationRecorderService.record(
         { action: 'add_column', request: params },
         internalTable,
@@ -1234,6 +1237,7 @@ export class TooljetDbTableOperationsService {
       internalTable = payload.internalTable;
       relation = payload.relation;
 
+      await this.migrationRecorderService.adjudicatePending(internalTable, relation);
       migration = await this.migrationRecorderService.record(
         { action: 'drop_column', request: params },
         internalTable,
@@ -1772,6 +1776,7 @@ export class TooljetDbTableOperationsService {
     const payload = await this.normalizeEditColumn(organizationId, params);
     const { internalTable, relation } = payload;
 
+    await this.migrationRecorderService.adjudicatePending(internalTable, relation);
     const migration = await this.migrationRecorderService.record(
       { action: 'edit_column', request: params },
       internalTable,
@@ -2038,6 +2043,7 @@ export class TooljetDbTableOperationsService {
     }
   ) {
     const normalized = await this.normalizeCreateForeignKey(organizationId, params, connectionManagers);
+    await this.migrationRecorderService.adjudicatePending(normalized.internalTable, normalized.relation);
     const migration = await this.migrationRecorderService.record(
       { action: 'create_foreign_key', request: params },
       normalized.internalTable,
@@ -2180,6 +2186,7 @@ export class TooljetDbTableOperationsService {
 
   protected async updateForeignKey(organizationId: string, params) {
     const normalized = await this.normalizeUpdateForeignKey(organizationId, params);
+    await this.migrationRecorderService.adjudicatePending(normalized.internalTable, normalized.relation);
     const migration = await this.migrationRecorderService.record(
       { action: 'update_foreign_key', request: params },
       normalized.internalTable,
@@ -2324,6 +2331,7 @@ export class TooljetDbTableOperationsService {
 
   protected async deleteForeignKey(organizationId: string, params) {
     const normalized = await this.normalizeDeleteForeignKey(organizationId, params);
+    await this.migrationRecorderService.adjudicatePending(normalized.internalTable, normalized.relation);
     const migration = await this.migrationRecorderService.record(
       { action: 'delete_foreign_key', request: params },
       normalized.internalTable,
