@@ -55,8 +55,8 @@ import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@modules/lic
 import { generatePayloadForLimits } from '@modules/licensing/helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
-import { fetchForeignKeys } from '../helpers/table-schema-snapshot';
-import { TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
+import { fetchForeignKeys, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
+import { TooljetDbMigrationRecorderService, StructuredMigrationPayload } from './tooljet-db-migration-recorder.service';
 import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
 
 enum AggregateFunctions {
@@ -739,9 +739,37 @@ export class TooljetDbTableOperationsService {
    * apply() must use this uuid as-is and never re-index into whatever relation it is handed by name.
    */
   protected async normalizeEditTable(organizationId: string, params, appManager: EntityManager) {
-    const { table_name: tableName, columns } = params;
+    const { table_name: tableName } = params;
     const { internalTable, relation } = await this.resolveTable(organizationId, tableName, appManager);
 
+    // Uuids are resolved against the relation normalize just read - the source of the request -
+    // never against whatever relation apply() ends up pointed at.
+    const sourceColumnNames = relation.configurations.columns.column_names;
+    const diff = this.buildEditTableColumnDiff(params, sourceColumnNames, () => uuidv4());
+
+    return {
+      organizationId,
+      internalTable,
+      relation,
+      ...diff,
+      newTableName: params.new_table_name,
+    };
+  }
+
+  /**
+   * Pure column-diff builder shared by the live edit_table path and replay: which columns to
+   * insert/update/delete, and every one of their uuids. `sourceColumnNames` is where an
+   * update/delete's uuid is read from - the live path's relation.configurations at request time,
+   * replay's prior-migration resulting_schema. `mintColumnUuid` is the one seam that differs
+   * between them: uuidv4() live, a read from this migration's own resulting_schema on replay - the
+   * only place in this function identity is created rather than looked up.
+   */
+  protected buildEditTableColumnDiff(
+    params: { columns: any[] },
+    sourceColumnNames: Record<string, string>,
+    mintColumnUuid: (columnName: string) => string
+  ) {
+    const { columns } = params;
     const updatedPrimaryKeys = [];
     const columnstoBeUpdated = [];
     const columnsToBeInserted = [];
@@ -860,10 +888,6 @@ export class TooljetDbTableOperationsService {
       }
     });
 
-    // Uuids are resolved against the relation normalize just read - the source of the request -
-    // never against whatever relation apply() ends up pointed at.
-    const sourceColumnNames = relation.configurations.columns.column_names;
-
     const columnUuidPatches = [];
     columnstoBeUpdated.forEach((column) => {
       const { newColumn, oldColumn } = column;
@@ -883,14 +907,11 @@ export class TooljetDbTableOperationsService {
 
     const insertedColumns = columnsToBeInserted.map((column) => ({
       name: column.name,
-      uuid: uuidv4(),
+      uuid: mintColumnUuid(column.name),
       configurations: columnConfigurationMap[column.name],
     }));
 
     return {
-      organizationId,
-      internalTable,
-      relation,
       updatedPrimaryKeys,
       columnsToBeDeleted,
       columnsToBeInserted,
@@ -898,7 +919,6 @@ export class TooljetDbTableOperationsService {
       columnUuidPatches,
       deletedColumns,
       insertedColumns,
-      newTableName: params.new_table_name,
     };
   }
 
@@ -2589,6 +2609,401 @@ export class TooljetDbTableOperationsService {
       }
     }
     return isFKfromCompositePK;
+  }
+
+  // --- Replay: reapplies a table's own migration chain against a different (empty) relation for
+  // the same logical table, e.g. the target of a promote. No controller route, no licence check,
+  // no environment resolution beyond the sibling lookup apply() already does. ---
+
+  /**
+   * Replays `migrationIds` against `targetRelation` in (sequence, id) order, reproducing the
+   * source's shape - including column identity - without minting anything new: every uuid a
+   * migration minted the first time it ran is already sitting in that migration's own
+   * `resulting_schema` (confirm() writes it there), so this reads it instead of calling uuidv4()
+   * again. Reading identity from each migration's own snapshot rather than "whatever the source
+   * relation currently looks like" also means a later rename on the source can't corrupt replay of
+   * an earlier migration in the same chain.
+   *
+   * Records and confirms exactly one migration against `targetRelation` for the whole call - the
+   * replayed migrations are not re-recorded individually, the same way a promote is one event even
+   * though it may reapply several authored changes.
+   *
+   * Atomicity: the six table/column ops share one app-DB + TJDB transaction and roll back
+   * together, matching apply()'s existing contract for those six. The three foreign-key ops always
+   * run in their own committed transaction, same as the live perform() path - they were not
+   * refactored to share a transaction here (see AGENTS.md on why their apply* shape differs). A
+   * chain that mixes a foreign-key op with a later op that fails therefore leaves that foreign
+   * key's DDL applied even though this call throws; nothing in the DoD or 6c's e2e exercises that
+   * interleaving today.
+   */
+  async applyMigrations(
+    migrationIds: string[],
+    targetRelation: InternalTableRelation,
+    connectionManagers: Record<ConnectionManagerKey, EntityManager> = {
+      appManager: this.manager,
+      tjdbManager: this.tooljetDbManager,
+    }
+  ): Promise<void> {
+    if (!migrationIds.length) return;
+    const { appManager, tjdbManager } = connectionManagers;
+
+    const targetInternalTable = await appManager.findOne(InternalTable, {
+      where: { id: targetRelation.internalTableId },
+      withDeleted: true,
+    });
+    if (!targetInternalTable) throw new NotFoundException('Internal table not found for replay target');
+    const organizationId = targetInternalTable.organizationId;
+
+    const migrations = await this.loadMigrationsInOrder(migrationIds, appManager);
+
+    await this.migrationRecorderService.adjudicatePending(targetInternalTable, targetRelation);
+    const migration = await this.migrationRecorderService.record(
+      { action: 'replay', request: { migrationIds } },
+      targetInternalTable,
+      targetRelation
+    );
+
+    const queryRunner = appManager?.queryRunner || appManager.connection.createQueryRunner();
+    const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    await tjdbQueryRunner.connect();
+    await tjdbQueryRunner.startTransaction();
+
+    try {
+      const sharedConnectionManagers = { appManager: queryRunner.manager, tjdbManager: tjdbQueryRunner.manager };
+      let priorSchema: TableSchemaSnapshot | null = null;
+      for (const sourceMigration of migrations) {
+        if (sourceMigration.kind === 'baseline') {
+          await this.replayBaselineMigration(sourceMigration, organizationId, targetRelation, sharedConnectionManagers);
+        } else {
+          await this.replayStructuredMigration(
+            sourceMigration,
+            priorSchema,
+            organizationId,
+            targetRelation,
+            sharedConnectionManagers
+          );
+        }
+        priorSchema = sourceMigration.resultingSchema;
+      }
+
+      await queryRunner.commitTransaction();
+      await tjdbQueryRunner.commitTransaction();
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, targetRelation, tjdbQueryRunner);
+    } catch (err) {
+      await this.migrationRecorderService.discard(migration, targetRelation);
+      await queryRunner.rollbackTransaction();
+      await tjdbQueryRunner.rollbackTransaction();
+      throw new TooljetDatabaseError(
+        err.message,
+        { origin: 'replay', internalTables: [{ id: targetRelation.id, tableName: targetInternalTable.tableName }] },
+        err
+      );
+    } finally {
+      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+      if (!queryRunner?.transactionDepth || queryRunner.transactionDepth < 1) await queryRunner.release();
+      //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
+      if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
+    }
+  }
+
+  private async loadMigrationsInOrder(
+    migrationIds: string[],
+    appManager: EntityManager
+  ): Promise<InternalTableMigration[]> {
+    const migrations = await appManager.find(InternalTableMigration, { where: { id: In(migrationIds) } });
+    return migrations.sort((a, b) => Number(a.sequence) - Number(b.sequence) || a.id.localeCompare(b.id));
+  }
+
+  /** Substitutes `refs`/`{{self}}` into the stored DDL and runs it, then copies the payload's
+   * column-uuid map onto the target relation - a baseline never mints, it only carries forward
+   * identity the source table already had. */
+  private async replayBaselineMigration(
+    sourceMigration: InternalTableMigration,
+    organizationId: string,
+    targetRelation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ): Promise<void> {
+    const { appManager, tjdbManager } = connectionManagers;
+    const payload = sourceMigration.payload as {
+      ddl: string;
+      refs: Record<string, string>;
+      column_uuids?: Record<string, string>;
+    };
+    const tjdbQueryRunner = tjdbManager.queryRunner;
+
+    const resolvedIdByPlaceholder = new Map<string, string>([['self', targetRelation.id]]);
+    for (const [placeholder, coRelationId] of Object.entries(payload.refs || {})) {
+      const sibling = await this.relationResolverService.resolveSiblingByCoRelationId(
+        organizationId,
+        coRelationId,
+        targetRelation.environmentId,
+        targetRelation.branchId,
+        appManager
+      );
+      resolvedIdByPlaceholder.set(placeholder, sibling.id);
+    }
+
+    const ddl = payload.ddl.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+      const resolved = resolvedIdByPlaceholder.get(key);
+      if (!resolved) throw new Error(`Unresolved placeholder "{{${key}}}" in baseline migration ${sourceMigration.id}`);
+      return resolved;
+    });
+    await tjdbQueryRunner.query(ddl);
+
+    if (payload.column_uuids && Object.keys(payload.column_uuids).length) {
+      const columnNames = { ...(targetRelation.configurations?.columns?.column_names || {}), ...payload.column_uuids };
+      const columnConfigurations = { ...(targetRelation.configurations?.columns?.configurations || {}) };
+      for (const uuid of Object.values(payload.column_uuids)) columnConfigurations[uuid] ??= {};
+      targetRelation.configurations = { columns: { column_names: columnNames, configurations: columnConfigurations } };
+      await appManager.save(targetRelation);
+    }
+  }
+
+  /**
+   * Reassembles the shape `apply*` expects from a structured migration's stored `{action,
+   * request}`, then calls the exact same `apply*` method perform() calls - never a copy of it.
+   * `priorSchema`/the migration's own `resultingSchema` (both real TableSchemaSnapshots, built by
+   * confirm() the first time this migration ran) stand in for normalize()'s uuid minting: a column
+   * this migration inserted is looked up by name in its own resultingSchema, one it edited or
+   * deleted is looked up by its old name in the prior migration's resultingSchema. Nothing here
+   * calls uuidv4().
+   */
+  private async replayStructuredMigration(
+    sourceMigration: InternalTableMigration,
+    priorSchema: TableSchemaSnapshot | null,
+    organizationId: string,
+    targetRelation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ): Promise<void> {
+    const { appManager } = connectionManagers;
+    const { action, request } = sourceMigration.payload as StructuredMigrationPayload;
+    const postSchema = sourceMigration.resultingSchema as TableSchemaSnapshot | null;
+    const uuidBefore = (name: string) => priorSchema?.columns.find((column) => column.name === name)?.uuid;
+    const uuidAfter = (name: string) => postSchema?.columns.find((column) => column.name === name)?.uuid;
+    const tenantSchema = findTenantSchema(organizationId);
+    const physicalName = concatSchemaAndTableName(tenantSchema, targetRelation.id);
+
+    switch (action) {
+      case 'create_table': {
+        const columnNames: Record<string, string> = {};
+        const columnConfigurations: Record<string, unknown> = {};
+        for (const column of request.columns) {
+          const uuid = uuidAfter(column.column_name);
+          columnNames[column.column_name] = uuid;
+          columnConfigurations[uuid] = column?.configurations || {};
+        }
+        const foreignKeys = await this.resolveForeignKeyCoRelationIds(
+          request.foreign_keys || [],
+          organizationId,
+          appManager
+        );
+        await this.applyCreateTable(
+          { organizationId, columns: request.columns, columnNames, columnConfigurations, foreignKeys },
+          targetRelation,
+          connectionManagers
+        );
+        return;
+      }
+      case 'drop_table': {
+        await this.applyDropTable(
+          {
+            organizationId,
+            internalTable: targetRelation.internalTable ?? (await this.targetInternalTable(targetRelation, appManager)),
+          },
+          targetRelation,
+          connectionManagers
+        );
+        return;
+      }
+      case 'add_column': {
+        const columnUuid = uuidAfter(request.column.column_name);
+        const foreignKeys = await this.resolveForeignKeyCoRelationIds(
+          request.foreign_keys || [],
+          organizationId,
+          appManager
+        );
+        await this.applyAddColumn(
+          { organizationId, column: request.column, columnUuid, foreignKeys },
+          targetRelation,
+          connectionManagers
+        );
+        return;
+      }
+      case 'drop_column': {
+        const columnName = request.column.column_name;
+        await this.applyDropColumn(
+          { organizationId, columnName, columnUuid: uuidBefore(columnName) },
+          targetRelation,
+          connectionManagers
+        );
+        return;
+      }
+      case 'edit_column': {
+        const { column } = request;
+        const columnName = column.column_name;
+        const newColumnName = column?.new_column_name;
+        const columnUuid = uuidBefore(columnName);
+        const foreignKeyIdToDelete = request.foreign_key_id_to_delete
+          ? await this.resolveFkConstraintName(
+              organizationId,
+              tenantSchema,
+              targetRelation,
+              await this.fkSpecFromResultingSchema(
+                priorSchema,
+                request.foreign_key_id_to_delete,
+                organizationId,
+                appManager
+              ),
+              appManager
+            )
+          : undefined;
+        await this.applyEditColumn(
+          { organizationId, column, columnName, newColumnName, columnUuid, foreignKeyIdToDelete },
+          targetRelation,
+          connectionManagers
+        );
+        return;
+      }
+      case 'edit_table': {
+        const sourceColumnNames: Record<string, string> = {};
+        priorSchema?.columns.forEach((column) => (sourceColumnNames[column.name] = column.uuid));
+        const diff = this.buildEditTableColumnDiff(request, sourceColumnNames, (name) => uuidAfter(name));
+        await this.applyEditTable(
+          { organizationId, ...diff, newTableName: request.new_table_name },
+          targetRelation,
+          connectionManagers
+        );
+        return;
+      }
+      case 'create_foreign_key': {
+        const foreign_keys = await this.resolveForeignKeyCoRelationIds(
+          request.foreign_keys,
+          organizationId,
+          appManager
+        );
+        const targetInternalTable =
+          targetRelation.internalTable ?? (await this.targetInternalTable(targetRelation, appManager));
+        await this.applyCreateForeignKey(
+          organizationId,
+          {
+            internalTable: targetInternalTable,
+            relation: targetRelation,
+            physicalName,
+            shouldDestroyDbConnection: true,
+            foreign_keys,
+          },
+          { appManager: this.manager, tjdbManager: this.tooljetDbManager },
+          this.replayDummyMigration(targetInternalTable.id)
+        );
+        return;
+      }
+      case 'update_foreign_key': {
+        const target = await this.fkSpecFromResultingSchema(
+          priorSchema,
+          request.foreign_key_id,
+          organizationId,
+          appManager
+        );
+        const foreign_keys = await this.resolveForeignKeyCoRelationIds(
+          request.foreign_keys,
+          organizationId,
+          appManager
+        );
+        const targetInternalTable =
+          targetRelation.internalTable ?? (await this.targetInternalTable(targetRelation, appManager));
+        await this.applyUpdateForeignKey(
+          organizationId,
+          {
+            internalTable: targetInternalTable,
+            relation: targetRelation,
+            physicalName,
+            tenantSchema,
+            target,
+            foreign_keys,
+          },
+          this.replayDummyMigration(targetInternalTable.id)
+        );
+        return;
+      }
+      case 'delete_foreign_key': {
+        const target = await this.fkSpecFromResultingSchema(
+          priorSchema,
+          request.foreign_key_id,
+          organizationId,
+          appManager
+        );
+        const targetInternalTable =
+          targetRelation.internalTable ?? (await this.targetInternalTable(targetRelation, appManager));
+        await this.applyDeleteForeignKey(
+          organizationId,
+          { internalTable: targetInternalTable, relation: targetRelation, physicalName, tenantSchema, target },
+          this.replayDummyMigration(targetInternalTable.id)
+        );
+        return;
+      }
+      default:
+        throw new BadRequestException(`Cannot replay migration action "${action}"`);
+    }
+  }
+
+  private async targetInternalTable(
+    targetRelation: InternalTableRelation,
+    appManager: EntityManager
+  ): Promise<InternalTable> {
+    return appManager.findOne(InternalTable, { where: { id: targetRelation.internalTableId }, withDeleted: true });
+  }
+
+  /**
+   * The three foreign-key ops confirm/discard their own `migration` argument internally (they own
+   * their own transaction, unlike the other six - see AGENTS.md). Replay already records and
+   * confirms one migration for the whole call, so this hands them an unpersisted stand-in: their
+   * internal confirm()/discard() calls become no-op updates/deletes against a row that was never
+   * inserted, and the real DDL still runs exactly as it does on the live path.
+   */
+  private replayDummyMigration(internalTableId: string): InternalTableMigration {
+    return { id: uuidv4(), internalTableId } as InternalTableMigration;
+  }
+
+  /**
+   * Rebuilds an FkSpec for a foreign key named `foreignKeyId` from a migration's own recorded
+   * resulting_schema rather than introspecting a live relation - the physical constraint this name
+   * pointed to on the source relation may not exist anymore by the time this replays.
+   */
+  private async fkSpecFromResultingSchema(
+    schema: TableSchemaSnapshot | null,
+    foreignKeyId: string,
+    organizationId: string,
+    appManager: EntityManager
+  ): Promise<FkSpec> {
+    const fk = schema?.foreign_keys.find((candidate) => candidate.name === foreignKeyId);
+    if (!fk) throw new NotFoundException(`Foreign key "${foreignKeyId}" not found in migration history`);
+
+    const logicalIdByRelationId = await this.relationResolverService.resolveLogicalIds(
+      organizationId,
+      [fk.referenced_table],
+      appManager
+    );
+    const referencedLogicalId = logicalIdByRelationId.get(fk.referenced_table);
+    const referencedInternalTable =
+      referencedLogicalId &&
+      (await appManager.findOne(InternalTable, {
+        where: { organizationId, id: referencedLogicalId },
+        withDeleted: true,
+      }));
+    if (!referencedInternalTable) {
+      throw new InternalServerErrorException(
+        `Foreign key "${foreignKeyId}" references relation "${fk.referenced_table}", which does not resolve to a known internal table`
+      );
+    }
+
+    return {
+      column_names: fk.column_names,
+      referenced_table: referencedInternalTable.co_relation_id,
+      referenced_column_names: fk.referenced_column_names,
+    };
   }
 
   async createTooljetDbTenantSchemaAndRole(organizationId: string, entityManager: EntityManager) {

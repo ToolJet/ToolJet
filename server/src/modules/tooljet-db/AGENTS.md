@@ -130,6 +130,43 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `{ column_names: {}, configurations: {} }` after the physical `DROP TABLE` — without this the
   relation row (which survives as the migration chain's anchor) would keep describing columns of a
   table that no longer exists, breaking the invariant every other `apply*` maintains.
+- **`TooljetDbTableOperationsService.applyMigrations(migrationIds, targetRelation,
+  connectionManagers?)` replays a table's own migration chain into a different relation** (no
+  controller route — the replay-triggering flow, e.g. promote, is a later module's job). It reuses
+  the exact same nine `apply*` methods `perform()` calls, never a copy: a structured migration's
+  stored `{action, request}` is reassembled into whatever shape that op's `apply*` expects by
+  `replayStructuredMigration`, and a baseline migration's `{ddl, refs, column_uuids}` is executed
+  directly by `replayBaselineMigration`. It records and confirms exactly one migration against
+  `targetRelation` for the whole call, not one per replayed migration.
+  - **No `uuidv4()` here either.** A column a migration minted the first time it ran is already
+    sitting in that migration's own `resulting_schema` (confirm() wrote it there when it first
+    applied) — replay reads it from there (the migration's own schema for a column it inserted,
+    the *prior* migration's schema for a column it edited or deleted by its old name) instead of
+    minting again. This also means a later rename on the source relation can't corrupt replay of
+    an earlier migration in the chain — resulting_schema is a fixed point-in-time record, not "the
+    source relation's current configuration".
+  - **The three foreign-key ops keep self-managing their own transaction and their own
+    confirm/discard during replay, same as they do in `perform()`.** Replay hands them a
+    never-persisted stand-in `InternalTableMigration` (real `internalTableId`, random `id`) instead
+    of its own real migration row, so their internal `confirm()`/`discard()` calls become harmless
+    no-op updates/deletes; the real DDL still runs exactly as it does on the live path, and
+    replay's own single migration is recorded/confirmed separately around the whole call. Known
+    gap: this means a chain that mixes a foreign-key op with a later op that fails leaves that
+    foreign key's DDL applied even though the whole `applyMigrations` call throws — full
+    cross-op-type atomicity would need the FK three refactored onto the other six's shared-
+    transaction shape, which is out of scope here (see the six-vs-three signature split above).
+  - `buildEditTableColumnDiff` is `normalizeEditTable`'s column-diff logic (insert/update/delete,
+    every uuid) pulled out as a pure function so replay's `edit_table` case can reuse it unchanged
+    — only `mintColumnUuid` differs (`uuidv4()` live, a `resulting_schema` read on replay).
+  - Migration A's baseline payload (`buildCreateTableDdl`/`buildForeignKeyDdl` in
+    `data-migrations/1787564882760-TjdbRolloutMigrationASubstrate.ts`) never bakes in a physical
+    relation id: `"{{self}}"` is the relation being replayed onto, every other `{{ref_N}}`
+    placeholder is a key into the payload's `refs` map (placeholder → `co_relation_id`, resolved at
+    replay time through `resolveSiblingByCoRelationId` against the *target's* environment/branch).
+    The tenant schema itself is baked in as a literal, not a placeholder — it's one per
+    organization, identical for every environment, unlike a relation id. `column_uuids` (the
+    baselined table's own `column_names` map) rides alongside the DDL so a replayed baseline
+    assigns the same column identities the source table already had.
 
 ## Related modules
 
