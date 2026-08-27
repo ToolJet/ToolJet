@@ -169,8 +169,8 @@ function ConflictRow({
                       {group.conflictField === 'slug' || group.conflictField === 'invalid_name'
                         ? item.name
                         : item.coRelationId
-                        ? `#${item.coRelationId.slice(0, 8)}`
-                        : item.name}
+                          ? `#${item.coRelationId.slice(0, 8)}`
+                          : item.name}
                     </span>
 
                     {/* invalid_name is one-sided — no counterpart for the badge to contrast against. */}
@@ -309,44 +309,21 @@ export function PullConflictModal({
           <h3 className="conflict-title">{title}</h3>
 
           <p className="conflict-description">
-            {/* Push gets one generic line regardless of category — always all-manual, nothing to differentiate. */}
+            {/* Every category gets one generic line regardless of conflict type — always all-manual, nothing to differentiate. */}
             {isPushNameConflict || isPushConflict
               ? 'The following resources have errors and cannot be pushed to git remote. Read docs to resolve the errors and try again.'
               : (() => {
-                  if (isBranchCreation) return 'Due to the following errors, this branch cannot be created:';
-                  if (isBranchSwitch) return 'Due to the following errors, this branch cannot be opened:';
-                  if (isImport) return 'Due to the following errors, these resources cannot be imported:';
-                  return 'Due to the following errors, this branch cannot be pulled:';
+                  if (isBranchCreation)
+                    return 'The following resources have errors and cannot be created. Read docs to resolve the errors and try again.';
+                  if (isBranchSwitch)
+                    return 'The following resources have errors and cannot be opened. Read docs to resolve the errors and try again.';
+                  if (isImport)
+                    return 'The following resources have errors and cannot be imported. Read docs to resolve the errors and try again.';
+                  return 'The following resources have errors and cannot be pulled from git remote. Read docs to resolve the errors and try again.';
                 })()}
           </p>
-          {!isPushNameConflict && !isPushConflict && (
-            <ul className="conflict-description-list">
-              {multiDraftResources.length > 0 && (
-                <li>
-                  Git allows only <strong>one draft version</strong> per resource which becomes the tip of your default
-                  branch. There are resources with more or less than one draft version.
-                </li>
-              )}
-              {(manualDuplicateGroups.length > 0 || syncableGroups.length > 0) && (
-                <li>
-                  There are resources with the <strong>duplicate data</strong> on this branch. ToolJet requires unique
-                  names &amp; slug for apps, data sources, modules, and folders within a branch.
-                </li>
-              )}
-              {manualInUseGroups.length > 0 && (
-                <li>
-                  Some modules/data sources removed from git are <strong>still in use</strong> locally. Remove the
-                  reference before pulling, or they&apos;ll be kept as-is.
-                </li>
-              )}
-              {manualInvalidNameGroups.length > 0 && (
-                <li>
-                  Some resources have an <strong>invalid name</strong> containing &apos;/&apos;. Rename them before
-                  trying again.
-                </li>
-              )}
-            </ul>
-          )}
+          {/* Bulleted category summary removed — each category section below already carries its own
+              header + subtext conveying the same thing, so the list was pure duplication. */}
 
           <div className="conflict-categories-list">
             {multiDraftResources.length > 0 && <MultiDraftSection resources={multiDraftResources} />}

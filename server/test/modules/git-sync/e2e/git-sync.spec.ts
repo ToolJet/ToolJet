@@ -8473,6 +8473,203 @@ describe('GitSyncController', () => {
         const validate = await auth(agent().get(`/api/apps/validate-released-app-access/${newSlug}`)).expect(200);
         expect(validate.body).toMatchObject({ id: appId, slug: newSlug });
       });
+
+      // Slug resolution must NOT require a DRAFT row. An app can have only a PUBLISHED
+      // version on the default branch (create → publish, no continuity draft seeded — the exact
+      // shape lts->latest migration leaves apps in). findBySlug matches any default-branch
+      // version row (draft OR published), so resolution lands on the PUBLISHED row.
+      it('resolves an app by slug when only a PUBLISHED version exists on the default branch (no draft)', async () => {
+        const { randomUUID } = await import('crypto');
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', regCookie).set('tj-workspace-id', regOrgId);
+        const slug = `nodraft-resolve-${randomUUID().slice(0, 8)}`;
+
+        const bid: string = (
+          await regDataSource.query(
+            `SELECT id FROM organization_git_sync_branches WHERE organization_id = $1 AND is_default = true`,
+            [regOrgId]
+          )
+        )[0].id;
+
+        // 1. Create app (git off) → one DRAFT version on the default branch.
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .send({ icon: 'home', name: 'nodraft-resolve', type: 'front-end' })
+            .expect(201)
+        ).body.id;
+        const detail = await auth(agent().get(`/api/apps/${appId}`)).expect(200);
+        const versionId: string = (detail.body?.editing_version || detail.body?.editingVersion).id;
+
+        // 2. Give it a known slug (and make it public, so the anonymous released-access path is
+        //    exercisable below), then publish → leaves ONLY the PUBLISHED version (no draft).
+        await auth(agent().put(`/api/apps/${appId}`))
+          .send({ app: { slug, is_public: true } })
+          .expect(200);
+        await auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}`))
+          .send({ is_user_switched_version: false, name: 'v1', status: 'PUBLISHED' })
+          .expect(200);
+
+        // Assert the exact scenario: NO draft on the default branch, and the sole non-stub
+        // version row (PUBLISHED) carries the slug there.
+        const rows = await regDataSource.query(
+          `SELECT status, slug FROM app_versions
+             WHERE app_id = $1 AND branch_id = $2 AND version_type = 'version' AND is_stub = false`,
+          [appId, bid]
+        );
+        expect(rows.length).toBe(1);
+        expect(rows[0]).toMatchObject({ status: 'PUBLISHED', slug });
+        const draftCount = await regDataSource.query(
+          `SELECT COUNT(*)::int AS c FROM app_versions
+             WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT' AND version_type = 'version' AND is_stub = false`,
+          [appId, bid]
+        );
+        expect(draftCount[0].c).toBe(0);
+
+        // 3. Release so the released/public resolution paths are exercisable (release only sets
+        //    current_version_id — it does NOT create a draft, so the no-draft state holds).
+        const envs = (await auth(agent().get('/api/app-environments')).expect(200)).body.environments.sort(
+          (a: any, b: any) => a.priority - b.priority
+        );
+        await auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}/promote`))
+          .send({ currentEnvironmentId: envs[0].id })
+          .expect(200);
+        await auth(agent().put(`/api/v2/apps/${appId}/versions/${versionId}/promote`))
+          .send({ currentEnvironmentId: envs[1].id })
+          .expect(200);
+        await auth(agent().put(`/api/apps/${appId}/release`))
+          .send({ versionToBeReleased: versionId })
+          .expect(200);
+
+        // Still no draft after release.
+        const draftAfter = await regDataSource.query(
+          `SELECT COUNT(*)::int AS c FROM app_versions
+             WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT' AND version_type = 'version' AND is_stub = false`,
+          [appId, bid]
+        );
+        expect(draftAfter[0].c).toBe(0);
+
+        // 4a. THE ASSERTION — GET /api/apps/slugs/:slug (findBySlug via ValidAppGuard) resolves
+        //     the app through its PUBLISHED default-branch row, with no draft present. A 200 (not
+        //     404 "Invalid app id or slug") is the proof resolution happened; the unique slug in
+        //     the payload confirms it landed on THIS app (getBySlug's exact shape varies by edition).
+        const resolved = await auth(agent().get(`/api/apps/slugs/${slug}`))
+          .query({ branch_id: bid })
+          .expect(200);
+        expect(resolved.body).toBeTruthy();
+        expect(JSON.stringify(resolved.body)).toContain(slug);
+
+        // 4b. And anonymous released-app access resolves by the same slug.
+        const anon = await agent().get(`/api/apps/validate-released-app-access/${slug}`).expect(200);
+        expect(anon.body).toMatchObject({ id: appId, slug });
+      });
+    });
+
+    // Same no-draft slug-resolution guarantee, GIT SYNC ON. findBySlug is git-state-agnostic
+    // (matches any default-branch version row, ordered is_synced DESC), so the git-on side is a
+    // SYNCED (is_synced=true) published-only app with no draft — the shape a git-enabled workspace
+    // can hold (e.g. after a pull collapses to a released version). It must still resolve by slug.
+    describe('slug resolution with no draft version — git sync ON (regression)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      let gonOrgId: string;
+      let gonCookie: string[];
+      let gonDs: DataSource;
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-on-nodraft@tooljet.io',
+          firstName: 'git',
+          lastName: 'onnodraft',
+        });
+        gonOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-on-nodraft@tooljet.io');
+        gonCookie = tokenCookie;
+        await ensureAppEnvironments(app, gonOrgId);
+        gonDs = app.get<DataSource>(getDataSourceToken('default'));
+
+        // Reset the repo then save provider configs → creates the org_git_sync row (git ON,
+        // single-branch) and auto-seeds the default 'main' branch.
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/git-sync/configs')
+          .set('Cookie', gonCookie)
+          .set('tj-workspace-id', gonOrgId)
+          .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+      });
+
+      it('resolves a SYNCED app by slug when only a PUBLISHED version exists on the default branch (no draft)', async () => {
+        const { randomUUID } = await import('crypto');
+        const agent = () => request.agent(app.getHttpServer());
+        const auth = (r: request.Test) => r.set('Cookie', gonCookie).set('tj-workspace-id', gonOrgId);
+        const slug = `giton-nodraft-${randomUUID().slice(0, 8)}`;
+
+        // git is ON for this workspace.
+        const gitDetails = await auth(agent().get(`/api/git-sync/${gonOrgId}`)).expect(200);
+        expect(gitDetails.body.organization_git).toBeTruthy();
+
+        const bid: string = (
+          await gonDs.query(
+            `SELECT id FROM organization_git_sync_branches WHERE organization_id = $1 AND is_default = true`,
+            [gonOrgId]
+          )
+        )[0].id;
+
+        // Create app → DRAFT on the default branch; give it a slug and make it public.
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: bid })
+            .send({ icon: 'home', name: 'giton-nodraft', type: 'front-end', branchId: bid })
+            .expect(201)
+        ).body.id;
+        const detail = await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: bid })
+          .expect(200);
+        const versionId: string = (detail.body?.editing_version || detail.body?.editingVersion).id;
+        await auth(agent().put(`/api/apps/${appId}`))
+          .query({ branch_id: bid })
+          .send({ app: { slug, is_public: true } })
+          .expect(200);
+
+        // Force the SYNCED, published-only, no-draft shape: publish the (slug-bearing) version,
+        // mark it synced, remove any other default-branch draft, point current_version_id at it.
+        await gonDs.query(`UPDATE app_versions SET status = 'PUBLISHED', is_synced = true WHERE id = $1`, [versionId]);
+        await gonDs.query(
+          `DELETE FROM app_versions WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT' AND version_type = 'version' AND id <> $3`,
+          [appId, bid, versionId]
+        );
+        await gonDs.query(`UPDATE apps SET current_version_id = $1 WHERE id = $2`, [versionId, appId]);
+
+        // Assert the exact scenario: one SYNCED PUBLISHED row carrying the slug, no draft.
+        const rows = await gonDs.query(
+          `SELECT status, slug, is_synced FROM app_versions
+             WHERE app_id = $1 AND branch_id = $2 AND version_type = 'version' AND is_stub = false`,
+          [appId, bid]
+        );
+        expect(rows.length).toBe(1);
+        expect(rows[0]).toMatchObject({ status: 'PUBLISHED', slug, is_synced: true });
+        const draftCount = await gonDs.query(
+          `SELECT COUNT(*)::int AS c FROM app_versions
+             WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT' AND version_type = 'version' AND is_stub = false`,
+          [appId, bid]
+        );
+        expect(draftCount[0].c).toBe(0);
+
+        // THE ASSERTION — slug resolves via the synced PUBLISHED default-branch row (no draft).
+        const resolved = await auth(agent().get(`/api/apps/slugs/${slug}`))
+          .query({ branch_id: bid })
+          .expect(200);
+        expect(resolved.body).toBeTruthy();
+        expect(JSON.stringify(resolved.body)).toContain(slug);
+
+        // Anonymous released public access resolves by the same slug too.
+        const anon = await agent().get(`/api/apps/validate-released-app-access/${slug}`).expect(200);
+        expect(anon.body).toMatchObject({ id: appId, slug });
+      });
     });
 
     // ────────────────────────────────────────────────────────────────────────────
