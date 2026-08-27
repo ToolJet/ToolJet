@@ -55,10 +55,22 @@ describe('RolesUtilService.checkIfBuilderLevelResourcesPermissions', () => {
     await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();
   });
 
-  it('returns truthy for a group with any DATA_SOURCE permission — existing behaviour', async () => {
-    const service = makeService(jest.fn().mockResolvedValue([makePermission(ResourceType.DATA_SOURCE)]));
+  it('returns truthy for a group with DATA_SOURCE canConfigure/canUse permission — existing behaviour', async () => {
+    const service = makeService(
+      jest
+        .fn()
+        .mockResolvedValue([{ type: ResourceType.DATA_SOURCE, dataSourcesGroupPermission: { canConfigure: true } }])
+    );
 
     await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();
+  });
+
+  it('returns falsy for a group with restrict-only DATA_SOURCE permission (no canConfigure/canUse) — the fix', async () => {
+    const service = makeService(
+      jest.fn().mockResolvedValue([{ type: ResourceType.DATA_SOURCE, dataSourcesGroupPermission: {} }])
+    );
+
+    await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeFalsy();
   });
 
   it('returns truthy for a group with module Build-with (view-only) permission — the fix', async () => {
