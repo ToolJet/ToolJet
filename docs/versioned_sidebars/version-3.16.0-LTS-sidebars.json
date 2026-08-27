@@ -89,7 +89,7 @@
                 "setup/migration/upgrade-to-lts",
                 {
                   "type": "category",
-                  "label": "PostgreSQL 13 → 16 Upgrade",
+                  "label": "PostgreSQL 13 \u2192 16 Upgrade",
                   "items": [
                     {
                       "type": "category",
@@ -175,33 +175,40 @@
       "items": [
         "build-with-ai/overview",
         {
-              "type": "category",
-              "label": "Building Application",
-              "items": [
-                "build-with-ai/generate-applications",
-                "build-with-ai/integrating-data"
-              ]
+          "type": "category",
+          "label": "Building Application",
+          "items": [
+            "build-with-ai/generate-applications",
+            "build-with-ai/integrating-data"
+          ]
         },
         {
-              "type": "category",
-              "label": "AI Assitance",
-              "items": [
-                "build-with-ai/referencing-app-resources",
-                "build-with-ai/debug-components",
-                "build-with-ai/ai-docs-assistant"
-              ]
+          "type": "category",
+          "label": "AI Assitance",
+          "items": [
+            "build-with-ai/referencing-app-resources",
+            "build-with-ai/debug-components",
+            "build-with-ai/ai-docs-assistant"
+          ]
         },
         {
-              "type": "category",
-              "label": "Concepts & References",
-              "items": [
-                "build-with-ai/ai-credits",
-                "build-with-ai/model-selection",
-                "build-with-ai/prompting101",
-                "build-with-ai/ai-best-practices"
-              ]
+          "type": "category",
+          "label": "Concepts & References",
+          "items": [
+            "build-with-ai/ai-credits",
+            "build-with-ai/model-selection",
+            "build-with-ai/prompting101",
+            "build-with-ai/ai-best-practices"
+          ]
         },
-        "build-with-ai/tooljet-mcp",
+        {
+          "type": "category",
+          "label": "ToolJet MCP Server",
+          "items": [
+            "build-with-ai/mcp/overview",
+            "build-with-ai/mcp/setup"
+          ]
+        },
         "build-with-ai/privacy"
       ]
     },
@@ -521,7 +528,7 @@
                 "widgets/toggle-switch-v2",
                 "widgets/tree-select",
                 "widgets/vertical-divider",
-                 {
+                {
                   "type": "category",
                   "label": "Legacy Components",
                   "items": [
@@ -1196,7 +1203,9 @@
             "type": "doc",
             "id": "development-lifecycle/backup/gitsync-backup"
           },
-          "items": ["development-lifecycle/backup/gitsync-backup"]
+          "items": [
+            "development-lifecycle/backup/gitsync-backup"
+          ]
         },
         {
           "type": "category",
