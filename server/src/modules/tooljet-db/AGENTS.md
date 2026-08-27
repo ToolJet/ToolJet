@@ -122,8 +122,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   once per handler, immediately before that handler's own `record()`, and once more in `viewTable()`
   (before it returns) — never the PostgREST read path. It is deliberately not inside `record()`
   itself: a single request can call `record()` more than once against the same relation before any
-  of them are applied (see "several migrations authored in one request" in the horizon's plan), and
-  a migration this same request just recorded is indistinguishable from a crashed one to
+  of them are applied — `record()` itself makes no such guarantee, only every handler wired into
+  `perform()` happens to call it once — and a migration this same request just recorded is
+  indistinguishable from a crashed one to
   `adjudicatePending`'s predicate — its DDL simply hasn't run yet.
 - `drop_table`'s `applyDropTable` clears the surviving relation's `configurations` to
   `{ column_names: {}, configurations: {} }` after the physical `DROP TABLE` — without this the
