@@ -155,6 +155,16 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
     foreign key's DDL applied even though the whole `applyMigrations` call throws — full
     cross-op-type atomicity would need the FK three refactored onto the other six's shared-
     transaction shape, which is out of scope here (see the six-vs-three signature split above).
+  - **The replay migration itself has no `ADJUDICATION_PREDICATES` entry for the `'replay'`
+    action, so a crash between the target's DDL committing and `applyMigrations`'s own `confirm()`
+    call is always resolved as "never happened" and discarded** — unlike every other action, which
+    can tell the two cases apart by introspecting the live relation. In that narrow window the
+    target relation is left correctly replayed but with no migration/application row recording it,
+    so a retry would re-run DDL (e.g. `CREATE TABLE`) against a relation that already has it. Not
+    exercised by any test here since nothing calls `applyMigrations` from a real request path yet;
+    whichever later module wires replay to a real caller (promote) needs either a real predicate
+    (comparing the target's live snapshot to the last replayed migration's own `resulting_schema`)
+    or to accept and handle the retry-on-existing-relation failure mode.
   - `buildEditTableColumnDiff` is `normalizeEditTable`'s column-diff logic (insert/update/delete,
     every uuid) pulled out as a pure function so replay's `edit_table` case can reuse it unchanged
     — only `mintColumnUuid` differs (`uuidv4()` live, a `resulting_schema` read on replay).
