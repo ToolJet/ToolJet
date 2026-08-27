@@ -3,6 +3,11 @@ import { DataSource, MigrationInterface, QueryRunner, Table, TableColumn, TableF
 import { v4 as uuidv4 } from 'uuid';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 import { findTenantSchema } from '@helpers/tooljet_db.helper';
+import {
+  buildTableSchemaSnapshot,
+  TableSchemaSnapshotColumn,
+  TableSchemaSnapshotForeignKey,
+} from '@modules/tooljet-db/helpers/table-schema-snapshot';
 
 const MIGRATION_NAME = 'TjdbRolloutMigrationASubstrate1787564882760';
 
@@ -135,7 +140,8 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
           { name: 'branch_id', type: 'uuid', isNullable: false },
           { name: 'kind', type: 'enum', enum: ['structured', 'raw_sql', 'baseline'], isNullable: false },
           { name: 'payload', type: 'jsonb', isNullable: false },
-          { name: 'resulting_schema', type: 'jsonb', isNullable: false },
+          // NULL means authoring not yet confirmed - the migration-side twin of applied_at IS NULL.
+          { name: 'resulting_schema', type: 'jsonb', isNullable: true },
           { name: 'name', type: 'varchar', isNullable: true },
           { name: 'description', type: 'varchar', isNullable: true },
           { name: 'reverts_migration_id', type: 'uuid', isNullable: true },
@@ -427,7 +433,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
    * shape already matches what's being recorded. Throws (caller stores the message as
    * baseline_error) for the known unbaselineable cases: missing physical relation, or a foreign
    * key referencing a composite primary key (TJDB's structured-migration format can't represent
-   * that shape — see buildResultingSchema.checkNoCompositeKeyForeignKeys).
+   * that shape).
    */
   private async synthesizeBaseline(
     tjdbQueryRunner: QueryRunner,
@@ -439,121 +445,67 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     if (!oid) throw new Error(`physical relation "${schema}"."${tableId}" does not exist`);
 
     const columnNames = configurations.columns.column_names;
-    const [columns, primaryKeyColumns, foreignKeys] = await Promise.all([
-      tjdbQueryRunner.query(
-        `SELECT column_name, data_type, is_nullable, column_default
-         FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 ORDER BY ordinal_position`,
-        [schema, tableId]
-      ),
-      this.fetchPrimaryKeyColumns(tjdbQueryRunner, schema, tableId),
-      this.fetchForeignKeys(tjdbQueryRunner, schema, tableId),
-    ]);
+    const snapshot = await buildTableSchemaSnapshot(tjdbQueryRunner, schema, tableId, columnNames);
 
-    for (const fk of foreignKeys) {
-      const referencedPk = await this.fetchPrimaryKeyColumns(
-        tjdbQueryRunner,
-        fk.referenced_schema,
-        fk.referenced_table
-      );
-      if (referencedPk.length > 1 && fk.referenced_column_names.some((c: string) => referencedPk.includes(c))) {
+    // Referenced tables live in this same tenant schema - cross-workspace foreign keys are not
+    // reachable through the app (fetchAndCheckIfValidForeignKeyTables scopes candidates to the
+    // organization), so the composite-PK check never needs to cross a schema boundary.
+    for (const fk of snapshot.foreign_keys) {
+      const referencedSnapshot = await buildTableSchemaSnapshot(tjdbQueryRunner, schema, fk.referenced_table, {});
+      if (
+        referencedSnapshot.primary_key.length > 1 &&
+        fk.referenced_column_names.some((c) => referencedSnapshot.primary_key.includes(c))
+      ) {
         throw new Error(
-          `foreign key "${fk.conname}" references composite primary key of "${fk.referenced_schema}"."${fk.referenced_table}"`
+          `foreign key "${fk.name}" references composite primary key of "${schema}"."${fk.referenced_table}"`
         );
       }
     }
-
-    const columnsSchema = columns.map((col) => ({
-      name: col.column_name,
-      uuid: columnNames[col.column_name],
-      data_type: col.data_type,
-      is_nullable: col.is_nullable === 'YES',
-      default: col.column_default,
-      is_primary_key: primaryKeyColumns.includes(col.column_name),
-    }));
-    const foreignKeysSchema = foreignKeys.map((fk) => ({
-      column_names: fk.column_names,
-      referenced_table: fk.referenced_table,
-      referenced_column_names: fk.referenced_column_names,
-    }));
 
     // resulting_schema is "shape at authoring time" per migration row, not a shared final shape —
     // the sequence-1 (create) row predates the FKs, so it must not claim them.
     const migrations: Array<{ sequence: number; payload: any; resultingSchema: any }> = [
       {
         sequence: 1,
-        payload: { ddl: this.buildCreateTableDdl(tableId, columns, primaryKeyColumns), refs: [] },
-        resultingSchema: { columns: columnsSchema, foreign_keys: [] },
+        payload: { ddl: this.buildCreateTableDdl(tableId, snapshot.columns, snapshot.primary_key), refs: [] },
+        resultingSchema: {
+          columns: snapshot.columns,
+          primary_key: snapshot.primary_key,
+          unique_constraints: snapshot.unique_constraints,
+          indexes: snapshot.indexes,
+          foreign_keys: [],
+        },
       },
     ];
-    if (foreignKeys.length) {
+    if (snapshot.foreign_keys.length) {
       migrations.push({
         sequence: 2,
-        payload: { ddl: this.buildForeignKeyDdl(tableId, foreignKeys), refs: foreignKeys.map((fk) => fk.conname) },
-        resultingSchema: { columns: columnsSchema, foreign_keys: foreignKeysSchema },
+        payload: {
+          ddl: this.buildForeignKeyDdl(tableId, snapshot.foreign_keys),
+          refs: snapshot.foreign_keys.map((fk) => fk.name),
+        },
+        resultingSchema: {
+          columns: snapshot.columns,
+          primary_key: snapshot.primary_key,
+          unique_constraints: snapshot.unique_constraints,
+          indexes: snapshot.indexes,
+          foreign_keys: snapshot.foreign_keys,
+        },
       });
     }
 
     return migrations;
   }
 
-  private async fetchPrimaryKeyColumns(
-    tjdbQueryRunner: QueryRunner,
-    schema: string,
-    tableName: string
-  ): Promise<string[]> {
-    const rows: Array<{ column_name: string }> = await tjdbQueryRunner.query(
-      `SELECT a.attname AS column_name
-       FROM pg_constraint c
-       JOIN pg_class t ON t.oid = c.conrelid
-       JOIN pg_namespace n ON n.oid = t.relnamespace
-       JOIN unnest(c.conkey) AS ck(attnum) ON true
-       JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = ck.attnum
-       WHERE c.contype = 'p' AND n.nspname = $1 AND t.relname = $2`,
-      [schema, tableName]
-    );
-    return rows.map((r) => r.column_name);
-  }
-
-  private async fetchForeignKeys(
-    tjdbQueryRunner: QueryRunner,
-    schema: string,
-    tableName: string
-  ): Promise<
-    Array<{
-      conname: string;
-      column_names: string[];
-      referenced_schema: string;
-      referenced_table: string;
-      referenced_column_names: string[];
-    }>
-  > {
-    return tjdbQueryRunner.query(
-      `SELECT
-         c.conname,
-         array_agg(a.attname::text ORDER BY x.n) AS column_names,
-         rn.nspname AS referenced_schema,
-         rt.relname AS referenced_table,
-         array_agg(ra.attname::text ORDER BY x.n) AS referenced_column_names
-       FROM pg_constraint c
-       JOIN pg_class t ON t.oid = c.conrelid
-       JOIN pg_namespace n ON n.oid = t.relnamespace
-       JOIN pg_class rt ON rt.oid = c.confrelid
-       JOIN pg_namespace rn ON rn.oid = rt.relnamespace
-       JOIN unnest(c.conkey) WITH ORDINALITY AS x(attnum, n) ON true
-       JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = x.attnum
-       JOIN unnest(c.confkey) WITH ORDINALITY AS y(attnum, n) ON y.n = x.n
-       JOIN pg_attribute ra ON ra.attrelid = rt.oid AND ra.attnum = y.attnum
-       WHERE c.contype = 'f' AND n.nspname = $1 AND t.relname = $2
-       GROUP BY c.conname, rn.nspname, rt.relname`,
-      [schema, tableName]
-    );
-  }
-
-  private buildCreateTableDdl(tableId: string, columns: any[], primaryKeyColumns: string[]): string {
+  private buildCreateTableDdl(
+    tableId: string,
+    columns: TableSchemaSnapshotColumn[],
+    primaryKeyColumns: string[]
+  ): string {
     const columnDdl = columns.map((col) => {
-      const notNull = col.is_nullable === 'YES' ? '' : ' NOT NULL';
-      const withDefault = col.column_default ? ` DEFAULT ${col.column_default}` : '';
-      return `  "${col.column_name}" ${col.data_type}${notNull}${withDefault}`;
+      const notNull = col.is_nullable ? '' : ' NOT NULL';
+      const withDefault = col.default ? ` DEFAULT ${col.default}` : '';
+      return `  "${col.name}" ${col.data_type}${notNull}${withDefault}`;
     });
     if (primaryKeyColumns.length) {
       columnDdl.push(`  PRIMARY KEY (${primaryKeyColumns.map((c) => `"${c}"`).join(', ')})`);
@@ -561,19 +513,11 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     return `CREATE TABLE "${tableId}" (\n${columnDdl.join(',\n')}\n)`;
   }
 
-  private buildForeignKeyDdl(
-    tableId: string,
-    foreignKeys: Array<{
-      conname: string;
-      column_names: string[];
-      referenced_table: string;
-      referenced_column_names: string[];
-    }>
-  ): string {
+  private buildForeignKeyDdl(tableId: string, foreignKeys: TableSchemaSnapshotForeignKey[]): string {
     return foreignKeys
       .map(
         (fk) =>
-          `ALTER TABLE "${tableId}" ADD CONSTRAINT "${fk.conname}" FOREIGN KEY (${fk.column_names
+          `ALTER TABLE "${tableId}" ADD CONSTRAINT "${fk.name}" FOREIGN KEY (${fk.column_names
             .map((c) => `"${c}"`)
             .join(', ')}) REFERENCES "${fk.referenced_table}" (${fk.referenced_column_names
             .map((c) => `"${c}"`)

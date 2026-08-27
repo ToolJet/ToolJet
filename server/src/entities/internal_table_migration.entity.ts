@@ -26,8 +26,11 @@ export class InternalTableMigration extends BaseEntity {
   @Column({ type: 'jsonb', name: 'payload' })
   payload: any;
 
-  @Column({ type: 'jsonb', name: 'resulting_schema' })
-  resultingSchema: any;
+  // NULL means authoring not yet confirmed - the migration-side twin of applied_at IS NULL on the
+  // applications table. Filled in once confirm() introspects the ToolJet Database and finds the
+  // shape this migration claimed to produce.
+  @Column({ type: 'jsonb', name: 'resulting_schema', nullable: true })
+  resultingSchema: any | null;
 
   @Column({ name: 'name', nullable: true })
   name: string | null;

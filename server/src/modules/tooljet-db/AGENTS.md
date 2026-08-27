@@ -23,6 +23,8 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 | `services/postgrest-proxy.service.ts` | Rewrites every table reference in a PostgREST request through the resolver before forwarding. |
 | `services/tooljet-db-table-operations.service.ts` | DDL actions (`create_table`, `join_tables`, `view_table`, etc.) — the `perform()` dispatch table. |
 | `services/tooljet-db-data-operations.service.ts` | Row-level actions (`list_rows`, `create_row`, `update_rows`, `delete_rows`). |
+| `services/tooljet-db-migration-recorder.service.ts` | Bookkeeping for the migration chain: `record`/`confirm`/`discard`/`adjudicatePending`. Not wired into `perform()` yet — the nine structured ops don't call it. |
+| `helpers/table-schema-snapshot.ts` | Introspects a relation's current shape (columns, primary key, unique constraints, indexes, foreign keys). Used by the recorder and by the rollout migration's baseline synthesis - kept byte-identical between the two on purpose. |
 | `controller.ts` | `/proxy/*` (PostgREST passthrough) plus the DDL/DML REST endpoints. |
 
 ## Edition split
@@ -33,6 +35,11 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   editions. Everything else in EE mirrors CE 1:1 today.
 - The resolver is real logic in CE, not a stub: a relation id is the only way to name a physical
   table, so a stub here would leave CE with nothing to resolve `perform()`'s table references to.
+- **Every service listed in `module.ts`'s `getProviders(...)` call needs a same-path file under
+  `server/ee/tooljet-db/services/`**, even one that only `extends` the CE class and forwards its
+  constructor to `super()` with no new logic. `getImportPath()` swaps the whole services list's base
+  path for EE/Cloud at once, not per-file - an omission is invisible under `TOOLJET_EDITION=ce` and
+  fails every e2e test (which runs EE) with "Cannot find module" at app bootstrap.
 
 ## Invariants & gotchas
 
@@ -72,6 +79,12 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `it.deleted_at IS NULL` by hand because raw joins don't get that filter for free. The
   `(organization_id, table_name)` unique index is partial (`WHERE deleted_at IS NULL`), so a dropped
   table's name is immediately free for reuse by a new `internal_tables` row.
+- **`internal_table_migrations.resulting_schema` is nullable; NULL means authoring not yet
+  confirmed** - the migration-side twin of `internal_table_migration_applications.applied_at IS
+  NULL`. `TooljetDbMigrationRecorderService.record()` inserts both NULL; `.confirm()` fills both in
+  together from a live introspection; `.discard()` deletes both rows rather than leaving either
+  half-written. `.adjudicatePending()` is the crash-recovery sweep for rows a process died between
+  `record()` and `confirm()`/`discard()` on.
 
 ## Related modules
 

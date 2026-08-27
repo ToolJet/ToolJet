@@ -39,6 +39,7 @@ export class TooljetDbModule extends SubModule {
       TooljetDbImportExportService,
       PostgrestProxyService,
       TooljetDbRelationResolverService,
+      TooljetDbMigrationRecorderService,
     } = await this.getProviders(configs, 'tooljet-db', [
       'controller',
       'services/tooljet-db-table-operations.service',
@@ -47,6 +48,7 @@ export class TooljetDbModule extends SubModule {
       'services/tooljet-db-import-export.service',
       'services/postgrest-proxy.service',
       'services/relation-resolver.service',
+      'services/tooljet-db-migration-recorder.service',
     ]);
 
     return this.cacheModule(cacheKey, {
@@ -72,6 +74,7 @@ export class TooljetDbModule extends SubModule {
         TooljetDbImportExportService,
         PostgrestProxyService,
         TooljetDbRelationResolverService,
+        TooljetDbMigrationRecorderService,
         TableCountGuard,
         FeatureAbilityFactory,
       ],
@@ -81,6 +84,7 @@ export class TooljetDbModule extends SubModule {
         TooljetDbDataOperationsService,
         TooljetDbImportExportService,
         TooljetDbRelationResolverService,
+        TooljetDbMigrationRecorderService,
       ],
     });
   }
