@@ -12,6 +12,8 @@ import {
   findEntity,
   updateEntity,
   resolveOrSeedDefaultBranch,
+  createGroupPermission,
+  createUserGroupPermissions,
 } from 'test-helper';
 import * as request from 'supertest';
 import { Folder } from '@entities/folder.entity';
@@ -20,6 +22,43 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
+import { GroupFolders } from '@entities/group_folders.entity';
+import { ResourceType } from '@modules/group-permissions/constants';
+
+/**
+ * Grants a MODULE_FOLDER-tagged granular permission to `groupId`, scoped to `options.folderId`.
+ * Mirrors workflow-folder-permissions.spec.ts's grantWorkflowFolderPermission, tagged with
+ * ResourceType.MODULE_FOLDER instead of WORKFLOW_FOLDER.
+ */
+let grantModuleFolderPermissionCallCount = 0;
+
+async function grantModuleFolderPermission(
+  groupId: string,
+  options: { folderId?: string; canEditFolder?: boolean; canEditApps?: boolean; canViewApps?: boolean; isAll?: boolean }
+): Promise<void> {
+  const isAll = options.isAll ?? !options.folderId;
+  grantModuleFolderPermissionCallCount += 1;
+  const granular = await saveEntity(GranularPermissions, {
+    groupId,
+    name: `Module folder permissions ${grantModuleFolderPermissionCallCount}`,
+    type: ResourceType.MODULE_FOLDER,
+    isAll,
+  } as any);
+  const folderPerm = await saveEntity(FoldersGroupPermissions, {
+    granularPermissionId: granular.id,
+    canEditFolder: options.canEditFolder ?? false,
+    canEditApps: options.canEditApps ?? false,
+    canViewApps: options.canViewApps ?? false,
+  } as any);
+  if (options.folderId && !isAll) {
+    await saveEntity(GroupFolders, {
+      folderId: options.folderId,
+      foldersGroupPermissionsId: folderPerm.id,
+    } as any);
+  }
+}
 
 async function setupOrganization(nestApp) {
   const adminUserData = await createUser(nestApp, {
@@ -489,7 +528,11 @@ describe('FolderAppsController', () => {
           const adminUser = adminUserData.user;
           const organization = adminUserData.organization;
 
-          await createUser(nestApp, { email: 'builder-add@tooljet.io', groups: ['builder'], organization });
+          const builderData = await createUser(nestApp, {
+            email: 'builder-add@tooljet.io',
+            groups: ['builder'],
+            organization,
+          });
           const { tokenCookie: builderCookie } = await login(nestApp, 'builder-add@tooljet.io', 'password');
 
           const moduleApp = await createApplication(
@@ -503,6 +546,13 @@ describe('FolderAppsController', () => {
             type: APP_TYPES.MODULE,
             organizationId: adminUser.organizationId,
           });
+
+          const moduleFolderGroup = await createGroupPermission(nestApp, {
+            organization,
+            group: 'module-folder-add-group',
+          } as any);
+          await createUserGroupPermissions(nestApp, builderData.user, ['module-folder-add-group']);
+          await grantModuleFolderPermission(moduleFolderGroup.id, { folderId: moduleFolder.id, canEditFolder: true });
 
           const response = await request(nestApp.getHttpServer())
             .post('/api/folder-apps')
@@ -521,7 +571,11 @@ describe('FolderAppsController', () => {
           const adminUser = adminUserData.user;
           const organization = adminUserData.organization;
 
-          await createUser(nestApp, { email: 'builder-remove@tooljet.io', groups: ['builder'], organization });
+          const builderData = await createUser(nestApp, {
+            email: 'builder-remove@tooljet.io',
+            groups: ['builder'],
+            organization,
+          });
           const { tokenCookie: builderCookie } = await login(nestApp, 'builder-remove@tooljet.io', 'password');
 
           const moduleApp = await createApplication(
@@ -537,6 +591,13 @@ describe('FolderAppsController', () => {
           });
 
           await addAppToFolder(nestApp, moduleApp, moduleFolder);
+
+          const moduleFolderGroup = await createGroupPermission(nestApp, {
+            organization,
+            group: 'module-folder-remove-group',
+          } as any);
+          await createUserGroupPermissions(nestApp, builderData.user, ['module-folder-remove-group']);
+          await grantModuleFolderPermission(moduleFolderGroup.id, { folderId: moduleFolder.id, canEditFolder: true });
 
           const response = await request(nestApp.getHttpServer())
             .put(`/api/folder-apps/${moduleFolder.id}`)

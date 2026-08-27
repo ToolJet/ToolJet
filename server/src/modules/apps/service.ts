@@ -200,7 +200,10 @@ export class AppsService implements IAppsService {
         // If preview params are present we need version resolution — fall through.
         // Only short-circuit when there is nothing to resolve.
         if (!versionName && !environmentName && !versionId && !envId) {
-          return plainToClass(ValidateAppAccessResponseDto, { ...response, canEdit: false });
+          return plainToClass(ValidateAppAccessResponseDto, {
+            ...response,
+            canEdit: false,
+          });
         }
       } else {
         // Viewer role: require access_type=view explicitly; reject edit or missing
@@ -239,7 +242,9 @@ export class AppsService implements IAppsService {
 
       if (!version) {
         // Check if the app is in stub state (pulled from git but not yet hydrated)
-        const stubVersion = await this.versionRepository.findOne({ where: { appId: app.id, isStub: true } });
+        const stubVersion = await this.versionRepository.findOne({
+          where: { appId: app.id, isStub: true },
+        });
         if (stubVersion) {
           throw new NotFoundException('app-not-ready');
         }
@@ -376,14 +381,20 @@ export class AppsService implements IAppsService {
           );
         }
         const branch = await this.appRepository.manager.findOne(WorkspaceBranch, {
-          where: { id: appUpdateDto.branch_id, organizationId: app.organizationId },
+          where: {
+            id: appUpdateDto.branch_id,
+            organizationId: app.organizationId,
+          },
           select: ['id', 'isDefault'],
         });
         // Unknown branch → treat as block. Default branch → block unless the app version
         // is unsynced (pre-git / never pushed) — those are always editable.
         if (!branch || branch.isDefault) {
           const versionToCheck = editingVersionId
-            ? await this.versionRepository.findOne({ where: { id: editingVersionId }, select: ['id', 'isSynced'] })
+            ? await this.versionRepository.findOne({
+                where: { id: editingVersionId },
+                select: ['id', 'isSynced'],
+              })
             : await this.versionRepository.findOne({
                 where: { appId: app.id, branchId: appUpdateDto.branch_id },
                 select: ['id', 'isSynced'],
@@ -403,7 +414,10 @@ export class AppsService implements IAppsService {
     // Unsynced apps are exempt — they haven't been pushed to git so they're always editable.
     if (name && name !== app.name && isGitSyncEnabled) {
       const versionForRename = editingVersionId
-        ? await this.versionRepository.findOne({ where: { id: editingVersionId }, select: ['id', 'isSynced'] })
+        ? await this.versionRepository.findOne({
+            where: { id: editingVersionId },
+            select: ['id', 'isSynced'],
+          })
         : await this.versionRepository.findOne({
             where: { appId: app.id, branchId: appUpdateDto.branch_id },
             select: ['id', 'isSynced'],
@@ -471,7 +485,11 @@ export class AppsService implements IAppsService {
       await assertGitSyncEditAllowedForOrg(
         this.gitSyncConfigsUtilService,
         app.organizationId,
-        { branchId: version?.branchId, status: version?.status, isSynced: version?.isSynced },
+        {
+          branchId: version?.branchId,
+          status: version?.status,
+          isSynced: version?.isSynced,
+        },
         app.type === APP_TYPES.MODULE ? 'module' : 'app'
       );
     }
@@ -510,20 +528,32 @@ export class AppsService implements IAppsService {
       }
 
       // Clean up query folder data — no CASCADE exists for these tables
-      const versions = await manager.find(AppVersion, { select: ['id'], where: { appId: id } });
+      const versions = await manager.find(AppVersion, {
+        select: ['id'],
+        where: { appId: id },
+      });
       const versionIds = versions.map((v) => v.id);
       if (versionIds.length > 0) {
-        const folders = await manager.find(DataQueryFolder, { where: { appVersionId: In(versionIds) } });
+        const folders = await manager.find(DataQueryFolder, {
+          where: { appVersionId: In(versionIds) },
+        });
         const folderIds = folders.map((f) => f.id);
-        const queries = await manager.find(DataQuery, { select: ['id'], where: { appVersionId: In(versionIds) } });
+        const queries = await manager.find(DataQuery, {
+          select: ['id'],
+          where: { appVersionId: In(versionIds) },
+        });
         const queryIds = queries.map((q) => q.id);
         const allChildIds = [...folderIds, ...queryIds];
 
         if (allChildIds.length > 0) {
-          await manager.delete(DataQueryFolderMapping, { childId: In(allChildIds) });
+          await manager.delete(DataQueryFolderMapping, {
+            childId: In(allChildIds),
+          });
         }
         if (folderIds.length > 0) {
-          await manager.delete(DataQueryFolder, { appVersionId: In(versionIds) });
+          await manager.delete(DataQueryFolder, {
+            appVersionId: In(versionIds),
+          });
         }
       }
 
@@ -999,7 +1029,10 @@ export class AppsService implements IAppsService {
         LICENSE_FIELD.APP_JS_LIBRARIES,
         app.organizationId
       );
-      const globalSettings = { ...versionToLoad.globalSettings, theme: appTheme };
+      const globalSettings = {
+        ...versionToLoad.globalSettings,
+        theme: appTheme,
+      };
       if (!hasJsLibrariesAccess) {
         delete globalSettings.libraries;
         delete globalSettings.preloadedScript;
@@ -1118,7 +1151,9 @@ export class AppsService implements IAppsService {
         }
       }
 
-      await manager.update(App, appId, { currentVersionId: versionToBeReleased });
+      await manager.update(App, appId, {
+        currentVersionId: versionToBeReleased,
+      });
 
       //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -1126,7 +1161,9 @@ export class AppsService implements IAppsService {
         organizationId: user.organizationId,
         resourceId: app.id,
         resourceName: app.name,
-        ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.RELEASE }),
+        ...(app.type === 'module' && {
+          actionType: MODULE_VERSION_AUDIT_KEYS.RELEASE,
+        }),
         resourceData: {
           appSlug: app.slug,
           isPublic: app.isPublic,
@@ -1135,7 +1172,12 @@ export class AppsService implements IAppsService {
           environmentId: currentEnvironment?.id,
           environmentName: currentEnvironment?.name,
         },
-        metadata: { data: { name: 'App Released', versionToBeReleased: versionReleaseDto.versionToBeReleased } },
+        metadata: {
+          data: {
+            name: 'App Released',
+            versionToBeReleased: versionReleaseDto.versionToBeReleased,
+          },
+        },
       });
       return;
     });

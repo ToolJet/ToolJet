@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { initTestApp, closeTestApp, createAdmin } from 'test-helper';
+import { initTestApp, closeTestApp, createAdmin, ensureAppEnvironments } from 'test-helper';
 
 /**
  * Slug-update validation matrix on a NON-git workspace (git sync disabled).
@@ -45,6 +45,7 @@ describe('PUT /apps/:id | slug update rules (git sync disabled)', () => {
     const admin = await createAdmin(app, 'slug-update-admin@tooljet.io');
     cookie = admin.cookie;
     workspaceId = admin.workspace.id;
+    await ensureAppEnvironments(app, workspaceId);
   });
 
   afterAll(async () => {

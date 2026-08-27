@@ -103,6 +103,14 @@ if [[ "${CI:-}" == "true" ]]; then
   unit_args+=(--json --outputFile /tmp/tj-unit-results.json)
   mkdir -p /tmp/tj-e2e-json
   e2e_args+=(--json-output-dir /tmp/tj-e2e-json)
+else
+  # Local-only: this spec runs real `git init`/`add`/`commit` against a tmpdir fixture and has
+  # landed its seed commit on the real repo's HEAD instead more than once locally, through a
+  # mechanism we couldn't pin down (not a GIT_DIR/GIT_WORK_TREE leak, not a stray process.chdir(),
+  # not the service under test - two in-test guards both failed to catch it live). CI runs it in
+  # an ephemeral container where that failure mode is harmless, so skip it in local pre-push runs
+  # only and let CI keep the coverage.
+  unit_args+=(--testPathIgnorePatterns="test/modules/workspace-branches/unit/app-deletion-targeted-removal.spec.ts")
 fi
 
 # ${arr[@]+...} guard: empty-array expansion breaks under set -u on bash 3.2 (macOS)

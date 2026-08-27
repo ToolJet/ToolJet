@@ -1,3 +1,4 @@
+/** @group platform */
 /**
  * Unit tests for RolesUtilService.checkIfBuilderLevelResourcesPermissions.
  *
@@ -55,7 +56,7 @@ describe('RolesUtilService.checkIfBuilderLevelResourcesPermissions', () => {
     await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();
   });
 
-  it('returns truthy for a group with DATA_SOURCE canConfigure/canUse permission — existing behaviour', async () => {
+  it('returns truthy for a group with DATA_SOURCE canConfigure/canUse permission', async () => {
     const service = makeService(
       jest
         .fn()
