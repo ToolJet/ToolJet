@@ -1,7 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
 import {
   StringColumn,
@@ -120,7 +119,7 @@ export default function generateColumnsData({
   if (!columnProperties) return [];
 
   return columnProperties
-    .map((column) => {
+    .map((column, index) => {
       if (!column) return null;
 
       const columnSize = useDynamicColumn
@@ -160,7 +159,15 @@ export default function generateColumnsData({
       if (!isVisible) return null;
 
       const columnDef = {
-        id: column.id || uuidv4(),
+        // Fall back to a value derived from the column's own content (never a fresh
+        // uuidv4() per render) so column identity stays stable across re-renders when
+        // `id` isn't persisted on legacy/externally-authored column configs. An unstable
+        // id here breaks dnd-kit's column-order/resize tracking in TableHeader and the
+        // Inspector's column-list drag-and-drop, since both key off this value.
+        // `index` is ALWAYS appended (not just as a last resort) because `key`/`name`
+        // are not guaranteed unique — a user can intentionally bind two columns to the
+        // same JSON field and display them differently, or reuse a display name.
+        id: column.id || `${column.key || column.name || 'col'}-${index}`,
         accessorKey: column.key || column.name,
         header: getResolvedValue(column.name) ?? '',
         // enableSorting: !disableSort,
