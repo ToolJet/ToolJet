@@ -56,6 +56,8 @@ import { generatePayloadForLimits } from '@modules/licensing/helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { fetchForeignKeys } from '../helpers/table-schema-snapshot';
+import { TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
+import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
 
 enum AggregateFunctions {
   sum = 'SUM',
@@ -114,7 +116,8 @@ export class TooljetDbTableOperationsService {
     protected eventEmitter: EventEmitter2,
     protected licenseTermsService: LicenseTermsService,
     protected readonly configService: ConfigService,
-    protected readonly relationResolverService: TooljetDbRelationResolverService
+    protected readonly relationResolverService: TooljetDbRelationResolverService,
+    protected readonly migrationRecorderService: TooljetDbMigrationRecorderService
   ) {}
 
   async perform(
@@ -231,6 +234,11 @@ export class TooljetDbTableOperationsService {
       undefined,
       appManager
     );
+
+    // Crash-recovery sweep: resolves any migration left pending by a process that died between
+    // record() and confirm()/discard() on this relation, before the view reflects its shape.
+    await this.migrationRecorderService.adjudicatePending(internalTable, relation);
+
     const tenantSchema = findTenantSchema(organizationId);
     let foreign_keys = await tjdbManager.query(`
       select (SELECT pgcls.relname FROM pg_class as pgcls where pgcls.oid = pgc.confrelid)                         as referenced_table_name,
@@ -573,6 +581,17 @@ export class TooljetDbTableOperationsService {
         })
       );
 
+      // Folded into this same app-DB transaction: if it rolls back, nothing was created and
+      // nothing was recorded either. Every other structured op records after its own DDL has
+      // already committed - create_table is the one exception, because there is no table id to
+      // record against until these two rows exist.
+      const migration = await this.migrationRecorderService.record(
+        { action: 'create_table', request: params },
+        internalTable,
+        relation,
+        queryRunner.manager
+      );
+
       await this.applyCreateTable(payload, relation, {
         appManager: queryRunner.manager,
         tjdbManager: tjdbQueryRunner.manager,
@@ -581,6 +600,7 @@ export class TooljetDbTableOperationsService {
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
 
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
       if (!queryRunner?.transactionDepth || queryRunner.transactionDepth < 1) await queryRunner.release();
@@ -628,6 +648,11 @@ export class TooljetDbTableOperationsService {
 
     await appManager.softDelete(InternalTable, { id: payload.internalTable.id });
     await tjdbManager.queryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }));
+
+    // The relation row survives drop_table (it's the migration chain's anchor), but its physical
+    // columns don't - clear configurations so it stops describing a table that no longer exists.
+    relation.configurations = { columns: { column_names: {}, configurations: {} } };
+    await appManager.save(relation);
   }
 
   protected async dropTable(organizationId: string, params) {
@@ -639,6 +664,12 @@ export class TooljetDbTableOperationsService {
     if (isTableInUse) {
       throw new BadRequestException("Table can't be deleted, it is being used in app queries");
     }
+
+    const migration = await this.migrationRecorderService.record(
+      { action: 'drop_table', request: params },
+      internalTable,
+      relation
+    );
 
     const queryRunner = this.manager.connection.createQueryRunner();
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
@@ -657,8 +688,10 @@ export class TooljetDbTableOperationsService {
 
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       return true;
     } catch (err) {
+      await this.migrationRecorderService.discard(migration, relation);
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.rollbackTransaction();
       throw new TooljetDatabaseError(
@@ -925,12 +958,19 @@ export class TooljetDbTableOperationsService {
     // read-your-own-writes hazard for any future write this handler makes before this point.
     let internalTable: InternalTable;
     let relation: InternalTableRelation;
+    let migration: InternalTableMigration;
     try {
       const payload = await this.normalizeEditTable(organizationId, params, queryRunner.manager);
       internalTable = payload.internalTable;
       relation = payload.relation;
 
       if (isEmpty(payload.updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
+
+      migration = await this.migrationRecorderService.record(
+        { action: 'edit_table', request: params },
+        internalTable,
+        relation
+      );
 
       await this.applyEditTable(payload, relation, {
         appManager: queryRunner.manager,
@@ -949,9 +989,11 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunner.commitTransaction();
       await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.release();
       await queryRunner.release();
     } catch (error) {
+      if (migration) await this.migrationRecorderService.discard(migration, relation);
       await tjdbQueryRunner.rollbackTransaction();
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
@@ -1081,10 +1123,17 @@ export class TooljetDbTableOperationsService {
     // read-your-own-writes hazard for any future write this handler makes before this point.
     let internalTable: InternalTable;
     let relation: InternalTableRelation;
+    let migration: InternalTableMigration;
     try {
       const payload = await this.normalizeAddColumn(organizationId, params, queryRunner.manager);
       internalTable = payload.internalTable;
       relation = payload.relation;
+
+      migration = await this.migrationRecorderService.record(
+        { action: 'add_column', request: params },
+        internalTable,
+        relation
+      );
 
       await this.applyAddColumn(payload, relation, {
         appManager: queryRunner.manager,
@@ -1094,9 +1143,11 @@ export class TooljetDbTableOperationsService {
       await queryRunner.commitTransaction();
       await tjdbQueryRunnner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunnner);
       await queryRunner.release();
       await tjdbQueryRunnner.release();
     } catch (err) {
+      if (migration) await this.migrationRecorderService.discard(migration, relation);
       await tjdbQueryRunnner.rollbackTransaction();
       await tjdbQueryRunnner.release();
       await queryRunner.rollbackTransaction();
@@ -1177,10 +1228,17 @@ export class TooljetDbTableOperationsService {
     // read-your-own-writes hazard for any future write this handler makes before this point.
     let internalTable: InternalTable;
     let relation: InternalTableRelation;
+    let migration: InternalTableMigration;
     try {
       const payload = await this.normalizeDropColumn(organizationId, params, queryRunner.manager);
       internalTable = payload.internalTable;
       relation = payload.relation;
+
+      migration = await this.migrationRecorderService.record(
+        { action: 'drop_column', request: params },
+        internalTable,
+        relation
+      );
 
       const result = await this.applyDropColumn(payload, relation, {
         appManager: queryRunner.manager,
@@ -1190,9 +1248,11 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunnner.commitTransaction();
       await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunnner);
 
       return result;
     } catch (error) {
+      if (migration) await this.migrationRecorderService.discard(migration, relation);
       await tjdbQueryRunnner.rollbackTransaction();
       await queryRunner.rollbackTransaction();
 
@@ -1712,6 +1772,12 @@ export class TooljetDbTableOperationsService {
     const payload = await this.normalizeEditColumn(organizationId, params);
     const { internalTable, relation } = payload;
 
+    const migration = await this.migrationRecorderService.record(
+      { action: 'edit_column', request: params },
+      internalTable,
+      relation
+    );
+
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     const queryRunner = this.manager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
@@ -1736,9 +1802,11 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunner.commitTransaction();
       await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.release();
       await queryRunner.release();
     } catch (error) {
+      await this.migrationRecorderService.discard(migration, relation);
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
       await queryRunner.rollbackTransaction();
@@ -1970,7 +2038,12 @@ export class TooljetDbTableOperationsService {
     }
   ) {
     const normalized = await this.normalizeCreateForeignKey(organizationId, params, connectionManagers);
-    return this.applyCreateForeignKey(organizationId, normalized, connectionManagers);
+    const migration = await this.migrationRecorderService.record(
+      { action: 'create_foreign_key', request: params },
+      normalized.internalTable,
+      normalized.relation
+    );
+    return this.applyCreateForeignKey(organizationId, normalized, connectionManagers, migration);
   }
 
   /**
@@ -2034,7 +2107,8 @@ export class TooljetDbTableOperationsService {
       shouldDestroyDbConnection: boolean;
       foreign_keys: FkSpec[];
     },
-    connectionManagers: Record<string, EntityManager>
+    connectionManagers: Record<string, EntityManager>,
+    migration: InternalTableMigration
   ) {
     const { internalTable, relation, physicalName, shouldDestroyDbConnection, foreign_keys } = normalized;
     const { appManager, tjdbManager } = connectionManagers;
@@ -2066,6 +2140,7 @@ export class TooljetDbTableOperationsService {
       await tjdbQueryRunner.createForeignKeys(physicalName, foreignKeys);
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
       if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
 
@@ -2074,6 +2149,7 @@ export class TooljetDbTableOperationsService {
         message: 'Foreign key relation created successfully!',
       };
     } catch (err) {
+      await this.migrationRecorderService.discard(migration, relation);
       // Error code: 42710 - indicates FK constraint exists
       if (!shouldDestroyDbConnection && err.code === '42710') {
         await tjdbQueryRunner.rollbackTransaction();
@@ -2104,7 +2180,12 @@ export class TooljetDbTableOperationsService {
 
   protected async updateForeignKey(organizationId: string, params) {
     const normalized = await this.normalizeUpdateForeignKey(organizationId, params);
-    return this.applyUpdateForeignKey(organizationId, normalized);
+    const migration = await this.migrationRecorderService.record(
+      { action: 'update_foreign_key', request: params },
+      normalized.internalTable,
+      normalized.relation
+    );
+    return this.applyUpdateForeignKey(organizationId, normalized, migration);
   }
 
   /**
@@ -2172,7 +2253,8 @@ export class TooljetDbTableOperationsService {
       tenantSchema: string;
       target: FkSpec;
       foreign_keys: FkSpec[];
-    }
+    },
+    migration: InternalTableMigration
   ) {
     const { internalTable, relation, physicalName, tenantSchema, target, foreign_keys } = normalized;
 
@@ -2212,12 +2294,14 @@ export class TooljetDbTableOperationsService {
 
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       await tjdbQueryRunner.release();
       return {
         statusCode: 200,
         message: 'Foreign key relation created successfully!',
       };
     } catch (err) {
+      await this.migrationRecorderService.discard(migration, relation);
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
       const referencedColumnInfoForError = [...referencedRelations.values()].map(({ relationId, tableName }) => ({
@@ -2240,7 +2324,12 @@ export class TooljetDbTableOperationsService {
 
   protected async deleteForeignKey(organizationId: string, params) {
     const normalized = await this.normalizeDeleteForeignKey(organizationId, params);
-    return this.applyDeleteForeignKey(organizationId, normalized);
+    const migration = await this.migrationRecorderService.record(
+      { action: 'delete_foreign_key', request: params },
+      normalized.internalTable,
+      normalized.relation
+    );
+    return this.applyDeleteForeignKey(organizationId, normalized, migration);
   }
 
   /**
@@ -2276,7 +2365,8 @@ export class TooljetDbTableOperationsService {
       physicalName: string;
       tenantSchema: string;
       target: FkSpec;
-    }
+    },
+    migration: InternalTableMigration
   ) {
     const { internalTable, relation, physicalName, tenantSchema, target } = normalized;
     const constraintName = await this.resolveFkConstraintName(
@@ -2287,17 +2377,19 @@ export class TooljetDbTableOperationsService {
       this.manager
     );
 
-    try {
-      const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
 
+    try {
       await tjdbQueryRunner.connect();
       await tjdbQueryRunner.dropForeignKey(physicalName, constraintName);
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await this.migrationRecorderService.confirm(migration, relation, tjdbQueryRunner);
       return {
         statusCode: 200,
         message: 'Foreign key relation deleted successfully!',
       };
     } catch (error) {
+      await this.migrationRecorderService.discard(migration, relation);
       throw new TooljetDatabaseError(
         error.message,
         {

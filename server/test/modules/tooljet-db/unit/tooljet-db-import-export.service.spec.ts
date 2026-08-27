@@ -6,6 +6,7 @@ import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import {
   resetDB,
@@ -88,6 +89,7 @@ describe('TooljetDbImportExportService', () => {
           TooljetDbImportExportService,
           TooljetDbTableOperationsService,
           TooljetDbRelationResolverService,
+          TooljetDbMigrationRecorderService,
           AppEnvironmentUtilService,
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },

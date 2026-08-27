@@ -5,6 +5,7 @@ import { INestApplication, NotFoundException } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments } from 'test-helper';
 import { setupTestTables } from '../../../tooljet-db-test.helper';
@@ -66,6 +67,7 @@ describe('TooljetDbTableOperationsService', () => {
         providers: [
           TooljetDbTableOperationsService,
           TooljetDbRelationResolverService,
+          TooljetDbMigrationRecorderService,
           AppEnvironmentUtilService,
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
@@ -227,10 +229,17 @@ describe('TooljetDbTableOperationsService', () => {
           where: { organizationId, tableName: 'orders' },
         });
 
-        const usersRelationId = uuidv4();
-        const ordersRelationId = uuidv4();
-        await appManager.update(InternalTableRelation, { internalTableId: usersTable.id }, { id: usersRelationId });
-        await appManager.update(InternalTableRelation, { internalTableId: ordersTable.id }, { id: ordersRelationId });
+        // create_table already mints an independent relation id (never internalTable.id) - reading
+        // it back is enough to keep the assertion below non-vacuous, and unlike reassigning it with
+        // an update, doesn't fight the FK internal_table_migration_applications now holds on it.
+        const usersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: usersTable.id },
+        });
+        const ordersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: ordersTable.id },
+        });
+        const usersRelationId = usersRelation.id;
+        const ordersRelationId = ordersRelation.id;
 
         const resolver = app.get(TooljetDbRelationResolverService);
         const relationIdByLogicalId = await resolver.resolve(organizationId, [usersTable.id, ordersTable.id]);
@@ -308,10 +317,17 @@ describe('TooljetDbTableOperationsService', () => {
           where: { organizationId, tableName: 'orders' },
         });
 
-        const usersRelationId = uuidv4();
-        const ordersRelationId = uuidv4();
-        await appManager.update(InternalTableRelation, { internalTableId: usersTable.id }, { id: usersRelationId });
-        await appManager.update(InternalTableRelation, { internalTableId: ordersTable.id }, { id: ordersRelationId });
+        // create_table already mints an independent relation id (never internalTable.id) - reading
+        // it back is enough to keep the assertion below non-vacuous, and unlike reassigning it with
+        // an update, doesn't fight the FK internal_table_migration_applications now holds on it.
+        const usersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: usersTable.id },
+        });
+        const ordersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: ordersTable.id },
+        });
+        const usersRelationId = usersRelation.id;
+        const ordersRelationId = ordersRelation.id;
 
         const resolver = app.get(TooljetDbRelationResolverService);
         const relationIdByLogicalId = await resolver.resolve(organizationId, [usersTable.id, ordersTable.id]);

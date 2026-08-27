@@ -23,7 +23,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 | `services/postgrest-proxy.service.ts` | Rewrites every table reference in a PostgREST request through the resolver before forwarding. |
 | `services/tooljet-db-table-operations.service.ts` | DDL actions (`create_table`, `join_tables`, `view_table`, etc.) — the `perform()` dispatch table. |
 | `services/tooljet-db-data-operations.service.ts` | Row-level actions (`list_rows`, `create_row`, `update_rows`, `delete_rows`). |
-| `services/tooljet-db-migration-recorder.service.ts` | Bookkeeping for the migration chain: `record`/`confirm`/`discard`/`adjudicatePending`. Not wired into `perform()` yet — the nine structured ops don't call it. |
+| `services/tooljet-db-migration-recorder.service.ts` | Bookkeeping for the migration chain: `record`/`confirm`/`discard`/`adjudicatePending`. Wired into every one of the nine structured `perform()` ops (see invariant below); `view_table` calls `adjudicatePending` only. |
 | `helpers/table-schema-snapshot.ts` | Introspects a relation's current shape (columns, primary key, unique constraints, indexes, foreign keys). Used by the recorder and by the rollout migration's baseline synthesis - kept byte-identical between the two on purpose. |
 | `controller.ts` | `/proxy/*` (PostgREST passthrough) plus the DDL/DML REST endpoints. |
 
@@ -107,6 +107,24 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `helpers/table-schema-snapshot.ts`) — never trust a name captured earlier. `referenced_table`
   resolves to the sibling relation in the same `(environment_id, branch_id)`
   (`resolveFkReferencedRelations`); no sibling there fails closed rather than crossing environments.
+- **`perform()`'s wiring of the recorder around each of the nine structured ops is uniform except
+  `create_table`.** For the other eight: `record()` (its own committed transaction, `request` = the
+  handler's raw `params`, not `normalize()`'s output) runs between `normalize*` and `apply*`;
+  `confirm()` runs after the handler's own commits, using its still-open `tjdbQueryRunner`, before
+  release; a caught DDL failure calls `discard()` first, then falls through to the handler's existing
+  rollback/rethrow untouched. `create_table` is the exception: `record()` takes `queryRunner.manager`
+  as its 4th argument so the insert folds into `create_table`'s own still-open app-DB transaction
+  (there is no table id to record against until the `InternalTable`/`InternalTableRelation` rows are
+  saved) — a rollback there erases the migration with everything else, so it needs no `discard()`.
+  `create_foreign_key`/`update_foreign_key`/`delete_foreign_key` thread `migration` through as an
+  explicit parameter to their `apply*` methods instead, since their `normalize*`/`apply*` pair isn't
+  called from inside one shared try/catch the way the other six are. `adjudicatePending` has exactly
+  two call sites: the start of `record()` (self-adjudicates this relation's own earlier pending rows
+  before recording a new one) and `viewTable()` (before it returns) — never the PostgREST read path.
+- `drop_table`'s `applyDropTable` clears the surviving relation's `configurations` to
+  `{ column_names: {}, configurations: {} }` after the physical `DROP TABLE` — without this the
+  relation row (which survives as the migration chain's anchor) would keep describing columns of a
+  table that no longer exists, breaking the invariant every other `apply*` maintains.
 
 ## Related modules
 

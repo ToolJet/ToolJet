@@ -6,6 +6,7 @@ import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbDataOperationsService } from '@modules/tooljet-db/services/tooljet-db-data-operations.service';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { resetDB, createUser, setDataSources, closeTestApp, ensureAppEnvironments } from 'test-helper';
 import { setupTestTables } from '../../../tooljet-db-test.helper';
@@ -26,7 +27,6 @@ import { App } from '@entities/app.entity';
 import { LicenseService } from '@modules/licensing/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { v4 as uuidv4 } from 'uuid';
 
 describe('TooljetDbDataOperationsService', () => {
   describe('EE (plan: enterprise)', () => {
@@ -66,6 +66,7 @@ describe('TooljetDbDataOperationsService', () => {
         providers: [
           TooljetDbTableOperationsService,
           TooljetDbRelationResolverService,
+          TooljetDbMigrationRecorderService,
           AppEnvironmentUtilService,
           LicenseService,
           { provide: LicenseTermsService, useValue: mockLicenseTermsService },
@@ -138,10 +139,9 @@ describe('TooljetDbDataOperationsService', () => {
 
     describe('.resolveTableNameToRelationIdMap', () => {
       it('should map display names to relation ids, not logical internal_table ids', async () => {
-        // The relation ids are moved off the logical ids here rather than relying on create_table
-        // to have minted independent ones, so the assertion stays non-vacuous no matter how these
-        // fixtures were built: if the two ids were equal it would pass whether or not the resolver
-        // was consulted at all.
+        // create_table already mints an independent relation id (never internalTable.id) - reading
+        // it back keeps the assertion below non-vacuous without fighting the FK
+        // internal_table_migration_applications now holds on it.
         const usersTable = await appManager.findOneOrFail(InternalTable, {
           where: { organizationId, tableName: 'users' },
         });
@@ -149,10 +149,14 @@ describe('TooljetDbDataOperationsService', () => {
           where: { organizationId, tableName: 'orders' },
         });
 
-        const usersRelationId = uuidv4();
-        const ordersRelationId = uuidv4();
-        await appManager.update(InternalTableRelation, { internalTableId: usersTable.id }, { id: usersRelationId });
-        await appManager.update(InternalTableRelation, { internalTableId: ordersTable.id }, { id: ordersRelationId });
+        const usersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: usersTable.id },
+        });
+        const ordersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: ordersTable.id },
+        });
+        const usersRelationId = usersRelation.id;
+        const ordersRelationId = ordersRelation.id;
 
         const internalTableInfo: Array<{ id: string; tableName: string }> = [];
         const map = await (
@@ -210,8 +214,10 @@ describe('TooljetDbDataOperationsService', () => {
         const usersTable = await appManager.findOneOrFail(InternalTable, {
           where: { organizationId, tableName: 'users' },
         });
-        const usersRelationId = uuidv4();
-        await appManager.update(InternalTableRelation, { internalTableId: usersTable.id }, { id: usersRelationId });
+        const usersRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: usersTable.id },
+        });
+        const usersRelationId = usersRelation.id;
 
         const internalTableInfo: Array<{ id: string; tableName: string }> = [];
 

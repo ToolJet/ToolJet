@@ -12,6 +12,7 @@
  */
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { IsNull } from 'typeorm';
 import {
   createUser,
   initTestApp,
@@ -24,6 +25,8 @@ import {
 } from 'test-helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { InternalTableMigration } from '@entities/internal_table_migration.entity';
+import { InternalTableMigrationApplication } from '@entities/internal_table_migration_application.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('TooljetDbController', () => {
@@ -700,6 +703,12 @@ describe('TooljetDbController', () => {
         // only way a real INSERT can distinguish resolver-consulted code from code still using the
         // logical id: pre-fix code targets the (now renamed-away) old id and errors; post-fix code
         // targets the new id and succeeds.
+        // The relation id gets reassigned below; migration bookkeeping keys off the pre-swap id via
+        // an FK, so clear it first rather than fighting that FK - this test's concern is bulk_upload's
+        // physical-name resolution, not the migration chain create_table just recorded.
+        await appManager.delete(InternalTableMigrationApplication, { relationId: originalRelation.id });
+        await appManager.delete(InternalTableMigration, { internalTableId: internalTable.id });
+
         const newRelationId = uuidv4();
         await tjDbManager.query(`ALTER TABLE "${tenantSchema}"."${originalRelation.id}" RENAME TO "${newRelationId}"`);
         await appManager.update(InternalTableRelation, { internalTableId: internalTable.id }, { id: newRelationId });
@@ -736,6 +745,463 @@ describe('TooljetDbController', () => {
           // by newRelationId) would leak in the tenant schema on every run.
           await tjDbManager.query(`DROP TABLE IF EXISTS "${tenantSchema}"."${newRelationId}"`);
         }
+      });
+    });
+
+    // ---------------------------------------------------------------------------
+    // Migration recording | perform() wires TooljetDbMigrationRecorderService's
+    // record/confirm/discard/adjudicatePending around every structured DDL op.
+    // ---------------------------------------------------------------------------
+    describe('Migration recording | perform() wiring', () => {
+      /**
+       * Both column invariants from the recording design: the relation's column_names map must
+       * name exactly the table's physical columns, and every uuid it holds must have a matching
+       * entry in configurations. Works after drop_table too - the relation survives (it's the
+       * migration chain's anchor) with both sides cleared to empty.
+       */
+      async function assertColumnInvariants(tableName: string) {
+        const appManager = getDefaultDataSource().manager;
+        const tjDbManager = getTooljetDbDataSource();
+        const tenantSchema = `workspace_${adminOrgId}`;
+
+        const internalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName },
+          withDeleted: true,
+        });
+        const relation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: internalTable.id },
+        });
+        const cols = relation.configurations?.columns ?? { column_names: {}, configurations: {} };
+
+        const physicalColumns = await tjDbManager.query(
+          `SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2`,
+          [tenantSchema, relation.id]
+        );
+        const physicalColumnNames = physicalColumns.map((row) => row.column_name).sort();
+
+        expect(Object.keys(cols.column_names).sort()).toEqual(physicalColumnNames);
+        expect(Object.values(cols.column_names).sort()).toEqual(Object.keys(cols.configurations).sort());
+      }
+
+      it('records a migration and an applied row for every one of the nine structured ops, with column invariants holding after each', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('mig_parent_tbl'));
+        await assertColumnInvariants('mig_parent_tbl');
+
+        const idColumn = {
+          column_name: 'id',
+          data_type: 'integer',
+          constraints_type: { is_not_null: true, is_primary_key: true, is_unique: false },
+        };
+
+        // create_table
+        const createRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'mig_child_tbl',
+            columns: [
+              idColumn,
+              {
+                column_name: 'name',
+                data_type: 'character varying',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+              {
+                column_name: 'parent_id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            ],
+            foreign_keys: [],
+          });
+        expect([200, 201]).toContain(createRes.statusCode);
+        await assertColumnInvariants('mig_child_tbl');
+
+        // edit_table
+        const renameRes = await request
+          .agent(app.getHttpServer())
+          .patch(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'mig_child_tbl',
+            new_table_name: 'mig_child_tbl_renamed',
+            columns: [{ old_column: idColumn, new_column: idColumn }],
+          });
+        expect(renameRes.statusCode).toBe(200);
+        await assertColumnInvariants('mig_child_tbl_renamed');
+
+        // add_column
+        const addColRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'extra',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+            foreign_keys: [],
+          });
+        expect([200, 201]).toContain(addColRes.statusCode);
+        await assertColumnInvariants('mig_child_tbl_renamed');
+
+        // edit_column
+        const editColRes = await request
+          .agent(app.getHttpServer())
+          .patch(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'extra',
+              new_column_name: 'extra_renamed',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+          });
+        expect(editColRes.statusCode).toBe(200);
+        await assertColumnInvariants('mig_child_tbl_renamed');
+
+        // drop_column
+        const dropColRes = await request
+          .agent(app.getHttpServer())
+          .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed/column/name`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        expect(dropColRes.statusCode).toBe(200);
+        await assertColumnInvariants('mig_child_tbl_renamed');
+
+        // create_foreign_key
+        const createFkRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed/foreignkey`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            foreign_keys: [
+              {
+                column_names: ['parent_id'],
+                referenced_table_name: 'mig_parent_tbl',
+                referenced_column_names: ['id'],
+                on_delete: 'CASCADE',
+                on_update: 'NO ACTION',
+              },
+            ],
+          });
+        expect([200, 201]).toContain(createFkRes.statusCode);
+        await assertColumnInvariants('mig_child_tbl_renamed');
+
+        const afterCreateFk = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        const foreignKeyId = afterCreateFk.body.result.foreign_keys[0].constraint_name;
+
+        // update_foreign_key
+        const updateFkRes = await request
+          .agent(app.getHttpServer())
+          .put(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed/foreignkey`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            foreign_key_id: foreignKeyId,
+            foreign_keys: [
+              {
+                column_names: ['parent_id'],
+                referenced_table_name: 'mig_parent_tbl',
+                referenced_column_names: ['id'],
+                on_delete: 'SET NULL',
+                on_update: 'NO ACTION',
+              },
+            ],
+          });
+        expect(updateFkRes.statusCode).toBe(200);
+        await assertColumnInvariants('mig_child_tbl_renamed');
+
+        const afterUpdateFk = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        const updatedForeignKeyId = afterUpdateFk.body.result.foreign_keys[0].constraint_name;
+
+        // delete_foreign_key
+        const deleteFkRes = await request
+          .agent(app.getHttpServer())
+          .delete(
+            `/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed/foreignkey/${updatedForeignKeyId}`
+          )
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        expect(deleteFkRes.statusCode).toBe(200);
+        await assertColumnInvariants('mig_child_tbl_renamed');
+
+        // drop_table
+        const dropTableRes = await request
+          .agent(app.getHttpServer())
+          .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/mig_child_tbl_renamed`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        expect(dropTableRes.statusCode).toBe(200);
+        await assertColumnInvariants('mig_child_tbl_renamed');
+
+        // All nine structured ops ran against mig_child_tbl(_renamed): create_table, edit_table,
+        // add_column, edit_column, drop_column, create_foreign_key, update_foreign_key,
+        // delete_foreign_key, drop_table.
+        const appManager = getDefaultDataSource().manager;
+        const internalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'mig_child_tbl_renamed' },
+          withDeleted: true,
+        });
+        const migrations = await appManager.find(InternalTableMigration, {
+          where: { internalTableId: internalTable.id },
+          order: { sequence: 'ASC' },
+        });
+        expect(migrations).toHaveLength(9);
+
+        const sequences = migrations.map((migration) => Number(migration.sequence));
+        for (let i = 1; i < sequences.length; i++) {
+          expect(sequences[i]).toBeGreaterThan(sequences[i - 1]);
+        }
+
+        const migrationIds = migrations.map((migration) => migration.id);
+        const applications = await appManager
+          .createQueryBuilder(InternalTableMigrationApplication, 'application')
+          .where('application.migration_id IN (:...migrationIds)', { migrationIds })
+          .getMany();
+        expect(applications).toHaveLength(9);
+        expect(applications.every((application) => application.appliedAt !== null)).toBe(true);
+        expect(migrations.every((migration) => migration.resultingSchema !== null)).toBe(true);
+      });
+
+      it('a create_table request carrying foreign keys records one migration, and a follow-up op on the same table gets a distinct, larger sequence', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('seq_parent_tbl'));
+
+        const createRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            table_name: 'seq_child_tbl',
+            columns: [
+              {
+                column_name: 'id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: true, is_primary_key: true, is_unique: true },
+              },
+              {
+                column_name: 'parent_id',
+                data_type: 'integer',
+                constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+              },
+            ],
+            foreign_keys: [
+              {
+                column_names: ['parent_id'],
+                referenced_table_name: 'seq_parent_tbl',
+                referenced_column_names: ['id'],
+                on_delete: 'CASCADE',
+                on_update: 'NO ACTION',
+              },
+            ],
+          });
+        expect([200, 201]).toContain(createRes.statusCode);
+
+        const addColRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/seq_child_tbl/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'extra',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+            foreign_keys: [],
+          });
+        expect([200, 201]).toContain(addColRes.statusCode);
+
+        const appManager = getDefaultDataSource().manager;
+        const internalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'seq_child_tbl' },
+        });
+        const migrations = await appManager.find(InternalTableMigration, {
+          where: { internalTableId: internalTable.id },
+          order: { sequence: 'ASC' },
+        });
+
+        // One migration for the FK-carrying create_table request - the foreign key is embedded in
+        // the same payload and applied as part of the same CREATE TABLE, not a second
+        // create_foreign_key call - plus one for the follow-up add_column.
+        expect(migrations).toHaveLength(2);
+        expect(migrations[0].payload.action).toBe('create_table');
+        expect(migrations[0].payload.request.foreign_keys).toHaveLength(1);
+        expect(migrations[1].payload.action).toBe('add_column');
+        expect(Number(migrations[1].sequence)).toBeGreaterThan(Number(migrations[0].sequence));
+      });
+
+      it('a failed DDL leaves no migration and no application row, and surfaces the original Postgres error', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('fail_ddl_tbl'));
+
+        const appManager = getDefaultDataSource().manager;
+        const internalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'fail_ddl_tbl' },
+        });
+        const migrationsBefore = await appManager.count(InternalTableMigration, {
+          where: { internalTableId: internalTable.id },
+        });
+
+        // 'id' already exists - add_column's own DDL fails with Postgres' duplicate-column error.
+        const failRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/fail_ddl_tbl/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'id',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+            foreign_keys: [],
+          });
+
+        expect(failRes.statusCode).toBeGreaterThanOrEqual(400);
+        expect(JSON.stringify(failRes.body)).toMatch(/already exists/i);
+
+        const migrationsAfter = await appManager.count(InternalTableMigration, {
+          where: { internalTableId: internalTable.id },
+        });
+        expect(migrationsAfter).toBe(migrationsBefore);
+
+        const relation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: internalTable.id },
+        });
+        const pendingApplications = await appManager.count(InternalTableMigrationApplication, {
+          where: { relationId: relation.id, appliedAt: IsNull() },
+        });
+        expect(pendingApplications).toBe(0);
+      });
+
+      it('adjudicates a pending migration on next access: confirms one whose DDL happened, deletes one whose DDL did not', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('adjudicate_tbl'));
+
+        const addColRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/adjudicate_tbl/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'confirmed_col',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+            foreign_keys: [],
+          });
+        expect([200, 201]).toContain(addColRes.statusCode);
+
+        const appManager = getDefaultDataSource().manager;
+        const internalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'adjudicate_tbl' },
+        });
+        const relation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: internalTable.id },
+        });
+
+        const confirmedMigration = await appManager.findOneOrFail(InternalTableMigration, {
+          where: { internalTableId: internalTable.id },
+          order: { sequence: 'DESC' },
+        });
+
+        // Write the pending state directly - simulates a crash between record() and confirm()
+        // without actually crashing the process.
+        await appManager.update(InternalTableMigration, { id: confirmedMigration.id }, { resultingSchema: null });
+        await appManager.update(
+          InternalTableMigrationApplication,
+          { migrationId: confirmedMigration.id },
+          { appliedAt: null }
+        );
+
+        // A migration whose DDL never happened: the column it claims to have added does not exist.
+        const ghostMigration = appManager.create(InternalTableMigration, {
+          internalTableId: internalTable.id,
+          sequence: String(Number(confirmedMigration.sequence) + 1),
+          branchId: confirmedMigration.branchId,
+          kind: 'structured',
+          payload: {
+            action: 'add_column',
+            request: { table_name: 'adjudicate_tbl', column: { column_name: 'ghost_col_never_created' } },
+          },
+          resultingSchema: null,
+        });
+        await appManager.save(ghostMigration);
+        await appManager.save(
+          appManager.create(InternalTableMigrationApplication, {
+            migrationId: ghostMigration.id,
+            relationId: relation.id,
+            appliedAt: null,
+          })
+        );
+
+        // view_table is the second adjudicatePending call site (record()'s own self-adjudication
+        // being the first) - GET here is what resolves both rows.
+        const viewRes = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/adjudicate_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        expect(viewRes.statusCode).toBe(200);
+
+        const reconfirmed = await appManager.findOneOrFail(InternalTableMigration, {
+          where: { id: confirmedMigration.id },
+        });
+        expect(reconfirmed.resultingSchema).not.toBeNull();
+        const reconfirmedApplication = await appManager.findOneOrFail(InternalTableMigrationApplication, {
+          where: { migrationId: confirmedMigration.id },
+        });
+        expect(reconfirmedApplication.appliedAt).not.toBeNull();
+
+        const ghostStillThere = await appManager.findOne(InternalTableMigration, {
+          where: { id: ghostMigration.id },
+        });
+        expect(ghostStillThere).toBeNull();
       });
     });
 
