@@ -426,12 +426,15 @@ describe('TooljetDb migration replay', () => {
           reloadedTarget.configurations.columns.column_names
         );
 
-        // The `id` column's default is expected to differ between source and target - each has to
-        // get its own sequence, never the other's - so it's excluded from the general shape
-        // comparison and asserted on separately below.
+        // A column whose default owns its own sequence (only `id` here) is expected to differ
+        // between source and target - each has to get its own sequence, never the other's - so
+        // only that default is excluded from the general shape comparison and asserted on
+        // separately below. Any other column's default still has to match exactly.
         const withoutSelfSequenceDefault = (s: TableSchemaSnapshot) => ({
           ...snapshotWithoutReferencedTableIds(s),
-          columns: s.columns.map(({ default: _default, ...rest }) => rest),
+          columns: s.columns.map((column) =>
+            /nextval\(/.test(column.default || '') ? { ...column, default: null } : column
+          ),
         });
         expect(withoutSelfSequenceDefault(targetSnapshot)).toEqual(withoutSelfSequenceDefault(sourceSnapshot));
         expect(reloadedTarget.configurations.columns.column_names).toEqual(columnUuids);

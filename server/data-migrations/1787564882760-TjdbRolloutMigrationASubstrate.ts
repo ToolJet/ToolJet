@@ -567,9 +567,8 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
   /**
    * Every row this migration baselines still satisfies relation.id === internal_table.id (true for
    * every row that predates this migration), including whatever a foreign key references - so a
-   * referenced
-   * relation id is looked up as an internal_tables id directly. This shortcut is only safe here;
-   * normal perform()/replay code must go through the relation resolver instead.
+   * referenced relation id is looked up as an internal_tables id directly. This shortcut is only
+   * safe here; normal perform()/replay code must go through the relation resolver instead.
    */
   private async buildForeignKeyDdl(
     queryRunner: QueryRunner,

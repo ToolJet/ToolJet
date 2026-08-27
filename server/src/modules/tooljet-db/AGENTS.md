@@ -120,9 +120,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   explicit parameter to their `apply*` methods instead, since their `normalize*`/`apply*` pair isn't
   called from inside one shared try/catch the way the other six are. `adjudicatePending` is called
   once by each of the eight existing-table handlers, immediately before that handler's own
-  `record()` (`create_table` has no such call - no prior relation exists to adjudicate), and once
-  more in `viewTable()`, right after the relation resolves and before it reads the relation's shape
-  — never the PostgREST read path. It is deliberately not inside `record()` itself: a single
+  `record()` (`create_table` has no such call - no prior relation exists to adjudicate), once
+  more in `viewTable()`, right after the relation resolves and before it reads the relation's shape,
+  and once more in `applyMigrations` before it records its own replay migration — never the
+  PostgREST read path. It is deliberately not inside `record()` itself: a single
   request can call `record()` more than once against the same relation before any of them are
   applied — `record()` itself makes no such guarantee, only every handler wired into `perform()`
   happens to call it once — and a migration this same request just recorded is indistinguishable
@@ -210,6 +211,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
        `resolveSiblingByCoRelationId`'s lookup can't see a relation created inside the caller's
        still-open transaction. The caller must create and commit the target relation before calling
        replay, not do both in one transaction.
+    5. A replayed `serial` column's sequence always starts at 1 on the target — correct for a
+       schema-only replay (nothing to seed it from), but a future replay that also copies rows
+       would need to advance the target's sequence past whatever it inserts, or later inserts will
+       collide with the copied ids.
 
 ## Related modules
 
