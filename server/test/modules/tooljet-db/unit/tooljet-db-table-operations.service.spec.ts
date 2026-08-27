@@ -380,13 +380,6 @@ describe('TooljetDbTableOperationsService', () => {
         );
 
         // Remove relation for orders table to simulate it missing in this environment
-        await appManager.save(
-          appManager.create(OrganizationTjdbConfigurations, {
-            organizationId,
-            pgUser: 'nonexistent_tjdb_test_role',
-            pgPassword: 'bogus-password',
-          })
-        );
         await appManager.delete(InternalTableRelation, { internalTableId: ordersTable.id });
 
         await expect(
