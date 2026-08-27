@@ -3103,7 +3103,8 @@ describeGitLab('GitSyncController — GitLab', () => {
             for (const e of cfFs.readdirSync(base, { withFileTypes: true })) {
               if (!e.isDirectory()) continue;
               const f = cfPath.join(base, e.name, 'data-source.json');
-              if (cfFs.existsSync(f)) return JSON.parse(cfFs.readFileSync(f, 'utf8')).name;
+              // Name is the DIRECTORY, not content.name (no longer pushed to git).
+              if (cfFs.existsSync(f)) return e.name;
             }
             throw new Error('no datasource found under data-sources/');
           });
@@ -3249,22 +3250,20 @@ describeGitLab('GitSyncController — GitLab', () => {
         await writeGitFile(moduleFolderConflictPath, {}, 'restore: neutralize injected cross-folder module conflict');
 
         step(59, 'pull main with a git datasource whose name collides with an existing DS → 409');
-        // 59. Same shape as step 55 for data sources. Conflict detection enumerates
-        //     data-sources/<dir>/data-source.json and keys on the file's `name`.
+        // 59. Same shape as step 55 for data sources. Conflict detection derives a
+        //     datasource's NAME from its DIRECTORY (data-sources/<name>/data-source.json),
+        //     not from content.name (no longer pushed) — so to collide we must write into
+        //     the existing DS's own directory with a DIFFERENT co_relation_id (git side
+        //     only; the 409 blocks the pull, so the DB DS keeps its real id → same name,
+        //     different identity → conflict), then restore. (Writing a NEW directory like
+        //     e2e-conflict-ds with content.name set does NOT collide — the name is the dir.)
         const existingDsName = await firstDataSourceName();
-        const fakeDsCorid = randomUUIDForMeta();
-        const dsConflictPath = 'data-sources/e2e-conflict-ds/data-source.json';
-        await writeGitFile(
-          dsConflictPath,
-          {
-            id: fakeDsCorid,
-            name: existingDsName,
-            kind: 'restapi',
-            type: 'default',
-            options: {},
-          },
-          'inject ds name conflict'
+        const dsConflictPath = `data-sources/${existingDsName}/data-source.json`;
+        const originalDsContent = await scanMain((dir) =>
+          JSON.parse(cfFs.readFileSync(cfPath.join(dir, dsConflictPath), 'utf8'))
         );
+        const fakeDsCorid = randomUUIDForMeta();
+        await writeGitFile(dsConflictPath, { ...originalDsContent, id: fakeDsCorid }, 'inject ds name conflict');
 
         const dsConflictGroups = await pullMainExpect409();
         const dsConflictGroup = dsConflictGroups.find((g: any) => g.type === 'datasource');
@@ -3273,7 +3272,8 @@ describeGitLab('GitSyncController — GitLab', () => {
         expect(dsConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
         expect(dsConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeDsCorid);
 
-        await writeGitFile(dsConflictPath, {}, 'restore: neutralize injected ds conflict');
+        // Restore the real DS file exactly so later steps see clean git.
+        await writeGitFile(dsConflictPath, originalDsContent, 'restore: revert injected ds conflict');
 
         step(60, 'delete data source A on a branch, then rename B → A → succeeds (branch-aware name check)');
         // 63. Regression for the CRUD rename check. Deleting a global DS on a
@@ -6153,6 +6153,73 @@ describeGitLab('GitSyncController — GitLab', () => {
         const dsJson = JSON.parse(dsFile as string);
         expect(dsJson.name).toBeUndefined();
         expect(dsJson.id).toBe(await dsCoRelId(dsId));
+      }, 300000);
+
+      // Resource names are used as filesystem path segments on push (apps/<name>/,
+      // modules/<name>/, data-sources/<name>/), so a '/' in a name splits into nested
+      // folders and silently vanishes on pull. Such names are only possible for content
+      // that predates name validation; the push must reject them so they're fixed first.
+      // Apps and modules are pushed individually (app-git gitpush); data sources are pushed
+      // via a workspace push — this covers both entry points.
+      it("rejects a push when a resource name contains '/' (app + module via app push, data source via workspace push)", async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-invalid-name-push-gl';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a front-end app, a module, and a global data source on the feature branch');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'invalid-name-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const appVersionId = await editingVersionId(appId, featBranchId);
+        const moduleAppId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'invalid-name-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleVersionId = await editingVersionId(moduleAppId, featBranchId);
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'invalid-name-ds',
+              kind: 'restapi',
+              options: dsOptions('http://invalid-name.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+
+        step(3, "app push whose git name contains '/' → 409 invalid_name");
+        const appPush = await gitpushApp(appId, appVersionId, 'invalid/app-name', FEAT, featBranchId);
+        expect(appPush.status).toBe(409);
+        expect(JSON.stringify(appPush.body)).toContain('invalid_name');
+
+        step(4, "module push whose git name contains '/' → 409 invalid_name");
+        const modulePush = await gitpushApp(moduleAppId, moduleVersionId, 'invalid/module-name', FEAT, featBranchId);
+        expect(modulePush.status).toBe(409);
+        expect(JSON.stringify(modulePush.body)).toContain('invalid_name');
+
+        step(5, "corrupt the data source name to contain '/' (the API rejects it, so set it directly)");
+        // Mirrors a legacy name pushed before validation existed. Both the data_sources row and
+        // its branch DSV carry the name, so update both.
+        await depDs.query(`UPDATE data_sources SET name = 'invalid/ds-name' WHERE id = $1`, [dsId]);
+        await depDs.query(
+          `UPDATE data_source_versions SET name = 'invalid/ds-name' WHERE data_source_id = $1 AND branch_id = $2`,
+          [dsId, featBranchId]
+        );
+
+        step(6, "workspace push (scope=datasource) with the '/' data source name → 409 invalid_name");
+        const dsPush = await auth(agent().post('/api/workspace-branches/push'))
+          .query({ branch_id: featBranchId })
+          .send({ commitMessage: 'push invalid ds name', branchId: featBranchId, scope: 'datasource' });
+        expect(dsPush.status).toBe(409);
+        expect(JSON.stringify(dsPush.body)).toContain('invalid_name');
       }, 300000);
 
       // An app push carries its referenced modules into the same commit, bootstrapping each
