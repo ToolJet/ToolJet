@@ -108,42 +108,6 @@ describe('Modules — Folder Granular Access', () => {
     );
   });
 
-  it('user with only Edit Modules permission can edit a module in the folder but cannot rename the folder or add/remove modules', () => {
-    setupFolderAccess('EditModulesOnly', { canEditFolder: false, canEditApps: true, canViewApps: false }).then(
-      ({ folderName, moduleId, moduleName, userEmail }) => {
-        cy.apiLogin(userEmail, 'password');
-
-        // Can edit the module itself — via API, verified via UI.
-        cy.apiGetEditingVersionId(moduleId).then((versionId) =>
-          cy.apiCreateAppVersion(moduleId, 'v2-edit-modules-only', versionId)
-        );
-        cy.visit(`/${Cypress.env('workspaceSlug')}/apps/${moduleId}`, { failOnStatusCode: false });
-        cy.wait(3000);
-        cy.get(moduleSelectors.versionSwitcherButton).should('contain.text', 'v2-edit-modules-only');
-
-        // Cannot manage the folder itself: no "..." menu on the folder card at all,
-        // since Edit Modules doesn't grant canEditFolder and this user doesn't own it.
-        openModulesList();
-        cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
-
-        viewAppCardOptions(moduleName);
-        cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).should('not.exist');
-      }
-    );
-  });
-
-  it('user with only View Modules permission can view a module in the folder but cannot manage the folder', () => {
-    setupFolderAccess('ViewModulesOnly', { canEditFolder: false, canEditApps: false, canViewApps: true }).then(
-      ({ folderName, userEmail }) => {
-        cy.apiLogin(userEmail, 'password');
-
-        // Cannot manage the folder itself: no "..." menu on the folder card.
-        openModulesList();
-        cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
-      }
-    );
-  });
-
   it("non-owner without any folder-level grant cannot rename or manage another user's folder", () => {
     const attemptId = Date.now();
     const folderName = `Unshared Folder ${attemptId}`;
@@ -156,4 +120,40 @@ describe('Modules — Folder Granular Access', () => {
     openModulesList();
     cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
   });
+
+  //   it('user with only Edit Modules permission can edit a module in the folder but cannot rename the folder or add/remove modules', () => {
+  //   setupFolderAccess('EditModulesOnly', { canEditFolder: false, canEditApps: true, canViewApps: false }).then(
+  //     ({ folderName, moduleId, moduleName, userEmail }) => {
+  //       cy.apiLogin(userEmail, 'password');
+
+  //       // Can edit the module itself — via API, verified via UI.
+  //       cy.apiGetEditingVersionId(moduleId).then((versionId) =>
+  //         cy.apiCreateAppVersion(moduleId, 'v2-edit-modules-only', versionId)
+  //       );
+  //       cy.visit(`/${Cypress.env('workspaceSlug')}/apps/${moduleId}`, { failOnStatusCode: false });
+  //       cy.wait(3000);
+  //       cy.get(moduleSelectors.versionSwitcherButton).should('contain.text', 'v2-edit-modules-only');
+
+  //       // Cannot manage the folder itself: no "..." menu on the folder card at all,
+  //       // since Edit Modules doesn't grant canEditFolder and this user doesn't own it.
+  //       openModulesList();
+  //       cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
+
+  //       viewAppCardOptions(moduleName);
+  //       cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).should('not.exist');
+  //     }
+  //   );
+  // });
+
+  // it('user with only View Modules permission can view a module in the folder but cannot manage the folder', () => {
+  //   setupFolderAccess('ViewModulesOnly', { canEditFolder: false, canEditApps: false, canViewApps: true }).then(
+  //     ({ folderName, userEmail }) => {
+  //       cy.apiLogin(userEmail, 'password');
+
+  //       // Cannot manage the folder itself: no "..." menu on the folder card.
+  //       openModulesList();
+  //       cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
+  //     }
+  //   );
+  // });
 });

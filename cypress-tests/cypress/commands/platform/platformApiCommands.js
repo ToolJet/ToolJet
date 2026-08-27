@@ -229,24 +229,6 @@ Cypress.Commands.add("apiGetDatasourceIds", (datasourceNames) => {
   });
 });
 
-Cypress.Commands.add("apiGetAppIdByName", (appName) => {
-  return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/apps`,
-        headers: headers,
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-        const app = response.body.apps.find((app) => app.name === appName);
-        expect(app, `App with name "${appName}" not found`).to.exist;
-        return app.id;
-      });
-  });
-});
-
 Cypress.Commands.add("apiGetUserDetails", (options = {}) => {
   const { page = 1 } = options;
 
