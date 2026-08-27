@@ -1900,9 +1900,9 @@ export class TooljetDbTableOperationsService {
   /**
    * Converts the foreign keys embedded in a create_table/add_column payload from
    * referenced_table_name (a display name) to referenced_table (that table's co_relation_id).
-   * Existence of the referenced tables is validated separately, by the same
-   * fetchAndCheckIfValidForeignKeyTables call every caller already made before normalize runs -
-   * this only re-reads the co_relation_id for names already known to exist.
+   * Same lookup+shape as normalizeCreateForeignKey/normalizeUpdateForeignKey use for the same
+   * purpose - delegates to resolveForeignKeyReferenceIds so a name that doesn't resolve throws
+   * instead of silently producing an FkSpec with referenced_table: undefined.
    */
   protected async resolveForeignKeyCoRelationIds(
     foreignKeys: TooljetDatabaseForeignKey[],
@@ -1911,23 +1911,14 @@ export class TooljetDbTableOperationsService {
   ): Promise<FkSpec[]> {
     if (!foreignKeys?.length) return [];
 
-    const tableNames = foreignKeys.map((foreignKey) => foreignKey.referenced_table_name);
-    const referencedTables = await manager.find(InternalTable, {
-      where: { organizationId, tableName: In(tableNames) },
-      select: ['tableName', 'co_relation_id'],
-    });
-    const coRelationIdByTableName = new Map(referencedTables.map((table) => [table.tableName, table.co_relation_id]));
+    const referencedTableNames = foreignKeys.map((foreignKey) => foreignKey.referenced_table_name);
+    const coRelationIdByTableName = await this.resolveForeignKeyReferenceIds(
+      referencedTableNames,
+      organizationId,
+      manager
+    );
 
-    return foreignKeys.map((foreignKey) => {
-      const { referenced_table_name, column_names, referenced_column_names, on_delete, on_update } = foreignKey;
-      return {
-        column_names,
-        referenced_table: coRelationIdByTableName.get(referenced_table_name),
-        referenced_column_names,
-        on_delete,
-        on_update,
-      };
-    });
+    return foreignKeys.map((foreignKey) => this.toFkSpec(foreignKey, coRelationIdByTableName));
   }
 
   /**
@@ -2360,9 +2351,11 @@ export class TooljetDbTableOperationsService {
 
   /**
    * Resolves each FkSpec's referenced_table (a co_relation_id) to the relation representing it in
-   * the same (environment_id, branch_id) as `relation` - a direct sibling lookup, not
-   * environment-aware resolution. A referenced table with no relation there would let a foreign
-   * key point outside the relation's own environment, so this fails closed rather than skipping it.
+   * the same (environment_id, branch_id) as `relation` - the same per-id sibling lookup
+   * resolveForeignKeyDetailsForApply uses, batched over the distinct co_relation_ids in
+   * `foreignKeys`. A referenced table with no relation there would let a foreign key point outside
+   * the relation's own environment, so resolveSiblingByCoRelationId fails closed rather than
+   * letting this skip it.
    */
   protected async resolveFkReferencedRelations(
     organizationId: string,
@@ -2374,31 +2367,18 @@ export class TooljetDbTableOperationsService {
     if (!foreignKeys.length) return resolved;
 
     const coRelationIds = [...new Set(foreignKeys.map((fk) => fk.referenced_table))];
-    const internalTables = await manager.find(InternalTable, {
-      where: { organizationId, co_relation_id: In(coRelationIds) },
-    });
-    const internalTableByCoRelationId = new Map(internalTables.map((table) => [table.co_relation_id, table]));
-
-    const siblingRelations = internalTables.length
-      ? await manager.find(InternalTableRelation, {
-          where: {
-            internalTableId: In(internalTables.map((table) => table.id)),
-            environmentId: relation.environmentId,
-            branchId: relation.branchId,
-          },
-        })
-      : [];
-    const siblingRelationByInternalTableId = new Map(siblingRelations.map((r) => [r.internalTableId, r]));
-
     for (const coRelationId of coRelationIds) {
-      const internalTable = internalTableByCoRelationId.get(coRelationId);
-      const siblingRelation = internalTable && siblingRelationByInternalTableId.get(internalTable.id);
-      if (!internalTable || !siblingRelation) {
-        throw new BadRequestException(
-          `Table "${internalTable?.tableName ?? coRelationId}" has no relation in this environment`
-        );
-      }
-      resolved.set(coRelationId, { relationId: siblingRelation.id, tableName: internalTable.tableName });
+      const siblingRelation = await this.relationResolverService.resolveSiblingByCoRelationId(
+        organizationId,
+        coRelationId,
+        relation.environmentId,
+        relation.branchId,
+        manager
+      );
+      resolved.set(coRelationId, {
+        relationId: siblingRelation.id,
+        tableName: siblingRelation.internalTable.tableName,
+      });
     }
     return resolved;
   }

@@ -141,6 +141,10 @@ export class TooljetDbRelationResolverService {
    * for a foreign key embedded in a payload that already pins the environment and branch it targets
    * (apply() applying create_table/add_column), re-deriving "the current environment" would be
    * wrong the moment more than one relation exists for a table.
+   *
+   * Sets the returned relation's `internalTable` (declared on the entity, not eager-loaded here)
+   * so callers that also need the logical table's name - e.g. for error messages - don't have to
+   * issue a second lookup for it.
    */
   async resolveSiblingByCoRelationId(
     organizationId: string,
@@ -161,6 +165,7 @@ export class TooljetDbRelationResolverService {
     if (!relation)
       throw new NotFoundException(`Table "${internalTable.tableName}" has no relation in this environment`);
 
+    relation.internalTable = internalTable;
     return relation;
   }
 }
