@@ -97,6 +97,16 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   together from a live introspection; `.discard()` deletes both rows rather than leaving either
   half-written. `.adjudicatePending()` is the crash-recovery sweep for rows a process died between
   `record()` and `confirm()`/`discard()` on.
+- **A foreign key's identity is structural, never its constraint name.** Postgres/TypeORM name a
+  constraint from the physical relation name, so the same logical foreign key is named differently
+  on every relation it's replayed onto. `create/update/deleteForeignKey` in
+  `tooljet-db-table-operations.service.ts` convert an incoming `foreign_key_id` to an `FkSpec`
+  (columns + `referenced_table` as a `co_relation_id`) in `normalize`, then re-resolve that spec
+  back to whichever constraint currently matches it on the target relation in `apply` (via
+  `resolveFkConstraintName`/`foreignKeyToFkSpec`, backed by `fetchForeignKeys` in
+  `helpers/table-schema-snapshot.ts`) — never trust a name captured earlier. `referenced_table`
+  resolves to the sibling relation in the same `(environment_id, branch_id)`
+  (`resolveFkReferencedRelations`); no sibling there fails closed rather than crossing environments.
 
 ## Related modules
 

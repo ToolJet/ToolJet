@@ -55,22 +55,33 @@ import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@modules/lic
 import { generatePayloadForLimits } from '@modules/licensing/helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { fetchForeignKeys } from '../helpers/table-schema-snapshot';
 
 enum AggregateFunctions {
   sum = 'SUM',
   count = 'COUNT',
 }
 
-// A foreign key embedded in a create_table/add_column payload, normalized: referenced_table_name
-// (a display name, environment-blind) is replaced with the referenced table's co_relation_id (its
-// portable, cross-environment identity) so apply() can resolve it to whichever relation it targets.
-type NormalizedForeignKeySpec = {
+/**
+ * Structural identity of a foreign key, independent of the constraint name Postgres/TypeORM gives
+ * it on any one relation - that name is minted from the physical table name, so it never survives
+ * being looked up again against a different relation for the same logical table.
+ * `referenced_table` is a co_relation_id (internal_tables' portable id), not a relation id: the
+ * relation it resolves to depends on which relation this spec is being applied against. Used both
+ * by the three foreign-key-mutation ops and by create_table/add_column's own embedded foreign_keys.
+ */
+interface FkSpec {
   column_names: string[];
   referenced_table: string;
   referenced_column_names: string[];
-  on_update?: string;
   on_delete?: string;
-};
+  on_update?: string;
+}
+
+// Column order is part of a composite key's identity (conkey ordinality), not just its member set.
+function sameOrderedColumnList(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((column, index) => column === b[index]);
+}
 
 // Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
 declare module 'typeorm' {
@@ -434,7 +445,7 @@ export class TooljetDbTableOperationsService {
       columns: TooljetDatabaseColumn[];
       columnNames: Record<string, string>;
       columnConfigurations: Record<string, unknown>;
-      foreignKeys: NormalizedForeignKeySpec[];
+      foreignKeys: FkSpec[];
     },
     relation: InternalTableRelation,
     connectionManagers: Record<string, EntityManager>
@@ -980,7 +991,7 @@ export class TooljetDbTableOperationsService {
       organizationId: string;
       column: TooljetDatabaseColumn & { configurations?: Record<string, unknown> };
       columnUuid: string;
-      foreignKeys: NormalizedForeignKeySpec[];
+      foreignKeys: FkSpec[];
     },
     relation: InternalTableRelation,
     connectionManagers: Record<string, EntityManager>
@@ -1897,7 +1908,7 @@ export class TooljetDbTableOperationsService {
     foreignKeys: TooljetDatabaseForeignKey[],
     organizationId: string,
     manager: EntityManager
-  ): Promise<NormalizedForeignKeySpec[]> {
+  ): Promise<FkSpec[]> {
     if (!foreignKeys?.length) return [];
 
     const tableNames = foreignKeys.map((foreignKey) => foreignKey.referenced_table_name);
@@ -1928,7 +1939,7 @@ export class TooljetDbTableOperationsService {
    * directly rather than re-deriving it.
    */
   protected async resolveForeignKeyDetailsForApply(
-    foreignKeys: NormalizedForeignKeySpec[],
+    foreignKeys: FkSpec[],
     organizationId: string,
     relation: InternalTableRelation,
     tenantSchema: string,
@@ -1967,18 +1978,35 @@ export class TooljetDbTableOperationsService {
       tjdbManager: this.tooljetDbManager,
     }
   ) {
+    const normalized = await this.normalizeCreateForeignKey(organizationId, params, connectionManagers);
+    return this.applyCreateForeignKey(organizationId, normalized, connectionManagers);
+  }
+
+  /**
+   * Pure-ish: validates the request and turns every `referenced_table_name` into an FkSpec keyed
+   * by co_relation_id. Does no DDL and opens no connection of its own beyond the reads it needs.
+   */
+  protected async normalizeCreateForeignKey(
+    organizationId: string,
+    params,
+    connectionManagers: Record<string, EntityManager>
+  ): Promise<{
+    internalTable: InternalTable;
+    relation: InternalTableRelation;
+    physicalName: string;
+    shouldDestroyDbConnection: boolean;
+    foreign_keys: FkSpec[];
+  }> {
     const { table_name, foreign_keys, shouldDestroyDbConnection = true } = params;
-    const { appManager, tjdbManager } = connectionManagers;
+    const { appManager } = connectionManagers;
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
 
     const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name, appManager);
 
-    let referenced_tables_info = {};
-    const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
-    referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
-      referenced_table_list,
+    const referencedTableNames = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+    const coRelationIdByTableName = await this.resolveForeignKeyReferenceIds(
+      referencedTableNames,
       organizationId,
-      'TABLENAME',
       appManager
     );
 
@@ -1993,14 +2021,56 @@ export class TooljetDbTableOperationsService {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
 
+    return {
+      internalTable,
+      relation,
+      physicalName,
+      shouldDestroyDbConnection,
+      foreign_keys: foreign_keys.map((foreignKey) => this.toFkSpec(foreignKey, coRelationIdByTableName)),
+    };
+  }
+
+  /**
+   * Resolves every FkSpec's referenced_table back to a physical relation and runs the DDL. The
+   * only thing in the create path that touches Postgres.
+   */
+  protected async applyCreateForeignKey(
+    organizationId: string,
+    normalized: {
+      internalTable: InternalTable;
+      relation: InternalTableRelation;
+      physicalName: string;
+      shouldDestroyDbConnection: boolean;
+      foreign_keys: FkSpec[];
+    },
+    connectionManagers: Record<string, EntityManager>
+  ) {
+    const { internalTable, relation, physicalName, shouldDestroyDbConnection, foreign_keys } = normalized;
+    const { appManager, tjdbManager } = connectionManagers;
+    const tenantSchema = findTenantSchema(organizationId);
+
+    const referencedRelations = await this.resolveFkReferencedRelations(
+      organizationId,
+      foreign_keys,
+      relation,
+      appManager
+    );
+
     const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
-    const tenantSchema = findTenantSchema(organizationId);
 
     try {
-      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
-        (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
+      const foreignKeys = foreign_keys.map(
+        (fk) =>
+          new TableForeignKey({
+            columnNames: fk.column_names,
+            referencedTableName: referencedRelations.get(fk.referenced_table).relationId,
+            referencedColumnNames: fk.referenced_column_names,
+            referencedSchema: tenantSchema,
+            ...(fk.on_delete && { onDelete: fk.on_delete }),
+            ...(fk.on_update && { onUpdate: fk.on_update }),
+          })
       );
       await tjdbQueryRunner.createForeignKeys(physicalName, foreignKeys);
       await tjdbQueryRunner.commitTransaction();
@@ -2022,14 +2092,10 @@ export class TooljetDbTableOperationsService {
         await tjdbQueryRunner.rollbackTransaction();
         await tjdbQueryRunner.release();
 
-        const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
-          ([tableName, tableId]): { id: string; tableName: string } => {
-            return {
-              id: tableId as string,
-              tableName: tableName,
-            };
-          }
-        );
+        const referencedColumnInfoForError = [...referencedRelations.values()].map(({ relationId, tableName }) => ({
+          id: relationId,
+          tableName,
+        }));
 
         throw new TooljetDatabaseError(
           err.message,
@@ -2046,18 +2112,39 @@ export class TooljetDbTableOperationsService {
   }
 
   protected async updateForeignKey(organizationId: string, params) {
+    const normalized = await this.normalizeUpdateForeignKey(organizationId, params);
+    return this.applyUpdateForeignKey(organizationId, normalized);
+  }
+
+  /**
+   * Resolves table_name to the relation being edited, the constraint named by `foreign_key_id` to
+   * an FkSpec (the "target" to drop), and every new `referenced_table_name` to an FkSpec. No DDL.
+   */
+  protected async normalizeUpdateForeignKey(
+    organizationId: string,
+    params
+  ): Promise<{
+    internalTable: InternalTable;
+    relation: InternalTableRelation;
+    physicalName: string;
+    tenantSchema: string;
+    target: FkSpec;
+    foreign_keys: FkSpec[];
+  }> {
     const { table_name, foreign_key_id, foreign_keys } = params;
     if (!foreign_key_id) throw new BadRequestException('Foreign key id is mandatory');
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
 
     const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name);
+    const tenantSchema = findTenantSchema(organizationId);
 
-    let referenced_tables_info = {};
-    const referenced_table_list = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
-    referenced_tables_info = await this.fetchAndCheckIfValidForeignKeyTables(
-      referenced_table_list,
+    const target = await this.foreignKeyToFkSpec(organizationId, tenantSchema, relation.id, foreign_key_id);
+
+    const referencedTableNames = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
+    const coRelationIdByTableName = await this.resolveForeignKeyReferenceIds(
+      referencedTableNames,
       organizationId,
-      'TABLENAME'
+      this.manager
     );
 
     const isFKfromCompositePK = await this.checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
@@ -2070,16 +2157,65 @@ export class TooljetDbTableOperationsService {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
 
+    return {
+      internalTable,
+      relation,
+      physicalName,
+      tenantSchema,
+      target,
+      foreign_keys: foreign_keys.map((foreignKey) => this.toFkSpec(foreignKey, coRelationIdByTableName)),
+    };
+  }
+
+  /**
+   * Re-resolves the target FkSpec to whichever constraint currently matches it on this relation
+   * (not the name recorded at normalize time - that name may belong to a different relation
+   * entirely once replay lands), drops it, and creates the replacement.
+   */
+  protected async applyUpdateForeignKey(
+    organizationId: string,
+    normalized: {
+      internalTable: InternalTable;
+      relation: InternalTableRelation;
+      physicalName: string;
+      tenantSchema: string;
+      target: FkSpec;
+      foreign_keys: FkSpec[];
+    }
+  ) {
+    const { internalTable, relation, physicalName, tenantSchema, target, foreign_keys } = normalized;
+
+    const referencedRelations = await this.resolveFkReferencedRelations(
+      organizationId,
+      foreign_keys,
+      relation,
+      this.manager
+    );
+    const constraintName = await this.resolveFkConstraintName(
+      organizationId,
+      tenantSchema,
+      relation,
+      target,
+      this.manager
+    );
+
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
-    const tenantSchema = findTenantSchema(organizationId);
 
     try {
-      await tjdbQueryRunner.dropForeignKey(physicalName, foreign_key_id);
+      await tjdbQueryRunner.dropForeignKey(physicalName, constraintName);
 
-      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
-        (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
+      const foreignKeys = foreign_keys.map(
+        (fk) =>
+          new TableForeignKey({
+            columnNames: fk.column_names,
+            referencedTableName: referencedRelations.get(fk.referenced_table).relationId,
+            referencedColumnNames: fk.referenced_column_names,
+            referencedSchema: tenantSchema,
+            ...(fk.on_delete && { onDelete: fk.on_delete }),
+            ...(fk.on_update && { onUpdate: fk.on_update }),
+          })
       );
       await tjdbQueryRunner.createForeignKeys(physicalName, foreignKeys);
 
@@ -2093,14 +2229,10 @@ export class TooljetDbTableOperationsService {
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
-      const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
-        ([tableName, tableId]): { id: string; tableName: string } => {
-          return {
-            id: tableId as string,
-            tableName: tableName,
-          };
-        }
-      );
+      const referencedColumnInfoForError = [...referencedRelations.values()].map(({ relationId, tableName }) => ({
+        id: relationId,
+        tableName,
+      }));
 
       throw new TooljetDatabaseError(
         err.message,
@@ -2116,13 +2248,59 @@ export class TooljetDbTableOperationsService {
   }
 
   protected async deleteForeignKey(organizationId: string, params) {
+    const normalized = await this.normalizeDeleteForeignKey(organizationId, params);
+    return this.applyDeleteForeignKey(organizationId, normalized);
+  }
+
+  /**
+   * Resolves table_name and turns the constraint named by `foreign_key_id` into an FkSpec. No DDL.
+   */
+  protected async normalizeDeleteForeignKey(
+    organizationId: string,
+    params
+  ): Promise<{
+    internalTable: InternalTable;
+    relation: InternalTableRelation;
+    physicalName: string;
+    tenantSchema: string;
+    target: FkSpec;
+  }> {
     const { table_name, foreign_key_id } = params;
     const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name);
+    const tenantSchema = findTenantSchema(organizationId);
+    const target = await this.foreignKeyToFkSpec(organizationId, tenantSchema, relation.id, foreign_key_id);
+
+    return { internalTable, relation, physicalName, tenantSchema, target };
+  }
+
+  /**
+   * No transaction: a single DROP CONSTRAINT is already atomic, and this handler never had one to
+   * begin with - later recording work uses its own separate transaction, not this one.
+   */
+  protected async applyDeleteForeignKey(
+    organizationId: string,
+    normalized: {
+      internalTable: InternalTable;
+      relation: InternalTableRelation;
+      physicalName: string;
+      tenantSchema: string;
+      target: FkSpec;
+    }
+  ) {
+    const { internalTable, relation, physicalName, tenantSchema, target } = normalized;
+    const constraintName = await this.resolveFkConstraintName(
+      organizationId,
+      tenantSchema,
+      relation,
+      target,
+      this.manager
+    );
+
     try {
       const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
 
       await tjdbQueryRunner.connect();
-      await tjdbQueryRunner.dropForeignKey(physicalName, foreign_key_id);
+      await tjdbQueryRunner.dropForeignKey(physicalName, constraintName);
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       return {
         statusCode: 200,
@@ -2140,6 +2318,160 @@ export class TooljetDbTableOperationsService {
         error
       );
     }
+  }
+
+  protected toFkSpec(foreignKey: TooljetDatabaseForeignKey, coRelationIdByTableName: Record<string, string>): FkSpec {
+    const { column_names, referenced_table_name, referenced_column_names, on_delete, on_update } = foreignKey;
+    return {
+      column_names,
+      referenced_table: coRelationIdByTableName[referenced_table_name],
+      referenced_column_names,
+      ...(on_delete && { on_delete }),
+      ...(on_update && { on_update }),
+    };
+  }
+
+  /**
+   * Display name -> co_relation_id, for every table a new foreign key names as `referenced_table_name`.
+   * Existence-only: whether the referenced table has a relation in any particular environment is a
+   * question for the relation this FkSpec eventually gets applied against, not this lookup.
+   */
+  protected async resolveForeignKeyReferenceIds(
+    referencedTableNames: string[],
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<Record<string, string>> {
+    if (!referencedTableNames.length) return {};
+    const tables = await manager.find(InternalTable, {
+      where: { organizationId, tableName: In(referencedTableNames) },
+      select: ['tableName', 'co_relation_id'],
+    });
+
+    const coRelationIdByTableName: Record<string, string> = {};
+    for (const table of tables) coRelationIdByTableName[table.tableName] = table.co_relation_id;
+
+    const missing = referencedTableNames.filter((name) => !coRelationIdByTableName[name]);
+    if (missing.length) {
+      throw new BadRequestException(`Tables: ${missing.join(',')} - used for Foreign key reference was not found`);
+    }
+
+    return coRelationIdByTableName;
+  }
+
+  /**
+   * Resolves each FkSpec's referenced_table (a co_relation_id) to the relation representing it in
+   * the same (environment_id, branch_id) as `relation` - a direct sibling lookup, not
+   * environment-aware resolution. A referenced table with no relation there would let a foreign
+   * key point outside the relation's own environment, so this fails closed rather than skipping it.
+   */
+  protected async resolveFkReferencedRelations(
+    organizationId: string,
+    foreignKeys: FkSpec[],
+    relation: InternalTableRelation,
+    manager: EntityManager
+  ): Promise<Map<string, { relationId: string; tableName: string }>> {
+    const resolved = new Map<string, { relationId: string; tableName: string }>();
+    if (!foreignKeys.length) return resolved;
+
+    const coRelationIds = [...new Set(foreignKeys.map((fk) => fk.referenced_table))];
+    const internalTables = await manager.find(InternalTable, {
+      where: { organizationId, co_relation_id: In(coRelationIds) },
+    });
+    const internalTableByCoRelationId = new Map(internalTables.map((table) => [table.co_relation_id, table]));
+
+    const siblingRelations = internalTables.length
+      ? await manager.find(InternalTableRelation, {
+          where: {
+            internalTableId: In(internalTables.map((table) => table.id)),
+            environmentId: relation.environmentId,
+            branchId: relation.branchId,
+          },
+        })
+      : [];
+    const siblingRelationByInternalTableId = new Map(siblingRelations.map((r) => [r.internalTableId, r]));
+
+    for (const coRelationId of coRelationIds) {
+      const internalTable = internalTableByCoRelationId.get(coRelationId);
+      const siblingRelation = internalTable && siblingRelationByInternalTableId.get(internalTable.id);
+      if (!internalTable || !siblingRelation) {
+        throw new BadRequestException(
+          `Table "${internalTable?.tableName ?? coRelationId}" has no relation in this environment`
+        );
+      }
+      resolved.set(coRelationId, { relationId: siblingRelation.id, tableName: internalTable.tableName });
+    }
+    return resolved;
+  }
+
+  /**
+   * Forward direction: the constraint named `foreignKeyId` on the relation `relationId`, described
+   * structurally. Only used to identify which foreign key a request means - never carries
+   * on_delete/on_update, since dropping a constraint doesn't need its old policy.
+   */
+  protected async foreignKeyToFkSpec(
+    organizationId: string,
+    tenantSchema: string,
+    relationId: string,
+    foreignKeyId: string
+  ): Promise<FkSpec> {
+    const foreignKeys = await fetchForeignKeys(this.tooljetDbManager, tenantSchema, relationId);
+    const match = foreignKeys.find((fk) => fk.name === foreignKeyId);
+    if (!match) throw new NotFoundException(`Foreign key "${foreignKeyId}" not found on table "${relationId}"`);
+
+    const logicalIdByRelationId = await this.relationResolverService.resolveLogicalIds(
+      organizationId,
+      [match.referenced_table],
+      this.manager
+    );
+    const referencedLogicalId = logicalIdByRelationId.get(match.referenced_table);
+    const referencedInternalTable =
+      referencedLogicalId &&
+      (await this.manager.findOne(InternalTable, {
+        where: { organizationId, id: referencedLogicalId },
+      }));
+    if (!referencedInternalTable) {
+      throw new InternalServerErrorException(
+        `Foreign key "${foreignKeyId}" references relation "${match.referenced_table}", which does not resolve to a known internal table`
+      );
+    }
+
+    return {
+      column_names: match.column_names,
+      referenced_table: referencedInternalTable.co_relation_id,
+      referenced_column_names: match.referenced_column_names,
+    };
+  }
+
+  /**
+   * Reverse direction: which constraint on the relation `relation` currently matches `target`
+   * structurally (same columns, same referenced relation, same referenced columns). This is
+   * looked up fresh every time rather than reusing the name recorded when `target` was built -
+   * that name may not even exist on this relation once replay applies the same FkSpec against a
+   * different one. No match means the request names a foreign key this relation doesn't have;
+   * that must fail rather than silently do nothing.
+   */
+  protected async resolveFkConstraintName(
+    organizationId: string,
+    tenantSchema: string,
+    relation: InternalTableRelation,
+    target: FkSpec,
+    manager: EntityManager
+  ): Promise<string> {
+    const referencedRelations = await this.resolveFkReferencedRelations(organizationId, [target], relation, manager);
+    const referencedRelationId = referencedRelations.get(target.referenced_table).relationId;
+
+    const foreignKeys = await fetchForeignKeys(this.tooljetDbManager, tenantSchema, relation.id);
+    const match = foreignKeys.find(
+      (fk) =>
+        fk.referenced_table === referencedRelationId &&
+        sameOrderedColumnList(fk.column_names, target.column_names) &&
+        sameOrderedColumnList(fk.referenced_column_names, target.referenced_column_names)
+    );
+
+    if (!match) {
+      throw new NotFoundException(`No matching foreign key found on table "${relation.id}"`);
+    }
+    return match.name;
   }
 
   protected async checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(

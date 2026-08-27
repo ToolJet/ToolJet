@@ -1,4 +1,8 @@
-import { QueryRunner } from 'typeorm';
+import { EntityManager, QueryRunner } from 'typeorm';
+
+// Structurally compatible with both QueryRunner and EntityManager - a read-only lookup outside a
+// queryRunner's own transaction (foreign-key identity resolution) can pass either.
+type Queryable = Pick<QueryRunner, 'query'> | Pick<EntityManager, 'query'>;
 
 export interface TableSchemaSnapshotColumn {
   name: string;
@@ -136,8 +140,13 @@ async function fetchIndexes(
   );
 }
 
-async function fetchForeignKeys(
-  queryRunner: QueryRunner,
+/**
+ * Exported for foreign-key operations' normalize/apply split: identifying "the constraint named X"
+ * or "the constraint matching this structural shape" reuses this same introspection rather than a
+ * second copy of the conkey/confkey join.
+ */
+export async function fetchForeignKeys(
+  queryRunner: Queryable,
   schema: string,
   tableName: string
 ): Promise<TableSchemaSnapshotForeignKey[]> {
