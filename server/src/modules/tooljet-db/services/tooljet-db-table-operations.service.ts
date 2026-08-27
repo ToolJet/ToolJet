@@ -2709,11 +2709,23 @@ export class TooljetDbTableOperationsService {
     }
   }
 
+  /**
+   * Every uuid replay relies on - a column's identity, an FK's referenced table - comes from
+   * reading a migration's own `resulting_schema`, never minting fresh. A migration whose authoring
+   * was never confirmed (`resulting_schema IS NULL`: still pending, or a crash that hasn't been
+   * adjudicated) has nothing there to read, so every one of those lookups would silently resolve
+   * to `undefined` and get written into the target relation's identity map with no error. Fail
+   * before any DDL runs rather than let that happen.
+   */
   private async loadMigrationsInOrder(
     migrationIds: string[],
     appManager: EntityManager
   ): Promise<InternalTableMigration[]> {
     const migrations = await appManager.find(InternalTableMigration, { where: { id: In(migrationIds) } });
+    const unconfirmed = migrations.find((migration) => migration.resultingSchema === null);
+    if (unconfirmed) {
+      throw new BadRequestException(`Migration ${unconfirmed.id} has not been confirmed, cannot be replayed`);
+    }
     return migrations.sort((a, b) => Number(a.sequence) - Number(b.sequence) || a.id.localeCompare(b.id));
   }
 

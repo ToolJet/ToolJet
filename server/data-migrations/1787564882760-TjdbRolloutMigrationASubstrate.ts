@@ -469,9 +469,9 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
       {
         sequence: 1,
         payload: {
-          ddl: this.buildCreateTableDdl(schema, snapshot.columns, snapshot.primary_key),
+          ddl: this.buildCreateTableDdl(schema, tableId, snapshot.columns, snapshot.primary_key),
           refs: {},
-          // Portability contract (also used by raw-SQL migrations from H7 on): the DDL never bakes
+          // Portability contract (also relied on by raw-SQL migrations): the DDL never bakes
           // in a physical relation id. "{{self}}" is the relation this migration is replayed onto;
           // every other placeholder is a key into `refs`, resolved through the FK's co_relation_id
           // to whichever relation stands for that table in the replay target's own environment.
@@ -510,25 +510,64 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
   // Schema is baked in as a literal, not a placeholder: TJDB's tenant schema is one per
   // organization, shared by every environment - unlike a relation id, it never differs between
   // the relation this migration was recorded against and whatever relation replays it.
+  //
+  // A `serial`/identity column's introspected default is `nextval('"<schema>"."<tableId>_..._seq"'::regclass)`
+  // - the physical relation id of the table being baselined, baked into the sequence name the same
+  // way a physical relation id could leak into any other part of this DDL. Left as a literal, replay
+  // would give the target relation's id column a default that points at the *source's* sequence
+  // object - two relations sharing one counter, and a dangling default if the source is later
+  // dropped (the sequence is OWNED BY its column). Detected and rewritten to a `{{self}}`-derived
+  // sequence name below, created fresh for whichever relation this DDL actually runs against - the
+  // same placeholder substitution `{{self}}` already gets for the table name itself.
   private buildCreateTableDdl(
     schema: string,
+    tableId: string,
     columns: TableSchemaSnapshotColumn[],
     primaryKeyColumns: string[]
   ): string {
+    const sequenceDdl: string[] = [];
+    const ownershipDdl: string[] = [];
+
     const columnDdl = columns.map((col) => {
       const notNull = col.is_nullable ? '' : ' NOT NULL';
-      const withDefault = col.default ? ` DEFAULT ${col.default}` : '';
+      const ownSequenceSuffix = this.ownSequenceSuffix(schema, tableId, col.default);
+      let defaultSql = col.default;
+      if (ownSequenceSuffix) {
+        const sequenceRef = `"${schema}"."{{self}}${ownSequenceSuffix}"`;
+        sequenceDdl.push(`CREATE SEQUENCE ${sequenceRef}`);
+        ownershipDdl.push(`ALTER SEQUENCE ${sequenceRef} OWNED BY "${schema}"."{{self}}"."${col.name}"`);
+        defaultSql = `nextval('${sequenceRef}'::regclass)`;
+      }
+      const withDefault = defaultSql ? ` DEFAULT ${defaultSql}` : '';
       return `  "${col.name}" ${col.data_type}${notNull}${withDefault}`;
     });
     if (primaryKeyColumns.length) {
       columnDdl.push(`  PRIMARY KEY (${primaryKeyColumns.map((c) => `"${c}"`).join(', ')})`);
     }
-    return `CREATE TABLE "${schema}"."{{self}}" (\n${columnDdl.join(',\n')}\n)`;
+    const createTable = `CREATE TABLE "${schema}"."{{self}}" (\n${columnDdl.join(',\n')}\n)`;
+    return [...sequenceDdl, createTable, ...ownershipDdl].join(';\n');
   }
 
   /**
-   * Every row this migration baselines still satisfies relation.id === internal_table.id (the
-   * pre-H3 rollout invariant), including whatever a foreign key references - so a referenced
+   * A column's default is "its own" sequence only when the sequence name is derived from this
+   * exact physical relation id - the pattern Postgres emits for a column it created via
+   * `serial`/`GENERATED ... AS IDENTITY`. Returns the suffix after `"<tableId>_"` (e.g. `id_seq`)
+   * so the caller can rebuild the same name against `{{self}}`; returns null for every other kind
+   * of default (a literal, a different function call, a sequence some other table owns, NULL) -
+   * those are copied through unchanged.
+   */
+  private ownSequenceSuffix(schema: string, tableId: string, columnDefault: string | null): string | null {
+    if (!columnDefault) return null;
+    const match = columnDefault.match(
+      new RegExp(`^nextval\\('(?:"${schema}"\\.)?"${tableId}(_[a-zA-Z0-9_]+)"'::regclass\\)$`)
+    );
+    return match ? match[1] : null;
+  }
+
+  /**
+   * Every row this migration baselines still satisfies relation.id === internal_table.id (true for
+   * every row that predates this migration), including whatever a foreign key references - so a
+   * referenced
    * relation id is looked up as an internal_tables id directly. This shortcut is only safe here;
    * normal perform()/replay code must go through the relation resolver instead.
    */

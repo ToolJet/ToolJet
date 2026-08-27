@@ -1,7 +1,7 @@
 /**
  * Replay engine e2e: reapplies a table's own migration chain into a different relation for the
  * same logical table, and proves the target introspects identically to the source - including
- * column identity - without minting anything. This is H4's done-when.
+ * column identity - without minting anything.
  *
  * @group database
  */
@@ -29,7 +29,11 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 // import would not resolve against an EE-booted app. See app-import-export.service.spec.ts for
 // the same pattern.
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
-import { buildTableSchemaSnapshot } from '@modules/tooljet-db/helpers/table-schema-snapshot';
+import { buildTableSchemaSnapshot, TableSchemaSnapshot } from '@modules/tooljet-db/helpers/table-schema-snapshot';
+// Imported only so this test can call the same DDL-synthesis method migration A itself uses,
+// instead of hand-writing a second copy that could silently drift from what the real migration
+// emits.
+import { TjdbRolloutMigrationASubstrate1787564882760 } from '../../../../data-migrations/1787564882760-TjdbRolloutMigrationASubstrate';
 
 describe('TooljetDb migration replay', () => {
   describe('EE (plan: enterprise)', () => {
@@ -324,13 +328,15 @@ describe('TooljetDb migration replay', () => {
         const appManager = getDefaultDataSource().manager;
         const tjDbManager = getTooljetDbDataSource();
 
-        // Stand in for a pre-H3 row: a physical table that already exists, with no perform()
-        // history - what migration A baselines. Built directly rather than by running the data
-        // migration in-process.
+        // Stand in for a row that predates any perform() history - what migration A baselines.
+        // Built directly rather than by running the data migration in-process. `id serial` gives
+        // this a self-owned sequence, the same shape TJDB's default `id` column type always has -
+        // buildCreateTableDdl below must not let this table's own sequence name leak into the
+        // baseline DDL literally.
         const relationId = uuidv4();
         await tjDbManager.query(
           `CREATE TABLE "${tenantSchema}"."${relationId}" (
-             id integer PRIMARY KEY,
+             id serial PRIMARY KEY,
              note character varying
            )`
         );
@@ -368,6 +374,16 @@ describe('TooljetDb migration replay', () => {
           columnUuids
         );
 
+        // Same DDL-synthesis method migration A itself calls, not a hand-written second copy -
+        // this is what actually exercises the self-referencing-sequence rewrite.
+        const migrationA = new TjdbRolloutMigrationASubstrate1787564882760();
+        const ddl: string = (migrationA as any).buildCreateTableDdl(
+          tenantSchema,
+          relationId,
+          snapshot.columns,
+          snapshot.primary_key
+        );
+
         const createMigration = await appManager.save(
           appManager.create(InternalTableMigration, {
             internalTableId: internalTable.id,
@@ -375,7 +391,7 @@ describe('TooljetDb migration replay', () => {
             branchId,
             kind: 'baseline',
             payload: {
-              ddl: `CREATE TABLE "${tenantSchema}"."{{self}}" (\n  "id" integer NOT NULL,\n  "note" character varying,\n  PRIMARY KEY ("id")\n)`,
+              ddl,
               refs: {},
               column_uuids: columnUuids,
             },
@@ -410,10 +426,80 @@ describe('TooljetDb migration replay', () => {
           reloadedTarget.configurations.columns.column_names
         );
 
-        expect(snapshotWithoutReferencedTableIds(targetSnapshot)).toEqual(
-          snapshotWithoutReferencedTableIds(sourceSnapshot)
-        );
+        // The `id` column's default is expected to differ between source and target - each has to
+        // get its own sequence, never the other's - so it's excluded from the general shape
+        // comparison and asserted on separately below.
+        const withoutSelfSequenceDefault = (s: TableSchemaSnapshot) => ({
+          ...snapshotWithoutReferencedTableIds(s),
+          columns: s.columns.map(({ default: _default, ...rest }) => rest),
+        });
+        expect(withoutSelfSequenceDefault(targetSnapshot)).toEqual(withoutSelfSequenceDefault(sourceSnapshot));
         expect(reloadedTarget.configurations.columns.column_names).toEqual(columnUuids);
+
+        // The replayed `id` column owns a sequence named after the *target* relation, not a
+        // literal copy of the source's - two environments must never hand out ids from one
+        // counter, and the source's sequence must not have leaked in verbatim.
+        const sourceIdDefault = sourceSnapshot.columns.find((c) => c.name === 'id').default;
+        const targetIdDefault = targetSnapshot.columns.find((c) => c.name === 'id').default;
+        expect(targetIdDefault).toContain(`"${reloadedTarget.id}_id_seq"`);
+        expect(targetIdDefault).not.toContain(relationId);
+        expect(sourceIdDefault).toContain(`"${relationId}_id_seq"`);
+
+        // Functional proof, not just a name match: inserting into the source advances the
+        // source's own sequence; the target's sequence starts fresh at 1 regardless.
+        await tjDbManager.query(`INSERT INTO "${tenantSchema}"."${relationId}" (note) VALUES ('source row')`);
+        await tjDbManager.query(`INSERT INTO "${tenantSchema}"."${relationId}" (note) VALUES ('source row 2')`);
+        const [{ id: targetFirstId }] = await tjDbManager.query(
+          `INSERT INTO "${tenantSchema}"."${reloadedTarget.id}" (note) VALUES ('target row') RETURNING id`
+        );
+        expect(Number(targetFirstId)).toBe(1);
+      });
+    });
+
+    describe('Guards', () => {
+      it('refuses to replay a chain containing an unconfirmed migration, and writes nothing to the target', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+        const appManager = getDefaultDataSource().manager;
+        const tjDbManager = getTooljetDbDataSource();
+
+        const internalTable = await appManager.save(
+          appManager.create(InternalTable, {
+            organizationId: adminOrgId,
+            tableName: 'replay_unconfirmed',
+            co_relation_id: uuidv4(),
+          })
+        );
+
+        // Same pattern the adjudication e2e uses: write the pending row directly rather than race
+        // a real crash. resulting_schema NULL is "authoring not yet confirmed".
+        const pendingMigration = await appManager.save(
+          appManager.create(InternalTableMigration, {
+            internalTableId: internalTable.id,
+            sequence: '1',
+            branchId,
+            kind: 'baseline',
+            payload: {
+              ddl: `CREATE TABLE "${tenantSchema}"."{{self}}" (\n  "id" integer NOT NULL,\n  PRIMARY KEY ("id")\n)`,
+              refs: {},
+              column_uuids: { id: uuidv4() },
+            },
+            resultingSchema: null,
+          })
+        );
+
+        const targetRelation = await createTargetRelation(internalTable.id);
+
+        await expect(tableOperationsService.applyMigrations([pendingMigration.id], targetRelation)).rejects.toThrow();
+
+        const reloadedTarget = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { id: targetRelation.id },
+        });
+        expect(reloadedTarget.configurations).toBeNull();
+
+        const [{ to_regclass: physicalTable }] = await tjDbManager.query(`SELECT to_regclass($1) AS to_regclass`, [
+          `"${tenantSchema}"."${targetRelation.id}"`,
+        ]);
+        expect(physicalTable).toBeNull();
       });
     });
   });
