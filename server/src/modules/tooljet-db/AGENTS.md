@@ -64,6 +64,14 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 - Every table reference used to build a query (`join_tables`' `from` table included) must be
   validated against the caller's workspace before it reaches a query builder's `.from()`/`.join()` —
   an unvalidated id there is a same-shape leak to the one the resolver closes for the proxy paths.
+- `drop_table` soft-deletes `internal_tables` (`@DeleteDateColumn`), it never hard-deletes the row.
+  The physical `DROP TABLE` still runs — the row is a name allocation and a chain anchor for the
+  migration-recording tables (`ON DELETE CASCADE` on `internal_table_id`), not an existence claim.
+  TypeORM excludes soft-deleted rows from every `find*`/entity-targeted `QueryBuilder` automatically;
+  the resolver's three raw joins (`resolve`, `resolveLogicalIds`, `getRelation`) add
+  `it.deleted_at IS NULL` by hand because raw joins don't get that filter for free. The
+  `(organization_id, table_name)` unique index is partial (`WHERE deleted_at IS NULL`), so a dropped
+  table's name is immediately free for reuse by a new `internal_tables` row.
 
 ## Related modules
 

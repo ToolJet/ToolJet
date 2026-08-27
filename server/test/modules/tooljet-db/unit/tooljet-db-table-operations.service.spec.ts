@@ -407,6 +407,52 @@ describe('TooljetDbTableOperationsService', () => {
       });
     });
 
+    describe('.dropTable | drop_table action', () => {
+      const columns = [
+        {
+          column_name: 'id',
+          data_type: 'integer',
+          constraints_type: { is_not_null: true, is_primary_key: true, is_unique: true },
+        },
+      ];
+
+      it('soft-deletes the internal_tables row and frees its name for reuse, instead of removing it', async () => {
+        await service.perform(organizationId, 'create_table', {
+          table_name: 'soft_delete_target',
+          columns,
+          foreign_keys: [],
+        });
+        const originalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'soft_delete_target' },
+        });
+
+        await service.perform(organizationId, 'drop_table', { table_name: 'soft_delete_target' });
+
+        // Gone from every ordinary read - TypeORM excludes soft-deleted rows by default.
+        await expect(
+          appManager.findOne(InternalTable, { where: { organizationId, tableName: 'soft_delete_target' } })
+        ).resolves.toBeNull();
+
+        // Still on disk, marked deleted rather than removed.
+        const softDeletedTable = await appManager.findOne(InternalTable, {
+          where: { id: originalTable.id },
+          withDeleted: true,
+        });
+        expect(softDeletedTable.deletedAt).toBeInstanceOf(Date);
+
+        // The partial unique index scopes to deleted_at IS NULL, so the freed name mints a new row.
+        await service.perform(organizationId, 'create_table', {
+          table_name: 'soft_delete_target',
+          columns,
+          foreign_keys: [],
+        });
+        const recreatedTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId, tableName: 'soft_delete_target' },
+        });
+        expect(recreatedTable.id).not.toBe(originalTable.id);
+      });
+    });
+
     describe('.viewTable | view_table action', () => {
       it('should not report columns from an identically named table in another schema', async () => {
         // A second workspace schema holding a table with the same physical name proves the

@@ -201,6 +201,68 @@ describe('TooljetDbController', () => {
 
         expect(res.statusCode).toBe(200);
       });
+
+      it('drop is soft: the table disappears from view_tables and the resolver, its name is free for reuse, and the internal_tables row survives with deleted_at set', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('soft_delete_tbl'));
+
+        const manager = getDefaultDataSource().manager;
+        const originalTable = await manager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'soft_delete_tbl' },
+        });
+
+        const dropRes = await request
+          .agent(app.getHttpServer())
+          .delete(`/api/tooljet-db/organizations/${adminOrgId}/table/soft_delete_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        expect(dropRes.statusCode).toBe(200);
+
+        // Row survives, soft-deleted rather than removed.
+        const softDeletedTable = await manager.findOne(InternalTable, {
+          where: { id: originalTable.id },
+          withDeleted: true,
+        });
+        expect(softDeletedTable).toBeTruthy();
+        expect(softDeletedTable.deletedAt).toBeTruthy();
+
+        // Gone from the table list.
+        const listRes = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/tables`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        const listedNames = listRes.body.result.map((table) => table.table_name);
+        expect(listedNames).not.toContain('soft_delete_tbl');
+
+        // Gone from the resolver: the dropped name no longer names anything.
+        const viewRes = await request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${adminOrgId}/table/soft_delete_tbl`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId);
+        expect(viewRes.statusCode).toBe(404);
+
+        // The name is free again - a new table can take it, minting a distinct logical row.
+        const recreateRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('soft_delete_tbl'));
+        expect([200, 201]).toContain(recreateRes.statusCode);
+
+        const recreatedTable = await manager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'soft_delete_tbl' },
+        });
+        expect(recreatedTable.id).not.toBe(originalTable.id);
+      });
     });
 
     // ---------------------------------------------------------------------------

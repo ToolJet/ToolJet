@@ -549,7 +549,7 @@ export class TooljetDbTableOperationsService {
     await tjdbQueryRunner.startTransaction();
 
     try {
-      await queryRunner.manager.delete(InternalTable, { id: internalTable.id });
+      await queryRunner.manager.softDelete(InternalTable, { id: internalTable.id });
       await tjdbQueryRunner.dropTable(new Table({ schema: tenantSchema, name: relation.id }));
 
       await queryRunner.commitTransaction();

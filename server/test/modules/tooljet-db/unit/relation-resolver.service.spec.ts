@@ -309,6 +309,15 @@ describe('TooljetDbRelationResolverService', () => {
 
         await expect(service.getRelation(organizationId, orphan.id)).rejects.toThrow(NotFoundException);
       });
+
+      it('should throw NotFoundException for a soft-deleted table', async () => {
+        const table = await appManager.findOne(InternalTable, {
+          where: { organizationId, tableName: 'orders' },
+        });
+        await appManager.update(InternalTable, { id: table.id }, { deletedAt: new Date() });
+
+        await expect(service.getRelation(organizationId, table.id)).rejects.toThrow(NotFoundException);
+      });
     });
 
     describe('CE', () => {
