@@ -45,6 +45,7 @@ describe('PAT scope definition', () => {
       MODULES.GLOBAL_DATA_SOURCE,
       MODULES.TOOLJET_DATABASE,
       MODULES.APP_ENVIRONMENTS,
+      MODULES.ORGANIZATION_THEMES,
     ]) {
       expect(patCanAccess(module)).toBe(true);
     }
