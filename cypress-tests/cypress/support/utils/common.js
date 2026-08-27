@@ -103,12 +103,10 @@ export const navigateToAppEditor = (appName) => {
 
 export const viewAppCardOptions = (appName) => {
   if (Cypress.env("environment") !== "Community") {
-    cy.waitForElement('[data-cy="ai-icon"]');
+    // waitForElement's 2nd arg is a plain number, not an options object —
+    // passing { timeout } nests it and Cypress rejects `[object Object]`.
+    cy.waitForElement('[data-cy="icon-home"]', 10000);
   }
-  // cyParamName (not just .toLowerCase()): app-card data-cy hyphenates spaces
-  // (matches commonSelectors.appCard/cyParamName convention used everywhere
-  // else) — a bare .toLowerCase() only coincidentally matched historically
-  // because no existing app-test name contained a space.
   const cardSelector = `[data-cy="${cyParamName(appName)}-card"]`;
   cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
     cy.get(cardSelector).parent().realHover();

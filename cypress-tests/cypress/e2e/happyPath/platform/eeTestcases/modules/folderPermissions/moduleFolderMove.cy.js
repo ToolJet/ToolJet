@@ -1,45 +1,42 @@
 import { commonSelectors } from 'Selectors/common';
-import { moduleSelectors } from 'Selectors/platform/modules';
-import { versionModalSelector } from 'Selectors/eeCommon';
 import { dashboardSelector } from 'Selectors/dashboard';
+import { versionModalSelector } from 'Selectors/eeCommon';
+import { moduleSelectors } from 'Selectors/platform/modules';
 import { viewAppCardOptions } from 'Support/utils/common';
-import { openModulesList } from 'Support/utils/platform/modules';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { openModulesList } from 'Support/utils/platform/modules';
 import { commonText } from 'Texts/common';
 import { dashboardText } from 'Texts/dashboard';
 
-describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
-  const testId = Date.now();
-  const wsName = `modules-folder-move-${testId}`;
-  const wsSlug = wsName;
+describe('Modules — Moving Modules Between Folders', () => {
+  let workspaceId, wsName, wsSlug;
 
-  let workspaceId;
+  // afterEach(() => {
+  //   cy.apiLogin();
+  //   cy.then(() => cy.apiArchiveWorkspace(workspaceId));
+  // });
 
-  before(() => {
+  beforeEach(() => {
+    wsName = `modules-folder-move-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
-    
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       workspaceId = res.body.organization_id;
       Cypress.env('workspaceId', workspaceId);
       Cypress.env('workspaceSlug', wsSlug);
     });
-  });
-
-  after(() => {
-    cy.apiLogin();
-    cy.then(() => cy.apiArchiveWorkspace(workspaceId));
-  });
-
-  beforeEach(() => {
-    cy.apiLogin();
+    cy.apiDeleteGranularPermission('builder', ['module', 'module_folder']);
   });
 
   it('user with Edit Folder access sees only authorized folders in the move picker, and can move a module they can edit into one', () => {
-    const editableFolderName = `Editable Folder ${testId}`;
-    const inaccessibleFolderName = `Inaccessible Folder ${testId}`;
-    const moduleName = `Move Source Module ${testId}`;
-    const groupName = `QA Move Group ${testId}`;
-    const userEmail = `qa-move-basic-${testId}@example.com`;
+
+    const attemptId = Date.now();
+    const editableFolderName = `Editable Folder ${attemptId}`;
+    const inaccessibleFolderName = `Inaccessible Folder ${attemptId}`;
+    const moduleName = `Move Source Module ${attemptId}`;
+    const groupName = `QA Move Group ${attemptId}`;
+    const userEmail = `qa-move-basic-${attemptId}@example.com`;
 
     cy.apiCreateModuleFolder(inaccessibleFolderName);
     cy.apiCreateModuleFolder(editableFolderName).then((folder) => {
@@ -54,7 +51,6 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
         )
       );
     });
-
     cy.then(() => {
       cy.apiFullUserOnboarding('QA Move Basic User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
       cy.apiLogin(userEmail, 'password');
@@ -62,6 +58,7 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
       cy.apiCreateModule(moduleName);
 
       openModulesList();
+      cy.wait(2000);
       viewAppCardOptions(moduleName);
       cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
       cy.get(dashboardSelector.selectFolder).click();
@@ -80,11 +77,12 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
   });
 
   it('a module can belong to only one folder — moving it to another folder removes it from the previous one', () => {
-    const sourceFolderName = `Source Folder ${testId}`;
-    const destFolderName = `Dest Folder ${testId}`;
-    const moduleName = `Relocating Module ${testId}`;
-    const groupName = `QA Relocate Group ${testId}`;
-    const userEmail = `qa-move-relocate-${testId}@example.com`;
+    const attemptId = Date.now();
+    const sourceFolderName = `Source Folder ${attemptId}`;
+    const destFolderName = `Dest Folder ${attemptId}`;
+    const moduleName = `Relocating Module ${attemptId}`;
+    const groupName = `QA Relocate Group ${attemptId}`;
+    const userEmail = `qa-move-relocate-${attemptId}@example.com`;
     let moduleId;
     let destFolderId;
 
@@ -127,10 +125,11 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
   });
 
   it("a module's effective permission recalculates immediately once it's moved into a folder that grants access", () => {
-    const folderName = `Recalc Folder ${testId}`;
-    const moduleName = `Recalc Module ${testId}`;
-    const groupName = `QA Recalc Group ${testId}`;
-    const userEmail = `qa-move-recalc-${testId}@example.com`;
+    const attemptId = Date.now();
+    const folderName = `Recalc Folder ${attemptId}`;
+    const moduleName = `Recalc Module ${attemptId}`;
+    const groupName = `QA Recalc Group ${attemptId}`;
+    const userEmail = `qa-move-recalc-${attemptId}@example.com`;
     let moduleId;
     let folderId;
 
@@ -152,21 +151,18 @@ describe('Modules — Moving Modules Between Folders', { retries: 0 }, () => {
     });
 
     cy.then(() => {
-      cy.apiFullUserOnboarding('QA Recalc User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
+      // "Create draft version" only renders once a saved version exists
+      // (VersionManagerDropdown.jsx: showCreateDraftButton = savedVersions.length > 0).
+      cy.apiGetEditingVersionId(moduleId).then((versionId) => {
+        Cypress.env('appId', moduleId);
+        Cypress.env('editingVersionId', versionId);
+        cy.apiPublishDraftVersion('v1');
+      });
 
-      // Before the move: the module isn't in the folder yet, so the folder's Edit
-      // Modules grant doesn't apply — editing is blocked.
-      cy.apiLogin(userEmail, 'password');
+      cy.apiFullUserOnboarding('QA Recalc User', userEmail, 'builder', 'password', wsName, {}, [groupName]);
       cy.visit(`/${wsSlug}/apps/${moduleId}`, { failOnStatusCode: false });
       cy.wait(3000);
-      cy.get(moduleSelectors.versionSwitcherButton).click();
-      cy.get(commonSelectors.buttonSelector('create draft version')).click();
-      cy.get(versionModalSelector.versionNameInput).type('v2-before-move');
-      cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        'You do not have permission to create a draft version'
-      );
+      cy.url({ timeout: 15000 }).should('include', '/error/restricted');
 
       // Move it into the folder (as admin) — no re-login for the test user needed.
       cy.apiLogin();

@@ -11937,5 +11937,716 @@ describe('GitSyncController', () => {
         expect(await ctx.appRowCount(moduleId)).toBe(1);
       }, 300000);
     });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // App commit cascades ALL connected resources (SINGLE branch).
+    //
+    // Graph under test:
+    //   app A ──(query)──▶ data source dsA
+    //   app A ──(ModuleViewer)──▶ module M ──(query)──▶ data source dsB
+    // dsB is linked ONLY inside module M (never directly to A). A single `gitpush` of app A
+    // onto the (unprotected) single-branch default must commit EVERY connected resource in
+    // one shot — A, dsA, M, AND dsB — where dsB rides in via
+    // writeReferencedModules → serializeLinkedDataSourcesForApp(M.version) (EE #794). A
+    // round-trip pull then reconciles the whole graph to is_synced=true. Against the real
+    // Gitea (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('app commit cascades all connected resources (single-branch)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+      // Non-`main` → unprotected on the simulator → direct single-branch pushes are allowed.
+      const SB_BRANCH = 'single-branch-main';
+
+      let ccOrgId: string;
+      let ccCookie: string[];
+      let ccDs: DataSource;
+
+      const agent = () => request.agent(app.getHttpServer());
+      const auth = (r: request.Test) => r.set('Cookie', ccCookie).set('tj-workspace-id', ccOrgId);
+      const pull = (branchId: string) =>
+        auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+      const gitpush = (appId: string, versionId: string, gitAppName: string, branchId: string) =>
+        auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
+          .query({ branch_id: branchId })
+          .send({
+            gitAppName,
+            versionId,
+            lastCommitMessage: `push ${gitAppName}`,
+            gitVersionName: SB_BRANCH,
+            sourceBranch: SB_BRANCH,
+          });
+      const editingVersionOf = async (appId: string, branchId: string) => {
+        const d = await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: branchId })
+          .expect(200);
+        const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+        const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || d.body?.pages?.[0]?.id;
+        return { versionId: ev.id as string, pageId: pageId as string };
+      };
+      const dsvName = async (dsId: string, branchId: string): Promise<string> =>
+        (
+          await ccDs.query(`SELECT name FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+            dsId,
+            branchId,
+          ])
+        )[0]?.name;
+      const dsvSynced = async (dsId: string, branchId: string): Promise<boolean> =>
+        (
+          await ccDs.query(`SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+            dsId,
+            branchId,
+          ])
+        )[0]?.is_synced;
+      const dsCoRelId = async (dsId: string): Promise<string> =>
+        (await ccDs.query(`SELECT co_relation_id FROM data_sources WHERE id = $1`, [dsId]))[0]?.co_relation_id;
+      const appCoRelId = async (appId: string): Promise<string> =>
+        (await ccDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [appId]))[0]?.co_relation_id;
+      // is_synced of the branch's non-stub (materialized) version for an app/module.
+      const nonStubVersionSynced = async (appId: string, branchId: string): Promise<boolean | undefined> =>
+        (
+          await ccDs.query(
+            `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2 AND is_stub = false ORDER BY created_at DESC LIMIT 1`,
+            [appId, branchId]
+          )
+        )[0]?.is_synced;
+      const dsOptions = (url: string) => [
+        { key: 'url', value: url },
+        { key: 'auth_type', value: 'none' },
+        { key: 'headers', value: [['', '']] },
+        { key: 'ssl_certificate', value: 'none', encrypted: false },
+      ];
+      const linkDsViaQuery = (dsId: string, versionId: string, branchId: string, name: string) =>
+        auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+          .query({ branch_id: branchId })
+          .send({
+            kind: 'restapi',
+            name,
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          });
+      const wireModuleViewer = (
+        appId: string,
+        versionId: string,
+        pageId: string,
+        moduleCoRel: string,
+        branchId: string
+      ) =>
+        auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+          .query({ branch_id: branchId })
+          .send({
+            is_user_switched_version: false,
+            pageId,
+            diff: {
+              [genRepoUUID()]: {
+                name: 'moduleviewer1',
+                layouts: {
+                  desktop: { top: 70, left: 5, width: 38, height: 400 },
+                  mobile: { top: 70, left: 5, width: 38, height: 400 },
+                },
+                type: 'ModuleViewer',
+                general: {},
+                generalStyles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: {
+                  moduleAppId: { value: moduleCoRel },
+                  moduleVersionId: { value: '' },
+                  visibility: { value: true },
+                },
+                styles: { backgroundColor: { value: '#fff' }, padding: { value: 'default' } },
+                parent: null,
+              },
+            },
+          });
+
+      // Clone a branch once and expose file-existence, JSON-read, and identity probes over its tree.
+      const inspectBranch = async (branch: string) => {
+        const simpleGit = (await import('simple-git')).default;
+        const fs = await import('fs');
+        const path = await import('path');
+        const os = await import('os');
+        const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-cc-'));
+        const git = simpleGit({
+          baseDir: tmpDir,
+          timeout: { block: 30000 },
+          unsafe: { allowUnsafeCredentialHelper: true },
+        });
+        await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
+          '--branch',
+          branch,
+          '--depth',
+          '1',
+          '--single-branch',
+        ]);
+        const readJson = (rel: string) => {
+          const full = path.join(tmpDir, rel);
+          return fs.existsSync(full) ? JSON.parse(fs.readFileSync(full, 'utf-8')) : null;
+        };
+        // Robust to the folder-name layout: scan <folder>/**/app/app.json for the co_relation_id.
+        const resourceHasCoRel = (folder: string, coRel: string): boolean => {
+          const root = path.join(tmpDir, folder);
+          if (!fs.existsSync(root)) return false;
+          const stack = [root];
+          while (stack.length) {
+            const dir = stack.pop() as string;
+            for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+              const full = path.join(dir, ent.name);
+              if (ent.isDirectory()) {
+                stack.push(full);
+              } else if (ent.name === 'app.json') {
+                try {
+                  if (JSON.parse(fs.readFileSync(full, 'utf-8'))?.id === coRel) return true;
+                } catch {
+                  /* skip malformed */
+                }
+              }
+            }
+          }
+          return false;
+        };
+        const cleanup = () => fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+        return { readJson, resourceHasCoRel, cleanup };
+      };
+
+      // Reset the repo + configure single-branch git (unprotected non-`main` default) and pull it.
+      const enableSingleBranchGit = async (): Promise<string> => {
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITHUB_HTTPS_PAYLOAD, branchName: SB_BRANCH, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${ccOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: false })
+          .expect(200);
+        const branchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body.activeBranchId;
+        await pull(branchId).expect(201);
+        return branchId;
+      };
+
+      // Add a second default-branch (VERSION-type) non-stub, unsynced draft to a module by copying
+      // an existing version row — the ambiguous "which draft do I commit?" state writeReferencedModules
+      // cannot resolve, so an app push carrying the module must block (MODULES_NOT_READY). VERSION-type
+      // allows multiple drafts per branch (only name/slug/app_name uniqueness applies), hence the
+      // distinct suffixes. Mirrors the injection in the §27 cross-branch multidraft case.
+      const addExtraModuleDraft = async (moduleId: string, branchId: string, suffix: string) => {
+        await ccDs.query(
+          `INSERT INTO app_versions (
+             name, definition, global_settings, page_settings, show_viewer_navigation,
+             version_type, app_id, current_environment_id, status, is_stub, is_synced,
+             branch_id, slug, app_name, icon, is_public
+           )
+           SELECT
+             name || '-' || $2, definition, global_settings, page_settings, show_viewer_navigation,
+             'version', app_id, current_environment_id, 'DRAFT', false, false,
+             $3, COALESCE(slug, '') || '-' || $2, COALESCE(app_name, name) || '-' || $2, icon, is_public
+           FROM app_versions WHERE app_id = $1 LIMIT 1`,
+          [moduleId, suffix, branchId]
+        );
+      };
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-commit-cascade@tooljet.io',
+          firstName: 'git',
+          lastName: 'commitcascade',
+        });
+        ccOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-commit-cascade@tooljet.io');
+        ccCookie = tokenCookie;
+        await ensureAppEnvironments(app, ccOrgId);
+        ccDs = app.get<DataSource>(getDataSourceToken('default'));
+        // Seed the workspace default branch already named `single-branch-main` so the git config
+        // finalize keeps it (rather than renaming a `main` default) — mirrors §18.
+        await ccDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, $2, true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [ccOrgId, SB_BRANCH]
+        );
+      });
+
+      it('commits the app, its data source, the connected module and the data source used only inside that module — in one push', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+
+        // ── 1. single-branch git on the (unprotected) non-main default ───────────────────
+        step(1, 'reset gitea, configure git (default single-branch-main), disable branching, pull default');
+        const branchId = await enableSingleBranchGit();
+
+        // ── 2. build the resource graph on the default branch ────────────────────────────
+        step(2, 'create app A + module M + dsA (linked to A) + dsB (linked to M); wire A ModuleViewer → M');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: branchId })
+            .send({ icon: 'home', name: 'cc-app', type: 'front-end', branchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await editingVersionOf(appId, branchId);
+        const moduleId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: branchId })
+            .send({ icon: 'folderupload', name: 'cc-module', type: 'module', branchId })
+            .expect(201)
+        ).body.id;
+        const moduleCtx = await editingVersionOf(moduleId, branchId);
+        const moduleCoRel = await appCoRelId(moduleId);
+        expect(moduleCoRel).toBeTruthy();
+
+        // dsA is linked to app A; dsB is linked ONLY to module M (never directly to A).
+        const dsAId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${branchId}`))
+            .send({
+              name: 'cc-ds-app',
+              kind: 'restapi',
+              options: dsOptions('http://cc-ds-app.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await linkDsViaQuery(dsAId, appCtx.versionId, branchId, 'q_cc_app').expect(201);
+        const dsBId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${branchId}`))
+            .send({
+              name: 'cc-ds-module',
+              kind: 'restapi',
+              options: dsOptions('http://cc-ds-module.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await linkDsViaQuery(dsBId, moduleCtx.versionId, branchId, 'q_cc_module').expect(201);
+
+        await wireModuleViewer(appId, appCtx.versionId, appCtx.pageId, moduleCoRel, branchId).expect(201);
+        const dsAName = await dsvName(dsAId, branchId);
+        const dsBName = await dsvName(dsBId, branchId);
+
+        // ── 3. ONE app push carries the whole graph ──────────────────────────────────────
+        step(3, 'gitpush app A once → the cascade carries dsA, module M and M-only dsB');
+        await gitpush(appId, appCtx.versionId, 'cc-app', branchId).expect(201);
+
+        // ── 4. every connected resource is committed on the default branch ───────────────
+        step(4, 'clone the default branch → app, module, dsA and dsB all present in git');
+        const tree = await inspectBranch(SB_BRANCH);
+        try {
+          expect(tree.resourceHasCoRel('apps', await appCoRelId(appId))).toBe(true);
+          expect(tree.resourceHasCoRel('modules', moduleCoRel)).toBe(true);
+          expect(tree.readJson(`data-sources/${dsAName}/data-source.json`)?.id).toBe(await dsCoRelId(dsAId));
+          // The key assertion: dsB — linked only inside module M — rode into A's push (EE #794).
+          expect(tree.readJson(`data-sources/${dsBName}/data-source.json`)?.id).toBe(await dsCoRelId(dsBId));
+        } finally {
+          await tree.cleanup();
+        }
+
+        // ── 5. a round-trip pull reconciles the whole graph to is_synced=true ────────────
+        step(5, 'pull the default branch → app, module, dsA and dsB all is_synced=true');
+        await pull(branchId).expect(201);
+        expect(await nonStubVersionSynced(appId, branchId)).toBe(true);
+        expect(await nonStubVersionSynced(moduleId, branchId)).toBe(true);
+        expect(await dsvSynced(dsAId, branchId)).toBe(true);
+        expect(await dsvSynced(dsBId, branchId)).toBe(true);
+      }, 300000);
+
+      // A connected module is bootstrapped into the app's commit from its single default-branch
+      // draft (writeReferencedModules). If the module has MULTIPLE drafts, an arbitrary one would
+      // be committed silently, so the push must fail — MODULES_NOT_READY, naming the module — the
+      // same class of error the app raises for its own multiple drafts. This is the single-branch
+      // counterpart of the §27 (multi-branch) multidraft guard; nothing else covers single-branch.
+      it('blocks the commit when the connected module has multiple draft versions', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+
+        step(1, 'single-branch git on the default branch');
+        const branchId = await enableSingleBranchGit();
+
+        step(2, 'create app A + module M on the default branch; wire A ModuleViewer → M');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: branchId })
+            .send({ icon: 'home', name: 'cc-multidraft-app', type: 'front-end', branchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await editingVersionOf(appId, branchId);
+        const moduleId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: branchId })
+            .send({ icon: 'folderupload', name: 'cc-multidraft-module', type: 'module', branchId })
+            .expect(201)
+        ).body.id;
+        const moduleCoRel = await appCoRelId(moduleId);
+        expect(moduleCoRel).toBeTruthy();
+        await wireModuleViewer(appId, appCtx.versionId, appCtx.pageId, moduleCoRel, branchId).expect(201);
+
+        step(3, 'give module M a SECOND default-branch draft — the ambiguous state a bootstrap cannot resolve');
+        await addExtraModuleDraft(moduleId, branchId, 'md2');
+        const modDraftCount: number = (
+          await ccDs.query(
+            `SELECT COUNT(*)::int AS c FROM app_versions
+               WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT' AND is_stub = false`,
+            [moduleId, branchId]
+          )
+        )[0].c;
+        expect(modDraftCount).toBeGreaterThan(1);
+
+        step(4, 'gitpush app A → blocked: the connected module has multiple drafts (MODULES_NOT_READY)');
+        // AllExceptionsFilter forwards only `message`, so the offending module name rides in it.
+        const pushResp = await gitpush(appId, appCtx.versionId, 'cc-multidraft-app', branchId);
+        expect(pushResp.status).toBe(400);
+        expect(pushResp.body.message).toMatch(/not ready to sync/i);
+        expect(pushResp.body.message).toContain('cc-multidraft-module');
+      }, 300000);
+    });
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // App sync cascades ALL connected resources onto the feature branch (MULTI branch).
+    //
+    // Same graph as the single-branch case above (app A ──▶ dsA + module M; module M ──▶ dsB),
+    // but with branching ON: syncing app A to a feature branch must ADD every connected
+    // resource to that branch in one push — A, dsA, M, and dsB (the data source used only
+    // inside M). Against the real Gitea (@group gitsync).
+    // ────────────────────────────────────────────────────────────────────────────
+    describe('app sync cascades all connected resources onto the feature branch (multi-branch)', () => {
+      const RESET_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/reset`;
+
+      let scOrgId: string;
+      let scCookie: string[];
+      let scDs: DataSource;
+
+      const agent = () => request.agent(app.getHttpServer());
+      const auth = (r: request.Test) => r.set('Cookie', scCookie).set('tj-workspace-id', scOrgId);
+      const pull = (branchId: string) =>
+        auth(agent().post('/api/workspace-branches/pull')).query({ branch_id: branchId }).send({ branchId });
+      const branchIdByName = async (name: string, xBranchId: string): Promise<string> =>
+        (
+          await auth(agent().get('/api/workspace-branches')).set('x-branch-id', xBranchId).expect(200)
+        ).body.branches.find((b: any) => b.name === name)?.id;
+      const editingVersionOf = async (appId: string, branchId: string) => {
+        const d = await auth(agent().get(`/api/apps/${appId}`))
+          .query({ branch_id: branchId })
+          .expect(200);
+        const ev = d.body?.editing_version || d.body?.editingVersion || d.body?.app?.editing_version;
+        const pageId = ev.home_page_id || ev.homePageId || ev.pages?.[0]?.id || d.body?.pages?.[0]?.id;
+        return { versionId: ev.id as string, pageId: pageId as string };
+      };
+      const gitpush = (appId: string, versionId: string, gitAppName: string, branchName: string, branchId: string) =>
+        auth(agent().post(`/api/app-git/gitpush/${appId}/${versionId}`))
+          .query({ branch_id: branchId })
+          .send({
+            gitAppName,
+            versionId,
+            lastCommitMessage: `push ${gitAppName}`,
+            gitVersionName: branchName,
+            sourceBranch: branchName,
+          });
+      const dsvName = async (dsId: string, branchId: string): Promise<string> =>
+        (
+          await scDs.query(`SELECT name FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+            dsId,
+            branchId,
+          ])
+        )[0]?.name;
+      const dsCoRelId = async (dsId: string): Promise<string> =>
+        (await scDs.query(`SELECT co_relation_id FROM data_sources WHERE id = $1`, [dsId]))[0]?.co_relation_id;
+      const appCoRelId = async (appId: string): Promise<string> =>
+        (await scDs.query(`SELECT co_relation_id FROM apps WHERE id = $1`, [appId]))[0]?.co_relation_id;
+      const nonStubVersionSynced = async (appId: string, branchId: string): Promise<boolean | undefined> =>
+        (
+          await scDs.query(
+            `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2 AND is_stub = false ORDER BY created_at DESC LIMIT 1`,
+            [appId, branchId]
+          )
+        )[0]?.is_synced;
+      const dsOptions = (url: string) => [
+        { key: 'url', value: url },
+        { key: 'auth_type', value: 'none' },
+        { key: 'headers', value: [['', '']] },
+        { key: 'ssl_certificate', value: 'none', encrypted: false },
+      ];
+      const linkDsViaQuery = (dsId: string, versionId: string, branchId: string, name: string) =>
+        auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+          .query({ branch_id: branchId })
+          .send({
+            kind: 'restapi',
+            name,
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          });
+      const wireModuleViewer = (
+        appId: string,
+        versionId: string,
+        pageId: string,
+        moduleCoRel: string,
+        branchId: string
+      ) =>
+        auth(agent().post(`/api/v2/apps/${appId}/versions/${versionId}/components`))
+          .query({ branch_id: branchId })
+          .send({
+            is_user_switched_version: false,
+            pageId,
+            diff: {
+              [genRepoUUID()]: {
+                name: 'moduleviewer1',
+                layouts: {
+                  desktop: { top: 70, left: 5, width: 38, height: 400 },
+                  mobile: { top: 70, left: 5, width: 38, height: 400 },
+                },
+                type: 'ModuleViewer',
+                general: {},
+                generalStyles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+                others: { showOnDesktop: { value: '{{true}}' }, showOnMobile: { value: '{{false}}' } },
+                properties: {
+                  moduleAppId: { value: moduleCoRel },
+                  moduleVersionId: { value: '' },
+                  visibility: { value: true },
+                },
+                styles: { backgroundColor: { value: '#fff' }, padding: { value: 'default' } },
+                parent: null,
+              },
+            },
+          });
+
+      // Clone a branch once and expose JSON-read + identity probes over its tree.
+      const inspectBranch = async (branch: string) => {
+        const simpleGit = (await import('simple-git')).default;
+        const fs = await import('fs');
+        const path = await import('path');
+        const os = await import('os');
+        const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-sc-'));
+        const git = simpleGit({
+          baseDir: tmpDir,
+          timeout: { block: 30000 },
+          unsafe: { allowUnsafeCredentialHelper: true },
+        });
+        await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
+          '--branch',
+          branch,
+          '--depth',
+          '1',
+          '--single-branch',
+        ]);
+        const readJson = (rel: string) => {
+          const full = path.join(tmpDir, rel);
+          return fs.existsSync(full) ? JSON.parse(fs.readFileSync(full, 'utf-8')) : null;
+        };
+        const resourceHasCoRel = (folder: string, coRel: string): boolean => {
+          const root = path.join(tmpDir, folder);
+          if (!fs.existsSync(root)) return false;
+          const stack = [root];
+          while (stack.length) {
+            const dir = stack.pop() as string;
+            for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+              const full = path.join(dir, ent.name);
+              if (ent.isDirectory()) {
+                stack.push(full);
+              } else if (ent.name === 'app.json') {
+                try {
+                  if (JSON.parse(fs.readFileSync(full, 'utf-8'))?.id === coRel) return true;
+                } catch {
+                  /* skip malformed */
+                }
+              }
+            }
+          }
+          return false;
+        };
+        const cleanup = () => fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+        return { readJson, resourceHasCoRel, cleanup };
+      };
+
+      const enableGitAndFeatureBranch = async (
+        featName: string
+      ): Promise<{ mainBranchId: string; featBranchId: string }> => {
+        await fetch(RESET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: '{}',
+        });
+        await auth(agent().post('/api/git-sync/configs'))
+          .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false })
+          .expect(201);
+        const gitConfig = await auth(agent().get(`/api/git-sync/${scOrgId}`)).expect(200);
+        const orgGitId: string = gitConfig.body.organization_git.id;
+        await auth(agent().put(`/api/git-sync/${orgGitId}/is-branching-enabled`))
+          .send({ isBranchingEnabled: true })
+          .expect(200);
+        const mainBranchId: string = (await auth(agent().get('/api/workspace-branches')).expect(200)).body
+          .activeBranchId;
+        await pull(mainBranchId).expect(201);
+        await auth(agent().post('/api/workspace-branches'))
+          .query({ branch_id: mainBranchId })
+          .send({ name: featName, sourceBranchId: mainBranchId })
+          .expect(201);
+        const featBranchId = await branchIdByName(featName, mainBranchId);
+        expect(featBranchId).toBeDefined();
+        return { mainBranchId, featBranchId };
+      };
+
+      // Add a default-branch (VERSION-type) non-stub, unsynced draft to a module by copying an
+      // existing version row. writeReferencedModules bootstraps a never-synced module from its
+      // default-branch draft, so >1 such draft is the ambiguous state that must block the app push
+      // (MODULES_NOT_READY). Mirrors the injection in the §27 cross-branch multidraft case.
+      const addExtraModuleDraft = async (moduleId: string, branchId: string, suffix: string) => {
+        await scDs.query(
+          `INSERT INTO app_versions (
+             name, definition, global_settings, page_settings, show_viewer_navigation,
+             version_type, app_id, current_environment_id, status, is_stub, is_synced,
+             branch_id, slug, app_name, icon, is_public
+           )
+           SELECT
+             name || '-' || $2, definition, global_settings, page_settings, show_viewer_navigation,
+             'version', app_id, current_environment_id, 'DRAFT', false, false,
+             $3, COALESCE(slug, '') || '-' || $2, COALESCE(app_name, name) || '-' || $2, icon, is_public
+           FROM app_versions WHERE app_id = $1 LIMIT 1`,
+          [moduleId, suffix, branchId]
+        );
+      };
+
+      beforeAll(async () => {
+        const { organization } = await createUser(app, {
+          email: 'git-sync-cascade@tooljet.io',
+          firstName: 'git',
+          lastName: 'synccascade',
+        });
+        scOrgId = organization.id;
+        const { tokenCookie } = await login(app, 'git-sync-cascade@tooljet.io');
+        scCookie = tokenCookie;
+        await ensureAppEnvironments(app, scOrgId);
+        scDs = app.get<DataSource>(getDataSourceToken('default'));
+        await scDs.query(
+          `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default)
+           VALUES ($1, 'main', true) ON CONFLICT (organization_id, branch_name) DO NOTHING`,
+          [scOrgId]
+        );
+      });
+
+      it('adds the app, its data source, the connected module and the module-only data source to the branch in one push', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-sync-cascade';
+
+        // ── 1. enable git + branching, create a feature branch ───────────────────────────
+        step(1, 'enable git + branching, create feature branch');
+        const { featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        // ── 2. build the resource graph on the feature branch ────────────────────────────
+        step(
+          2,
+          'create app A + module M + dsA (linked to A) + dsB (linked to M) on the feature branch; wire A ModuleViewer → M'
+        );
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'sc-app', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await editingVersionOf(appId, featBranchId);
+        const moduleId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'sc-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleCtx = await editingVersionOf(moduleId, featBranchId);
+        const moduleCoRel = await appCoRelId(moduleId);
+        expect(moduleCoRel).toBeTruthy();
+
+        const dsAId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'sc-ds-app',
+              kind: 'restapi',
+              options: dsOptions('http://sc-ds-app.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await linkDsViaQuery(dsAId, appCtx.versionId, featBranchId, 'q_sc_app').expect(201);
+        const dsBId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${featBranchId}`))
+            .send({
+              name: 'sc-ds-module',
+              kind: 'restapi',
+              options: dsOptions('http://sc-ds-module.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await linkDsViaQuery(dsBId, moduleCtx.versionId, featBranchId, 'q_sc_module').expect(201);
+
+        await wireModuleViewer(appId, appCtx.versionId, appCtx.pageId, moduleCoRel, featBranchId).expect(201);
+        const dsAName = await dsvName(dsAId, featBranchId);
+        const dsBName = await dsvName(dsBId, featBranchId);
+
+        // ── 3. ONE app push adds the whole graph to the feature branch ───────────────────
+        step(3, 'gitpush app A once → the cascade adds dsA, module M and M-only dsB to the feature branch');
+        await gitpush(appId, appCtx.versionId, 'sc-app', FEAT, featBranchId).expect(201);
+
+        // ── 4. every connected resource is present on the feature branch ─────────────────
+        step(4, 'clone the feature branch → app, module, dsA and dsB all present in git');
+        const tree = await inspectBranch(FEAT);
+        try {
+          expect(tree.resourceHasCoRel('apps', await appCoRelId(appId))).toBe(true);
+          expect(tree.resourceHasCoRel('modules', moduleCoRel)).toBe(true);
+          expect(tree.readJson(`data-sources/${dsAName}/data-source.json`)?.id).toBe(await dsCoRelId(dsAId));
+          // The key assertion: dsB — linked only inside module M — rode into A's push (EE #794).
+          expect(tree.readJson(`data-sources/${dsBName}/data-source.json`)?.id).toBe(await dsCoRelId(dsBId));
+        } finally {
+          await tree.cleanup();
+        }
+
+        // ── 5. the pushed app version is synced on the feature branch ────────────────────
+        step(5, 'the pushed app version is is_synced=true on the feature branch');
+        expect(await nonStubVersionSynced(appId, featBranchId)).toBe(true);
+      }, 300000);
+
+      // Multi-branch counterpart of the single-branch multidraft guard above (and of §27's
+      // standalone case), inside this cascade suite: syncing the host app must fail when the
+      // connected module carries multiple default-branch drafts. The module draft count is
+      // measured on the DEFAULT branch (getConnectedModulesBlockingPush), so the extra drafts
+      // are injected there even though the module lives on the feature branch.
+      it('blocks the sync when the connected module has multiple draft versions', async () => {
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-sync-cascade-multidraft';
+
+        step(1, 'enable git + branching, create feature branch');
+        const { mainBranchId, featBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create module M on the feature branch; give it TWO default-branch drafts');
+        const moduleId: string = (
+          await auth(agent().post('/api/modules'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'folderupload', name: 'sc-multidraft-module', type: 'module', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const moduleCoRel = await appCoRelId(moduleId);
+        expect(moduleCoRel).toBeTruthy();
+        await addExtraModuleDraft(moduleId, mainBranchId, 'md1');
+        await addExtraModuleDraft(moduleId, mainBranchId, 'md2');
+        const modDraftCount: number = (
+          await scDs.query(
+            `SELECT COUNT(*)::int AS c FROM app_versions
+               WHERE app_id = $1 AND branch_id = $2 AND status = 'DRAFT' AND is_stub = false`,
+            [moduleId, mainBranchId]
+          )
+        )[0].c;
+        expect(modDraftCount).toBeGreaterThan(1);
+
+        step(3, 'create host app A on the feature branch referencing M via a ModuleViewer');
+        const appId: string = (
+          await auth(agent().post('/api/apps'))
+            .query({ branch_id: featBranchId })
+            .send({ icon: 'home', name: 'sc-multidraft-host', type: 'front-end', branchId: featBranchId })
+            .expect(201)
+        ).body.id;
+        const appCtx = await editingVersionOf(appId, featBranchId);
+        await wireModuleViewer(appId, appCtx.versionId, appCtx.pageId, moduleCoRel, featBranchId).expect(201);
+
+        step(4, 'gitpush host app A → blocked: the connected module has multiple drafts (MODULES_NOT_READY)');
+        const pushResp = await gitpush(appId, appCtx.versionId, 'sc-multidraft-host', FEAT, featBranchId);
+        expect(pushResp.status).toBe(400);
+        expect(pushResp.body.message).toMatch(/not ready to sync/i);
+        expect(pushResp.body.message).toContain('sc-multidraft-module');
+      }, 300000);
+    });
   });
 });

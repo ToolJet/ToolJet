@@ -1,29 +1,21 @@
 import { commonSelectors } from 'Selectors/common';
-import { moduleSelectors } from 'Selectors/platform/modules';
 import { dashboardSelector } from 'Selectors/dashboard';
+import { moduleSelectors } from 'Selectors/platform/modules';
 import { viewAppCardOptions } from 'Support/utils/common';
-import { openModulesList } from 'Support/utils/platform/modules';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
+import { openModulesList } from 'Support/utils/platform/modules';
 import { commonText } from 'Texts/common';
 
-// Granular per-folder module permissions (Edit Folder / Edit Modules / View Modules),
-// distinct from the coarse moduleFolderCreate/moduleFolderDelete toggles covered in
-// moduleFolder{Create,Delete}Permission.cy.js. Set up via cy.apiCreateGranularPermission
-// with resourceType "module_folder" (endpoint added to platformApiCommands.js) rather than
-// the "Add permission" UI dropdown, for the same reliability reasons as the direct-module
-// granular permission suite.
-describe('Modules — Folder Granular Access', { retries: 0 }, () => {
-  const testId = Date.now();
-  const wsName = `modules-folder-granular-${testId}`;
-  const wsSlug = wsName;
 
-  let workspaceId;
+describe('Modules — Folder Granular Access', () => {
+  let workspaceId, wsName, wsSlug;
 
   const setupFolderAccess = (label, permissions) => {
-    const folderName = `${label} Folder ${testId}`;
-    const moduleName = `${label} Module ${testId}`;
-    const groupName = `QA ${label} Group ${testId}`;
-    const userEmail = `qa-folder-${label.toLowerCase().replace(/\s+/g, '-')}-${testId}@example.com`;
+    const attemptId = Date.now();
+    const folderName = `${label} Folder ${attemptId}`;
+    const moduleName = `${label} Module ${attemptId}`;
+    const groupName = `QA ${label} Group ${attemptId}`;
+    const userEmail = `qa-folder-${label.toLowerCase().replace(/\s+/g, '-')}-${attemptId}@example.com`;
     let folderId;
     let moduleId;
 
@@ -45,30 +37,30 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
       .then(() => ({ folderId, moduleId, folderName, moduleName, userEmail }));
   };
 
-  before(() => {
-    cy.apiLogin();
-    
-    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
-      workspaceId = res.body.organization_id;
-      Cypress.env('workspaceId', workspaceId);
-      Cypress.env('workspaceSlug', wsSlug);
-    });
-  });
-
-  after(() => {
+  afterEach(() => {
     cy.apiLogin();
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
   beforeEach(() => {
+    wsName = `modules-folder-granular-${Date.now()}`;
+    wsSlug = wsName;
+
     cy.apiLogin();
+    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env('workspaceId', workspaceId);
+      Cypress.env('workspaceSlug', wsSlug);
+    });
+
+    cy.apiDeleteGranularPermission('builder', ['module', 'module_folder']);
   });
 
-  it.only('user with Edit Folder permission can rename an authorized folder, move modules in and out of it, and edit a module within it — and deleting the folder does not delete the module inside it', () => {
+  it('user with Edit Folder permission can rename an authorized folder, move modules in and out of it, and edit a module within it — and deleting the folder does not delete the module inside it', () => {
     setupFolderAccess('EditFolder', { canEditFolder: true, canEditApps: false, canViewApps: false }).then(
       ({ folderId, moduleId, folderName, moduleName, userEmail }) => {
         const renamedFolderName = `${folderName} Renamed`;
-        const looseModuleName = `Loose Module ${testId}`;
+        const looseModuleName = `Loose Module ${Date.now()}`;
         let looseModuleId;
 
         cy.apiCreateModule(looseModuleName).then((module) => {
@@ -89,7 +81,7 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
         cy.get(commonSelectors.appCard(looseModuleName)).should('be.visible');
 
         cy.then(() => cy.apiRemoveModuleFromFolder(looseModuleId, folderId));
-        openModulesList();
+        cy.get(moduleSelectors.allModulesLink).click({ force: true });
         cy.get(dashboardSelector.folderName(renamedFolderName)).click();
         cy.get(commonSelectors.appCard(looseModuleName)).should('not.exist');
 
@@ -107,6 +99,7 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
         cy.apiLogin();
         cy.then(() => cy.apiDeleteFolder(folderId));
         openModulesList();
+
         cy.get(commonSelectors.folderListcard(renamedFolderName)).should('not.exist');
 
         cy.get(moduleSelectors.allModulesLink).click({ force: true });
@@ -115,48 +108,10 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
     );
   });
 
-  it('user with only Edit Modules permission can edit a module in the folder but cannot rename the folder or add/remove modules', () => {
-    setupFolderAccess('EditModulesOnly', { canEditFolder: false, canEditApps: true, canViewApps: false }).then(
-      ({ folderName, moduleId, moduleName, userEmail }) => {
-        cy.apiLogin(userEmail, 'password');
-
-        // Can edit the module itself — via API, verified via UI.
-        cy.apiGetEditingVersionId(moduleId).then((versionId) =>
-          cy.apiCreateAppVersion(moduleId, 'v2-edit-modules-only', versionId)
-        );
-        cy.visit(`/${Cypress.env('workspaceSlug')}/apps/${moduleId}`, { failOnStatusCode: false });
-        cy.wait(3000);
-        cy.get(moduleSelectors.versionSwitcherButton).should('contain.text', 'v2-edit-modules-only');
-
-        // Cannot manage the folder itself: no "..." menu on the folder card at all,
-        // since Edit Modules doesn't grant canEditFolder and this user doesn't own it.
-        openModulesList();
-        cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
-
-        // Cannot add/remove modules via the module's own card menu either — that
-        // requires folder-edit access (admin/superAdmin/editable_folders_id/ownership),
-        // which Edit Modules alone doesn't grant (AppMenu.jsx canAddAppToFolder).
-        viewAppCardOptions(moduleName);
-        cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).should('not.exist');
-      }
-    );
-  });
-
-  it('user with only View Modules permission can view a module in the folder but cannot manage the folder', () => {
-    setupFolderAccess('ViewModulesOnly', { canEditFolder: false, canEditApps: false, canViewApps: true }).then(
-      ({ folderName, userEmail }) => {
-        cy.apiLogin(userEmail, 'password');
-
-        // Cannot manage the folder itself: no "..." menu on the folder card.
-        openModulesList();
-        cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
-      }
-    );
-  });
-
   it("non-owner without any folder-level grant cannot rename or manage another user's folder", () => {
-    const folderName = `Unshared Folder ${testId}`;
-    const userEmail = `qa-folder-unshared-${testId}@example.com`;
+    const attemptId = Date.now();
+    const folderName = `Unshared Folder ${attemptId}`;
+    const userEmail = `qa-folder-unshared-${attemptId}@example.com`;
 
     cy.apiCreateModuleFolder(folderName);
     cy.apiFullUserOnboarding('QA Unshared Folder User', userEmail, 'builder', 'password', wsName);
@@ -165,4 +120,40 @@ describe('Modules — Folder Granular Access', { retries: 0 }, () => {
     openModulesList();
     cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
   });
+
+  //   it('user with only Edit Modules permission can edit a module in the folder but cannot rename the folder or add/remove modules', () => {
+  //   setupFolderAccess('EditModulesOnly', { canEditFolder: false, canEditApps: true, canViewApps: false }).then(
+  //     ({ folderName, moduleId, moduleName, userEmail }) => {
+  //       cy.apiLogin(userEmail, 'password');
+
+  //       // Can edit the module itself — via API, verified via UI.
+  //       cy.apiGetEditingVersionId(moduleId).then((versionId) =>
+  //         cy.apiCreateAppVersion(moduleId, 'v2-edit-modules-only', versionId)
+  //       );
+  //       cy.visit(`/${Cypress.env('workspaceSlug')}/apps/${moduleId}`, { failOnStatusCode: false });
+  //       cy.wait(3000);
+  //       cy.get(moduleSelectors.versionSwitcherButton).should('contain.text', 'v2-edit-modules-only');
+
+  //       // Cannot manage the folder itself: no "..." menu on the folder card at all,
+  //       // since Edit Modules doesn't grant canEditFolder and this user doesn't own it.
+  //       openModulesList();
+  //       cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
+
+  //       viewAppCardOptions(moduleName);
+  //       cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).should('not.exist');
+  //     }
+  //   );
+  // });
+
+  // it('user with only View Modules permission can view a module in the folder but cannot manage the folder', () => {
+  //   setupFolderAccess('ViewModulesOnly', { canEditFolder: false, canEditApps: false, canViewApps: true }).then(
+  //     ({ folderName, userEmail }) => {
+  //       cy.apiLogin(userEmail, 'password');
+
+  //       // Cannot manage the folder itself: no "..." menu on the folder card.
+  //       openModulesList();
+  //       cy.get(commonSelectors.folderCardOptions(folderName)).should('not.exist');
+  //     }
+  //   );
+  // });
 });

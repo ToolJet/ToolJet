@@ -947,6 +947,67 @@ provider-parity.
 
 ---
 
+## 32. App commit cascades all connected resources — single-branch (`describe: app commit cascades all connected resources (single-branch)`)
+
+Dedicated isolated org, **single-branch** (default branch `single-branch-main`, unprotected on the
+simulator, `isBranchingEnabled=false`). Verifies that committing an app carries its **entire connected
+resource graph** into git in ONE push — including a data source used **only inside a connected module**
+(the EE #794 cascade). Graph under test:
+
+```
+app A ──(query)──▶ data source dsA
+app A ──(ModuleViewer)──▶ module M ──(query)──▶ data source dsB   (dsB linked ONLY inside M)
+```
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Reset repo; configure git (default `single-branch-main`), disable branching, pull the default branch | 201/200 |
+| 2 | Create app A + module M + dsA (query on A) + dsB (query on M); wire A's `ModuleViewer` to M's `co_relation_id` | 201 |
+| 3 | `gitpush` app A **once** to the (unprotected) default branch | 201 |
+| 4 | Clone the default branch | `apps/**/app/app.json` has A's `co_relation_id`; `modules/**/app/app.json` has M's; `data-sources/<dsA>/data-source.json` id = dsA `co_relation_id`; **`data-sources/<dsB>/data-source.json` id = dsB `co_relation_id`** (the module-only DS rode into A's push) |
+| 5 | Pull the default branch (round-trip) | app A version, module M version, dsA DSV **and** dsB DSV all `is_synced=true` |
+
+Step 4's dsB assertion is the crux: dsB is linked only via a query on module M's version, so it reaches
+git purely through the cascade `writeReferencedModules → serializeLinkedDataSourcesForApp(M.version)`
+(`ee/app-git/shared/app-git-file-operations.util.ts`, EE #794). Before that fix M's committed JSON kept
+only a dangling `dataSourceId` reference to dsB. Step 5 confirms the pull reconcile marks the whole graph
+synced (mirrors §14/§18). No separate workspace/data-source push — the single app `gitpush` carries
+everything. **Mirrored in `git-sync-gitlab.spec.ts`** (`GITLAB_PAYLOAD`, `-gl` emails).
+
+**Second `it` — `blocks the commit when the connected module has multiple draft versions`:** the
+single-branch counterpart of the §27 (multi-branch) multidraft guard — nothing else covers single-branch.
+A connected module is bootstrapped into the app's commit from its ONE default-branch draft; give the
+module a second default-branch draft (raw `INSERT` copying a version row) and the app `gitpush` must
+fail **400 MODULES_NOT_READY** with a message naming the module (`/not ready to sync/i` +
+`toContain('cc-multidraft-module')`) rather than silently committing an arbitrary draft.
+
+## 33. App sync cascades all connected resources onto the feature branch — multi-branch (`describe: app sync cascades all connected resources onto the feature branch (multi-branch)`)
+
+Dedicated isolated org, **multi-branch** (`isBranchingEnabled=true`). The multi-branch counterpart of §32:
+the same graph (app A → dsA + module M; module M → dsB), synced to a feature branch, must **add every
+connected resource to that branch** in one push.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Configure git, enable branching, pull `main`, create feature branch `feat-sync-cascade` | 201/200 |
+| 2 | On the feature branch: create app A + module M + dsA (query on A) + dsB (query on M); wire A's `ModuleViewer` to M | 201 |
+| 3 | `gitpush` app A **once** to the feature branch | 201 |
+| 4 | Clone the feature branch | A present under `apps/` (by `co_relation_id`); M under `modules/`; `data-sources/<dsA>/…` id = dsA `co_relation_id`; **`data-sources/<dsB>/…` id = dsB `co_relation_id`** |
+| 5 | The pushed app version on the feature branch | `is_synced=true` (BRANCH-type push marks the pushed version; `ee/app-git/shared/app-git-operations.util.ts`) |
+
+Complements §27 (which covers "app push carries a connected DS" and "app push carries a referenced
+module" separately) by exercising the **full nested graph** — A + dsA + M + M-only dsB — in a single push.
+The dsB assertion again pins the EE #794 cascade. **Mirrored in `git-sync-gitlab.spec.ts`**
+(`GITLAB_PAYLOAD`, `-gl` emails).
+
+**Second `it` — `blocks the sync when the connected module has multiple draft versions`:** the
+multi-branch multidraft guard inside this cascade suite. The module lives on the feature branch, but the
+readiness check counts drafts on the DEFAULT branch (`getConnectedModulesBlockingPush`), so TWO extra
+default-branch drafts are injected there; the host-app `gitpush` then fails **400 MODULES_NOT_READY**
+naming the module (`/not ready to sync/i` + `toContain('sc-multidraft-module')`).
+
+---
+
 ## Test-only license control
 
 The real License path (`ee/licensing/configs/License.ts`) always decrypts its key — no test-only branch. In

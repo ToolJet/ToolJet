@@ -26,7 +26,7 @@ export const groupsText = {
   createLabel: "Create",
   folderCreateLabel: "Create",
   folderCreateHelperText: "Create new app folders in this workspace",
-  folderDeleteHelperText: "Delete any folders in this workspace",
+  folderDeleteHelperText: "Delete any app folders in this workspace",
   deleteLabel: "Delete",
   deleteMessage: "This permission will be permanently deleted. Do you want to continue?",
   permissionUpdatedToast: "Group permissions updated",

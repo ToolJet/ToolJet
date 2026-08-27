@@ -1,9 +1,9 @@
 import { commonSelectors } from 'Selectors/common';
+import { deleteFolder, viewFolderCardOptions } from 'Support/utils/common';
 import { openModulesList } from 'Support/utils/platform/modules';
 import { uiCreateFolder, uiVerifyFolderCreated } from 'Support/utils/uiPermissions';
-import { deleteFolder, viewFolderCardOptions } from 'Support/utils/common';
 
-describe('Modules — Folder Permissions: Default Role Access', { retries: 0 }, () => {
+describe('Modules — Folder Permissions: Default Role Access', () => {
   const testId = Date.now();
   const wsName = `role-${testId}`;
   const wsSlug = wsName;

@@ -16,19 +16,27 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     // Depends on every org having a default branch (EnsureDefaultBranchForAllOrganizations).
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
-    // ── 1. Flag backfill (set from the ORIGINAL branch_id state, before backfill) ──
+    // ── 1. Flag backfill — only for orgs that actually have git sync configured ──
     // The is_synced column is created up front by the schema migration
     // AddSyncFlagColumnsToVersions (migrations/) so it exists before any entity-based
     // data-migration runs; here we only backfill it.
     //
-    // Existing branch-associated rows are the synced/gitsync rows. The rows that
-    // are still branch_id IS NULL here are the non-gitsync ones and stay is_synced=false
-    // even after we backfill their branch_id below. is_stub rows always have a
-    // branch_id, so the is_synced requirement for stubs is covered.
+    // A version is "synced" only if its workspace has git sync configured. On the
+    // lts->latest path the consolidated setup migration backfills branch_id onto EVERY
+    // row (universal branch model) and wipes git config, so a bare `branch_id IS NOT NULL`
+    // would wrongly flag every row is_synced=true — which then (a) forces the single-draft
+    // unique index to require dedup and (b) makes a later reconfigure+pull deactivate
+    // resources absent from the fresh repo. Scoping to orgs with an organization_git_sync
+    // row keeps lts rows is_synced=false (nothing is synced yet — the customer syncs later)
+    // while preserving the correct flag for genuinely git-configured workspaces (beta ran
+    // this already and is unaffected).
     await queryRunner.query(`
-      UPDATE app_versions
+      UPDATE app_versions av
       SET is_synced = true
-      WHERE branch_id IS NOT NULL
+      FROM apps a
+      WHERE av.app_id = a.id
+        AND av.branch_id IS NOT NULL
+        AND EXISTS (SELECT 1 FROM organization_git_sync ogs WHERE ogs.organization_id = a.organization_id)
     `);
 
     // ── 2. Drop the name/slug triggers + functions and the gating CHECK ──────────

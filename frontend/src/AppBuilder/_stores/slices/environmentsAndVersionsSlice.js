@@ -623,6 +623,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           // Event handlers are cloned with new ids per version too — without this, click/
           // onPageLoad actions stay wired to the previous version's event definitions.
           get().eventsSlice.updateEventsField('events', data.events || [], moduleId);
+          // "Go to app" link targets — stale otherwise.
+          get().setLinkedApps(data.linkedApps ?? {}, moduleId);
 
           // Queries are cloned with new ids per version too (mirrors pages above), but
           // getAppVersionData doesn't return them — without this refetch, queryNameIdMapping/
