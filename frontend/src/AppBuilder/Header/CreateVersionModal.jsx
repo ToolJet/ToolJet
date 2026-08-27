@@ -9,7 +9,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
-import { ToolTip } from '@/_components/ToolTip';
 import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
@@ -130,8 +129,15 @@ const CreateVersionModal = ({
 
   const selectVersionForCreation = (version) => {
     setSelectedVersionForCreation(version);
-    setVersionName(isGitSyncEnabled ? '' : version.name);
-    setVersionDescription(isGitSyncEnabled ? '' : version.description || '');
+    // New git-sync drafts get a throwaway uuid() name (see createVersion in
+    // versions/util.service.ts) — the user names it here, so that placeholder shouldn't be
+    // pre-filled. A draft that predates git sync, or otherwise already carries a real name,
+    // should still be auto-filled instead of blanked just because git sync happens to be on.
+    const isUuidPlaceholderName = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      version.name || ''
+    );
+    setVersionName(isUuidPlaceholderName ? '' : version.name);
+    setVersionDescription(isUuidPlaceholderName ? '' : version.description || '');
   };
 
   const { t } = useTranslation();
@@ -462,28 +468,16 @@ const CreateVersionModal = ({
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
-              <ToolTip
-                message={
-                  isEditorReadOnly
-                    ? "You don't have access to save this version. Contact admin to know more."
-                    : 'Save this version'
-                }
-                placement="top"
-                width="280px"
+              <ButtonSolid
+                size="lg"
+                variant="primary"
+                className=""
+                type="submit"
+                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
+                data-cy="create-version-save-button"
               >
-                <span>
-                  <ButtonSolid
-                    size="lg"
-                    variant="primary"
-                    className=""
-                    type="submit"
-                    disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
-                    data-cy="create-version-save-button"
-                  >
-                    {t('editor.appVersionManager.saveVersion', 'Save version')}
-                  </ButtonSolid>
-                </span>
-              </ToolTip>
+                {t('editor.appVersionManager.saveVersion', 'Save version')}
+              </ButtonSolid>
             </div>
           </div>
         </form>

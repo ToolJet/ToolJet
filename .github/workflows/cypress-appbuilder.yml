@@ -199,9 +199,9 @@ jobs:
 
       - name: Wait for the server to be ready
         run: |
-          echo "Waiting for ToolJet to start (timeout: 700 seconds)..."
+          echo "Waiting for ToolJet to start (timeout: 900 seconds)..."
           SUCCESS_FOUND=false
-          TIMEOUT=700
+          TIMEOUT=900
           ELAPSED=0
 
           while [ $ELAPSED -lt $TIMEOUT ]; do

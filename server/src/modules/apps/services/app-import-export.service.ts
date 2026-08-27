@@ -1879,10 +1879,19 @@ export class AppImportExportService {
     // non-git workspace keeps full version history, so all versions are imported.
     const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
 
+    // Workflows don't participate in the git-sync branch/one-version-per-branch
+    // model (see the same exemption in createAppVersionsForImportedApp below) —
+    // they can carry multiple real, user-created versions with no branch backing
+    // any of them. The "keep only the latest" collapse below exists to enforce
+    // the branch contract for FRONT_END/MODULE apps and must not apply to them.
+    const isWorkflowImport = importedApp.type === APP_TYPES.WORKFLOW;
+
     // When importing multiple versions, select the right versions to import based on context:
     // - Cloning on a sub-branch (cloning=true, branchId provided): prefer non-stub BRANCH-type
     //   versions matching the source branchId. Fall back to VERSION-type if none found.
     // - Git hydrate (isGitApp + branchId): pass all (pull.service.ts re-parents).
+    // - File import of a workflow into a git-enabled workspace: import ALL versions —
+    //   workflows are branch-agnostic, so the one-version-per-branch contract doesn't apply.
     // - File import into a git-enabled workspace (!isGitApp + !cloning + git ON): keep ONLY
     //   the latest version — the one-version-per-branch contract. Older versions in the JSON
     //   are dropped.
@@ -1907,7 +1916,7 @@ export class AppImportExportService {
         // (the original cross-workspace-import rule) leaves zero versions and crashes
         // hydration with "No versions found after import".
         filteredAppVersions = importingAppVersions;
-      } else if (!isGitApp && !cloning && isGitSyncEnabled) {
+      } else if (!isGitApp && !cloning && isGitSyncEnabled && !isWorkflowImport) {
         // File import into a git-enabled workspace — keep only the latest version.
         // Older versions are dropped (one editable version per branch, no history).
         const latest = this.pickLatestVersionFromImport(importingAppVersions);

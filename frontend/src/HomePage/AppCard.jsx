@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import cx from 'classnames';
 import { AppMenu } from './AppMenu';
 import moment from 'moment';
@@ -237,8 +237,8 @@ export default function AppCard({
             app?.current_version_id === null
               ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
               : !canAccessReleased
-              ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
-              : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+                ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
+                : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
           }
         >
           <button
@@ -267,8 +267,8 @@ export default function AppCard({
                 app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
                   ? '#4C5155'
                   : darkMode
-                  ? '#FDFDFE'
-                  : '#11181C'
+                    ? '#FDFDFE'
+                    : '#11181C'
               }
             />
 
@@ -330,6 +330,26 @@ export default function AppCard({
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
   const isUnsynced =
     isGitSyncConfigured && wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced && appType !== 'workflow';
+
+  // Draft version id an unsynced app would push — same rule used for `app` below, applied to
+  // every sibling so the "Select app" picker in PushAppsModal can push whichever one is chosen.
+  const getPushableVersionId = (a) =>
+    a.app_versions?.find(
+      (v) =>
+        (v.status === 'DRAFT' || v.status === 'draft') && (v.versionType === 'version' || v.version_type === 'version')
+    )?.id ?? a.editing_version?.id;
+
+  const unsyncedAppsList = useMemo(
+    () =>
+      (props.siblingUnsyncedApps || []).map((a) => ({
+        id: a.id,
+        name: a.name,
+        versionId: getPushableVersionId(a),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.siblingUnsyncedApps]
+  );
+
   return (
     <>
       <ToolTip
@@ -513,13 +533,8 @@ export default function AppCard({
           resourceName={app.name}
           appName={app.name}
           appGitId={app.id}
-          versionId={
-            app.app_versions?.find(
-              (v) =>
-                (v.status === 'DRAFT' || v.status === 'draft') &&
-                (v.versionType === 'version' || v.version_type === 'version')
-            )?.id ?? app.editing_version?.id
-          }
+          versionId={getPushableVersionId(app)}
+          appsList={unsyncedAppsList}
           onSuccess={() => {
             setPushModalOpen(false);
             props.refreshApps?.();
