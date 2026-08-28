@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   createApplication,
   createApplicationVersion,
   createUser,
@@ -18,19 +17,18 @@ import {
   updateEntity,
   countEntities,
   saveEntity,
-} from "test-helper";
-import { AppVersion } from "src/entities/app_version.entity";
-import { Folder } from "src/entities/folder.entity";
-import { GroupPermissions } from "src/entities/group_permissions.entity";
-import { WorkspaceBranch } from "@entities/workspace_branch.entity";
-import { APP_TYPES } from "@modules/apps/constants";
-import { GranularPermissions } from "@entities/granular_permissions.entity";
-import { FoldersGroupPermissions } from "@entities/folders_group_permissions.entity";
-import { GroupFolders } from "@entities/group_folders.entity";
-import { ResourceType } from "@modules/group-permissions/constants";
-import { AbilityService } from "@modules/ability/interfaces/IService";
-import { MODULES } from "@modules/app/constants/modules";
-import { AppsGroupPermissions } from "@entities/apps_group_permissions.entity";
+} from 'test-helper';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { Folder } from 'src/entities/folder.entity';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
+import { APP_TYPES } from '@modules/apps/constants';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
+import { GroupFolders } from '@entities/group_folders.entity';
+import { ResourceType } from '@modules/group-permissions/constants';
+import { AbilityService } from '@modules/ability/interfaces/IService';
+import { MODULES } from '@modules/app/constants/modules';
+import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 
 const FOLDER_TYPE = 'front-end';
 
@@ -90,12 +88,9 @@ describe('FoldersController', () => {
           user: adminUserData.user,
         });
         await addAppToFolder(nestApp, appInFolder, folder);
-        const appInFolderVersion = await createApplicationVersion(
-          nestApp,
-          appInFolder,
-        );
+        const appInFolderVersion = await createApplicationVersion(nestApp, appInFolder);
         await updateEntity(AppVersion, appInFolderVersion.id, {
-          appName: "App in folder",
+          appName: 'App in folder',
         });
 
         const anotherUserData = await createUser(nestApp, {
@@ -123,16 +118,16 @@ describe('FoldersController', () => {
         let folder1 = folders[0];
         expect(new Set(Object.keys(folder1))).toEqual(
           new Set([
-            "id",
-            "name",
-            "organization_id",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "folder_apps",
-            "count",
-            "type",
-          ]),
+            'id',
+            'name',
+            'organization_id',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'folder_apps',
+            'count',
+            'type',
+          ])
         );
         expect(folder1).toMatchObject({
           organization_id: user.organizationId,
@@ -155,16 +150,16 @@ describe('FoldersController', () => {
         folder1 = folders[0];
         expect(new Set(Object.keys(folder1))).toEqual(
           new Set([
-            "id",
-            "name",
-            "organization_id",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "folder_apps",
-            "count",
-            "type",
-          ]),
+            'id',
+            'name',
+            'organization_id',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'folder_apps',
+            'count',
+            'type',
+          ])
         );
         expect(folder1).toMatchObject({
           organization_id: user.organizationId,
@@ -187,16 +182,16 @@ describe('FoldersController', () => {
         folder1 = folders[0];
         expect(new Set(Object.keys(folder1))).toEqual(
           new Set([
-            "id",
-            "name",
-            "organization_id",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "folder_apps",
-            "count",
-            "type",
-          ]),
+            'id',
+            'name',
+            'organization_id',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'folder_apps',
+            'count',
+            'type',
+          ])
         );
         expect(folder1).toMatchObject({
           organization_id: user.organizationId,
@@ -216,12 +211,7 @@ describe('FoldersController', () => {
 
         let loggedUser = await login(nestApp);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await login(
-          nestApp,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(nestApp, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         const folder = await createFolder(nestApp, {
@@ -250,12 +240,9 @@ describe('FoldersController', () => {
           user: adminUserData.user,
         });
         await addAppToFolder(nestApp, appInFolder, folder);
-        const appInFolderVersion = await createApplicationVersion(
-          nestApp,
-          appInFolder,
-        );
+        const appInFolderVersion = await createApplicationVersion(nestApp, appInFolder);
         await updateEntity(AppVersion, appInFolderVersion.id, {
-          appName: "App in folder",
+          appName: 'App in folder',
         });
 
         const anotherUserData = await createUser(nestApp, {
@@ -283,16 +270,16 @@ describe('FoldersController', () => {
         let folder1 = folders[0];
         expect(new Set(Object.keys(folder1))).toEqual(
           new Set([
-            "id",
-            "name",
-            "organization_id",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "folder_apps",
-            "count",
-            "type",
-          ]),
+            'id',
+            'name',
+            'organization_id',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'folder_apps',
+            'count',
+            'type',
+          ])
         );
         expect(folder1).toMatchObject({
           organization_id: user.organizationId,
@@ -315,16 +302,16 @@ describe('FoldersController', () => {
         folder1 = folders[0];
         expect(new Set(Object.keys(folder1))).toEqual(
           new Set([
-            "id",
-            "name",
-            "organization_id",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "folder_apps",
-            "count",
-            "type",
-          ]),
+            'id',
+            'name',
+            'organization_id',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'folder_apps',
+            'count',
+            'type',
+          ])
         );
         expect(folder1).toMatchObject({
           organization_id: user.organizationId,
@@ -347,16 +334,16 @@ describe('FoldersController', () => {
         folder1 = folders[0];
         expect(new Set(Object.keys(folder1))).toEqual(
           new Set([
-            "id",
-            "name",
-            "organization_id",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "folder_apps",
-            "count",
-            "type",
-          ]),
+            'id',
+            'name',
+            'organization_id',
+            'created_at',
+            'created_by',
+            'updated_at',
+            'folder_apps',
+            'count',
+            'type',
+          ])
         );
         expect(folder1).toMatchObject({
           organization_id: user.organizationId,
@@ -543,12 +530,7 @@ describe('FoldersController', () => {
 
         let loggedUser = await login(nestApp);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
-        loggedUser = await login(
-          nestApp,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(nestApp, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         const response = await request(nestApp.getHttpServer())
@@ -568,28 +550,139 @@ describe('FoldersController', () => {
         expect(response.body.updated_at).toBeDefined();
       });
 
-      it("should return 400 when creating a folder with a duplicate name in the same org", async () => {
+      it('should return 400 when creating a folder with a duplicate name in the same org', async () => {
         const adminUserData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const loggedUser = await login(nestApp);
 
         await createFolder(nestApp, {
-          name: "DuplicateName",
+          name: 'DuplicateName',
           type: FOLDER_TYPE,
           organizationId: adminUserData.organization.id,
         });
 
         const response = await request(nestApp.getHttpServer())
-          .post("/api/folders")
-          .set("tj-workspace-id", adminUserData.user.defaultOrganizationId)
-          .set("Cookie", loggedUser.tokenCookie)
-          .send({ name: "DuplicateName", type: FOLDER_TYPE });
+          .post('/api/folders')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'DuplicateName', type: FOLDER_TYPE });
 
         expect(response.statusCode).toBe(409);
-        expect(response.body.message).toBe(
-          "This folder name is already taken.",
-        );
+        expect(response.body.message).toBe('This folder name is already taken.');
+      });
+
+      // Parallel to the FOLDER (front-end) create case above, but for a WORKFLOW
+      // folder: the group must have workflowFolderCreate (not folderCreate) to
+      // create it — proves the canCreateFolder branch in folders/ability/index.ts,
+      // fed by request.tj_folder_type set in folders/ability/guard.ts from
+      // request.body?.type.
+      it('should be able to create a new WORKFLOW folder if group has workflowFolderCreate permission', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-create@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-create@tooljet.io',
+          groups: ['all_users', 'wf-create-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'wf-create-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          workflowFolderCreate: true,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const preCount = await countEntities(Folder, {});
+
+        const response = await request(nestApp.getHttpServer())
+          .post('/api/folders')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ name: 'Workflow Folder Created', type: APP_TYPES.WORKFLOW });
+
+        expect(response.statusCode).toBe(201);
+
+        const postCount = await countEntities(Folder, {});
+        expect(postCount).toEqual(preCount + 1);
+
+        const createdFolder = await findEntityOrFail(Folder, { id: response.body.id });
+        expect(createdFolder).toMatchObject({
+          name: 'Workflow Folder Created',
+          type: APP_TYPES.WORKFLOW,
+        });
+      });
+
+      // Isolation: a group with the front-end folderCreate flag (but NOT
+      // workflowFolderCreate) must not be able to create a workflow folder.
+      it('isolation: folderCreate (front-end) permission does NOT grant create access to a WORKFLOW folder', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-create-isolation@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-create-isolation@tooljet.io',
+          groups: ['all_users', 'fe-only-create-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'fe-only-create-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          folderCreate: true,
+          workflowFolderCreate: false,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const response = await request(nestApp.getHttpServer())
+          .post('/api/folders')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ name: 'Workflow Folder Isolation', type: APP_TYPES.WORKFLOW });
+
+        expect(response.statusCode).toBe(403);
+      });
+
+      // Isolation (reverse direction): a group with only workflowFolderCreate
+      // (but NOT folderCreate) must not be able to create a regular front-end
+      // folder.
+      it('isolation: workflowFolderCreate permission does NOT grant create access to a FOLDER (front-end) folder', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-fe-create-isolation@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-fe-create-isolation@tooljet.io',
+          groups: ['all_users', 'wf-only-create-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'wf-only-create-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          workflowFolderCreate: true,
+          folderCreate: false,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const response = await request(nestApp.getHttpServer())
+          .post('/api/folders')
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send({ name: 'Front End Folder Isolation', type: FOLDER_TYPE });
+
+        expect(response.statusCode).toBe(403);
       });
     });
 
@@ -625,19 +718,14 @@ describe('FoldersController', () => {
         loggedUser = await login(nestApp, developerUserData.user.email);
         developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        loggedUser = await login(
-          nestApp,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(nestApp, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         // Seed the folder with developer as creator: the creator-owns check in
         // checkFolderManagePermission grants them rename access without needing
         // an explicit granular permission.
         const folder = await saveEntity(Folder, {
-          name: "Folder1",
+          name: 'Folder1',
           type: FOLDER_TYPE,
           organizationId: adminUserData.organization.id,
           createdBy: developerUserData.user.id,
@@ -662,6 +750,62 @@ describe('FoldersController', () => {
           .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
           .set('Cookie', viewerUserData['tokenCookie'])
           .send({ name: 'my folder' })
+          .expect(403);
+      });
+
+      // Parallel to the FOLDER (front-end) case above: same ownership-bypass path,
+      // now on a Workflow-typed folder — proves guard.ts's `select: [..., 'type']` +
+      // `request.tj_folder_type = folder?.type` doesn't change the ownership outcome.
+      it('should be able to update an existing WORKFLOW folder if group is admin, has update permission, or owns it', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-update@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-update@tooljet.io',
+          groups: ['all_users', 'developer'],
+          organization: adminUserData.organization,
+        });
+        const viewerUserData = await createUser(nestApp, {
+          email: 'viewer-wf-update@tooljet.io',
+          groups: ['viewer', 'all_users'],
+          organization: adminUserData.organization,
+        });
+
+        let loggedUser = await login(nestApp, adminUserData.user.email);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        loggedUser = await login(nestApp, viewerUserData.user.email);
+        viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const workflowFolder = await saveEntity(Folder, {
+          name: 'Workflow Folder1',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+          createdBy: developerUserData.user.id,
+        } as any);
+
+        for (const [i, userData] of [adminUserData, developerUserData].entries()) {
+          const name = `workflow folder ${i}`;
+          await request(nestApp.getHttpServer())
+            .put(`/api/folders/${workflowFolder.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', userData['tokenCookie'])
+            .send({ name })
+            .expect(200);
+
+          const updatedFolder = await findEntity(Folder, { id: workflowFolder.id });
+          expect(updatedFolder.name).toEqual(name);
+        }
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
+          .set('Cookie', viewerUserData['tokenCookie'])
+          .send({ name: 'my workflow folder' })
           .expect(403);
       });
     });
@@ -706,12 +850,7 @@ describe('FoldersController', () => {
         loggedUser = await login(nestApp, developerUserData.user.email);
         developerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        loggedUser = await login(
-          nestApp,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(nestApp, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
@@ -747,9 +886,263 @@ describe('FoldersController', () => {
           .send()
           .expect(403);
       });
+
+      // Parallel to the FOLDER (front-end) delete case above, but on a WORKFLOW
+      // folder: the group must have workflowFolderDelete (not folderDelete) to
+      // delete it — proves the canDeleteFolder branch in folders/ability/index.ts.
+      it('should be able to delete an existing WORKFLOW folder if group has workflowFolderDelete permission', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-delete@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-delete@tooljet.io',
+          groups: ['all_users', 'wf-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'wf-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          workflowFolderDelete: true,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder For Delete',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+        });
+
+        const preCount = await countEntities(Folder, {});
+
+        await request(nestApp.getHttpServer())
+          .delete(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send()
+          .expect(200);
+
+        const postCount = await countEntities(Folder, {});
+        expect(postCount).toEqual(preCount - 1);
+      });
+
+      // Isolation: a group with the front-end folderDelete flag (but NOT
+      // workflowFolderDelete) must not be able to delete a workflow folder.
+      it('isolation: folderDelete (front-end) permission does NOT grant delete access to a WORKFLOW folder', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-wf-delete-isolation@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const developerUserData = await createUser(nestApp, {
+          email: 'dev-wf-delete-isolation@tooljet.io',
+          groups: ['all_users', 'fe-only-developer'],
+          organization: adminUserData.organization,
+        });
+
+        const developerGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'fe-only-developer',
+        });
+        await updateEntity(GroupPermissions, developerGroup.id, {
+          folderDelete: true,
+          workflowFolderDelete: false,
+        });
+
+        const loggedUser = await login(nestApp, developerUserData.user.email);
+        developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Folder For Delete Isolation',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+        });
+
+        await request(nestApp.getHttpServer())
+          .delete(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', developerUserData['tokenCookie'])
+          .send()
+          .expect(403);
+      });
     });
 
-    describe("GET /api/folder-apps | Non-git-sync workspace folder visibility", () => {
+    // ---------------------------------------------------------------------
+    // checkFolderManagePermission (folders/service.ts) — the update-tier
+    // editableFoldersId check must key off the correct resource type
+    // (MODULES.FOLDER vs MODULES.WORKFLOW_FOLDER) depending on folder.type.
+    // ---------------------------------------------------------------------
+    describe('PUT /api/folders/:id | checkFolderManagePermission granular edit-tier (FOLDER vs WORKFLOW_FOLDER)', () => {
+      /** Grants canEditFolder on `folderId`, tagged with `resourceType`, to `groupId`. */
+      async function grantEditFolder(groupId: string, folderId: string, resourceType: ResourceType): Promise<void> {
+        const granular = await saveEntity(GranularPermissions, {
+          groupId,
+          name: 'Folder manage grant',
+          type: resourceType,
+          isAll: false,
+        } as any);
+        const folderPerm = await saveEntity(FoldersGroupPermissions, {
+          granularPermissionId: granular.id,
+          canViewApps: true,
+          canEditApps: true,
+          canEditFolder: true,
+        } as any);
+        await saveEntity(GroupFolders, {
+          folderId,
+          foldersGroupPermissionsId: folderPerm.id,
+        } as any);
+      }
+
+      it('FOLDER (front-end): a canEditFolder grant scoped to the folder allows rename', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-manage-fe@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const endUserData = await createUser(nestApp, {
+          email: 'enduser-manage-fe@tooljet.io',
+          groups: ['all_users', 'builder'],
+          organization: adminUserData.organization,
+        });
+        const group = await createGroupPermission(nestApp, {
+          organization: adminUserData.organization,
+          group: 'manage-fe-group',
+        } as any);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['manage-fe-group']);
+
+        const folder = await createFolder(nestApp, {
+          name: 'FE Manage Folder',
+          type: FOLDER_TYPE,
+          organizationId: adminUserData.organization.id,
+        });
+        await grantEditFolder(group.id, folder.id, ResourceType.FOLDER);
+
+        const loggedUser = await login(nestApp, endUserData.user.email);
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${folder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'FE Manage Folder Renamed' })
+          .expect(200);
+
+        const updatedFolder = await findEntity(Folder, { id: folder.id });
+        expect(updatedFolder.name).toEqual('FE Manage Folder Renamed');
+      });
+
+      it('WORKFLOW_FOLDER (parallel case): a canEditFolder grant scoped to the workflow folder allows rename', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-manage-wf@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const endUserData = await createUser(nestApp, {
+          email: 'enduser-manage-wf@tooljet.io',
+          groups: ['all_users', 'builder'],
+          organization: adminUserData.organization,
+        });
+        const group = await createGroupPermission(nestApp, {
+          organization: adminUserData.organization,
+          group: 'manage-wf-group',
+        } as any);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['manage-wf-group']);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Manage Folder',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+        });
+        await grantEditFolder(group.id, workflowFolder.id, ResourceType.WORKFLOW_FOLDER);
+
+        const loggedUser = await login(nestApp, endUserData.user.email);
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'Workflow Manage Folder Renamed' })
+          .expect(200);
+
+        const updatedFolder = await findEntity(Folder, { id: workflowFolder.id });
+        expect(updatedFolder.name).toEqual('Workflow Manage Folder Renamed');
+      });
+
+      // -------------------------------------------------------------------
+      // Isolation: a FOLDER-tagged canEditFolder grant scoped to a folder id
+      // must not grant rename access when that same folder id is actually a
+      // WORKFLOW folder, and vice versa. checkFolderManagePermission must key
+      // its userPermissions lookup off folder.type, not just the folder id.
+      // -------------------------------------------------------------------
+      it('isolation: a WORKFLOW_FOLDER-tagged canEditFolder grant does NOT allow renaming a front-end folder with the same id', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-manage-isolation-1@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const endUserData = await createUser(nestApp, {
+          email: 'enduser-manage-isolation-1@tooljet.io',
+          groups: ['all_users', 'builder'],
+          organization: adminUserData.organization,
+        });
+        const group = await createGroupPermission(nestApp, {
+          organization: adminUserData.organization,
+          group: 'manage-isolation-group-1',
+        } as any);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['manage-isolation-group-1']);
+
+        const folder = await createFolder(nestApp, {
+          name: 'FE Manage Isolation Folder',
+          type: FOLDER_TYPE,
+          organizationId: adminUserData.organization.id,
+        });
+        // Foreign grant: WORKFLOW_FOLDER type tag, scoped to a front-end folder's id.
+        await grantEditFolder(group.id, folder.id, ResourceType.WORKFLOW_FOLDER);
+
+        const loggedUser = await login(nestApp, endUserData.user.email);
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${folder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'should not rename' })
+          .expect(403);
+      });
+
+      it('isolation: a FOLDER-tagged canEditFolder grant does NOT allow renaming a workflow folder with the same id', async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: 'admin-manage-isolation-2@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const endUserData = await createUser(nestApp, {
+          email: 'enduser-manage-isolation-2@tooljet.io',
+          groups: ['all_users', 'builder'],
+          organization: adminUserData.organization,
+        });
+        const group = await createGroupPermission(nestApp, {
+          organization: adminUserData.organization,
+          group: 'manage-isolation-group-2',
+        } as any);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['manage-isolation-group-2']);
+
+        const workflowFolder = await createFolder(nestApp, {
+          name: 'Workflow Manage Isolation Folder',
+          type: APP_TYPES.WORKFLOW,
+          organizationId: adminUserData.organization.id,
+        });
+        // Foreign grant: FOLDER type tag, scoped to a workflow folder's id.
+        await grantEditFolder(group.id, workflowFolder.id, ResourceType.FOLDER);
+
+        const loggedUser = await login(nestApp, endUserData.user.email);
+
+        await request(nestApp.getHttpServer())
+          .put(`/api/folders/${workflowFolder.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
+          .send({ name: 'should not rename' })
+          .expect(403);
+      });
+    });
+
+    describe('GET /api/folder-apps | Non-git-sync workspace folder visibility', () => {
       async function grantFolderPermission(
         group: GroupPermissions,
         options: {
@@ -758,12 +1151,12 @@ describe('FoldersController', () => {
           canEditApps?: boolean;
           canEditFolder?: boolean;
           isAll?: boolean;
-        },
+        }
       ): Promise<void> {
         const isAll = options.isAll ?? !options.folder;
         const granPerm = await saveEntity(GranularPermissions, {
           groupId: group.id,
-          name: "Folder permissions",
+          name: 'Folder permissions',
           type: ResourceType.FOLDER,
           isAll,
         });
@@ -790,11 +1183,11 @@ describe('FoldersController', () => {
           canAccessStaging?: boolean;
           canAccessProduction?: boolean;
           canAccessReleased?: boolean;
-        },
+        }
       ): Promise<void> {
         const granPerm = await saveEntity(GranularPermissions, {
           groupId: group.id,
-          name: "App permissions",
+          name: 'App permissions',
           type: ResourceType.APP,
           isAll: true,
         });
@@ -812,160 +1205,162 @@ describe('FoldersController', () => {
       }
 
       // TC1: admin sees all folders regardless of app count
-      it("admin sees all folders including empty ones", async () => {
+      it('admin sees all folders including empty ones', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const loggedAdmin = await login(nestApp);
 
         const folderWithApp = await createFolder(nestApp, {
-          name: "has-app",
+          name: 'has-app',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         await createFolder(nestApp, {
-          name: "empty",
+          name: 'empty',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
 
         const app = await createApplication(nestApp, {
-          name: "App1",
+          name: 'App1',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folderWithApp);
 
         const response = await request(nestApp.getHttpServer())
           .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
-          .set("tj-workspace-id", adminData.user.defaultOrganizationId)
-          .set("Cookie", loggedAdmin.tokenCookie);
+          .set('tj-workspace-id', adminData.user.defaultOrganizationId)
+          .set('Cookie', loggedAdmin.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         const names = response.body.folders.map((f) => f.name);
-        expect(names).toContain("has-app");
-        expect(names).toContain("empty");
+        expect(names).toContain('has-app');
+        expect(names).toContain('empty');
       });
 
       // TC2: end-user with no folder perms sees nothing (EE requires explicit folder grant)
-      it("end-user with no folder permissions sees no folders", async () => {
+      it('end-user with no folder permissions sees no folders', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const endUserData = await createUser(nestApp, {
-          email: "enduser@tooljet.io",
-          groups: ["all_users"],
+          email: 'enduser@tooljet.io',
+          groups: ['all_users'],
           organization: adminData.organization,
         });
         const endUserLogin = await login(nestApp, endUserData.user.email);
 
         const folder = await createFolder(nestApp, {
-          name: "folder-no-perm",
+          name: 'folder-no-perm',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App2",
+          name: 'App2',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         const response = await request(nestApp.getHttpServer())
           .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
-          .set("tj-workspace-id", endUserData.user.defaultOrganizationId)
-          .set("Cookie", endUserLogin.tokenCookie);
+          .set('tj-workspace-id', endUserData.user.defaultOrganizationId)
+          .set('Cookie', endUserLogin.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         expect(response.body.folders).toEqual([]);
       });
 
       // TC3: end-user with app-level perm but no folder perm — folder IS surfaced (EE)
-      it("end-user with only app-level permission but no folder permission sees the containing folder", async () => {
+      it('end-user with only app-level permission but no folder permission sees the containing folder', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const endUserData = await createUser(nestApp, {
-          email: "enduser@tooljet.io",
-          groups: ["all_users"],
+          email: 'enduser@tooljet.io',
+          groups: ['all_users'],
           organization: adminData.organization,
         });
 
         const folder = await createFolder(nestApp, {
-          name: "folder-app-only",
+          name: 'folder-app-only',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App3",
+          name: 'App3',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         // grant app-level view via custom group — no folder grant
         await createGroupPermission(nestApp, {
-          group: "app-only-group",
+          group: 'app-only-group',
           organization: adminData.organization,
         });
         const appOnlyGroup = await findEntityOrFail(GroupPermissions, {
-          name: "app-only-group",
+          name: 'app-only-group',
           organizationId: adminData.organization.id,
         });
         await grantAppPermission(nestApp, app, appOnlyGroup.id, { read: true });
-        await createUserGroupPermissions(nestApp, endUserData.user, [
-          "app-only-group",
-        ]);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['app-only-group']);
 
         const endUserLogin = await login(nestApp, endUserData.user.email);
         const response = await request(nestApp.getHttpServer())
           .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
-          .set("tj-workspace-id", endUserData.user.defaultOrganizationId)
-          .set("Cookie", endUserLogin.tokenCookie);
+          .set('tj-workspace-id', endUserData.user.defaultOrganizationId)
+          .set('Cookie', endUserLogin.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         // App-level access surfaces the containing folder — explicit folder permission is not required.
         expect(response.body.folders).toHaveLength(1);
-        expect(response.body.folders[0].name).toBe("folder-app-only");
+        expect(response.body.folders[0].name).toBe('folder-app-only');
         expect(response.body.folders[0].count).toBe(1);
       });
 
       // TC4: end-user with canViewApps on a specific folder sees only that folder
-      it("end-user with view permission on folder1 sees only folder1", async () => {
+      it('end-user with view permission on folder1 sees only folder1', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const endUserData = await createUser(nestApp, {
-          email: "enduser@tooljet.io",
-          groups: ["all_users"],
+          email: 'enduser@tooljet.io',
+          groups: ['all_users'],
           organization: adminData.organization,
         });
 
         const folder1 = await createFolder(nestApp, {
-          name: "permitted-folder",
+          name: 'permitted-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const folder2 = await createFolder(nestApp, {
-          name: "other-folder",
+          name: 'other-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
 
         const app1 = await createApplication(nestApp, {
-          name: "App4a",
+          name: 'App4a',
           user: adminData.user,
         });
-        const app2 = await createApplication(nestApp, {
-          name: "App4b",
-          user: adminData.user,
-        }, false);
+        const app2 = await createApplication(
+          nestApp,
+          {
+            name: 'App4b',
+            user: adminData.user,
+          },
+          false
+        );
         await addAppToFolder(nestApp, app1, folder1);
         await addAppToFolder(nestApp, app2, folder2);
 
         await createGroupPermission(nestApp, {
-          group: "folder-view-group",
+          group: 'folder-view-group',
           organization: adminData.organization,
         });
         const folderViewGroup = await findEntityOrFail(GroupPermissions, {
-          name: "folder-view-group",
+          name: 'folder-view-group',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(folderViewGroup, {
@@ -973,108 +1368,104 @@ describe('FoldersController', () => {
           canViewApps: true,
           isAll: false,
         });
-        await createUserGroupPermissions(nestApp, endUserData.user, [
-          "folder-view-group",
-        ]);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['folder-view-group']);
 
         const endUserLogin = await login(nestApp, endUserData.user.email);
         const response = await request(nestApp.getHttpServer())
           .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
-          .set("tj-workspace-id", endUserData.user.defaultOrganizationId)
-          .set("Cookie", endUserLogin.tokenCookie);
+          .set('tj-workspace-id', endUserData.user.defaultOrganizationId)
+          .set('Cookie', endUserLogin.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         const folderNames = response.body.folders.map((f) => f.name);
-        expect(folderNames).toContain("permitted-folder");
-        expect(folderNames).not.toContain("other-folder");
+        expect(folderNames).toContain('permitted-folder');
+        expect(folderNames).not.toContain('other-folder');
       });
 
       // TC5: isAll=true canViewApps shows all non-empty folders, hides empty ones
-      it("end-user with isAll folder view perm sees all non-empty folders only", async () => {
+      it('end-user with isAll folder view perm sees all non-empty folders only', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const endUserData = await createUser(nestApp, {
-          email: "enduser@tooljet.io",
-          groups: ["all_users"],
+          email: 'enduser@tooljet.io',
+          groups: ['all_users'],
           organization: adminData.organization,
         });
 
         const folderWithApp = await createFolder(nestApp, {
-          name: "non-empty-folder",
+          name: 'non-empty-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         await createFolder(nestApp, {
-          name: "empty-folder",
+          name: 'empty-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
 
         const app = await createApplication(nestApp, {
-          name: "App5",
+          name: 'App5',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folderWithApp);
 
         await createGroupPermission(nestApp, {
-          group: "all-folders-view",
+          group: 'all-folders-view',
           organization: adminData.organization,
         });
         const allFoldersGroup = await findEntityOrFail(GroupPermissions, {
-          name: "all-folders-view",
+          name: 'all-folders-view',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(allFoldersGroup, {
           canViewApps: true,
           isAll: true,
         });
-        await createUserGroupPermissions(nestApp, endUserData.user, [
-          "all-folders-view",
-        ]);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['all-folders-view']);
 
         const endUserLogin = await login(nestApp, endUserData.user.email);
         const response = await request(nestApp.getHttpServer())
           .get(`/api/folder-apps?type=${FOLDER_TYPE}`)
-          .set("tj-workspace-id", endUserData.user.defaultOrganizationId)
-          .set("Cookie", endUserLogin.tokenCookie);
+          .set('tj-workspace-id', endUserData.user.defaultOrganizationId)
+          .set('Cookie', endUserLogin.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         const folderNames = response.body.folders.map((f) => f.name);
-        expect(folderNames).toContain("non-empty-folder");
-        expect(folderNames).not.toContain("empty-folder");
+        expect(folderNames).toContain('non-empty-folder');
+        expect(folderNames).not.toContain('empty-folder');
       });
 
       // TC6: folders are environment-agnostic — canViewApps on a specific folder must grant
       // full env access, same as canEditApps. Currently FAILS: the editable/viewable split
       // caps view-only folder access to released-only.
-      it("folder canViewApps grants all-env access in appSpecificEnvironmentAccess", async () => {
+      it('folder canViewApps grants all-env access in appSpecificEnvironmentAccess', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const endUserData = await createUser(nestApp, {
-          email: "enduser@tooljet.io",
-          groups: ["all_users"],
+          email: 'enduser@tooljet.io',
+          groups: ['all_users'],
           organization: adminData.organization,
         });
 
         const folder = await createFolder(nestApp, {
-          name: "view-env-folder",
+          name: 'view-env-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App6",
+          name: 'App6',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         await createGroupPermission(nestApp, {
-          group: "view-env-group",
+          group: 'view-env-group',
           organization: adminData.organization,
         });
         const viewEnvGroup = await findEntityOrFail(GroupPermissions, {
-          name: "view-env-group",
+          name: 'view-env-group',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(viewEnvGroup, {
@@ -1082,24 +1473,15 @@ describe('FoldersController', () => {
           canViewApps: true,
           isAll: false,
         });
-        await createUserGroupPermissions(nestApp, endUserData.user, [
-          "view-env-group",
-        ]);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['view-env-group']);
 
         const abilityService = nestApp.get(AbilityService);
-        const perms = await abilityService.resourceActionsPermission(
-          endUserData.user,
-          {
-            resources: [
-              { resource: MODULES.APP },
-              { resource: MODULES.FOLDER },
-            ],
-            organizationId: adminData.organization.id,
-          },
-        );
+        const perms = await abilityService.resourceActionsPermission(endUserData.user, {
+          resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
+          organizationId: adminData.organization.id,
+        });
 
-        const envAccess =
-          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        const envAccess = perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
         expect(envAccess?.development).toBe(true);
         expect(envAccess?.staging).toBe(true);
@@ -1108,33 +1490,33 @@ describe('FoldersController', () => {
       });
 
       // TC7: canEditApps on folder → all envs true in appSpecificEnvironmentAccess
-      it("folder canEditApps grants all-env access in appSpecificEnvironmentAccess", async () => {
+      it('folder canEditApps grants all-env access in appSpecificEnvironmentAccess', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const endUserData = await createUser(nestApp, {
-          email: "enduser@tooljet.io",
-          groups: ["all_users"],
+          email: 'enduser@tooljet.io',
+          groups: ['all_users'],
           organization: adminData.organization,
         });
 
         const folder = await createFolder(nestApp, {
-          name: "edit-env-folder",
+          name: 'edit-env-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App7",
+          name: 'App7',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         await createGroupPermission(nestApp, {
-          group: "edit-env-group",
+          group: 'edit-env-group',
           organization: adminData.organization,
         });
         const editEnvGroup = await findEntityOrFail(GroupPermissions, {
-          name: "edit-env-group",
+          name: 'edit-env-group',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(editEnvGroup, {
@@ -1142,24 +1524,15 @@ describe('FoldersController', () => {
           canEditApps: true,
           isAll: false,
         });
-        await createUserGroupPermissions(nestApp, endUserData.user, [
-          "edit-env-group",
-        ]);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['edit-env-group']);
 
         const abilityService = nestApp.get(AbilityService);
-        const perms = await abilityService.resourceActionsPermission(
-          endUserData.user,
-          {
-            resources: [
-              { resource: MODULES.APP },
-              { resource: MODULES.FOLDER },
-            ],
-            organizationId: adminData.organization.id,
-          },
-        );
+        const perms = await abilityService.resourceActionsPermission(endUserData.user, {
+          resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
+          organizationId: adminData.organization.id,
+        });
 
-        const envAccess =
-          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        const envAccess = perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
         expect(envAccess?.development).toBe(true);
         expect(envAccess?.staging).toBe(true);
@@ -1168,34 +1541,34 @@ describe('FoldersController', () => {
       });
 
       // TC8: union semantics — app-level dev access + folder canViewApps → dev access preserved
-      it("folder canViewApps does not strip existing app-level development access (union)", async () => {
+      it('folder canViewApps does not strip existing app-level development access (union)', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const endUserData = await createUser(nestApp, {
-          email: "enduser@tooljet.io",
-          groups: ["all_users"],
+          email: 'enduser@tooljet.io',
+          groups: ['all_users'],
           organization: adminData.organization,
         });
 
         const folder = await createFolder(nestApp, {
-          name: "union-folder",
+          name: 'union-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App8",
+          name: 'App8',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         // group1: grants edit (all-env) access to the specific app
         await createGroupPermission(nestApp, {
-          group: "app-edit-group",
+          group: 'app-edit-group',
           organization: adminData.organization,
         });
         const appEditGroup = await findEntityOrFail(GroupPermissions, {
-          name: "app-edit-group",
+          name: 'app-edit-group',
           organizationId: adminData.organization.id,
         });
         await grantAppPermission(nestApp, app, appEditGroup.id, {
@@ -1204,11 +1577,11 @@ describe('FoldersController', () => {
 
         // group2: grants folder canViewApps only (would set released=true, dev/staging/prod=false)
         await createGroupPermission(nestApp, {
-          group: "folder-view-only",
+          group: 'folder-view-only',
           organization: adminData.organization,
         });
         const folderViewOnlyGroup = await findEntityOrFail(GroupPermissions, {
-          name: "folder-view-only",
+          name: 'folder-view-only',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(folderViewOnlyGroup, {
@@ -1217,25 +1590,15 @@ describe('FoldersController', () => {
           isAll: false,
         });
 
-        await createUserGroupPermissions(nestApp, endUserData.user, [
-          "app-edit-group",
-          "folder-view-only",
-        ]);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['app-edit-group', 'folder-view-only']);
 
         const abilityService = nestApp.get(AbilityService);
-        const perms = await abilityService.resourceActionsPermission(
-          endUserData.user,
-          {
-            resources: [
-              { resource: MODULES.APP },
-              { resource: MODULES.FOLDER },
-            ],
-            organizationId: adminData.organization.id,
-          },
-        );
+        const perms = await abilityService.resourceActionsPermission(endUserData.user, {
+          resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
+          organizationId: adminData.organization.id,
+        });
 
-        const envAccess =
-          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        const envAccess = perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
         // app-edit-group grants dev/staging/prod — folder-view-only must not strip them
         expect(envAccess?.development).toBe(true);
@@ -1247,57 +1610,48 @@ describe('FoldersController', () => {
       // TC9: isAll-folder canViewApps (no specific folder IDs) must grant all-env access,
       // same as the specific-folder canViewApps case (TC6). Currently FAILS: the
       // allFoldersViewable branch caps this to released-only.
-      it("isAll folder canViewApps grants all-env access in appSpecificEnvironmentAccess", async () => {
+      it('isAll folder canViewApps grants all-env access in appSpecificEnvironmentAccess', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const endUserData = await createUser(nestApp, {
-          email: "enduser@tooljet.io",
-          groups: ["all_users"],
+          email: 'enduser@tooljet.io',
+          groups: ['all_users'],
           organization: adminData.organization,
         });
 
         const folder = await createFolder(nestApp, {
-          name: "isall-view-folder",
+          name: 'isall-view-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App9",
+          name: 'App9',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         await createGroupPermission(nestApp, {
-          group: "isall-view-group",
+          group: 'isall-view-group',
           organization: adminData.organization,
         });
         const isAllViewGroup = await findEntityOrFail(GroupPermissions, {
-          name: "isall-view-group",
+          name: 'isall-view-group',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(isAllViewGroup, {
           canViewApps: true,
           isAll: true,
         });
-        await createUserGroupPermissions(nestApp, endUserData.user, [
-          "isall-view-group",
-        ]);
+        await createUserGroupPermissions(nestApp, endUserData.user, ['isall-view-group']);
 
         const abilityService = nestApp.get(AbilityService);
-        const perms = await abilityService.resourceActionsPermission(
-          endUserData.user,
-          {
-            resources: [
-              { resource: MODULES.APP },
-              { resource: MODULES.FOLDER },
-            ],
-            organizationId: adminData.organization.id,
-          },
-        );
+        const perms = await abilityService.resourceActionsPermission(endUserData.user, {
+          resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
+          organizationId: adminData.organization.id,
+        });
 
-        const envAccess =
-          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        const envAccess = perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
         expect(envAccess?.development).toBe(true);
         expect(envAccess?.staging).toBe(true);
@@ -1310,33 +1664,33 @@ describe('FoldersController', () => {
       // `allFoldersEditable && !isAllEditable` is false (isAllEditable blocks it) AND
       // `allFoldersViewable` is also false (canViewApps was never set at the DB level), so
       // NEITHER branch runs — appSpecificEnvironmentAccess stays completely empty for the app.
-      it("isAllEditable app permission + isAll folder canEditFolder grants all-env access (neither-branch bug)", async () => {
+      it('isAllEditable app permission + isAll folder canEditFolder grants all-env access (neither-branch bug)', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const builderData = await createUser(nestApp, {
-          email: "builder@tooljet.io",
+          email: 'builder@tooljet.io',
           organization: adminData.organization,
           groups: [],
         });
 
         const folder = await createFolder(nestApp, {
-          name: "isall-editor-folder",
+          name: 'isall-editor-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App10",
+          name: 'App10',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         await createGroupPermission(nestApp, {
-          group: "isall-editor-group",
+          group: 'isall-editor-group',
           organization: adminData.organization,
         });
         const isAllEditorGroup = await findEntityOrFail(GroupPermissions, {
-          name: "isall-editor-group",
+          name: 'isall-editor-group',
           organizationId: adminData.organization.id,
         });
         await grantAllAppsPermission(isAllEditorGroup, {
@@ -1348,24 +1702,15 @@ describe('FoldersController', () => {
           canEditFolder: true,
           isAll: true,
         });
-        await createUserGroupPermissions(nestApp, builderData.user, [
-          "isall-editor-group",
-        ]);
+        await createUserGroupPermissions(nestApp, builderData.user, ['isall-editor-group']);
 
         const abilityService = nestApp.get(AbilityService);
-        const perms = await abilityService.resourceActionsPermission(
-          builderData.user,
-          {
-            resources: [
-              { resource: MODULES.APP },
-              { resource: MODULES.FOLDER },
-            ],
-            organizationId: adminData.organization.id,
-          },
-        );
+        const perms = await abilityService.resourceActionsPermission(builderData.user, {
+          resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
+          organizationId: adminData.organization.id,
+        });
 
-        const envAccess =
-          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        const envAccess = perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
         expect(envAccess?.development).toBe(true);
         expect(envAccess?.staging).toBe(true);
@@ -1376,33 +1721,33 @@ describe('FoldersController', () => {
       // TC11: builder with isAllEditable=true (app-level) PLUS isAll-folder canViewApps=true
       // (a group that only grants folder viewing, not editing) must still get all-env access.
       // Currently FAILS: falls into the `allFoldersViewable` branch → released-only.
-      it("isAllEditable app permission + isAll folder canViewApps grants all-env access", async () => {
+      it('isAllEditable app permission + isAll folder canViewApps grants all-env access', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const builderData = await createUser(nestApp, {
-          email: "builder@tooljet.io",
+          email: 'builder@tooljet.io',
           organization: adminData.organization,
           groups: [],
         });
 
         const folder = await createFolder(nestApp, {
-          name: "isall-editor-view-folder",
+          name: 'isall-editor-view-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App11",
+          name: 'App11',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         await createGroupPermission(nestApp, {
-          group: "isall-editor-view-group",
+          group: 'isall-editor-view-group',
           organization: adminData.organization,
         });
         const group = await findEntityOrFail(GroupPermissions, {
-          name: "isall-editor-view-group",
+          name: 'isall-editor-view-group',
           organizationId: adminData.organization.id,
         });
         await grantAllAppsPermission(group, {
@@ -1414,24 +1759,15 @@ describe('FoldersController', () => {
           canViewApps: true,
           isAll: true,
         });
-        await createUserGroupPermissions(nestApp, builderData.user, [
-          "isall-editor-view-group",
-        ]);
+        await createUserGroupPermissions(nestApp, builderData.user, ['isall-editor-view-group']);
 
         const abilityService = nestApp.get(AbilityService);
-        const perms = await abilityService.resourceActionsPermission(
-          builderData.user,
-          {
-            resources: [
-              { resource: MODULES.APP },
-              { resource: MODULES.FOLDER },
-            ],
-            organizationId: adminData.organization.id,
-          },
-        );
+        const perms = await abilityService.resourceActionsPermission(builderData.user, {
+          resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
+          organizationId: adminData.organization.id,
+        });
 
-        const envAccess =
-          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        const envAccess = perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
         expect(envAccess?.development).toBe(true);
         expect(envAccess?.staging).toBe(true);
@@ -1443,57 +1779,48 @@ describe('FoldersController', () => {
       // NOT isAllEditable at the app level, but has isAll-folder canEditFolder, correctly hits
       // the `allFoldersEditable && !isAllEditable` branch and gets all-env access already.
       // This isolates isAllEditable specifically as the variable that breaks TC10.
-      it("non-isAllEditable builder + isAll folder canEditFolder already grants all-env access", async () => {
+      it('non-isAllEditable builder + isAll folder canEditFolder already grants all-env access', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const builderData = await createUser(nestApp, {
-          email: "builder@tooljet.io",
+          email: 'builder@tooljet.io',
           organization: adminData.organization,
           groups: [],
         });
 
         const folder = await createFolder(nestApp, {
-          name: "narrow-editor-folder",
+          name: 'narrow-editor-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App12",
+          name: 'App12',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         await createGroupPermission(nestApp, {
-          group: "narrow-editor-group",
+          group: 'narrow-editor-group',
           organization: adminData.organization,
         });
         const group = await findEntityOrFail(GroupPermissions, {
-          name: "narrow-editor-group",
+          name: 'narrow-editor-group',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(group, {
           canEditFolder: true,
           isAll: true,
         });
-        await createUserGroupPermissions(nestApp, builderData.user, [
-          "narrow-editor-group",
-        ]);
+        await createUserGroupPermissions(nestApp, builderData.user, ['narrow-editor-group']);
 
         const abilityService = nestApp.get(AbilityService);
-        const perms = await abilityService.resourceActionsPermission(
-          builderData.user,
-          {
-            resources: [
-              { resource: MODULES.APP },
-              { resource: MODULES.FOLDER },
-            ],
-            organizationId: adminData.organization.id,
-          },
-        );
+        const perms = await abilityService.resourceActionsPermission(builderData.user, {
+          resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
+          organizationId: adminData.organization.id,
+        });
 
-        const envAccess =
-          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        const envAccess = perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
         expect(envAccess?.development).toBe(true);
         expect(envAccess?.staging).toBe(true);
@@ -1505,33 +1832,33 @@ describe('FoldersController', () => {
       // isAll-folder canViewApps — so allFoldersEditable AND allFoldersViewable are both true
       // at once. Must still grant all-env access, and both editableAppsId and viewableAppsId
       // must reflect the folder-derived app (neither flag should cancel the other out).
-      it("isAll folder canEditFolder + isAll folder canViewApps from separate groups both apply", async () => {
+      it('isAll folder canEditFolder + isAll folder canViewApps from separate groups both apply', async () => {
         const adminData = await createUser(nestApp, {
-          email: "admin@tooljet.io",
+          email: 'admin@tooljet.io',
         });
         const builderData = await createUser(nestApp, {
-          email: "builder@tooljet.io",
+          email: 'builder@tooljet.io',
           organization: adminData.organization,
           groups: [],
         });
 
         const folder = await createFolder(nestApp, {
-          name: "dual-isall-folder",
+          name: 'dual-isall-folder',
           type: FOLDER_TYPE,
           organizationId: adminData.organization.id,
         });
         const app = await createApplication(nestApp, {
-          name: "App13",
+          name: 'App13',
           user: adminData.user,
         });
         await addAppToFolder(nestApp, app, folder);
 
         await createGroupPermission(nestApp, {
-          group: "dual-isall-edit-group",
+          group: 'dual-isall-edit-group',
           organization: adminData.organization,
         });
         const editGroup = await findEntityOrFail(GroupPermissions, {
-          name: "dual-isall-edit-group",
+          name: 'dual-isall-edit-group',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(editGroup, {
@@ -1540,11 +1867,11 @@ describe('FoldersController', () => {
         });
 
         await createGroupPermission(nestApp, {
-          group: "dual-isall-view-group",
+          group: 'dual-isall-view-group',
           organization: adminData.organization,
         });
         const viewGroup = await findEntityOrFail(GroupPermissions, {
-          name: "dual-isall-view-group",
+          name: 'dual-isall-view-group',
           organizationId: adminData.organization.id,
         });
         await grantFolderPermission(viewGroup, {
@@ -1552,25 +1879,15 @@ describe('FoldersController', () => {
           isAll: true,
         });
 
-        await createUserGroupPermissions(nestApp, builderData.user, [
-          "dual-isall-edit-group",
-          "dual-isall-view-group",
-        ]);
+        await createUserGroupPermissions(nestApp, builderData.user, ['dual-isall-edit-group', 'dual-isall-view-group']);
 
         const abilityService = nestApp.get(AbilityService);
-        const perms = await abilityService.resourceActionsPermission(
-          builderData.user,
-          {
-            resources: [
-              { resource: MODULES.APP },
-              { resource: MODULES.FOLDER },
-            ],
-            organizationId: adminData.organization.id,
-          },
-        );
+        const perms = await abilityService.resourceActionsPermission(builderData.user, {
+          resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
+          organizationId: adminData.organization.id,
+        });
 
-        const envAccess =
-          perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
+        const envAccess = perms[MODULES.APP]?.appSpecificEnvironmentAccess?.[app.id];
         expect(envAccess).toBeDefined();
         expect(envAccess?.development).toBe(true);
         expect(envAccess?.staging).toBe(true);

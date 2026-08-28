@@ -9,7 +9,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
-import { ToolTip } from '@/_components/ToolTip';
 import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
@@ -23,13 +22,14 @@ const CreateVersionModal = ({
   versionId,
   onVersionCreated,
   isBranchingEnabled,
+  getSuccessMessage,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
-  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isGitSyncEnabled = orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
 
   const {
@@ -129,8 +129,15 @@ const CreateVersionModal = ({
 
   const selectVersionForCreation = (version) => {
     setSelectedVersionForCreation(version);
-    setVersionName(isGitSyncEnabled ? '' : version.name);
-    setVersionDescription(isGitSyncEnabled ? '' : version.description || '');
+    // New git-sync drafts get a throwaway uuid() name (see createVersion in
+    // versions/util.service.ts) — the user names it here, so that placeholder shouldn't be
+    // pre-filled. A draft that predates git sync, or otherwise already carries a real name,
+    // should still be auto-filled instead of blanked just because git sync happens to be on.
+    const isUuidPlaceholderName = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      version.name || ''
+    );
+    setVersionName(isUuidPlaceholderName ? '' : version.name);
+    setVersionDescription(isUuidPlaceholderName ? '' : version.description || '');
   };
 
   const { t } = useTranslation();
@@ -191,56 +198,19 @@ const CreateVersionModal = ({
         }
       }
 
-      // Only call git-related APIs if git sync is enabled
-      await appVersionService.save(appId, selectedVersionForCreation.id, {
-        name: versionName,
-        description: versionDescription,
-        // need to add commit changes logic here
-        status: 'PUBLISHED',
-      });
-      // if (isGitSyncEnabled) {
-      //   // The backend's version-rename-commit event is suppressed when the status is
-      //   // also changing to PUBLISHED (save-version flow), so there's no competing push.
-      //   // We always handle the commit here with the correct "Version Created" message.
-      //   const updatedVersionData = {
-      //     ...selectedVersionForCreation,
-      //     name: versionName,
-      //     description: versionDescription,
-      //   };
-      //   handleCommitOnVersionCreation(updatedVersionData, selectedVersion)
-      //     .then((commitDone) => {
-      //       if (!commitDone) return;
-      //       if (isBranchingEnabled) {
-      //         return gitSyncService.createGitTag(
-      //           appId,
-      //           selectedVersionForCreation.id,
-      //           versionDescription || `Version ${versionName.trim()} created`
-      //         );
-      //       }
-      //     })
-      //     .catch((error) => {
-      //       console.error('Commit or tag failed:', error);
-      //       toast.error(error?.data?.message || 'Commit or tag failed');
-      //     });
-      // }
-
-      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
-        gitSyncService
-          .createGitTag(
-            appId,
-            selectedVersionForCreation.id,
-            versionDescription || `Version ${versionName.trim()} created`
-          )
-          .catch((error) => {
-            const message = error?.data?.message || error?.message || '';
-            // Suppress "already exists" — version was saved successfully and was
-            // already tagged in a previous save. No user action needed.
-            if (message.toLowerCase().includes('already exist')) return;
-            toast.error(message || 'Tag creation failed');
-          });
+      // Save the version. Git-tag creation is OWNED BY THE BACKEND: for a git-enabled workspace we
+      // call the app-git save endpoint, which performs the DB save AND creates the git tag in one
+      // server-side call. Non-git workspaces (incl. community edition) keep using the versions
+      // endpoint. The client no longer fires a separate createGitTag call — the pre-save
+      // checkTagExists above is retained purely for the "rename before saving" duplicate-name UX.
+      const saveValues = { name: versionName, description: versionDescription, status: 'PUBLISHED' };
+      if (isGitSyncEnabled) {
+        await gitSyncService.saveVersion(appId, selectedVersionForCreation.id, saveValues);
+      } else {
+        await appVersionService.save(appId, selectedVersionForCreation.id, saveValues);
       }
 
-      toast.success('Version Created successfully');
+      toast.success(getSuccessMessage ? getSuccessMessage(versionName.trim()) : 'Version Created successfully');
       setVersionName('');
       setVersionDescription('');
       setSelectedVersionForCreation(null);
@@ -498,28 +468,16 @@ const CreateVersionModal = ({
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
-              <ToolTip
-                message={
-                  isEditorReadOnly
-                    ? "You don't have access to save this version. Contact admin to know more."
-                    : 'Save this version'
-                }
-                placement="top"
-                width="280px"
+              <ButtonSolid
+                size="lg"
+                variant="primary"
+                className=""
+                type="submit"
+                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
+                data-cy="create-version-save-button"
               >
-                <span>
-                  <ButtonSolid
-                    size="lg"
-                    variant="primary"
-                    className=""
-                    type="submit"
-                    disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
-                    data-cy="create-version-save-button"
-                  >
-                    {t('editor.appVersionManager.saveVersion', 'Save version')}
-                  </ButtonSolid>
-                </span>
-              </ToolTip>
+                {t('editor.appVersionManager.saveVersion', 'Save version')}
+              </ButtonSolid>
             </div>
           </div>
         </form>

@@ -19,6 +19,7 @@ import { RolesRepository } from '@modules/roles/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 @Module({})
 export class ModulesModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -49,6 +50,7 @@ export class ModulesModule extends SubModule {
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await AppHistoryModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport ? [ModulesController] : [],
       providers: [

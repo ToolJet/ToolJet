@@ -9,7 +9,7 @@ describe('AppsService.getBySlug', () => {
   const getBySlug = AppsService.prototype.getBySlug;
 
   const makeApp = (overrides: Partial<App> = {}): App =>
-    ({ id: 'app-uuid-1', slug: 'my-app', currentVersionId: null, isPublic: true, ...overrides } as App);
+    ({ id: 'app-uuid-1', slug: 'my-app', currentVersionId: null, isPublic: true, ...overrides }) as App;
 
   it('throws 501 HttpException when unauthenticated user accesses app with no released version', async () => {
     expect.assertions(3);
@@ -33,7 +33,7 @@ describe('AppsService.validateReleasedApp', () => {
   const validateReleasedApp = AppsService.prototype.validateReleasedApp;
 
   const makeApp = (overrides: Partial<App> = {}): App =>
-    ({ id: 'app-uuid-1', slug: 'my-app', currentVersionId: 'ver-uuid-1', ...overrides } as App);
+    ({ id: 'app-uuid-1', slug: 'my-app', currentVersionId: 'ver-uuid-1', ...overrides }) as App;
 
   const makeAbility = (canUpdate = false) => ({
     can: jest.fn().mockReturnValue(canUpdate),

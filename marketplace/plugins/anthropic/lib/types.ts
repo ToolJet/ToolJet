@@ -1,17 +1,16 @@
-
 export type SourceOptions = {
   apiKey: string;
 };
 
 export type QueryOptions = {
-  model?: string; 
-  operation: Operation; 
-  system_prompt?: string; 
+  model?: string;
+  operation: Operation;
+  system_prompt?: string;
   message?: string; // Legacy parameter
   history?: string; // New parameter
   prompt?: string; // New parameter
-  temperature?: number | string; 
-  max_size?: number | string; 
+  temperature?: number | string;
+  max_size?: number | string;
 };
 
 //for vision operation
@@ -33,7 +32,7 @@ export type ImageSource = {
 };*/
 
 export enum Operation {
-  Chat = "chat",
-  ChatV2 = "chat-v2",
-  Vision = "vision"
+  Chat = 'chat',
+  ChatV2 = 'chat-v2',
+  Vision = 'vision',
 }

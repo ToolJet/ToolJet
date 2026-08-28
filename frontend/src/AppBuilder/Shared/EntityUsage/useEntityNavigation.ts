@@ -2,7 +2,14 @@ import useStore from '@/AppBuilder/_stores/store';
 import type { UsageEntryKind } from '@/AppBuilder/_utils/entityUsage';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-export const NAVIGABLE_KINDS = new Set<string>(['component', 'query', 'variable', 'pageVariable', 'global', 'constant']);
+export const NAVIGABLE_KINDS = new Set<string>([
+  'component',
+  'query',
+  'variable',
+  'pageVariable',
+  'global',
+  'constant',
+]);
 
 export const KIND_LABELS: Record<UsageEntryKind, string> = {
   component: 'component',

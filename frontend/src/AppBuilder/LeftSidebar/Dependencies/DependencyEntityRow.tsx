@@ -74,9 +74,7 @@ export const DependencyEntityRow = ({
     >
       <span className="dependency-row-icon">{icon}</span>
       <span className="dependency-row-content">
-        <span className="dependency-row-name text-truncate">
-          {withHighlight(label, highlight)}
-        </span>
+        <span className="dependency-row-name text-truncate">{withHighlight(label, highlight)}</span>
         {subtitle && <span className="dependency-row-subtitle text-truncate">{subtitle}</span>}
         {tags.map((tag, index) => (
           // eslint-disable-next-line react/no-array-index-key

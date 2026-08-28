@@ -77,7 +77,6 @@ export class CreatePageDto {
   @IsOptional()
   type?: PageType;
 
-  // Deprecated: use targetCorelationId instead
   @IsUUID()
   @IsOptional()
   appId?: string;

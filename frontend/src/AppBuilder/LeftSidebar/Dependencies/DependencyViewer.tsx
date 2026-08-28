@@ -216,12 +216,8 @@ function buildDetail(
     const item = sections.queries.find((q) => q.id === selected.id);
     if (!item) return null;
     const loadRows: DependencyEntry[] = [
-      ...(item.loadTriggers.appLoad
-        ? [{ kind: 'appLoad' as const, id: null, name: 'App load', details: [] }]
-        : []),
-      ...(item.loadTriggers.pageLoad
-        ? [{ kind: 'pageLoad' as const, id: null, name: 'Page load', details: [] }]
-        : []),
+      ...(item.loadTriggers.appLoad ? [{ kind: 'appLoad' as const, id: null, name: 'App load', details: [] }] : []),
+      ...(item.loadTriggers.pageLoad ? [{ kind: 'pageLoad' as const, id: null, name: 'Page load', details: [] }] : []),
     ];
     return {
       breadcrumbRoot: 'Queries',

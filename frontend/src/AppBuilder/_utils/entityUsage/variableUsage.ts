@@ -54,8 +54,12 @@ export function getVariableUsage(state: any, moduleId = 'canvas', componentUsage
   const applyAnalysis = (analysis: ScriptAnalysis | null, queryId: string, queryName: string, label: string) => {
     if (!analysis) return;
     const detail = detailOf(label);
-    analysis.variableWrites.forEach((n) => addQueryEntry(state, moduleId, row('app', n).setBy, queryId, detail, queryName));
-    analysis.variableReads.forEach((n) => addQueryEntry(state, moduleId, row('app', n).readBy, queryId, detail, queryName));
+    analysis.variableWrites.forEach((n) =>
+      addQueryEntry(state, moduleId, row('app', n).setBy, queryId, detail, queryName)
+    );
+    analysis.variableReads.forEach((n) =>
+      addQueryEntry(state, moduleId, row('app', n).readBy, queryId, detail, queryName)
+    );
     analysis.pageVariableWrites.forEach((n) =>
       addQueryEntry(state, moduleId, row('page', n).setBy, queryId, detail, queryName)
     );
