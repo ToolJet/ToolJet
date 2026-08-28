@@ -16,11 +16,23 @@ const GPT_IMAGE_2_MODELS = new Set(['gpt-image-2', 'gpt-image-2-2026-04-21']);
 
 const GPT_IMAGE_2_SIZE_RE = /^\d+x\d+$/;
 
-const getSizeEnum = (model: string | undefined, size: string | undefined): string => {
+// All known literal sizes across every supported model and SDK version.
+// Using a local type keeps us compatible with openai@4.x, @6.25.x, and @6.39.x — each of
+// which defines ImageGenerateParams.size as a strict literal union (no string & {}).
+type ImageSize =
+  | 'auto'
+  | '1024x1024' | '1536x1024' | '1024x1536'
+  | '256x256'   | '512x512'
+  | '1792x1024' | '1024x1792';
+
+const getSizeEnum = (model: string | undefined, size: string | undefined): ImageSize => {
   // gpt-image-2: pass through any valid WIDTHxHEIGHT string or 'auto'; default 1024x1024
+  // `as ImageSize` is needed because gpt-image-2 accepts arbitrary WIDTHxHEIGHT strings
+  // that cannot be expressed as a subtype of a finite literal union. The regex validates
+  // the value before this point, so the assertion is safe at runtime.
   if (GPT_IMAGE_2_MODELS.has(model ?? '')) {
     const s = size?.trim() ?? '';
-    if (s === 'auto' || GPT_IMAGE_2_SIZE_RE.test(s)) return s;
+    if (s === 'auto' || GPT_IMAGE_2_SIZE_RE.test(s)) return s as ImageSize;
     return '1024x1024';
   }
 
