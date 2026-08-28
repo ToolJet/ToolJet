@@ -116,6 +116,7 @@ export const FileButton = (props) => {
     isVisible,
     isLoading,
     disabledState,
+    disablePicker,
     clearFiles,
     uiErrorMessage,
   } = useFilePicker({
@@ -164,6 +165,9 @@ export const FileButton = (props) => {
 
   const selectedSummary = selectedFiles.length === 1 ? selectedFiles[0].name : `${selectedFiles.length} files selected`;
 
+  // disablePicker is true once the selection limit is reached.
+  const isPickerDisabled = disabledState || disablePicker;
+
   if (!isVisible) return null;
 
   return (
@@ -172,70 +176,78 @@ export const FileButton = (props) => {
         <input
           {...inputProps}
           aria-required={isMandatory}
-          aria-disabled={disabledState}
+          aria-disabled={isPickerDisabled}
           aria-busy={isLoading}
           aria-labelledby={`${id}-label`}
           className="tw-hidden"
         />
-        <Button
-          ref={browseButtonRef}
-          variant={buttonVariant}
-          size="default"
-          className={clsx(
-            'tw-flex tw-group tw-w-full tw-h-full tw-items-center tw-gap-1.5',
-            'focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background',
-            justifyClass[contentAlignment] ?? 'tw-justify-start',
-            iconVisibility ?? 'tw-justify-center',
-            {
-              'tw-flex-row-reverse': iconDirection === 'right',
-            },
-            { 'tw-p-0': padding === 'none' }
-          )}
-          style={buttonStyle}
-          disabled={disabledState}
-          onClick={openFilePicker}
-        >
-          {isLoading ? (
-            <div className="tw-w-full tw-flex-1 tw-h-full tw-flex tw-items-center tw-justify-center">
-              <Loader color={computedLoaderColor} width="16" />
-            </div>
-          ) : (
-            <>
-              {iconVisibility && <TablerIcon iconName={icon} size={16} color={computedIconColor} />}
-              <span
-                className={clsx(
-                  'tw-flex tw-items-center tw-gap-1.5 tw-min-w-0 tw-overflow-hidden',
-                  justifyClass[contentAlignment] ?? 'tw-justify-start'
-                )}
-              >
+        <div className="tw-relative tw-w-full tw-h-full">
+          <Button
+            ref={browseButtonRef}
+            variant={buttonVariant}
+            size="default"
+            className={clsx(
+              'tw-flex tw-group tw-w-full tw-h-full tw-items-center tw-gap-1.5',
+              'focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background',
+              justifyClass[contentAlignment] ?? 'tw-justify-start',
+              iconVisibility ?? 'tw-justify-center',
+              {
+                'tw-flex-row-reverse': iconDirection === 'right',
+              },
+              { 'tw-p-0': padding === 'none' }
+            )}
+            style={{ ...buttonStyle, cursor: isPickerDisabled ? 'not-allowed' : 'pointer' }}
+            // disabled stays tied to disabledState only, not isPickerDisabled: react-dropzone's
+            // noClick already blocks the click at the file limit, so we avoid the extra recolor.
+            disabled={disabledState}
+            aria-disabled={isPickerDisabled}
+            onClick={openFilePicker}
+          >
+            {isLoading ? (
+              <div className="tw-w-full tw-flex-1 tw-h-full tw-flex tw-items-center tw-justify-center">
+                <Loader color={computedLoaderColor} width="16" />
+              </div>
+            ) : (
+              <>
+                {iconVisibility && <TablerIcon iconName={icon} size={16} color={computedIconColor} />}
                 <span
-                  id={`${id}-label`}
-                  style={{ fontSize: `${labelSize}px`, color: computedLabelColor }}
-                  className={clsx('tw-truncate', fontWeightClass[labelWeight] ?? 'tw-font-medium')}
+                  className={clsx(
+                    'tw-flex tw-items-center tw-gap-1.5 tw-min-w-0 tw-overflow-hidden',
+                    justifyClass[contentAlignment] ?? 'tw-justify-start',
+                    { 'tw-pr-6': selectedFiles.length > 0 && enableClearSelection }
+                  )}
                 >
-                  {selectedFiles.length === 0 ? buttonText : selectedSummary}
-                  {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)' }}>*</span>}
-                </span>
-                {selectedFiles.length > 0 && enableClearSelection && (
-                  <Button
-                    variant="ghost"
-                    iconOnly
-                    size="small"
-                    disabled={disabledState}
-                    className="tw-shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      clearFiles();
-                    }}
+                  <span
+                    id={`${id}-label`}
+                    style={{ fontSize: `${labelSize}px`, color: computedLabelColor }}
+                    className={clsx('tw-truncate', fontWeightClass[labelWeight] ?? 'tw-font-medium')}
                   >
-                    <IconX width={16} className="tw-cursor-pointer" color={computedLabelColor} />
-                  </Button>
-                )}
-              </span>
-            </>
+                    {selectedFiles.length === 0 ? buttonText : selectedSummary}
+                    {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)' }}>*</span>}
+                  </span>
+                </span>
+              </>
+            )}
+          </Button>
+          {/* Sibling of the browse Button, not nested inside it, so its disabled state doesn't cascade here. */}
+          {!isLoading && selectedFiles.length > 0 && enableClearSelection && (
+            <Button
+              variant="ghost"
+              iconOnly
+              size="small"
+              disabled={disabledState}
+              className="tw-shrink-0"
+              style={{ position: 'absolute', top: '50%', right: '8px', transform: 'translateY(-50%)' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                clearFiles();
+              }}
+            >
+              <IconX width={16} className="tw-cursor-pointer" color={computedLabelColor} />
+            </Button>
           )}
-        </Button>
+        </div>
       </div>
       {uiErrorMessage && (
         <div className="tw-text-[11px] tw-font-normal tw-leading-4 tw-mt-0.5 tw-text-[color:var(--cc-error-systemStatus)]">
