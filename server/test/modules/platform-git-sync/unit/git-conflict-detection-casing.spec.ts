@@ -29,6 +29,10 @@ describe('GitConflictDetectionService — name casing (case-sensitive)', () => {
   beforeEach(() => {
     service = new GitConflictDetectionService({ log: jest.fn() } as any);
     repoPath = fs.mkdtempSync(path.join(os.tmpdir(), 'git-conflict-casing-'));
+    // The pull orphan sweep (loadOrphanCandidate*) hits the DB and is irrelevant to
+    // name-casing collision detection — stub it out so these stay pure unit tests.
+    jest.spyOn(service as any, 'loadOrphanCandidateModules').mockResolvedValue([]);
+    jest.spyOn(service as any, 'loadOrphanCandidateDataSources').mockResolvedValue([]);
   });
 
   afterEach(() => {
