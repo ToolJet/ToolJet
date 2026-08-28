@@ -117,8 +117,7 @@ cd plugins && npm install && npm run build
 - Database name convention: `tooljet_{edition}` (see `PG_DB` in `.env`)
 - TypeORM schema migrations in `server/migrations/`; data migrations in `server/data-migrations/`
 - Never import `@ee/` or `@cloud/` from CE code — webpack enforces this at compile time
-- Backend port reads from `PORT` in `.env`; frontend port via `npm start -- --port <port>`
-- Lint before committing. Pre-commit hooks are in the repo (husky + lint-staged, activated by root `npm install`); the hook only lint-fixes frontend files — backend needs `cd server && npm run lint` manually. CI lints all three folders and blocks the PR on failure. Never `--no-verify` unless the user explicitly asks
+- Lint before committing. Git hooks are installed via husky (activated by root `npm install` / `npm run prepare`) across root and EE submodules (`server/ee`, `frontend/ee`). Staged files are auto-formatted/linted on commit, and pre-push verifies submodule parity (cleanliness, pointer parity, remote push parity) and linting. Never use `--no-verify` unless explicitly requested.
 
 ## Skills
 

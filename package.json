@@ -7,7 +7,7 @@
     "npm": "10.9.2"
   },
   "lint-staged": {
-    "frontend/src/**/*.{js,jsx,ts,tsx}": [
+    "frontend/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix --config frontend/eslint.config.mjs"
     ],
     "server/**/*.ts": [
@@ -62,7 +62,7 @@
     "rotate:keys": "npm --prefix server run rotate:keys --",
     "rotate:keys:prod": "npm --prefix server run rotate:keys:prod --",
     "heroku-postbuild": "./heroku-postbuild.sh",
-    "prepare": "husky install",
+    "prepare": "husky && (git submodule foreach --quiet 'git config core.hooksPath ../../.husky' || true)",
     "update-version": "node update-version.js"
   },
   "dependencies": {}
