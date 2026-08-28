@@ -60,7 +60,7 @@ const Container = React.memo(
     const { moduleId, isModuleEditor, isModuleMode } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
-    const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
+    const setLastCanvasClick = useStore((state) => state.setLastCanvasClick, shallow);
     const isEmbeddedModule = appType === 'module' && isModuleMode;
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
@@ -236,10 +236,13 @@ const Container = React.memo(
           const scrollTop = realCanvas.scrollTop || 0;
           const x = e.clientX - rect.left + scrollLeft;
           const y = e.clientY - rect.top + scrollTop;
-          setLastCanvasClickPosition({ x, y });
+
+          // Record the canvas the coordinates were measured in, so paste can resolve its own target
+          // instead of reading focusedParentId, which other gestures move without producing a position.
+          setLastCanvasClick({ parentId: canvasId, position: { x, y } });
         }
       },
-      [setFocusedParentId, setLastCanvasClickPosition]
+      [setFocusedParentId, setLastCanvasClick]
     );
 
     /* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
