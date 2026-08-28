@@ -148,12 +148,3 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 
 - **Inference:** The architecture favors a modular monolith for control-plane/API behavior, with connector execution and background workers as extension/execution boundaries rather than independently deployed feature services.
 - **Inference:** App Version is the consistency boundary for editor/viewer behavior; environment-specific source options are deliberately resolved late so the same app definition can move between environments.
-
-## Unanswered questions
-
-- Which public modules are CE production paths versus shared contracts for private editions?
-- Is Redis used for any CE real-time collaboration path beyond BullMQ/cache, or is collaboration entirely edition-specific?
-- What is the supported production topology for splitting API and `WORKER=true` processes, including queue concurrency and failure recovery?
-- Which file/object-storage backend is the CE default in each supported deployment?
-- What formal SLOs, backup/restore guarantees, and disaster-recovery procedures apply to the two PostgreSQL databases and Redis?
-- Which API endpoints are considered stable public APIs versus internal frontend/backend contracts?

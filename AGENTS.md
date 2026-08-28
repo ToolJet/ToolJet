@@ -41,10 +41,10 @@ Frontend conventions, App Builder architecture and glossary: `frontend/AGENTS.md
 
 Use these maps to get oriented before tracing unfamiliar behavior:
 
-- `.agents/context/product-map.md` — users, capabilities, user journeys, confirmed business rules, inferences, and open product questions
+- `.agents/context/product-map.md` — users, capabilities, user journeys, confirmed business rules, and inferences
 - `.agents/context/architecture-map.md` — runtime components, data stores, authentication/authorization, integrations, deployment, failure modes, and end-to-end technical flows
 
-The maps are indexes, not substitutes for current code. Follow their path and symbol references, then verify the relevant implementation, tests, migrations, and recent history. Treat sections labeled **Inference** as hypotheses and **Unanswered questions** as unresolved; never silently promote either to fact.
+The maps are indexes, not substitutes for current code. Follow their path and symbol references, then verify the relevant implementation, tests, migrations, and recent history. Treat sections labeled **Inference** as hypotheses; never silently promote them to fact.
 
 ### Public/private boundary
 
@@ -148,4 +148,4 @@ Context is layered — the closest file to the code you're changing wins:
 
 **Living-docs rule:** when you meaningfully change a module (new service, changed invariant, renamed concept, new gotcha discovered), update its `AGENTS.md` in the same PR. If the module has none yet, create one from `server/docs/agents-module-template.md`. Introducing or renaming a domain term means updating `UBIQUITOUS_LANGUAGE.md` in the same PR — every glossary term should map to a real code identifier or user-facing feature.
 
-Update `.agents/context/product-map.md` when a public capability, user journey, role, or business rule changes. Update `.agents/context/architecture-map.md` when a runtime component, data store, integration boundary, authentication path, deployment topology, or major failure mode changes. Keep evidence links current, preserve explicit inference/unknown labels, and review map changes with the same owners as the code. Stale context is worse than no context.
+Update `.agents/context/product-map.md` when a public capability, user journey, role, or business rule changes. Update `.agents/context/architecture-map.md` when a runtime component, data store, integration boundary, authentication path, deployment topology, or major failure mode changes. Keep evidence links current, preserve explicit inference labels, and review map changes with the same owners as the code. Stale context is worse than no context.

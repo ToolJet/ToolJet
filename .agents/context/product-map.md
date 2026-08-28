@@ -101,11 +101,3 @@ graph TD
 
 - **Inference:** The public repository is intentionally both the CE implementation and the stable contract/base layer extended by private editions. Evidence: dynamic module selection in `SubModule.getProviders` and the documented edition inheritance/composition patterns in `AGENTS.md`.
 - **Inference:** The App + Version aggregate is the dominant product boundary because pages, components, events, queries, release state, and most access checks converge on it.
-
-## Unanswered questions
-
-- Which capabilities in the public source are officially supported in CE today versus present only as shared interfaces, migrations, or gated UI?
-- Which user journeys and APIs carry backward-compatibility guarantees across minor and LTS releases?
-- Who owns each public module and connector, and what are their operational support boundaries?
-- Which telemetry paths are enabled by default in CE, and what exact data classification/redaction policy applies?
-- Are workflows intended to become a CE capability, or should their public base classes be documented solely as edition-extension contracts?
