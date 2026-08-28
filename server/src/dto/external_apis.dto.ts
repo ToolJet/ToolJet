@@ -80,7 +80,6 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
-  @IsOptional()
   @MinLength(5)
   @MaxLength(100)
   password: string;
