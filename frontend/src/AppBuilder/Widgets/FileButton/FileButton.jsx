@@ -7,6 +7,7 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useFilePicker } from '@/AppBuilder/Widgets/FilePicker/hooks/useFilePicker';
 import { getModifiedColor, getCssVarValue } from '@/AppBuilder/Widgets/utils';
 import clsx from 'clsx';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 // Alpha applied to the configured background to render the disabled state. Fading (rather than
 // lightening/darkening) keeps the chosen hue and reads as disabled on both light and dark surfaces.
@@ -37,6 +38,7 @@ export const FileButton = (props) => {
     dataCy,
     id,
   } = props;
+  const cyBase = generateCypressDataCy(dataCy);
   const browseButtonRef = useRef(null);
 
   const {
@@ -179,6 +181,7 @@ export const FileButton = (props) => {
           aria-disabled={isPickerDisabled}
           aria-busy={isLoading}
           aria-labelledby={`${id}-label`}
+          data-cy={`${cyBase}-input-field`}
           className="tw-hidden"
         />
         <div className="tw-relative tw-w-full tw-h-full">
@@ -202,14 +205,20 @@ export const FileButton = (props) => {
             disabled={disabledState}
             aria-disabled={isPickerDisabled}
             onClick={openFilePicker}
+            data-cy={`${cyBase}-button`}
           >
             {isLoading ? (
-              <div className="tw-w-full tw-flex-1 tw-h-full tw-flex tw-items-center tw-justify-center">
+              <div
+                className="tw-w-full tw-flex-1 tw-h-full tw-flex tw-items-center tw-justify-center"
+                data-cy={`${cyBase}-loader`}
+              >
                 <Loader color={computedLoaderColor} width="16" />
               </div>
             ) : (
               <>
-                {iconVisibility && <TablerIcon iconName={icon} size={16} color={computedIconColor} />}
+                {iconVisibility && (
+                  <TablerIcon iconName={icon} size={16} color={computedIconColor} data-cy={`${cyBase}-icon`} />
+                )}
                 <span
                   className={clsx(
                     'tw-flex tw-items-center tw-gap-1.5 tw-min-w-0 tw-overflow-hidden',
@@ -219,11 +228,16 @@ export const FileButton = (props) => {
                 >
                   <span
                     id={`${id}-label`}
+                    data-cy={`${cyBase}-label`}
                     style={{ fontSize: `${labelSize}px`, color: computedLabelColor }}
                     className={clsx('tw-truncate', fontWeightClass[labelWeight] ?? 'tw-font-medium')}
                   >
                     {selectedFiles.length === 0 ? buttonText : selectedSummary}
-                    {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)' }}>*</span>}
+                    {isMandatory && (
+                      <span style={{ color: 'var(--cc-error-systemStatus)' }} data-cy={`${cyBase}-mandatory-indicator`}>
+                        *
+                      </span>
+                    )}
                   </span>
                 </span>
               </>
@@ -238,6 +252,7 @@ export const FileButton = (props) => {
               disabled={disabledState}
               className="tw-shrink-0"
               style={{ position: 'absolute', top: '50%', right: '8px', transform: 'translateY(-50%)' }}
+              data-cy={`${cyBase}-clear-button`}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -250,7 +265,10 @@ export const FileButton = (props) => {
         </div>
       </div>
       {uiErrorMessage && (
-        <div className="tw-text-[11px] tw-font-normal tw-leading-4 tw-mt-0.5 tw-text-[color:var(--cc-error-systemStatus)]">
+        <div
+          className="tw-text-[11px] tw-font-normal tw-leading-4 tw-mt-0.5 tw-text-[color:var(--cc-error-systemStatus)]"
+          data-cy={`${cyBase}-invalid-feedback`}
+        >
           {uiErrorMessage}
         </div>
       )}
