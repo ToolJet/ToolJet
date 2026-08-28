@@ -39,6 +39,8 @@ export class ExternalApiModule extends SubModule {
       ExternalApisGroupsController,
       ExternalApisAppsControllerV2,
       ExternalApisModulesController,
+      ExternalApisModulesControllerV2,
+      ExternalApisWorkflowsControllerV2,
       ExternalApisTjdbController,
       ExternalApisBanController,
     } = await this.getProviders(configs, 'external-apis', [
@@ -49,6 +51,8 @@ export class ExternalApiModule extends SubModule {
       'controllers/groups.controller',
       'controllers/apps.controller.v2',
       'controllers/modules.controller',
+      'controllers/modules.controller.v2',
+      'controllers/workflows.controller.v2',
       'controllers/tooljet-db.controller',
       'controllers/ban.controller',
     ]);
@@ -94,6 +98,8 @@ export class ExternalApiModule extends SubModule {
             ExternalApisGroupsController,
             ExternalApisAppsControllerV2,
             ExternalApisModulesController,
+            ExternalApisModulesControllerV2,
+            ExternalApisWorkflowsControllerV2,
             ExternalApisTjdbController,
             ExternalApisBanController,
           ]

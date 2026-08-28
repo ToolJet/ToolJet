@@ -47,6 +47,20 @@ interface Features {
   [FEATURE_KEY.DELETE_APP_V2]: FeatureConfig;
   [FEATURE_KEY.IMPORT_APP_V2]: FeatureConfig;
   [FEATURE_KEY.EXPORT_APP_V2]: FeatureConfig;
+  [FEATURE_KEY.CREATE_MODULE_V2]: FeatureConfig;
+  [FEATURE_KEY.RENAME_MODULE_V2]: FeatureConfig;
+  [FEATURE_KEY.LIST_MODULES_V2]: FeatureConfig;
+  [FEATURE_KEY.GET_MODULE_V2]: FeatureConfig;
+  [FEATURE_KEY.DELETE_MODULE_V2]: FeatureConfig;
+  [FEATURE_KEY.IMPORT_MODULE_V2]: FeatureConfig;
+  [FEATURE_KEY.EXPORT_MODULE_V2]: FeatureConfig;
+  [FEATURE_KEY.CREATE_WORKFLOW_V2]: FeatureConfig;
+  [FEATURE_KEY.RENAME_WORKFLOW_V2]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKFLOWS_V2]: FeatureConfig;
+  [FEATURE_KEY.GET_WORKFLOW_V2]: FeatureConfig;
+  [FEATURE_KEY.DELETE_WORKFLOW_V2]: FeatureConfig;
+  [FEATURE_KEY.IMPORT_WORKFLOW_V2]: FeatureConfig;
+  [FEATURE_KEY.EXPORT_WORKFLOW_V2]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

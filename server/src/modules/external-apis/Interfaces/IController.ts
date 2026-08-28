@@ -12,6 +12,14 @@ import {
   RenameAppV2Dto,
   ListAppsV2QueryDto,
   ImportAppV2Dto,
+  CreateModuleV2Dto,
+  RenameModuleV2Dto,
+  ListModulesV2QueryDto,
+  ImportModuleV2Dto,
+  CreateWorkflowV2Dto,
+  RenameWorkflowV2Dto,
+  ListWorkflowsV2QueryDto,
+  ImportWorkflowV2Dto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -88,6 +96,58 @@ export interface IExternalApisAppsControllerV2 {
   exportApp(
     workspaceIdentifier: string,
     appIdentifier: string,
+    exportTjdb?: boolean,
+    appVersion?: string,
+    exportAllVersions?: boolean
+  ): Promise<any>;
+}
+
+export interface IExternalApisModulesControllerV2 {
+  // Creates a new module in the given workspace
+  createModule(workspaceIdentifier: string, dto: CreateModuleV2Dto): Promise<any>;
+
+  // Renames a module's name within the given workspace
+  renameModule(workspaceIdentifier: string, moduleIdentifier: string, dto: RenameModuleV2Dto): Promise<any>;
+
+  // Lists modules in the given workspace, with search and pagination
+  listModules(workspaceIdentifier: string, query: ListModulesV2QueryDto): Promise<any>;
+
+  // Retrieves a single module's curated details within the given workspace
+  getModule(workspaceIdentifier: string, moduleIdentifier: string): Promise<any>;
+
+  // Deletes a module within the given workspace
+  deleteModule(workspaceIdentifier: string, moduleIdentifier: string): Promise<void>;
+
+  // Imports a module into the given workspace from an exported definition
+  importModule(workspaceIdentifier: string, dto: ImportModuleV2Dto): Promise<any>;
+
+  // Exports a module's definition from the given workspace
+  exportModule(workspaceIdentifier: string, moduleIdentifier: string, exportTjdb?: boolean): Promise<any>;
+}
+
+export interface IExternalApisWorkflowsControllerV2 {
+  // Creates a new workflow in the given workspace
+  createWorkflow(workspaceIdentifier: string, dto: CreateWorkflowV2Dto): Promise<any>;
+
+  // Renames/updates a workflow's name or folder within the given workspace
+  renameWorkflow(workspaceIdentifier: string, workflowIdentifier: string, dto: RenameWorkflowV2Dto): Promise<any>;
+
+  // Lists workflows in the given workspace, with search/folder filters and pagination
+  listWorkflows(workspaceIdentifier: string, query: ListWorkflowsV2QueryDto): Promise<any>;
+
+  // Retrieves a single workflow's curated details within the given workspace
+  getWorkflow(workspaceIdentifier: string, workflowIdentifier: string): Promise<any>;
+
+  // Deletes a workflow within the given workspace
+  deleteWorkflow(workspaceIdentifier: string, workflowIdentifier: string): Promise<void>;
+
+  // Imports a workflow into the given workspace from an exported definition
+  importWorkflow(workspaceIdentifier: string, dto: ImportWorkflowV2Dto): Promise<any>;
+
+  // Exports a workflow's definition from the given workspace
+  exportWorkflow(
+    workspaceIdentifier: string,
+    workflowIdentifier: string,
     exportTjdb?: boolean,
     appVersion?: string,
     exportAllVersions?: boolean

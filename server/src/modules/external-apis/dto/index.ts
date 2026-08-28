@@ -659,3 +659,105 @@ export class ImportAppV2Dto {
   @IsObject()
   definition: Record<string, any>;
 }
+
+export class CreateModuleV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name: string;
+}
+
+export class RenameModuleV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name?: string;
+}
+
+export class ListModulesV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportModuleV2Dto {
+  // Matches the shape Export Module v2 returns ({ definition: {...} }), so an export
+  // can be re-imported directly without any reshaping by the caller.
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
+}
+
+export class CreateWorkflowV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name: string;
+
+  // workflow folder, by id or name
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string;
+}
+
+export class RenameWorkflowV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  name?: string;
+
+  // accepts either the folder's id or its name; explicit null clears the folder, undefined leaves it unchanged
+  @IsOptional()
+  @ValidateIf((o) => o.folder_id !== null)
+  @IsString()
+  @IsNotEmpty()
+  folder_id?: string | null;
+}
+
+export class ListWorkflowsV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // accepts the folder's id, its name, or the literal string "null" for "workflows not in any folder"
+  @IsOptional()
+  @IsString()
+  folder_id?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ImportWorkflowV2Dto {
+  // Matches the shape Export Workflow v2 returns ({ definition: {...} }), so an export
+  // can be re-imported directly without any reshaping by the caller.
+  @IsDefined()
+  @IsObject()
+  definition: Record<string, any>;
+}
