@@ -1560,8 +1560,14 @@ export const createComponentsSlice = (set, get) => ({
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const componentIds = [];
-    const _selectedComponents = selected?.length ? selected : selectedComponents;
-    if (!_selectedComponents.length || shouldFreeze) return;
+    const _selectedComponents = (selected?.length ? selected : selectedComponents).filter((componentId) => {
+      const def = getComponentDefinition(componentId, moduleId);
+      return def?.component?.component !== 'ModuleContainer';
+    });
+    if (!_selectedComponents.length || shouldFreeze) {
+      set({ showWidgetDeleteConfirmation: false });
+      return;
+    }
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
