@@ -114,6 +114,30 @@ export const kanbanConfig = {
         defaultValue: 400,
       },
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     tooltipFormat: {
       type: 'switch',
       displayName: 'Tooltip',
@@ -131,19 +155,10 @@ export const kanbanConfig = {
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'Enter tooltip text',
-      },
+      validation: { schema: { type: 'string' }, defaultValue: '' },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
       showLabel: false,
-    },
-    collapseWhenHidden: {
-      type: 'toggle',
-      displayName: 'Collapse when hidden',
-      validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'additionalActions',
     },
   },
   events: {
@@ -155,9 +170,34 @@ export const kanbanConfig = {
     onCardSelected: { displayName: 'Card selected' },
   },
   styles: {
-    disabledState: { type: 'toggle', displayName: 'Disable' },
-    visibility: { type: 'toggle', displayName: 'Visibility' },
-    accentColor: { type: 'colorSwatches', displayName: 'Accent color' },
+    accentColor: { type: 'colorSwatches', displayName: 'Accent color', accordian: 'Board' },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      accordian: 'container',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      accordian: 'container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      accordian: 'container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'container',
+    },
   },
   actions: [
     {
@@ -240,15 +280,20 @@ export const kanbanConfig = {
       },
       size: { value: 'lg' },
       modalHeight: { value: 400 },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       tooltipFormat: { value: 'plainText' },
       tooltip: { value: '' },
-      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       accentColor: { value: 'var(--cc-primary-brand)' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      borderRadius: { value: '{{6}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

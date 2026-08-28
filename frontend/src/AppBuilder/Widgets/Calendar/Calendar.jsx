@@ -5,6 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
 import './Calendar.scss';
 import _ from 'lodash';
+import Spinner from '@/_ui/Spinner';
 
 const localizer = momentLocalizer(moment);
 
@@ -40,7 +41,9 @@ export default function Calendar({
   setExposedVariable,
   dataCy,
 }) {
-  const style = { height, borderRadius: `${styles.borderRadius}px`, overflow: 'hidden' };
+  const { visibility, disabledState, loadingState } = properties;
+  const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
+
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
   const events = Array.isArray(properties?.events)
     ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
@@ -130,79 +133,92 @@ export default function Calendar({
     <div
       id={id}
       style={{
-        display: styles.visibility ? 'block' : 'none',
-        boxShadow: styles.boxShadow,
-        border: `1px solid ${styles.borderColor}`,
-        borderRadius: `${styles.borderRadius}px`,
+        height,
+        display: visibility ? 'block' : 'none',
+        backgroundColor,
+        boxShadow,
+        border: '1px solid',
+        borderColor,
+        borderRadius: `${borderRadius}px`,
       }}
       data-cy={dataCy}
+      data-disabled={disabledState}
+      aria-busy={loadingState}
       className="scrollbar-container"
     >
-      <ReactCalendar
-        className={`calendar-widget
+      {loadingState ? (
+        <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
+          <Spinner />
+        </div>
+      ) : (
+        <>
+          <ReactCalendar
+            className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
         ${styles.cellSizeInViewsClassifiedByResource}
         ${properties.highlightToday ? '' : 'dont-highlight-today'}
         ${currentView === 'week' ? 'resources-week-cls' : ''}
         ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
-        localizer={localizer}
-        date={currentDate}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        style={style}
-        views={allowedCalendarViews}
-        defaultView={properties.defaultView || allowedCalendarViews[0]}
-        view={currentView}
-        onView={(view) => {
-          setExposedVariable('currentView', view);
-          setCurrentView(view);
-          fireEvent('onCalendarViewChange');
-        }}
-        {...resourcesParam}
-        resourceIdAccessor="resourceId"
-        resourceTitleAccessor="title"
-        min={startTime}
-        max={endTime}
-        onSelectEvent={(calendarEvent, e) => {
-          fireEvent('onCalendarEventSelect', { id, calendarEvent });
-          if (properties.showPopOverOnEventClick)
-            setEventPopoverOptions({
-              ...eventPopoverOptions,
-              show: true,
-              offset: {
-                left: e.target.getBoundingClientRect().x,
-                top: e.target.getBoundingClientRect().y,
-                width: e.target.getBoundingClientRect().width,
-                height: e.target.getBoundingClientRect().height,
-              },
-            });
-        }}
-        onNavigate={(date) => {
-          const formattedDate = moment(date).format(properties.dateFormat);
-          setExposedVariable('currentDate', formattedDate);
-          setCurrentDate(date);
-          fireEvent('onCalendarNavigate');
-        }}
-        selectable={true}
-        onSelectSlot={slotSelectHandler}
-        toolbar={properties.displayToolbar}
-        eventPropGetter={eventPropGetter}
-        tooltipAccessor="tooltip"
-        popup={true}
-        components={components}
-      />
-      <CalendarEventPopover
-        id={id}
-        calendarWidgetId={id}
-        darkMode={darkMode}
-        show={eventPopoverOptions.show}
-        offset={eventPopoverOptions.offset}
-        containerProps={containerProps}
-        removeComponent={removeComponent}
-        popoverClosed={popoverClosed}
-        component={component}
-      />
+            localizer={localizer}
+            date={currentDate}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ borderRadius: `${borderRadius}px`, overflow: 'hidden' }}
+            views={allowedCalendarViews}
+            defaultView={properties.defaultView || allowedCalendarViews[0]}
+            view={currentView}
+            onView={(view) => {
+              setExposedVariable('currentView', view);
+              setCurrentView(view);
+              fireEvent('onCalendarViewChange');
+            }}
+            {...resourcesParam}
+            resourceIdAccessor="resourceId"
+            resourceTitleAccessor="title"
+            min={startTime}
+            max={endTime}
+            onSelectEvent={(calendarEvent, e) => {
+              fireEvent('onCalendarEventSelect', { id, calendarEvent });
+              if (properties.showPopOverOnEventClick)
+                setEventPopoverOptions({
+                  ...eventPopoverOptions,
+                  show: true,
+                  offset: {
+                    left: e.target.getBoundingClientRect().x,
+                    top: e.target.getBoundingClientRect().y,
+                    width: e.target.getBoundingClientRect().width,
+                    height: e.target.getBoundingClientRect().height,
+                  },
+                });
+            }}
+            onNavigate={(date) => {
+              const formattedDate = moment(date).format(properties.dateFormat);
+              setExposedVariable('currentDate', formattedDate);
+              setCurrentDate(date);
+              fireEvent('onCalendarNavigate');
+            }}
+            selectable={true}
+            onSelectSlot={slotSelectHandler}
+            toolbar={properties.displayToolbar}
+            eventPropGetter={eventPropGetter}
+            tooltipAccessor="tooltip"
+            popup={true}
+            components={components}
+          />
+          <CalendarEventPopover
+            id={id}
+            calendarWidgetId={id}
+            darkMode={darkMode}
+            show={eventPopoverOptions.show}
+            offset={eventPopoverOptions.offset}
+            containerProps={containerProps}
+            removeComponent={removeComponent}
+            popoverClosed={popoverClosed}
+            component={component}
+          />
+        </>
+      )}
     </div>
   );
 }
