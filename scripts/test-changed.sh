@@ -110,16 +110,21 @@ run_test_step() {
       local char="${spin_chars[i % ${#spin_chars[@]}]}"
       local elapsed=$(( $(date +%s) - start_time ))
       
-      # Extract live metrics from jest log
+      # Strip ANSI color codes from log buffer for robust regex parsing
+      local clean_log
+      clean_log=$(sed -E $'s/\033\\[[0-9;]*[a-zA-Z]//g' "$log_file" 2>/dev/null || true)
+      
       local passed_count
-      passed_count=$(grep -cE '^[[:space:]]*PASS[[:space:]]' "$log_file" 2>/dev/null || true)
+      passed_count=$(printf '%s\n' "$clean_log" | grep -cE '^[[:space:]]*PASS[[:space:]]' 2>/dev/null || true)
       local failed_count
-      failed_count=$(grep -cE '^[[:space:]]*FAIL[[:space:]]' "$log_file" 2>/dev/null || true)
+      failed_count=$(printf '%s\n' "$clean_log" | grep -cE '^[[:space:]]*FAIL[[:space:]]' 2>/dev/null || true)
       local total_completed=$((passed_count + failed_count))
       
       local latest_suite=""
       if [ $total_completed -gt 0 ]; then
-        latest_suite=$(grep -E '^[[:space:]]*(PASS|FAIL)[[:space:]]' "$log_file" 2>/dev/null | tail -1 | awk '{print $2}' | xargs -n1 basename 2>/dev/null || true)
+        local suite_path
+        suite_path=$(printf '%s\n' "$clean_log" | grep -E '^[[:space:]]*(PASS|FAIL)[[:space:]]' 2>/dev/null | tail -1 | awk '{print $2}')
+        latest_suite=$(basename "$suite_path" 2>/dev/null || true)
       fi
       
       local live_msg=""
@@ -148,11 +153,13 @@ run_test_step() {
   end_time=$(date +%s)
   local duration=$((end_time - start_time))
   
-  # Extract final summary lines from jest
+  local clean_final_log
+  clean_final_log=$(sed -E $'s/\033\\[[0-9;]*[a-zA-Z]//g' "$log_file" 2>/dev/null || true)
+  
   local suite_summary
-  suite_summary=$(grep -E '^Test Suites:' "$log_file" 2>/dev/null | head -1 | sed 's/Test Suites:[[:space:]]*//' || true)
+  suite_summary=$(printf '%s\n' "$clean_final_log" | grep -E '^[[:space:]]*Test Suites:' 2>/dev/null | head -1 | sed 's/^[[:space:]]*Test Suites:[[:space:]]*//' || true)
   local test_summary
-  test_summary=$(grep -E '^Tests:' "$log_file" 2>/dev/null | head -1 | sed 's/Tests:[[:space:]]*//' || true)
+  test_summary=$(printf '%s\n' "$clean_final_log" | grep -E '^[[:space:]]*Tests:' 2>/dev/null | head -1 | sed 's/^[[:space:]]*Tests:[[:space:]]*//' || true)
   
   local summary_text=""
   if [ -n "$suite_summary" ]; then
