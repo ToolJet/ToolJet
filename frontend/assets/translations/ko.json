@@ -1,0 +1,1069 @@
+{
+    "globals": {
+        "readDocumentation": "문서 보기",
+        "cancel": "취소",
+        "save": "저장",
+        "savechanges": "변경 사항 저장",
+        "execute": "실행",
+        "Build": "빌드",
+        "back": "뒤로",
+        "edit": "편집",
+        "search": "검색",
+        "update": "업데이트",
+        "delete": "삭제",
+        "remove": "제거",
+        "add": "추가",
+        "view": "보기",
+        "create": "생성",
+        "enabled": "사용",
+        "disabled": "사용 안 함",
+        "yes": "예",
+        "submit": "제출",
+        "select": "선택",
+        "environmentVar": "워크스페이스 상수/변수",
+        "saving": "저장 중...",
+        "saveDatasource": "데이터 소스 저장",
+        "authorize": "인증",
+        "connect": "연결",
+        "reconnect": "다시 연결",
+        "components": "컴포넌트",
+        "send": "보내기",
+        "noConnection": "연결할 수 없습니다",
+        "connectionVerified": "연결이 확인되었습니다",
+        "left": "왼쪽",
+        "center": "가운데",
+        "right": "오른쪽",
+        "justified": "양쪽 맞춤",
+        "host": "호스트",
+        "operation": "작업",
+        "header": "헤더",
+        "path": "경로",
+        "query": "쿼리",
+        "requestBody": "요청 본문",
+        "page": "페이지",
+        "searchItem": "이 워크스페이스에서 앱 검색",
+        "workflowsSearchItem": "이 워크스페이스에서 워크플로 검색",
+        "searchComponents": "컴포넌트 검색",
+        "promote": "승격",
+        "release": "릴리스"
+    },
+    "errorBoundary": "문제가 발생했습니다.",
+    "viewer": "죄송합니다. 이 앱은 현재 점검 중입니다",
+    "app": {
+        "updateAvailable": "업데이트 사용 가능",
+        "newVersionReleased": "ToolJet의 새 버전이 출시되었습니다.",
+        "readReleaseNotes": "릴리스 노트 보기 및 업데이트",
+        "skipVersion": "이 버전 건너뛰기"
+    },
+    "stripe": "Stripe의 OpenAPI 명세를 불러오는 동안 잠시 기다려 주세요.",
+    "openApi": {
+        "noValidOpenApi": "유효한 OpenAPI 명세를 사용할 수 없습니다.",
+        "selectHost": "호스트를 선택하세요",
+        "selectOperation": "작업을 선택하세요"
+    },
+    "slack": {
+        "authorize": "인증",
+        "connectToolJetToSlack": "{{whiteLabelText}}은(는) Slack에 연결하여 사용자 목록 조회, 메시지 전송 등을 할 수 있습니다. 적절한 권한 범위를 선택하세요.",
+        "chatWrite": "chat:write",
+        "listUsersAndSendMessage": "{{whiteLabelText}} 앱에서 사용자 목록을 조회하고 사용자 및 채널에 메시지를 보낼 수 있습니다.",
+        "connectSlack": "Slack에 연결"
+    },
+    "googleSheets": {
+        "readOnly": "읽기 전용",
+        "enableReadAndWrite": "{{whiteLabelText}} 앱에서 Google Sheets를 수정하려면 읽기 및 쓰기 액세스를 선택하세요",
+        "readDataFromSheets": "{{whiteLabelText}} 앱은 Google Sheets에서 데이터를 읽을 수만 있습니다",
+        "readWrite": "읽기 및 쓰기",
+        "readModifySheets": "{{whiteLabelText}} 앱은 시트에서 데이터를 읽고, 시트를 수정하는 등의 작업을 할 수 있습니다.",
+        "toGoogleSheets": "Google Sheets에"
+    },
+    "zendesk": {
+        "enableReadAndWrite": "{{whiteLabelText}} 앱에서 Zendesk 리소스를 수정하려면 읽기 및 쓰기 액세스를 선택하세요",
+        "readDataFromResources": "{{whiteLabelText}} 앱은 리소스에서 데이터를 읽을 수만 있습니다",
+        "readModifySheets": "{{whiteLabelText}} 앱은 리소스에서 데이터를 읽고, 리소스를 수정하는 등의 작업을 할 수 있습니다."
+    },
+    "profile": {
+        "profileSettings": "프로필 설정"
+    },
+    "verificationSuccessPage": {
+        "workEmail": "이메일",
+        "enterFullName": "전체 이름을 입력하세요",
+        "enterNewPassword": "새 비밀번호를 입력하세요",
+        "name": "이름",
+        "password": "비밀번호",
+        "acceptInvite": "초대 수락",
+        "successfullyVerifiedEmail": "이메일 인증이 완료되었습니다",
+        "setupTooljet": "{{whiteLabelText}} 설정"
+    },
+    "loginSignupPage": {
+        "forgotPassword": "비밀번호 찾기",
+        "emailAddress": "이메일 주소",
+        "enterEmail": "이메일 입력",
+        "dontHaveAccount": "아직 계정이 없으신가요?",
+        "enterBusinessEmail": "회사 이메일을 입력하세요",
+        "alreadyHaveAnAccount": "이미 계정이 있으신가요?",
+        "resetPassword": "비밀번호 재설정",
+        "signIn": "로그인",
+        "signUp": "회원가입",
+        "createToolJetAccount": "계정 만들기",
+        "password": "비밀번호",
+        "showPassword": "비밀번호 표시",
+        "loginTo": "로그인",
+        "yourAccount": "내 계정",
+        "noLoginMethodsEnabled": "이 워크스페이스에 활성화된 로그인 방법이 없습니다",
+        "emailConfirmLink": "확인 링크는 이메일을 확인해 주세요",
+        "newPassword": "새 비밀번호",
+        "passwordConfirmation": "비밀번호 확인",
+        "newToTooljet": "{{whiteLabelText}}이(가) 처음이신가요?",
+        "newToWorkspace": "이 워크스페이스가 처음이신가요?",
+        "enterWorkEmail": "회사 이메일을 입력하세요",
+        "enterPassword": "비밀번호 입력",
+        "forgot": "잊으셨나요?",
+        "workEmail": "이메일",
+        "joinTooljet": "{{whiteLabelText}} 가입",
+        "getStartedForFree": "무료로 시작하기",
+        "passwordCharacter": "비밀번호는 5자 이상이어야 합니다",
+        "enterFullName": "전체 이름을 입력하세요",
+        "enterNewPassword": "새 비밀번호를 입력하세요"
+    },
+    "editor": {
+        "preview": "미리보기",
+        "share": "공유",
+        "shareModal": {
+            "makeApplicationPublic": "애플리케이션 공개로 설정",
+            "shareableLink": "공유 가능한 앱 링크",
+            "copy": "복사",
+            "embeddableLink": "임베드 앱 링크",
+            "manageUsers": "사용자"
+        },
+        "appVersionManager": {
+            "version": "버전",
+            "currentlyReleased": "현재 릴리스됨",
+            "createVersion": "버전 생성",
+            "saveVersion": "버전 저장",
+            "createDraftVersion": "초안 버전 생성",
+            "versionName": "버전 이름",
+            "versionDescription": "버전 설명",
+            "createVersionFrom": "기존 버전에서 생성",
+            "save": "저장",
+            "create": "버전 생성",
+            "editVersion": "버전 편집",
+            "deleteVersion": "이 버전({{version}})을 정말 삭제하시겠습니까?",
+            "enterVersionName": "버전 이름을 입력하세요",
+            "enterVersionDescription": "버전 설명을 입력하세요",
+            "versionNameHelper": "버전 이름에는 공백이나 특수문자를 포함할 수 없으며 25자를 초과할 수 없습니다",
+            "versionDescriptionHelper": "설명은 최대 500자까지 입력할 수 있습니다",
+            "versionAlreadyReleased": "이미 릴리스된 버전은 변경할 수 없습니다. \n 변경하려면 새 버전을 생성하거나 다른 버전으로 전환하세요."
+        },
+        "queries": "쿼리",
+        "inspectComponent": "검사할 컴포넌트를 선택하세요",
+        "release": "릴리스",
+        "searchQueries": "쿼리 검색",
+        "createQuery": "쿼리 생성",
+        "queryManager": {
+            "general": "일반",
+            "advanced": "고급",
+            "preview": "미리보기",
+            "Save": "저장",
+            "selectDatasource": "데이터 소스 선택",
+            "addDatasource": "데이터 소스 추가",
+            "dataSourceManager": {
+                "toast": {
+                    "success": {
+                        "dataSourceAdded": "데이터 소스가 추가되었습니다",
+                        "dataSourceSaved": "데이터 소스가 저장되었습니다"
+                    },
+                    "error": {
+                        "noEmptyDsName": "데이터 소스 이름은 비워둘 수 없습니다"
+                    }
+                },
+                "suggestDataSource": "데이터 소스 제안",
+                "suggestAnIntegration": "연동 제안",
+                "whatLookingFor": "무엇을 찾고 계셨는지 알려주세요.",
+                "noResultFound": "원하는 항목을 찾지 못하셨나요?",
+                "suggest": "제안",
+                "addNewDataSource": "새 데이터 소스 추가",
+                "whiteListIP": "데이터 소스가 공개적으로 접근할 수 없는 경우 당사의 IP 주소를 화이트리스트에 추가해 주세요",
+                "copied": "복사됨",
+                "copy": "복사",
+                "saving": "저장 중",
+                "noResultsFor": "다음에 대한 결과 없음",
+                "noteTaken": "감사합니다. 의견을 잘 기록했습니다!",
+                "goToAllDatasources": "모든 데이터 소스로 이동",
+                "send": "보내기"
+            },
+            "runQueryOnApplicationLoad": "애플리케이션 로드 시 이 쿼리 실행",
+            "confirmBeforeQueryRun": "쿼리 실행 전 확인 요청",
+            "notificationOnSuccess": "성공 시 알림 표시",
+            "runOnDependencyChange": "종속성 변경 시 이 쿼리 실행",
+            "successMessage": "성공 메시지",
+            "queryRanSuccessfully": "쿼리가 성공적으로 실행되었습니다",
+            "notificationDuration": "알림 지속 시간(초)",
+            "events": "이벤트",
+            "transformation": {
+                "transformationToolTip": "변환을 사용하면 쿼리 결과를 변형할 수 있습니다. ToolJet에서는 JavaScript와 Python 두 가지 프로그래밍 언어로 쿼리 결과를 변환할 수 있습니다",
+                "transformations": "변환"
+            }
+        },
+        "inspector": {
+            "eventManager": {
+                "event": "이벤트",
+                "action": "액션",
+                "debounce": "디바운스",
+                "actionOptions": "액션 옵션",
+                "message": "메시지",
+                "alertType": "알림 유형",
+                "url": "URL",
+                "modal": "모달",
+                "text": "텍스트",
+                "query": "쿼리",
+                "key": "키",
+                "value": "값",
+                "type": "유형",
+                "fileName": "파일 이름",
+                "data": "데이터",
+                "table": "테이블",
+                "pageIndex": "페이지 인덱스",
+                "component": "컴포넌트",
+                "addHandler": "새 이벤트 핸들러",
+                "addNewEvent": "새 이벤트 추가",
+                "addEventHandler": "+ 이벤트 핸들러 추가",
+                "emptyMessage": "이 {{componentName}}에는 이벤트 핸들러가 없습니다",
+                "page": "페이지",
+                "addKeyValueParam": "{{parameter}} 추가"
+            }
+        }
+    },
+    "homePage": {
+        "appCard": {
+            "changeIcon": "아이콘 변경",
+            "addToFolder": "폴더에 추가",
+            "move": "이동",
+            "to": "대상",
+            "selectFolder": "폴더 선택",
+            "deleteApp": "앱 삭제",
+            "exportApp": "앱 내보내기",
+            "cloneApp": "앱 복제",
+            "launch": "실행",
+            "maintenance": "유지보수",
+            "noDeployedVersion": "앱에 배포된 버전이 없습니다",
+            "openInAppViewer": "앱 뷰어에서 열기",
+            "removeFromFolder": "폴더에서 제거"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "새 ToolJet 워크스페이스에 오신 것을 환영합니다",
+            "getStartedCreateNewApp": "새 애플리케이션을 생성하거나 ToolJet 라이브러리의 템플릿을 사용하여 애플리케이션을 생성하여 시작할 수 있습니다.",
+            "importApplication": "앱 가져오기"
+        },
+        "foldersSection": {
+            "allApplications": "모든 애플리케이션",
+            "folders": "폴더",
+            "createNewFolder": "+ 새로 만들기",
+            "noFolders": "아직 생성한 폴더가 없습니다. 폴더를 사용하여 앱을 정리하세요",
+            "createFolder": "폴더 생성",
+            "updateFolder": "폴더 업데이트",
+            "editFolder": "폴더 편집",
+            "deleteFolder": "폴더 삭제",
+            "folderName": "폴더 이름",
+            "wishToDeleteFolder": "{{folderName}} 폴더를 정말 삭제하시겠습니까? 폴더 안의 앱은 삭제되지 않습니다."
+        },
+        "header": {
+            "createNewApplication": "앱 생성",
+            "import": "기기에서 가져오기",
+            "chooseFromTemplate": "템플릿에서 선택"
+        },
+        "pagination": {
+            "showing": "표시 중",
+            "of": "/",
+            "to": "~"
+        },
+        "noApplicationFound": "애플리케이션을 찾을 수 없습니다",
+        "noWorkflowFound": "워크플로를 찾을 수 없습니다",
+        "thisFolderIsEmpty": "이 폴더는 비어 있습니다",
+        "nonAccessibleFolderApps": "이 폴더의 어떤 애플리케이션에도 접근할 수 없습니다.",
+        "deleteAppAndData": "{{appName}} 앱과 관련 데이터가 영구적으로 삭제됩니다. 계속하시겠습니까?",
+        "deleteWorkflowAndData": "{{appName}} 워크플로와 관련 데이터가 영구적으로 삭제됩니다. 계속하시겠습니까?",
+        "removeAppFromFolder": "이 폴더에서 앱이 제거됩니다. 계속하시겠습니까?",
+        "change": "변경",
+        "templateCard": {
+            "use": "사용",
+            "preview": "미리보기",
+            "leadGeneretion": "리드 생성"
+        },
+        "templateLibraryModal": {
+            "select": "템플릿 선택",
+            "createAppfromTemplate": "템플릿에서 애플리케이션 생성"
+        }
+    },
+    "header": {
+        "darkModeToggle": {
+            "activateLightMode": "라이트 모드 활성화",
+            "activateDarkMode": "다크 모드 활성화"
+        },
+        "languageSelection": {
+            "changeLanguage": "언어 변경",
+            "searchLanguage": "언어 검색"
+        },
+        "notificationCenter": {
+            "notifications": "알림",
+            "markAllAs": "모두 표시",
+            "read": "읽음으로",
+            "un": "읽지 않음으로",
+            "youDontHaveany": "다음 항목이 없습니다",
+            "youAreCaughtUp": "모두 확인했습니다!",
+            "view": "보기"
+        },
+        "organization": {
+            "addNewWorkSpace": "새 워크스페이스 추가",
+            "loadOrganizations": "조직 불러오기",
+            "createWorkspace": "워크스페이스 생성",
+            "workspaceName": "워크스페이스 이름",
+            "editWorkspace": "워크스페이스 편집",
+            "menus": {
+                "addWorkspace": "워크스페이스 추가",
+                "instanceLogout": {
+                    "title": "인스턴스 로그아웃",
+                    "customLogoutUrl": {
+                        "label": "사용자 지정 로그아웃 URL",
+                        "helperText": "이 인스턴스에서 로그아웃하는 사용자를 위한 맞춤 로그아웃 URL을 설정합니다."
+                    }
+                },
+                "menusList": {
+                    "manageUsers": "사용자",
+                    "manageGroups": "그룹",
+                    "manageSso": "SSO",
+                    "manageEnv": "워크스페이스 변수"
+                },
+                "manageUsers": {
+                    "usersAndPermission": "사용자 및 권한",
+                    "inviteNewUser": "사용자 한 명 초대",
+                    "inviteUsers": "사용자 초대",
+                    "name": "이름",
+                    "email": "이메일",
+                    "status": "상태",
+                    "archive": "보관",
+                    "unarchive": "보관 해제",
+                    "addNewUser": "사용자 추가",
+                    "emailAddress": "이메일 주소",
+                    "createUser": "사용자 생성",
+                    "enterFirstName": "이름을 입력하세요",
+                    "enterLastName": "성을 입력하세요",
+                    "enterEmail": "이메일 ID를 입력하세요",
+                    "enterFullName": "전체 이름을 입력하세요",
+                    "inviteNewUsers": "새 사용자 초대"
+                },
+                "manageGroups": {
+                    "permissions": {
+                        "userGroups": "사용자 그룹",
+                        "createNewGroup": "새 그룹 생성",
+                        "updateGroup": "그룹 업데이트",
+                        "addNewGroup": "새 그룹 추가",
+                        "enterName": "그룹 이름을 입력하세요",
+                        "createGroup": "그룹 생성",
+                        "name": "이름"
+                    },
+                    "permissionResources": {
+                        "userGroup": "사용자 그룹",
+                        "apps": "앱",
+                        "workflows": "워크플로우",
+                        "users": "사용자",
+                        "permissions": "권한",
+                        "addAppsToGroup": "그룹에 추가할 앱을 선택하세요",
+                        "addWorkflowsToGroup": "그룹에 추가할 워크플로우를 선택하세요",
+                        "name": "이름",
+                        "addUsersToGroup": "그룹에 추가할 사용자를 선택하세요",
+                        "email": "이메일",
+                        "resource": "리소스",
+                        "createUpdateDelete": "생성/업데이트/삭제",
+                        "folder": "폴더",
+                        "dataSource": "데이터 소스"
+                    },
+                    "groupOptions": {
+                        "deleteGroup": "그룹 삭제",
+                        "duplicateGroup": "그룹 복제"
+                    }
+                },
+                "manageSSO": {
+                    "manageSso": "SSO",
+                    "generalSettings": {
+                        "title": "일반 설정",
+                        "enableSignup": "가입 활성화",
+                        "newAccountWillBeCreated": "사용자가 처음 SSO로 로그인할 때 새 계정이 생성됩니다",
+                        "allowedDomains": "허용된 도메인",
+                        "enterDomains": "도메인을 입력하세요",
+                        "supportMultiDomains": "여러 도메인을 지원합니다. 도메인 이름을 쉼표로 구분하여 입력하세요. 예: tooljet.com,tooljet.io,yourorganization.com",
+                        "loginUrl": "로그인 URL",
+                        "workspaceLogin": "이 URL을 사용하여 이 워크스페이스에 직접 로그인하세요",
+                        "allowDefaultSso": "기본 SSO 허용",
+                        "ssoAuth": "사용자가 기본 SSO를 통해 인증하도록 허용합니다. 기본 SSO 구성은 \n 워크스페이스 수준 SSO로 재정의될 수 있습니다.",
+                        "customLogoutUrl": "사용자 지정 로그아웃 URL"
+                    },
+                    "google": {
+                        "title": "Google",
+                        "enabled": "사용",
+                        "disabled": "사용 안 함",
+                        "clientId": "클라이언트 ID",
+                        "enterClientId": "클라이언트 ID를 입력하세요",
+                        "redirectUrl": "리디렉션 URL"
+                    },
+                    "github": {
+                        "title": "GitHub",
+                        "hostName": "호스트 이름",
+                        "enterHostName": "호스트 이름을 입력하세요",
+                        "requiredGithub": "GitHub가 자체 호스팅된 경우 필수",
+                        "clientId": "클라이언트 ID",
+                        "enterClientId": "클라이언트 ID를 입력하세요",
+                        "clientSecret": "클라이언트 시크릿",
+                        "enterClientSecret": "클라이언트 시크릿을 입력하세요",
+                        "encrypted": "암호화됨",
+                        "redirectUrl": "리디렉션 URL"
+                    },
+                    "passwordLogin": "비밀번호 로그인",
+                    "environmentVar": {
+                        "noEnvConfig": "구성된 워크스페이스 변수가 없습니다. '새 변수 추가' 버튼을 눌러 생성하세요",
+                        "envWillBeDeleted": "변수가 삭제됩니다. 계속하시겠습니까?",
+                        "addNewVariable": "새 변수 추가",
+                        "variableForm": {
+                            "addNewVariable": "새 변수 추가",
+                            "updatevariable": "변수 업데이트",
+                            "name": "이름",
+                            "value": "값",
+                            "enterVariableName": "변수 이름을 입력하세요",
+                            "enterValue": "값을 입력하세요",
+                            "type": "유형",
+                            "enableEncryption": "암호화 활성화",
+                            "addVariable": "변수 추가"
+                        },
+                        "variableTable": {
+                            "name": "이름",
+                            "value": "값",
+                            "type": "유형",
+                            "secret": "시크릿"
+                        }
+                    }
+                }
+            }
+        },
+        "profileSettingPage": {
+            "profileSettings": "프로필 설정",
+            "firstName": "이름",
+            "lastName": "성",
+            "enterFirstName": "이름을 입력하세요",
+            "enterLastName": "성을 입력하세요",
+            "email": "이메일 주소",
+            "avatar": "아바타",
+            "update": "업데이트",
+            "profile": "프로필",
+            "changePassword": "비밀번호 변경",
+            "currentPassword": "현재 비밀번호",
+            "newPassword": "새 비밀번호",
+            "confirmNewPassword": "새 비밀번호 확인",
+            "enterCurrentPassword": "현재 비밀번호를 입력하세요",
+            "enterNewPassword": "새 비밀번호를 입력하세요",
+            "inviteUsers": "사용자 초대"
+        },
+        "profile": "프로필",
+        "logout": "로그아웃"
+    },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "실행",
+            "openInWorkflowEditor": "워크플로우 편집기에서 열기"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "새 ToolJet 워크스페이스에 오신 것을 환영합니다",
+            "getStartedCreateNewApp": "새 애플리케이션을 만들거나 ToolJet Library의 템플릿을 사용하여 애플리케이션을 만들면서 시작할 수 있습니다.",
+            "importApplication": "애플리케이션 가져오기"
+        },
+        "foldersSection": {
+            "allApplications": "모든 워크플로우",
+            "folders": "폴더",
+            "createNewFolder": "+ 새로 만들기",
+            "noFolders": "아직 생성한 폴더가 없습니다. 폴더를 사용하여 앱을 정리하세요",
+            "createFolder": "폴더 만들기",
+            "updateFolder": "폴더 업데이트",
+            "editFolder": "폴더 편집",
+            "deleteFolder": "폴더 삭제",
+            "folderName": "폴더 이름",
+            "wishToDeleteFolder": "정말로 이 폴더를 삭제하시겠습니까? 폴더 내의 앱은 삭제되지 않습니다."
+        },
+        "header": {
+            "createNewApplication": "새 워크플로우 만들기",
+            "import": "가져오기",
+            "chooseFromTemplate": "템플릿에서 선택"
+        },
+        "pagination": {
+            "showing": "표시 중",
+            "of": "/",
+            "to": "~"
+        },
+        "noApplicationFound": "애플리케이션을 찾을 수 없습니다",
+        "thisFolderIsEmpty": "이 폴더는 비어 있습니다",
+        "deleteAppAndData": "앱과 관련 데이터가 영구적으로 삭제됩니다. 계속하시겠습니까?",
+        "removeAppFromFolder": "이 폴더에서 앱이 제거됩니다. 계속하시겠습니까?",
+        "change": "변경",
+        "templateCard": {
+            "use": "사용",
+            "preview": "미리보기",
+            "leadGeneretion": "리드 생성"
+        },
+        "templateLibraryModal": {
+            "select": "템플릿 선택",
+            "createAppfromTemplate": "템플릿에서 애플리케이션 만들기"
+        }
+    },
+    "confirmationPage": {
+        "setupAccount": "계정을 설정하세요",
+        "signupWithGoogle": "Google로 가입",
+        "signupWithGitHub": "GitHub로 가입",
+        "signupWithOpenid": "다음으로 가입:",
+        "or": "또는",
+        "firstName": "이름",
+        "lastName": "성",
+        "company": "회사",
+        "role": "역할",
+        "pleaseSelect": "선택하세요",
+        "password": "비밀번호",
+        "confirmPassword": "비밀번호 확인",
+        "clickAndAgree": "아래 버튼을 클릭하면 다음에 동의하는 것입니다:",
+        "termsAndConditions": "이용 약관",
+        "finishAccountSetup": "계정 설정 완료",
+        "acceptInvite": "초대 수락",
+        "accountExists": "이미 계정이 있으신가요?",
+        "and": "및"
+    },
+    "onBoarding": {
+        "finishToolJetInstallation": "ToolJet 설치 완료",
+        "organization": "조직",
+        "name": "이름",
+        "email": "이메일",
+        "receiveUpdatesFromToolJet": "ToolJet 팀으로부터 업데이트를 받게 됩니다 ( 매월 1-2건의 이메일, 스팸은 보내지 않습니다 )",
+        "finishSetup": "설정 완료",
+        "skip": "건너뛰기"
+    },
+    "redirectSso": {
+        "upgradingTov1.13.0": "v1.13.0 이상으로 업그레이드합니다.",
+        "fromV1.13.0": "v1.13.0부터 다음을 도입했습니다:",
+        "multiWorkspace": "멀티 워크스페이스",
+        "singleSignOnConfig": "Single Sign-On 관련 구성이 워크스페이스 변수에서 데이터베이스로 이동되었습니다. 다음을 참조하세요:",
+        "link": "링크",
+        "toConfigureSSO": "SSO를 구성하려면.",
+        "haveGoogleGithubSSo": "업그레이드 전에 Google 또는 GitHub SSO 구성이 있고 멀티 워크스페이스를 비활성화한 경우, 업그레이드 중에 SSO 구성이 마이그레이션되지만 SSO 공급자 측에서 리디렉션 URL을 다시 구성해야 합니다. 각 SSO의 리디렉션 URL은 아래에 나와 있습니다.",
+        "isMultiWorkspaceEnabled": "멀티 워크스페이스를 활성화한 경우, 업그레이드 중에 SSO 구성이 마이그레이션되지 않으므로 해당 워크스페이스에서 SSO를 다시 구성해야 합니다.",
+        "youHaveEnabled": "활성화하셨습니다",
+        "setupSsoWorkspace": "비밀번호로 로그인하면 워크스페이스를 사용하여 SSO를 설정할 수 있습니다",
+        "manageSsoMenu": "SSO 관리 메뉴.",
+        "youHaveDisabled": "비활성화하셨습니다",
+        "configureRedirectUrl": "SSO 공급자 측에서 리디렉션 URL을 구성하세요.",
+        "google": "Google",
+        "redirectUrl": "리디렉션 URL:",
+        "gitHub": "GitHub"
+    },
+    "oAuth2": {
+        "pleaseWait": "잠시 기다려 주세요...",
+        "authSuccess": "인증에 성공했습니다. 이제 이 탭을 닫아도 됩니다.",
+        "authFailed": "인증 실패"
+    },
+    "widgetManager": {
+        "commonlyUsed": "자주 사용됨",
+        "layouts": "레이아웃",
+        "forms": "폼",
+        "integrations": "통합",
+        "others": "기타",
+        "noResults": "결과를 찾을 수 없습니다",
+        "tryAdjustingFilterMessage": "찾고 있는 항목을 찾으려면 검색이나 필터를 조정해 보세요.",
+        "clearQuery": "검색어 지우기"
+    },
+    "leftSidebar": {
+        "Inspector": {
+            "text": "인스펙터",
+            "tip": "인스펙터"
+        },
+        "Sources": {
+            "text": "소스",
+            "tip": "데이터소스 추가 또는 편집",
+            "dataSources": "데이터 소스",
+            "addDataSource": "+ 데이터 소스 추가"
+        },
+        "Debugger": {
+            "text": "디버거",
+            "tip": "디버거",
+            "errors": "오류",
+            "noErrors": "오류가 없습니다",
+            "noLogs": "로그가 없습니다",
+            "clear": "지우기"
+        },
+        "Comments": {
+            "text": "댓글",
+            "tip": "댓글 토글",
+            "commentBody": "표시할 댓글이 없습니다",
+            "typeComment": "여기에 댓글을 입력하세요"
+        },
+        "Settings": {
+            "text": "트리거",
+            "tip": "전역 설정",
+            "hideHeader": "실행된 앱의 헤더 숨기기",
+            "maintenanceMode": "유지보수 모드",
+            "maxWidthOfCanvas": "캔버스 최대 너비",
+            "maxHeightOfCanvas": "캔버스 최대 높이",
+            "backgroundColorOfCanvas": "캔버스 배경",
+            "appMode": "앱 모드",
+            "exportApp": "앱 내보내기"
+        },
+        "Back": {
+            "text": "뒤로",
+            "tip": "홈으로 돌아가기"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "1월",
+            "february": "2월",
+            "march": "3월",
+            "april": "4월",
+            "may": "5월",
+            "june": "6월",
+            "july": "7월",
+            "august": "8월",
+            "september": "9월",
+            "october": "10월",
+            "november": "11월",
+            "december": "12월"
+        }
+    },
+    "widget": {
+        "commonProperties": {
+            "visibility": "표시 여부",
+            "disable": "비활성화",
+            "borderRadius": "테두리 반경",
+            "transformation": "변형",
+            "boxShadow": "박스 그림자",
+            "tooltip": "툴팁",
+            "showOnDesktop": "데스크톱에서 표시",
+            "showOnMobile": "모바일에서 표시",
+            "showLoadingState": "로딩 상태 표시",
+            "backgroundColor": "배경 색상",
+            "textColor": "텍스트 색상",
+            "loaderColor": "로더 색상",
+            "defaultValue": "기본값",
+            "placeholder": "플레이스홀더",
+            "label": "레이블",
+            "title": "제목",
+            "code": "코드",
+            "data": "데이터",
+            "tableData": "테이블 데이터",
+            "tableColumns": "테이블 열",
+            "loadingState": "로딩 상태",
+            "serverSidePagination": "서버 측 페이지네이션",
+            "clientSidePagination": "클라이언트 측 페이지네이션",
+            "serverSideSearch": "서버 측 검색",
+            "showSearchBox": "검색 상자 표시",
+            "showDownloadButton": "다운로드 버튼 표시",
+            "showFilterButton": "필터 버튼 표시",
+            "showBulkUpdateActions": "업데이트 버튼 표시",
+            "bulkSelection": "일괄 선택",
+            "highlightSelectedRow": "선택한 행 강조",
+            "actionButtonRadius": "액션 버튼 반경",
+            "tableType": "테이블 유형",
+            "cellSize": "셀 크기",
+            "setPage": "페이지 설정",
+            "page": "페이지",
+            "buttonText": "버튼 텍스트",
+            "click": "클릭",
+            "setText": "텍스트 설정",
+            "text": "텍스트",
+            "markerColor": "마커 색상",
+            "showAxes": "축 표시",
+            "showGridLines": "격자선 표시",
+            "chartType": "차트 유형",
+            "jsonDescription": "JSON 설명",
+            "usePlotlyJsonSchema": "Plotly JSON 스키마 사용",
+            "padding": "padding",
+            "hideTitleBar": "제목 표시줄 숨기기",
+            "hideCloseButton": "닫기 버튼 숨기기",
+            "hideOnEscape": "Escape 키로 숨기기",
+            "modalSize": "모달 크기",
+            "open": "열기",
+            "close": "닫기",
+            "regex": "regex",
+            "minLength": "최소 길이",
+            "maxLength": "최대 길이",
+            "customValidation": "사용자 지정 유효성 검사",
+            "clear": "지우기",
+            "minimumValue": "최솟값",
+            "maximumValue": "최댓값",
+            "format": "형식",
+            "enableTimeSelection": "시간 선택 활성화?",
+            "enableDateSelection": "날짜 선택 활성화?",
+            "disabledDates": "비활성화된 날짜",
+            "minDate": "최소 날짜",
+            "maxDate": "최대 날짜",
+            "makeThisFieldMandatory": "이 필드를 필수로 설정",
+            "setChecked": "체크 설정",
+            "status": "상태",
+            "defaultStatus": "기본 상태",
+            "checkboxColor": "체크박스 색상",
+            "optionValues": "옵션 값",
+            "optionLabels": "옵션 레이블",
+            "activeColor": "활성 색상",
+            "selectOption": "옵션 선택",
+            "option": "옵션",
+            "toggleSwitchColor": "토글 스위치 색상",
+            "defaultStartDate": "기본 시작 날짜",
+            "defaultEndDate": "기본 종료 날짜",
+            "textSize": "텍스트 크기",
+            "alignText": "텍스트 정렬",
+            "url": "URL",
+            "alternativeText": "대체 텍스트",
+            "zoomButton": "확대/축소 버튼",
+            "borderType": "border 유형",
+            "imageFit": "이미지 맞춤",
+            "optionsLoadingState": "옵션 로딩 상태",
+            "selectedTextColor": "선택된 텍스트 색상",
+            "select": "선택",
+            "deselectOption": "옵션 선택 해제",
+            "clearSelections": "선택 지우기",
+            "enableSelectAllOption": "전체 선택 옵션 활성화",
+            "initialLocation": "초기 위치",
+            "defaultMarkers": "기본 마커",
+            "addNewMarkers": "새 마커 추가",
+            "searchForPlaces": "장소 검색",
+            "setLocation": "위치 설정",
+            "latitude": "위도",
+            "longitude": "경도",
+            "numberOfStars": "별 개수",
+            "defaultNoOfSelectedStars": "기본 선택된 별 개수",
+            "enableHalfStar": "반쪽 별 활성화",
+            "tooltips": "툴팁",
+            "starColor": "별 색상",
+            "labelColor": "레이블 색상",
+            "dividerColor": "구분선 색상",
+            "clearFiles": "파일 지우기",
+            "instructionText": "안내 텍스트",
+            "useDropZone": "드롭 영역 사용",
+            "useFilePicker": "파일 선택기 사용",
+            "pickMultipleFiles": "여러 파일 선택",
+            "maxFileCount": "최대 파일 개수",
+            "acceptFileTypes": "허용 파일 형식",
+            "maxSizeLimitBytes": "최대 크기 제한 (Bytes)",
+            "minSizeLimitBytes": "최소 크기 제한 (Bytes)",
+            "parseContent": "콘텐츠 구문 분석",
+            "fileType": "파일 형식",
+            "dateFormat": "날짜 형식",
+            "timeFormat": "시간 형식",
+            "displayIn": "표시 위치",
+            "storeIn": "저장 위치",
+            "defaultDate": "기본 날짜",
+            "events": "이벤트",
+            "resources": "리소스",
+            "defaultView": "기본 보기",
+            "startTimeOnWeekAndDayView": "주 및 일 보기의 시작 시간",
+            "endTimeOnWeekAndDayView": "주 및 일 보기의 종료 시간",
+            "showToolbar": "도구 모음 표시",
+            "showViewSwitcher": "보기 전환기 표시",
+            "highlightToday": "오늘 강조",
+            "showPopoverWhenEventIsClicked": "이벤트 클릭 시 팝오버 표시",
+            "cellSizeInViewsClassifiedByResource": "리소스별로 분류된 보기의 셀 크기",
+            "headerDateFormatOnWeekView": "주 보기의 헤더 날짜 형식",
+            "showLineNumber": "줄 번호 표시",
+            "mode": "모드",
+            "tabs": "탭",
+            "defaultTab": "기본 탭",
+            "hideTabs": "탭 숨기기",
+            "highlightColor": "강조 색상",
+            "tabWidth": "탭 너비",
+            "setCurrentTab": "현재 탭 설정",
+            "id": "Id",
+            "timerType": "타이머 유형",
+            "listData": "목록 데이터",
+            "rowHeight": "행 높이",
+            "showBottomBorder": "하단 border 표시",
+            "tags": "태그",
+            "numberOfPages": "페이지 수",
+            "defaultPageIndex": "기본 페이지 인덱스",
+            "progress": "진행률",
+            "color": "색상",
+            "strokeWidth": "선 두께",
+            "counterClockwise": "반시계 방향",
+            "circleRatio": "원 비율",
+            "colour": "색상",
+            "size": "크기",
+            "primaryValueLabel": "기본 값 레이블",
+            "primaryValue": "기본 값",
+            "hideSecondaryValue": "보조 값 숨기기",
+            "secondaryValueLabel": "보조 값 레이블",
+            "secondaryValue": "보조 값",
+            "secondarySignDisplay": "보조 부호 표시",
+            "primaryLabelColour": "기본 레이블 색상",
+            "primaryTextColour": "기본 텍스트 색상",
+            "secondaryLabelColour": "보조 레이블 색상",
+            "secondaryTextColour": "보조 텍스트 색상",
+            "min": "최소",
+            "max": "최대",
+            "value": "값",
+            "twoHandles": "두 개의 핸들",
+            "lineColor": "선 색상",
+            "handleColor": "핸들 색상",
+            "trackColor": "트랙 색상",
+            "timelineData": "타임라인 데이터",
+            "hideDate": "날짜 숨기기",
+            "svgData": "Svg 데이터",
+            "rawHtml": "Raw HTML",
+            "values": "값",
+            "labels": "레이블",
+            "defaultSelected": "기본 선택",
+            "enableMultipleSelection": "다중 선택 활성화",
+            "selectedTextColour": "선택된 텍스트 색상",
+            "selectedBackgroundColor": "선택된 배경 색상",
+            "fileUrl": "파일 URL",
+            "scalePageToWidth": "페이지를 너비에 맞춤",
+            "showPageControls": "페이지 컨트롤 표시",
+            "steps": "단계",
+            "currentStep": "현재 단계",
+            "stepsSelectable": "단계 선택 가능",
+            "theme": "테마",
+            "columns": "열",
+            "cardData": "카드 데이터",
+            "enableAddCard": "카드 추가 활성화",
+            "width": "너비",
+            "minWidth": "최소 너비",
+            "accentColor": "강조 색상",
+            "defaultColor": "기본 색상",
+            "setColor": "색상 설정",
+            "structure": "구조",
+            "checkedValues": "체크된 값",
+            "expandedValues": "확장된 값"
+        },
+        "common": {
+            "properties": "속성",
+            "events": "이벤트",
+            "layout": "레이아웃",
+            "devices": "디바이스",
+            "styles": "스타일",
+            "general": "일반",
+            "validation": "유효성 검사",
+            "structure": "구조",
+            "data": "데이터",
+            "additionalActions": "추가 작업",
+            "documentation": "{{componentMeta}} 문서 읽기",
+            "widgetNameEmptyError": "위젯 이름은 비워 둘 수 없습니다",
+            "componentNameExistsError": "컴포넌트 이름이 이미 존재합니다",
+            "invalidWidgetName": "잘못된 위젯 이름입니다. 고유해야 하며 문자, 숫자, 밑줄만 포함할 수 있습니다."
+        },
+        "Table": {
+            "displayName": "테이블",
+            "description": "페이지로 나뉜 표 형식 데이터 표시",
+            "columnType": "열 유형",
+            "columnName": "열 이름",
+            "overflow": "오버플로",
+            "key": "키",
+            "textColor": "텍스트 색상",
+            "validation": "유효성 검사",
+            "regex": "정규식",
+            "minLength": "최소 길이",
+            "maxLength": "최대 길이",
+            "customRule": "사용자 지정 규칙",
+            "values": "값",
+            "labels": "레이블",
+            "cellBgColor": "셀 배경 색상",
+            "dateDisplayformat": "날짜 형식",
+            "dateParseformat": "날짜",
+            "showTime": "시간 표시",
+            "makeEditable": "편집 가능하게 설정",
+            "buttonText": "버튼 텍스트",
+            "buttonPosition": "버튼 위치",
+            "remove": "제거",
+            "addButton": "+ 버튼 추가",
+            "addColumn": "열 추가",
+            "addNewColumn": "새 열 추가",
+            "noActionMessage": "이 테이블에는 작업 버튼이 없습니다",
+            "horizontalAlignment": "가로 정렬",
+            "textAlignment": "텍스트 정렬",
+            "deciamalPlaces": "소수 자릿수",
+            "imageFit": "이미지 맞춤"
+        },
+        "Button": {
+            "displayName": "버튼",
+            "description": "쿼리, 알림, 변수 설정 등의 작업 실행"
+        },
+        "Chart": {
+            "displayName": "차트",
+            "description": "데이터 시각화"
+        },
+        "Modal": {
+            "displayName": "모달",
+            "description": "팝업 창 표시"
+        },
+        "TextInput": {
+            "displayName": "텍스트 입력",
+            "description": "사용자 텍스트 입력 필드"
+        },
+        "NumberInput": {
+            "displayName": "숫자 입력",
+            "description": "숫자 입력 필드"
+        },
+        "PasswordInput": {
+            "displayName": "비밀번호 입력",
+            "description": "보안 텍스트 입력"
+        },
+        "Datepicker": {
+            "displayName": "날짜 선택기",
+            "description": "날짜 및 시간 선택"
+        },
+        "Checkbox": {
+            "displayName": "체크박스",
+            "description": "단일 체크박스 토글"
+        },
+        "Radio-button": {
+            "displayName": "라디오 버튼",
+            "description": "여러 선택지 중 하나 선택"
+        },
+        "ToggleSwitch": {
+            "displayName": "토글 스위치",
+            "description": "사용자가 제어하는 켜기/끄기 스위치"
+        },
+        "Textarea": {
+            "displayName": "텍스트 영역",
+            "description": "여러 줄 텍스트 입력"
+        },
+        "DateRangePicker": {
+            "displayName": "날짜 범위 선택기",
+            "description": "날짜 범위 선택"
+        },
+        "Text": {
+            "displayName": "텍스트",
+            "description": "텍스트 또는 HTML 표시"
+        },
+        "Image": {
+            "displayName": "이미지",
+            "description": "이미지 파일 표시"
+        },
+        "Container": {
+            "displayName": "컨테이너",
+            "description": "컴포넌트 그룹화"
+        },
+        "Dropdown": {
+            "displayName": "드롭다운",
+            "description": "단일 항목 선택기"
+        },
+        "Multiselect": {
+            "displayName": "다중 선택",
+            "description": "다중 항목 선택기"
+        },
+        "RichTextEditor": {
+            "displayName": "텍스트 편집기",
+            "description": "서식 있는 텍스트 편집기"
+        },
+        "Map": {
+            "displayName": "지도",
+            "description": "지도 위치 표시"
+        },
+        "QrScanner": {
+            "displayName": "QR 스캐너",
+            "description": "QR 코드를 스캔하고 데이터 보관"
+        },
+        "StarRating": {
+            "displayName": "평점",
+            "description": "별점"
+        },
+        "Divider": {
+            "displayName": "구분선",
+            "description": "컴포넌트 사이 구분선"
+        },
+        "FilePicker": {
+            "displayName": "파일 선택기",
+            "description": "파일 선택기"
+        },
+        "Calendar": {
+            "displayName": "캘린더",
+            "description": "캘린더 이벤트 표시"
+        },
+        "Iframe": {
+            "displayName": "Iframe",
+            "description": "외부 콘텐츠 삽입"
+        },
+        "CodeEditor": {
+            "displayName": "코드 편집기",
+            "description": "소스 코드 편집"
+        },
+        "Tabs": {
+            "displayName": "탭",
+            "description": "탭으로 콘텐츠 구성"
+        },
+        "Timer": {
+            "displayName": "타이머",
+            "description": "카운트다운 또는 스톱워치"
+        },
+        "Listview": {
+            "displayName": "목록 보기",
+            "description": "여러 항목 목록 표시"
+        },
+        "Tags": {
+            "displayName": "태그",
+            "description": "태그 레이블 표시"
+        },
+        "Pagination": {
+            "displayName": "페이지 매김",
+            "description": "페이지 탐색"
+        },
+        "CircularProgressbar": {
+            "displayName": "원형 진행률 표시줄",
+            "description": "원형 진행률 표시"
+        },
+        "Spinner": {
+            "displayName": "스피너",
+            "description": "로딩 상태 표시"
+        },
+        "Statistics": {
+            "displayName": "통계",
+            "description": "주요 지표 표시"
+        },
+        "RangeSlider": {
+            "displayName": "범위 슬라이더",
+            "description": "값 범위 조정"
+        },
+        "Timeline": {
+            "displayName": "타임라인",
+            "description": "이벤트 타임라인 표시"
+        },
+        "SvgImage": {
+            "displayName": "SVG 이미지",
+            "description": "SVG 그래픽 표시"
+        },
+        "Html": {
+            "displayName": "HTML 뷰어",
+            "description": "HTML 콘텐츠 보기"
+        },
+        "VerticalDivider": {
+            "displayName": "세로 구분선",
+            "description": "세로 선 구분선"
+        },
+        "CustomComponent": {
+            "displayName": "사용자 지정 컴포넌트",
+            "description": "React 컴포넌트 생성"
+        },
+        "ButtonGroup": {
+            "displayName": "버튼 그룹",
+            "description": "버튼 그룹"
+        },
+        "PDF": {
+            "displayName": "PDF",
+            "description": "PDF 문서 삽입"
+        },
+        "Steps": {
+            "displayName": "단계",
+            "description": "단계별 탐색 도우미"
+        },
+        "KanbanBoard": {
+            "displayName": "칸반 보드",
+            "description": "작업 관리 보드"
+        },
+        "ColorPicker": {
+            "displayName": "색상 선택기",
+            "description": "팔레트에서 색상 선택"
+        },
+        "TreeSelect": {
+            "displayName": "트리 선택",
+            "description": "계층형 항목 선택기"
+        }
+    }
+}
