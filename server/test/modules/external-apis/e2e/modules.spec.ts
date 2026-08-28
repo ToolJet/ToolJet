@@ -4,13 +4,7 @@
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import {
-  createUser,
-  initTestApp,
-  closeTestApp,
-  createApplication,
-  createApplicationVersion,
-} from 'test-helper';
+import { createUser, initTestApp, closeTestApp, createApplication, createApplicationVersion } from 'test-helper';
 import { APP_TYPES } from '@modules/apps/constants';
 
 jest.setTimeout(120_000);
@@ -80,9 +74,7 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
   describe('GET /api/ext/workspace/:workspaceId/modules', () => {
     it('returns 403 without Authorization header', async () => {
       const { user } = await createUser(app, { email: 'admin@tooljet.io' });
-      await request(app.getHttpServer())
-        .get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`)
-        .expect(403);
+      await request(app.getHttpServer()).get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`).expect(403);
     });
 
     it('returns 400 for non-UUID workspaceId', async () => {
