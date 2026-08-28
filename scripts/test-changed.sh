@@ -1,34 +1,97 @@
 #!/usr/bin/env bash
 # Detects changed server modules and runs their Jest tests (unit + e2e).
 # Usage: scripts/test-changed.sh
-#
-# Fallback: cross-cutting changes (helpers/entities/dto/lib, jest config/setup) → run
-# all tests. Tooling-only changes (scripts, package.json) don't affect test selection
-# and are ignored. Anything else unrecognized under server/ also falls back to all, as
-# a safety net.
-# NODE_ENV=test is set by the npm scripts themselves (server/package.json,
-# run-e2e.sh) — no env needed from the caller.
 
 set -euo pipefail
+
+ESC="\033"
+RESET="${ESC}[0m"
+BOLD="${ESC}[1m"
+DIM="${ESC}[2m"
+
+FG_CYAN="${ESC}[38;5;39m"
+FG_BLUE="${ESC}[38;5;75m"
+FG_GREEN="${ESC}[38;5;78m"
+FG_YELLOW="${ESC}[38;5;220m"
+FG_RED="${ESC}[38;5;196m"
+FG_PURPLE="${ESC}[38;5;141m"
+FG_GRAY="${ESC}[38;5;244m"
+
+SYM_CHECK="${FG_GREEN}✔${RESET}"
+SYM_CROSS="${FG_RED}✖${RESET}"
+SYM_INFO="${FG_BLUE}ℹ${RESET}"
+SYM_ARROW="${FG_PURPLE}❯${RESET}"
+SYM_BLOCK="${FG_PURPLE}▌${RESET}"
 
 ROOT=$(git rev-parse --show-toplevel)
 SERVER_DIR="$ROOT/server"
 
+run_step() {
+  local title="$1"
+  shift
+  local log_file
+  log_file=$(mktemp)
+  local spin_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+  
+  "$@" > "$log_file" 2>&1 &
+  local pid=$!
+  local i=0
+  local start_time
+  start_time=$(date +%s)
+  
+  tput civis 2>/dev/null || true
+  
+  while kill -0 "$pid" 2>/dev/null; do
+    local char="${spin_chars[i % ${#spin_chars[@]}]}"
+    printf "\r  ${FG_PURPLE}%s${RESET} %s ${DIM}running...${RESET}\033[K" "$char" "$title"
+    i=$((i + 1))
+    sleep 0.08
+  done
+  
+  wait "$pid"
+  local exit_code=$?
+  local end_time
+  end_time=$(date +%s)
+  local duration=$((end_time - start_time))
+  
+  tput cnorm 2>/dev/null || true
+  
+  if [ $exit_code -eq 0 ]; then
+    printf "\r  ${SYM_CHECK} %s ${FG_GRAY}(${duration}s)${RESET}\033[K\n" "$title"
+    rm -f "$log_file"
+    return 0
+  else
+    printf "\r  ${SYM_CROSS} ${FG_RED}%s${RESET} ${FG_GRAY}(failed after ${duration}s)${RESET}\033[K\n" "$title"
+    echo ""
+    echo "  ${FG_RED}┌─ Error Details ──────────────────────────────────────────┐${RESET}"
+    sed 's/^/  │ /' "$log_file"
+    echo "  ${FG_RED}└──────────────────────────────────────────────────────────┘${RESET}"
+    echo ""
+    rm -f "$log_file"
+    return $exit_code
+  fi
+}
+
+echo ""
+echo "${SYM_BLOCK} ${BOLD}${FG_PURPLE}ToolJet Changed-Scope Test Runner${RESET}"
+echo "${DIM}──────────────────────────────────────────────────────────────${RESET}"
+
 # Resolve merge base against the PR base branch (or main as local fallback).
 BASE_BRANCH="${BASE_BRANCH:-main}"
 if ! MERGE_BASE=$(git merge-base HEAD "origin/${BASE_BRANCH}" 2>/dev/null); then
-  echo "warn: could not resolve merge base with origin/${BASE_BRANCH} — running all server unit tests"
+  echo "  ${FG_YELLOW}▲ Notice:${RESET} Could not resolve merge base with origin/${BASE_BRANCH} — running all server unit tests."
   RUN_ALL=true
   SERVER_FILES=""
 else
   ALL_CHANGED=$(git diff --name-only "$MERGE_BASE" HEAD)
-  SERVER_FILES=$(echo "$ALL_CHANGED" | grep "^server/" || true)
+  SERVER_FILES=$(echo "$ALL_CHANGED" | grep "^server" || true)
 fi
 
 RUN_ALL="${RUN_ALL:-false}"
 
 if [[ -z "${SERVER_FILES:-}" && "$RUN_ALL" != "true" ]]; then
-  echo "No server files changed — skipping."
+  echo "  ${SYM_INFO} No server files changed — skipping tests."
+  echo ""
   exit 0
 fi
 
@@ -46,27 +109,48 @@ while IFS= read -r file; do
       MODULES+=("$mod")
       ;;
     server/test/ee/*)
-      # test/ee specs aren't matched by the per-module unit regex — run everything
-      echo "EE test change in: $file"
+      echo "  ${SYM_ARROW} EE test change detected in: ${DIM}$file${RESET}"
       RUN_ALL=true
+      ;;
+    server/ee)
+      # Inspect changed modules inside server/ee submodule
+      SUB_BASE=$(git -C "$ROOT/server/ee" merge-base HEAD "origin/${BASE_BRANCH}" 2>/dev/null || git -C "$ROOT/server/ee" rev-parse HEAD~1 2>/dev/null || true)
+      if [ -n "$SUB_BASE" ]; then
+        EE_CHANGED=$(git -C "$ROOT/server/ee" diff --name-only "$SUB_BASE" HEAD 2>/dev/null || true)
+        if [ -n "$EE_CHANGED" ]; then
+          while IFS= read -r ee_file; do
+            [[ -z "$ee_file" ]] && continue
+            ee_mod=$(echo "$ee_file" | cut -d'/' -f1)
+            MODULES+=("$ee_mod")
+          done <<< "$EE_CHANGED"
+        else
+          RUN_ALL=true
+        fi
+      else
+        RUN_ALL=true
+      fi
       ;;
     server/ee/*)
       mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
       ;;
     server/src/helpers/*|server/src/entities/*|server/src/dto/*|server/lib/*)
-      echo "Cross-cutting change in: $file"
+      echo "  ${SYM_ARROW} Cross-cutting change in: ${DIM}$file${RESET}"
+      RUN_ALL=true
+      ;;
+    server/test/helpers/*|server/test/test.helper.ts)
+      echo "  ${SYM_ARROW} Test helper change in: ${DIM}$file${RESET}"
       RUN_ALL=true
       ;;
     server/test/jest-*.config.ts|server/test/jest-*setup*.ts)
-      echo "Test infra change in: $file"
+      echo "  ${SYM_ARROW} Test infra change in: ${DIM}$file${RESET}"
       RUN_ALL=true
       ;;
-    server/scripts/*|server/package.json|server/package-lock.json)
-      echo "Non-test-selecting change (ignored): $file"
+    server/docs/*|server/*.md|server/AGENTS.md|server/scripts/*|server/package.json|server/package-lock.json)
+      # Documentation & tooling changes don't affect test selection
       ;;
     *)
-      echo "Unrecognized server change, falling back to all: $file"
+      echo "  ${SYM_ARROW} General server change (running full test suite): ${DIM}$file${RESET}"
       RUN_ALL=true
       ;;
   esac
@@ -81,14 +165,15 @@ fi
 
 if [[ "$RUN_ALL" == "true" ]]; then
   PATTERN=""
-  echo "Running all server tests"
+  echo "  ${SYM_INFO} Target Scope: ${BOLD}All Server Tests${RESET}"
 elif [[ ${#UNIQUE_MODULES[@]} -eq 0 ]]; then
-  echo "No test-affecting server changes — skipping."
+  echo "  ${SYM_INFO} No test-affecting server changes — skipping."
+  echo ""
   exit 0
 else
   MODULE_REGEX=$(IFS='|'; echo "${UNIQUE_MODULES[*]}")
   PATTERN="test/modules/(${MODULE_REGEX})/"
-  echo "Changed modules: ${UNIQUE_MODULES[*]}"
+  echo "  ${SYM_INFO} Target Scope: ${BOLD}${UNIQUE_MODULES[*]}${RESET}"
 fi
 
 cd "$SERVER_DIR"
@@ -104,29 +189,26 @@ if [[ "${CI:-}" == "true" ]]; then
   mkdir -p /tmp/tj-e2e-json
   e2e_args+=(--json-output-dir /tmp/tj-e2e-json)
 else
-  # Local-only: this spec runs real `git init`/`add`/`commit` against a tmpdir fixture and has
-  # landed its seed commit on the real repo's HEAD instead more than once locally, through a
-  # mechanism we couldn't pin down (not a GIT_DIR/GIT_WORK_TREE leak, not a stray process.chdir(),
-  # not the service under test - two in-test guards both failed to catch it live). CI runs it in
-  # an ephemeral container where that failure mode is harmless, so skip it in local pre-push runs
-  # only and let CI keep the coverage.
   unit_args+=(--testPathIgnorePatterns="test/modules/workspace-branches/unit/app-deletion-targeted-removal.spec.ts")
 fi
 
-# ${arr[@]+...} guard: empty-array expansion breaks under set -u on bash 3.2 (macOS)
-echo "--- Lint ---"
-npm run lint
+run_typecheck() {
+  npx tsc --noEmit -p tsconfig.build.json
+}
+run_step "TypeScript typecheck (server)" run_typecheck
 
-echo "--- Typecheck ---"
-npx tsc --noEmit -p tsconfig.build.json
+run_unit_tests() {
+  npm run test -- ${unit_args[@]+"${unit_args[@]}"}
+}
+run_step "Server unit tests" run_unit_tests
 
-echo "--- Unit tests ---"
-npm run test -- ${unit_args[@]+"${unit_args[@]}"}
-
-# e2e is CI-only: slow, flake-prone locally, and CI re-runs it regardless.
 if [[ "${CI:-}" == "true" ]]; then
-  echo "--- E2e tests ---"
-  npm run test:e2e -- ${e2e_args[@]+"${e2e_args[@]}"}
-else
-  echo "--- E2e tests: skipped locally (CI runs them) ---"
+  run_e2e_tests() {
+    npm run test:e2e -- ${e2e_args[@]+"${e2e_args[@]}"}
+  }
+  run_step "Server e2e tests" run_e2e_tests
 fi
+
+echo "${DIM}──────────────────────────────────────────────────────────────${RESET}"
+echo "  ${SYM_CHECK} ${BOLD}${FG_GREEN}All server test checks completed successfully!${RESET}"
+echo ""
