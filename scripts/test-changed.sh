@@ -96,62 +96,22 @@ run_test_step() {
   shift
   local log_file
   log_file=$(mktemp)
-  local spin_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
-  
-  "$@" > "$log_file" 2>&1 &
-  local pid=$!
-  local tick=0
   local start_time
   start_time=$(date +%s)
-  local live_msg="${DIM}executing suites...${RESET}"
   
   if [ $IS_TTY -eq 1 ]; then
     tput civis 2>/dev/null || true
-    while kill -0 "$pid" 2>/dev/null; do
-      local char="${spin_chars[tick % ${#spin_chars[@]}]}"
-      local elapsed=$(( $(date +%s) - start_time ))
-      
-      # Sample log file once every 1s (tick % 10 == 0) with a single tail+awk pass to prevent CPU contention with Jest
-      if (( tick % 10 == 0 )); then
-        local stats
-        stats=$(tail -n 80 "$log_file" 2>/dev/null | sed -E $'s/\033\\[[0-9;]*[a-zA-Z]//g' | awk '
-          /PASS / { pass++ }
-          /FAIL / { fail++ }
-          /(PASS|FAIL) / { last=$2 }
-          END {
-            if (pass > 0 || fail > 0) {
-              sub(".*/", "", last);
-              print pass, fail, last;
-            }
-          }
-        ' || true)
-        
-        if [ -n "$stats" ]; then
-          local p_cnt f_cnt l_suite
-          p_cnt=$(echo "$stats" | awk '{print $1}')
-          f_cnt=$(echo "$stats" | awk '{print $2}')
-          l_suite=$(echo "$stats" | awk '{print $3}')
-          p_cnt=${p_cnt:-0}
-          f_cnt=${f_cnt:-0}
-          if [ "$f_cnt" -gt 0 ] 2>/dev/null; then
-            live_msg="${FG_YELLOW}$((p_cnt + f_cnt)) completed${RESET} (${FG_GREEN}${p_cnt} passed${RESET}, ${FG_RED}${f_cnt} failed${RESET}) ${DIM}• ${l_suite}${RESET}"
-          elif [ "$p_cnt" -gt 0 ] 2>/dev/null; then
-            live_msg="${FG_GREEN}${p_cnt} passed${RESET} ${DIM}• ${l_suite}${RESET}"
-          fi
-        fi
-      fi
-      
-      printf "\r  ${FG_PURPLE}%s${RESET} %s ${FG_GRAY}(${elapsed}s)${RESET} ${SYM_ARROW} %b\033[K" "$char" "$title" "$live_msg"
-      tick=$((tick + 1))
-      sleep 0.1
-    done
+    set -o pipefail
+    "$@" 2>&1 | IS_TTY="$IS_TTY" node "$ROOT/scripts/test-live-reporter.mjs" "$title" "$log_file"
+    local exit_code=$?
+    set +o pipefail
     tput cnorm 2>/dev/null || true
   else
     printf "  • %s ...\n" "$title"
+    "$@" > "$log_file" 2>&1
+    local exit_code=$?
   fi
   
-  wait "$pid"
-  local exit_code=$?
   local end_time
   end_time=$(date +%s)
   local duration=$((end_time - start_time))
@@ -170,6 +130,12 @@ run_test_step() {
     if [ -n "$test_summary" ]; then
       summary_text="${summary_text} ${DIM}| Tests: ${test_summary}${RESET}"
     fi
+    # Apply requested color coding
+    summary_text=$(echo "$summary_text" | sed -E \
+      -e "s/([0-9]+ passed)/${FG_GREEN}\1${RESET}${DIM}/g" \
+      -e "s/([0-9]+ failed)/${FG_RED}\1${RESET}${DIM}/g" \
+      -e "s/([0-9]+ skipped)/${FG_YELLOW}\1${RESET}${DIM}/g" \
+      -e "s/([0-9]+( of [0-9]+)? total)/${FG_GRAY}\1${RESET}${DIM}/g")
   fi
   
   if [ $exit_code -eq 0 ]; then
