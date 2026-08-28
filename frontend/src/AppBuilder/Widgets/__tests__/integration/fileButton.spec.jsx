@@ -1,17 +1,8 @@
 /**
- * FileButton — regression spec for the mandatory-field indicator.
- *
- * Bug: `validation.enableValidation` ("Make this field mandatory") was
- * defined in the widget's config (WidgetManager/widgets/fileButton.js) but
- * FileButton.jsx never read it, so unlike FileInput no red `*` ever appeared
- * next to the label, and the hidden file input carried no `aria-required`
- * for assistive tech either. See FileButton.jsx for the fix.
- *
- * Lives in __tests__/integration/ because it imports the real store via
- * ./widgetHarness.js (scripts/validate-test-layout.js). Setup shared across
- * widgets lives in ./widgetHarness.js.
+ * FileButton — mandatory indicator, a11y attributes, and max-file-count disabling.
+ * Lives in __tests__/integration/ since it imports the real store via ./widgetHarness.js.
  */
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from './widgetHarness';
 
 const BTN = 'filebtn1';
@@ -25,6 +16,9 @@ const widget = createWidgetHarness({
 
 const labelSpan = (container) => container.querySelector(`#${BTN}-label`);
 const hiddenInput = (container) => container.querySelector('input[type="file"]');
+const allButtons = (container) => Array.from(container.querySelectorAll('button'));
+const browseButton = (container) => allButtons(container)[0];
+const clearButton = (container) => allButtons(container)[1];
 
 describe('FileButton widget', () => {
   beforeEach(widget.setup);
@@ -63,6 +57,61 @@ describe('FileButton widget', () => {
 
       expect(hiddenInput(container)).toHaveAttribute('aria-labelledby', `${BTN}-label`);
       expect(labelSpan(container)).toHaveAttribute('id', `${BTN}-label`);
+    });
+  });
+
+  describe('reaching the maximum file count', () => {
+    // disabled stays false here on purpose (avoids the Button component's disabled recolor);
+    // aria-disabled + inline cursor communicate the unavailable state instead.
+    test('shows a not-allowed cursor once the max file count is reached, without natively disabling or recoloring the button', async () => {
+      const { container } = widget.render({ properties: { enableClearSelection: binding('{{false}}') } });
+      const file = new File(['hello'], 'hello.txt', { type: 'text/plain' });
+
+      await widget.session.user.upload(hiddenInput(container), file);
+      await waitFor(() => expect(screen.getByText('hello.txt')).toBeInTheDocument());
+
+      expect(browseButton(container)).not.toBeDisabled();
+      expect(browseButton(container)).toHaveAttribute('aria-disabled', 'true');
+      expect(browseButton(container)).toHaveStyle('cursor: not-allowed');
+    });
+
+    test('the button stays enabled with a pointer cursor before any file is selected', async () => {
+      const { container } = widget.render({ properties: { enableClearSelection: binding('{{false}}') } });
+      await screen.findByText('Upload file');
+
+      expect(browseButton(container)).not.toBeDisabled();
+      expect(browseButton(container)).toHaveAttribute('aria-disabled', 'false');
+      expect(browseButton(container)).not.toHaveStyle('cursor: not-allowed');
+    });
+  });
+
+  describe('clearing the selection while at capacity', () => {
+    // The clear button must be a sibling of the browse Button, not nested inside it, so a
+    // disabled browse button can't take the clear button down with it (see FileInput.jsx too).
+    test('the clear button is not nested inside the browse button', async () => {
+      const { container } = widget.render({ properties: { enableClearSelection: binding('{{true}}') } });
+      const file = new File(['hello'], 'hello.txt', { type: 'text/plain' });
+
+      await widget.session.user.upload(hiddenInput(container), file);
+      await waitFor(() => expect(screen.getByText('hello.txt')).toBeInTheDocument());
+
+      const clear = clearButton(container);
+      expect(clear).toBeInTheDocument();
+      expect(browseButton(container).contains(clear)).toBe(false);
+      expect(clear).not.toBeDisabled();
+    });
+
+    test('clicking the clear button removes the selected file', async () => {
+      const { container } = widget.render({ properties: { enableClearSelection: binding('{{true}}') } });
+      const file = new File(['hello'], 'hello.txt', { type: 'text/plain' });
+
+      await widget.session.user.upload(hiddenInput(container), file);
+      await waitFor(() => expect(screen.getByText('hello.txt')).toBeInTheDocument());
+
+      await widget.session.user.click(clearButton(container));
+
+      await waitFor(() => expect(screen.getByText('Upload file')).toBeInTheDocument());
+      expect(browseButton(container)).toHaveAttribute('aria-disabled', 'false');
     });
   });
 });

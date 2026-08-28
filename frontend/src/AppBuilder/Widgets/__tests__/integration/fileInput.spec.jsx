@@ -1,17 +1,8 @@
 /**
- * FileInput — regression spec for the accessibility attributes added to its
- * hidden file input alongside the FileButton/FilePicker asterisk fix.
- *
- * FileInput already rendered the mandatory `*` next to its label (via the
- * shared Label component), but its `<input>` carried no `aria-required`,
- * `aria-disabled`, `aria-busy` or `aria-labelledby` — so a screen reader user
- * had no way to know the field was required. See FileInput.jsx for the fix.
- *
- * Lives in __tests__/integration/ because it imports the real store via
- * ./widgetHarness.js (scripts/validate-test-layout.js). Setup shared across
- * widgets lives in ./widgetHarness.js.
+ * FileInput — mandatory indicator, a11y attributes, and max-file-count disabling.
+ * Lives in __tests__/integration/ since it imports the real store via ./widgetHarness.js.
  */
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from './widgetHarness';
 
 const INPUT = 'fileinput1';
@@ -25,6 +16,8 @@ const widget = createWidgetHarness({
 
 const labelEl = (container) => container.querySelector(`#${INPUT}-label`);
 const hiddenInput = (container) => container.querySelector('input[type="file"]');
+const browseButton = (container) => container.querySelector('button');
+const clickableField = (container) => container.querySelector('.tj-file-input-field');
 
 describe('FileInput widget', () => {
   beforeEach(widget.setup);
@@ -60,6 +53,31 @@ describe('FileInput widget', () => {
 
       expect(hiddenInput(container)).toHaveAttribute('aria-labelledby', `${INPUT}-label`);
       expect(labelEl(container)).toHaveAttribute('id', `${INPUT}-label`);
+    });
+  });
+
+  describe('reaching the maximum file count', () => {
+    test('disables the Browse button and shows a not-allowed cursor once a file is selected', async () => {
+      const { container } = widget.render();
+      const file = new File(['hello'], 'hello.txt', { type: 'text/plain' });
+
+      await widget.session.user.upload(hiddenInput(container), file);
+
+      await waitFor(() => expect(browseButton(container)).toBeDisabled());
+      expect(clickableField(container)).toHaveClass('tj-file-input-disabled');
+      // Set directly on the button, not just inherited from the row: Button.jsx's disabled
+      // treatment never actually applies pointer-events: none (malformed Tailwind class), so
+      // hover doesn't fall through to the ancestor's cursor.
+      expect(browseButton(container)).toHaveStyle('cursor: not-allowed');
+    });
+
+    test('the Browse button stays enabled with a pointer cursor before any file is selected', async () => {
+      const { container } = widget.render();
+      await screen.findByText('Attachment', { exact: false });
+
+      expect(browseButton(container)).not.toBeDisabled();
+      expect(clickableField(container)).not.toHaveClass('tj-file-input-disabled');
+      expect(browseButton(container)).not.toHaveStyle('cursor: not-allowed');
     });
   });
 });
