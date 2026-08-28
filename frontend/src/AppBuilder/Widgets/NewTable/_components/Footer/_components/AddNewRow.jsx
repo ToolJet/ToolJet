@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useCallback, useRef } from 'react';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
+import { tabbable } from 'tabbable';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
@@ -58,6 +59,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   );
 
   const addRowTableRef = useRef();
+  const rowToFocusRef = useRef(null);
 
   const columns = useMemo(
     () =>
@@ -100,8 +102,21 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   });
 
   const addNewRow = () => {
+    rowToFocusRef.current = addNewRowDetailsLength;
     updateAddNewRowDetails(id, addNewRowDetailsLength, newEmptyRow);
   };
+
+  useEffect(() => {
+    // Move focus into the new row's first cell when a new row is added
+    const rowIndex = rowToFocusRef.current;
+    if (rowIndex === null) return;
+    rowToFocusRef.current = null;
+    const row = addRowTableRef.current?.querySelectorAll('.table-row')?.[rowIndex];
+    if (!row) return;
+    // tabbable returns the row's controls in real tab order and already excludes disabled, hidden
+    // and tabindex="-1" nodes — which is how JSON columns keep opting themselves out.
+    tabbable(row)[0]?.focus();
+  }, [addNewRowDetailsLength]);
 
   const closeAddNewRowPopup = () => {
     hideAddNewRowPopup();

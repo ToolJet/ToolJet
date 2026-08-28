@@ -704,7 +704,13 @@ export class ComponentsService implements IComponentsService {
             componentData[column === 'others' ? 'displayPreferences' : column],
             updatedDefinition[column],
             (objValue, srcValue) => {
-              if ((componentData.type === 'Table' || componentData.type === 'Form') && _.isArray(objValue)) {
+              if (
+                (componentData.type === 'Table' ||
+                  componentData.type === 'Form' ||
+                  componentData.type === 'KeyValuePair') &&
+                _.isArray(objValue)
+              ) {
+                // Arrays are sent whole, so replace: merging keeps stored tail entries and resurrects deletions
                 return srcValue;
               } else if (componentData.type === 'Form' && _.isObject(srcValue)) {
                 // Handle Form component with object srcValue like JSONData & JSONSchema

@@ -229,6 +229,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
     '/smtp',
     '/llm-key',
     '/license',
+    '/security',
   ];
   if (isUserLoggingIn && !path) {
     const role = authenticationService?.currentSessionValue?.role?.name;
