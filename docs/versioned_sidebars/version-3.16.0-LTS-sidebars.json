@@ -1141,6 +1141,25 @@
         },
         {
           "type": "category",
+          "label": "Branching and Pull Requests",
+          "link": {
+            "type": "doc",
+            "id": "beta/branching/overview"
+          },
+          "items": [
+            "beta/branching/overview",
+            "beta/branching/enable-branching",
+            "beta/branching/managing-branches",
+            "beta/branching/commit-and-pull",
+            "beta/branching/app-builder-git-sync",
+            "beta/branching/push-unsynced-resources",
+            "beta/branching/pull-requests",
+            "beta/branching/auto-sync",
+            "beta/branching/resolving-conflicts"
+          ]
+        },
+        {
+          "type": "category",
           "label": "GitSync CI/CD",
           "link": {
             "type": "doc",
