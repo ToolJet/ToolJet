@@ -300,7 +300,9 @@ export const FileInput = (props) => {
                   variant="ghost"
                   size="default"
                   className="tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-rounded-none focus:tw-ring-2 focus:tw-ring-[var(--interactive-focus-outline)] focus:tw-ring-offset-2 focus:tw-ring-offset-background focus:tw-bg-button-outline"
-                  style={{ height: '100%' }}
+                  // cursor set directly: the ancestor's `.tj-file-input-disabled` cursor relies on
+                  // Button's own disabled:pointer-events-none, which doesn't apply to this element.
+                  style={{ height: '100%', cursor: disabledState || disablePicker ? 'not-allowed' : 'pointer' }}
                   disabled={disabledState || disablePicker}
                 >
                   {iconVisibility && (
