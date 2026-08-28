@@ -9,7 +9,7 @@
   font-style: normal;
   font-weight: 500;
   line-height: 20px;
-  color: var(--cc-primary-text, #1B1F24);
+  color: var(--app-title-color, var(--cc-primary-text, #1B1F24));
 }
 
 .page-group-wrapper.active::after {
