@@ -4,7 +4,10 @@
 
 set -euo pipefail
 
-ESC="\033"
+# -----------------------------------------------------------------------------
+# Styling & Palette (ANSI-C quoting for portable byte evaluation)
+# -----------------------------------------------------------------------------
+ESC=$'\033'
 RESET="${ESC}[0m"
 BOLD="${ESC}[1m"
 DIM="${ESC}[2m"
@@ -26,6 +29,11 @@ SYM_BLOCK="${FG_PURPLE}▌${RESET}"
 ROOT=$(git rev-parse --show-toplevel)
 SERVER_DIR="$ROOT/server"
 
+IS_TTY=0
+if [ -t 1 ]; then
+  IS_TTY=1
+fi
+
 run_step() {
   local title="$1"
   shift
@@ -39,14 +47,19 @@ run_step() {
   local start_time
   start_time=$(date +%s)
   
-  tput civis 2>/dev/null || true
-  
-  while kill -0 "$pid" 2>/dev/null; do
-    local char="${spin_chars[i % ${#spin_chars[@]}]}"
-    printf "\r  ${FG_PURPLE}%s${RESET} %s ${DIM}running...${RESET}\033[K" "$char" "$title"
-    i=$((i + 1))
-    sleep 0.08
-  done
+  if [ $IS_TTY -eq 1 ]; then
+    tput civis 2>/dev/null || true
+    while kill -0 "$pid" 2>/dev/null; do
+      local char="${spin_chars[i % ${#spin_chars[@]}]}"
+      printf "\r  ${FG_PURPLE}%s${RESET} %s ${DIM}running...${RESET}\033[K" "$char" "$title"
+      i=$((i + 1))
+      sleep 0.08
+    done
+    tput cnorm 2>/dev/null || true
+  else
+    printf "  • %s ...\n" "$title"
+    wait "$pid" || true
+  fi
   
   wait "$pid"
   local exit_code=$?
@@ -54,14 +67,20 @@ run_step() {
   end_time=$(date +%s)
   local duration=$((end_time - start_time))
   
-  tput cnorm 2>/dev/null || true
-  
   if [ $exit_code -eq 0 ]; then
-    printf "\r  ${SYM_CHECK} %s ${FG_GRAY}(${duration}s)${RESET}\033[K\n" "$title"
+    if [ $IS_TTY -eq 1 ]; then
+      printf "\r  ${SYM_CHECK} %s ${FG_GRAY}(${duration}s)${RESET}\033[K\n" "$title"
+    else
+      printf "  ${SYM_CHECK} %s (${duration}s)\n" "$title"
+    fi
     rm -f "$log_file"
     return 0
   else
-    printf "\r  ${SYM_CROSS} ${FG_RED}%s${RESET} ${FG_GRAY}(failed after ${duration}s)${RESET}\033[K\n" "$title"
+    if [ $IS_TTY -eq 1 ]; then
+      printf "\r  ${SYM_CROSS} ${FG_RED}%s${RESET} ${FG_GRAY}(failed after ${duration}s)${RESET}\033[K\n" "$title"
+    else
+      printf "  ${SYM_CROSS} %s (failed after ${duration}s)\n" "$title"
+    fi
     echo ""
     echo "  ${FG_RED}┌─ Error Details ──────────────────────────────────────────┐${RESET}"
     sed 's/^/  │ /' "$log_file"
