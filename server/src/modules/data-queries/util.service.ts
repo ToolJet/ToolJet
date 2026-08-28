@@ -1,4 +1,5 @@
 import * as requestIp from 'request-ip';
+import { singleFlight } from './oauth-single-flight.util';
 import { App } from '@entities/app.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { User } from '@entities/user.entity';
@@ -25,6 +26,11 @@ import { ListTablesDto } from './dto';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
+
+  // One in-flight OAuth refresh per (datasource, user, environment): concurrent
+  // page-load queries share it instead of racing parallel refreshes.
+  private oauthRefreshInFlight = new Map<string, Promise<void>>();
+
   constructor(
     protected readonly versionRepository: VersionRepository,
     protected readonly configService: ConfigService,
@@ -223,14 +229,31 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               );
           if (currentUserToken && currentUserToken['refresh_token']) {
             console.log('Access token expired. Attempting refresh token flow.');
-            let accessTokenDetails;
-            try {
-              accessTokenDetails = await service.refreshToken(
+            // Single-flight: every Run-on-Page-Load query hitting the same
+            // expired datasource concurrently must share ONE refresh —
+            // parallel refreshes race each other (providers with
+            // single-use refresh tokens invalidate the losers, cascading
+            // every query into a manual re-auth redirect instead of the
+            // one silent refresh a single flight produces).
+            const refreshKey = `${dataSource.id}:${user?.id ?? 'public'}:${environmentId}`;
+            const refreshPromise = singleFlight(this.oauthRefreshInFlight, refreshKey, async () => {
+              const accessTokenDetails = await service.refreshToken(
                 sourceOptions,
                 dataSource.id,
                 user?.id,
                 effectiveIsPublic
               );
+              await this.dataSourceUtilService.updateOAuthAccessToken(
+                accessTokenDetails,
+                dataSource.options,
+                dataSource.id,
+                user?.id,
+                user?.organizationId,
+                environmentId
+              );
+            });
+            try {
+              await refreshPromise;
             } catch (error) {
               if (error.constructor.name === 'OAuthUnauthorizedClientError') {
                 // unauthorized error need to re-authenticate
@@ -267,14 +290,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               );
             }
 
-            await this.dataSourceUtilService.updateOAuthAccessToken(
-              accessTokenDetails,
-              dataSource.options,
-              dataSource.id,
-              user?.id,
-              user?.organizationId,
-              environmentId
-            );
+            // The shared refresh promise already persisted the new token;
+            // re-read the datasource options (every waiter takes this path
+            // with the same refreshed state) and retry the query once.
             const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
               dataSource.id,
               user.organizationId,
