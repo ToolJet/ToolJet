@@ -59,6 +59,7 @@ import { ClearStaleAiRunsScheduler } from '@modules/ai/schedulers/clear-stale-ai
 import { SampleDBScheduler } from '@modules/data-sources/schedulers/sample-db.scheduler';
 import { SessionScheduler } from '@modules/session/scheduler';
 import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
+import { LicensingScheduler } from '@modules/meta/scheduler';
 import { CustomDomainStatusScheduler } from '@modules/custom-domains/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
@@ -205,6 +206,7 @@ export class AppModule implements OnModuleInit, NestModule {
         SampleDBScheduler,
         SessionScheduler,
         AuditLogsClearScheduler,
+        LicensingScheduler,
         MfaCleanupScheduler,
         CustomDomainStatusScheduler,
         AppService,
