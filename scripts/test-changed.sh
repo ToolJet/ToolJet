@@ -51,14 +51,14 @@ run_step() {
     tput civis 2>/dev/null || true
     while kill -0 "$pid" 2>/dev/null; do
       local char="${spin_chars[i % ${#spin_chars[@]}]}"
-      printf "\r  ${FG_PURPLE}%s${RESET} %s ${DIM}running...${RESET}\033[K" "$char" "$title"
+      local elapsed=$(( $(date +%s) - start_time ))
+      printf "\r  ${FG_PURPLE}%s${RESET} %s ${FG_GRAY}(${elapsed}s)${RESET} ${DIM}running...${RESET}\033[K" "$char" "$title"
       i=$((i + 1))
       sleep 0.08
     done
     tput cnorm 2>/dev/null || true
   else
     printf "  • %s ...\n" "$title"
-    wait "$pid" || true
   fi
   
   wait "$pid"
@@ -83,6 +83,101 @@ run_step() {
     fi
     echo ""
     echo "  ${FG_RED}┌─ Error Details ──────────────────────────────────────────┐${RESET}"
+    sed 's/^/  │ /' "$log_file"
+    echo "  ${FG_RED}└──────────────────────────────────────────────────────────┘${RESET}"
+    echo ""
+    rm -f "$log_file"
+    return $exit_code
+  fi
+}
+
+run_test_step() {
+  local title="$1"
+  shift
+  local log_file
+  log_file=$(mktemp)
+  local spin_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+  
+  "$@" > "$log_file" 2>&1 &
+  local pid=$!
+  local i=0
+  local start_time
+  start_time=$(date +%s)
+  
+  if [ $IS_TTY -eq 1 ]; then
+    tput civis 2>/dev/null || true
+    while kill -0 "$pid" 2>/dev/null; do
+      local char="${spin_chars[i % ${#spin_chars[@]}]}"
+      local elapsed=$(( $(date +%s) - start_time ))
+      
+      # Extract live metrics from jest log
+      local passed_count
+      passed_count=$(grep -cE '^[[:space:]]*PASS[[:space:]]' "$log_file" 2>/dev/null || true)
+      local failed_count
+      failed_count=$(grep -cE '^[[:space:]]*FAIL[[:space:]]' "$log_file" 2>/dev/null || true)
+      local total_completed=$((passed_count + failed_count))
+      
+      local latest_suite=""
+      if [ $total_completed -gt 0 ]; then
+        latest_suite=$(grep -E '^[[:space:]]*(PASS|FAIL)[[:space:]]' "$log_file" 2>/dev/null | tail -1 | awk '{print $2}' | xargs -n1 basename 2>/dev/null || true)
+      fi
+      
+      local live_msg=""
+      if [ $total_completed -gt 0 ]; then
+        if [ $failed_count -gt 0 ]; then
+          live_msg="${FG_YELLOW}${total_completed} completed${RESET} (${FG_GREEN}${passed_count} passed${RESET}, ${FG_RED}${failed_count} failed${RESET}) ${DIM}• ${latest_suite}${RESET}"
+        else
+          live_msg="${FG_GREEN}${passed_count} passed${RESET} ${DIM}• ${latest_suite}${RESET}"
+        fi
+      else
+        live_msg="${DIM}executing suites...${RESET}"
+      fi
+      
+      printf "\r  ${FG_PURPLE}%s${RESET} %s ${FG_GRAY}(${elapsed}s)${RESET} ${SYM_ARROW} %b\033[K" "$char" "$title" "$live_msg"
+      i=$((i + 1))
+      sleep 0.1
+    done
+    tput cnorm 2>/dev/null || true
+  else
+    printf "  • %s ...\n" "$title"
+  fi
+  
+  wait "$pid"
+  local exit_code=$?
+  local end_time
+  end_time=$(date +%s)
+  local duration=$((end_time - start_time))
+  
+  # Extract final summary lines from jest
+  local suite_summary
+  suite_summary=$(grep -E '^Test Suites:' "$log_file" 2>/dev/null | head -1 | sed 's/Test Suites:[[:space:]]*//' || true)
+  local test_summary
+  test_summary=$(grep -E '^Tests:' "$log_file" 2>/dev/null | head -1 | sed 's/Tests:[[:space:]]*//' || true)
+  
+  local summary_text=""
+  if [ -n "$suite_summary" ]; then
+    summary_text="${DIM}• Suites: ${suite_summary}${RESET}"
+    if [ -n "$test_summary" ]; then
+      summary_text="${summary_text} ${DIM}| Tests: ${test_summary}${RESET}"
+    fi
+  fi
+  
+  if [ $exit_code -eq 0 ]; then
+    if [ $IS_TTY -eq 1 ]; then
+      printf "\r  ${SYM_CHECK} %s ${FG_GRAY}(${duration}s)${RESET} %b\033[K\n" "$title" "$summary_text"
+    else
+      printf "  ${SYM_CHECK} %s (%ss) %b\n" "$title" "$duration" "$summary_text"
+    fi
+    rm -f "$log_file"
+    return 0
+  else
+    if [ $IS_TTY -eq 1 ]; then
+      printf "\r  ${SYM_CROSS} ${FG_RED}%s${RESET} ${FG_GRAY}(failed after ${duration}s)${RESET}\033[K\n" "$title"
+    else
+      printf "  ${SYM_CROSS} %s (failed after ${duration}s)\n" "$title"
+    fi
+    echo ""
+    echo "  ${FG_RED}┌─ Jest Test Failures ─────────────────────────────────────┐${RESET}"
     sed 's/^/  │ /' "$log_file"
     echo "  ${FG_RED}└──────────────────────────────────────────────────────────┘${RESET}"
     echo ""
@@ -197,8 +292,8 @@ fi
 
 cd "$SERVER_DIR"
 
-unit_args=()
-e2e_args=(--ci)
+unit_args=(--colors)
+e2e_args=(--ci --colors)
 if [[ -n "$PATTERN" ]]; then
   unit_args+=(--testPathPatterns="$PATTERN")
   e2e_args+=(--testPathPatterns "$PATTERN")
@@ -219,13 +314,13 @@ run_step "TypeScript typecheck (server)" run_typecheck
 run_unit_tests() {
   npm run test -- ${unit_args[@]+"${unit_args[@]}"}
 }
-run_step "Server unit tests" run_unit_tests
+run_test_step "Server unit tests" run_unit_tests
 
 if [[ "${CI:-}" == "true" ]]; then
   run_e2e_tests() {
     npm run test:e2e -- ${e2e_args[@]+"${e2e_args[@]}"}
   }
-  run_step "Server e2e tests" run_e2e_tests
+  run_test_step "Server e2e tests" run_e2e_tests
 fi
 
 echo "${DIM}──────────────────────────────────────────────────────────────${RESET}"
