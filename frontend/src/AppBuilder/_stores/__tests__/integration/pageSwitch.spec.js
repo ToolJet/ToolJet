@@ -274,6 +274,11 @@ describe('switchPage — the re-entrancy guard', () => {
     expect(state().getCurrentPageId('canvas')).toBe('page-b');
     state().flushExposedValueBatch();
     expect(state().isExposedValueBatching()).toBe(false);
+    // The other half of the guard's lifecycle: the post-flush callback must
+    // actually release it. Without this assertion, a removed or broken
+    // callback would leave pageSwitchInProgress stuck true forever — every
+    // later switch permanently rejected — while this test still passed.
+    expect(state().pageSwitchInProgress).toBe(false);
   });
 });
 
