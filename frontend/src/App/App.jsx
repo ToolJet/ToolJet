@@ -4,7 +4,8 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
+import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute } from '@/Routes';
+import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -281,95 +282,78 @@ class AppComponent extends React.Component {
                     </AppsRoute>
                   }
                 />
-                <Route element={<LayoutRouteWrapper darkMode={darkMode} switchDarkMode={this.switchDarkMode} />}>
+
+                {/* Layout routes, grouped by the guard each page needs */}
+                <Route
+                  element={
+                    <LayoutRouteWrapper
+                      guard={DesktopOnlyPrivateRoute}
+                      darkMode={darkMode}
+                      switchDarkMode={this.switchDarkMode}
+                    />
+                  }
+                >
                   <Route
                     exact
                     path="/:workspaceId/workspace-constants"
-                    element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
-                    }
+                    element={<WorkspaceConstants darkMode={darkMode} />}
                   />
 
-                  <Route
-                    path="/:workspaceId/workspace-settings/*"
-                    element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <WorkspaceSettings {...mergedProps} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
-                    }
-                  />
+                  <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...mergedProps} />} />
 
                   <Route
                     path="settings/*"
                     element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
+                      <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
                     }
                   />
                   <Route
                     path="/:workspaceId/settings/*"
                     element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
+                      <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
                     }
                   />
-
-                  {getAuditLogsRoutes({ ...mergedProps, darkMode })}
 
                   <Route
                     exact
                     path="/:workspaceId/profile-settings"
-                    element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <ProfileSettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
-                    }
+                    element={<ProfileSettingsPage darkMode={darkMode} />}
                   />
 
+                  <Route exact path="/:workspaceId/database" element={<TooljetDatabase />} />
+                </Route>
+
+                <Route
+                  element={
+                    <LayoutRouteWrapper
+                      guard={DesktopOnlyAdminRoute}
+                      darkMode={darkMode}
+                      switchDarkMode={this.switchDarkMode}
+                    />
+                  }
+                >
+                  {getAuditLogsRoutes({ ...mergedProps, darkMode })}
+                </Route>
+
+                {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (
                   <Route
-                    exact
-                    path="/:workspaceId/database"
                     element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
+                      <LayoutRouteWrapper
+                        guard={MarketplaceRoute}
+                        darkMode={darkMode}
+                        switchDarkMode={this.switchDarkMode}
+                      />
                     }
-                  />
-
-                  {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (
-                    <Route
-                      exact
-                      path="/integrations"
-                      element={
-                        <MarketplaceRoute>
-                          <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                        </MarketplaceRoute>
-                      }
-                    >
+                  >
+                    <Route exact path="/integrations" element={<MarketplacePage />}>
                       <Route path="installed" element={<InstalledPlugins />} />
                       <Route
                         path="marketplace"
                         element={<DesktopOnlyRoute>{<MarketplacePlugins />}</DesktopOnlyRoute>}
                       />
                     </Route>
-                  )}
-                </Route>
+                  </Route>
+                )}
                 {/* VIEWER ROUTES REMOVED - Now handled by ViewerApp.jsx via RootRouter.jsx */}
                 {/* These routes are now in ViewerApp.jsx for bundle isolation: */}
                 {/* - /applications/:slug/:pageHandle? */}

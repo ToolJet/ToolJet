@@ -5,12 +5,15 @@ import { BreadCrumbContext } from '@/App/App';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import Layout from './index';
 
+type Guard = React.ComponentType<{ children: React.ReactNode; darkMode?: boolean }>;
+
 type LayoutRouteWrapperProps = {
   darkMode: boolean;
   switchDarkMode: () => void;
+  guard: Guard;
 };
 
-const LayoutRouteWrapper = ({ darkMode, switchDarkMode }: LayoutRouteWrapperProps) => {
+const LayoutRouteWrapper = ({ darkMode, switchDarkMode, guard: Guard }: LayoutRouteWrapperProps) => {
   const location = useLocation();
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext) as { updateSidebarNAV: (value: string) => void };
@@ -45,17 +48,19 @@ const LayoutRouteWrapper = ({ darkMode, switchDarkMode }: LayoutRouteWrapperProp
   }, [location.pathname]);
 
   return (
-    <Layout
-      switchDarkMode={switchDarkMode}
-      darkMode={darkMode}
-      enableCollapsibleSidebar={enableCollapsibleSidebar}
-      collapseSidebar={collapseSidebar}
-      toggleCollapsibleSidebar={() => setCollapseSidebar((prev) => !prev)}
-    >
-      <Suspense fallback={<TJLoader />}>
-        <Outlet context={{ collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar }} />
-      </Suspense>
-    </Layout>
+    <Guard darkMode={darkMode}>
+      <Layout
+        switchDarkMode={switchDarkMode}
+        darkMode={darkMode}
+        enableCollapsibleSidebar={enableCollapsibleSidebar}
+        collapseSidebar={collapseSidebar}
+        toggleCollapsibleSidebar={() => setCollapseSidebar((prev) => !prev)}
+      >
+        <Suspense fallback={<TJLoader />}>
+          <Outlet context={{ collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar }} />
+        </Suspense>
+      </Layout>
+    </Guard>
   );
 };
 
