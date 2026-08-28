@@ -54,10 +54,15 @@ ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
-    apt-get install -y postgresql-client freetds-dev libaio1 wget redis-server supervisor && \
+    apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget supervisor && \
     apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
     apt-get -y autoremove && \
     apt-get -y autoclean
+
+# Install Redis 7.x from official Redis repository (Debian's bundled package is stale)
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y redis-server
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle

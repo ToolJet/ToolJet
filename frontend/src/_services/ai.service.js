@@ -16,6 +16,9 @@ export const aiService = {
   getConversation,
   autoSort,
   getTokenUsage,
+  getLlmPreference,
+  updateLlmPreference,
+  getOpenRouterModels,
 };
 
 function handleAITextResponse(response) {
@@ -49,48 +52,84 @@ async function voteMessage(messageId, voteType) {
   return fetch(`${config.apiUrl}/ai/conversation/vote-message`, requestOptions).then(handleResponse);
 }
 
+// The server pushes a `heartbeat` SSE event every 5s, so a live stream always
+// ticks well inside this window. If the connection is silently severed (proxy /
+// network drop, backgrounded socket), fetchEventSource — configured with no retry
+// — never fires onclose/onerror and the awaited promise below would hang forever,
+// freezing the chat in a perpetual loading state. Aborting after this much total
+// silence lets the caller settle and re-sync from the persisted conversation.
+const AI_STREAM_STALL_TIMEOUT_MS = 30000;
+
 async function sendMessage(body, onMessage, isDocs = false) {
   const fullResponse = [];
   const url = isDocs ? `${config.apiUrl}/ai/conversation/docs-message` : `${config.apiUrl}/ai/conversation/message`;
-  await fetchEventSource(url, {
-    method: 'POST',
-    headers: { ...authHeader(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    credentials: 'include',
-    retryStrategy: {
-      next: () => null,
-    },
-    openWhenHidden: true,
-    onopen: async (response) => {
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        const err = new Error(data?.message || `HTTP error! status: ${response.status}`);
-        err.statusCode = response.status;
-        throw err;
-      }
-    },
-    onmessage: (event) => {
-      if (!event.data) return;
-      try {
-        const parsed = JSON.parse(event.data);
-        fullResponse.push(parsed);
-        const { event: type } = event;
-        onMessage({
-          data: parsed,
-          type,
-        });
-      } catch (e) {
-        console.log(e);
-      }
-    },
-    onerror: (error) => {
-      console.log(error);
-      throw new Error(error);
-    },
-    onclose: () => {
-      console.log('Connection closed');
-    },
-  });
+
+  const controller = new AbortController();
+  let stalled = false;
+  let stallTimer = null;
+  const armStallTimer = () => {
+    if (stallTimer) clearTimeout(stallTimer);
+    stallTimer = setTimeout(() => {
+      stalled = true;
+      controller.abort();
+    }, AI_STREAM_STALL_TIMEOUT_MS);
+  };
+
+  try {
+    armStallTimer();
+    await fetchEventSource(url, {
+      method: 'POST',
+      headers: { ...authHeader(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      credentials: 'include',
+      signal: controller.signal,
+      retryStrategy: {
+        next: () => null,
+      },
+      openWhenHidden: true,
+      onopen: async (response) => {
+        armStallTimer();
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          const err = new Error(data?.message || `HTTP error! status: ${response.status}`);
+          err.statusCode = response.status;
+          throw err;
+        }
+      },
+      onmessage: (event) => {
+        // Any event, including the server heartbeat, proves the stream is alive.
+        armStallTimer();
+        if (!event.data) return;
+        try {
+          const parsed = JSON.parse(event.data);
+          fullResponse.push(parsed);
+          const { event: type } = event;
+          onMessage({
+            data: parsed,
+            type,
+          });
+        } catch (e) {
+          console.log(e);
+        }
+      },
+      onerror: (error) => {
+        console.log(error);
+        throw new Error(error);
+      },
+      onclose: () => {
+        console.log('Connection closed');
+      },
+    });
+  } catch (error) {
+    if (stalled) {
+      const stallError = new Error('AI stream stalled — connection lost before completion');
+      stallError.stalled = true;
+      throw stallError;
+    }
+    throw error;
+  } finally {
+    if (stallTimer) clearTimeout(stallTimer);
+  }
 
   return fullResponse;
 }
@@ -164,4 +203,24 @@ async function autoSort(body) {
 async function getTokenUsage(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/ai/conversation/${conversationId}/token-usage`, requestOptions).then(handleResponse);
+}
+
+async function getOpenRouterModels() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/openrouter-models`, requestOptions).then(handleResponse);
+}
+
+async function getLlmPreference() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
+}
+
+async function updateLlmPreference(provider) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ provider }),
+  };
+  return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
 }

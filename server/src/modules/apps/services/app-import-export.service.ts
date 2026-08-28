@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -25,6 +25,7 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { deduplicateLayoutsByType } from 'src/helpers/layout.helper';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
@@ -43,6 +44,7 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
@@ -113,7 +115,8 @@ type NewRevampedComponent =
   | 'ButtonGroupV2'
   | 'ModalV2'
   | 'PopoverMenu'
-  | 'Pagination';
+  | 'Pagination'
+  | 'Timeline';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -167,6 +170,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ModalV2',
   'PopoverMenu',
   'Pagination',
+  'Timeline',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -258,6 +262,17 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'TreeSelect',
 ];
 
+const LEGACY_INPUT_SIZE_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Cascader',
+  'TextArea',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'Cascader'];
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
@@ -312,6 +327,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextArea',
   'TextInput',
   'TimePicker',
+  'Timeline',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -326,7 +342,8 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly abilityService: AbilityService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -597,6 +614,24 @@ export class AppImportExportService {
             .distinct(true)
             .getMany()
         : [];
+
+    // Gate: if any referenced module is missing, the user must have module_create permission
+    if (appParams?.modules?.length > 0) {
+      const missingModules = appParams.modules.filter(
+        (m) => !existingModules.find((existing) => existing.name === m?.appV2?.name)
+      );
+      if (missingModules.length > 0) {
+        const perms = await this.abilityService.resourceActionsPermission(user, {
+          organizationId: user.organizationId,
+        });
+        const canCreateModule = perms.isSuperAdmin || perms.isAdmin || !!perms.moduleCreate;
+        if (!canCreateModule) {
+          throw new ForbiddenException(
+            "This app requires creating modules, but you don't have permission to create modules. Contact admin."
+          );
+        }
+      }
+    }
 
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {
@@ -1497,8 +1532,10 @@ export class AppImportExportService {
             appResourceMappings.componentsMapping[component.id] = savedComponent.id;
             const componentLayout = component.layouts;
 
+            // Deduplicate layouts by type to prevent duplicate layout rows on import
+            const uniqueLayouts = deduplicateLayoutsByType(componentLayout);
             await Promise.all(
-              componentLayout.map(async (layout) => {
+              uniqueLayouts.map(async (layout) => {
                 const newLayout = new Layout();
                 newLayout.type = layout.type;
                 newLayout.top = layout.top;
@@ -2722,6 +2759,13 @@ export class AppImportExportService {
         eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
       }
 
+      if (
+        eventDefinition?.actionId === 'scroll-component-into-view' &&
+        oldComponentToNewComponentMapping[eventDefinition.componentId]
+      ) {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);
@@ -2845,6 +2889,10 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (LEGACY_INPUT_SIZE_COMPONENT_TYPES.includes(componentType) && properties.legacyInputSize === undefined) {
+    properties.legacyInputSize = { value: '{{true}}' };
+  }
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };

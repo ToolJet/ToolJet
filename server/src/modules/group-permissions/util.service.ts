@@ -202,7 +202,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
           CreateResourcePermissionObject<any>
         > = DEFAULT_RESOURCE_PERMISSIONS[group.name];
         for (const resource of Object.keys(groupGranularPermissions)) {
-          if (getTooljetEdition() === TOOLJET_EDITIONS.CE && resource == ResourceType.WORKFLOWS) continue;
+          if (getTooljetEdition() === TOOLJET_EDITIONS.CE && (resource == ResourceType.WORKFLOWS || resource == ResourceType.MODULE)) continue;
           const createResourcePermissionObj: CreateResourcePermissionObject<any> = groupGranularPermissions[resource];
 
           // End users only have access to released apps by default
