@@ -660,7 +660,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           <div
             style={{
               position: 'absolute',
-              zIndex: 1061,
+              zIndex: 1050,
             }}
           >
             {renderPopover(props)}
