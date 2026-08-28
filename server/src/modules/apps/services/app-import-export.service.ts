@@ -2152,8 +2152,9 @@ export class AppImportExportService {
         }
 
         // Ensure branch-scoped DSV exists so the DS appears on the global DS page
-        // for the active branch. This handles both newly created and existing DS.
-        if (!isDefaultDatasource) {
+        // for the active branch. Only needed for newly created data sources —
+        // existing ones (e.g. reused by name during clone) already have their DSVs.
+        if (!isDefaultDatasource && !this.isExistingDataSource(dataSourceForAppVersion)) {
           await this.ensureBranchDsvForDataSource(manager, dataSourceForAppVersion, user.organizationId, branchId);
         }
 
