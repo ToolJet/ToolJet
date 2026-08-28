@@ -100,46 +100,49 @@ run_test_step() {
   
   "$@" > "$log_file" 2>&1 &
   local pid=$!
-  local i=0
+  local tick=0
   local start_time
   start_time=$(date +%s)
+  local live_msg="${DIM}executing suites...${RESET}"
   
   if [ $IS_TTY -eq 1 ]; then
     tput civis 2>/dev/null || true
     while kill -0 "$pid" 2>/dev/null; do
-      local char="${spin_chars[i % ${#spin_chars[@]}]}"
+      local char="${spin_chars[tick % ${#spin_chars[@]}]}"
       local elapsed=$(( $(date +%s) - start_time ))
       
-      # Strip ANSI color codes from log buffer for robust regex parsing
-      local clean_log
-      clean_log=$(sed -E $'s/\033\\[[0-9;]*[a-zA-Z]//g' "$log_file" 2>/dev/null || true)
-      
-      local passed_count
-      passed_count=$(printf '%s\n' "$clean_log" | grep -cE '^[[:space:]]*PASS[[:space:]]' 2>/dev/null || true)
-      local failed_count
-      failed_count=$(printf '%s\n' "$clean_log" | grep -cE '^[[:space:]]*FAIL[[:space:]]' 2>/dev/null || true)
-      local total_completed=$((passed_count + failed_count))
-      
-      local latest_suite=""
-      if [ $total_completed -gt 0 ]; then
-        local suite_path
-        suite_path=$(printf '%s\n' "$clean_log" | grep -E '^[[:space:]]*(PASS|FAIL)[[:space:]]' 2>/dev/null | tail -1 | awk '{print $2}')
-        latest_suite=$(basename "$suite_path" 2>/dev/null || true)
-      fi
-      
-      local live_msg=""
-      if [ $total_completed -gt 0 ]; then
-        if [ $failed_count -gt 0 ]; then
-          live_msg="${FG_YELLOW}${total_completed} completed${RESET} (${FG_GREEN}${passed_count} passed${RESET}, ${FG_RED}${failed_count} failed${RESET}) ${DIM}• ${latest_suite}${RESET}"
-        else
-          live_msg="${FG_GREEN}${passed_count} passed${RESET} ${DIM}• ${latest_suite}${RESET}"
+      # Sample log file once every 1s (tick % 10 == 0) with a single tail+awk pass to prevent CPU contention with Jest
+      if (( tick % 10 == 0 )); then
+        local stats
+        stats=$(tail -n 80 "$log_file" 2>/dev/null | sed -E $'s/\033\\[[0-9;]*[a-zA-Z]//g' | awk '
+          /PASS / { pass++ }
+          /FAIL / { fail++ }
+          /(PASS|FAIL) / { last=$2 }
+          END {
+            if (pass > 0 || fail > 0) {
+              sub(".*/", "", last);
+              print pass, fail, last;
+            }
+          }
+        ' || true)
+        
+        if [ -n "$stats" ]; then
+          local p_cnt f_cnt l_suite
+          p_cnt=$(echo "$stats" | awk '{print $1}')
+          f_cnt=$(echo "$stats" | awk '{print $2}')
+          l_suite=$(echo "$stats" | awk '{print $3}')
+          p_cnt=${p_cnt:-0}
+          f_cnt=${f_cnt:-0}
+          if [ "$f_cnt" -gt 0 ] 2>/dev/null; then
+            live_msg="${FG_YELLOW}$((p_cnt + f_cnt)) completed${RESET} (${FG_GREEN}${p_cnt} passed${RESET}, ${FG_RED}${f_cnt} failed${RESET}) ${DIM}• ${l_suite}${RESET}"
+          elif [ "$p_cnt" -gt 0 ] 2>/dev/null; then
+            live_msg="${FG_GREEN}${p_cnt} passed${RESET} ${DIM}• ${l_suite}${RESET}"
+          fi
         fi
-      else
-        live_msg="${DIM}executing suites...${RESET}"
       fi
       
       printf "\r  ${FG_PURPLE}%s${RESET} %s ${FG_GRAY}(${elapsed}s)${RESET} ${SYM_ARROW} %b\033[K" "$char" "$title" "$live_msg"
-      i=$((i + 1))
+      tick=$((tick + 1))
       sleep 0.1
     done
     tput cnorm 2>/dev/null || true
