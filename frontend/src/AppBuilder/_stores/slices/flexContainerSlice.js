@@ -1,4 +1,5 @@
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { set as lodashSet } from 'lodash';
 import {
   getNextFlexChildOrderOnInsert,
   insertId,
@@ -34,8 +35,11 @@ const buildFlexChildOrderComponentDiff = (component, childOrder) => ({
 
 const writeChildOrder = (component, childOrder) => {
   if (!component) return;
-  if (!component.definition.properties) component.definition.properties = {};
-  component.definition.properties.childOrder = { value: childOrder };
+  // Writes the `value` leaf instead of replacing the whole `childOrder` property object.
+  // These writes happen inside undo/redo-tracked producers, and undo replays a patch by its path:
+  // one that stops at the property level is replayed as `childOrder.value = { value: [...] }` which is incorrect,
+  // so getFlexContainerChildOrder no longer sees an array and falls back to natural child order (restored child at end).
+  lodashSet(component, ['definition', 'properties', 'childOrder', 'value'], childOrder);
 };
 
 export const createFlexContainerSlice = (set, get) => ({
