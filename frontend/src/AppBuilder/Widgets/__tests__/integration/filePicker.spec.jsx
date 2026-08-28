@@ -24,6 +24,7 @@ const widget = createWidgetHarness({
 
 const labelHeading = (container) => container.querySelector(`#${PICKER}-label`);
 const hiddenInput = (container) => container.querySelector('input[type="file"]');
+const rootWrapper = (container) => container.querySelector('.file-picker-widget-wrapper');
 
 describe('FilePicker widget', () => {
   beforeEach(widget.setup);
@@ -60,6 +61,17 @@ describe('FilePicker widget', () => {
 
       expect(hiddenInput(container)).toHaveAttribute('aria-labelledby', `${PICKER}-label`);
       expect(labelHeading(container)).toHaveAttribute('id', `${PICKER}-label`);
+    });
+  });
+
+  describe('scroll affordance', () => {
+    // The scrollbar-thumb color is transparent by default and only set on :hover (style.scss),
+    // so the widget only needs to carry the class that CSS hooks into.
+    test('the scrollable root carries the hover-reveal scrollbar class', async () => {
+      const { container } = widget.render();
+      await screen.findByText('Upload files', { exact: false });
+
+      expect(rootWrapper(container)).toHaveClass('files-pane-scrollable');
     });
   });
 });
