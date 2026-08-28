@@ -34,6 +34,7 @@ import {
   calculateInputCanvasHeight,
   resolveInputCanvasAlignment,
   resolveInputCanvasLabelLength,
+  isComponentDeletable,
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
@@ -1562,7 +1563,7 @@ export const createComponentsSlice = (set, get) => ({
     const componentIds = [];
     const _selectedComponents = (selected?.length ? selected : selectedComponents).filter((componentId) => {
       const def = getComponentDefinition(componentId, moduleId);
-      return def?.component?.component !== 'ModuleContainer';
+      return isComponentDeletable(def);
     });
     if (!_selectedComponents.length || shouldFreeze) {
       set({ showWidgetDeleteConfirmation: false });
