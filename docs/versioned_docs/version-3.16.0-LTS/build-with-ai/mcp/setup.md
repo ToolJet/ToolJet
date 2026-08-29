@@ -3,6 +3,10 @@ id: setup
 title: Setup
 ---
 
+:::caution BETA
+ToolJet MCP is currently in beta and not recommended for production use.
+:::
+
 ToolJet MCP connects your AI coding assistant to your ToolJet workspace, so your agent can build and modify apps in the instance you already use, whether that's ToolJet Cloud or your own self-hosted domain.
 
 ## Prerequisites

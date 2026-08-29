@@ -3,6 +3,10 @@ id: overview
 title: Overview
 ---
 
+:::caution BETA
+ToolJet MCP is currently in beta and not recommended for production use.
+:::
+
 The [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) is a standard for connecting Large Language Models (LLMs) to platforms like ToolJet. This guide covers how to connect ToolJet to AI tools using MCP, enabling your AI assistants to interact with and manage your ToolJet instance.
 
 ## What is ToolJet MCP?
