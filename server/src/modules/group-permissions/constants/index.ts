@@ -20,6 +20,8 @@ export enum ResourceType {
   WORKFLOWS = 'workflow',
   FOLDER = 'folder',
   MODULE = 'module',
+  WORKFLOW_FOLDER = 'workflow_folder',
+  MODULE_FOLDER = 'module_folder',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -30,10 +32,14 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appDelete: true,
     folderCreate: true,
     folderDelete: true,
+    workflowFolderCreate: true,
+    workflowFolderDelete: true,
     workflowCreate: true,
     workflowDelete: true,
     moduleCreate: true,
     moduleDelete: true,
+    moduleFolderCreate: true,
+    moduleFolderDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -49,10 +55,14 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appDelete: true,
     folderCreate: true,
     folderDelete: true,
+    workflowFolderCreate: true,
+    workflowFolderDelete: true,
     workflowCreate: true,
     workflowDelete: true,
     moduleCreate: true,
     moduleDelete: true,
+    moduleFolderCreate: true,
+    moduleFolderDelete: true,
     orgConstantCRUD: true,
     tjdbCRUD: true,
     dataSourceCreate: true,
@@ -70,6 +80,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     workflowDelete: false,
     folderCreate: false,
     folderDelete: false,
+    workflowFolderCreate: false,
+    workflowFolderDelete: false,
     orgConstantCRUD: false,
     tjdbCRUD: false,
     dataSourceCreate: false,
@@ -112,6 +124,18 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: true,
       canView: false,
     },
+    [ResourceType.WORKFLOW_FOLDER]: {
+      // Radio button selection: Admin has "Edit folder" permission
+      // Only set the selected permission level to true; implied permissions are derived at runtime
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
+    [ResourceType.MODULE_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
@@ -128,6 +152,11 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canView: true,
     },
     [ResourceType.FOLDER]: {
+      canEditFolder: false,
+      canEditApps: false,
+      canViewApps: true,
+    },
+    [ResourceType.WORKFLOW_FOLDER]: {
       canEditFolder: false,
       canEditApps: false,
       canViewApps: true,
@@ -162,6 +191,16 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: true,
       canView: false,
     },
+    [ResourceType.WORKFLOW_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
+    [ResourceType.MODULE_FOLDER]: {
+      canEditFolder: true,
+      canEditApps: false,
+      canViewApps: false,
+    },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;
 
@@ -189,6 +228,14 @@ export enum FEATURE_KEY {
   UPDATE_GRANULAR_FOLDER_PERMISSIONS = 'update_granular_folder_permissions',
   DELETE_GRANULAR_FOLDER_PERMISSIONS = 'delete_granular_folder_permissions',
   GET_ADDABLE_FOLDERS = 'get_addable_folders',
+  GET_ADDABLE_WORKFLOW_FOLDERS = 'get_addable_workflow_folders',
+  CREATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'create_granular_workflow_folder_permissions',
+  UPDATE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'update_granular_workflow_folder_permissions',
+  DELETE_GRANULAR_WORKFLOW_FOLDER_PERMISSIONS = 'delete_granular_workflow_folder_permissions',
+  GET_ADDABLE_MODULE_FOLDERS = 'get_addable_module_folders',
+  CREATE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'create_granular_module_folder_permissions',
+  UPDATE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'update_granular_module_folder_permissions',
+  DELETE_GRANULAR_MODULE_FOLDER_PERMISSIONS = 'delete_granular_module_folder_permissions',
   USER_ROLE_CHANGE = 'change_user_role',
   ASSIGN_GROUP_ADMIN = 'assign_group_admin',
   REVOKE_GROUP_ADMIN = 'revoke_group_admin',

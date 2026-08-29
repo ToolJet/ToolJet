@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
 import { appsService } from '@/_services';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 
 const BUFFER_OFFSET = 15;
 
@@ -46,6 +47,17 @@ const pickDefaultVersion = (appVersions = []) => {
   );
 };
 
+// Mirrors modules/Modules/utils.js#getIsModuleSynced (ee). Duplicated locally because CE code
+// can't import from @ee/ — keep both in sync if the sync rule changes. A module is "synced"
+// only when EVERY draft it has (main-branch AND branch-type) is in git; checking a single
+// picked version here would miss an unsynced sibling draft and unpin a module that isn't
+// actually fully synced.
+const isModuleSynced = (appVersions = []) => {
+  const draftVersions = appVersions.filter((v) => v.status === 'DRAFT');
+  if (draftVersions.length === 0) return appVersions.some((v) => (v.is_synced ?? v.isSynced) === true);
+  return draftVersions.every((v) => (v.is_synced ?? v.isSynced) === true);
+};
+
 export const useCanvasDropHandler = () => {
   const { isModuleEditor } = useModuleContext();
 
@@ -57,6 +69,7 @@ export const useCanvasDropHandler = () => {
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
   const setModulesList = useStore((state) => state.setModulesList, shallow) || noop;
   const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
+  const { isGitSyncEnabled } = useGitSyncConfig();
 
   const handleDrop = async ({ componentType: draggedComponentType, component }, canvasId) => {
     const realCanvasRef =
@@ -122,11 +135,15 @@ export const useCanvasDropHandler = () => {
             toast.error('Module is still not ready. Please try again.', { id: toastId });
             return;
           }
+          const isDraft = hydratedVersion.status === 'DRAFT';
+          const shouldUnpin = isGitSyncEnabled && isDraft && isModuleSynced(hydrated.app_versions);
           dropComponent = {
             ...dropComponent,
             isStub: false,
-            versionId: hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId,
-            versionName: hydratedVersion.name ?? '',
+            versionId: shouldUnpin
+              ? ''
+              : hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId ?? '',
+            versionName: shouldUnpin ? '' : hydratedVersion.name ?? '',
             environmentId: hydratedVersion.current_environment_id,
             moduleContainer: hydrated.module_container,
             defaultSize: {

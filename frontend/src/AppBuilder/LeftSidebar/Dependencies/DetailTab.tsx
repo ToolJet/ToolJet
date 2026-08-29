@@ -46,13 +46,7 @@ export type DetailHeaderProps = {
 };
 
 /** Breadcrumb + kebab. Lives in the panel header so it stays put while the list scrolls. */
-export const DetailHeader = ({
-  subject,
-  breadcrumbRoot,
-  onNavigateRoot,
-  menuItems,
-  darkMode,
-}: DetailHeaderProps) => (
+export const DetailHeader = ({ subject, breadcrumbRoot, onNavigateRoot, menuItems, darkMode }: DetailHeaderProps) => (
   <div className="dependency-breadcrumb-bar">
     <div className="dependency-breadcrumb">
       <span

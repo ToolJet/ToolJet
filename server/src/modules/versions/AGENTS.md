@@ -43,6 +43,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 - Non-workflow app metadata (`appName`/`slug`/`icon`/`isPublic`) lives on `app_versions` rows, not `apps.*`; workflows keep it on `apps.*` and always have `branch_id` NULL.
 - Publishing an app version blocks if any ModuleViewer resolves to a draft/orphan/unpinned module (`checkDraftModulesInApp`); EE promote blocks if a pinned module version isn't yet in the target environment.
 - `co_relation_id` is only unique per-organization (git clones share it) — always scope lookups by org.
+- **Orphaned module pins fall back only on feature branches.** `resolveModuleRef` (the `module/by-correlation/:coRel/version` fetch) resolves a UUID/name pin that matches no tier by falling back to the module's own row on the consumer's *non-default* branch — never on the default branch, where an unhonorable pin still returns null (404). This mirrors `resolveAllModuleViewersForVersion` (app-load), so the two agree: without it the parent app renders the ModuleViewer via its orphan-fallback while this endpoint 404s, blanking the embed. Keep the default-branch strictness — an explicit pin there must resolve to a servable row (PUBLISHED / legacy `isSynced:false`), not silently swap to a synced draft (see `module-ref-resolution.spec` "synced draft name-pin still 404s").
 - New versions/drafts always start on the lowest-priority (development) environment regardless of source.
 
 ## Related modules

@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body, BadRequestException, Headers } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, BadRequestException } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
@@ -26,12 +26,8 @@ export class ImportExportResourcesController {
   @InitFeature(FEATURE_KEY.APP_RESOURCE_EXPORT)
   @UseGuards(JwtAuthGuard, AppFeatureAbilityGuard)
   @Post('/export')
-  async export(
-    @User() user,
-    @Body() exportResourcesDto: ExportResourcesDto,
-    @Headers('x-branch-id') branchId?: string
-  ) {
-    const result = await this.importExportResourcesService.export(user, exportResourcesDto, branchId);
+  async export(@User() user, @Body() exportResourcesDto: ExportResourcesDto) {
+    const result = await this.importExportResourcesService.export(user, exportResourcesDto, user.branchId);
     return {
       ...result,
       tooljet_version: globalThis.TOOLJET_VERSION,
@@ -41,18 +37,14 @@ export class ImportExportResourcesController {
   @InitFeature(FEATURE_KEY.APP_RESOURCE_IMPORT)
   @UseGuards(JwtAuthGuard, ResourceCountGuard, AppFeatureAbilityGuard, DataSourceFeatureAbilityGuard)
   @Post('/import')
-  async import(
-    @User() user,
-    @Body() importResourcesDto: ImportResourcesDto,
-    @Headers('x-branch-id') branchId?: string
-  ) {
+  async import(@User() user, @Body() importResourcesDto: ImportResourcesDto) {
     const isNotCompatibleVersion = isVersionGreaterThan(importResourcesDto.tooljet_version, globalThis.TOOLJET_VERSION);
     if (isNotCompatibleVersion) {
       throw new BadRequestException(APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.UNSUPPORTED_VERSION_ERROR);
     }
-    // Header takes precedence over body. Body's branchId is kept for backward
-    // compatibility with callers that already plumb it that way (e.g. clone).
-    if (branchId) importResourcesDto.branchId = branchId;
+    // Resolved branch (user.branchId) takes precedence over body. Body's branchId is kept for
+    // backward compatibility with callers that already plumb it that way (e.g. clone).
+    if (user.branchId) importResourcesDto.branchId = user.branchId;
     const imports = await this.importExportResourcesService.import(user, importResourcesDto);
     return { imports, success: true };
   }

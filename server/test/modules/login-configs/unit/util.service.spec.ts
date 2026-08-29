@@ -41,7 +41,11 @@ describe('LoginConfigsUtilService', () => {
       const config = {
         sso: 'openid',
         enabled: true,
-        configs: { client_id: 'my-client-id', client_secret: 'super-secret', well_known_url: 'https://provider/.well-known/openid-configuration' },
+        configs: {
+          client_id: 'my-client-id',
+          client_secret: 'super-secret',
+          well_known_url: 'https://provider/.well-known/openid-configuration',
+        },
       };
 
       const result = service.buildConfigs(config, 'config-id-2');
@@ -85,7 +89,11 @@ describe('LoginConfigsUtilService', () => {
       expect(result.configId).toBe('cfg-abc');
       expect(result.sso).toBe('openid');
       expect(result.enabled).toBe(true);
-      expect(result.configs).toEqual({ clientId: 'id', wellKnownUrl: 'https://example.com/.well-known', name: 'Corp SSO' });
+      expect(result.configs).toEqual({
+        clientId: 'id',
+        wellKnownUrl: 'https://example.com/.well-known',
+        name: 'Corp SSO',
+      });
     });
 
     it('handles empty configs object without throwing', () => {

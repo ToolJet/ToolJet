@@ -162,3 +162,9 @@ export const AI_QUERY_SUPPORTED_KINDS = [
   'quickbooks',
   'hubspot',
 ];
+
+// ToolJet-synthesized query error kinds (errorData.data.type); mirrors server TJ_QUERY_ERROR_TYPE
+export const TJ_QUERY_ERROR_TYPE = {
+  UNAUTHORIZED: 'tj-401', // app-level Query Access denied
+  FORBIDDEN: 'tj-403', // data-source query-run restricted
+};

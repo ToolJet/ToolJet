@@ -47,10 +47,11 @@ export class TooljetDbModule extends SubModule {
 
     return this.cacheModule(cacheKey, {
       module: TooljetDbModule,
-      imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser, RolesRepository])],
+      imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser])],
       controllers: isMainImport ? [TooljetDbController] : [],
       providers: [
         AbilityUtilService,
+        RolesRepository,
         TooljetDbTableOperationsService,
         TooljetDbBulkUploadService,
         TooljetDbUtilService,

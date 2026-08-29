@@ -20,16 +20,16 @@ const ORACLE_MAX_BIND_PARAMS = 1000;
 
 // Operator key → SQL symbol map (mirrors QueryBuilder in common)
 const ORACLE_OPERATORS: Record<string, string> = {
-  eq:      '=',
-  neq:     '!=',
-  gt:      '>',
-  gte:     '>=',
-  lt:      '<',
-  lte:     '<=',
-  like:    'LIKE',
-  ilike:   'LIKE',   // Oracle has no ILIKE, fall back to LIKE
-  in:      'IN',
-  not_in:  'NOT IN',
+  eq: '=',
+  neq: '!=',
+  gt: '>',
+  gte: '>=',
+  lt: '<',
+  lte: '<=',
+  like: 'LIKE',
+  ilike: 'LIKE', // Oracle has no ILIKE, fall back to LIKE
+  in: 'IN',
+  not_in: 'NOT IN',
 };
 
 export default class OracledbQueryService implements QueryService {
@@ -65,9 +65,7 @@ export default class OracledbQueryService implements QueryService {
       query = queryOptions.query;
     }
 
-    const binds = this.isSqlParametersUsed(queryOptions)
-      ? this.sanitizeQueryParams(queryOptions)
-      : {};
+    const binds = this.isSqlParametersUsed(queryOptions) ? this.sanitizeQueryParams(queryOptions) : {};
 
     if (sourceOptions.use_tns_alias == 'thin') {
       let connection: any;
@@ -160,7 +158,7 @@ export default class OracledbQueryService implements QueryService {
   // else on other platforms like Linux
   // the system library search path MUST always be
   // set before Node.js is started, for example with ldconfig or LD_LIBRARY_PATH.
-  initOracleClient(clientPathType: string, customPath: string,instantClientVersion: string, initOptions: any = {}) {
+  initOracleClient(clientPathType: string, customPath: string, instantClientVersion: string, initOptions: any = {}) {
     try {
       const clientOpts: any = { ...initOptions };
 
@@ -180,7 +178,10 @@ export default class OracledbQueryService implements QueryService {
 
   async buildConnection(sourceOptions: SourceOptions) {
     try {
-      if ((sourceOptions.use_tns_alias == 'thin' || sourceOptions.use_tns_alias == 'thick') && sourceOptions.wallet_file) {
+      if (
+        (sourceOptions.use_tns_alias == 'thin' || sourceOptions.use_tns_alias == 'thick') &&
+        sourceOptions.wallet_file
+      ) {
         const base64Data = sourceOptions.wallet_file.split(',')[1] || sourceOptions.wallet_file;
         const buffer = Buffer.from(base64Data, 'base64');
 
@@ -351,10 +352,10 @@ export default class OracledbQueryService implements QueryService {
       const payload = (result as any)?.data ?? [];
 
       if (isPaginated) {
-        const rows       = (payload as any)?.rows ?? [];
+        const rows = (payload as any)?.rows ?? [];
         const totalCount = (payload as any)?.totalCount ?? 0;
         return {
-          items:      rows.map((r: any) => ({ label: String(r.value), value: String(r.value) })),
+          items: rows.map((r: any) => ({ label: String(r.value), value: String(r.value) })),
           totalCount,
         };
       }
@@ -372,9 +373,7 @@ export default class OracledbQueryService implements QueryService {
 
   // ─── Meta queries ─────────────────────────────────────────────────────────────
 
-  private async _fetchSchemas(
-    sourceOptions: SourceOptions
-  ): Promise<Array<{ value: string; label: string }>> {
+  private async _fetchSchemas(sourceOptions: SourceOptions): Promise<Array<{ value: string; label: string }>> {
     const isThin = sourceOptions.use_tns_alias === 'thin';
     const conn = await this.buildConnection(sourceOptions);
 
@@ -407,7 +406,7 @@ export default class OracledbQueryService implements QueryService {
       queryOptions?.schema || null,
       queryOptions?.search || '',
       queryOptions?.page,
-      queryOptions?.limit,
+      queryOptions?.limit
     );
 
     if (queryOptions?.limit) {
@@ -426,10 +425,9 @@ export default class OracledbQueryService implements QueryService {
     schema: string | null = null,
     search = '',
     page?: number,
-    limit?: number,
+    limit?: number
   ): Promise<
-    Array<{ value: string; label: string }> |
-    { items: Array<{ value: string; label: string }>; totalCount: number }
+    Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
   > {
     const isThin = sourceOptions.use_tns_alias === 'thin';
     const conn = await this.buildConnection(sourceOptions);
@@ -440,17 +438,17 @@ export default class OracledbQueryService implements QueryService {
 
       const tableSource = useAllTables ? 'all_tables' : 'user_tables';
       const schemaFilter = useAllTables
-        ? (isThin ? `owner = :owner AND table_name LIKE :1` : `owner = ? AND table_name LIKE ?`)
-        : (isThin ? `table_name LIKE :1` : `table_name LIKE ?`);
-
-      const baseParams = useAllTables
-        ? (isThin ? { owner: schema.toUpperCase(), 1: searchPattern } : [schema.toUpperCase(), searchPattern])
-        : (isThin ? [searchPattern] : [searchPattern]);
+        ? isThin
+          ? `owner = :owner AND table_name LIKE :1`
+          : `owner = ? AND table_name LIKE ?`
+        : isThin
+        ? `table_name LIKE :1`
+        : `table_name LIKE ?`;
 
       if (limit) {
-        const offset  = ((page || 1) - 1) * limit;
+        const offset = ((page || 1) - 1) * limit;
         const startRow = offset + 1;
-        const endRow   = offset + limit;
+        const endRow = offset + limit;
 
         let dataSql: string;
         let countSql: string;
@@ -473,7 +471,7 @@ export default class OracledbQueryService implements QueryService {
             FROM   ${tableSource}
             WHERE  ${schemaFilter}
           `;
-          dataParams  = useAllTables ? { owner: schema.toUpperCase(), 1: searchPattern } : [searchPattern];
+          dataParams = useAllTables ? { owner: schema.toUpperCase(), 1: searchPattern } : [searchPattern];
           countParams = useAllTables ? { owner: schema.toUpperCase(), 1: searchPattern } : [searchPattern];
         } else {
           dataSql = `
@@ -491,7 +489,7 @@ export default class OracledbQueryService implements QueryService {
             FROM   ${tableSource}
             WHERE  ${schemaFilter}
           `;
-          dataParams  = useAllTables ? [schema.toUpperCase(), searchPattern] : [searchPattern];
+          dataParams = useAllTables ? [schema.toUpperCase(), searchPattern] : [searchPattern];
           countParams = useAllTables ? [schema.toUpperCase(), searchPattern] : [searchPattern];
         }
 
@@ -546,7 +544,7 @@ export default class OracledbQueryService implements QueryService {
   private async _fetchColumns(
     sourceOptions: SourceOptions,
     table: string,
-    schema: string | null = null,
+    schema: string | null = null
   ): Promise<Array<{ value: string; label: string }>> {
     if (!table) return [];
 
@@ -614,13 +612,20 @@ export default class OracledbQueryService implements QueryService {
 
   private async dispatchGuiOperation(conn: any, queryOptions: QueryOptions, isThin: boolean): Promise<QueryResult> {
     switch (queryOptions.operation) {
-      case 'list_rows':        return await this.guiListRows(conn, queryOptions, isThin);
-      case 'create_row':       return await this.guiCreateRow(conn, queryOptions, isThin);
-      case 'update_rows':      return await this.guiUpdateRows(conn, queryOptions, isThin);
-      case 'delete_rows':      return await this.guiDeleteRows(conn, queryOptions, isThin);
-      case 'upsert_rows':      return await this.guiUpsertRows(conn, queryOptions, isThin);
-      case 'bulk_insert':      return await this.guiBulkInsert(conn, queryOptions, isThin);
-      case 'bulk_upsert_pkey': return await this.guiBulkUpsertPkey(conn, queryOptions, isThin);
+      case 'list_rows':
+        return await this.guiListRows(conn, queryOptions, isThin);
+      case 'create_row':
+        return await this.guiCreateRow(conn, queryOptions, isThin);
+      case 'update_rows':
+        return await this.guiUpdateRows(conn, queryOptions, isThin);
+      case 'delete_rows':
+        return await this.guiDeleteRows(conn, queryOptions, isThin);
+      case 'upsert_rows':
+        return await this.guiUpsertRows(conn, queryOptions, isThin);
+      case 'bulk_insert':
+        return await this.guiBulkInsert(conn, queryOptions, isThin);
+      case 'bulk_upsert_pkey':
+        return await this.guiBulkUpsertPkey(conn, queryOptions, isThin);
       default:
         throw new QueryError(
           `Unsupported GUI operation: ${queryOptions.operation}`,
@@ -680,18 +685,25 @@ export default class OracledbQueryService implements QueryService {
 
     for (const f of entries) {
       // skip fully empty rows
-      const hasColumn   = !!(f.column   && String(f.column).trim());
+      const hasColumn = !!(f.column && String(f.column).trim());
       const hasOperator = !!(f.operator && String(f.operator).trim());
       const isValueEmpty = f.value === undefined || f.value === null || f.value === '';
       if (!hasColumn && !hasOperator && isValueEmpty) continue;
 
-      if (!hasColumn)   throw new QueryError('A filter condition has a value or operator but no column specified', '', {});
+      if (!hasColumn)
+        throw new QueryError('A filter condition has a value or operator but no column specified', '', {});
       if (!hasOperator) throw new QueryError(`Filter on column "${f.column}" is missing an operator`, '', {});
 
       // IS NULL / IS NOT NULL
       if (f.operator === 'is') {
-        if (f.value === 'null')     { parts.push(`${f.column} IS NULL`);     continue; }
-        if (f.value === 'not_null') { parts.push(`${f.column} IS NOT NULL`); continue; }
+        if (f.value === 'null') {
+          parts.push(`${f.column} IS NULL`);
+          continue;
+        }
+        if (f.value === 'not_null') {
+          parts.push(`${f.column} IS NOT NULL`);
+          continue;
+        }
         throw new QueryError(`Unknown value for "is" operator: "${f.value}"`, '', {});
       }
 
@@ -699,7 +711,9 @@ export default class OracledbQueryService implements QueryService {
       if (f.operator === 'in' || f.operator === 'not_in') {
         const values: any[] = Array.isArray(f.value)
           ? f.value
-          : String(f.value).split(',').map((v: string) => v.trim());
+          : String(f.value)
+              .split(',')
+              .map((v: string) => v.trim());
         if (!values.length) throw new QueryError(`"${f.operator}" requires at least one value`, '', {});
         const placeholders = values.map((v, i) => {
           binds.push(v);
@@ -733,11 +747,7 @@ export default class OracledbQueryService implements QueryService {
     return { clause: `WHERE ${parts.join(' AND ')}`, binds };
   }
 
-  private buildSetClause(
-    columns: Record<string, any>,
-    isThin: boolean,
-    offset = 0
-  ): { clause: string; binds: any[] } {
+  private buildSetClause(columns: Record<string, any>, isThin: boolean, offset = 0): { clause: string; binds: any[] } {
     const entries = Object.values(columns);
     const binds: any[] = [];
     const parts = entries.map((c: any, i: number) => {
@@ -746,19 +756,15 @@ export default class OracledbQueryService implements QueryService {
     });
     return { clause: parts.join(', '), binds };
   }
-  
+
   private _buildSelectClause(aggregates?: Record<string, any>, group_by?: Record<string, any>): string {
     const parts: string[] = [];
     if (aggregates && Object.keys(aggregates).length) {
       for (const agg of Object.values(aggregates)) {
-
         const fn = String((agg as any).aggFx).toLowerCase();
         const col = (agg as any).column;
 
-        const expr =
-          fn === 'count_distinct'
-            ? `COUNT(DISTINCT ${col})`
-            : `${fn.toUpperCase()}(${col})`;
+        const expr = fn === 'count_distinct' ? `COUNT(DISTINCT ${col})` : `${fn.toUpperCase()}(${col})`;
 
         parts.push(expr);
       }
@@ -794,10 +800,7 @@ export default class OracledbQueryService implements QueryService {
           const order = String(f.order ?? 'ASC')
             .trim()
             .toUpperCase();
-          const normalizedOrder =
-            order === 'DESC'
-              ? 'DESC'
-              : 'ASC';
+          const normalizedOrder = order === 'DESC' ? 'DESC' : 'ASC';
           return `${f.column} ${normalizedOrder}`;
         });
       if (orderParts.length > 0) {
@@ -833,11 +836,12 @@ export default class OracledbQueryService implements QueryService {
       const hasColumn = !!(c.column && String(c.column).trim());
       const isValueEmpty = c.value === undefined || c.value === null || c.value === '';
       if (!hasColumn && isValueEmpty) return false;
-      if (!hasColumn) throw new QueryError(
-        'A column entry has a value but no column name specified',
-        'Column name is missing for a provided value',
-        {}
-      );
+      if (!hasColumn)
+        throw new QueryError(
+          'A column entry has a value but no column name specified',
+          'Column name is missing for a provided value',
+          {}
+        );
       return true;
     });
 
@@ -845,10 +849,10 @@ export default class OracledbQueryService implements QueryService {
       throw new QueryError('create_row: no columns provided', 'At least one column is required to create a row', {});
     }
 
-    const tableRef     = this.buildTableRef(table, schema);
-    const names        = cols.map((c: any) => c.column).join(', ');
+    const tableRef = this.buildTableRef(table, schema);
+    const names = cols.map((c: any) => c.column).join(', ');
     const placeholders = cols.map((_: any, i: number) => this.placeholder(i, isThin)).join(', ');
-    const binds        = cols.map((c: any) => c.value);
+    const binds = cols.map((c: any) => c.value);
 
     const sql = `INSERT INTO ${tableRef} (${names}) VALUES (${placeholders})`;
 
@@ -857,87 +861,63 @@ export default class OracledbQueryService implements QueryService {
   }
 
   private async guiUpdateRows(conn: any, q: QueryOptions, isThin: boolean): Promise<QueryResult> {
-        const { table, schema } = q as any;
-        const { columns, where_filters } = q.update_rows || {};
+    const { table, schema } = q as any;
+    const { columns, where_filters } = q.update_rows || {};
 
-        const validColumns = Object.values(columns ?? {}).filter((col: any) => {
-          const hasColumn = !!(col.column && String(col.column).trim());
-          const isValueEmpty = col.value === undefined || col.value === null || col.value === '';
-          if (!hasColumn && isValueEmpty) return false;
-          if (!hasColumn) throw new QueryError(
-            'An update entry has a value but no column name specified',
-            'Column name is missing for a provided value',
-            {}
-          );
-          return true;
-        });
-
-        if (!validColumns.length) {
-          throw new QueryError('update_rows: no columns provided', 'At least one column is required for update', {});
-        }
-
-        const validColumnsMap = Object.fromEntries(validColumns.map((c: any) => [c.column, c]));
-        const { clause: setClause, binds: setBinds } = this.buildSetClause(validColumnsMap, isThin, 0);
-        const { clause: whereClause, binds: whereBinds } = this.buildWhereClause(
-          where_filters ?? {},
-          isThin,
-          setBinds.length
+    const validColumns = Object.values(columns ?? {}).filter((col: any) => {
+      const hasColumn = !!(col.column && String(col.column).trim());
+      const isValueEmpty = col.value === undefined || col.value === null || col.value === '';
+      if (!hasColumn && isValueEmpty) return false;
+      if (!hasColumn)
+        throw new QueryError(
+          'An update entry has a value but no column name specified',
+          'Column name is missing for a provided value',
+          {}
         );
+      return true;
+    });
 
-        const tableRef = this.buildTableRef(table, schema);
-        const sql = `UPDATE ${tableRef} SET ${setClause}${whereClause ? ` ${whereClause}` : ''}`;
-        const binds = [...setBinds, ...whereBinds];
+    if (!validColumns.length) {
+      throw new QueryError('update_rows: no columns provided', 'At least one column is required for update', {});
+    }
 
-        const countSql =
-      `SELECT COUNT(*) AS COUNT FROM ${tableRef}` +
-      `${whereClause ? ` ${whereClause}` : ''}`;
+    const validColumnsMap = Object.fromEntries(validColumns.map((c: any) => [c.column, c]));
+    const { clause: setClause, binds: setBinds } = this.buildSetClause(validColumnsMap, isThin, 0);
+    const { clause: whereClause, binds: whereBinds } = this.buildWhereClause(
+      where_filters ?? {},
+      isThin,
+      setBinds.length
+    );
+
+    const tableRef = this.buildTableRef(table, schema);
+    const sql = `UPDATE ${tableRef} SET ${setClause}${whereClause ? ` ${whereClause}` : ''}`;
+    const binds = [...setBinds, ...whereBinds];
+
+    const countSql = `SELECT COUNT(*) AS COUNT FROM ${tableRef}` + `${whereClause ? ` ${whereClause}` : ''}`;
 
     if (isThin) {
       const countResult = await conn.execute(countSql, whereBinds, {
         outFormat: oracledb.OUT_FORMAT_OBJECT,
       });
-      const rowsMatched =
-        Number(countResult.rows?.[0]?.COUNT ?? 0);
+      const rowsMatched = Number(countResult.rows?.[0]?.COUNT ?? 0);
       if (!q.allow_multiple_updates && rowsMatched > 1) {
-        throw new QueryError(
-          'Multiple row updates are not allowed',
-          'Query matched more than one row',
-          {}
-        );
+        throw new QueryError('Multiple row updates are not allowed', 'Query matched more than one row', {});
       }
       if (!q.zero_records_as_success && rowsMatched === 0) {
-        throw new QueryError(
-          'No rows were updated',
-          'Query matched zero rows',
-          {}
-        );
+        throw new QueryError('No rows were updated', 'Query matched zero rows', {});
       }
       await conn.execute(sql, binds, {
         autoCommit: true,
       });
-
     } else {
       await conn.transaction(async (trx: any) => {
         const countResult = await trx.raw(countSql, whereBinds);
-        const rowsMatched =
-          Number(
-            countResult?.[0]?.COUNT ??
-            countResult?.rows?.[0]?.COUNT ??
-            0
-          );
+        const rowsMatched = Number(countResult?.[0]?.COUNT ?? countResult?.rows?.[0]?.COUNT ?? 0);
         if (!q.allow_multiple_updates && rowsMatched > 1) {
-          throw new QueryError(
-            'Multiple row updates are not allowed',
-            'Query matched more than one row',
-            {}
-          );
+          throw new QueryError('Multiple row updates are not allowed', 'Query matched more than one row', {});
         }
         if (!q.zero_records_as_success && rowsMatched === 0) {
-          throw new QueryError(
-            'No rows were updated',
-            'Query matched zero rows',
-            {}
-          );
+          throw new QueryError('No rows were updated', 'Query matched zero rows', {});
         }
         await trx.raw(sql, binds);
       });
@@ -945,114 +925,63 @@ export default class OracledbQueryService implements QueryService {
     return { status: 'ok', data: [] };
   }
 
-  private async guiDeleteRows(
-  conn: any,
-  q: QueryOptions,
-  isThin: boolean
-): Promise<QueryResult> {
+  private async guiDeleteRows(conn: any, q: QueryOptions, isThin: boolean): Promise<QueryResult> {
+    const { table, schema, limit } = q as any;
+    const { where_filters } = q.delete_rows || {};
 
-  const { table, schema, limit } = q as any;
-  const { where_filters } = q.delete_rows || {};
+    const hasFilters = where_filters && Object.keys(where_filters).length > 0;
+    const hasLimit = limit !== undefined && limit !== null && String(limit).trim() !== '';
 
-  const hasFilters =
-    where_filters &&
-    Object.keys(where_filters).length > 0;
-  const hasLimit =
-    limit !== undefined &&
-    limit !== null &&
-    String(limit).trim() !== '';
+    // Prevent full table delete
+    if (!hasFilters && !hasLimit) {
+      throw new QueryError('Filter or limit is mandatory', 'Deleting entire table is not allowed', {});
+    }
+    const tableRef = this.buildTableRef(table, schema);
+    const { clause: whereClause, binds: whereBinds } = this.buildWhereClause(where_filters ?? {}, isThin, 0);
 
-  // Prevent full table delete
-  if (!hasFilters && !hasLimit) {
-    throw new QueryError(
-      'Filter or limit is mandatory',
-      'Deleting entire table is not allowed',
-      {}
-    );
-  }
-  const tableRef = this.buildTableRef(table, schema);
-  const {
-    clause: whereClause,
-    binds: whereBinds,
-  } = this.buildWhereClause(where_filters ?? {}, isThin, 0);
+    const parsedLimit = hasLimit ? parseInt(String(limit), 10) : null;
 
-  const parsedLimit = hasLimit
-    ? parseInt(String(limit), 10)
-    : null;
+    let countSql = `SELECT COUNT(*) AS COUNT FROM ${tableRef}`;
+    let deleteSql = `DELETE FROM ${tableRef}`;
 
-  let countSql = `SELECT COUNT(*) AS COUNT FROM ${tableRef}`;
-  let deleteSql = `DELETE FROM ${tableRef}`;
+    if (whereClause) {
+      countSql += ` ${whereClause}`;
+    }
+    // Oracle delete with limit
+    if (parsedLimit) {
+      const limitedWhere = whereClause
+        ? `${whereClause} AND ROWNUM <= ${parsedLimit}`
+        : `WHERE ROWNUM <= ${parsedLimit}`;
 
-  if (whereClause) {
-    countSql += ` ${whereClause}`;
-  }
-  // Oracle delete with limit
-  if (parsedLimit) {
-    const limitedWhere = whereClause
-      ? `${whereClause} AND ROWNUM <= ${parsedLimit}`
-      : `WHERE ROWNUM <= ${parsedLimit}`;
-
-    deleteSql += ` ${limitedWhere}`;
-    countSql += whereClause
-      ? ` AND ROWNUM <= ${parsedLimit}`
-      : ` WHERE ROWNUM <= ${parsedLimit}`;
-
-  } else if (whereClause) {
-    deleteSql += ` ${whereClause}`;
-  }
-  if (isThin) {
-    const countResult = await conn.execute(
-      countSql,
-      whereBinds,
-      {
+      deleteSql += ` ${limitedWhere}`;
+      countSql += whereClause ? ` AND ROWNUM <= ${parsedLimit}` : ` WHERE ROWNUM <= ${parsedLimit}`;
+    } else if (whereClause) {
+      deleteSql += ` ${whereClause}`;
+    }
+    if (isThin) {
+      const countResult = await conn.execute(countSql, whereBinds, {
         outFormat: oracledb.OUT_FORMAT_OBJECT,
-      }
-    );
-    const rowsMatched =
-      Number(countResult.rows?.[0]?.COUNT ?? 0);
+      });
+      const rowsMatched = Number(countResult.rows?.[0]?.COUNT ?? 0);
 
-    if (!q.allow_multiple_updates && rowsMatched > 1) {
-      throw new QueryError(
-        'Multiple row deletes are not allowed',
-        'Query matched more than one row',
-        {}
-      );
-    }
-    if (!q.zero_records_as_success && rowsMatched === 0) {
-      throw new QueryError(
-        'No rows were deleted',
-        'Query matched zero rows',
-        {}
-      );
-    }
-    await conn.execute(deleteSql, whereBinds, {
+      if (!q.allow_multiple_updates && rowsMatched > 1) {
+        throw new QueryError('Multiple row deletes are not allowed', 'Query matched more than one row', {});
+      }
+      if (!q.zero_records_as_success && rowsMatched === 0) {
+        throw new QueryError('No rows were deleted', 'Query matched zero rows', {});
+      }
+      await conn.execute(deleteSql, whereBinds, {
         autoCommit: true,
       });
     } else {
       await conn.transaction(async (trx: any) => {
-        const countResult = await trx.raw(
-          countSql,
-          whereBinds
-        );
-        const rowsMatched =
-          Number(
-            countResult?.[0]?.COUNT ??
-            countResult?.rows?.[0]?.COUNT ??
-            0
-          );
+        const countResult = await trx.raw(countSql, whereBinds);
+        const rowsMatched = Number(countResult?.[0]?.COUNT ?? countResult?.rows?.[0]?.COUNT ?? 0);
         if (!q.allow_multiple_updates && rowsMatched > 1) {
-          throw new QueryError(
-            'Multiple row deletes are not allowed',
-            'Query matched more than one row',
-            {}
-          );
+          throw new QueryError('Multiple row deletes are not allowed', 'Query matched more than one row', {});
         }
         if (!q.zero_records_as_success && rowsMatched === 0) {
-          throw new QueryError(
-            'No rows were deleted',
-            'Query matched zero rows',
-            {}
-          );
+          throw new QueryError('No rows were deleted', 'Query matched zero rows', {});
         }
         await trx.raw(deleteSql, whereBinds);
       });
@@ -1063,26 +992,14 @@ export default class OracledbQueryService implements QueryService {
     };
   }
 
- private async guiUpsertRows(
-    conn: any,
-    q: QueryOptions,
-    isThin: boolean
-  ): Promise<QueryResult> {
+  private async guiUpsertRows(conn: any, q: QueryOptions, isThin: boolean): Promise<QueryResult> {
     const { table, schema } = q as any;
-    const rawCols: any[] = Object.values(
-      q.upsert_rows?.columns ?? {}
-    );
+    const rawCols: any[] = Object.values(q.upsert_rows?.columns ?? {});
     const pkRaw = (q as any).primary_key_columns ?? [];
-    const pk: string[] = Array.isArray(pkRaw)
-      ? pkRaw
-      : [pkRaw];
+    const pk: string[] = Array.isArray(pkRaw) ? pkRaw : [pkRaw];
     const cols = rawCols.filter((c: any) => {
-      const hasColumn =
-        !!(c.column && String(c.column).trim());
-      const isValueEmpty =
-        c.value === undefined ||
-        c.value === null ||
-        c.value === '';
+      const hasColumn = !!(c.column && String(c.column).trim());
+      const isValueEmpty = c.value === undefined || c.value === null || c.value === '';
 
       if (!hasColumn && isValueEmpty) return false;
       if (!hasColumn) {
@@ -1096,11 +1013,7 @@ export default class OracledbQueryService implements QueryService {
     });
 
     if (!cols.length) {
-      throw new QueryError(
-        'upsert_rows: no columns provided',
-        'At least one column is required for upsert',
-        {}
-      );
+      throw new QueryError('upsert_rows: no columns provided', 'At least one column is required for upsert', {});
     }
     if (!pk.length) {
       throw new QueryError(
@@ -1116,16 +1029,10 @@ export default class OracledbQueryService implements QueryService {
     // PK validation
     const pkFilters: Record<string, any> = {};
     pk.forEach((key) => {
-      const matchedCol = cols.find(
-        (c: any) => c.column === key
-      );
+      const matchedCol = cols.find((c: any) => c.column === key);
 
       if (!matchedCol) {
-        throw new QueryError(
-          `Primary key column "${key}" value missing`,
-          'Primary key value required for upsert',
-          {}
-        );
+        throw new QueryError(`Primary key column "${key}" value missing`, 'Primary key value required for upsert', {});
       }
 
       pkFilters[key] = {
@@ -1135,33 +1042,19 @@ export default class OracledbQueryService implements QueryService {
       };
     });
 
-    const {
-      clause: whereClause,
-      binds: whereBinds,
-    } = this.buildWhereClause(
-      pkFilters,
-      isThin,
-      0
-    );
+    const { clause: whereClause, binds: whereBinds } = this.buildWhereClause(pkFilters, isThin, 0);
 
-    const countSql =
-      `SELECT COUNT(*) AS COUNT FROM ${tableRef} ${whereClause}`;
+    const countSql = `SELECT COUNT(*) AS COUNT FROM ${tableRef} ${whereClause}`;
 
-    const srcCols = cols.map((c: any, i: number) =>
-      `${this.placeholder(i, isThin)} AS ${c.column}`
-    ).join(', ');
+    const srcCols = cols.map((c: any, i: number) => `${this.placeholder(i, isThin)} AS ${c.column}`).join(', ');
 
-    const onClause = pk
-      .map((k: string) => `t.${k} = s.${k}`)
-      .join(' AND ');
+    const onClause = pk.map((k: string) => `t.${k} = s.${k}`).join(' AND ');
     const updateSet = allColNames
       .filter((c: string) => !pk.includes(c))
       .map((c: string) => `t.${c} = s.${c}`)
       .join(', ');
     const insertCols = allColNames.join(', ');
-    const insertVals = allColNames
-      .map((c: string) => `s.${c}`)
-      .join(', ');
+    const insertVals = allColNames.map((c: string) => `s.${c}`).join(', ');
 
     const sql = `
       MERGE INTO ${tableRef} t
@@ -1175,26 +1068,14 @@ export default class OracledbQueryService implements QueryService {
     `;
 
     if (isThin) {
-      const countResult = await conn.execute(
-        countSql,
-        whereBinds,
-        {
-          outFormat: oracledb.OUT_FORMAT_OBJECT,
-        }
-      );
-      const rowsMatched =
-        Number(countResult.rows?.[0]?.COUNT ?? 0);
+      const countResult = await conn.execute(countSql, whereBinds, {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+      });
+      const rowsMatched = Number(countResult.rows?.[0]?.COUNT ?? 0);
       if (!q.allow_multiple_updates && rowsMatched > 1) {
-        throw new QueryError(
-          'Multiple row upserts are not allowed',
-          'Query matched more than one row',
-          {}
-        );
+        throw new QueryError('Multiple row upserts are not allowed', 'Query matched more than one row', {});
       }
-      if (
-        !q.zero_records_as_success &&
-        rowsMatched === 0
-      ) {
+      if (!q.zero_records_as_success && rowsMatched === 0) {
         // For upsert:
         // zero means INSERT path
         // so this should still be allowed
@@ -1204,25 +1085,10 @@ export default class OracledbQueryService implements QueryService {
       });
     } else {
       await conn.transaction(async (trx: any) => {
-        const countResult = await trx.raw(
-          countSql,
-          whereBinds
-        );
-        const rowsMatched =
-          Number(
-            countResult?.[0]?.COUNT ??
-            countResult?.rows?.[0]?.COUNT ??
-            0
-          );
-        if (
-          !q.allow_multiple_updates &&
-          rowsMatched > 1
-        ) {
-          throw new QueryError(
-            'Multiple row upserts are not allowed',
-            'Query matched more than one row',
-            {}
-          );
+        const countResult = await trx.raw(countSql, whereBinds);
+        const rowsMatched = Number(countResult?.[0]?.COUNT ?? countResult?.rows?.[0]?.COUNT ?? 0);
+        if (!q.allow_multiple_updates && rowsMatched > 1) {
+          throw new QueryError('Multiple row upserts are not allowed', 'Query matched more than one row', {});
         }
         await trx.raw(sql, binds);
       });
@@ -1232,7 +1098,7 @@ export default class OracledbQueryService implements QueryService {
       data: [],
     };
   }
-  
+
   private computeOracleBatchSize(records: Record<string, any>[], maxParams = ORACLE_MAX_BIND_PARAMS): number {
     if (!records || records.length === 0) return 100;
     const SAMPLE_SIZE = 100;
@@ -1254,16 +1120,14 @@ export default class OracledbQueryService implements QueryService {
   private async guiBulkInsert(conn: any, q: QueryOptions, isThin: boolean): Promise<QueryResult> {
     const { table, schema } = q as any;
     const rawRecords = (q as any).records ?? [];
-    const records: Record<string, any>[] = typeof rawRecords === 'string'
-      ? JSON.parse(rawRecords)
-      : rawRecords;
+    const records: Record<string, any>[] = typeof rawRecords === 'string' ? JSON.parse(rawRecords) : rawRecords;
     if (!records.length) return { status: 'ok', data: [] };
 
     const tableRef = this.buildTableRef(table, schema);
-    const cols     = Object.keys(records[0]);
+    const cols = Object.keys(records[0]);
 
-    const batchSize   = this.computeOracleBatchSize(records);
-    const batches     = this.splitIntoBatches(records, batchSize);
+    const batchSize = this.computeOracleBatchSize(records);
+    const batches = this.splitIntoBatches(records, batchSize);
 
     for (const batch of batches) {
       const bindsArray = batch.map((r) => cols.map((c) => r[c]));
@@ -1288,22 +1152,18 @@ export default class OracledbQueryService implements QueryService {
 
   private async guiBulkUpsertPkey(conn: any, q: QueryOptions, isThin: boolean): Promise<QueryResult> {
     const rawRecords = (q as any).records ?? [];
-    const records: Record<string, any>[] = typeof rawRecords === 'string'
-      ? JSON.parse(rawRecords)
-      : rawRecords;
+    const records: Record<string, any>[] = typeof rawRecords === 'string' ? JSON.parse(rawRecords) : rawRecords;
     if (!records.length) return { status: 'ok', data: [] };
 
     const batchSize = this.computeOracleBatchSize(records);
-    const batches   = this.splitIntoBatches(records, batchSize);
+    const batches = this.splitIntoBatches(records, batchSize);
 
     for (const batch of batches) {
       for (const record of batch) {
         const syntheticQ = {
           ...q,
           upsert_rows: {
-            columns: Object.fromEntries(
-              Object.keys(record).map((k) => [k, { column: k, value: record[k] }])
-            ),
+            columns: Object.fromEntries(Object.keys(record).map((k) => [k, { column: k, value: record[k] }])),
           },
         };
         await this.guiUpsertRows(conn, syntheticQ as any, isThin);

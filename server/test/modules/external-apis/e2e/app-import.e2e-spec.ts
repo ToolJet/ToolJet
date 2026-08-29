@@ -1,7 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { createUser, initTestApp, closeTestApp, createApplication, createApplicationVersion } from 'test-helper';
+import {
+  createUser,
+  initTestApp,
+  closeTestApp,
+  createApplication,
+  createApplicationVersion,
+  getExternalApiAuthHeader,
+  NONEXISTENT_UUID,
+} from 'test-helper';
 
 /**
  * External API — POST /ext/import/workspace/:workspaceId/apps
@@ -22,8 +29,6 @@ import { createUser, initTestApp, closeTestApp, createApplication, createApplica
  *     flagged as a design question rather than silently patched.
  */
 
-const NONEXISTENT_UUID = '00000000-0000-0000-0000-000000000001';
-
 /** @group platform */
 describe('External API — POST /ext/import/workspace/:workspaceId/apps', () => {
   let app: INestApplication;
@@ -31,7 +36,7 @@ describe('External API — POST /ext/import/workspace/:workspaceId/apps', () => 
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    AUTH_HEADER = `Basic ${app.get(ConfigService).get('EXTERNAL_API_ACCESS_TOKEN')}`;
+    AUTH_HEADER = getExternalApiAuthHeader(app);
   });
 
   afterEach(() => {
@@ -185,7 +190,9 @@ describe('External API — POST /ext/import/workspace/:workspaceId/apps', () => 
     });
 
     it('imports into a different workspace than the source', async () => {
-      const { user: user1, organization: org1 } = await createUser(app, { email: `app-import-cross-1-${Date.now()}@tooljet.io` });
+      const { user: user1, organization: org1 } = await createUser(app, {
+        email: `app-import-cross-1-${Date.now()}@tooljet.io`,
+      });
       const { organization: org2 } = await createUser(app, { email: `app-import-cross-2-${Date.now()}@tooljet.io` });
 
       const seededApp = await createApplication(app, { name: 'Portable App', user: user1 });
