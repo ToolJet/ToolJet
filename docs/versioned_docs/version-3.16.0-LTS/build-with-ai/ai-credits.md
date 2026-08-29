@@ -17,79 +17,7 @@ For tips on structuring your prompts and sessions for the best results, see [Pro
 
 ## Credit Usage
 
-Credit usage in ToolJet varies based on the complexity of the request. Monthly credits are always consumed first. Add-on credits are utilized only after the monthly credits are exhausted. The cards below provide an average range of credits utilized for different operations to help you estimate usage.
-
-<div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', margin: '16px 0'}}>
-
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>[App Generation](/docs/build-with-ai/generate-applications)</span>
-    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
-      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>100 credits</span>
-    </span>
-  </div>
-
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>New Feature in the App</span>
-    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
-      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>100 credits</span>
-    </span>
-  </div>
-
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>Modifying Layout/UI</span>
-    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
-      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>50 credits</span>
-    </span>
-  </div>
-
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>Modifying Queries/Database</span>
-    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
-      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>30 credits</span>
-    </span>
-  </div>
-
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>[Debug Components Auto Fix](/docs/build-with-ai/debug-components)</span>
-    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
-      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>10 credits</span>
-    </span>
-  </div>
-
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>[AI Docs Assistant](/docs/build-with-ai/ai-docs-assistant)</span>
-    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
-      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>6 credits</span>
-    </span>
-  </div>
-
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>Generate Query</span>
-    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
-      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>5 credits</span>
-    </span>
-  </div>
-
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>Custom Code Generation</span>
-    <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-      <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
-      <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>2 credits</span>
-    </span>
-  </div>
-
-</div>
-
-:::warning
-These values are only average estimates to help plan your operations. **Actual credit consumption will vary depending on the complexity of the operation.**
-:::
+Credit usage in ToolJet varies based on the complexity of the request. Monthly credits are always consumed first. Add-on credits are utilized only after the monthly credits are exhausted. 
 
 ## Types of Credits
 
@@ -99,7 +27,6 @@ Monthly credits are recurring credits included with your purchased license. They
 
 ### Add-on Credits
 <PlanBadge type="pro" />
-
 
 Add-on credits can be purchased in addition to your monthly credits and are a one-time purchase that do not renew monthly. These credits can only be purchased in multiples of 100 and are valid for one year from the date of purchase. If you buy additional credits after an initial purchase, the validity of the entire pool of credits is extended based on the latest purchase date. Checkout the [pricing](https://www.tooljet.com/pricing) page for more information.
 
