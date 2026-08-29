@@ -65,7 +65,7 @@ export default function AppCard({
 
   const handlePushClick = async () => {
     try {
-      const rt = appType === 'module' ? 'module' : 'app';
+      const rt = appType === 'workflow' ? 'workflow' : appType === 'module' ? 'module' : 'app';
       const result = await gitSyncService.validatePush(app.id, rt);
       if (!result.valid) {
         setPushValidationError({
@@ -237,8 +237,8 @@ export default function AppCard({
             app?.current_version_id === null
               ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
               : !canAccessReleased
-                ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
-                : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+              ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
+              : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
           }
         >
           <button
@@ -267,8 +267,8 @@ export default function AppCard({
                 app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
                   ? '#4C5155'
                   : darkMode
-                    ? '#FDFDFE'
-                    : '#11181C'
+                  ? '#FDFDFE'
+                  : '#11181C'
               }
             />
 
@@ -328,8 +328,7 @@ export default function AppCard({
   }
   const isStub = app?.app_versions?.[0]?.is_stub;
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
-  const isUnsynced =
-    isGitSyncConfigured && wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced && appType !== 'workflow';
+  const isUnsynced = isGitSyncConfigured && wsCurrentBranch && isOnDefaultBranch && !app?.is_app_synced;
   return (
     <>
       <ToolTip
@@ -410,9 +409,11 @@ export default function AppCard({
                           canUpdateApp={canUpdateApp(app)}
                           deleteApp={() => deleteApp(app)}
                           exportApp={() => {
-                            if (isStub && appType !== 'workflow') {
+                            if (isStub) {
                               toast.error(
-                                'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                                appType === 'workflow'
+                                  ? 'Workflow contents are still syncing from Git. Open the app to finish loading, then try again.'
+                                  : 'App contents are still syncing from Git. Open the app to finish loading, then try again.',
                                 { position: 'top-center' }
                               );
                               return;
@@ -509,7 +510,7 @@ export default function AppCard({
         <PushAppsModal
           show={pushModalOpen}
           onClose={() => setPushModalOpen(false)}
-          resourceType={appType === 'module' ? 'module' : 'app'}
+          resourceType={appType === 'workflow' ? 'workflow' : appType === 'module' ? 'module' : 'app'}
           resourceName={app.name}
           appName={app.name}
           appGitId={app.id}

@@ -2,7 +2,6 @@ import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, No
 import { AsyncLocalStorage } from 'async_hooks';
 import { App } from 'src/entities/app.entity';
 import { AppVersionType } from 'src/entities/app_version.entity';
-import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
@@ -55,15 +54,8 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     if (skipAppEditingVersionHydration.getStore()) return;
 
     // Git-sync detection via the central util — gates on license + provider + branch.
-    // Workflows are exempt — they only ever use the org's default branch (no feature
-    // branches), so the subscriber falls through and picks their single VERSION row even
-    // when git is on for the org.
-    const isWorkflow = app.type === APP_TYPES.WORKFLOW;
-    let isGitEnabled = false;
-    if (!isWorkflow) {
-      const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
-      isGitEnabled = details.isEnabled;
-    }
+    const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+    const isGitEnabled = details.isEnabled;
 
     if (isGitEnabled) {
       // Git on: every editing-version read is branch-scoped. Callers must
@@ -76,7 +68,7 @@ export class AppsSubscriber implements EntitySubscriberInterface {
       return;
     }
 
-    // Git off (or workflow): fall back to most-recent non-BRANCH non-stub
+    // Git off: fall back to most-recent non-BRANCH non-stub
     // VERSION row. These rows live on the org's default branch, and there is a
     // single non-stub VERSION DRAFT per app here, so this is deterministic.
     const editingVersion = await this.appVersionRepository.findOne({

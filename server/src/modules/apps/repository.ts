@@ -375,13 +375,14 @@ export class AppsRepository extends Repository<App> {
   async findAllOrganizationWorkflows(
     organizationId: string,
     workflowIds?: string[]
-  ): Promise<{ id: string; name: string }[]> {
+  ): Promise<{ id: string; name: string; co_relation_id: string }[]> {
     if (workflowIds && !workflowIds.length) return [];
 
     const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
     const qb = this.createQueryBuilder('app')
       .select(['app.id AS id'])
       .addSelect('COALESCE(av_meta.app_name, app.name) AS name')
+      .addSelect('app.co_relation_id AS co_relation_id')
       .where('app.organizationId = :organizationId', { organizationId })
       .andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW });
     if (workflowIds) {

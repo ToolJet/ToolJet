@@ -22,20 +22,9 @@ export function Workflows({ options, optionsChanged, currentState }) {
   const [syncExecution, setSyncExecution] = useState(options.syncExecution ?? true);
   const [versionOptions, setVersionOptions] = useState([]);
 
-  /*
-   * The stored ids belong to the workspace that authored the app -- after a git pull or an
-   * import they resolve to nothing here. Fall back to the names stamped in at export time.
-   * Display-only: never written back, since resolving on read would dirty the app version
-   * and autosave a revision the user never asked for.
-   */
-  const resolvedWorkflowId =
-    workflowOptions.find((o) => o.value === options.workflowId)?.value ??
-    workflowOptions.find((o) => o.name === options.workflowName)?.value ??
-    null;
-  const resolvedWorkflowVersionId =
-    versionOptions.find((o) => o.value === options.workflowVersionId)?.value ??
-    versionOptions.find((o) => o.name === options.workflowVersionName)?.value ??
-    null;
+  // Portable ids post-migration — plain value match, no name-fallback needed.
+  const resolvedWorkflowId = workflowOptions.find((o) => o.value === options.workflowId)?.value ?? null;
+  const resolvedWorkflowVersionId = versionOptions.find((o) => o.value === options.workflowVersionId)?.value ?? null;
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -56,8 +45,9 @@ export function Workflows({ options, optionsChanged, currentState }) {
       .then(({ workflows }) => {
         setWorkflowOptions(
           workflows.map((workflow) => ({
-            value: workflow.id,
+            value: workflow.co_relation_id,
             name: workflow.name,
+            id: workflow.id, // real app PK — appVersionService.getAll needs this, not the co_relation_id
           }))
         );
       })
@@ -67,15 +57,15 @@ export function Workflows({ options, optionsChanged, currentState }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const resolvedWorkflowAppId = workflowOptions.find((o) => o.value === resolvedWorkflowId)?.id ?? null;
+
   useEffect(() => {
-    if (resolvedWorkflowId) {
+    if (resolvedWorkflowAppId) {
       appVersionService
-        .getAll(resolvedWorkflowId)
+        .getAll(resolvedWorkflowAppId)
         .then((data) => {
-          // `name` is matched against options.workflowVersionName above. Any display
-          // formatting added here must carry the raw name in a separate field instead.
           const versions = (data?.versions || []).map((v) => ({
-            value: v.id,
+            value: v.name,
             name: v.name,
           }));
           setVersionOptions(versions);
@@ -87,7 +77,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
       setVersionOptions([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedWorkflowId]);
+  }, [resolvedWorkflowAppId]);
 
   useEffect(() => {
     optionsChanged({

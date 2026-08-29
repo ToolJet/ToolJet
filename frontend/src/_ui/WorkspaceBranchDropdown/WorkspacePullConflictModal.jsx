@@ -18,6 +18,7 @@ const CONFLICT_SECTION_HEADER_MAP = {
   'app-slug': 'App slug',
   'module-name': 'Module name',
   'module-slug': 'Module slug',
+  'workflow-name': 'Workflow name',
   'folder-folder': 'Folder name',
   'datasource-name': 'Data source name',
   // Deleted/deactivated by git but still referenced locally — pull can't proceed

@@ -14,8 +14,8 @@ const BRANCH_URL_PARAM = 'branch';
 /**
  * Whether the given dashboard path is a Git/branch-relevant page — mirrors the Header's
  * `isWorkspaceGitPage` (which gates the branch dropdown): the apps list (`/<ws>`) and the
- * `data-sources` / `modules` sections. Everything else (the `/home` landing, settings,
- * workflows, …) is branch-agnostic and must NOT carry `?branch`. Editor / preview routes
+ * `data-sources` / `modules` / `workflows` sections. Everything else (the `/home` landing,
+ * settings, …) is branch-agnostic and must NOT carry `?branch`. Editor / preview routes
  * (`/<ws>/apps/...`, `/applications/...`) manage the branch param themselves.
  */
 function isBranchRelevantPath(pathname = window.location.pathname) {
@@ -23,7 +23,7 @@ function isBranchRelevantPath(pathname = window.location.pathname) {
   if (parts.length === 1) return true; // /<workspaceId> → apps list
   if (parts[0] === 'applications') return true; // preview / viewer (/applications/:slug/...)
   if (parts[1] === 'apps') return true; // editor (/<workspaceId>/apps/:slug/...)
-  return parts.length >= 2 && ['data-sources', 'modules'].includes(parts[1]);
+  return parts.length >= 2 && ['data-sources', 'modules', 'workflows'].includes(parts[1]);
 }
 
 // In-memory id cache, set by the branches store when it resolves the URL branch name -> id.
@@ -130,11 +130,8 @@ export function whenBranchResolved(timeoutMs = 4000) {
  * - Pass an explicit `branchId` to override the active branch.
  * - Defaults to the resolved active branch id via getActiveBranchId().
  * - Returns the URL unchanged when there is no branch (non-git orgs, or before the store has
- *   resolved) — the backend then resolves the default branch (general reads) or NULL
- *   (folder-apps / workflows).
+ *   resolved) — the backend then resolves the default branch.
  * - Does not append when the URL already carries a `branch_id` param (explicit wins).
- *
- * For NULL-branch contexts (workflows) callers should simply NOT wrap the URL.
  */
 export function appendBranchParam(url, branchId = getActiveBranchId()) {
   if (!branchId) return url;

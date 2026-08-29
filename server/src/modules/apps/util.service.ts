@@ -41,6 +41,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
@@ -185,15 +186,12 @@ export class AppsUtilService implements IAppsUtilService {
             await manager.save(
               AppVersion,
               manager.create(AppVersion, {
-                name: type === APP_TYPES.WORKFLOW ? 'v1' : uuidv4(),
+                name: uuidv4(),
                 appId: app.id,
                 definition: {},
                 currentEnvironmentId: firstPriorityEnv.id,
                 status: AppVersionStatus.DRAFT,
-                // Workflows don't participate in branching — keep them as VERSION.
-                // Apps and modules on a feature branch must be BRANCH-type so the
-                // editor recognises them as editable branch copies.
-                versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
+                versionType: AppVersionType.BRANCH,
                 branchId: branchId,
                 // A freshly created app/module on a feature branch has never been pushed to git —
                 // it must start unsynced so it's treated as new content until its first push
@@ -498,12 +496,9 @@ export class AppsUtilService implements IAppsUtilService {
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const appBuilderMode = appUpdateDto.app_builder_mode;
     const { name, slug, icon } = appUpdateDto;
-    const { id: appId, currentVersionId: lastReleasedVersion, type: appType } = app;
+    const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
-    const branchId =
-      appType === APP_TYPES.WORKFLOW
-        ? (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id
-        : appUpdateDto.branch_id;
+    const branchId = appUpdateDto.branch_id;
 
     // Version-level fields, written to app_versions for every app type.
     const versionParams: Record<string, any> = {};
@@ -903,7 +898,7 @@ export class AppsUtilService implements IAppsUtilService {
   // Only runs for FRONT_END apps in the git-sync flow (branchId present) — no-op for
   // all other app types and all non-git flows.
   async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
-    if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
+    if (!branchId || !apps.length) return;
     const rows: { app_id: string }[] = await this.appRepository.manager.query(
       `SELECT DISTINCT av.app_id FROM app_versions av
        WHERE av.app_id = ANY($1::uuid[]) AND av.branch_id = $2::uuid AND av.is_synced = true
@@ -942,7 +937,7 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
-    const willInnerJoinOnBranch = !!branchId && (type === APP_TYPES.MODULE || type === APP_TYPES.FRONT_END);
+    const willInnerJoinOnBranch = !!branchId;
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -978,7 +973,7 @@ export class AppsUtilService implements IAppsUtilService {
       } else {
         qb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
-    } else if (branchId && type === APP_TYPES.FRONT_END) {
+    } else if (branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.WORKFLOW)) {
       qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
     }
   }
@@ -1044,7 +1039,7 @@ export class AppsUtilService implements IAppsUtilService {
     // the INNER JOIN via applyAppVersionsJoin (_skipBranchScope=true). Without
     // that join, ordering by appVersions columns triggers PostgreSQL error 42P01
     // ("missing FROM-clause entry for table appversions").
-    if (branchId && type !== APP_TYPES.WORKFLOW && _skipBranchScope) {
+    if (branchId && _skipBranchScope) {
       viewableAppsQb
         .orderBy('appVersions.isStub', 'ASC')
         .addOrderBy('appVersions.updatedAt', 'DESC')
@@ -1675,6 +1670,41 @@ export class AppsUtilService implements IAppsUtilService {
       if (error instanceof BadRequestException) throw error;
       console.error('Failed to check if module is in use', error?.stack || error);
       throw new BadRequestException('Failed to validate module references');
+    }
+  }
+
+  /**
+   * Twin of checkModuleInUseByApps: blocks deleting a workflow still referenced by a
+   * workflow-node DataQuery (DataSource.kind === 'workflows') elsewhere. `options.workflowId`
+   * is a co_relation_id post-B9, but matched against both id and co_relation_id below for rows
+   * the migration hasn't reached yet — same tolerance as resolveAllWorkflowRefsForVersion.
+   */
+  async checkWorkflowInUseByApps(workflowApp: App, manager: EntityManager): Promise<void> {
+    if (!workflowApp?.co_relation_id) return;
+    try {
+      // Self-ref excluded so a workflow can reference itself without blocking its own
+      // deletion — mirrors checkModuleInUseByApps.
+      const rows: { options: Record<string, any>; ownerAppId: string }[] = await manager
+        .createQueryBuilder(DataQuery, 'dq')
+        .innerJoin('dq.dataSource', 'dataSource')
+        .innerJoin('dq.appVersion', 'appVersion')
+        .select('dq.options', 'options')
+        .addSelect('appVersion.appId', 'ownerAppId')
+        .where('dataSource.kind = :kind', { kind: 'workflows' })
+        .getRawMany();
+
+      const referencedByOtherApp = rows.some((r) => {
+        if (r.ownerAppId === workflowApp.id) return false;
+        const { workflowId } = readWorkflowQueryRefs(r.options);
+        return workflowId === workflowApp.id || workflowId === workflowApp.co_relation_id;
+      });
+      if (referencedByOtherApp) {
+        throw new BadRequestException('Workflow is still referenced by another app or module.');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check if workflow is in use', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow references');
     }
   }
 

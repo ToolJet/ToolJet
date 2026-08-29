@@ -22,7 +22,12 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
-import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
+import {
+  resolveAllModuleViewersForVersion,
+  ResolvedModuleViewer,
+  resolveAllWorkflowRefsForVersion,
+  resolveWorkflowRef,
+} from './module-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import {
   assertGitSyncEditAllowedForOrg,
@@ -327,7 +332,7 @@ export class VersionUtilService implements IVersionUtilService {
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
     const { versionName, versionType } = versionCreateDto;
-    const branchId = await this.resolveVersionBranchId(app, user, versionCreateDto);
+    const branchId = await this.resolveVersionBranchId(user, versionCreateDto);
 
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
@@ -377,7 +382,7 @@ export class VersionUtilService implements IVersionUtilService {
    * the released/current version is never removed.
    */
   async replaceDraftVersion(app: App, user: User, versionCreateDto: VersionCreateDto): Promise<any> {
-    const branchId = await this.resolveVersionBranchId(app, user, versionCreateDto);
+    const branchId = await this.resolveVersionBranchId(user, versionCreateDto);
     if (!versionCreateDto.versionName || versionCreateDto.versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
@@ -437,23 +442,11 @@ export class VersionUtilService implements IVersionUtilService {
   /**
    * Resolve the branch id a new version lands on: the forwarded branch id, else the org's
    * default branch. branch_id is NOT NULL on app_versions for every app type now (see
-   * 1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull), so every type needs a real value —
-   * but workflows never participate in git-sync branching, so they're pinned to the org's
-   * default branch unconditionally, ignoring any branch context on the request. That context is
-   * normally absent for workflow calls (the frontend omits it — see active-branch.js's
-   * isBranchRelevantPath), but `_activeBranchId` is a session-wide client cache that can still
-   * carry a stale feature-branch id left over from an unrelated app opened earlier in the same
-   * session; the backend must not trust it for a type that structurally can't branch. This is a
-   * pure constraint-satisfaction fix, not new git-sync participation for workflows.
+   * 1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull), so every type needs a real value.
    */
-  private async resolveVersionBranchId(
-    app: App,
-    user: User,
-    versionCreateDto: VersionCreateDto
-  ): Promise<string | undefined> {
+  private async resolveVersionBranchId(user: User, versionCreateDto: VersionCreateDto): Promise<string | undefined> {
     const defaultBranchId = (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch
       ?.id;
-    if (app.type === APP_TYPES.WORKFLOW) return defaultBranchId ?? undefined;
     return versionCreateDto.branchId ?? defaultBranchId ?? undefined;
   }
 
@@ -775,6 +768,102 @@ export class VersionUtilService implements IVersionUtilService {
       if (error instanceof BadRequestException) throw error;
       this.logger.error('Failed to check module environment availability', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions for promote');
+    }
+  }
+
+  // Twin of checkModulesPromotableToEnvironment for embedded workflows.
+  async checkWorkflowsPromotableToEnvironment(
+    versionId: string,
+    targetEnvironmentName: string,
+    targetPriority: number,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+
+      const refs = await resolveAllWorkflowRefsForVersion(manager, versionId, organizationId, defaultBranchId);
+      if (refs.length === 0) return;
+
+      const dataQueries = await manager.find(DataQuery, {
+        where: { id: In(refs.map((r) => r.dataQueryId)) },
+        select: ['id', 'options'],
+      });
+      const optionsByDataQueryId = new Map(dataQueries.map((dq) => [dq.id, dq.options]));
+
+      const coRels = Array.from(new Set(refs.map((r) => r.workflowCoRel)));
+      const workflowApps: { coRel: string; name: string }[] = await manager.query(
+        `SELECT DISTINCT ON (a.co_relation_id) a.co_relation_id AS "coRel",
+                COALESCE(a.name, (
+                  SELECT av.app_name FROM app_versions av
+                  WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                  ORDER BY av.created_at DESC LIMIT 1
+                )) AS "name"
+         FROM apps a
+         WHERE a.co_relation_id::text = ANY($1) AND a.type = $2 AND a.organization_id = $3
+         ORDER BY a.co_relation_id, a.created_at ASC`,
+        [coRels, APP_TYPES.WORKFLOW, organizationId]
+      );
+      const nameByCoRel = new Map(workflowApps.map((w) => [w.coRel, w.name]));
+
+      type Offender = { name: string; kind: 'no-row' | 'unresolved-pin' | 'not-promoted'; versionName?: string };
+      const offenders: Offender[] = [];
+      const seenCoRel = new Set<string>();
+
+      for (const ref of refs) {
+        if (seenCoRel.has(ref.workflowCoRel)) continue;
+        seenCoRel.add(ref.workflowCoRel);
+        const name = nameByCoRel.get(ref.workflowCoRel) ?? 'unknown workflow';
+
+        let resolved: { appId: string | null; appVersionId: string | null };
+        try {
+          resolved = await resolveWorkflowRef(
+            manager,
+            optionsByDataQueryId.get(ref.dataQueryId) ?? {},
+            organizationId,
+            defaultBranchId
+          );
+        } catch {
+          offenders.push({ name, kind: 'unresolved-pin' });
+          continue;
+        }
+        if (!resolved.appVersionId) {
+          offenders.push({ name, kind: 'no-row' });
+          continue;
+        }
+
+        const row = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .leftJoin('app_environments', 'e', 'e.id = av.current_environment_id')
+          .select(['av.name AS "versionName"', 'e.priority AS "envPriority"'])
+          .where('av.id = :id', { id: resolved.appVersionId })
+          .getRawOne<{ versionName: string; envPriority: number | null }>();
+
+        if (!row || row.envPriority === null || row.envPriority < targetPriority) {
+          offenders.push({ name, kind: 'not-promoted', versionName: row?.versionName });
+        }
+      }
+
+      if (offenders.length === 0) return;
+
+      const formatEntry = (o: Offender) => {
+        if (o.kind === 'no-row') return `Workflow "${o.name}" has no saved version. Save the workflow first.`;
+        if (o.kind === 'unresolved-pin') return `Workflow "${o.name}" pin is invalid. Pin a saved version.`;
+        return `Workflow "${o.name}" version "${o.versionName ?? 'unresolved'}" not promoted to ${targetEnvironmentName} yet.`;
+      };
+      const workflowList = offenders.map(formatEntry).join(' ');
+      const message =
+        offenders.length === 1
+          ? `Promote blocked - ${formatEntry(offenders[0])}`
+          : `Promote blocked - ${offenders.length} dependent workflows need attention. ${workflowList}`;
+      throw new BadRequestException({
+        message: { error: message, details: workflowList },
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check workflow environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow versions for promote');
     }
   }
 

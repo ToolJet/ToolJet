@@ -101,15 +101,9 @@ export class AppsService implements IAppsService {
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     // Git configured but license expired/invalid → workspace is read-only; block creates.
-    if (type !== APP_TYPES.WORKFLOW) {
-      await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, user.organizationId);
-    }
+    await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, user.organizationId);
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Workflows always resolve to the org's default branch, ignoring any DTO-supplied
-      // branchId (frontend may send the current dashboard branch even for workflow
-      // creation) — they don't support feature-branch creation, so there is only ever
-      // one branch context for a workflow.
-      let branchId = type === APP_TYPES.WORKFLOW ? undefined : appCreateDto.branchId;
+      let branchId = appCreateDto.branchId;
       if (!branchId) {
         const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         branchId = options.defaultBranch?.id;
@@ -120,7 +114,7 @@ export class AppsService implements IAppsService {
       // directly on main would bypass the git-sync review flow entirely.
       // Single-branch mode (and no-multi-branch-license) is exempt — there are no feature
       // branches, so the default branch IS the working branch.
-      if (type !== APP_TYPES.WORKFLOW && branchId) {
+      if (branchId) {
         const { isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         if (isMultiBranchingEnabled) {
           const targetBranch = await manager.findOne(WorkspaceBranch, {
@@ -345,20 +339,17 @@ export class AppsService implements IAppsService {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
     // Git configured but license expired/invalid → workspace is read-only; block metadata edits.
-    if (app.type !== APP_TYPES.WORKFLOW) {
-      await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, app.organizationId);
-    }
+    await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, app.organizationId);
     const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
       app.organizationId
     );
 
     // Block metadata edits on the default branch when multi-branching is enabled. These fields
     // (name/slug/icon/is_public) must be edited from a feature branch — the change then
-    // flows to the default branch via push + merge. Workflows are exempt because they
-    // keep metadata on apps.* and don't participate in branching. Single-branch mode (and
+    // flows to the default branch via push + merge. Single-branch mode (and
     // non-git-sync workspaces) are exempt too — the default branch is the working branch;
     // util.service.update writes to all VERSION rows.
-    if (isGitSyncEnabled && isMultiBranchingEnabled && app.type !== APP_TYPES.WORKFLOW) {
+    if (isGitSyncEnabled && isMultiBranchingEnabled) {
       const blockedFields: string[] = [];
       if (appUpdateDto.name !== undefined) blockedFields.push('name');
       if (appUpdateDto.slug !== undefined) blockedFields.push('slug');
@@ -464,17 +455,15 @@ export class AppsService implements IAppsService {
     const { id } = app;
 
     // Git checks: block deleting a synced app on the default branch (multi-branch) or any
-    // feature-branch delete (single-branch), and the whole workspace when license-locked. Workflows
-    // don't participate in branching. Uses the resolved version's branch/synced state.
-    if (app.type !== APP_TYPES.WORKFLOW) {
-      const version = app.appVersions?.[0];
-      await assertGitSyncEditAllowedForOrg(
-        this.gitSyncConfigsUtilService,
-        app.organizationId,
-        { branchId: version?.branchId, status: version?.status, isSynced: version?.isSynced },
-        app.type === APP_TYPES.MODULE ? 'module' : 'app'
-      );
-    }
+    // feature-branch delete (single-branch), and the whole workspace when license-locked.
+    // Uses the resolved version's branch/synced state.
+    const version = app.appVersions?.[0];
+    await assertGitSyncEditAllowedForOrg(
+      this.gitSyncConfigsUtilService,
+      app.organizationId,
+      { branchId: version?.branchId, status: version?.status, isSynced: version?.isSynced },
+      app.type === APP_TYPES.MODULE ? 'module' : 'app'
+    );
     if (app.type === APP_TYPES.MODULE) {
       await dbTransactionWrap(async (manager: EntityManager) => {
         const refCount = await manager
@@ -549,7 +538,7 @@ export class AppsService implements IAppsService {
     // configured, fall back to the default branch so only default-branch apps surface.
     // Non-git-sync workspaces have no orgGit; branchId stays undefined and the no-branch
     // overlay below picks any version row's metadata per app.
-    const branchId = await this.resolveDashboardBranchId(user, type, appListDto.branchId);
+    const branchId = await this.resolveDashboardBranchId(user, appListDto.branchId);
     // if (!branchId && type === 'front-end') {
     //   const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
     //   if (orgGit) {
@@ -578,16 +567,11 @@ export class AppsService implements IAppsService {
         context
       );
 
-      // When a branch is in scope, the loaded `appVersions[0]` is the branch-specific
-      // version for branch-scoped types (front-end/module — util.service.ts's INNER
-      // JOIN guarantees a match whenever the app is present in `apps` at all, so
-      // `!branchVersion` is unreachable for them here). Workflows are never
-      // branch-joined — a single version permanently tied to the org's default branch
-      // (see ee/apps/util.service.ts's "common across all branches" comment) — so
-      // `appVersions` is never populated for them regardless of branchId. Route
-      // whichever apps the branch join didn't cover (workflows, or every app when no
-      // branch is in scope at all) through the appId-keyed default-branch query below,
-      // instead of leaving their metadata unresolved.
+      // When a branch is in scope, `appVersions[0]` is the branch-specific version for
+      // every type — util.service.ts's `applyAppVersionsJoin` INNER JOINs all three, so
+      // `!branchVersion` is unreachable and the guard below is defensive only. Without a
+      // branch, nothing is joined: route those apps through the appId-keyed
+      // default-branch query instead of leaving their metadata unresolved.
       const unresolvedAppIds: string[] = [];
       if (branchId) {
         for (const app of apps) {
@@ -666,19 +650,10 @@ export class AppsService implements IAppsService {
   }
 
   // End users with no branchId would otherwise see apps across every branch; default to the org's default branch.
-  private async resolveDashboardBranchId(
-    user: User,
-    type: string,
-    providedBranchId?: string
-  ): Promise<string | undefined> {
+  private async resolveDashboardBranchId(user: User, providedBranchId?: string): Promise<string | undefined> {
     if (providedBranchId) return providedBranchId;
-    // Resolve default branch for git-synced app types (FRONT_END and MODULE).
-    // Workflows are never branch-scoped — their folder_apps rows always use branch_id=NULL.
-    if (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE) {
-      const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
-      return options.defaultBranch?.id;
-    }
-    return providedBranchId;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+    return options.defaultBranch?.id;
   }
 
   private async fetchDashboardApps(
@@ -814,7 +789,6 @@ export class AppsService implements IAppsService {
    */
   private async resolveBranchAwareEditingVersion(app: App, branchId?: string): Promise<void> {
     if (app.editingVersion) return; // subscriber already set it (workflow / git-off)
-    if (app.type === APP_TYPES.WORKFLOW) return;
 
     const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
     const defaultBranchId = options.defaultBranch?.id;
