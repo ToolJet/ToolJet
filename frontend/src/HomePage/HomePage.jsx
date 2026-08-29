@@ -2746,6 +2746,7 @@ class HomePageComponent extends React.Component {
                     darkMode={this.props.darkMode}
                     appActionModal={this.appActionModal}
                     removeAppFromFolder={this.removeAppFromFolder}
+                    refreshApps={() => this.fetchApps(this.state.currentPage, this.state.currentFolder.id)}
                     appType={this.props.appType}
                     basicPlan={shouldExcludeEnvParam}
                     moduleEnabled={moduleEnabled}

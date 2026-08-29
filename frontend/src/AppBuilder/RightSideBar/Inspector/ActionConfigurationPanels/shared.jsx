@@ -47,9 +47,12 @@ export const FieldRow = ({ label, dataCy, children, className }) => (
 // Single-select combobox over `{ name, value }` options. `value`/`onChange` work
 // with the raw value (not the option object) — the helper resolves the selected
 // option internally.
-export const OptionCombobox = ({ options, value, onChange, placeholder }) => {
+export const OptionCombobox = ({ options, value, onChange, placeholder, invalid = false, errLabel = '' }) => {
   const { t } = useTranslation();
-  const selected = (options ?? []).find((o) => o.value === value) ?? null;
+  // When `value` is set but no option matches it, render an orphan display object so the trigger shows e.g. "Undefined app".
+  // The orphan is NOT added to `items`, so the dropdown list stays clean.
+  const matched = (options ?? []).find((o) => o.value === value);
+  const selected = matched ?? (value ? { name: errLabel, value } : null);
   return (
     <Combobox
       items={options ?? []}
@@ -57,7 +60,10 @@ export const OptionCombobox = ({ options, value, onChange, placeholder }) => {
       value={selected}
       onValueChange={(item) => onChange(item?.value ?? null)}
     >
-      <ComboboxInput placeholder={placeholder ?? t('globals.select', 'Select') + '...'} />
+      <ComboboxInput
+        placeholder={placeholder ?? t('globals.select', 'Select') + '...'}
+        className={invalid ? '!tw-border-border-danger-strong' : undefined}
+      />
       <ComboboxContent align="end" className="!tw-w-min !tw-max-w-[268px]">
         <ComboboxList>
           {(item) => (

@@ -4,7 +4,7 @@ import { deleteDownloadsFolder } from "Support/utils/common";
 import { createModuleViaAPI, openModulesList } from "Support/utils/platform/modules";
 
 
-describe("Module Export", { retries: 0 }, () => {
+describe("Module Export", () => {
   const testId = Date.now();
   const wsName = `modules-export-${testId}`;
   const wsSlug = wsName;

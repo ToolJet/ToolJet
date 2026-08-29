@@ -1,62 +1,29 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { Organization } from '@entities/organization.entity';
-import { App } from '@entities/app.entity';
-import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
-import { MigrationProgress } from '@helpers/migration.helper';
-import { APP_TYPES } from '@modules/apps/constants';
 
+/**
+ * NEUTRALISED for the lts->latest migration flow.
+ *
+ * This migration originally auto-RELEASED every existing module: it took each module's latest
+ * version, set it status=PUBLISHED + current_environment_id=production, and pointed
+ * apps.current_version_id at it.
+ *
+ * The migration path now PRESERVES every version exactly as it is and only attaches it to the
+ * default branch — it does NOT release modules or rewrite their status. Auto-releasing turned a
+ * module whose only version is a DRAFT into a draftless PUBLISHED module, which then has no
+ * editable version. A customer releases a module themselves (and creates a draft to edit it)
+ * through the normal flow when they are ready.
+ *
+ * Safe to make a no-op:
+ *   - Beta/main already ran the original version (recorded), so they are unaffected.
+ *   - A fresh install has no modules, so the original was a no-op there too.
+ */
 export class PromoteAndReleaseExistingModuleVersions1776419051000 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    const manager = queryRunner.manager;
-
-    const organizations = await manager.find(Organization, {
-      select: ['id'],
-      relations: ['appEnvironments'],
-    });
-
-    const migrationProgress = new MigrationProgress('PromoteAndReleaseExistingModuleVersions', organizations.length);
-
-    for (const organization of organizations) {
-      const productionEnvironment = organization.appEnvironments.find((env) => env.isDefault);
-
-      if (!productionEnvironment) {
-        migrationProgress.show();
-        continue;
-      }
-
-      const moduleApps = await manager.find(App, {
-        where: { organizationId: organization.id, type: APP_TYPES.MODULE },
-        select: ['id', 'currentVersionId'],
-      });
-
-      for (const app of moduleApps) {
-        const versions = await manager.find(AppVersion, {
-          where: { appId: app.id },
-          order: { createdAt: 'DESC' },
-          select: ['id', 'createdAt'],
-        });
-
-        if (!versions.length) continue;
-
-        const latestVersion = versions[0];
-
-        await manager.update(
-          AppVersion,
-          { id: latestVersion.id },
-          {
-            currentEnvironmentId: productionEnvironment.id,
-            status: AppVersionStatus.PUBLISHED,
-          }
-        );
-
-        await manager.update(App, { id: app.id }, { currentVersionId: latestVersion.id });
-
-        console.log(`Released module ${app.id} → version ${latestVersion.id}`);
-      }
-
-      migrationProgress.show();
-    }
+  public async up(_queryRunner: QueryRunner): Promise<void> {
+    // Intentionally does nothing — see the class comment. Modules keep their exact status and
+    // current_version_id, and stay attached to the default branch.
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {
+    // No-op.
+  }
 }

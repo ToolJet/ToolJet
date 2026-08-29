@@ -108,14 +108,17 @@ const LifecycleCTAButton = () => {
       ));
   const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
-  // Only show the button on the development environment — not on staging/production.
-  if (!isDevelopmentEnvironment) {
+  // Only show the button on the development environment — not on staging/production —
+  // except the "Sync" state, which stays visible on every environment until the app is
+  // actually pushed to git at least once.
+  if (!isDevelopmentEnvironment && !isUnsynced) {
     return null;
   }
 
   // Only show on the draft version — saved/released versions are read-only and have no
-  // commit or pull action to perform.
-  if (selectedVersion && selectedVersion.status !== 'DRAFT') {
+  // commit or pull action to perform. "Sync" is the exception: it acts on the app's
+  // default-branch draft regardless of which version is selected in the current environment.
+  if (selectedVersion && selectedVersion.status !== 'DRAFT' && !isUnsynced) {
     return null;
   }
 
@@ -210,6 +213,7 @@ const LifecycleCTAButton = () => {
           fromEditor
           onSuccess={() => {
             setShowPushModal(false);
+            fetchDevelopmentVersions(appId);
           }}
         />
       )}

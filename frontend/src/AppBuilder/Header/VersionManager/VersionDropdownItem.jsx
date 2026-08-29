@@ -77,7 +77,7 @@ const VersionDropdownItem = ({
   const workspaceBranches = useWorkspaceBranchesStore((state) => state.branches);
   const sourceBranchId = parentVersion?.branchId || parentVersion?.branch_id;
   const sourceBranchName = parentIsBranchVersion
-    ? (workspaceBranches.find((b) => b.id === sourceBranchId)?.name ?? 'feature-branch')
+    ? workspaceBranches.find((b) => b.id === sourceBranchId)?.name ?? 'feature-branch'
     : null;
 
   const metadataRef = useRef(null);
@@ -412,32 +412,20 @@ const VersionDropdownItem = ({
 
                     {/* Create version button - shown for drafts */}
                     {canCreateVersion && (
-                      <ToolTip
-                        message={
-                          isEditorReadOnly
-                            ? "You don't have access to save this version. Contact admin to know more."
-                            : 'Save this version'
-                        }
-                        placement="left"
-                        width="280px"
+                      <Button
+                        variant="outline"
+                        size="small"
+                        disabled={isEditorReadOnly}
+                        className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuVersionId?.(null);
+                          onCreateVersion?.(version);
+                        }}
+                        data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
                       >
-                        <span>
-                          <Button
-                            variant="outline"
-                            size="small"
-                            disabled={isEditorReadOnly}
-                            className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenMenuVersionId?.(null);
-                              onCreateVersion?.(version);
-                            }}
-                            data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
-                          >
-                            Save version
-                          </Button>
-                        </span>
-                      </ToolTip>
+                        Save version
+                      </Button>
                     )}
 
                     {/* More menu */}
