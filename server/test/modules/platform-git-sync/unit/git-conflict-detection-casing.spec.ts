@@ -29,6 +29,10 @@ describe('GitConflictDetectionService — name casing (case-sensitive)', () => {
   beforeEach(() => {
     service = new GitConflictDetectionService({ log: jest.fn() } as any);
     repoPath = fs.mkdtempSync(path.join(os.tmpdir(), 'git-conflict-casing-'));
+    // gatherDataSourceConflicts's in-use check runs unconditionally (not gated by any casing
+    // logic these tests care about) — mock it out so this stays a real-DB-free unit test.
+    jest.spyOn(service as any, 'loadOrphanCandidateDataSources').mockResolvedValue([]);
+    jest.spyOn(service as any, 'loadOrphanCandidateModuleOrWorkflowApps').mockResolvedValue([]);
   });
 
   afterEach(() => {

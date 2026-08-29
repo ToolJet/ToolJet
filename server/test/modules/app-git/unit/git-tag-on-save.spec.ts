@@ -113,9 +113,16 @@ describe('AppGitVersionService — git tag on save', () => {
     expect(versionRepository.getAppVersionById).not.toHaveBeenCalled();
   });
 
-  it('does NOT tag workflows', async () => {
+  it('tags workflows the same as any other type', async () => {
+    versionRepository.getAppVersionById.mockResolvedValue({
+      id: 'ver-1',
+      name: 'v2',
+      versionType: AppVersionType.VERSION,
+      isSynced: true,
+    });
+
     await service.saveVersion(buildApp({ type: APP_TYPES.WORKFLOW }), user, publish());
-    expect(appGitService.createGitTag).not.toHaveBeenCalled();
+    expect(appGitService.createGitTag).toHaveBeenCalledTimes(1);
   });
 
   it('does NOT tag when git sync is disabled for the workspace', async () => {
