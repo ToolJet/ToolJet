@@ -1,0 +1,229 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Adanos Datasource",
+  "description": "A schema defining Adanos datasource operations",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        {
+          "value": "get_asset_sentiment",
+          "name": "Get asset sentiment"
+        },
+        {
+          "value": "get_trending_assets",
+          "name": "Get trending assets"
+        },
+        {
+          "value": "compare_assets",
+          "name": "Compare assets"
+        },
+        {
+          "value": "get_market_sentiment",
+          "name": "Get market sentiment"
+        }
+      ]
+    },
+    "get_asset_sentiment": {
+      "source": {
+        "label": "Data source",
+        "key": "source",
+        "type": "dropdown",
+        "description": "Select the platform source",
+        "list": [
+          { "value": "reddit_stocks", "name": "Reddit stocks" },
+          { "value": "x_stocks", "name": "X / FinTwit stocks" },
+          { "value": "news_stocks", "name": "News stocks" },
+          { "value": "polymarket_stocks", "name": "Polymarket stocks" },
+          { "value": "reddit_crypto", "name": "Reddit crypto" }
+        ],
+        "default": "reddit_stocks"
+      },
+      "symbol": {
+        "label": "Ticker / Symbol",
+        "key": "symbol",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Enter the stock ticker (e.g., TSLA, AAPL) or crypto symbol (e.g., BTC, ETH)",
+        "placeholder": "TSLA",
+        "height": "36px"
+      },
+      "from": {
+        "label": "From Date (YYYY-MM-DD)",
+        "key": "from",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Optional start date in YYYY-MM-DD (UTC)",
+        "placeholder": "2026-08-01",
+        "height": "36px"
+      },
+      "to": {
+        "label": "To Date (YYYY-MM-DD)",
+        "key": "to",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Optional end date in YYYY-MM-DD (UTC)",
+        "placeholder": "2026-08-28",
+        "height": "36px"
+      }
+    },
+    "get_trending_assets": {
+      "source": {
+        "label": "Data source",
+        "key": "source",
+        "type": "dropdown",
+        "description": "Select the platform source",
+        "list": [
+          { "value": "reddit_stocks", "name": "Reddit stocks" },
+          { "value": "x_stocks", "name": "X / FinTwit stocks" },
+          { "value": "news_stocks", "name": "News stocks" },
+          { "value": "polymarket_stocks", "name": "Polymarket stocks" },
+          { "value": "reddit_crypto", "name": "Reddit crypto" }
+        ],
+        "default": "reddit_stocks"
+      },
+      "from": {
+        "label": "From Date (YYYY-MM-DD)",
+        "key": "from",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Optional start date in YYYY-MM-DD (UTC)",
+        "placeholder": "2026-08-01",
+        "height": "36px"
+      },
+      "to": {
+        "label": "To Date (YYYY-MM-DD)",
+        "key": "to",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Optional end date in YYYY-MM-DD (UTC)",
+        "placeholder": "2026-08-28",
+        "height": "36px"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Maximum number of items to return (1-100, default: 20)",
+        "placeholder": "20",
+        "height": "36px"
+      },
+      "offset": {
+        "label": "Offset",
+        "key": "offset",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Pagination offset (default: 0)",
+        "placeholder": "0",
+        "height": "36px"
+      },
+      "type": {
+        "label": "Asset Type",
+        "key": "type",
+        "type": "dropdown",
+        "description": "Filter by asset type (Stocks/X/Polymarket)",
+        "list": [
+          { "value": "all", "name": "All" },
+          { "value": "stock", "name": "Stocks" },
+          { "value": "etf", "name": "ETFs" }
+        ],
+        "default": "all"
+      }
+    },
+    "compare_assets": {
+      "source": {
+        "label": "Data source",
+        "key": "source",
+        "type": "dropdown",
+        "description": "Select the platform source",
+        "list": [
+          { "value": "reddit_stocks", "name": "Reddit stocks" },
+          { "value": "x_stocks", "name": "X / FinTwit stocks" },
+          { "value": "news_stocks", "name": "News stocks" },
+          { "value": "polymarket_stocks", "name": "Polymarket stocks" },
+          { "value": "reddit_crypto", "name": "Reddit crypto" }
+        ],
+        "default": "reddit_stocks"
+      },
+      "symbols": {
+        "label": "Tickers / Symbols (comma-separated, max 10)",
+        "key": "symbols",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Comma-separated asset symbols (e.g., TSLA,NVDA,AAPL or BTC,ETH)",
+        "placeholder": "TSLA,NVDA,AAPL",
+        "height": "36px"
+      },
+      "from": {
+        "label": "From Date (YYYY-MM-DD)",
+        "key": "from",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Optional start date in YYYY-MM-DD (UTC)",
+        "placeholder": "2026-08-01",
+        "height": "36px"
+      },
+      "to": {
+        "label": "To Date (YYYY-MM-DD)",
+        "key": "to",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Optional end date in YYYY-MM-DD (UTC)",
+        "placeholder": "2026-08-28",
+        "height": "36px"
+      }
+    },
+    "get_market_sentiment": {
+      "source": {
+        "label": "Data source",
+        "key": "source",
+        "type": "dropdown",
+        "description": "Select the platform source",
+        "list": [
+          { "value": "reddit_stocks", "name": "Reddit stocks" },
+          { "value": "x_stocks", "name": "X / FinTwit stocks" },
+          { "value": "news_stocks", "name": "News stocks" },
+          { "value": "polymarket_stocks", "name": "Polymarket stocks" },
+          { "value": "reddit_crypto", "name": "Reddit crypto" }
+        ],
+        "default": "reddit_stocks"
+      },
+      "from": {
+        "label": "From Date (YYYY-MM-DD)",
+        "key": "from",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Optional start date in YYYY-MM-DD (UTC)",
+        "placeholder": "2026-08-01",
+        "height": "36px"
+      },
+      "to": {
+        "label": "To Date (YYYY-MM-DD)",
+        "key": "to",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "width": "320px",
+        "description": "Optional end date in YYYY-MM-DD (UTC)",
+        "placeholder": "2026-08-28",
+        "height": "36px"
+      }
+    }
+  }
+}
