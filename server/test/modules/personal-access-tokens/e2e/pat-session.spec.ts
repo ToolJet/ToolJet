@@ -207,6 +207,13 @@ describe('Personal access token session exchange', () => {
         .set('Cookie', `tj_auth_token=${body.authToken}`)
         .set('tj-workspace-id', orgId)
         .expect(200);
+
+      await request
+        .agent(app.getHttpServer())
+        .get('/api/organization-users')
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .expect(200);
     });
 
     it('should be refused on a module outside the allowlist', async () => {
@@ -217,12 +224,19 @@ describe('Personal access token session exchange', () => {
       // which is the whole point of the allowlist.
       const res = await request
         .agent(app.getHttpServer())
-        .get('/api/organization-users')
+        .get('/api/v2/group-permissions')
         .set('Cookie', `tj_auth_token=${body.authToken}`)
         .set('tj-workspace-id', orgId)
         .expect(403);
 
       expect(res.body.message).toMatch(/personal access token cannot access/i);
+
+      await request
+        .agent(app.getHttpServer())
+        .post('/api/organization-users/random-id/archive-all')
+        .set('Cookie', `tj_auth_token=${body.authToken}`)
+        .set('tj-workspace-id', orgId)
+        .expect(403);
     });
 
     it('should not be able to mint another token', async () => {
