@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(curl -s http://localhost:3033/docs/)",
+      "Bash(curl -s http://localhost:3033/docs/ -o /tmp/docs_page.html)",
+      "Bash(kill %1)",
+      "Bash(wait)",
+      "Bash(echo \"started pid $!\")"
+    ]
+  }
+}

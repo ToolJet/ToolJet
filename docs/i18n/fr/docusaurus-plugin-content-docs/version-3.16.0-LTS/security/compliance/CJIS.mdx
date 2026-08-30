@@ -1,0 +1,174 @@
+---
+id: cjis
+title: CJIS - Outils internes alignés avec ToolJet
+sidebar_label: Criminal Justice Information Services
+---
+
+ToolJet peut être déployé dans des environnements contrôlés par une agence pour créer des outils internes qui traitent des Criminal Justice Information (CJI). Ce guide met en correspondance les exigences de la CJIS Security Policy avec les contrôles d'infrastructure, la configuration des identités et l'application au niveau applicatif.
+
+:::caution Avertissement
+Ce guide ne constitue pas une représentation exhaustive de la CJIS Security Policy. Il peut être incomplet ou contenir des inexactitudes. Reportez-vous toujours à la
+[CJIS Security Policy officielle](https://le.fbi.gov/cjis-division/cjis-security-policy-resource-center) et consultez du personnel de conformité qualifié pour votre déploiement
+spécifique.
+:::
+
+:::info Principe clé
+Il n'existe pas de certification CJIS pour les plateformes. La conformité relève de la responsabilité de l'agence — ToolJet permet son application via une configuration correcte.
+:::
+
+## Modèle de responsabilité partagée
+
+| Couche            | Responsable   | Ce qu'ils contrôlent                                |
+| :--------------- | :------ | :----------------------------------------------- |
+| Infrastructure   | Agence  | Isolation réseau, chiffrement au repos, correctifs  |
+| Identité         | Agence  | Authentification, MFA, cycle de vie des accès            |
+| Systèmes de données     | Agence  | Stockage CJI, classification, protection          |
+| Application      | Partagé  | Application des accès, contrôle des requêtes, journalisation d'audit |
+| Plateforme ToolJet | ToolJet | RBAC, intégration SSO, capacités de journalisation      |
+
+## Correspondance des capacités ToolJet
+
+| Domaine de contrôle     | Exigence CJIS             | Capacité ToolJet                      |
+| :--------------- | :--------------------------- | :-------------------------------------- |
+| Contrôle d'accès   | IDs uniques, moindre privilège  | RBAC et SSO SAML                       |
+| Journalisation d'audit    | Suivi d'activité, conservation | Journalisation intégrée avec export SIEM       |
+| Résidence des données   | Stockage contrôlé par l'agence    | Déploiement auto-hébergé                  |
+| Sécurité réseau | Isolation, segmentation      | Support du déploiement privé              |
+| Chiffrement       | TLS, FIPS 140-2              | Fonctionne dans les limites des contrôles d'infrastructure |
+| Contrôles IA      | Restreindre l'accès des CJI aux systèmes d'IA | Configurable, peut être désactivé              |
+
+## Flux de mise en œuvre
+
+### 1. Définir le périmètre de déploiement
+
+- Déployez ToolJet dans un VPC privé ou une installation sur site
+- Restreignez tout accès public à internet
+- Acheminez le trafic via des passerelles contrôlées
+
+### 2. Configurer l'identité et l'authentification
+
+- Intégrez un SSO basé sur SAML
+- Appliquez la MFA au niveau du fournisseur d'identité
+- Assurez une identification unique des utilisateurs conformément à la CJIS Security Policy §5.6.2.1
+
+### 3. Configurer l'autorisation
+
+- Définissez des rôles RBAC correspondant aux fonctions professionnelles
+- Appliquez le principe du moindre privilège
+- Séparez les rôles administratifs et opérationnels
+
+### 4. Configurer l'accès aux données
+
+- Connectez-vous aux bases de données via des connexions sécurisées par TLS
+- Évitez de mettre en cache ou de persister les CJI dans ToolJet
+- Appliquez des contrôles d'accès au niveau de la base de données
+
+### 5. Activer la journalisation d'audit
+
+- Capturez toutes les actions et requêtes des utilisateurs
+- Exportez les journaux vers un SIEM (Splunk, Elastic Stack)
+- Définissez des politiques de conservation conformes aux exigences CJIS
+
+### 6. Appliquer les contrôles réseau
+
+- Restreignez le trafic entrant et sortant
+- Utilisez des proxys inverses et des pare-feux
+- Segmentez les charges de travail
+
+### 7. Configurer le chiffrement
+
+- Appliquez TLS 1.2+ pour toutes les communications
+- Activez le chiffrement au repos dans les bases de données et le stockage
+- Utilisez des modules cryptographiques validés FIPS 140-2
+
+### 8. Maintenir l'intégrité du système
+
+- Appliquez régulièrement des correctifs au système d'exploitation et aux conteneurs
+- Renforcez les configurations à l'aide des benchmarks CIS
+- Effectuez des analyses de vulnérabilité sur l'infrastructure
+
+### 9. Configurer les contrôles IA (optionnel)
+
+- Désactivez les fonctionnalités d'IA pour les workflows impliquant des CJI
+- Restreignez l'utilisation aux modèles approuvés ou internes
+- Empêchez la journalisation des invites ou réponses sensibles
+
+## Architecture
+
+Un déploiement aligné CJIS comprend une couche réseau privée (VPC ou sur site), un accès contrôlé via VPN ou des passerelles zero trust, et aucune exposition publique directe. La couche applicative s'exécute dans des environnements conteneurisés avec des configurations renforcées, prises en charge par des proxys inverses appliquant TLS. L'identité est gérée via un SSO basé sur SAML avec MFA, et l'observabilité est assurée par une journalisation centralisée intégrée à un SIEM.
+
+<img
+  className="screenshot-full img-full"
+  src="/img/compliance/CJIS_Compliant_Architecture.png"
+  alt="Diagramme d'architecture CJIS"
+/>
+
+## Liste de contrôle de conformité
+
+### Contrôle d'accès et authentification
+
+| Contrôle                     | Section CJIS | Extrait de la politique                                                                     | Mise en œuvre         |
+| --------------------------- | ------------ | ---------------------------------------------------------------------------------- | ---------------------- |
+| Identification unique des utilisateurs  | 5.6.2.1      | Chaque utilisateur doit être identifié de manière unique. Les comptes partagés ou de groupe ne sont pas autorisés. | SSO basé sur SAML         |
+| Authentification multifacteur | 5.6.2.2      | La MFA est requise pour tout accès distant aux systèmes CJI.                              | Appliquée via l'IdP       |
+| Accès au moindre privilège      | 5.5.2        | L'accès doit être limité en fonction des responsabilités professionnelles et du besoin d'en connaître.             | Configuration RBAC     |
+| Gestion de session          | 5.5.6        | Les systèmes doivent appliquer des délais d'expiration de session et une réauthentification.                       | Politiques de l'IdP et du proxy |
+
+### Chiffrement et protection des données
+
+| Contrôle         | Section CJIS | Extrait de la politique                                                                         | Mise en œuvre            |
+| --------------- | ------------ | -------------------------------------------------------------------------------------- | ------------------------- |
+| Données en transit | 5.10.1.2     | Les CJI transmis hors des périmètres sécurisés doivent utiliser un chiffrement validé FIPS.          | Application de TLS           |
+| Données au repos    | 5.10.1.1     | Les CJI stockés électroniquement doivent être protégés par chiffrement ou mesures équivalentes. | Chiffrement de l'infrastructure |
+| Conformité FIPS | 5.10.1.2     | Les modules cryptographiques doivent être validés selon FIPS 140-2 ou équivalent.                | Configuration de l'environnement |
+
+### Audit et responsabilité
+
+| Contrôle              | Section CJIS | Extrait de la politique                                                                   | Mise en œuvre      |
+| -------------------- | ------------ | --------------------------------------------------------------------------------- | ------------------- |
+| Journalisation d'activité     | 5.10.1       | Les systèmes doivent générer des enregistrements d'audit pour les accès utilisateurs, les requêtes et les actions administratives. | Journaux ToolJet        |
+| Suivi des accès aux données | 5.10.1.3     | Les journaux doivent capturer qui a accédé aux CJI, quelles actions ont été effectuées, et quand.       | Journalisation des requêtes       |
+| Conservation des journaux        | 5.10.4       | Les enregistrements doivent être conservés conformément aux exigences CJIS et organisationnelles.               | Intégration SIEM    |
+| Intégrité des journaux        | 5.10.5       | Les journaux doivent être protégés contre toute modification ou suppression non autorisée.               | Journalisation centralisée |
+
+### Réseau et intégrité du système
+
+| Contrôle              | Section CJIS | Extrait de la politique                                                               | Mise en œuvre           |
+| -------------------- | ------------ | ---------------------------------------------------------------------------- | ------------------------ |
+| Isolation réseau    | 5.5.1        | Les CJI doivent être protégés par une segmentation et des périmètres d'accès contrôlés. | Déploiement privé       |
+| Gestion des correctifs     | 5.7.1.5      | Les systèmes doivent être régulièrement mis à jour pour corriger les vulnérabilités.                | Processus d'infrastructure |
+| Configuration sécurisée | 5.7.1        | Les systèmes doivent suivre des normes de renforcement reconnues par l'industrie.                 | Environnements renforcés    |
+
+## Modes de défaillance à éviter
+
+:::warning
+L'alignement CJIS échoue généralement au niveau des couches de configuration et opérationnelles, et non de l'infrastructure. Surveillez ces modes de défaillance.
+:::
+
+| Mode de défaillance                    | Risque                                                                          | Que faire                                                                |
+| ------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Autorisation mal configurée     | Un RBAC trop permissif expose les CJI au-delà des utilisateurs prévus                           | Séparez les rôles administratifs et opérationnels ; révisez lors de changements de responsabilité     |
+| Journalisation d'audit incomplète        | Des lacunes dans les journaux d'opérations de lecture ou l'absence de transfert vers le SIEM rendent les audits impossibles | Assurez-vous que tous les types de requêtes sont journalisés et transférés avec une conservation définie    |
+| Exposition réseau inappropriée       | Instances ToolJet exposées publiquement sans VPN ou zero trust                     | Acheminez tous les accès via des passerelles contrôlées ; aucune exposition directe à internet |
+| Mauvaise configuration du traitement des données | Mise en cache des CJI dans la couche applicative                                              | Fonctionnez sans état ; désactivez la mise en cache ou restreignez-la aux données non sensibles      |
+| Application faible du chiffrement     | Modules non-FIPS ou TLS obsolète sur les connexions internes                  | Appliquez TLS 1.2+ partout ; validez la conformité des certificats et des modules   |
+| Fuite vers des services externes        | CJI envoyées à des API externes ou des services d'IA                                      | Auditez toutes les intégrations sortantes ; bloquez les flux de données externes non approuvés     |
+
+## Questions d'audit courantes
+
+1. **Où sont stockées les CJI ?** <br/>
+   Les CJI doivent rester dans les systèmes de données contrôlés par l'agence. ToolJet ne persiste pas les CJI — les données sont récupérées en temps réel depuis les systèmes source. <br/>
+2. **ToolJet stocke-t-il ou met-il en cache des données sensibles ?** <br/>
+   ToolJet peut être configuré pour fonctionner sans stockage persistant. Tout mécanisme de mise en cache doit être désactivé ou restreint aux données non sensibles. <br/>
+3. **Comment l'accès aux CJI est-il contrôlé ?** <br/>
+   Via une authentification basée sur SAML, la MFA au niveau du fournisseur d'identité, des politiques RBAC au sein de ToolJet, et des contrôles d'accès au niveau de la base de données. <br/>
+4. **Comment les actions des utilisateurs sont-elles auditées ?** <br/>
+   Les interactions utilisateurs, les requêtes et les appels API sont journalisés et transférés vers des systèmes SIEM tels que Splunk, conservés et protégés conformément aux exigences CJIS. <br/>
+5. **Comment l'accès est-il révoqué ?** <br/>
+   Via le fournisseur d'identité, en désactivant les comptes utilisateurs ou en supprimant les appartenances aux groupes. Les changements se propagent immédiatement à ToolJet via l'application du SSO. <br/>
+6. **Que se passe-t-il en cas de défaillance du système ?** <br/>
+   ToolJet n'agit pas comme un système d'enregistrement. Une défaillance entraîne une indisponibilité temporaire — aucune perte de CJI ni d'impact sur l'intégrité des données. <br/>
+7. **Comment les données sont-elles protégées en transit et au repos ?** <br/>
+   TLS est appliqué pour toutes les communications. Les données au repos sont protégées par un chiffrement au niveau de l'infrastructure, conforme à FIPS 140-2. <br/>
+8. **Les intégrations externes sont-elles restreintes ?** <br/>
+   Les services externes, y compris les API et les modèles d'IA, ne doivent pas traiter les CJI sauf approbation explicite. Tous les flux de données sortants doivent être audités. <br/>

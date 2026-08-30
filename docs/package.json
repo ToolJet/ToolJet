@@ -12,9 +12,11 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "generate-api-docs": "node scripts/generate-api-docs.js"
+    "generate-api-docs": "node scripts/generate-api-docs.js",
+    "translate:fr": "node scripts/translate-fr.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
     "@docusaurus/core": "^3.6.3",
     "@docusaurus/plugin-client-redirects": "^3.6.3",
     "@docusaurus/plugin-google-gtag": "^3.6.3",

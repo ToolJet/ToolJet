@@ -734,6 +734,10 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   font-weight: 400;
 }
 
+.navbar__link.navbar-locale-dropdown::before {
+  content: 'Language  ';
+}
+
 .dropdown__menu {
   min-width: 180px;
 }

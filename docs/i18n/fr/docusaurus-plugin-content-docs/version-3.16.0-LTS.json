@@ -1,0 +1,462 @@
+{
+  "version.label": {
+    "message": "3.16 - 3.20 LTS",
+    "description": "The label for version 3.16.0-LTS"
+  },
+  "sidebar.docs.category.Getting Started": {
+    "message": "Démarrage",
+    "description": "The label for category Getting Started in sidebar docs"
+  },
+  "sidebar.docs.category.Deployment": {
+    "message": "Déploiement",
+    "description": "The label for category Deployment in sidebar docs"
+  },
+  "sidebar.docs.category.Overview": {
+    "message": "Aperçu",
+    "description": "The label for category Overview in sidebar docs"
+  },
+  "sidebar.docs.category.Configuration": {
+    "message": "Configuration",
+    "description": "The label for category Configuration in sidebar docs"
+  },
+  "sidebar.docs.category.Managed Cloud": {
+    "message": "Cloud managé",
+    "description": "The label for category Managed Cloud in sidebar docs"
+  },
+  "sidebar.docs.category.AWS": {
+    "message": "AWS",
+    "description": "The label for category AWS in sidebar docs"
+  },
+  "sidebar.docs.category.Kubernetes": {
+    "message": "Kubernetes",
+    "description": "The label for category Kubernetes in sidebar docs"
+  },
+  "sidebar.docs.category.Setup ToolJet AI": {
+    "message": "Configurer ToolJet AI",
+    "description": "The label for category Setup ToolJet AI in sidebar docs"
+  },
+  "sidebar.docs.category.Migrations & Upgrades": {
+    "message": "Migrations et mises à niveau",
+    "description": "The label for category Migrations & Upgrades in sidebar docs"
+  },
+  "sidebar.docs.category.PostgreSQL 13 → 16 Upgrade": {
+    "message": "Mise à niveau PostgreSQL 13 → 16",
+    "description": "The label for category PostgreSQL 13 → 16 Upgrade in sidebar docs"
+  },
+  "sidebar.docs.category.Deployment Specific": {
+    "message": "Spécifique au déploiement",
+    "description": "The label for category Deployment Specific in sidebar docs"
+  },
+  "sidebar.docs.category.Azure": {
+    "message": "Azure",
+    "description": "The label for category Azure in sidebar docs"
+  },
+  "sidebar.docs.category.GCP": {
+    "message": "GCP",
+    "description": "The label for category GCP in sidebar docs"
+  },
+  "sidebar.docs.category.Version Migrations": {
+    "message": "Migrations de version",
+    "description": "The label for category Version Migrations in sidebar docs"
+  },
+  "sidebar.docs.category.Build with AI": {
+    "message": "Créer avec l'IA",
+    "description": "The label for category Build with AI in sidebar docs"
+  },
+  "sidebar.docs.category.Building Application": {
+    "message": "Créer une application",
+    "description": "The label for category Building Application in sidebar docs"
+  },
+  "sidebar.docs.category.AI Assitance": {
+    "message": "Assistance IA",
+    "description": "The label for category AI Assitance in sidebar docs"
+  },
+  "sidebar.docs.category.Concepts & References": {
+    "message": "Concepts et références",
+    "description": "The label for category Concepts & References in sidebar docs"
+  },
+  "sidebar.docs.category.App Builder": {
+    "message": "Créateur d'applications",
+    "description": "The label for category App Builder in sidebar docs"
+  },
+  "sidebar.docs.category.UI and Themes": {
+    "message": "Interface et thèmes",
+    "description": "The label for category UI and Themes in sidebar docs"
+  },
+  "sidebar.docs.category.Building the UI": {
+    "message": "Créer l'interface",
+    "description": "The label for category Building the UI in sidebar docs"
+  },
+  "sidebar.docs.category.Data and Logic": {
+    "message": "Données et logique",
+    "description": "The label for category Data and Logic in sidebar docs"
+  },
+  "sidebar.docs.category.Connecting Data Sources": {
+    "message": "Connexion aux sources de données",
+    "description": "The label for category Connecting Data Sources in sidebar docs"
+  },
+  "sidebar.docs.category.Events and Actions": {
+    "message": "Événements et actions",
+    "description": "The label for category Events and Actions in sidebar docs"
+  },
+  "sidebar.docs.category.Writing Custom Code": {
+    "message": "Écrire du code personnalisé",
+    "description": "The label for category Writing Custom Code in sidebar docs"
+  },
+  "sidebar.docs.category.Importing External Libraries": {
+    "message": "Importer des bibliothèques externes",
+    "description": "The label for category Importing External Libraries in sidebar docs"
+  },
+  "sidebar.docs.category.Dynamic Access Rules": {
+    "message": "Règles d'accès dynamiques",
+    "description": "The label for category Dynamic Access Rules in sidebar docs"
+  },
+  "sidebar.docs.category.Debugging": {
+    "message": "Débogage",
+    "description": "The label for category Debugging in sidebar docs"
+  },
+  "sidebar.docs.category.Modules": {
+    "message": "Modules",
+    "description": "The label for category Modules in sidebar docs"
+  },
+  "sidebar.docs.category.Embed Application": {
+    "message": "Intégrer une application",
+    "description": "The label for category Embed Application in sidebar docs"
+  },
+  "sidebar.docs.category.References": {
+    "message": "Références",
+    "description": "The label for category References in sidebar docs"
+  },
+  "sidebar.docs.category.Component Catalog": {
+    "message": "Catalogue de composants",
+    "description": "The label for category Component Catalog in sidebar docs"
+  },
+  "sidebar.docs.category.Chart": {
+    "message": "Graphique",
+    "description": "The label for category Chart in sidebar docs"
+  },
+  "sidebar.docs.category.Chat": {
+    "message": "Chat",
+    "description": "The label for category Chat in sidebar docs"
+  },
+  "sidebar.docs.category.Custom Component": {
+    "message": "Composant personnalisé",
+    "description": "The label for category Custom Component in sidebar docs"
+  },
+  "sidebar.docs.category.Form": {
+    "message": "Formulaire",
+    "description": "The label for category Form in sidebar docs"
+  },
+  "sidebar.docs.category.Image": {
+    "message": "Image",
+    "description": "The label for category Image in sidebar docs"
+  },
+  "sidebar.docs.category.List View": {
+    "message": "Vue liste",
+    "description": "The label for category List View in sidebar docs"
+  },
+  "sidebar.docs.category.PDF": {
+    "message": "PDF",
+    "description": "The label for category PDF in sidebar docs"
+  },
+  "sidebar.docs.category.Table": {
+    "message": "Tableau",
+    "description": "The label for category Table in sidebar docs"
+  },
+  "sidebar.docs.category.Serverside Operations": {
+    "message": "Opérations côté serveur",
+    "description": "The label for category Serverside Operations in sidebar docs"
+  },
+  "sidebar.docs.category.Tabs": {
+    "message": "Onglets",
+    "description": "The label for category Tabs in sidebar docs"
+  },
+  "sidebar.docs.category.Legacy Components": {
+    "message": "Composants existants",
+    "description": "The label for category Legacy Components in sidebar docs"
+  },
+  "sidebar.docs.category.Actions Reference": {
+    "message": "Référence des actions",
+    "description": "The label for category Actions Reference in sidebar docs"
+  },
+  "sidebar.docs.category.Run Action": {
+    "message": "Exécuter une action",
+    "description": "The label for category Run Action in sidebar docs"
+  },
+  "sidebar.docs.category.Control Component": {
+    "message": "Contrôler un composant",
+    "description": "The label for category Control Component in sidebar docs"
+  },
+  "sidebar.docs.category.Navigation": {
+    "message": "Navigation",
+    "description": "The label for category Navigation in sidebar docs"
+  },
+  "sidebar.docs.category.Variable": {
+    "message": "Variable",
+    "description": "The label for category Variable in sidebar docs"
+  },
+  "sidebar.docs.category.Other": {
+    "message": "Autre",
+    "description": "The label for category Other in sidebar docs"
+  },
+  "sidebar.docs.category.Data Sources": {
+    "message": "Sources de données",
+    "description": "The label for category Data Sources in sidebar docs"
+  },
+  "sidebar.docs.category.Data Sources Library": {
+    "message": "Bibliothèque de sources de données",
+    "description": "The label for category Data Sources Library in sidebar docs"
+  },
+  "sidebar.docs.category.Amazon S3": {
+    "message": "Amazon S3",
+    "description": "The label for category Amazon S3 in sidebar docs"
+  },
+  "sidebar.docs.category.Google Cloud Storage": {
+    "message": "Google Cloud Storage",
+    "description": "The label for category Google Cloud Storage in sidebar docs"
+  },
+  "sidebar.docs.category.REST API": {
+    "message": "API REST",
+    "description": "The label for category REST API in sidebar docs"
+  },
+  "sidebar.docs.category.Run JavaScript Code": {
+    "message": "Exécuter du code JavaScript",
+    "description": "The label for category Run JavaScript Code in sidebar docs"
+  },
+  "sidebar.docs.category.Run Python Code": {
+    "message": "Exécuter du code Python",
+    "description": "The label for category Run Python Code in sidebar docs"
+  },
+  "sidebar.docs.category.Marketplace": {
+    "message": "Marketplace",
+    "description": "The label for category Marketplace in sidebar docs"
+  },
+  "sidebar.docs.category.Marketplace Plugins": {
+    "message": "Plugins Marketplace",
+    "description": "The label for category Marketplace Plugins in sidebar docs"
+  },
+  "sidebar.docs.category.ToolJet Database": {
+    "message": "Base de données ToolJet",
+    "description": "The label for category ToolJet Database in sidebar docs"
+  },
+  "sidebar.docs.category.Column Constraints": {
+    "message": "Contraintes de colonne",
+    "description": "The label for category Column Constraints in sidebar docs"
+  },
+  "sidebar.docs.category.Workflows": {
+    "message": "Workflows",
+    "description": "The label for category Workflows in sidebar docs"
+  },
+  "sidebar.docs.category.Nodes": {
+    "message": "Nœuds",
+    "description": "The label for category Nodes in sidebar docs"
+  },
+  "sidebar.docs.category.Logic Nodes": {
+    "message": "Nœuds logiques",
+    "description": "The label for category Logic Nodes in sidebar docs"
+  },
+  "sidebar.docs.category.Triggers": {
+    "message": "Déclencheurs",
+    "description": "The label for category Triggers in sidebar docs"
+  },
+  "sidebar.docs.category.Environment & Versions": {
+    "message": "Environnement et versions",
+    "description": "The label for category Environment & Versions in sidebar docs"
+  },
+  "sidebar.docs.category.Setup ToolJet": {
+    "message": "Configurer ToolJet",
+    "description": "The label for category Setup ToolJet in sidebar docs"
+  },
+  "sidebar.docs.category.Licensing": {
+    "message": "Licences",
+    "description": "The label for category Licensing in sidebar docs"
+  },
+  "sidebar.docs.category.Branding": {
+    "message": "Image de marque",
+    "description": "The label for category Branding in sidebar docs"
+  },
+  "sidebar.docs.category.Setup SMTP Server": {
+    "message": "Configurer le serveur SMTP",
+    "description": "The label for category Setup SMTP Server in sidebar docs"
+  },
+  "sidebar.docs.category.Observability": {
+    "message": "Observabilité",
+    "description": "The label for category Observability in sidebar docs"
+  },
+  "sidebar.docs.category.User Management and Access Control": {
+    "message": "Gestion des utilisateurs et contrôle d'accès",
+    "description": "The label for category User Management and Access Control in sidebar docs"
+  },
+  "sidebar.docs.category.Onboard and Offboard Users": {
+    "message": "Intégration et départ des utilisateurs",
+    "description": "The label for category Onboard and Offboard Users in sidebar docs"
+  },
+  "sidebar.docs.category.Authentication": {
+    "message": "Authentification",
+    "description": "The label for category Authentication in sidebar docs"
+  },
+  "sidebar.docs.category.Self-hosted": {
+    "message": "Auto-hébergé",
+    "description": "The label for category Self-hosted in sidebar docs"
+  },
+  "sidebar.docs.category.Role Based Access Control": {
+    "message": "Contrôle d'accès basé sur les rôles",
+    "description": "The label for category Role Based Access Control in sidebar docs"
+  },
+  "sidebar.docs.category.Single Sign-On (SSO)": {
+    "message": "Authentification unique (SSO)",
+    "description": "The label for category Single Sign-On (SSO) in sidebar docs"
+  },
+  "sidebar.docs.category.OpenID Connect": {
+    "message": "OpenID Connect",
+    "description": "The label for category OpenID Connect in sidebar docs"
+  },
+  "sidebar.docs.category.SAML": {
+    "message": "SAML",
+    "description": "The label for category SAML in sidebar docs"
+  },
+  "sidebar.docs.category.Group Sync": {
+    "message": "Synchronisation des groupes",
+    "description": "The label for category Group Sync in sidebar docs"
+  },
+  "sidebar.docs.category.Instance level": {
+    "message": "Niveau instance",
+    "description": "The label for category Instance level in sidebar docs"
+  },
+  "sidebar.docs.category.Workspace level": {
+    "message": "Niveau espace de travail",
+    "description": "The label for category Workspace level in sidebar docs"
+  },
+  "sidebar.docs.category.Profile Management": {
+    "message": "Gestion du profil",
+    "description": "The label for category Profile Management in sidebar docs"
+  },
+  "sidebar.docs.category.Development Lifecycle": {
+    "message": "Cycle de développement",
+    "description": "The label for category Development Lifecycle in sidebar docs"
+  },
+  "sidebar.docs.category.Release Management": {
+    "message": "Gestion des versions",
+    "description": "The label for category Release Management in sidebar docs"
+  },
+  "sidebar.docs.category.GitSync": {
+    "message": "GitSync",
+    "description": "The label for category GitSync in sidebar docs"
+  },
+  "sidebar.docs.category.Connect to Git Repo": {
+    "message": "Connecter un dépôt Git",
+    "description": "The label for category Connect to Git Repo in sidebar docs"
+  },
+  "sidebar.docs.category.Git SSH Protocol": {
+    "message": "Protocole SSH Git",
+    "description": "The label for category Git SSH Protocol in sidebar docs"
+  },
+  "sidebar.docs.category.GitSync CI/CD": {
+    "message": "CI/CD GitSync",
+    "description": "The label for category GitSync CI/CD in sidebar docs"
+  },
+  "sidebar.docs.category.Environment": {
+    "message": "Environnement",
+    "description": "The label for category Environment in sidebar docs"
+  },
+  "sidebar.docs.category.Self-Hosted": {
+    "message": "Auto-hébergé",
+    "description": "The label for category Self-Hosted in sidebar docs"
+  },
+  "sidebar.docs.category.Multi-Instance": {
+    "message": "Multi-instance",
+    "description": "The label for category Multi-Instance in sidebar docs"
+  },
+  "sidebar.docs.category.Cloud": {
+    "message": "Cloud",
+    "description": "The label for category Cloud in sidebar docs"
+  },
+  "sidebar.docs.category.Backup": {
+    "message": "Sauvegarde",
+    "description": "The label for category Backup in sidebar docs"
+  },
+  "sidebar.docs.category.Import Export": {
+    "message": "Importer/Exporter",
+    "description": "The label for category Import Export in sidebar docs"
+  },
+  "sidebar.docs.category.Security and Monitoring": {
+    "message": "Sécurité et surveillance",
+    "description": "The label for category Security and Monitoring in sidebar docs"
+  },
+  "sidebar.docs.category.Constants": {
+    "message": "Constantes",
+    "description": "The label for category Constants in sidebar docs"
+  },
+  "sidebar.docs.category.Audit Logs": {
+    "message": "Journaux d'audit",
+    "description": "The label for category Audit Logs in sidebar docs"
+  },
+  "sidebar.docs.category.Compliance": {
+    "message": "Conformité",
+    "description": "The label for category Compliance in sidebar docs"
+  },
+  "sidebar.docs.category.ToolJet API": {
+    "message": "API ToolJet",
+    "description": "The label for category ToolJet API in sidebar docs"
+  },
+  "sidebar.docs.category.Resources": {
+    "message": "Ressources",
+    "description": "The label for category Resources in sidebar docs"
+  },
+  "sidebar.docs.category.Contributing Guide": {
+    "message": "Guide de contribution",
+    "description": "The label for category Contributing Guide in sidebar docs"
+  },
+  "sidebar.docs.category.Setup": {
+    "message": "Configuration",
+    "description": "The label for category Setup in sidebar docs"
+  },
+  "sidebar.docs.category.Documentation": {
+    "message": "Documentation",
+    "description": "The label for category Documentation in sidebar docs"
+  },
+  "sidebar.docs.category.Troubleshooting": {
+    "message": "Dépannage",
+    "description": "The label for category Troubleshooting in sidebar docs"
+  },
+  "sidebar.docs.link.Modal": {
+    "message": "Modal",
+    "description": "The label for link Modal in sidebar docs, linking to https://docs.tooljet.com/docs/3.5.0-LTS/widgets/modal"
+  },
+  "sidebar.docs.link.Radio Button": {
+    "message": "Bouton radio",
+    "description": "The label for link Radio Button in sidebar docs, linking to https://docs.tooljet.com/docs/3.5.0-LTS/widgets/radio-button"
+  },
+  "sidebar.docs.link.Dropdown": {
+    "message": "Liste déroulante",
+    "description": "The label for link Dropdown in sidebar docs, linking to https://docs.tooljet.com/docs/2.50.0-LTS/widgets/dropdown"
+  },
+  "sidebar.docs.link.Multiselect": {
+    "message": "Sélection multiple",
+    "description": "The label for link Multiselect in sidebar docs, linking to https://docs.tooljet.com/docs/2.50.0-lts/widgets/multiselect/"
+  },
+  "sidebar.docs.link.Range Slider": {
+    "message": "Curseur de plage",
+    "description": "The label for link Range Slider in sidebar docs, linking to https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider"
+  },
+  "sidebar.docs.link.SCIM": {
+    "message": "SCIM",
+    "description": "The label for link SCIM in sidebar docs, linking to /api/scim/"
+  },
+  "sidebar.docs.link.ToolJet API": {
+    "message": "API ToolJet",
+    "description": "The label for link ToolJet API in sidebar docs, linking to /api"
+  },
+  "sidebar.docs.link.GitSync API": {
+    "message": "API GitSync",
+    "description": "The label for link GitSync API in sidebar docs, linking to /api/gitsync-api"
+  },
+  "sidebar.docs.link.Release Notes": {
+    "message": "Notes de version",
+    "description": "The label for link Release Notes in sidebar docs, linking to https://app.tooljet.ai/applications/release-notes"
+  },
+  "sidebar.docs.link.Roadmap": {
+    "message": "Feuille de route",
+    "description": "The label for link Roadmap in sidebar docs, linking to https://github.com/orgs/ToolJet/projects/15"
+  }
+}

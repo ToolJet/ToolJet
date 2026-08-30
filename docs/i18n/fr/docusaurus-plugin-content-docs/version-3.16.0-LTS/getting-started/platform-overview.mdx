@@ -1,0 +1,271 @@
+---
+id: platform-overview
+title: Aperçu de la plateforme
+hide_title: true
+---
+
+import Link from '@docusaurus/Link';
+
+export const FlowStep = ({ number, title, description }) => (
+    <div style={{
+        display: 'flex', flexDirection: 'column', gap: '8px',
+        padding: '16px', borderRadius: '10px',
+        border: '1px solid var(--ifm-toc-border-color)',
+        background: 'var(--ifm-card-background-color)',
+    }}>
+        <div style={{
+            width: '30px', height: '30px', borderRadius: '50%',
+            background: '#4d72fa', color: 'white',
+            fontSize: '13px', fontWeight: 700, flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>{number}</div>
+        <div style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--ifm-font-color-base)' }}>{title}</div>
+        <div style={{ fontSize: '12.5px', color: 'var(--ifm-color-emphasis-700)', lineHeight: 1.55 }}>{description}</div>
+    </div>
+);
+
+export const CapabilityCard = ({ icon, title, description, img, href, features, badge }) => (
+    <Link to={href} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
+        <div style={{
+            border: '1px solid var(--ifm-toc-border-color)',
+            borderRadius: '10px', overflow: 'hidden',
+            height: '100%', cursor: 'pointer',
+            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+            background: 'var(--ifm-card-background-color)',
+            display: 'flex', flexDirection: 'column',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#4d72fa'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(77,114,250,0.12)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+        >
+            <div style={{ padding: '18px 18px 14px', flex: img ? 'none' : 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '24px', lineHeight: 1 }}>{icon}</span>
+                    {badge && (
+                        <span style={{
+                            fontSize: '10px', fontWeight: 700, padding: '2px 8px',
+                            borderRadius: '20px', letterSpacing: '0.05em', textTransform: 'uppercase',
+                            background: '#e0e7ff', color: '#3730a3',
+                        }}>{badge}</span>
+                    )}
+                </div>
+                <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--ifm-font-color-base)', marginBottom: '6px' }}>{title}</div>
+                <div style={{ fontSize: '13px', color: 'var(--ifm-color-emphasis-700)', lineHeight: 1.55 }}>{description}</div>
+                {features && (
+                    <ul style={{ margin: '10px 0 0', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        {features.map((f, i) => (
+                            <li key={i} style={{ fontSize: '12.5px', color: 'var(--ifm-color-emphasis-700)' }}>{f}</li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+            {img && (
+                <div style={{ marginTop: 'auto', padding: '0 10px 10px' }}>
+                    <img
+                        src={img} alt={title}
+                        style={{ width: '100%', display: 'block', borderRadius: '6px', border: '1px solid var(--ifm-toc-border-color)', margin: 0 }}
+                    />
+                </div>
+            )}
+        </div>
+    </Link>
+);
+
+export const NextStepCard = ({ title, description, href }) => (
+    <Link to={href} style={{ textDecoration: 'none', display: 'block' }}>
+        <div style={{
+            border: '1px solid var(--ifm-toc-border-color)',
+            borderRadius: '10px', padding: '16px 18px',
+            cursor: 'pointer', transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+            background: 'var(--ifm-card-background-color)',
+            display: 'flex', flexDirection: 'column', gap: '5px',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#4d72fa'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(77,114,250,0.1)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+        >
+            <div style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--ifm-font-color-base)' }}>{title}</div>
+            <div style={{ fontSize: '12.5px', color: 'var(--ifm-color-emphasis-700)', lineHeight: 1.5 }}>{description}</div>
+            <span style={{ fontSize: '12px', color: '#4d72fa', fontWeight: 500, marginTop: '2px' }}>En savoir plus →</span>
+        </div>
+    </Link>
+);
+
+
+<div style={{
+    padding: '32px 32px 28px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%)',
+    border: '1px solid #bfdbfe',
+    marginBottom: '36px',
+}}>
+    <div style={{ fontSize: '12px', fontWeight: 700, color: '#1d4ed8', marginBottom: '8px', letterSpacing: '0.07em', textTransform: 'uppercase' }}>Aperçu de la plateforme ToolJet</div>
+    <h1 style={{ fontSize: '30px', fontWeight: 700, margin: '0 0 10px', color: '#1e3a5f', lineHeight: 1.2 }}>Créez des outils internes, plus vite</h1>
+    <p style={{ fontSize: '15px', color: '#1e40af', margin: '0 0 24px', maxWidth: '640px', lineHeight: 1.65 }}>
+        ToolJet est une plateforme nativement pilotée par l'IA pour créer des applications, des agents et des workflows automatisés. Combinez la génération par IA avec la création visuelle, plus de 80 intégrations de sources de données et un contrôle d'accès de niveau entreprise.
+    </p>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        {["Génération d'application par IA", 'Agents IA', "70+ composants d'interface", '80+ sources de données', 'Contrôle de version', "Contrôle d'accès basé sur les rôles", 'SSO'].map(label => (
+            <span key={label} style={{
+                display: 'inline-block', padding: '4px 12px',
+                borderRadius: '20px', fontSize: '12px', fontWeight: 600,
+                background: 'rgba(255,255,255,0.7)', border: '1px solid #93c5fd',
+                color: '#1d4ed8', backdropFilter: 'blur(4px)',
+            }}>{label}</span>
+        ))}
+    </div>
+</div>
+
+<img className="img-full screenshot-full" src="/img/platform-overview/platform-overview-v4.png" alt="Aperçu de la plateforme ToolJet"  />
+
+## Comment fonctionne ToolJet
+
+<p style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', marginTop: '-8px', marginBottom: '16px' }}>
+    D'une invite en langage naturel à un outil interne déployé et sécurisé - en cinq étapes.
+</p>
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '48px' }}>
+    <FlowStep number="1" title="Générer avec l'IA" description="Décrivez ce dont vous avez besoin. ToolJet génère automatiquement la mise en page, les composants et les requêtes." />
+    <FlowStep number="2" title="Créer visuellement" description="Personnalisez avec des composants glisser-déposer, des thèmes et de la logique JavaScript ou Python." />
+    <FlowStep number="3" title="Connecter les données" description="Intégrez plus de 80 bases de données, API et services SaaS. Toutes les connexions passent par un proxy pour la sécurité." />
+    <FlowStep number="4" title="Automatiser avec des agents" description="Déployez des agents IA qui interrogent les données, déclenchent des workflows et gèrent des processus à plusieurs étapes." />
+    <FlowStep number="5" title="Sécuriser et déployer" description="RBAC, gestion multi-environnement, GitSync, historique des versions et journaux d'audit." />
+</div>
+
+## Fonctionnalités principales
+
+<p style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', marginTop: '-8px', marginBottom: '16px' }}>
+    Tout ce dont vous avez besoin pour créer, connecter, automatiser et gouverner vos outils internes.
+</p>
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px', marginBottom: '48px' }}>
+    <CapabilityCard
+        icon="⚡"
+        title="ToolJet AI"
+        description="Générez une application fonctionnelle à partir d'une invite en langage naturel."
+        features={[
+            "Génère automatiquement toute l'interface, les requêtes et les liaisons de composants",
+            "Démarrez à partir d'un prototype fonctionnel, pas d'une page vierge",
+            "Modifiez tout élément généré avec l'éditeur visuel",
+        ]}
+        href="/docs/build-with-ai/overview"
+    />
+    <CapabilityCard
+        icon="🤖"
+        title="Créateur d'agents"
+        description="Créez et déployez des agents intelligents qui orchestrent de manière autonome des workflows à plusieurs étapes."
+        features={[
+            'Interrogez des données, déclenchez des actions et enchaînez des opérations',
+            "Réduisez l'intervention manuelle dans les processus répétitifs",
+            'Intégrez des agents directement dans vos applications',
+        ]}
+        href="/docs/workflows/nodes/agent"
+        badge="Auto-hébergé"
+    />
+    <CapabilityCard
+        icon="🧩"
+        title="Créateur d'applications visuel"
+        description="Créez des interfaces avec un éditeur glisser-déposer et plus de 82 composants prêts à l'emploi."
+        features={[
+            'Tableaux, graphiques, formulaires, tableaux Kanban, cartes, et plus encore',
+            'Ajoutez une logique personnalisée en JavaScript ou Python',
+            'Mises en page responsives pour ordinateur et mobile',
+        ]}
+        href="/docs/app-builder/overview"
+    />
+    <CapabilityCard
+        icon="🔌"
+        title="Intégrations"
+        description="Connectez-vous à plus de 80 bases de données, API REST, outils SaaS et services cloud, prêts à l'emploi."
+        features={[
+            'PostgreSQL, MySQL, MongoDB, Snowflake, et plus encore',
+            'Support des API REST, GraphQL et SOAP',
+            'Support des LLM Anthropic, Gemini et plus encore',
+        ]}
+        href="/docs/data-sources/overview"
+    />
+    <CapabilityCard
+        icon="🗄️"
+        title="Base de données ToolJet"
+        description="Une base de données intégrée basée sur PostgreSQL, sans configuration externe requise."
+        features={[
+            'Création de tables sans code avec opérations CRUD',
+            'Types de données, contraintes et relations',
+            "Interrogez directement depuis n'importe quelle application ou workflow",
+        ]}
+        href="/docs/tooljet-db/tooljet-database"
+    />
+    <CapabilityCard
+        icon="⚙️"
+        title="Automatisation des workflows"
+        description="Automatisez des processus métier à plusieurs étapes avec un éditeur de workflow visuel."
+        features={[
+            'Déclenchez via des actions utilisateur, des planifications ou des appels API',
+            'Logique conditionnelle, boucles et exécution conditionnelle',
+            'Intégrez des workflows directement dans vos applications',
+        ]}
+        href="/docs/workflows/overview"
+        badge="Auto-hébergé"
+    />
+    <CapabilityCard
+        icon="🔒"
+        title="Sécurité et contrôle d'accès"
+        description="Protégez vos applications et vos données avec des contrôles de niveau entreprise."
+        features={[
+            "Contrôle d'accès basé sur les rôles : Admin, Créateur, Utilisateur final et groupes d'utilisateurs personnalisés avec des permissions granulaires",
+            'SSO via Okta, Google, Azure AD, SAML et OpenID',
+            "Journaux d'audit pour toutes les actions et tous les accès aux données",
+        ]}
+        href="/docs/user-management/overview"
+    />
+    <CapabilityCard
+        icon="🚀"
+        title="Déploiement et environnements"
+        description="Déployez en toute confiance grâce à une gestion intégrée du cycle de vie."
+        features={[
+            'Multi-environnement : isolez le développement, la préproduction et la production',
+            'GitSync et CI/CD avec GitHub et GitLab',
+            'Applications intégrées pour les portails externes et les tableaux de bord',
+        ]}
+        href="/docs/development-lifecycle/overview"
+    />
+
+</div>
+
+## Prochaines étapes
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+    <NextStepCard
+        title="Guide de démarrage rapide"
+        description="Créez votre première application en moins de 10 minutes."
+        href="/docs/getting-started/quickstart-guide"
+    />
+    <NextStepCard
+        title="Génération d'application par IA"
+        description="Générez une application complète et fonctionnelle à partir d'une invite en langage naturel."
+        href="/docs/build-with-ai/generate-applications"
+    />
+    <NextStepCard
+        title="Créateur d'applications"
+        description="Découvrez l'éditeur visuel, les composants et les requêtes."
+        href="/docs/app-builder/overview"
+    />
+    <NextStepCard
+        title="Base de données ToolJet"
+        description="Découvrez la base de données sans code intégrée."
+        href="/docs/tooljet-db/tooljet-database"
+    />
+    <NextStepCard
+        title="Déployer ToolJet"
+        description="Auto-hébergez ToolJet sur votre propre infrastructure."
+        href="/docs/setup/"
+    />
+</div>
+
+<br/>
+
+---
+
+## Besoin d'aide ?
+
+- Contactez-nous via notre [communauté Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Ou envoyez-nous un e-mail à [support@tooljet.com](mailto:support@tooljet.com)
+- Vous avez trouvé un bug ? Merci de le signaler via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

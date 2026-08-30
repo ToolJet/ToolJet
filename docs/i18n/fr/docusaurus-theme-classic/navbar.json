@@ -1,0 +1,22 @@
+{
+  "logo.alt": {
+    "message": "Logo ToolJet",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.API Reference": {
+    "message": "Référence API",
+    "description": "Navbar item with label API Reference"
+  },
+  "item.label.Website": {
+    "message": "Site web",
+    "description": "Navbar item with label Website"
+  },
+  "item.label.Sign in": {
+    "message": "Se connecter",
+    "description": "Navbar item with label Sign in"
+  },
+  "item.label.Try for free": {
+    "message": "Essayer gratuitement",
+    "description": "Navbar item with label Try for free"
+  }
+}
