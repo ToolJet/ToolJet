@@ -15,7 +15,7 @@
 | boxShadow | `fillBoxShadowParams` | commonWidget.js | styles | `fillBoxShadowParams(['X', 'Y', 'Blur', 'Spread'], [2, 4, 6, 0])` |
 | boxShadow | `verifyBoxShadowCss` | commonWidget.js | styles | `verifyBoxShadowCss('textinput1', [0,0,0,1], [2,4,6,0])` |
 | - | `verifyComponentFromInspector` | commonWidget.js | inspector | `verifyComponentFromInspector('textinput1')` |
-| styleFx | `verifyAndModifyStylePickerFx` | commonWidget.js | styles | `verifyAndModifyStylePickerFx('Border radius', '0', '4px')` |
+| - | `verifyAndModifyStylePickerFx` | commonWidget.js | styles | `verifyAndModifyStylePickerFx('Border radius', '0', '4px')` |
 | colorSwatches | `verifyWidgetColorCss` | commonWidget.js | styles | `verifyWidgetColorCss('textinput1', 'background-color', ['255','0','0','100'])` |
 | - | `verifyLoaderColor` | commonWidget.js | styles | `verifyLoaderColor('button1', ['255','0','0','100'])` |
 | toggle | `verifyLayout` | commonWidget.js | properties | `verifyLayout('textinput1')` |

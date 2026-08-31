@@ -13,7 +13,7 @@
 //   fillBoxShadowParams              boxShadow            → styles
 //   verifyBoxShadowCss               boxShadow            → styles
 //   verifyComponentFromInspector     -                    → inspector
-//   verifyAndModifyStylePickerFx     styleFx              → styles
+//   verifyAndModifyStylePickerFx     -                    → styles
 //   verifyWidgetColorCss             colorSwatches        → styles
 //   verifyLoaderColor                -                    → styles
 //   verifyLayout                     toggle               → properties
@@ -372,7 +372,6 @@ export const verifyComponentFromInspector = (
 };
 
 /**
- * @tjType   styleFx
  * @tjBlock  styles
  * @tjUsage  verifyAndModifyStylePickerFx('Border radius', '0', '4px')
  * @tjDom    style picker label + fx button + CodeMirror input
@@ -570,6 +569,7 @@ export const verifyStylesGeneralAccordion = (
 
   verifyBoxShadowCss(widgetName, boxShadowColor, boxShadowParameter);
 };
+
 /**
  * @tjBlock  canvas
  * @tjUsage  addTextWidgetToVerifyValue('components.textinput1.value')
