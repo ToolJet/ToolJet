@@ -164,10 +164,11 @@ describe('TooljetDbDataOperationsService', () => {
             resolveTableNameToRelationIdMap: (
               tablesUsedInQuery: string[],
               organizationId: string,
+              environmentId: string | undefined,
               internalTableInfo: Array<{ id: string; tableName: string }>
             ) => Promise<Record<string, string>>;
           }
-        ).resolveTableNameToRelationIdMap(['users', 'orders'], organizationId, internalTableInfo);
+        ).resolveTableNameToRelationIdMap(['users', 'orders'], organizationId, undefined, internalTableInfo);
 
         expect(map).toEqual({ users: usersRelationId, orders: ordersRelationId });
         expect(map.users).not.toEqual(usersTable.id);
@@ -227,10 +228,16 @@ describe('TooljetDbDataOperationsService', () => {
               resolveTableNameToRelationIdMap: (
                 tablesUsedInQuery: string[],
                 organizationId: string,
+                environmentId: string | undefined,
                 internalTableInfo: Array<{ id: string; tableName: string }>
               ) => Promise<Record<string, string>>;
             }
-          ).resolveTableNameToRelationIdMap(['users', 'non_existent_table'], organizationId, internalTableInfo)
+          ).resolveTableNameToRelationIdMap(
+            ['users', 'non_existent_table'],
+            organizationId,
+            undefined,
+            internalTableInfo
+          )
         ).rejects.toThrow();
 
         // The successful resolution (users) should still be appended

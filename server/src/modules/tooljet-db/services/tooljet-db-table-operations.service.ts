@@ -120,10 +120,19 @@ export class TooljetDbTableOperationsService {
     protected readonly migrationRecorderService: TooljetDbMigrationRecorderService
   ) {}
 
+  /**
+   * environmentId is required, not optional: a caller with no environment to name (a DDL action,
+   * always development) must write `undefined` deliberately, so a new call site can't silently
+   * read development by omission. join_tables and view_table are the two actions that resolve a
+   * table reference internally - environmentId rides in on params for them to read, rather than as
+   * an extra positional argument the loosely-typed actionHandler.call() dispatch below would have
+   * to account for.
+   */
   async perform(
     organizationId: string,
     action: string,
     params = {},
+    environmentId: string | undefined,
     connectionManagers: Record<ConnectionManagerKey, EntityManager> = {
       appManager: this.manager,
       tjdbManager: this.tooljetDbManager,
@@ -133,7 +142,7 @@ export class TooljetDbTableOperationsService {
     if (!actionHandler) {
       throw new BadRequestException('Action not defined');
     }
-    return await actionHandler.call(this, organizationId, params, connectionManagers);
+    return await actionHandler.call(this, organizationId, { ...params, environmentId }, connectionManagers);
   }
 
   protected getActionHandler(action: string): ((organizationId: string, params: any) => Promise<any>) | undefined {
@@ -164,6 +173,7 @@ export class TooljetDbTableOperationsService {
   async resolveTable(
     organizationId: string,
     tableName: string,
+    environmentId: string | undefined,
     manager?: EntityManager
   ): Promise<{ internalTable: InternalTable; relation: InternalTableRelation; physicalName: string }> {
     const entityManager = manager || this.manager;
@@ -176,7 +186,7 @@ export class TooljetDbTableOperationsService {
     const relation = await this.relationResolverService.getRelation(
       organizationId,
       internalTable.id,
-      undefined,
+      environmentId,
       manager
     );
     const physicalName = concatSchemaAndTableName(findTenantSchema(organizationId), relation.id);
@@ -634,7 +644,7 @@ export class TooljetDbTableOperationsService {
 
   /** No uuid minting: drop_table just resolves the table name to its relation. */
   protected async normalizeDropTable(organizationId: string, tableName: string) {
-    const { internalTable, relation } = await this.resolveTable(organizationId, tableName);
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, undefined);
     return { organizationId, internalTable, relation };
   }
 
@@ -740,7 +750,7 @@ export class TooljetDbTableOperationsService {
    */
   protected async normalizeEditTable(organizationId: string, params, appManager: EntityManager) {
     const { table_name: tableName } = params;
-    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, appManager);
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, undefined, appManager);
 
     // Uuids are resolved against the relation normalize just read - the source of the request -
     // never against whatever relation apply() ends up pointed at.
@@ -1042,7 +1052,7 @@ export class TooljetDbTableOperationsService {
    */
   protected async normalizeAddColumn(organizationId: string, params, appManager: EntityManager) {
     const { table_name: tableName, column, foreign_keys = [] } = params;
-    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, appManager);
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, undefined, appManager);
 
     const columnUuid = uuidv4();
     const foreignKeys = await this.resolveForeignKeyCoRelationIds(foreign_keys, organizationId, appManager);
@@ -1206,7 +1216,7 @@ export class TooljetDbTableOperationsService {
   /** Reads the uuid of the column being dropped from the source relation; mints nothing. */
   protected async normalizeDropColumn(organizationId: string, params, appManager: EntityManager) {
     const { table_name: tableName, column } = params;
-    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, appManager);
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, undefined, appManager);
     const columnName = column['column_name'];
     const columnUuid = relation.configurations.columns.column_names[columnName];
 
@@ -1332,7 +1342,7 @@ export class TooljetDbTableOperationsService {
   }
 
   protected async joinTable(organizationId: string, params: Record<string, any>) {
-    const { joinQueryJson: rawJoinQueryJson, dataQuery, user } = params;
+    const { joinQueryJson: rawJoinQueryJson, dataQuery, user, environmentId } = params;
     if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");
     const joinQueryJson = this.normalizeJoinQueryJsonToNewFormat(rawJoinQueryJson);
 
@@ -1394,11 +1404,17 @@ export class TooljetDbTableOperationsService {
     }, {});
 
     // Physical-name map: logical id -> relation id, resolved once for the whole table set.
-    const relationIdByLogicalId = await this.relationResolverService.resolve(organizationId, tableIdList);
+    const relationIdByLogicalId = await this.relationResolverService.resolve(
+      organizationId,
+      tableIdList,
+      environmentId
+    );
     const logicalIdsWithoutRelation = tableIdList.filter((tableId) => !relationIdByLogicalId.has(tableId));
     if (logicalIdsWithoutRelation.length) {
       const namesWithoutRelation = logicalIdsWithoutRelation.map((tableId) => internalTableIdToNameMap[tableId]);
-      throw new BadRequestException(
+      // DEV-89: an (env, branch) with no relation is a 404, not a 400 - the table exists, it just
+      // isn't promoted here.
+      throw new NotFoundException(
         `Table(s) "${namesWithoutRelation.join('", "')}" have no relation in this environment`
       );
     }
@@ -1687,7 +1703,7 @@ export class TooljetDbTableOperationsService {
    */
   protected async normalizeEditColumn(organizationId: string, params) {
     const { table_name: tableName, column, foreign_key_id_to_delete } = params;
-    const { internalTable, relation } = await this.resolveTable(organizationId, tableName);
+    const { internalTable, relation } = await this.resolveTable(organizationId, tableName, undefined);
     const columnUuid = relation.configurations.columns.column_names[column.column_name];
     if (!columnUuid) throw new NotFoundException('Column not found: ' + column.column_name);
 
@@ -2064,7 +2080,12 @@ export class TooljetDbTableOperationsService {
     const { appManager } = connectionManagers;
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
 
-    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name, appManager);
+    const { internalTable, relation, physicalName } = await this.resolveTable(
+      organizationId,
+      table_name,
+      undefined,
+      appManager
+    );
 
     const referencedTableNames = foreign_keys.map((foreign_key) => foreign_key.referenced_table_name);
     const coRelationIdByTableName = await this.resolveForeignKeyReferenceIds(
@@ -2207,7 +2228,7 @@ export class TooljetDbTableOperationsService {
     if (!foreign_key_id) throw new BadRequestException('Foreign key id is mandatory');
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
 
-    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name);
+    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name, undefined);
     const tenantSchema = findTenantSchema(organizationId);
 
     const target = await this.foreignKeyToFkSpec(organizationId, tenantSchema, relation.id, foreign_key_id);
@@ -2347,7 +2368,7 @@ export class TooljetDbTableOperationsService {
     target: FkSpec;
   }> {
     const { table_name, foreign_key_id } = params;
-    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name);
+    const { internalTable, relation, physicalName } = await this.resolveTable(organizationId, table_name, undefined);
     const tenantSchema = findTenantSchema(organizationId);
     const target = await this.foreignKeyToFkSpec(organizationId, tenantSchema, relation.id, foreign_key_id);
 

@@ -46,9 +46,14 @@ export class TooljetDbImportExportService {
       columns,
       foreign_keys,
       configurations = {},
-    } = await this.tableOperationsService.perform(organizationId, 'view_table', {
-      id: tjDbDto.table_id,
-    });
+    } = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      {
+        id: tjDbDto.table_id,
+      },
+      undefined
+    );
 
     columns.forEach((column) => {
       const columnUuid = configurations?.columns?.column_names?.[column.column_name];
@@ -122,6 +127,7 @@ export class TooljetDbImportExportService {
             foreign_keys: foreignKeys,
             shouldDestroyDbConnection: false,
           },
+          undefined,
           connectionManagers
         );
       }
@@ -187,6 +193,7 @@ export class TooljetDbImportExportService {
         table_name: tableName,
         ...{ columns, foreign_keys: [] },
       },
+      undefined,
       connectionManagers
     );
 
@@ -207,7 +214,8 @@ export class TooljetDbImportExportService {
       'view_table',
       {
         id: internalTable.id,
-      }
+      },
+      undefined
     );
 
     const internalTableColumns = new Set<string>(internalTableColumnSchema.columns.map((c) => c.column_name));

@@ -10,7 +10,7 @@
  *
  * @group database
  */
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, NotFoundException } from '@nestjs/common';
 import * as request from 'supertest';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
@@ -21,6 +21,7 @@ import {
   createUser,
   initTestApp,
   login,
+  withRealTransactions,
   getTooljetDbDataSource,
   getDefaultDataSource,
   closeTestApp,
@@ -28,6 +29,7 @@ import {
   createAppWithDependencies,
 } from 'test-helper';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
 // EE-only imports: resolve the real, edition-aware DI tokens TooljetDbModule/DataQueriesModule
 // register under edition 'ee' (SubModule.getProviders dynamically imports these exact classes) —
 // mirrors the existing pattern in test/modules/tooljet-db/e2e/tooljetdb-migration-replay.spec.ts
@@ -549,6 +551,245 @@ describe('TooljetDbDataController', () => {
         const rows = result.data as any[];
         expect(rows.find((row) => row.id === 102)).toBeDefined();
         expect(rows.find((row) => row.id === 101)).toBeUndefined();
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // sql_execution and join_tables never go through PostgrestProxyService - each resolves
+    // relation names through its own path (resolveTable / relationResolverService.resolve), so
+    // they need their own environment-resolution coverage. Unlike the Polly-mocked tests above,
+    // both open a *second*, genuinely separate Postgres connection to run the query
+    // (createTooljetDatabaseConnection) - it cannot see anything still sitting inside this spec
+    // file's uncommitted suite transaction. Each test below runs inside withRealTransactions to
+    // get real, committed rows, and builds its own workspace from scratch rather than reusing
+    // adminOrgId/tableId - withRealTransactions rolls the suite transaction all the way back
+    // first, which would take the outer beforeAll's fixtures with it.
+    // -------------------------------------------------------------------------
+    describe('sql_execution & join_tables | resolve in the requested environment', () => {
+      async function setUpWorkspace() {
+        const email = `tjdb-env-${uuidv4()}@tooljet.io`;
+        const { user } = await createUser(app, {
+          email,
+          firstName: 'Env',
+          lastName: 'Test',
+          groups: ['admin', 'end-user'],
+        });
+        const organizationId = user.defaultOrganizationId;
+        const appEnvironments = await ensureAppEnvironments(app, organizationId);
+        const productionEnv = appEnvironments.find((env) => env.name === 'production');
+        expect(productionEnv).toBeDefined();
+
+        // join_tables/sql_execution each open their own real connection using a per-workspace
+        // tenant role whose default search_path is the workspace schema - createUser() (unlike
+        // the real signup flow) never provisions one. .from(relationId, alias) names the physical
+        // table unqualified, relying on that search_path to find it, so a real tenant role is load
+        // -bearing here, not just a schema config row.
+        const defaultManager = getDefaultDataSource().manager;
+        await app
+          .get(TooljetDbTableOperationsService)
+          .createTooljetDbTenantSchemaAndRole(organizationId, defaultManager);
+
+        const { tokenCookie } = await login(app, email);
+        return { organizationId, cookie: tokenCookie, productionEnv };
+      }
+
+      // createTooljetDbTenantSchemaAndRole provisions a cluster-level Postgres role + schema -
+      // withRealTransactions only rolls back this suite's transaction, it never reclaims those.
+      // Every test that calls setUpWorkspace must drop them here, or CI leaks a role+schema per run.
+      async function cleanupWorkspace(organizationId: string) {
+        try {
+          await app.get(TooljetDbTableOperationsService).deleteTooljetDbTenantSchemaAndRole(organizationId);
+        } catch {
+          // best-effort - a failed setup earlier in the test shouldn't mask the real failure
+        }
+      }
+
+      async function createTestTable(organizationId: string, cookie: string[], tableName: string): Promise<string> {
+        const res = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${organizationId}/table`)
+          .set('Cookie', cookie)
+          .set('tj-workspace-id', organizationId)
+          .send(buildCreateTablePayload(tableName));
+
+        expect([200, 201]).toContain(res.statusCode);
+        const internalTableId = res.body?.result?.id;
+        expect(internalTableId).toBeDefined();
+        return internalTableId;
+      }
+
+      // A promoted relation is otherwise just a metadata row - mint a real physical table behind
+      // it (mirroring what create_table does for development), since sql_execution/join_tables
+      // run real SQL against it.
+      async function promoteToProduction(
+        organizationId: string,
+        productionEnv: { id: string },
+        internalTableId: string,
+        prodRowName: string
+      ) {
+        const tjds = getTooljetDbDataSource();
+        const schema = `workspace_${organizationId}`;
+        const defaultManager = getDefaultDataSource().manager;
+
+        const devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId },
+        });
+        const prodRelation = await defaultManager.save(
+          defaultManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId,
+            environmentId: productionEnv.id,
+            branchId: devRelation.branchId,
+          })
+        );
+
+        await tjds.query(`CREATE TABLE "${schema}"."${prodRelation.id}" (id integer primary key, name varchar)`);
+        await tjds.query(`INSERT INTO "${schema}"."${prodRelation.id}" (id, name) VALUES (1, $1)`, [prodRowName]);
+        // The development relation's table already exists (create_table minted it) - seed it with
+        // a row that must never surface once production is what's named.
+        await tjds.query(`INSERT INTO "${schema}"."${devRelation.id}" (id, name) VALUES (1, $1)`, [
+          `dev-${prodRowName}`,
+        ]);
+
+        return { devRelation, prodRelation };
+      }
+
+      it('sql_execution should read production rows, not development rows, when production is named', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie, productionEnv } = workspace;
+            const tableName = `test_sql_exec_${Date.now()}`;
+            const internalTableId = await createTestTable(organizationId, cookie, tableName);
+            await promoteToProduction(organizationId, productionEnv, internalTableId, 'ProdSqlRow');
+
+            const dataOperationsService = app.get(TooljetDbDataOperationsService);
+            const result = await dataOperationsService.sqlExecution(
+              { sql_execution: { sqlQuery: `select * from ${tableName}` } },
+              { app: { organization_id: organizationId, environment_id: productionEnv.id } }
+            );
+
+            expect(result.status).toBe('ok');
+            const names = (result.data as any).results.map((row: any) => row.name);
+            expect(names).toContain('ProdSqlRow');
+            expect(names).not.toContain('dev-ProdSqlRow');
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('join_tables should join production relations, not development relations, when production is named', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie, productionEnv } = workspace;
+            const tableAName = `test_join_env_a_${Date.now()}`;
+            const tableBName = `test_join_env_b_${Date.now()}`;
+            const tableAId = await createTestTable(organizationId, cookie, tableAName);
+            const tableBId = await createTestTable(organizationId, cookie, tableBName);
+            await promoteToProduction(organizationId, productionEnv, tableAId, 'ProdJoinA');
+            await promoteToProduction(organizationId, productionEnv, tableBId, 'ProdJoinB');
+
+            const dataOperationsService = app.get(TooljetDbDataOperationsService);
+            const result = await dataOperationsService.joinTables(
+              {
+                join_table: {
+                  from: { name: tableAId, type: 'Table' },
+                  fields: [
+                    { name: 'name', table: tableAId },
+                    { name: 'name', table: tableBId },
+                  ],
+                  joins: [
+                    {
+                      joinType: 'INNER',
+                      table: tableBId,
+                      conditions: {
+                        operator: 'AND',
+                        conditionsList: [
+                          {
+                            operator: '=',
+                            leftField: { type: 'Column', table: tableAId, columnName: 'id' },
+                            rightField: { type: 'Column', table: tableBId, columnName: 'id' },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
+              { app: { organization_id: organizationId, environment_id: productionEnv.id } }
+            );
+
+            expect(result.status).toBe('ok');
+            const rows = (result.data as any).result;
+            const aliasA = `${tableAName}_name`;
+            const aliasB = `${tableBName}_name`;
+            expect(rows.some((row: any) => row[aliasA] === 'ProdJoinA' && row[aliasB] === 'ProdJoinB')).toBe(true);
+            expect(rows.some((row: any) => row[aliasA] === `dev-ProdJoinA`)).toBe(false);
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('join_tables should 404 when one of the joined tables has no relation in production', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie, productionEnv } = workspace;
+            const tableAName = `test_join_404_a_${Date.now()}`;
+            const tableBName = `test_join_404_b_${Date.now()}`;
+            const tableAId = await createTestTable(organizationId, cookie, tableAName);
+            const tableBId = await createTestTable(organizationId, cookie, tableBName);
+            // tableAId is promoted; tableBId is deliberately left development-only.
+            await promoteToProduction(organizationId, productionEnv, tableAId, 'ProdJoin404A');
+
+            const dataOperationsService = app.get(TooljetDbDataOperationsService);
+
+            await expect(
+              dataOperationsService.joinTables(
+                {
+                  join_table: {
+                    from: { name: tableAId, type: 'Table' },
+                    fields: [{ name: 'name', table: tableAId }],
+                    joins: [
+                      {
+                        joinType: 'INNER',
+                        table: tableBId,
+                        conditions: {
+                          operator: 'AND',
+                          conditionsList: [
+                            {
+                              operator: '=',
+                              leftField: { type: 'Column', table: tableAId, columnName: 'id' },
+                              rightField: { type: 'Column', table: tableBId, columnName: 'id' },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                { app: { organization_id: organizationId, environment_id: productionEnv.id } }
+              )
+            ).rejects.toThrow(NotFoundException);
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
       });
     });
   });

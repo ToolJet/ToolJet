@@ -130,10 +130,15 @@ describe('TooljetDbTableOperationsService', () => {
         // Simulates the gap UpdateInternalTablesConfigurationsColumn1718542399701 left behind:
         // a physical column with no entry in configurations.columns.column_names.
         await expect(
-          service.perform(organizationId, 'edit_column', {
-            table_name: 'users',
-            column: { column_name: 'not_a_tracked_column', data_type: 'character varying' },
-          })
+          service.perform(
+            organizationId,
+            'edit_column',
+            {
+              table_name: 'users',
+              column: { column_name: 'not_a_tracked_column', data_type: 'character varying' },
+            },
+            undefined
+          )
         ).rejects.toThrow('Column not found: not_a_tracked_column');
 
         const usersTable = await appManager.findOneOrFail(InternalTable, {
@@ -182,28 +187,33 @@ describe('TooljetDbTableOperationsService', () => {
         );
 
         await expect(
-          service.perform(organizationId, 'join_tables', {
-            joinQueryJson: {
-              from: { name: foreignTable.id },
-              fields: [{ name: 'id', table: ordersTable.id }],
-              joins: [
-                {
-                  joinType: 'INNER',
-                  table: ordersTable.id,
-                  conditions: {
-                    operator: 'AND',
-                    conditionsList: [
-                      {
-                        operator: '=',
-                        leftField: { type: 'Column', table: ordersTable.id, columnName: 'id' },
-                        rightField: { type: 'Column', table: ordersTable.id, columnName: 'id' },
-                      },
-                    ],
+          service.perform(
+            organizationId,
+            'join_tables',
+            {
+              joinQueryJson: {
+                from: { name: foreignTable.id },
+                fields: [{ name: 'id', table: ordersTable.id }],
+                joins: [
+                  {
+                    joinType: 'INNER',
+                    table: ordersTable.id,
+                    conditions: {
+                      operator: 'AND',
+                      conditionsList: [
+                        {
+                          operator: '=',
+                          leftField: { type: 'Column', table: ordersTable.id, columnName: 'id' },
+                          rightField: { type: 'Column', table: ordersTable.id, columnName: 'id' },
+                        },
+                      ],
+                    },
                   },
-                },
-              ],
+                ],
+              },
             },
-          })
+            undefined
+          )
         ).rejects.toThrow(NotFoundException);
       });
 
@@ -398,21 +408,24 @@ describe('TooljetDbTableOperationsService', () => {
         // Remove relation for orders table to simulate it missing in this environment
         await appManager.delete(InternalTableRelation, { internalTableId: ordersTable.id });
 
-        await expect(
-          service.perform(organizationId, 'join_tables', {
-            joinQueryJson: {
-              from: { name: usersTable.id },
-              fields: [{ name: 'id', table: usersTable.id }],
-              joins: [
-                {
-                  joinType: 'INNER',
-                  table: ordersTable.id,
-                  conditions: { operator: 'AND', conditionsList: [] },
-                },
-              ],
-            },
-          })
-        ).rejects.toThrow('Table(s) "orders" have no relation in this environment');
+        const joinParams = {
+          joinQueryJson: {
+            from: { name: usersTable.id },
+            fields: [{ name: 'id', table: usersTable.id }],
+            joins: [
+              {
+                joinType: 'INNER',
+                table: ordersTable.id,
+                conditions: { operator: 'AND', conditionsList: [] },
+              },
+            ],
+          },
+        };
+
+        // DEV-89: an (env, branch) with no relation is a 404, never a 400.
+        await expect(service.perform(organizationId, 'join_tables', joinParams, undefined)).rejects.toThrow(
+          new NotFoundException('Table(s) "orders" have no relation in this environment')
+        );
       });
     });
 
@@ -426,16 +439,21 @@ describe('TooljetDbTableOperationsService', () => {
       ];
 
       it('soft-deletes the internal_tables row and frees its name for reuse, instead of removing it', async () => {
-        await service.perform(organizationId, 'create_table', {
-          table_name: 'soft_delete_target',
-          columns,
-          foreign_keys: [],
-        });
+        await service.perform(
+          organizationId,
+          'create_table',
+          {
+            table_name: 'soft_delete_target',
+            columns,
+            foreign_keys: [],
+          },
+          undefined
+        );
         const originalTable = await appManager.findOneOrFail(InternalTable, {
           where: { organizationId, tableName: 'soft_delete_target' },
         });
 
-        await service.perform(organizationId, 'drop_table', { table_name: 'soft_delete_target' });
+        await service.perform(organizationId, 'drop_table', { table_name: 'soft_delete_target' }, undefined);
 
         // Gone from every ordinary read - TypeORM excludes soft-deleted rows by default.
         await expect(
@@ -450,11 +468,16 @@ describe('TooljetDbTableOperationsService', () => {
         expect(softDeletedTable.deletedAt).toBeInstanceOf(Date);
 
         // The partial unique index scopes to deleted_at IS NULL, so the freed name mints a new row.
-        await service.perform(organizationId, 'create_table', {
-          table_name: 'soft_delete_target',
-          columns,
-          foreign_keys: [],
-        });
+        await service.perform(
+          organizationId,
+          'create_table',
+          {
+            table_name: 'soft_delete_target',
+            columns,
+            foreign_keys: [],
+          },
+          undefined
+        );
         const recreatedTable = await appManager.findOneOrFail(InternalTable, {
           where: { organizationId, tableName: 'soft_delete_target' },
         });
@@ -480,7 +503,7 @@ describe('TooljetDbTableOperationsService', () => {
           `CREATE TABLE "workspace_${otherOrganizationId}"."${usersTable.id}" (decoy_column text)`
         );
 
-        const result = await service.perform(organizationId, 'view_table', { table_name: 'users' });
+        const result = await service.perform(organizationId, 'view_table', { table_name: 'users' }, undefined);
 
         expect(result.columns.map((column) => column.column_name)).not.toContain('decoy_column');
       });

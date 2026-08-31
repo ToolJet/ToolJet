@@ -269,7 +269,7 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   async joinTables(queryOptions, context): Promise<QueryResult> {
-    const { organization_id: organizationId } = context.app;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
     const { join_table = {} } = queryOptions;
 
     // Empty Input is restricted
@@ -326,9 +326,14 @@ export class TooljetDbDataOperationsService implements QueryService {
     if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
       delete sanitizedJoinTableJson.order_by;
 
-    const result = await this.tableOperationsService.perform(organizationId, 'join_tables', {
-      joinQueryJson: sanitizedJoinTableJson,
-    });
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'join_tables',
+      {
+        joinQueryJson: sanitizedJoinTableJson,
+      },
+      environmentId
+    );
 
     return { status: 'ok', data: { result } };
   }
@@ -337,7 +342,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     if (isSQLModeDisabled())
       throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
 
-    const { organization_id: organizationId } = context.app;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
     const { sql_execution: sqlExecution = {} } = queryOptions;
     const { sqlQuery = '' } = sqlExecution;
     if (isEmpty(sqlQuery)) return;
@@ -393,6 +398,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       const internalTableNameToRelationIdMap = await this.resolveTableNameToRelationIdMap(
         tablesUsedInQuery,
         organizationId,
+        environmentId,
         internalTableInfo
       );
 
@@ -459,6 +465,7 @@ export class TooljetDbDataOperationsService implements QueryService {
    *
    * @param tablesUsedInQuery - display names, from parseTableListFromASTParser
    * @param organizationId - Workspace id
+   * @param environmentId - environment to resolve each display name's relation in
    * @param internalTableInfo - accumulator mutated in place with { id: relationId, tableName } as
    *   each table resolves, so it is populated for TooljetDatabaseError's error-translation context
    *   even if resolution fails partway through the list
@@ -467,11 +474,17 @@ export class TooljetDbDataOperationsService implements QueryService {
   protected async resolveTableNameToRelationIdMap(
     tablesUsedInQuery: Array<string>,
     organizationId: string,
+    environmentId: string | undefined,
     internalTableInfo: Array<{ id: string; tableName: string }>
   ): Promise<Record<string, string>> {
     const internalTableNameToRelationIdMap: Record<string, string> = {};
     for (const tableName of tablesUsedInQuery) {
-      const { relation } = await this.tableOperationsService.resolveTable(organizationId, tableName, this.manager);
+      const { relation } = await this.tableOperationsService.resolveTable(
+        organizationId,
+        tableName,
+        environmentId,
+        this.manager
+      );
       internalTableInfo.push({ id: relation.id, tableName });
       internalTableNameToRelationIdMap[tableName] = relation.id;
     }

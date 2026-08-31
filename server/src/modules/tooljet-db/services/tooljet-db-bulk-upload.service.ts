@@ -59,9 +59,14 @@ export class TooljetDbBulkUploadService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
-      await this.tableOperationsService.perform(organizationId, 'view_table', {
-        id: internalTableId,
-      });
+      await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        {
+          id: internalTableId,
+        },
+        undefined
+      );
 
     const tablesInvolvedList = [
       internalTableId,
@@ -467,9 +472,14 @@ export class TooljetDbBulkUploadService {
       };
     }
 
-    const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
-      id: tableId,
-    });
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      {
+        id: tableId,
+      },
+      undefined
+    );
     const tableColumns = result?.columns || [];
 
     // Check if pk columns exist in the table

@@ -116,6 +116,7 @@ interface TableOperationsService {
     organizationId: string,
     action: string,
     params: Record<string, any>,
+    environmentId: string | undefined,
     connectionManagers?: Record<string, EntityManager>
   ): Promise<any>;
 }
@@ -147,5 +148,5 @@ async function createTable(
   organizationId: string,
   params: { table_name: string; columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] }
 ) {
-  await tooljetDbService.perform(organizationId, 'create_table', params, { appManager, tjdbManager });
+  await tooljetDbService.perform(organizationId, 'create_table', params, undefined, { appManager, tjdbManager });
 }

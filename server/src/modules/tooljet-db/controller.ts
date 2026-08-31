@@ -69,7 +69,7 @@ export class TooljetDbController {
   @Get('/organizations/:organizationId/tables')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async tables(@Param('organizationId') organizationId) {
-    const result = await this.tableOperationsService.perform(organizationId, 'view_tables');
+    const result = await this.tableOperationsService.perform(organizationId, 'view_tables', {}, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -85,7 +85,12 @@ export class TooljetDbController {
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async table(@Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
-    const result = await this.tableOperationsService.perform(organizationId, 'view_table', { table_name: tableName });
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      { table_name: tableName },
+      undefined
+    );
     const decamelizedResult = decamelizeKeys({ result });
     decamelizedResult['result']['configurations'] = result.configurations || {};
     return decamelizedResult;
@@ -95,7 +100,7 @@ export class TooljetDbController {
   @Post('/organizations/:organizationId/table')
   @UseGuards(JwtAuthGuard, TableCountGuard, FeatureAbilityGuard)
   async createTable(@Body() createTableDto: CreatePostgrestTableDto, @Param('organizationId') organizationId) {
-    const result = await this.tableOperationsService.perform(organizationId, 'create_table', createTableDto);
+    const result = await this.tableOperationsService.perform(organizationId, 'create_table', createTableDto, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -103,7 +108,7 @@ export class TooljetDbController {
   @Patch('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async editTable(@Body() editTableBody: EditTableDto, @Param('organizationId') organizationId) {
-    const result = await this.tableOperationsService.perform(organizationId, 'edit_table', editTableBody);
+    const result = await this.tableOperationsService.perform(organizationId, 'edit_table', editTableBody, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -111,7 +116,12 @@ export class TooljetDbController {
   @Delete('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async dropTable(@Param('organizationId') organizationId, @Param('tableName') tableName) {
-    const result = await this.tableOperationsService.perform(organizationId, 'drop_table', { table_name: tableName });
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'drop_table',
+      { table_name: tableName },
+      undefined
+    );
     return decamelizeKeys({ result });
   }
 
@@ -128,7 +138,7 @@ export class TooljetDbController {
       column: addColumnBody.column,
       foreign_keys: addColumnBody?.foreign_keys || [],
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'add_column', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'add_column', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -145,7 +155,7 @@ export class TooljetDbController {
       column: { column_name: columnName },
     };
 
-    const result = await this.tableOperationsService.perform(organizationId, 'drop_column', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'drop_column', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -173,7 +183,7 @@ export class TooljetDbController {
       user: req.user,
     };
 
-    const result = await this.tableOperationsService.perform(organizationId, 'join_tables', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'join_tables', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -191,7 +201,7 @@ export class TooljetDbController {
       column: columnDto,
       foreign_key_id_to_delete: foreignKeyIdToDelete || '',
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'edit_column', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'edit_column', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -208,7 +218,7 @@ export class TooljetDbController {
       foreign_keys: foreign_keys,
       shouldDestroyDbConnection: true,
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'create_foreign_key', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'create_foreign_key', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -226,7 +236,7 @@ export class TooljetDbController {
       foreign_key_id: foreign_key_id,
       foreign_keys: foreign_keys,
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'update_foreign_key', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'update_foreign_key', params, undefined);
     return decamelizeKeys({ result });
   }
 
@@ -242,7 +252,7 @@ export class TooljetDbController {
       table_name: tableName,
       foreign_key_id: foreignKeyId,
     };
-    const result = await this.tableOperationsService.perform(organizationId, 'delete_foreign_key', params);
+    const result = await this.tableOperationsService.perform(organizationId, 'delete_foreign_key', params, undefined);
     return decamelizeKeys({ result });
   }
 }

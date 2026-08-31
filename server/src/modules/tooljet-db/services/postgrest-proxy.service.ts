@@ -79,7 +79,12 @@ export class PostgrestProxyService {
 
     if (['PATCH', 'POST'].includes(req.method)) {
       const { path: resolvedTableId } = extractTableRefs(rewrittenUrl);
-      const updatedRequestBody = await this.validateJSONBInputs(organizationId, tableInfo[resolvedTableId], req.body);
+      const updatedRequestBody = await this.validateJSONBInputs(
+        organizationId,
+        tableInfo[resolvedTableId],
+        req.body,
+        undefined
+      );
       req.body = { ...req.body, ...updatedRequestBody };
     }
 
@@ -136,7 +141,8 @@ export class PostgrestProxyService {
         const updatedRequestBody = await this.validateJSONBInputs(
           headers['tj-workspace-id'],
           tableInfo[resolvedTableId],
-          body
+          body,
+          environmentId
         );
         body = { ...body, ...updatedRequestBody };
       }
@@ -333,10 +339,15 @@ export class PostgrestProxyService {
     throw new NotFoundException('Internal table not found: ' + tableNamesNotInOrg);
   }
 
-  protected async validateJSONBInputs(organizationId, tableName, body) {
-    const tableDetails = await this.tableOperationsService.perform(organizationId, 'view_table', {
-      table_name: tableName,
-    });
+  protected async validateJSONBInputs(organizationId, tableName, body, environmentId: string | undefined) {
+    const tableDetails = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      {
+        table_name: tableName,
+      },
+      environmentId
+    );
 
     const jsonbColumns = tableDetails.columns
       .filter((column) => column.data_type === 'jsonb')
