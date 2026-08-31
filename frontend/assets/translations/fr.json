@@ -913,7 +913,7 @@
     },
     "Settings": {
       "text": "Réglages",
-      "tip": "Paramètres globaux",
+      "tip": "Paramètres de l'application",
       "hideHeader": "Masquer l'en-tête pour les applications lancées",
       "maintenanceMode": "Mode de Maintenance",
       "maxWidthOfCanvas": "Largeur maximale de toile",

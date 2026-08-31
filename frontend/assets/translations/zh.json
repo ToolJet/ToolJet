@@ -946,7 +946,7 @@
         },
         "Settings": {
             "text": "设置",
-            "tip": "全局设置",
+            "tip": "应用设置",
             "hideHeader": "隐藏已启动应用的标题栏",
             "maintenanceMode": "维护模式",
             "maxWidthOfCanvas": "画布的最大宽度",

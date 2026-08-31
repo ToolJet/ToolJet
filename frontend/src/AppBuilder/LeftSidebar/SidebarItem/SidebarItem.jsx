@@ -33,6 +33,7 @@ export const SidebarItem = forwardRef(
     const { t } = useTranslation();
     let displayIcon = icon;
     if (icon == 'page') displayIcon = 'file01';
+    const translatedTip = typeof tip === 'string' ? t(`leftSidebar.${tip}.tip`, tip) : tip;
     const content = (
       <Button
         {...rest}
@@ -42,7 +43,7 @@ export const SidebarItem = forwardRef(
         onClick={onClick && onClick}
         ref={ref}
         type="button"
-        aria-label={tip}
+        aria-label={translatedTip}
         variant="ghost"
         size="default"
         iconOnly
@@ -67,7 +68,7 @@ export const SidebarItem = forwardRef(
         delay={{ show: 250, hide: 200 }}
         overlay={
           <Tooltip id="button-tooltip" className={classes?.tooltip}>
-            {typeof tip === 'string' ? t(`leftSidebar.${tip}.tip`, tip) : tip}
+            {translatedTip}
           </Tooltip>
         }
         show={show}
