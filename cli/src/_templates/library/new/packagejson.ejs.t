@@ -11,7 +11,7 @@ to: <%= name %>/package.json
     "build": "tooljet library build"
   },
   "dependencies": {
-    "@tooljet/custom-component-sdk": "^1.0.0"
+    "@tooljet/custom-component-sdk": "0.1.0-beta.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
