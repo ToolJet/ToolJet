@@ -10,7 +10,7 @@
  *
  * @group database
  */
-import { INestApplication, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, INestApplication, NotFoundException } from '@nestjs/common';
 import * as request from 'supertest';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
@@ -27,6 +27,7 @@ import {
   closeTestApp,
   ensureAppEnvironments,
   createAppWithDependencies,
+  restoreLicensePlan,
 } from 'test-helper';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
@@ -553,6 +554,188 @@ describe('TooljetDbDataController', () => {
         expect(rows.find((row) => row.id === 102)).toBeDefined();
         expect(rows.find((row) => row.id === 101)).toBeUndefined();
       });
+
+      // ordersTableId (created in beforeAll) has only ever had its development relation minted -
+      // never promoted to production, unlike tableId above which the test just gave one.
+      it('should 404 for a table this workspace has not promoted to production', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const appEnvironments = await ensureAppEnvironments(app, adminOrgId);
+        const productionEnv = appEnvironments.find((env) => env.name === 'production');
+        expect(productionEnv).toBeDefined();
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+
+        await expect(
+          dataOperationsService.listRows(
+            { id: 'q1-404', table_id: ordersTableId, list_rows: {} },
+            { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+          )
+        ).rejects.toThrow(/not found in this environment/i);
+      });
+    });
+
+    // create_row/update_rows/delete_rows never go through PostgrestProxyService's proxy() HTTP
+    // route in this environment-resolution matrix - each is called as the plugin/data-query
+    // dispatcher (TooljetDbDataOperationsService.run) actually calls it, with an explicit
+    // context.app.environment_id, mirroring list_rows above. PostgREST itself is Polly-mocked
+    // (see file header), so the observable proof of which physical relation a write targeted is
+    // the resolved relation id embedded in the request URL Polly actually forwarded
+    // (interceptedRequests) - the same signal the fail-closed matrix above already relies on.
+    describe('create_row, update_rows, delete_rows | resolve in the requested environment', () => {
+      let writeTableId: string;
+      let unpromotedWriteTableId: string;
+      let productionEnv: { id: string };
+      let devRelation: InternalTableRelation;
+      let prodRelation: InternalTableRelation;
+
+      beforeAll(async () => {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const tableName = `test_write_env_${Date.now()}`;
+        const res = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload(tableName));
+        expect([200, 201]).toContain(res.statusCode);
+        writeTableId = res.body?.result?.id;
+        expect(writeTableId).toBeDefined();
+
+        // Left development-only deliberately - never given a production relation.
+        const unpromotedName = `test_write_unprom_${Date.now()}`;
+        const unpromotedRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload(unpromotedName));
+        expect([200, 201]).toContain(unpromotedRes.statusCode);
+        unpromotedWriteTableId = unpromotedRes.body?.result?.id;
+        expect(unpromotedWriteTableId).toBeDefined();
+
+        const appEnvironments = await ensureAppEnvironments(app, adminOrgId);
+        productionEnv = appEnvironments.find((env) => env.name === 'production');
+        expect(productionEnv).toBeDefined();
+
+        const defaultManager = getDefaultDataSource().manager;
+        devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: writeTableId },
+        });
+        prodRelation = await defaultManager.save(
+          defaultManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: writeTableId,
+            environmentId: productionEnv.id,
+            branchId: devRelation.branchId,
+          })
+        );
+      });
+
+      it('create_row should write through the production relation, not development, when production is named', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        await dataOperationsService.createRow(
+          { id: 'q-create', table_id: writeTableId, create_row: { name: { column: 'name', value: 'ProdCreate' } } },
+          { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+        );
+
+        const postRequests = pollyRequests().filter((r) => r.method === 'POST');
+        expect(postRequests.some((r) => r.url.includes(prodRelation.id))).toBe(true);
+        expect(postRequests.some((r) => r.url.includes(devRelation.id))).toBe(false);
+      });
+
+      it('create_row should 404 for a table this workspace has not promoted to production', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        await expect(
+          dataOperationsService.createRow(
+            {
+              id: 'q-create-404',
+              table_id: unpromotedWriteTableId,
+              create_row: { name: { column: 'name', value: 'x' } },
+            },
+            { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+          )
+        ).rejects.toThrow(NotFoundException);
+      });
+
+      it('update_rows should write through the production relation, not development, when production is named', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        await dataOperationsService.updateRows(
+          {
+            id: 'q-update',
+            table_id: writeTableId,
+            update_rows: {
+              where_filters: { id: { column: 'id', operator: 'eq', value: 1 } },
+              columns: { name: { column: 'name', value: 'ProdUpdate' } },
+            },
+          },
+          { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+        );
+
+        const patchRequests = pollyRequests().filter((r) => r.method === 'PATCH');
+        expect(patchRequests.some((r) => r.url.includes(prodRelation.id))).toBe(true);
+        expect(patchRequests.some((r) => r.url.includes(devRelation.id))).toBe(false);
+      });
+
+      it('update_rows should 404 for a table this workspace has not promoted to production', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        await expect(
+          dataOperationsService.updateRows(
+            {
+              id: 'q-update-404',
+              table_id: unpromotedWriteTableId,
+              update_rows: {
+                where_filters: { id: { column: 'id', operator: 'eq', value: 1 } },
+                columns: { name: { column: 'name', value: 'x' } },
+              },
+            },
+            { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+          )
+        ).rejects.toThrow(NotFoundException);
+      });
+
+      it('delete_rows should write through the production relation, not development, when production is named', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        await dataOperationsService.deleteRows(
+          {
+            id: 'q-delete',
+            table_id: writeTableId,
+            delete_rows: { where_filters: { id: { column: 'id', operator: 'eq', value: 1 } } },
+          },
+          { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+        );
+
+        const deleteRequests = pollyRequests().filter((r) => r.method === 'DELETE');
+        expect(deleteRequests.some((r) => r.url.includes(prodRelation.id))).toBe(true);
+        expect(deleteRequests.some((r) => r.url.includes(devRelation.id))).toBe(false);
+      });
+
+      it('delete_rows should 404 for a table this workspace has not promoted to production', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        await expect(
+          dataOperationsService.deleteRows(
+            {
+              id: 'q-delete-404',
+              table_id: unpromotedWriteTableId,
+              delete_rows: { where_filters: { id: { column: 'id', operator: 'eq', value: 1 } } },
+            },
+            { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+          )
+        ).rejects.toThrow(NotFoundException);
+      });
     });
 
     // -------------------------------------------------------------------------
@@ -568,6 +751,7 @@ describe('TooljetDbDataController', () => {
     // -------------------------------------------------------------------------
     describe('bulk_update_with_primary_key & bulk_upsert_with_primary_key | resolve in the requested environment', () => {
       let bulkTableId: string;
+      let unpromotedBulkTableId: string;
       let productionEnv: { id: string };
       let devRelation: InternalTableRelation;
       let prodRelation: InternalTableRelation;
@@ -586,6 +770,18 @@ describe('TooljetDbDataController', () => {
         expect([200, 201]).toContain(res.statusCode);
         bulkTableId = res.body?.result?.id;
         expect(bulkTableId).toBeDefined();
+
+        // Left development-only deliberately - never given a production relation.
+        const unpromotedName = `test_bulk_unprom_${Date.now()}`;
+        const unpromotedRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload(unpromotedName));
+        expect([200, 201]).toContain(unpromotedRes.statusCode);
+        unpromotedBulkTableId = unpromotedRes.body?.result?.id;
+        expect(unpromotedBulkTableId).toBeDefined();
 
         const appEnvironments = await ensureAppEnvironments(app, adminOrgId);
         productionEnv = appEnvironments.find((env) => env.name === 'production');
@@ -659,6 +855,145 @@ describe('TooljetDbDataController', () => {
         // view_table resolved the SAME relation id the write target above resolved to, not
         // development's, which is what bulkUpsertRowsWithPrimaryKey's :458/:470 pair depends on.
         expect(viewResult.columns.some((column: any) => column.column_name === 'prod_only_marker')).toBe(true);
+      });
+
+      it('bulk_update_with_primary_key with production named updates production, not development', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const tjds = getTooljetDbDataSource();
+        // Same row (by primary key) seeded on both relations so the assertion below tells "updated
+        // production" apart from "happened to already differ".
+        await tjds.query(`INSERT INTO "${workspaceSchema()}"."${prodRelation.id}" (id, name) VALUES (9002, 'Before')`);
+        await tjds.query(`INSERT INTO "${workspaceSchema()}"."${devRelation.id}" (id, name) VALUES (9002, 'Before')`);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        const result = await dataOperationsService.bulkUpdateWithPrimaryKey(
+          {
+            table_id: bulkTableId,
+            bulk_update_with_primary_key: { primary_key: 'id', rows_update: [{ id: 9002, name: 'ProdBulkUpdate' }] },
+          },
+          { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+        );
+
+        expect(result.status).toBe('ok');
+
+        const prodRows = await tjds.query(
+          `SELECT name FROM "${workspaceSchema()}"."${prodRelation.id}" WHERE id = 9002`
+        );
+        expect(prodRows[0].name).toBe('ProdBulkUpdate');
+
+        const devRows = await tjds.query(`SELECT name FROM "${workspaceSchema()}"."${devRelation.id}" WHERE id = 9002`);
+        expect(devRows[0].name).toBe('Before');
+      });
+
+      it('bulk_update_with_primary_key should fail closed for a table not promoted to production', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        const result = await dataOperationsService.bulkUpdateWithPrimaryKey(
+          {
+            table_id: unpromotedBulkTableId,
+            bulk_update_with_primary_key: { primary_key: 'id', rows_update: [{ id: 1, name: 'x' }] },
+          },
+          { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+        );
+
+        // bulkUpdateRowsWithPrimaryKey's own getRelation NotFoundException throws outside its try
+        // block; bulkUpdateWithPrimaryKey (the run() dispatcher method) catches everything into
+        // this service's { status: 'failed' } convention rather than re-throwing.
+        expect(result.status).toBe('failed');
+        expect(result.errorMessage).toBeInstanceOf(NotFoundException);
+        expect((result.errorMessage as NotFoundException).message).toMatch(/not found in this environment/i);
+      });
+
+      it('bulk_upsert_with_primary_key should fail closed for a table not promoted to production', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const bulkUploadService = app.get(TooljetDbBulkUploadService);
+        const result = await bulkUploadService.bulkUpsertRowsWithPrimaryKey(
+          [{ id: 1, name: 'x' }],
+          unpromotedBulkTableId,
+          ['id'],
+          adminOrgId,
+          productionEnv.id
+        );
+
+        expect(result.status).toBe('failed');
+        expect(result.error).toMatch(/not found in this environment/i);
+      });
+    });
+
+    // A licence lapse degrades the workspace to a single (development) environment - it must
+    // never look like production's data disappeared. resolveEnvironmentId refuses the request
+    // (never silently substitutes development), and nothing about the refusal may touch Postgres.
+    // Placed here, before the sql_execution/join_tables block below - that block's
+    // withRealTransactions rebuilds the suite transaction from scratch on exit, which leaves the
+    // ordinary per-test SAVEPOINT machinery pointed at a savepoint that no longer exists for
+    // anything running after it in this file (the same pre-existing hazard documented on the bulk
+    // block above).
+    describe('degraded workspace | licence lapse refuses production without touching its data', () => {
+      afterEach(() => {
+        restoreLicensePlan(app, 'enterprise');
+      });
+
+      it('should refuse a builder run naming production while production rows remain in Postgres', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const tableName = `test_degraded_${Date.now()}`;
+        const res = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload(tableName));
+        expect([200, 201]).toContain(res.statusCode);
+        const degradedTableId = res.body?.result?.id;
+        expect(degradedTableId).toBeDefined();
+
+        const appEnvironments = await ensureAppEnvironments(app, adminOrgId);
+        const productionEnv = appEnvironments.find((env) => env.name === 'production');
+        expect(productionEnv).toBeDefined();
+
+        const defaultManager = getDefaultDataSource().manager;
+        // createTable only ever mints the development relation - priority 1 and priority 3 are
+        // seeded here, mirroring a workspace that promoted this table while still licensed.
+        const devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: degradedTableId },
+        });
+        const prodRelation = await defaultManager.save(
+          defaultManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: degradedTableId,
+            environmentId: productionEnv.id,
+            branchId: devRelation.branchId,
+          })
+        );
+
+        const tjds = getTooljetDbDataSource();
+        const schema = `workspace_${adminOrgId}`;
+        await tjds.query(
+          `CREATE TABLE "${schema}"."${prodRelation.id}" (id integer primary key, name varchar, email varchar)`
+        );
+        await tjds.query(`INSERT INTO "${schema}"."${prodRelation.id}" (id, name) VALUES (1, 'StillHere')`);
+
+        // Licence lapses - MULTI_ENVIRONMENT is off from here on.
+        restoreLicensePlan(app, 'basic');
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        // create_row has no try/catch of its own (unlike list_rows/sql_execution/the bulk pair),
+        // so resolveEnvironmentId's ForbiddenException propagates unwrapped - the clean signal
+        // for "refused", as opposed to a converted { status: 'failed' } shape.
+        await expect(
+          dataOperationsService.createRow(
+            { id: 'q-degraded', table_id: degradedTableId, create_row: { name: { column: 'name', value: 'x' } } },
+            { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+          )
+        ).rejects.toThrow(ForbiddenException);
+
+        // The refusal is only meaningful if production's data survived the lapse untouched.
+        const survivingRows = await tjds.query(`SELECT * FROM "${schema}"."${prodRelation.id}" WHERE id = 1`);
+        expect(survivingRows.length).toBe(1);
+        expect(survivingRows[0].name).toBe('StillHere');
       });
     });
 
@@ -785,6 +1120,32 @@ describe('TooljetDbDataController', () => {
             const names = (result.data as any).results.map((row: any) => row.name);
             expect(names).toContain('ProdSqlRow');
             expect(names).not.toContain('dev-ProdSqlRow');
+          });
+        } finally {
+          if (organizationId) await cleanupWorkspace(organizationId);
+        }
+      });
+
+      it('sql_execution should 404 when the table has not been promoted to production', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        let organizationId: string | undefined;
+        try {
+          await withRealTransactions(async () => {
+            const workspace = await setUpWorkspace();
+            organizationId = workspace.organizationId;
+            const { cookie, productionEnv } = workspace;
+            const tableName = `test_sql_exec_404_${Date.now()}`;
+            // Left development-only deliberately - never promoted to production.
+            await createTestTable(organizationId, cookie, tableName);
+
+            const dataOperationsService = app.get(TooljetDbDataOperationsService);
+            await expect(
+              dataOperationsService.sqlExecution(
+                { sql_execution: { sqlQuery: `select * from ${tableName}` } },
+                { app: { organization_id: organizationId, environment_id: productionEnv.id } }
+              )
+            ).rejects.toThrow(/not found in this environment/i);
           });
         } finally {
           if (organizationId) await cleanupWorkspace(organizationId);

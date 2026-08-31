@@ -391,5 +391,114 @@ describe('TooljetDbRelationResolverService', () => {
         await expect(service.resolve(organizationId, [], stagingEnvId)).rejects.toThrow(ForbiddenException);
       });
     });
+
+    /**
+     * Task 7 (DEV-89): the licence x request matrix end to end. This is the entire safety
+     * argument for environment isolation now that a Postgres schema boundary no longer exists -
+     * every row pins one cell so a regression in resolveEnvironmentId or resolve()/getRelation's
+     * predicates fails here first, not in a later module that merely calls this one.
+     */
+    describe('.resolve/.getRelation | environment-aware fail-closed matrix', () => {
+      async function getEnvByPriority(priority: number) {
+        return appManager.findOneOrFail(AppEnvironment, { where: { organizationId, priority } });
+      }
+
+      it('unlicensed + names production: 403 from resolveEnvironmentId, never a relation', async () => {
+        getLicenseTerms.mockResolvedValue(false);
+        const productionEnv = await getEnvByPriority(3);
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
+
+        await expect(service.resolve(organizationId, [table.id], productionEnv.id)).rejects.toThrow(ForbiddenException);
+        await expect(service.getRelation(organizationId, table.id, productionEnv.id)).rejects.toThrow(
+          ForbiddenException
+        );
+      });
+
+      it('unlicensed + names nothing: resolves to the development relation', async () => {
+        getLicenseTerms.mockResolvedValue(false);
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
+        const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+
+        const resolved = await service.resolve(organizationId, [table.id]);
+        expect(resolved.get(table.id)).toBe(devRelation.id);
+      });
+
+      it('unlicensed + names development explicitly: development relation, no throw', async () => {
+        getLicenseTerms.mockResolvedValue(false);
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
+        const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+
+        const resolved = await service.resolve(organizationId, [table.id], adminEnvironmentId);
+        expect(resolved.get(table.id)).toBe(devRelation.id);
+        expect(await service.getRelation(organizationId, table.id, adminEnvironmentId)).toMatchObject({
+          id: devRelation.id,
+        });
+      });
+
+      it('licensed + names production, relation exists: resolves to the production relation id', async () => {
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
+        const productionEnv = await getEnvByPriority(3);
+        const prodRelation = await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: table.id,
+            environmentId: productionEnv.id,
+            branchId: adminBranchId,
+          })
+        );
+
+        const resolved = await service.resolve(organizationId, [table.id], productionEnv.id);
+        expect(resolved.get(table.id)).toBe(prodRelation.id);
+        expect((await service.getRelation(organizationId, table.id, productionEnv.id)).id).toBe(prodRelation.id);
+      });
+
+      it('licensed + names production, no relation: omitted from the map, 404 from getRelation', async () => {
+        // 'orders' has never been promoted to production - setupTestTables only mints development.
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
+        const productionEnv = await getEnvByPriority(3);
+
+        const resolved = await service.resolve(organizationId, [table.id], productionEnv.id);
+        expect(resolved.has(table.id)).toBe(false);
+        await expect(service.getRelation(organizationId, table.id, productionEnv.id)).rejects.toThrow(
+          NotFoundException
+        );
+      });
+
+      it("licensed + a foreign workspace's environment id: no match - the org predicate holds regardless of environment id", async () => {
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
+        const foreignUserData = await createUser(app, {
+          email: 'foreign-env-matrix@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const foreignEnvironments = await ensureAppEnvironments(app, foreignUserData.organization.id);
+        const foreignDevEnv = foreignEnvironments.find((env: { priority: number }) => env.priority === 1);
+
+        // organizationId's own table only ever has relations under organizationId's own
+        // environments - passing a foreign org's environment id must not match it via
+        // environment_id alone; it.organization_id is what actually rules this out.
+        const resolved = await service.resolve(organizationId, [table.id], foreignDevEnv.id);
+        expect(resolved.has(table.id)).toBe(false);
+      });
+
+      it('never falls back to the priority-1 relation on a refused request', async () => {
+        getLicenseTerms.mockResolvedValue(false);
+        const stagingEnv = await getEnvByPriority(2);
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
+
+        // The point of this case: a refusal must never quietly resolve to development's relation
+        // instead - resolve() either throws or it does not return at all, it never substitutes.
+        let resolved: Map<string, string> | undefined;
+        try {
+          resolved = await service.resolve(organizationId, [table.id], stagingEnv.id);
+        } catch (err) {
+          expect(err).toBeInstanceOf(ForbiddenException);
+        }
+        expect(resolved).toBeUndefined();
+      });
+    });
   });
 });
