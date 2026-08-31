@@ -103,6 +103,7 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.EXTERNAL_APIS, // authenticated by a separate instance-wide secret, not by a session
   MODULES.ONBOARDING, // signup/invite flow, meaningless for a machine client
   MODULES.METADATA, // instance metadata
+  MODULES.FRONTEND_METRICS, // browser telemetry ingestion, not required by automation clients
   MODULES.ROOT, // health and version
 ];
 
