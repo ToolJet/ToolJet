@@ -13,6 +13,7 @@ const TreeSelectItemPopover = forwardRef(
       getResolvedValue,
       parentValue = null,
       showSelectionFields = true,
+      componentId,
       ...restProps
     },
     ref
@@ -41,8 +42,10 @@ const TreeSelectItemPopover = forwardRef(
       onDeleteItem(item.value, parentValue);
     };
 
-    // No componentId here, so two TreeSelects sharing an item value share a stash entry.
-    const getFxStashKey = (property) => `treeSelect-${parentValue ?? 'root'}-${item.value}-${property}`;
+    // Instance-scoped: TreeSelect and Cascader instances sharing an item value must not share a
+    // stash entry.
+    const getFxStashKey = (property) =>
+      componentId && `${componentId}-treeItems-${parentValue ?? 'root'}-${item.value}-${property}`;
 
     return (
       <Popover

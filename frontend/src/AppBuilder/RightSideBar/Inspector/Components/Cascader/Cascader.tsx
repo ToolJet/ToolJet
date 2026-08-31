@@ -87,6 +87,7 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }: CascaderInsp
       expandedItems={expandedItems}
       onToggleExpand={toggleItemExpanded}
       showSelectionFields={false}
+      componentId={component?.id}
       {...restProps}
     />
   );

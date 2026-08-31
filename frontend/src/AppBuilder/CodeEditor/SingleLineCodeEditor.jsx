@@ -26,7 +26,7 @@ import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
-import useTransientStore from '@/AppBuilder/_stores/transientStore';
+import { stashFxExpression, takeFxExpression } from './fxExpressionStash';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue } from '@/AppBuilder/Widgets/utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -711,7 +711,6 @@ const DynamicEditorBridge = (props) => {
         <FxButton
           active={codeShow}
           onPress={() => {
-            const { stashFxExpression, takeFxExpression } = useTransientStore.getState();
             if (codeShow) {
               // Call sites that never store fxActive keep a presentational fx button — freezing there
               // would write a value nothing reads back.

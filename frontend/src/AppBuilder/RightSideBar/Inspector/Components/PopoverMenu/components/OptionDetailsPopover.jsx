@@ -15,6 +15,7 @@ const OptionDetailsPopover = forwardRef(
       getResolvedValue,
       config,
       componentType,
+      componentId,
       ...restProps
     },
     ref
@@ -22,8 +23,8 @@ const OptionDetailsPopover = forwardRef(
     const iconVisibility = item?.iconVisibility;
     const { dataCy: dataCyPrefix, popoverFields, popoverClassName, popoverTitle } = config;
 
-    // No componentId here, so two Menu-style widgets share a stash entry per option index.
-    const getFxStashKey = (property) => `${componentType}-options-${index}-${property}`;
+    // Instance-scoped: two Menu-style widgets must not share a stash entry per option index.
+    const getFxStashKey = (property) => componentId && `${componentId}-options-${index}-${property}`;
 
     // Common CodeHinter props
     const commonCodeHinterProps = {

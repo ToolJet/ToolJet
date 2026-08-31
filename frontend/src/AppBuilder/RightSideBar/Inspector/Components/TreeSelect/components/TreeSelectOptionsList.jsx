@@ -12,6 +12,7 @@ const TreeSelectOptionsList = ({
   onReorder,
   getResolvedValue,
   showSelectionFields = true,
+  componentId,
 }) => {
   return (
     <div className="treeselect-inspector" data-cy="inspector-treeselect-options-list" style={{ marginBottom: '12px' }}>
@@ -25,6 +26,7 @@ const TreeSelectOptionsList = ({
           onReorder={onReorder}
           getResolvedValue={getResolvedValue}
           showSelectionFields={showSelectionFields}
+          componentId={componentId}
         />
       </div>
       <div>

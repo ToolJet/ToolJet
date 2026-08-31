@@ -72,6 +72,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         getResolvedValue={getResolvedValue}
         getItemStyle={getItemStyle}
         componentType={componentType}
+        componentId={component?.id}
         config={config}
         {...restProps}
       />
