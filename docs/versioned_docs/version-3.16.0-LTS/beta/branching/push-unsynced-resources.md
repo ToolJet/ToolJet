@@ -4,52 +4,48 @@ title: Push Unsynced Resources to Git
 sidebar_label: Push Unsynced Resources
 ---
 
-An unsynced resource is an application, module, or datasource that exists in ToolJet but has never been committed to your Git repository. This usually happens when the resource was created before Git Sync was configured, or before branching was enabled.
+An unsynced resource is an application, module, or datasource that exists in ToolJet but has never been committed to your Git repository. You will usually meet them right after turning on Git Sync or branching in a workspace that already had resources in it: everything built beforehand is still local, and Git has never seen it.
 
-ToolJet flags these resources on the default branch and gives you a dedicated push flow to get them into Git for the first time.
+## How Unsynced Resources Reach Git
 
-## Why Unsynced Resources Need a Separate Flow
+A resource gets into Git the same way any other change does, through a feature branch and a pull request. ToolJet gives unsynced resources their own entry point because the ordinary **Commit** button cannot help here. Commit re-pushes resources Git already tracks, and it is unavailable on the default branch, which is exactly where an unsynced resource sits.
 
-In multi-branch mode the default branch is read-only, so you cannot simply commit an unsynced resource where it sits. Instead, you push it to a feature branch, then merge that branch into the default branch through a pull request.
+So the flow is: push the resource to a feature branch, then merge that branch into the default branch.
 
-The regular **Commit** button behaves differently: it re-pushes resources that Git already knows about. The push flow documented here is the first-time publish for resources Git has never seen.
+## Where ToolJet Flags Them
 
-## Find Unsynced Resources
+Indicators appear only while you are on the default branch. Each entry point pushes a different scope, which is the part worth checking before you click.
 
-Each resource is pushed from the page it belongs to. Indicators appear only while you are on the default branch.
+| Where you are | What you see | What it pushes |
+|:--------------|:-------------|:---------------|
+| **Applications** or **Modules** page | A red refresh icon on the card | That one application or module |
+| App Builder | A **Sync** button in the header | The application you have open |
+| **Data sources** page | A red refresh icon on the row | That one datasource |
+| **Data sources** page | A **Sync** button in the header | Every unsynced datasource at once |
 
-| Resource | Where to look | Indicator |
-|:---------|:--------------|:----------|
-| Application or module | The card on the **Applications** or **Modules** page | A red refresh icon |
-| Datasource | The row on the **Data sources** page | A red refresh icon |
-| Application currently open | The App Builder header | A **Sync** button |
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/push-unsynced-resources/unsynced-app-card.png" alt="Applications page on the default branch with red refresh icons on two unsynced apps, one showing the tooltip App not synced in remote git" />
 
-The **Data sources** page also has a **Sync** button in the header that pushes every unsynced datasource at once. It applies to datasources only, and appears when the workspace has at least one unsynced datasource. An unsynced application is pushed from the **Applications** page or from the App Builder, not from this button.
+The header **Sync** button on the **Data sources** page covers datasources only. An unsynced application is always pushed from its card or from the App Builder, never from there.
 
 Workflows never appear as unsynced, because they are not branch-scoped.
 
 ## Push an Unsynced Resource
 
-1. Click the red refresh icon on the resource, or the **Sync** button on the **Data sources** page.
-2. In the push dialog, confirm the resource to push. On the **Applications** and **Modules** pages, the **Select app** picker lists every other unsynced resource, so you can push a different one without closing the dialog. In the App Builder, the picker is fixed to the application you have open.
-3. Choose the target branch:
-   - Select an existing feature branch, or
-   - Type a new branch name to create one. New branches are always created from the default branch, whichever branch you are currently viewing.
-4. Click to push.
+1. Click the red refresh icon on the resource, or **Sync** in the header.
+2. Confirm which resource to push. On the **Applications** and **Modules** pages the dialog also lists your other unsynced resources, so you can switch to a different one without closing it.
+3. Choose a target branch. Select an existing feature branch, or type a new name to create one. New branches always come from the default branch, whichever branch you are viewing.
+4. Push. ToolJet commits the resource to that branch, pulls it back, and switches you to the branch.
+5. Open a pull request for the branch and merge it into the default branch. Refer to [Pull Requests](/docs/beta/branching/pull-requests).
 
-ToolJet pushes the resource, pulls the branch back, and switches you to it.
-
-5. Open a pull request for that branch and merge it into the default branch. See [Pull Requests](/docs/beta/branching/pull-requests).
+The resource is only on a feature branch until step 5 completes. It reaches the default branch when the pull request is merged.
 
 :::info
-In single-branch mode the target is always the default branch and the branch dropdown is disabled, because there is nowhere else to push.
+In single-branch mode the target is always the default branch and the branch field is disabled, because there is nowhere else to push.
 :::
 
-## Draft Version Requirements
+## Version Requirements Before Pushing
 
-Before pushing an application or module, ToolJet checks that it is in a state Git can represent. Git uses exactly one [draft version](/docs/development-lifecycle/release/version-control) as the tip of the default branch, so a resource with none, or with several, cannot be pushed until you correct it.
-
-If the check fails, a dialog explains which condition was not met and which resources are affected.
+Git uses exactly one [draft version](/docs/development-lifecycle/release/version-control) as the tip of the default branch. ToolJet checks this before pushing an application or module, and blocks the push if the resource, or anything it depends on, does not meet it. A dialog names the condition and the resources affected.
 
 | Condition | How to fix |
 |:----------|:-----------|
@@ -58,13 +54,11 @@ If the check fails, a dialog explains which condition was not met and which reso
 | A module used by this application is not ready | For each module listed, save all draft versions except one, or create one if it has none, then pin the application to that draft. |
 | An application linked to this one is not ready | For each application listed, save all draft versions except one, or create one if it has none. |
 
-Datasources do not have versions, so this check does not apply to them.
+Datasources have no versions, so this check does not apply to them.
 
 ## Naming Conflicts
 
-If the resource you are pushing has the same name as a resource that already exists in Git, the push stops and a conflict dialog opens. Nothing is written to Git until the conflict is resolved.
-
-See [Resolving Conflicts](/docs/beta/branching/resolving-conflicts) for the categories and how to fix each one.
+If the resource shares a name with something already in Git, the push stops and a conflict dialog opens. Nothing is written to Git until you resolve it. Refer to [Resolving Conflicts](/docs/beta/branching/resolving-conflicts).
 
 <br/>
 ---

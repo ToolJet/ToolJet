@@ -50,7 +50,7 @@ Pulling a specific saved version brings it in as a published version, which is h
 
 In single-branch mode a saved version cannot be changed at all. In multi-branch mode you can still pull, but only the draft is updated.
 
-## The Full Cycle
+## Development Lifecycle With Branching
 
 1. Create a feature branch from the default branch and work in its draft.
 2. Commit, open a pull request, and merge it in Git.
