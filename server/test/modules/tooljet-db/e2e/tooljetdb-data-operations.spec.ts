@@ -154,6 +154,31 @@ describe('TooljetDbDataController', () => {
     }
 
     // ---------------------------------------------------------------------------
+    // Helper: seed a production InternalTableRelation from an existing development one - the
+    // metadata half of "promote to production" every environment-resolution test needs.
+    // promoteToProduction() (sql_execution & join_tables describe below) layers a physical table
+    // and seed rows on top of this for tests that also run real SQL against it.
+    // ---------------------------------------------------------------------------
+    async function createProdRelation(
+      productionEnv: { id: string },
+      internalTableId: string
+    ): Promise<{ devRelation: InternalTableRelation; prodRelation: InternalTableRelation }> {
+      const defaultManager = getDefaultDataSource().manager;
+      const devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
+        where: { internalTableId },
+      });
+      const prodRelation = await defaultManager.save(
+        defaultManager.create(InternalTableRelation, {
+          id: uuidv4(),
+          internalTableId,
+          environmentId: productionEnv.id,
+          branchId: devRelation.branchId,
+        })
+      );
+      return { devRelation, prodRelation };
+    }
+
+    // ---------------------------------------------------------------------------
     // Lifecycle
     // ---------------------------------------------------------------------------
     beforeAll(async () => {
@@ -523,20 +548,9 @@ describe('TooljetDbDataController', () => {
         const productionEnv = appEnvironments.find((env) => env.name === 'production');
         expect(productionEnv).toBeDefined();
 
-        const defaultManager = getDefaultDataSource().manager;
         // createTable (in beforeAll) only ever mints the development relation — production has
         // none yet, so it's seeded directly here.
-        const devRelation = await defaultManager.findOne(InternalTableRelation, {
-          where: { internalTableId: tableId },
-        });
-        const prodRelation = await defaultManager.save(
-          defaultManager.create(InternalTableRelation, {
-            id: uuidv4(),
-            internalTableId: tableId,
-            environmentId: productionEnv.id,
-            branchId: devRelation.branchId,
-          })
-        );
+        const { devRelation, prodRelation } = await createProdRelation(productionEnv, tableId);
 
         environmentRowsByRelationId = new Map([
           [devRelation.id, [{ id: 101, name: 'DevOnlyRow' }]],
@@ -571,7 +585,7 @@ describe('TooljetDbDataController', () => {
             { id: 'q1-404', table_id: ordersTableId, list_rows: {} },
             { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
           )
-        ).rejects.toThrow(/not found in this environment/i);
+        ).rejects.toThrow(/have no relation in this environment/i);
       });
     });
 
@@ -619,18 +633,7 @@ describe('TooljetDbDataController', () => {
         productionEnv = appEnvironments.find((env) => env.name === 'production');
         expect(productionEnv).toBeDefined();
 
-        const defaultManager = getDefaultDataSource().manager;
-        devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
-          where: { internalTableId: writeTableId },
-        });
-        prodRelation = await defaultManager.save(
-          defaultManager.create(InternalTableRelation, {
-            id: uuidv4(),
-            internalTableId: writeTableId,
-            environmentId: productionEnv.id,
-            branchId: devRelation.branchId,
-          })
-        );
+        ({ devRelation, prodRelation } = await createProdRelation(productionEnv, writeTableId));
       });
 
       it('create_row should write through the production relation, not development, when production is named', async function () {
@@ -787,19 +790,8 @@ describe('TooljetDbDataController', () => {
         productionEnv = appEnvironments.find((env) => env.name === 'production');
         expect(productionEnv).toBeDefined();
 
-        const defaultManager = getDefaultDataSource().manager;
         // createTable only ever mints the development relation - production has none yet.
-        devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
-          where: { internalTableId: bulkTableId },
-        });
-        prodRelation = await defaultManager.save(
-          defaultManager.create(InternalTableRelation, {
-            id: uuidv4(),
-            internalTableId: bulkTableId,
-            environmentId: productionEnv.id,
-            branchId: devRelation.branchId,
-          })
-        );
+        ({ devRelation, prodRelation } = await createProdRelation(productionEnv, bulkTableId));
 
         // Production's physical table carries an extra column development's table never had -
         // lets the agreement test below prove which relation a shape read actually landed on
@@ -954,20 +946,9 @@ describe('TooljetDbDataController', () => {
         const productionEnv = appEnvironments.find((env) => env.name === 'production');
         expect(productionEnv).toBeDefined();
 
-        const defaultManager = getDefaultDataSource().manager;
         // createTable only ever mints the development relation - priority 1 and priority 3 are
         // seeded here, mirroring a workspace that promoted this table while still licensed.
-        const devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
-          where: { internalTableId: degradedTableId },
-        });
-        const prodRelation = await defaultManager.save(
-          defaultManager.create(InternalTableRelation, {
-            id: uuidv4(),
-            internalTableId: degradedTableId,
-            environmentId: productionEnv.id,
-            branchId: devRelation.branchId,
-          })
-        );
+        const { prodRelation } = await createProdRelation(productionEnv, degradedTableId);
 
         const tjds = getTooljetDbDataSource();
         const schema = `workspace_${adminOrgId}`;
@@ -1072,19 +1053,8 @@ describe('TooljetDbDataController', () => {
       ) {
         const tjds = getTooljetDbDataSource();
         const schema = `workspace_${organizationId}`;
-        const defaultManager = getDefaultDataSource().manager;
 
-        const devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
-          where: { internalTableId },
-        });
-        const prodRelation = await defaultManager.save(
-          defaultManager.create(InternalTableRelation, {
-            id: uuidv4(),
-            internalTableId,
-            environmentId: productionEnv.id,
-            branchId: devRelation.branchId,
-          })
-        );
+        const { devRelation, prodRelation } = await createProdRelation(productionEnv, internalTableId);
 
         await tjds.query(`CREATE TABLE "${schema}"."${prodRelation.id}" (id integer primary key, name varchar)`);
         await tjds.query(`INSERT INTO "${schema}"."${prodRelation.id}" (id, name) VALUES (1, $1)`, [prodRowName]);

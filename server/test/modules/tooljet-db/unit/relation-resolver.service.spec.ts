@@ -362,7 +362,7 @@ describe('TooljetDbRelationResolverService', () => {
 
         await expect(
           resolveAndRewrite(`/${pathTable.id}?${unpromotedTable.id}.title=eq.x`, stagingEnvId)
-        ).rejects.toThrow(/not found in this environment/);
+        ).rejects.toThrow(/have no relation in this environment/);
       });
 
       it('should still return 400 for an embedded reference to another workspace uuid', async () => {
