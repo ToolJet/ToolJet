@@ -60,8 +60,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   path — it calls PostgREST directly via `got.get()` because it needs `Accept: text/csv` and a raw
   text body, which `perform()` cannot return. It resolves the relation id itself via
   `TooljetDbRelationResolverService`; if you touch it, keep that resolve in place.
-- Fail-closed by position: an unresolvable table named in the URL **path** is 404 (the table doesn't
-  exist here); an unresolvable table named in an embedded **querystring** reference (a `select=`
+- Fail-closed, ownership first then position: a uuid owned by this workspace but absent from the
+  requested (environment, branch) is 404 in every position — it exists, just not promoted here. Only
+  once ownership is ruled out does position decide: an unowned uuid in the URL **path** is 404 (the
+  table doesn't exist here); an unowned uuid in an embedded **querystring** reference (a `select=`
   join) is 400 (malformed request). Nothing reaches PostgREST unrewritten in either case.
 - `joinTable` falls back to the `TOOLJET_DB_USER` admin role when SQL mode is disabled (Cloud
   today) — no workspace-scoped connection exists in that configuration. That role can read every

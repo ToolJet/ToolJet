@@ -183,7 +183,9 @@ export class PostgrestProxyService {
   }
 
   /**
-   * The single tenancy gate for both entry points. Positions decide the status code:
+   * The single tenancy gate for both entry points. Ownership decides first: a uuid owned by this
+   * workspace but absent from the requested (environment, branch) is a 404 in every position — it
+   * exists, just not here yet. Only once ownership is ruled out do positions decide the status code:
    * an unowned uuid in the PATH is a table that does not exist here (404); an unresolvable uuid in
    * the QUERYSTRING is a malformed request that must never reach PostgREST (400). Nothing is ever
    * forwarded unrewritten.
@@ -202,11 +204,24 @@ export class PostgrestProxyService {
 
     const resolved = await this.relationResolverService.resolve(organizationId, [path, ...embedded], environmentId);
 
-    if (!resolved.has(path)) throw new NotFoundException('Table not found');
+    const missing = [path, ...embedded].filter((id) => !resolved.has(id));
+    if (missing.length) {
+      // Omission conflates two answers: not owned by this workspace (tenancy), or owned but not
+      // promoted into this (environment, branch). Only the second is a 404 in every position.
+      const owned = await this.manager.find(InternalTable, {
+        where: { organizationId, id: In(missing) },
+        select: ['id'],
+      });
+      const ownedIds = new Set(owned.map((table) => table.id));
 
-    const unresolvable = embedded.filter((id) => !resolved.has(id));
-    if (unresolvable.length) {
-      throw new BadRequestException(`Unknown table reference: ${unresolvable.join(', ')}`);
+      const unpromoted = missing.filter((id) => ownedIds.has(id));
+      if (unpromoted.length) {
+        throw new NotFoundException(`Table(s) not found in this environment: ${unpromoted.join(', ')}`);
+      }
+
+      // Not owned: keep the positional rule the fail-closed spec already pins.
+      if (!resolved.has(path)) throw new NotFoundException('Table not found');
+      throw new BadRequestException(`Unknown table reference: ${missing.join(', ')}`);
     }
 
     const internalTables = await this.manager.find(InternalTable, {

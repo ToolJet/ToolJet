@@ -1,10 +1,11 @@
 /**
  * @group database
  */
-import { ForbiddenException, INestApplication, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, INestApplication, NotFoundException } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
+import { PostgrestProxyService } from '@modules/tooljet-db/services/postgrest-proxy.service';
 import { TooljetDbMigrationRecorderService } from '@modules/tooljet-db/services/tooljet-db-migration-recorder.service';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import {
@@ -43,6 +44,7 @@ describe('TooljetDbRelationResolverService', () => {
     let tjDbManager: EntityManager;
     let tableOperationsService: TooljetDbTableOperationsService;
     let service: TooljetDbRelationResolverService;
+    let postgrestProxyService: PostgrestProxyService;
     let organizationId: string;
     let adminEnvironmentId: string;
     let adminBranchId: string;
@@ -78,6 +80,7 @@ describe('TooljetDbRelationResolverService', () => {
         providers: [
           TooljetDbTableOperationsService,
           TooljetDbRelationResolverService,
+          PostgrestProxyService,
           TooljetDbMigrationRecorderService,
           AppEnvironmentUtilService,
           LicenseService,
@@ -104,6 +107,7 @@ describe('TooljetDbRelationResolverService', () => {
 
       tableOperationsService = moduleFixture.get<TooljetDbTableOperationsService>(TooljetDbTableOperationsService);
       service = app.get(TooljetDbRelationResolverService);
+      postgrestProxyService = app.get(PostgrestProxyService);
     });
 
     beforeEach(async () => {
@@ -319,6 +323,63 @@ describe('TooljetDbRelationResolverService', () => {
         await appManager.update(InternalTable, { id: table.id }, { deletedAt: new Date() });
 
         await expect(service.getRelation(organizationId, table.id)).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    /**
+     * PostgrestProxyService.resolveAndRewrite() disambiguates two reasons an id can be missing
+     * from resolve()'s map: not owned by this workspace (tenancy - H2's fail-closed positional
+     * rule), or owned but not promoted into the requested (environment, branch) - always 404,
+     * regardless of position.
+     */
+    describe('PostgrestProxyService.resolveAndRewrite | tenancy vs promotion disambiguation', () => {
+      async function createOwnTableWithRelation(tableName: string, environmentId: string) {
+        const table = await appManager.save(
+          appManager.create(InternalTable, { organizationId, tableName, co_relation_id: uuidv4() })
+        );
+        const relation = await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: table.id,
+            environmentId,
+            branchId: adminBranchId,
+          })
+        );
+        return { table, relation };
+      }
+
+      async function resolveAndRewrite(url: string, environmentId: string) {
+        return (postgrestProxyService as any).resolveAndRewrite(url, organizationId, environmentId);
+      }
+
+      it('should return 404 for an embedded reference to a table this workspace owns but has not promoted into the named environment', async () => {
+        const stagingEnvId = (await appManager.findOne(AppEnvironment, { where: { organizationId, priority: 2 } })).id;
+        // Owned by this workspace and promoted into staging - the path must resolve cleanly so
+        // the failure under test is isolated to the embedded reference.
+        const { table: pathTable } = await createOwnTableWithRelation('promoted_to_staging', stagingEnvId);
+        // Owned by this workspace but only ever promoted to development - absent from staging.
+        const { table: unpromotedTable } = await createOwnTableWithRelation('dev_only', adminEnvironmentId);
+
+        await expect(
+          resolveAndRewrite(`/${pathTable.id}?${unpromotedTable.id}.title=eq.x`, stagingEnvId)
+        ).rejects.toThrow(/not found in this environment/);
+      });
+
+      it('should still return 400 for an embedded reference to another workspace uuid', async () => {
+        const { table: pathTable } = await createOwnTableWithRelation('owns_this_one', adminEnvironmentId);
+        const { table: foreignTable } = await createForeignTableWithRelation('foreign_embedded');
+
+        await expect(
+          resolveAndRewrite(`/${pathTable.id}?${foreignTable.id}.title=eq.x`, adminEnvironmentId)
+        ).rejects.toThrow(BadRequestException);
+      });
+
+      it('should still return 404 for an unowned uuid in the path', async () => {
+        const { table: foreignTable } = await createForeignTableWithRelation('foreign_path');
+
+        await expect(resolveAndRewrite(`/${foreignTable.id}?select=name`, adminEnvironmentId)).rejects.toThrow(
+          NotFoundException
+        );
       });
     });
 
