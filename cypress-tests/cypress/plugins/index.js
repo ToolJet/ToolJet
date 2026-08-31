@@ -42,5 +42,7 @@ module.exports = (on, config) => {
     },
   });
 
+  require("@cypress/grep/plugin").plugin(config);
+
   return config;
 };
