@@ -26,8 +26,6 @@ import {
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
-const INDICATOR_CONTAINER_WIDTH = 60;
-const ICON_WIDTH = 18; // includes flex gap 2px
 
 export const CustomDropdownIndicator = (props) => {
   const {
@@ -369,11 +367,14 @@ export const DropdownV2 = ({
     container: (base) => ({
       ...base,
       width: '100%',
-      minWidth: '72px',
+      minWidth: 0,
+      maxWidth: '100%',
     }),
     control: (provided, state) => {
       return {
         ...provided,
+        minWidth: 0,
+        maxWidth: '100%',
         minHeight: _height,
         height: _height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
@@ -416,6 +417,8 @@ export const DropdownV2 = ({
       justifyContent,
       display: 'flex',
       gap: '0.13rem',
+      minWidth: 0,
+      overflow: 'hidden',
     }),
 
     singleValue: (provided, _state) => ({
@@ -426,9 +429,8 @@ export const DropdownV2 = ({
           : isDropdownDisabled || isDropdownLoading
           ? 'var(--text-disabled)'
           : 'var(--text-primary)',
-      maxWidth:
-        ref?.current?.offsetWidth -
-        (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
+      maxWidth: '100%',
+      minWidth: 0,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
@@ -444,6 +446,11 @@ export const DropdownV2 = ({
     placeholder: (provided, _state) => ({
       ...provided,
       color: placeholderTextColor || 'var(--cc-placeholder-text)',
+      maxWidth: '100%',
+      minWidth: 0,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
@@ -508,6 +515,7 @@ export const DropdownV2 = ({
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
+  const inputWidthStyles = getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment);
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
   return (
     <>
@@ -528,6 +536,8 @@ export const DropdownV2 = ({
           position: 'relative',
           whiteSpace: 'nowrap',
           width: '100%',
+          minWidth: 0,
+          maxWidth: '100%',
         }}
         onMouseDown={(event) => {
           onComponentClick(id);
@@ -558,7 +568,9 @@ export const DropdownV2 = ({
           onClick={handleClickInsideSelect}
           onTouchEnd={handleClickInsideSelect}
           style={{
-            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+            ...inputWidthStyles,
+            minWidth: inputWidthStyles.minWidth ?? 0,
+            maxWidth: '100%',
           }}
         >
           <Select
