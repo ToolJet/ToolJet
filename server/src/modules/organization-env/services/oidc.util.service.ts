@@ -10,11 +10,18 @@ export class OidcEnvUtilService implements IOidcEnvUtilService {
     return false;
   }
 
-  async getOidcConfig(_organizationId: string, _configId: string, _envConfigIndex: number): Promise<OidcEnvConfig | null> {
+  async getOidcConfig(
+    _organizationId: string,
+    _configId: string,
+    _envConfigIndex: number
+  ): Promise<OidcEnvConfig | null> {
     return null;
   }
 
-  async getOidcTemplateConfig(_organizationId: string, _envConfigIndex: number): Promise<Partial<OidcEnvConfig> | null> {
+  async getOidcTemplateConfig(
+    _organizationId: string,
+    _envConfigIndex: number
+  ): Promise<Partial<OidcEnvConfig> | null> {
     return null;
   }
 

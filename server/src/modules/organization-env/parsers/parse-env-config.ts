@@ -1,6 +1,18 @@
-import { SAML_ENV_KEYS, LDAP_ENV_KEYS, OIDC_ENV_KEYS, REQUIRED_KEYS, REQUIRED_OIDC_KEYS } from '@modules/organization-env/constants';
+import {
+  SAML_ENV_KEYS,
+  LDAP_ENV_KEYS,
+  OIDC_ENV_KEYS,
+  REQUIRED_KEYS,
+  REQUIRED_OIDC_KEYS,
+} from '@modules/organization-env/constants';
 import { SamlEnvConfig, LdapEnvConfig, OidcEnvConfig } from '@modules/organization-env/types';
-import { EnvParseResult, EnvIssue, issue, EnvKeyName, toEnvKeyName } from '@modules/organization-env/types/env-parse-result';
+import {
+  EnvParseResult,
+  EnvIssue,
+  issue,
+  EnvKeyName,
+  toEnvKeyName,
+} from '@modules/organization-env/types/env-parse-result';
 
 export const VALID_OIDC_GRANT_TYPES = ['authorization_code', 'pkce'] as const;
 
@@ -17,7 +29,9 @@ export function parseGroupMappingValue(raw: string | undefined): Record<string, 
   try {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
-  } catch {}
+  } catch {
+    // fall through to undefined below
+  }
   return undefined;
 }
 
@@ -141,7 +155,9 @@ export function parseOidcEnvConfig(values: Record<string, string | undefined>): 
   if (!isValidGrantType(grantType)) {
     return {
       ok: false,
-      issues: [issue(k.GRANT_TYPE, 'invalid', `must be one of ${VALID_OIDC_GRANT_TYPES.join(' | ')}, got "${grantType}"`)],
+      issues: [
+        issue(k.GRANT_TYPE, 'invalid', `must be one of ${VALID_OIDC_GRANT_TYPES.join(' | ')}, got "${grantType}"`),
+      ],
     };
   }
 

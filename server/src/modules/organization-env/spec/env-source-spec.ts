@@ -3,7 +3,12 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { EnvKeyName, EnvParseResult } from '@modules/organization-env/types/env-parse-result';
 import { SAML_ENV_KEYS, LDAP_ENV_KEYS, REQUIRED_KEYS } from '@modules/organization-env/constants';
 import { SamlEnvConfig, LdapEnvConfig } from '@modules/organization-env/types';
-import { parseSamlEnvConfig, parseLdapEnvConfig, deriveSamlTemplate, deriveLdapTemplate } from '@modules/organization-env/parsers/parse-env-config';
+import {
+  parseSamlEnvConfig,
+  parseLdapEnvConfig,
+  deriveSamlTemplate,
+  deriveLdapTemplate,
+} from '@modules/organization-env/parsers/parse-env-config';
 
 export interface EnvSourceSpec<T> {
   readonly sso: SSOType;

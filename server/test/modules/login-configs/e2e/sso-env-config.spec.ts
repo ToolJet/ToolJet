@@ -3,7 +3,14 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { IsNull } from 'typeorm';
 import { Issuer } from 'openid-client';
-import { initTestApp, closeTestApp, ensureInstanceSSOConfigs, createUser, getEntityRepository, buildTestSession } from 'test-helper';
+import {
+  initTestApp,
+  closeTestApp,
+  ensureInstanceSSOConfigs,
+  createUser,
+  getEntityRepository,
+  buildTestSession,
+} from 'test-helper';
 import { OrganizationEnvUtilService } from '@ee/organization-env/util.service';
 import { LoginConfigsService } from '@ee/login-configs/service';
 import { SSOConfigs, SSOType } from 'src/entities/sso_config.entity';
@@ -69,7 +76,12 @@ describe('LoginConfigsController', () => {
         [TEST_ORG_SLUG]: { SAML_IDP_METADATA: samlIdpMetadata, SAML_NAME: 'Test SAML' },
       });
       baselineWorkspaceLdapConfig = JSON.stringify({
-        [TEST_ORG_SLUG]: { LDAP_HOST_NAME: 'localhost', LDAP_PORT: '389', LDAP_BASE_DN: 'dc=example,dc=com', LDAP_NAME: 'Test LDAP' },
+        [TEST_ORG_SLUG]: {
+          LDAP_HOST_NAME: 'localhost',
+          LDAP_PORT: '389',
+          LDAP_BASE_DN: 'dc=example,dc=com',
+          LDAP_NAME: 'Test LDAP',
+        },
       });
       process.env.WORKSPACE_OIDC_CONFIG = baselineWorkspaceOidcConfig;
       process.env.WORKSPACE_SAML_CONFIG = baselineWorkspaceSamlConfig;
@@ -103,7 +115,11 @@ describe('LoginConfigsController', () => {
       beforeEach(async () => {
         await ssoConfigsRepository.update(
           { sso: SSOType.OPENID, organizationId: IsNull() },
-          { useEnvConfig: false, enabled: false, configs: { clientId: '', clientSecret: '', name: '', wellKnownUrl: '' } }
+          {
+            useEnvConfig: false,
+            enabled: false,
+            configs: { clientId: '', clientSecret: '', name: '', wellKnownUrl: '' },
+          }
         );
       });
 
@@ -140,7 +156,10 @@ describe('LoginConfigsController', () => {
 
         await ssoConfigsRepository.update(
           { sso: SSOType.OPENID, organizationId: IsNull() },
-          { useEnvConfig: false, configs: { ...(enabledRow?.configs as Record<string, unknown>), isAutoEnabled: false } }
+          {
+            useEnvConfig: false,
+            configs: { ...(enabledRow?.configs as Record<string, unknown>), isAutoEnabled: false },
+          }
         );
 
         await runBootSequence();

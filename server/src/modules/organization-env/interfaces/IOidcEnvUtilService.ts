@@ -24,9 +24,13 @@ export interface IOidcEnvUtilService {
   getInstanceProviderState(): EnvProviderState;
   // One instance-level provider can serve multiple workspaces, each with its own claim/mapping
   // via OIDC_{PROVIDERNAME}_GROUP_SYNC_{WORKSPACE_NAME}_CLAIM_NAME/_MAPPING.
-  getInstanceGroupSyncMappings(): Promise<Array<{ organizationId: string; claimName?: string; groupMapping?: Record<string, string> }>>;
+  getInstanceGroupSyncMappings(): Promise<
+    Array<{ organizationId: string; claimName?: string; groupMapping?: Record<string, string> }>
+  >;
   // Admin-display-only: literal env var key names instead of resolved values (see impl).
-  getInstanceGroupSyncTemplateConfig(): Promise<Array<{ organizationId: string; claimName?: string; groupMapping?: string }>>;
+  getInstanceGroupSyncTemplateConfig(): Promise<
+    Array<{ organizationId: string; claimName?: string; groupMapping?: string }>
+  >;
 
   applyLicenseToResolvedOrgs(): Promise<void>;
 }
