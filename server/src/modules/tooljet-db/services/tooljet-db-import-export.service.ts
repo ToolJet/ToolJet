@@ -42,6 +42,7 @@ export class TooljetDbImportExportService {
       internalTable.co_relation_id = coRelationId;
     }
 
+    // Import/export has no environment on the wire - always resolves in development.
     const {
       columns,
       foreign_keys,
@@ -119,6 +120,7 @@ export class TooljetDbImportExportService {
           };
         });
 
+        // Import/export has no environment on the wire - always resolves in development.
         await this.tableOperationsService.perform(
           importResourcesDto.organization_id,
           'create_foreign_key',
@@ -186,6 +188,7 @@ export class TooljetDbImportExportService {
 
     const { columns } = tjDbDto.schema;
 
+    // Import/export has no environment on the wire - always resolves in development.
     const createdTable = await this.tableOperationsService.perform(
       organizationId,
       'create_table',
@@ -209,6 +212,7 @@ export class TooljetDbImportExportService {
   async isTableColumnsSubset(internalTable: InternalTable, tjDbDto: ImportTooljetDatabaseDto): Promise<boolean> {
     const dtoColumns = new Set<string>(tjDbDto.schema.columns.map((c) => c.column_name));
 
+    // Import/export has no environment on the wire - always resolves in development.
     const internalTableColumnSchema = await this.tableOperationsService.perform(
       internalTable.organizationId,
       'view_table',

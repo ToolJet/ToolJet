@@ -75,7 +75,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     headers: Record<string, string>,
-    body: Record<string, any> = {},
+    body: Record<string, any>,
     environmentId: string | undefined
   ): Promise<QueryResult> {
     const result: any = await this.postgrestProxyService.perform(url, method, headers, body, environmentId);

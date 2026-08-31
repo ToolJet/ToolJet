@@ -121,17 +121,18 @@ export class TooljetDbTableOperationsService {
   ) {}
 
   /**
-   * environmentId is required, not optional: a caller with no environment to name (a DDL action,
-   * always development) must write `undefined` deliberately, so a new call site can't silently
-   * read development by omission. join_tables and view_table are the two actions that resolve a
-   * table reference internally - environmentId rides in on params for them to read, rather than as
-   * an extra positional argument the loosely-typed actionHandler.call() dispatch below would have
-   * to account for.
+   * environmentId is required, not optional: a caller with no environment to name must write
+   * `undefined` deliberately, so a new call site can't silently read development by omission. Most
+   * no-environment callers are DDL actions (schema edits are development-only); view_tables and
+   * view_table are the exception - they're editor reads whose environment selector lands in H8, not
+   * DDL. join_tables and view_table are the two actions that resolve a table reference internally -
+   * environmentId rides in on params for them to read, rather than as an extra positional argument
+   * the loosely-typed actionHandler.call() dispatch below would have to account for.
    */
   async perform(
     organizationId: string,
     action: string,
-    params = {},
+    params,
     environmentId: string | undefined,
     connectionManagers: Record<ConnectionManagerKey, EntityManager> = {
       appManager: this.manager,
@@ -1972,7 +1973,8 @@ export class TooljetDbTableOperationsService {
         // Tenancy validation above already proved this table belongs to the caller; a missing
         // relation here means it has no relation in this (environment, branch) - fail closed rather
         // than let a logical id leak through as a physical name.
-        if (!relationId) throw new BadRequestException(`Table "${tableName}" has no relation in this environment`);
+        // DEV-89: an (env, branch) with no relation is a 404, not a 400 - same rule as the join path.
+        if (!relationId) throw new NotFoundException(`Table "${tableName}" has no relation in this environment`);
         referenced_tables_info[tableName] = relationId;
       }
     }
@@ -2581,6 +2583,7 @@ export class TooljetDbTableOperationsService {
     let isFKfromCompositePK = false;
     for (const foreignKeyDetails of foreignKeys) {
       const { referenced_table_name = '', referenced_column_names = [] } = foreignKeyDetails;
+      // DDL path (foreign key create/edit validation) - always development, no environment key needed here.
       const referencedTableMetaData = await this.viewTable(
         organizationId,
         { table_name: referenced_table_name },

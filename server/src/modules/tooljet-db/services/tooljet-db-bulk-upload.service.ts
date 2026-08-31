@@ -59,6 +59,7 @@ export class TooljetDbBulkUploadService {
       columns: internalTableDatabaseColumn,
       foreign_keys: foreignKeys,
     }: { columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] } =
+      // CSV upload has no environment on the wire - always resolves in development.
       await this.tableOperationsService.perform(
         organizationId,
         'view_table',
@@ -225,6 +226,7 @@ export class TooljetDbBulkUploadService {
       const relationTaggedTables = await Promise.all(
         internalTables.map(async (table) => {
           try {
+            // CSV upload has no environment on the wire - always resolves in development.
             const { relation } = await this.tableOperationsService.resolveTableById(
               organizationId,
               table.id,

@@ -103,7 +103,7 @@ export class PostgrestProxyService {
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     headers: Record<string, any>,
-    body: Record<string, any> = {},
+    body: Record<string, any>,
     environmentId: string | undefined
   ) {
     // Outside the try: NotFoundException/BadRequestException from resolveAndRewrite must
@@ -222,7 +222,9 @@ export class PostgrestProxyService {
 
       const unpromoted = missing.filter((id) => ownedIds.has(id));
       if (unpromoted.length) {
-        throw new NotFoundException(`Table(s) not found in this environment: ${unpromoted.join(', ')}`);
+        // Wording matches the join path's "have no relation" phrasing (DEV-89) - ids, not names,
+        // since this path resolves logical ids and has no table-name lookup at hand here.
+        throw new NotFoundException(`Table(s) "${unpromoted.join('", "')}" have no relation in this environment`);
       }
 
       // Not owned: keep the positional rule the fail-closed spec already pins.
