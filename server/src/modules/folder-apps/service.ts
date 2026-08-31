@@ -105,10 +105,7 @@ export class FolderAppsService implements IFolderAppsService {
     const manager = getConnectionInstance().manager;
     const type = query.type;
     const searchKey = query.searchKey;
-    // Workflows are not branched by the user, but their folder_apps rows now live on the org's
-    // default branch (not NULL). Null out any client-supplied branchId for them so the default
-    // branch is resolved below and the listing matches those rows.
-    let branchId = type === APP_TYPES.WORKFLOW ? undefined : query.branchId;
+    let branchId = query.branchId;
 
     // AppsSubscriber.afterLoad would otherwise fire one AppVersion query per loaded App
     // entity (N+1), including App entities loaded

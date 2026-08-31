@@ -32,9 +32,7 @@ export const AppMenu = function AppMenu({
 
   const { orgGitConfig, currentBranch, isInitialized } = useWorkspaceBranchesStore();
   const isBranchingEnabled =
-    isInitialized && orgGitConfig && (appType === 'front-end' || appType === 'module')
-      ? orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled
-      : false;
+    isInitialized && orgGitConfig && (orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled);
   const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
   // Unsynced apps are always mutable, even on master
   const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch) && !isUnsynced;
@@ -53,9 +51,9 @@ export const AppMenu = function AppMenu({
       ? currentSession?.workflow_group_permissions?.is_all_editable ||
         currentSession?.workflow_group_permissions?.editable_workflows_id?.includes(appId)
       : appType === 'module'
-        ? canEditModule(currentSession, appId, appUserId)
-        : currentSession?.app_group_permissions?.is_all_editable ||
-          currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
+      ? canEditModule(currentSession, appId, appUserId)
+      : currentSession?.app_group_permissions?.is_all_editable ||
+        currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
 
   const canModifyApp = canEditApp || isAppOwner;
 
@@ -166,8 +164,8 @@ export const AppMenu = function AppMenu({
                       appType === 'workflow'
                         ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
                         : appType === 'front-end'
-                          ? t('homePage.appCard.deleteApp', 'Delete app')
-                          : 'Delete module'
+                        ? t('homePage.appCard.deleteApp', 'Delete app')
+                        : 'Delete module'
                     }
                     customClass="field__danger"
                     onClick={deleteApp}
