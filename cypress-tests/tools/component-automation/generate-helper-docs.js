@@ -28,8 +28,16 @@ function rewriteHeader(filePath) {
   const lines = src.split("\n");
   const s = lines.findIndex(l => l.includes("AUTO-GENERATED from @tj"));
   const e = lines.findIndex(l => l.startsWith(HEADER_END));
-  const body = (s !== -1 && e !== -1) ? [...lines.slice(0, s - 1), ...lines.slice(e + 1)].join("\n") : src;
-  fs.writeFileSync(filePath, header + "\n" + body.replace(/^\n+/, ""));
+  let bodyLines;
+  if (s !== -1 && e !== -1 && e >= s) {
+    let after = e + 1;
+    if (lines[after] === "") after += 1;               // absorb one blank line after old header
+    bodyLines = [...lines.slice(0, s), ...lines.slice(after)];
+  } else {
+    bodyLines = lines;
+  }
+  const body = bodyLines.join("\n").replace(/^\n+/, "");
+  fs.writeFileSync(filePath, header + "\n" + body);
   return recs;
 }
 
