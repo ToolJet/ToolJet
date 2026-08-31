@@ -194,13 +194,15 @@
     "@storybook/testing-library": "^0.2.0",
     "@svgr/webpack": "^6.5.1",
     "@tailwindcss/container-queries": "^0.1.1",
+    "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
+    "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.4.3",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "autoprefixer": "^10.4.17",
     "babel-loader": "^9.1.2",
+    "babel-jest": "^29.7.0",
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.6",
     "babel-plugin-istanbul": "^6.1.1",
@@ -220,9 +222,11 @@
     "globals": "^15.15.0",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.0",
-    "jest": "^29.4.2",
-    "jest-environment-jsdom": "^30.4.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-fixed-jsdom": "^0.0.11",
     "mini-css-extract-plugin": "^2.9.4",
+    "msw": "^2.15.0",
     "path": "^0.12.7",
     "postcss": "^8.4.35",
     "postcss-loader": "^8.1.0",
@@ -305,33 +309,23 @@
     "format": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:unit": "jest",
+    "test:unit:changed": "jest --onlyChanged",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage",
+    "test:layout": "node scripts/validate-test-layout.js",
+    "test:unit:only": "jest --testPathIgnorePatterns '/node_modules/' '/__tests__/integration/'",
+    "test:integration": "jest --testPathPattern \"__tests__/integration\"",
+    "test:ci:changed": "jest --ci --coverage --onlyChanged",
+    "test:app-builder": "node scripts/run-app-builder-tests.js all",
+    "test:app-builder:watch": "node scripts/run-app-builder-tests.js watch",
+    "test:app-builder:contracts": "node scripts/run-app-builder-tests.js contracts --runInBand",
+    "test:app-builder:parity": "node scripts/run-app-builder-tests.js parity --runInBand",
+    "test:app-builder:coverage": "node scripts/run-app-builder-tests.js all --coverage --runInBand",
+    "test:app-builder:cypress": "npm --prefix ../cypress-tests run cy:run -- --config-file cypress-appbuilder.config.js",
+    "validate:app-builder-coverage-manifest": "node scripts/validate-app-builder-coverage-manifest.js",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npx storybook build"
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.js?$": "babel-jest",
-      "^.+\\.jsx?$": "babel-jest",
-      "^.+\\.tsx?$": "babel-jest",
-      "^.+\\.svg$": "<rootDir>/__mocks__/svg.js"
-    },
-    "transformIgnorePatterns": [
-      "node_modules/(?!(react|mpx-error-boundary)/)"
-    ],
-    "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/src/$1"
-    },
-    "testEnvironment": "jest-environment-jsdom",
-    "moduleDirectories": [
-      "node_modules",
-      "src"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "json",
-      "jsx"
-    ]
   }
 }

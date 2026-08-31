@@ -5,7 +5,6 @@ import JSONTreeViewerV2 from './JSONTreeViewerV2';
 import useIconList from './useIconList';
 import InspectorHeader from './InspectorHeader';
 import { formatInspectorDataMisc, formatInspectorQueryData, noDataFoundChildDataFormat } from './utils';
-import ErrorBoundary from '@/_ui/ErrorBoundary';
 
 import './styles.scss';
 
@@ -162,14 +161,13 @@ const LeftSidebarInspector = ({ darkMode, onClose, moduleId, appType }) => {
       />
 
       <div className="card-body p-1 pb-5">
-        <ErrorBoundary>
-          <JSONTreeViewerV2
-            data={memoizedJSONData}
-            iconsList={iconsList}
-            darkMode={darkMode}
-            searchablePaths={searchablePaths.current}
-          />
-        </ErrorBoundary>
+        {/* Crashes here are caught by the LeftSidebar panel FallbackBoundary. */}
+        <JSONTreeViewerV2
+          data={memoizedJSONData}
+          iconsList={iconsList}
+          darkMode={darkMode}
+          searchablePaths={searchablePaths.current}
+        />
       </div>
     </div>
   );
