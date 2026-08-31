@@ -73,7 +73,7 @@ export default class ComponentInit extends Command {
 
     const client = new ApiClient(url, apiToken);
 
-    let library: { id: string; name: string };
+    let library: { id: string; name: string; correlationId: string };
     try {
       library = await client.createLibrary(displayName);
     } catch (err) {
@@ -83,7 +83,12 @@ export default class ComponentInit extends Command {
     }
 
     try {
-      writeLibraryConfig(libraryDirectoryName, { workspaceId, libraryId: library.id, libraryName: library.name });
+      writeLibraryConfig(libraryDirectoryName, {
+        workspaceId,
+        libraryId: library.id,
+        libraryName: library.name,
+        correlationId: library.correlationId,
+      });
     } catch (err) {
       this.log(
         formatError(

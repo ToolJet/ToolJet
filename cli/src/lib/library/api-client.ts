@@ -51,7 +51,7 @@ export class ApiClient {
   }
 
   // POST /api/custom-component-libraries
-  async createLibrary(name: string): Promise<{ id: string; name: string }> {
+  async createLibrary(name: string): Promise<{ id: string; name: string; correlationId: string }> {
     return this.request('POST', '/custom-component-libraries', { name });
   }
 
