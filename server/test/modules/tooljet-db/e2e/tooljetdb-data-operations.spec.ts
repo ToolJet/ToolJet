@@ -25,14 +25,23 @@ import {
   getDefaultDataSource,
   closeTestApp,
   ensureAppEnvironments,
+  createAppWithDependencies,
 } from 'test-helper';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+// EE-only imports: resolve the real, edition-aware DI tokens TooljetDbModule/DataQueriesModule
+// register under edition 'ee' (SubModule.getProviders dynamically imports these exact classes) —
+// mirrors the existing pattern in test/modules/tooljet-db/e2e/tooljetdb-migration-replay.spec.ts
+// and test/modules/data-queries/e2e/data-queries.spec.ts. Importing the CE base classes would be
+// a different DI token and app.get() would not find them.
+import { TooljetDbDataOperationsService } from '@ee/tooljet-db/services/tooljet-db-data-operations.service';
+import { DataQueriesUtilService as EEDataQueriesUtilService } from '@ee/data-queries/util.service';
 
 describe('TooljetDbDataController', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
     let adminCookie: string[];
     let adminOrgId: string;
+    let adminUser: any;
     let tooljetDbAvailable: boolean;
     let tableId: string;
     let ordersTableId: string;
@@ -150,6 +159,7 @@ describe('TooljetDbDataController', () => {
         groups: ['admin', 'end-user'],
       });
       adminOrgId = user.defaultOrganizationId;
+      adminUser = { ...user, organizationId: user.defaultOrganizationId };
 
       if (tooljetDbAvailable) {
         const schemaReady = await ensureWorkspaceSchema(adminOrgId);
@@ -453,6 +463,36 @@ describe('TooljetDbDataController', () => {
 
         expect(res.statusCode).toBe(400);
         expect(pollyRequests()).toHaveLength(0);
+      });
+    });
+
+    describe('plugin context | environment_id', () => {
+      afterEach(() => {
+        jest.restoreAllMocks();
+      });
+
+      it('carries the resolved environment into context.app.environment_id for a tooljetdb query', async function () {
+        const { application, dataQuery, appEnvironments } = await createAppWithDependencies(app, adminUser, {
+          dsKind: 'tooljetdb',
+        });
+        // 'staging' rather than the default 'production': asserting against the org's default
+        // environment can't tell "carried the requested environment" apart from "silently fell
+        // back to whatever getOptions resolves with no name given" — staging is neither the
+        // default nor priority 1, so it discriminates both failure modes.
+        const stagingEnv = appEnvironments.find((env) => env.name === 'staging');
+        expect(stagingEnv).toBeDefined();
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        const runSpy = jest.spyOn(dataOperationsService, 'run').mockResolvedValue({ status: 'ok', data: [] } as any);
+
+        const eeUtilService = app.get(EEDataQueriesUtilService);
+        const response = { cookie: jest.fn(), setHeader: jest.fn() } as any;
+
+        await eeUtilService.runQuery(adminUser, dataQuery, {}, response, stagingEnv.id, 'edit', application as any);
+
+        expect(runSpy).toHaveBeenCalled();
+        const context = runSpy.mock.calls[0][4];
+        expect(context.app.environment_id).toBe(stagingEnv.id);
       });
     });
   });

@@ -198,7 +198,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             app: {
               id: appToUse?.id,
               isPublic: effectiveIsPublic,
-              ...(dataSource.kind === 'tooljetdb' && { organization_id: appToUse.organizationId }),
+              ...(dataSource.kind === 'tooljetdb' && {
+                organization_id: appToUse.organizationId,
+                environment_id: dataSourceOptions.environmentId,
+              }),
             },
           }
         );
@@ -296,6 +299,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             abortCtrl.start();
 
             const promises = [];
+            // This branch only runs after catching an OAuth token error, which a tooljetdb data
+            // source's own error paths never throw — so the spread below is a no-op here today.
+            // Mirrored anyway, rather than argued away in a comment: it costs nothing and survives
+            // a future plugin gaining an OAuth-shaped retry path.
             const queryPromise = service.run(
               sourceOptions,
               parsedQueryOptions,
@@ -303,7 +310,14 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               dataSourceOptions.updatedAt,
               {
                 user: { id: user?.id },
-                app: { id: appToUse?.id, isPublic: effectiveIsPublic },
+                app: {
+                  id: appToUse?.id,
+                  isPublic: effectiveIsPublic,
+                  ...(dataSource.kind === 'tooljetdb' && {
+                    organization_id: appToUse.organizationId,
+                    environment_id: dataSourceOptions.environmentId,
+                  }),
+                },
               }
             );
             promises.push(queryPromise);
