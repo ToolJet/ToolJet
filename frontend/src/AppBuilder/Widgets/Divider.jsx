@@ -5,7 +5,8 @@ const DASH_WIDTH = 4;
 const DASH_GAP = 4;
 
 export const Divider = function Divider({ dataCy, height, width, darkMode, styles, properties }) {
-  const { labelAlignment, labelColor, dividerColor, boxShadow, dividerStyle, padding, textWrap } = styles;
+  const { labelAlignment, labelColor, labelFontSize, dividerColor, boxShadow, dividerStyle, padding, textWrap } =
+    styles;
   const { label, visibility } = properties;
   const color =
     dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;
@@ -37,7 +38,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
   const labelStyles = {
     color: labelColor,
     boxShadow,
-    fontSize: '11px',
+    fontSize: `${labelFontSize ?? 12}px`,
     fontWeight: '500',
     lineHeight: '16px',
     ...(shouldWrap

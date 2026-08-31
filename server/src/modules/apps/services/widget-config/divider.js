@@ -125,6 +125,12 @@ export const dividerConfig = {
       },
       accordian: 'Divider',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Label size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'Divider',
+    },
     textWrap: {
       type: 'switch',
       displayName: 'Text wrap',
@@ -181,6 +187,7 @@ export const dividerConfig = {
       labelAlignment: { value: 'center' },
       dividerStyle: { value: 'solid' },
       labelColor: { value: 'var(--cc-placeholder-text)' },
+      labelFontSize: { value: '{{12}}' },
       textWrap: { value: 'wrap' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

@@ -8,6 +8,10 @@ export const timePickerConfig = {
     height: 40,
   },
   validation: {
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
     minTime: {
       type: 'code',
       placeholder: 'HH:mm',
@@ -23,10 +27,6 @@ export const timePickerConfig = {
     customRule: {
       type: 'code',
       displayName: 'Custom validation',
-    },
-    mandatory: {
-      type: 'toggle',
-      displayName: 'Make this field mandatory',
     },
   },
   others: {

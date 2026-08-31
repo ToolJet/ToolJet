@@ -254,6 +254,7 @@ export const Statistics = function Statistics({
               size={(primaryValueSize ?? 34) * 1.3}
               stroke={1.5}
               color={iconColor}
+              style={{ color: iconColor }}
             />
           )}
 

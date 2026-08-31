@@ -10,7 +10,7 @@ export const PasswordInput = (props) => {
     inputLogic.setIconVisibility(!inputLogic.iconVisibility);
   };
 
-  const TogglePasswordVisibilityIcon = !inputLogic.iconVisibility ? IconEye : IconEyeClosed;
+  const TogglePasswordVisibilityIcon = inputLogic.iconVisibility ? IconEye : IconEyeClosed;
 
   const passwordIcon = (
     <div onClick={toggleVisibility} data-cy={`password-visibility-icon`}>
