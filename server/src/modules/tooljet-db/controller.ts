@@ -163,22 +163,20 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
-  //Not used anywhere so commented needs proper Org and User Validation and testing before enabling
+  @InitFeature(FEATURE_KEY.JOIN_TABLES)
+  @Post('/organizations/:organizationId/join')
+  @UseFilters(new TooljetDbJoinExceptionFilter())
+  @UseGuards(OrganizationAuthGuard, FeatureAbilityGuard)
+  async joinTables(@Req() req, @Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
+    const params = {
+      joinQueryJson: { ...tooljetDbJoinDto },
+      dataQuery: req.dataQuery,
+      user: req.user,
+    };
 
-  // @InitFeature(FEATURE_KEY.JOIN_TABLES)
-  // @Post('/organizations/:organizationId/join')
-  // @UseFilters(new TooljetDbJoinExceptionFilter())
-  // @UseGuards(OrganizationAuthGuard, FeatureAbilityGuard)
-  // async joinTables(@Req() req, @Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
-  //   const params = {
-  //     joinQueryJson: { ...tooljetDbJoinDto },
-  //     dataQuery: req.dataQuery,
-  //     user: req.user,
-  //   };
-
-  //   const result = await this.tableOperationsService.perform(organizationId, 'join_tables', params);
-  //   return decamelizeKeys({ result });
-  // }
+    const result = await this.tableOperationsService.perform(organizationId, 'join_tables', params);
+    return decamelizeKeys({ result });
+  }
 
   @InitFeature(FEATURE_KEY.EDIT_COLUMN)
   @Patch('/organizations/:organizationId/table/:tableName/column')

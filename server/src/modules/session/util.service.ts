@@ -35,7 +35,6 @@ import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
-import { incrementActiveSessions, incrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionUtilService {
@@ -151,19 +150,6 @@ export class SessionUtilService {
 
       const permissionData = await this.getPermissionDataToAuthorize(user, manager);
       const noActiveWorkspaces = await this.checkUserWorkspaceStatus(user.id, manager);
-
-      // Track concurrent users if a new session was created and organization is available
-      if (loggedInUser?.id !== user.id && !isPatLogin && organization?.id) {
-        try {
-          incrementConcurrentUsers({
-            workspaceId: organization.id as string,
-            userId: user.id,
-            userRole: permissionData.admin ? 'admin' : 'member',
-          });
-        } catch (error) {
-          console.error('Error incrementing concurrent users metric:', error);
-        }
-      }
 
       const responsePayload = {
         organizationId: organization?.id,
@@ -322,16 +308,6 @@ export class SessionUtilService {
           lastLoggedIn: new Date(),
         })
       );
-
-      // Increment active sessions counter
-      try {
-        incrementActiveSessions({
-          userId,
-          sessionType: 'user',
-        });
-      } catch (error) {
-        console.error('Error incrementing active sessions metric:', error);
-      }
 
       return session;
     }, manager);
