@@ -399,9 +399,8 @@ export const createCompleteWorkflow = async (
 }> => {
   const app = await createWorkflowForUser(nestApp, user, workflowConfig.name);
 
-  const queriesDefinition = workflowConfig.queries.map((q) => ({
+  const queriesDefinition: Array<{ idOnDefinition: string; id?: string }> = workflowConfig.queries.map((q) => ({
     idOnDefinition: q.idOnDefinition,
-    id: null as string | null,
   }));
 
   const appVersion = await createWorkflowApplicationVersion(nestApp, app, {
