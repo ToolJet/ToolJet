@@ -3,7 +3,6 @@ import { User } from '@modules/app/decorators/user.decorator';
 import { ICustomComponentLibrariesController } from './interface/IController';
 
 // CE stub — the feature is EE/paid; real implementation lives in ee/custom-component-libraries/.
-// Route order matters: literal paths (validate-token, tokens) MUST be declared before ':id'.
 @Controller('custom-component-libraries')
 export class CustomComponentLibrariesController implements ICustomComponentLibrariesController {
   constructor() {}
@@ -13,31 +12,8 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
     throw new Error('Method not implemented.');
   }
 
-  @Get('validate-token')
-  async validateToken(@User() user): Promise<{ email: string; organizationId: string }> {
-    throw new Error('Method not implemented.');
-  }
-
   @Get()
   async list(@User() user): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-
-  @Post('tokens')
-  async createToken(
-    @User() user,
-    @Body() body: { name: string; organizationId?: string; expiresInDays?: number | null }
-  ): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-
-  @Get('tokens')
-  async listTokens(@User() user): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-
-  @Delete('tokens/:id')
-  async deleteToken(@User() user, @Param('id') id: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
