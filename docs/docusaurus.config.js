@@ -402,6 +402,26 @@ module.exports = {
             to: '/docs/setup/tooljet-ai/tj-ai-enterprise',
           },
           {
+            from: '/docs/build-with-ai/prompting101',
+            to: '/docs/build-with-ai/generate-applications',
+          },
+          {
+            from: '/docs/build-with-ai/ai-best-practices',
+            to: '/docs/build-with-ai/generate-applications',
+          },
+          {
+            from: '/docs/build-with-ai/integrating-data',
+            to: '/docs/build-with-ai/generate-applications',
+          },
+          {
+            from: '/docs/build-with-ai/debug-components',
+            to: '/docs/build-with-ai/overview',
+          },
+          {
+            from: '/docs/build-with-ai/mcp/overview',
+            to: '/docs/build-with-ai/mcp/app-generation',
+          },
+          {
             from: '/docs/tj-setup/observability-otel',
             to: '/docs/tj-setup/observability/observability-otel/',
           },

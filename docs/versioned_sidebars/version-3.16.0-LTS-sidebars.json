@@ -176,36 +176,26 @@
         "build-with-ai/overview",
         {
           "type": "category",
-          "label": "Building Application",
+          "label": "Use AI in ToolJet",
+          "link": {
+            "type": "doc",
+            "id": "build-with-ai/use-ai-in-tooljet"
+          },
           "items": [
+            "build-with-ai/use-ai-in-tooljet",
             "build-with-ai/generate-applications",
-            "build-with-ai/integrating-data"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "AI Assitance",
-          "items": [
+            "build-with-ai/generate-queries",
             "build-with-ai/referencing-app-resources",
-            "build-with-ai/debug-components",
-            "build-with-ai/ai-docs-assistant"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Concepts & References",
-          "items": [
+            "build-with-ai/ai-docs-assistant",
             "build-with-ai/ai-credits",
-            "build-with-ai/model-selection",
-            "build-with-ai/prompting101",
-            "build-with-ai/ai-best-practices"
+            "build-with-ai/model-selection"
           ]
         },
         {
           "type": "category",
           "label": "ToolJet MCP Server",
           "items": [
-            "build-with-ai/mcp/overview",
+            "build-with-ai/mcp/app-generation",
             "build-with-ai/mcp/setup"
           ]
         },

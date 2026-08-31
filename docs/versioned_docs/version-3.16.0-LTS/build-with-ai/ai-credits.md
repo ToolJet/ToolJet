@@ -13,7 +13,7 @@ Credits are consumed based on the complexity of each operation and the context o
 
 Credit consumption is variable by design: a simple layout tweak costs far fewer credits than generating a full application with complex logic. This means you have a lot of control over how efficiently you build, focused sessions with clear, specific prompts get more done per credit.
 
-For tips on structuring your prompts and sessions for the best results, see [Prompting 101 - Best Practices](/docs/build-with-ai/prompting101#efficient-utilization-of-credits).
+To get the most out of each credit, keep sessions focused: start a fresh chat for an unrelated task, and write prompts that name the exact component, query, or data source you want changed, using [@mention in AI Chat](/docs/build-with-ai/referencing-app-resources) where possible.
 
 ## Credit Usage
 
