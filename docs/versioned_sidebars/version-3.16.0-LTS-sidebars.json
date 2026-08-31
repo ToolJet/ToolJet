@@ -184,7 +184,7 @@
         },
         {
           "type": "category",
-          "label": "AI Assitance",
+          "label": "AI Assistance",
           "items": [
             "build-with-ai/referencing-app-resources",
             "build-with-ai/debug-components",
