@@ -1,4 +1,5 @@
 import { MODULES } from '@modules/app/constants/modules';
+import { FEATURE_KEY as ORGANIZATION_USER_FEATURE } from '@modules/organization-users/constants';
 
 /**
  * What a WORKSPACE personal access token may reach.
@@ -19,6 +20,7 @@ export enum PAT_BUNDLE {
   APPS = 'apps',
   DATA = 'data',
   WORKFLOWS = 'workflows',
+  WORKSPACE_USERS = 'workspace_users',
   WORKSPACE_ADMIN = 'workspace_admin',
   INSTANCE_ADMIN = 'instance_admin',
 }
@@ -48,9 +50,9 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.APP_ENVIRONMENTS,
   ],
   [PAT_BUNDLE.WORKFLOWS]: [MODULES.WORKFLOWS],
+  [PAT_BUNDLE.WORKSPACE_USERS]: [MODULES.ORGANIZATION_USER],
   [PAT_BUNDLE.WORKSPACE_ADMIN]: [
     MODULES.ORGANIZATIONS,
-    MODULES.ORGANIZATION_USER,
     MODULES.USER,
     MODULES.GROUP_PERMISSIONS,
     MODULES.ORGANIZATION_CONSTANT,
@@ -111,11 +113,21 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
  * deliberately unassigned pending a decision — it builds apps, but its endpoints spend money on
  * model calls, so an app-scoped automation token should not reach it by default.
  */
-export const PAT_ALLOWED_BUNDLES: PAT_BUNDLE[] = [PAT_BUNDLE.APPS, PAT_BUNDLE.DATA];
+export const PAT_ALLOWED_BUNDLES: PAT_BUNDLE[] = [PAT_BUNDLE.APPS, PAT_BUNDLE.DATA, PAT_BUNDLE.WORKSPACE_USERS];
 
 const ALLOWED_MODULES: ReadonlySet<MODULES> = new Set(
   PAT_ALLOWED_BUNDLES.flatMap((bundle) => PAT_BUNDLE_MODULES[bundle])
 );
+
+const PAT_ALLOWED_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
+  [MODULES.ORGANIZATION_USER]: new Set([
+    ORGANIZATION_USER_FEATURE.VIEW_ALL_USERS,
+    ORGANIZATION_USER_FEATURE.USER_INVITE,
+    ORGANIZATION_USER_FEATURE.USER_UPDATE,
+    ORGANIZATION_USER_FEATURE.USER_ARCHIVE,
+    ORGANIZATION_USER_FEATURE.USER_UNARCHIVE,
+  ]),
+};
 
 /** Which bundle a module belongs to, for the denial message. Undefined if unassigned. */
 export function patBundleOf(module: MODULES): PAT_BUNDLE | undefined {
@@ -126,7 +138,9 @@ export function patBundleOf(module: MODULES): PAT_BUNDLE | undefined {
  * Fails CLOSED: a route whose controller carries no @InitModule is denied rather than exempt, so a
  * new endpoint is locked down by default instead of silently escaping the allowlist.
  */
-export function patCanAccess(module: MODULES | undefined): boolean {
+export function patCanAccess(module: MODULES | undefined, feature?: string): boolean {
   if (!module) return false;
-  return ALLOWED_MODULES.has(module);
+  if (!ALLOWED_MODULES.has(module)) return false;
+  const allowedFeatures = PAT_ALLOWED_FEATURES[module];
+  return !allowedFeatures || (!!feature && allowedFeatures.has(feature));
 }
