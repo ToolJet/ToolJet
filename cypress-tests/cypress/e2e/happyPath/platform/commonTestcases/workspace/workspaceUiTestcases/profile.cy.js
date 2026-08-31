@@ -13,6 +13,7 @@ describe("Profile Settings", () => {
   const randomLastName = fake.lastName;
   const avatarImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
+    cy.viewport(1400, 1900);
     cy.defaultWorkspaceLogin();
     cy.apiUpdateProfile({
       firstName: "The",
@@ -20,6 +21,7 @@ describe("Profile Settings", () => {
     });
     cy.getUserIdByEmail("dev@tooljet.io").then((userId) => {
       Cypress.env("userIdDev", userId);
+
     });
   });
 
