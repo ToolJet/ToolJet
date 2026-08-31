@@ -120,7 +120,7 @@ describe('TooljetDbRelationResolverService', () => {
       });
       organizationId = adminUserData.organization.id;
       const environments = await ensureAppEnvironments(app, organizationId);
-      adminEnvironmentId = environments.find((env) => env.priority === 1).id;
+      adminEnvironmentId = environments.find((env: { priority: number }) => env.priority === 1).id;
       adminBranchId = (await resolveOrSeedDefaultBranch(organizationId)).id;
 
       const schemaName = `workspace_${organizationId}`;

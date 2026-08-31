@@ -14,7 +14,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
  * of this service exists only to satisfy the same-path service rule, not to override this behaviour.
  *
  * Fail-closed contract: an id the caller does not own, or that has no relation in this
- * (environment, branch), is OMITTED from the returned map. It is never passed through unrewritten.
+ * (environment, branch), is OMITTED from the returned map. It is never passed through un-rewritten.
  * The caller decides the status code, because only the caller knows the position the id came from.
  */
 @Injectable()
