@@ -1,16 +1,50 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// inspector.js
+//   openAndVerifyNode                exposed              → inspector
+//   verifyNodes                      exposed              → inspector
+//   openNode                         exposed              → inspector
+//   openSubNode                      -                    → inspector
+//   backFromDetail                   -                    → common
+//   openSubNodeAndVerify             -                    → inspector
+//   openStateFromComponent           -                    → inspector
+//   verifyNodeData                   exposed              → inspector
+//   deleteComponentFromInspector     -                    → inspector
+//   navigateToInspectorNodes         -                    → inspector
+//   verifyInspectorValue             -                    → inspector
+//   verifyInspectorKeyValue          -                    → inspector
+//   navigateAndVerifyInspector       -                    → inspector
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector, inspectorSelectors } from "Selectors/common";
 
+/**
+ * @tjType   exposed
+ * @tjBlock  inspector
+ * @tjUsage  openAndVerifyNode('textinput1', nodes, verifyNodeData)
+ * @tjDom    widget inspect-button → inspector left sidebar → expand node + verify rows
+ */
 export const openAndVerifyNode = (nodeName, nodes, verificationFunction) => {
   openStateFromComponent(nodeName);
   verifyNodes(nodes, verificationFunction);
 };
 
+/**
+ * @tjType   exposed
+ * @tjBlock  inspector
+ * @tjUsage  verifyNodes([{ key: 'value', type: 'string', value: 'hello' }], verifyNodeData)
+ * @tjDom    inspector detail panel rows — key/type/value
+ */
 export const verifyNodes = (nodes, verificationFunction) => {
   nodes.forEach((node) =>
     verificationFunction(node.key, node.type, node.value)
   );
 };
 
+/**
+ * @tjType   exposed
+ * @tjBlock  inspector
+ * @tjUsage  openNode('components', 0)
+ * @tjDom    inspector-<node>-expand-button click to expand tree node
+ */
 export const openNode = (node, index = 0, time = 15000) => {
   cy.get(`[data-cy="inspector-${node.toLowerCase()}-expand-button"]`, {
     timeout: time,
@@ -41,6 +75,11 @@ const cyDataCy = (text) =>
 
 // Click a tree subnode label to open its detail panel.
 // `parentExpandType` (optional) ensures the owning level-1 node is expanded first.
+/**
+ * @tjBlock  inspector
+ * @tjUsage  openSubNode('textinput1', 'components')
+ * @tjDom    inspector-<subnode>-subnode-label click to open detail panel
+ */
 export const openSubNode = (subNodeName, parentExpandType = null, time = 15000) => {
   if (parentExpandType) {
     openNode(parentExpandType, 0, time);
@@ -53,6 +92,11 @@ export const openSubNode = (subNodeName, parentExpandType = null, time = 15000) 
 };
 
 // Return from a detail panel back to the tree view.
+/**
+ * @tjBlock  common
+ * @tjUsage  backFromDetail()
+ * @tjDom    inspector-detail-header-back-button click
+ */
 export const backFromDetail = () => {
   cy.get('[data-cy="inspector-detail-header-back-button"]').click();
 };
@@ -60,6 +104,11 @@ export const backFromDetail = () => {
 // Expand a level-1 node, open one of its subnodes' detail panel, verify the
 // detail rows, then go back to the tree. Used for non-component nodes
 // (globals/page/variables) where values live in the detail panel.
+/**
+ * @tjBlock  inspector
+ * @tjUsage  openSubNodeAndVerify('globals', 'currentUser', nodes, verifyNodeData)
+ * @tjDom    inspector level-1 expand → subnode label → detail rows → back button
+ */
 export const openSubNodeAndVerify = (
   parentExpandType,
   subNodeName,
@@ -71,6 +120,11 @@ export const openSubNodeAndVerify = (
   backFromDetail();
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  openStateFromComponent('textinput1')
+ * @tjDom    widget hover → inspect-button realClick → inspector left sidebar
+ */
 export const openStateFromComponent = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .realHover()
@@ -86,6 +140,12 @@ export const openStateFromComponent = (widgetName) => {
     });
 };
 
+/**
+ * @tjType   exposed
+ * @tjBlock  inspector
+ * @tjUsage  verifyNodeData('value', 'string', 'hello', 0)
+ * @tjDom    inspector-<node>-label + inspector-<node>-value text assertions
+ */
 export const verifyNodeData = (node, type, value, index = 0) => {
   cy.get(`[data-cy="inspector-${node.toLowerCase()}-label"]`)
     .eq(index)
@@ -97,6 +157,11 @@ export const verifyNodeData = (node, type, value, index = 0) => {
     .verifyVisibleElement("have.text", type == "Function" ? "function" : value);
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  deleteComponentFromInspector('textinput1')
+ * @tjDom    inspector-menu-icon → inspector-delete-component-action
+ */
 export const deleteComponentFromInspector = (node) => {
   cy.get('[data-cy="inspector-menu-icon"]').click();
   cy.get(`[data-cy="inspector-delete-component-action"`)
@@ -107,6 +172,11 @@ export const deleteComponentFromInspector = (node) => {
     .click();
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  navigateToInspectorNodes(['globals', 'currentUser', 'email'])
+ * @tjDom    inspector sidebar → node expand → subnode click → label visibility
+ */
 export const navigateToInspectorNodes = ([node, subNode, label]) => {
   cy.get('[data-cy="left-sidebar-inspector"] [aria-label="Inspector"]')
     .should("be.visible")
@@ -128,6 +198,11 @@ export const navigateToInspectorNodes = ([node, subNode, label]) => {
   }
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  verifyInspectorValue('currentUser', 'admin')
+ * @tjDom    inspector node value → json-viewer-node-value div text
+ */
 export const verifyInspectorValue = (node, expectedValue) => {
   cy.get(
     `${inspectorSelectors.inspectorNodeValue(node)} > .json-viewer-node-value > div`
@@ -136,6 +211,11 @@ export const verifyInspectorValue = (node, expectedValue) => {
     .and("have.text", expectedValue);
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  verifyInspectorKeyValue('isValid', 'true')
+ * @tjDom    inspector-<key>-label + inspector-<key>-value text assertions
+ */
 export const verifyInspectorKeyValue = (key, value) => {
   const normalizeKey = (key) =>
     key.replace(/[^a-zA-Z0-9]/g, "-").replace(/-+/g, "-");
@@ -173,6 +253,11 @@ export const verifyInspectorKeyValue = (key, value) => {
   cy.get(valueSelector).should("have.text", finalValue);
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  navigateAndVerifyInspector(['globals','currentUser','firstName'], [['firstName','Admin']])
+ * @tjDom    inspector sidebar full navigation + key/value assertion sequence
+ */
 export const navigateAndVerifyInspector = (
   nodePath = [],
   keyValueDataList = [],

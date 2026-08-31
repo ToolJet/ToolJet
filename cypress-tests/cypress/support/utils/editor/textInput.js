@@ -1,3 +1,10 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// textInput.js
+//   verifyControlComponentAction     -                    → csa
+//   randomString                     -                    → common
+//   verifyCSA                        csa                  → csa
+//   addCSA                           csa                  → csa
+// └──────────────────────────────────────────────────────────────────┘
 import { faker } from "@faker-js/faker";
 import { commonWidgetSelector } from "Selectors/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
@@ -10,6 +17,11 @@ import {
   selectEvent,
 } from "Support/utils/events";
 
+/**
+ * @tjBlock  csa
+ * @tjUsage  verifyControlComponentAction('textinput1', 'hello')
+ * @tjDom    canvas → button widget → Control Component event → Set text action
+ */
 export const verifyControlComponentAction = (widgetName, value) => {
   cy.forceClickOnCanvas();
   cy.dragAndDropWidget("button", 340, 90);
@@ -35,11 +47,21 @@ export const verifyControlComponentAction = (widgetName, value) => {
   ).should("have.text", value);
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  randomString(8)
+ */
 export const randomString = (length) => {
   let str = faker.lorem.words();
   return str.replace(/\s/g, "").substr(0, length);
 };
 
+/**
+ * @tjType   csa
+ * @tjBlock  csa
+ * @tjUsage  verifyCSA('textinput1')
+ * @tjDom    button1-9 clicks → draggable-widget visibility / disabled / value assertions
+ */
 export const verifyCSA = (component) => {
   cy.get(commonWidgetSelector.draggableWidget("button1")).click();
   cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
@@ -78,6 +100,12 @@ export const verifyCSA = (component) => {
     });
 };
 
+/**
+ * @tjType   csa
+ * @tjBlock  csa
+ * @tjUsage  addCSA('textinput1', [{ event: 'On click', action: 'Set text', value: 'hello' }])
+ * @tjDom    canvas drag-drop buttons → Control Component events + CSA action values
+ */
 export const addCSA = (componentName, actions) => {
   actions.forEach((action, index) => {
     cy.forceClickOnCanvas();
