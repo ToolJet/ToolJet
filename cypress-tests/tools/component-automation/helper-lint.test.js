@@ -19,4 +19,13 @@ assert.match(v[0].reason, /missing @tj annotation/);
 const rec = parseAnnotations(require("fs").readFileSync(good, "utf8")).find(r => r.name === "annotatedHelper");
 assert.deepStrictEqual(rec.tjType, ["toggle", "switch"]);
 assert.strictEqual(rec.tjBlock, "properties");
+
+// single-line JSDoc: verify trailing " */" is stripped from captured tags
+const singleLineSource = `/** @tjType button @tjBlock properties @tjUsage doStuff() */
+export const singleLineHelper = () => {};`;
+const singleLineRec = parseAnnotations(singleLineSource).find(r => r.name === "singleLineHelper");
+assert.strictEqual(singleLineRec.tjType[0], "button", "tjType must not have trailing */");
+assert.strictEqual(singleLineRec.tjBlock, "properties", "tjBlock must not have trailing */");
+assert.strictEqual(singleLineRec.tjUsage, "doStuff()", "tjUsage must not have trailing */");
+
 console.log("helper-lint.test PASS");

@@ -18,7 +18,12 @@ function parseAnnotations(src) {
       if (lines[j].trim() === "" && !block.includes("*/")) { block = ""; break; }
     }
     const has = block.includes("@tj");
-    const grab = (re) => (block.match(re)?.[1] || "").trim();
+    const grab = (re) => {
+      let val = (block.match(re)?.[1] || "").trim();
+      // Strip at the first @ (next tag) or */ (JSDoc close)
+      val = val.replace(/\s*[@*].*$/, "").trim();
+      return val;
+    };
     recs.push({
       name: m[1], line: i + 1, hasAnnotation: has,
       tjType: grab(TAG_RE.type) ? grab(TAG_RE.type).split(",").map(s => s.trim()) : [],
@@ -28,8 +33,8 @@ function parseAnnotations(src) {
   return recs;
 }
 
-function lintFile(path) {
-  const recs = parseAnnotations(fs.readFileSync(path, "utf8"));
+function lintFile(filePath) {
+  const recs = parseAnnotations(fs.readFileSync(filePath, "utf8"));
   const violations = [];
   for (const r of recs) {
     if (!r.hasAnnotation) { violations.push({ name: r.name, line: r.line, reason: "missing @tj annotation" }); continue; }
@@ -37,7 +42,7 @@ function lintFile(path) {
       violations.push({ name: r.name, line: r.line, reason: `invalid @tjBlock '${r.tjBlock}'` });
     if (!r.tjUsage) violations.push({ name: r.name, line: r.line, reason: "missing @tjUsage" });
   }
-  return { path, violations };
+  return { path: filePath, violations };
 }
 
 module.exports = { parseAnnotations, lintFile, VALID_BLOCKS };
