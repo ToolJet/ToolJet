@@ -11034,31 +11034,19 @@ tbody {
 }
 
 .bounded-box {
-  // react-image-annotation's own wrapper. Selected structurally on purpose: it
-  // is a styled-components div, and every styled-components class name is
-  // derived from a bundle-wide creation counter, so hardcoding one (this block
-  // used to say `.sc-dxgOiQ.jcdOkx`) silently stops matching the day module
-  // evaluation order changes. See BoundedBox/__tests__/generatedClassCoupling.
-  //
-  // This wrapper is also the positioning context for every annotation overlay,
-  // whose geometry is stored as a PERCENTAGE of it. It must therefore stay
-  // exactly the size of the rendered photo — letterboxing the image inside a
-  // larger wrapper (object-fit: contain on a full-width img) would silently
-  // move every saved annotation off its subject.
-  // Width and height are set in px by BoundedBox, which measures the fit — CSS
-  // alone cannot both scale the photo to the box and keep this wrapper glued to
-  // it. See BoundedBox/imageFrame.js.
-  > div {
-    margin: auto;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 
-    // Fill the wrapper exactly, so the wrapper's bounds and the photo's bounds
-    // are the same rectangle and annotation percentages stay registered. The
-    // library ships `width: 100%` and no height, which is what let the rendered
-    // height become width x aspect and escape the widget box.
+  > div {
     img {
       display: block;
       width: 100%;
       height: 100%;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: none;
     }
   }
 

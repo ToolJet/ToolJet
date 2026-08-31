@@ -1,7 +1,6 @@
 import React from 'react';
 import Select from '@/_ui/Select';
 import { Box } from './Box';
-import { annotationLabelPosition } from './annotationLabel';
 
 export const RenderHighlight = ({
   annotation,
@@ -12,7 +11,6 @@ export const RenderHighlight = ({
   setAnnotations,
   fireEvent,
   getExposedAnnotations,
-  containerHeight,
 }) => {
   let { geometry } = annotation;
   if (geometry.type === 'POINT') {
@@ -37,9 +35,7 @@ export const RenderHighlight = ({
         style={{
           position: 'absolute',
           left: `${geometry.x}%`,
-          // Anchored above the box instead when there is no room below, so the
-          // label cannot escape the widget and cover the components under it.
-          ...annotationLabelPosition(geometry, containerHeight),
+          top: `${geometry.y + geometry.height}%`,
           right: `${geometry.x + geometry.width}%`,
           width: `${geometry.width}%`,
           minWidth: '125px',

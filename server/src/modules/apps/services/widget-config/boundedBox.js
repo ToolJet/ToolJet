@@ -3,11 +3,6 @@ export const boundedBoxConfig = {
   displayName: 'Bounded Box',
   description: 'An infinitely customizable image annotation widget',
   component: 'BoundedBox',
-  // 30 of 43 grid columns is ~902px on the 1292px default canvas; the preset
-  // photo is 746x497, so ~600px of height is what lets it fill that width
-  // without letterboxing. At the old 420 the image had to shrink well inside
-  // the box. This only affects newly dropped widgets — existing ones keep the
-  // height stored in their layout.
   defaultSize: {
     width: 30,
     height: 600,

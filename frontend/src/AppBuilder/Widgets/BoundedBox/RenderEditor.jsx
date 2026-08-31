@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import Select from '@/_ui/Select';
 import { v4 as uuid } from 'uuid';
-import { annotationLabelPosition } from './annotationLabel';
 
 export const RenderEditor = ({
   annotation,
@@ -13,7 +12,6 @@ export const RenderEditor = ({
   darkMode,
   selectElementStyles,
   getExposedAnnotations,
-  containerHeight,
 }) => {
   useEffect(() => {
     if (geometry) {
@@ -28,10 +26,7 @@ export const RenderEditor = ({
       style={{
         position: 'absolute',
         left: `${annotation.geometry.x}%`,
-        // A POINT annotation has no height, so the old `y + height` produced
-        // `top: "NaN%"` here — an invalid declaration browsers drop, dumping the
-        // editor at its static position. See annotationLabel.
-        ...annotationLabelPosition(geometry, containerHeight),
+        top: `${annotation.geometry.y + annotation.geometry.height}%`,
         right: `${annotation.geometry.x + annotation.geometry.width}%`,
         width: `${annotation.geometry.width}%`,
         minWidth: '125px',

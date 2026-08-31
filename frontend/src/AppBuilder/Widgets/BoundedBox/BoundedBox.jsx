@@ -15,8 +15,6 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
   const [outerDivWidth, setOuterDivWidth] = useState();
-  // Rendered photo size, kept current on resize. Drives annotation label placement.
-  const [frameSize, setFrameSize] = useState(null);
 
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
@@ -29,24 +27,16 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   const annotateRef = useRef(null);
   const rootRef = useRef(null);
 
-  // Sizes react-image-annotation's image wrapper to the photo as actually
-  // rendered, and keeps it there as the canvas resizes.
-  //
-  // The wrapper is the positioning context for every annotation overlay, whose
-  // geometry is stored as a percentage of it, so it has to stay exactly the
-  // photo's bounds. The library ships `width: 100%` with no height, which makes
-  // the rendered height width x aspect and lets the image spill out of the
-  // widget box; see imageFrame for why the correction cannot live in CSS.
-  //
-  // The image and wrapper are located structurally. The `.hIIYQM` / `.jcdOkx`
-  // lookups this replaced were styled-components generated names, which are
-  // derived from a bundle-wide creation counter — they had gone stale and
-  // matched nothing, so both measurements stayed undefined forever and the
-  // widget's own default annotations never rendered at all.
+  // Size the library wrapper to the widget: full width, height capped so the
+  // photo cannot overflow. Also stop native <img> drag/select (the blue wash).
   useEffect(() => {
     const root = rootRef.current;
     const imageElement = root?.querySelector('img');
     if (!root || !imageElement) return undefined;
+
+    imageElement.draggable = false;
+    const preventImageDrag = (event) => event.preventDefault();
+    imageElement.addEventListener('dragstart', preventImageDrag);
 
     const applyFrame = () => {
       const wrapperElement = imageElement.parentElement;
@@ -60,7 +50,6 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
       wrapperElement.style.width = `${frame.width}px`;
       wrapperElement.style.height = `${frame.height}px`;
-      setFrameSize(frame);
     };
 
     const handleImageLoad = () => {
@@ -69,17 +58,12 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       const wrapperElement = imageElement.parentElement;
       if (wrapperElement) {
         const { width, height } = wrapperElement.getBoundingClientRect();
-        // Use the width and height of bounding image for further calculations.
-        // Deliberately set only on load: these feed the one-shot clamp of the
-        // configured default annotations, and refreshing them on resize would
-        // re-run that clamp and overwrite annotations the user has drawn.
+        // Use the width and height of bounding image for further calculations
         setOuterDivWidth(width);
         setOuterDivHeight(height);
       }
     };
 
-    // A cached image can already be complete before this effect runs, in which
-    // case no load event is ever fired.
     if (imageElement.complete && imageElement.naturalWidth) {
       handleImageLoad();
     }
@@ -91,6 +75,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
     return () => {
       imageElement.removeEventListener('load', handleImageLoad);
+      imageElement.removeEventListener('dragstart', preventImageDrag);
       observer?.disconnect();
     };
   }, [properties.imageUrl]);
@@ -248,7 +233,6 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             <RenderEditor
               annotation={annotation}
               labels={labels}
-              containerHeight={frameSize?.height ?? outerDivHeight}
               setAnnotation={setAnnotation}
               setAnnotations={setAnnotations}
               setExposedVariable={setExposedVariable}
@@ -262,7 +246,6 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         renderHighlight={({ annotation }) => (
           <RenderHighlight
             annotation={annotation}
-            containerHeight={frameSize?.height ?? outerDivHeight}
             setAnnotations={setAnnotations}
             setExposedVariable={setExposedVariable}
             fireEvent={fireEvent}
