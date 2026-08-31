@@ -5849,6 +5849,104 @@ describe('GitSyncController', () => {
         expect(await dsvCount(dsId, featBranchId)).toBeGreaterThan(0);
       }, 300000);
 
+      it('carries a connected global data source into git on workflow push, and re-hydrates it on open', async () => {
+        // Regression for the workflow counterpart of the app/module cases above: gitPushApp
+        // gated serializeLinkedDataSourcesForApp to FRONT_END|MODULE, so a global DS connected
+        // solely via a workflow's query never rode into the commit and was left permanently
+        // unsynced. Unlike the two cases above this pushes to the DEFAULT branch: a workflow is
+        // always created there (POST /api/workflows ignores a DTO branchId), so there is no
+        // feature-branch-create equivalent to copy.
+        const step = (n: number, label: string) =>
+          process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
+        const FEAT = 'feat-dep-ds-workflow';
+
+        step(1, 'enable git + branching (workflow pushes target the default branch)');
+        const { mainBranchId } = await enableGitAndFeatureBranch(FEAT);
+
+        step(2, 'create a workflow + global data source, link the DS via a query on the workflow draft');
+        const workflowId: string = (
+          await auth(agent().post('/api/workflows')).send({ name: 'dep-ds-workflow', type: 'workflow' }).expect(201)
+        ).body.id;
+        // Read the version from the DB: GET /api/apps/:id is the app/module idiom and is
+        // deliberately not relied on for workflows here.
+        const versionId: string = (
+          await depDs.query(`SELECT id FROM app_versions WHERE app_id = $1 AND branch_id = $2`, [
+            workflowId,
+            mainBranchId,
+          ])
+        )[0]?.id;
+        expect(versionId).toBeTruthy();
+
+        const dsId: string = (
+          await auth(agent().post(`/api/data-sources?branch_id=${mainBranchId}`))
+            .send({
+              name: 'dep-carry-workflow-ds',
+              kind: 'restapi',
+              options: dsOptions('http://dep-carry-workflow.example.com'),
+              scope: 'global',
+            })
+            .expect(201)
+        ).body.id;
+        await auth(agent().post(`/api/data-queries/data-sources/${dsId}/versions/${versionId}`))
+          .query({ branch_id: mainBranchId })
+          .send({
+            kind: 'restapi',
+            name: 'q_dep_carry_workflow',
+            options: { method: 'get', url: '', url_params: [], headers: [], body: [] },
+          })
+          .expect(201);
+        const dsName = await dsvName(dsId, mainBranchId);
+
+        step(3, 'gitpush the workflow → its connected DS rides into the same commit');
+        await gitpushApp(workflowId, versionId, 'dep-ds-workflow', 'main', mainBranchId).expect(201);
+
+        step(4, 'the connected data source is present in git');
+        const dsFile = await readGitFile('main', `data-sources/${dsName}/data-source.json`);
+        expect(dsFile).not.toBeNull();
+        const dsJson = JSON.parse(dsFile as string);
+        expect(dsJson.id).toBe(await dsCoRelId(dsId));
+        expect(dsJson.kind).toBe('restapi');
+        // The name lives in the directory (data-sources/<name>/), never in the file.
+        expect(dsJson.name).toBeUndefined();
+
+        step(5, 'the workflow committed under its NAME not its UUID, and carries no enable toggle');
+        const wfFile = await readGitFile('main', 'workflows/dep-ds-workflow/app/app.json');
+        expect(wfFile).not.toBeNull();
+        const wfJson = JSON.parse(wfFile as string);
+        expect(wfJson.name).toBeUndefined();
+        expect(wfJson.type).toBe('workflow');
+        // is_maintenance_on is the workflow ENABLE toggle — workspace-local, must never travel.
+        expect(wfJson.isMaintenanceOn).toBeUndefined();
+
+        step(6, 'drop the branch DSV, force a fresh open → hydrate re-creates it from git (no dummy)');
+        await depDs.query(
+          `DELETE FROM data_source_version_options
+             WHERE data_source_version_id IN (
+               SELECT id FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2)`,
+          [dsId, mainBranchId]
+        );
+        await depDs.query(`DELETE FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`, [
+          dsId,
+          mainBranchId,
+        ]);
+        expect(await dsvCount(dsId, mainBranchId)).toBe(0);
+
+        await depDs.query(
+          `UPDATE app_versions SET git_tree_sha = 'force-rehydrate-0000000000000000000000000000000000'
+             WHERE app_id = $1 AND branch_id = $2`,
+          [workflowId, mainBranchId]
+        );
+
+        const hydrateResp = await auth(agent().get(`/api/apps/${workflowId}`))
+          .query({ branch_id: mainBranchId })
+          .expect(200);
+        expect(hydrateResp.body.is_hydration_tried).toBe(true);
+        expect(hydrateResp.body.hydration_status).toBe('success');
+
+        step(7, 'the branch DSV is back — the connected data source populated on open');
+        expect(await dsvCount(dsId, mainBranchId)).toBeGreaterThan(0);
+      }, 300000);
+
       it('pushes app, module and data source with NO `name` field — the directory name is the sole source of truth', async () => {
         const step = (n: number, label: string) =>
           process.stdout.write(`    ↳ step ${String(n).padStart(2, '0')}: ${label}\n`);
