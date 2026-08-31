@@ -189,6 +189,7 @@ export const addSupportCSAData = (field, data) => {
     .click({ force: true })
     .clearAndTypeOnCodeMirror(data);
   commitEventConfig();
+  cy.wait("@events");
 };
 
 // Set a CSA `select`-type parameter. Its combobox shares
@@ -224,6 +225,11 @@ export const changeEventType = (event, eventIndex = 0) => {
   cy.wait("@events");
 };
 
+
+// Wire ONE trigger to Show Alert. Same isWait caveat as below.
+export const addEventWithAlert = (event, message, isWait = true) => {
+  addMultiEventsWithAlert([{ event, message }], isWait);
+};
 
 // Wire several triggers to Show Alert in one call: [{ event, message }, ...].
 // Leave isWait TRUE — see selectEvent; false drops the alert message and the handler
