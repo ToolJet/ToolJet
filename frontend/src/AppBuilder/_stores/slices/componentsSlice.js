@@ -92,6 +92,23 @@ export function setSuppressQueryRerun(moduleId, value) {
 // END SECTION: Query re-run on dependency change
 // ======================
 
+// Gate for resolving nested arrays, which can be user data of any size (eg. TreeSelect option trees)
+const hasDynamicValue = (value) => {
+  const pending = [value];
+  while (pending.length) {
+    const current = pending.pop();
+    if (typeof current === 'string') {
+      if (current.includes('{{') && current.includes('}}')) return true;
+    } else if (current && typeof current === 'object') {
+      for (const entry of Object.values(current)) pending.push(entry);
+    }
+  }
+  return false;
+};
+
+// Arrays are objects too, so entries that are themselves arrays do not count as per-key resolvable values
+const hasObjectEntry = (items) => items.some((item) => item && typeof item === 'object' && !Array.isArray(item));
+
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
 // and `.value` access fails. Spreading `{ ...state, components: scopeCtx.scoped }`
@@ -149,6 +166,10 @@ const initialState = {
   selectedComponents: [],
   showWidgetDeleteConfirmation: false,
   deleteTargetIsModuleEditor: false,
+  // Components the open delete confirmation targets. Null means "whatever is selected
+  // on the canvas"; the component tree sets it so it can delete a component without
+  // stealing the canvas selection.
+  widgetDeleteConfirmationTargets: null,
   focusedParentId: null,
   modalsOpenOnCanvas: [],
   showComponentPermissionModal: false,
@@ -967,16 +988,34 @@ export const createComponentsSlice = (set, get) => ({
     component,
     resolvedComponentValues,
     updatePassedValue = true,
-    moduleId
+    moduleId,
+    preClonedValue
   ) => {
-    const { updateResolvedValues, generateDependencyGraphForRefs } = get();
+    const { updateResolvedValues, generateDependencyGraphForRefs, checkValueAndResolve } = get();
     if (Array.isArray(value)) {
-      const updatedPropertyValue = cloneDeep(value);
+      // Nested calls receive the parent's clone of this subtree, so cloning again would repeat per level
+      const updatedPropertyValue = preClonedValue ?? cloneDeep(value);
       value.forEach((val, index) => {
         //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
         if (val && typeof val === 'object') {
           Object.entries(val).forEach(([key, keyValue]) => {
             const propertyWithArrayValue = `${property}[${index}].${key}`;
+            // Nested arrays of objects (eg. Navigation group children) carry their own dynamic values
+            if (Array.isArray(keyValue) && hasObjectEntry(keyValue) && hasDynamicValue(keyValue)) {
+              const { updatedValue } = checkValueAndResolve(
+                componentId,
+                paramType,
+                propertyWithArrayValue,
+                keyValue,
+                component,
+                resolvedComponentValues,
+                updatePassedValue,
+                moduleId,
+                updatedPropertyValue[index][key]
+              );
+              lodashSet(updatedPropertyValue, [index, key], updatedValue);
+              return;
+            }
             const keys = [key];
             if (keyValue?.value) {
               keys.push('value');
@@ -1609,6 +1648,7 @@ export const createComponentsSlice = (set, get) => ({
           }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
+          state.widgetDeleteConfirmationTargets = null;
         });
 
         const filteredEvents = appEvents.filter((event) => !toDeleteEvents.includes(event.id));
@@ -2169,6 +2209,7 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentMode,
       getCustomResolvables,
       setResolvedComponentByProperty,
+      removePropertyNodes,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     const componentDef = getComponentDefinition(componentId, moduleId);
@@ -2186,6 +2227,8 @@ export const createComponentsSlice = (set, get) => ({
       if (index === null) {
         resolvedComponent[componentId][paramType][property] = [];
       }
+      // Entries are re-indexed on every edit, so edges for the previous indices must go before the new ones register
+      removePropertyNodes(`components.${componentId}.${paramType}.${property}`, moduleId);
       const { updatedValue } = checkValueAndResolve(
         componentId,
         paramType,
@@ -2544,10 +2587,21 @@ export const createComponentsSlice = (set, get) => ({
 
     await savePageChanges(app.appId, currentVersionId, currentPageId, { autoComputeLayout: false });
   },
-  setWidgetDeleteConfirmation: (value, isModuleEditor = false) => {
+  setWidgetDeleteConfirmation: (value, second = null) => {
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
-      if (value) state.deleteTargetIsModuleEditor = isModuleEditor;
+      if (!value) {
+        state.widgetDeleteConfirmationTargets = null;
+        return;
+      }
+      // Canvas/hotkey/inspector pass a boolean isModuleEditor. The component tree
+      // passes an explicit id list so it can delete without stealing canvas selection.
+      if (Array.isArray(second)) {
+        state.widgetDeleteConfirmationTargets = second;
+      } else {
+        state.deleteTargetIsModuleEditor = Boolean(second);
+        state.widgetDeleteConfirmationTargets = null;
+      }
     });
   },
 

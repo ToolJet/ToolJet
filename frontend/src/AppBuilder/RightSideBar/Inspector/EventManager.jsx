@@ -1282,7 +1282,7 @@ export const EventManager = ({
                                           {eventMetaDefinition?.events[event.event.eventId]?.displayName}
                                         </span>
                                         <ArrowRight className="tw-h-3 tw-w-3 tw-shrink-0 tw-text-text-placeholder" />
-                                        <span className="tw-min-w-0 tw-text-left tw-truncate tw-font-body-default tw-text-text-placeholder">
+                                        <span className="tw-min-w-0 tw-text-left tw-flex-1 tw-truncate tw-font-body-default tw-text-text-placeholder">
                                           {actionMeta.name}
                                         </span>
                                       </div>

@@ -15,8 +15,8 @@ export class AppResourceGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const { appId, versionId } = request.params;
     const user: User = request.user;
-    // Forward x-branch-id so metadata overlay reflects the caller's active branch.
-    const branchId = (request.headers['x-branch-id'] as string) || undefined;
+    // user.branchId (resolved in the JWT strategy) so metadata overlay reflects the caller's active branch.
+    const branchId = user?.branchId || undefined;
     if (!appId && !versionId) {
       throw new BadRequestException('App ID or version ID must be provided');
     }
@@ -27,7 +27,7 @@ export class AppResourceGuard implements CanActivate {
         request.tj_app ||
         (appId && (await this.appRepository.findById(appId, user.organizationId, undefined, branchId)));
     } else if (versionId) {
-      // Forward x-branch-id so getAppVersionById overlays the right branch's metadata
+      // Forward user.branchId so getAppVersionById overlays the right branch's metadata
       // onto `version.app` (otherwise it'd default to default-branch / any version).
       const version = await this.versionRepository.getAppVersionById(versionId, branchId);
       app = version?.app;

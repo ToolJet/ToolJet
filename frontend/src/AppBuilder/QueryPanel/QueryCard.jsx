@@ -9,38 +9,9 @@ import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
-import { Modal } from 'react-bootstrap';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
 import { EllipsisVerticalIcon } from 'lucide-react';
-
-const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => (
-  <Modal
-    show={show}
-    onHide={onCancel}
-    animation={false}
-    centered
-    contentClassName={`query-folder-delete-modal ${darkMode ? 'dark-theme' : ''}`}
-    dialogClassName="query-folder-delete-modal-dialog"
-    backdropClassName="query-delete-modal-backdrop"
-    onClick={(e) => e.stopPropagation()}
-  >
-    <Modal.Header>
-      <Modal.Title>Delete {decodeEntities(queryName)}?</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>Are you sure you want to delete this query? This action is irreversible.</Modal.Body>
-    <Modal.Footer>
-      <ButtonSolid size="sm" variant="tertiary" onClick={onCancel} data-cy="cancel-delete-query">
-        Cancel
-      </ButtonSolid>
-      <ButtonSolid size="sm" variant="dangerPrimary" onClick={onDelete} data-cy="confirm-delete-query">
-        <SolidIcon name="trash" width="14" fill="#fff" />
-        Delete
-      </ButtonSolid>
-    </Modal.Footer>
-  </Modal>
-);
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const { isModuleEditor } = useModuleContext();
@@ -52,16 +23,12 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
   const hasQueryFolders = useStore((state) => Boolean(state.queryFolders));
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
-  const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   const renamingQueryId = useStore((state) => state.queryPanel.renamingQueryId);
-  const deletingQueryId = useStore((state) => state.queryPanel.deletingQueryId);
   const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
-  const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
   const isRenaming = renamingQueryId === dataQuery.id;
-  const isDeleting = deletingQueryId === dataQuery.id;
 
   const hasPermissions =
     selectedDataSourceScope === 'global'
@@ -93,12 +60,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
       }
       setRenamingQuery(null);
     }
-  };
-
-  const executeDataQueryDeletion = () => {
-    deleteDataQuery(null);
-    deleteDataQueries(dataQuery?.id);
-    setPreviewData(null);
   };
 
   const getTooltip = () => {
@@ -228,13 +189,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           </div>
         )}
       </div>
-      <DeleteQueryModal
-        show={isDeleting}
-        queryName={dataQuery.name}
-        darkMode={darkMode}
-        onCancel={() => deleteDataQuery(null)}
-        onDelete={executeDataQueryDeletion}
-      />
     </>
   );
 };

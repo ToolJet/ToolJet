@@ -28,6 +28,9 @@ export class DataSourcesGroupPermissions extends BaseEntity {
   @Column({ name: 'can_use', nullable: false, default: false })
   canUse: boolean;
 
+  @Column({ name: 'can_run_query', nullable: false, default: true })
+  canRunQuery: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

@@ -17,7 +17,6 @@ import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.s
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { RedisModule } from '@modules/redis/module';
-import { BullMqMetricsModule } from '@modules/bullmq-metrics/bullmq-metrics.module';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -90,14 +89,17 @@ export class AppModuleLoader {
             };
             return logLevel[process.env.NODE_ENV] || 'info';
           })(),
-          autoLogging: process.env.NODE_ENV === 'test' ? false : {
-            ignore: (req) => {
-              if (req.url === '/api/health' || req.url === '/api/metrics') {
-                return true;
-              }
-              return false;
-            },
-          },
+          autoLogging:
+            process.env.NODE_ENV === 'test'
+              ? false
+              : {
+                  ignore: (req) => {
+                    if (req.url === '/api/health' || req.url === '/api/metrics') {
+                      return true;
+                    }
+                    return false;
+                  },
+                },
           transport:
             process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
               ? {
@@ -147,9 +149,7 @@ export class AppModuleLoader {
           metrics: {
             hostMetrics: true,
           },
-        }),
-        // Queue depth + worker gauges; not WORKER-gated (counts come from Redis)
-        BullMqMetricsModule
+        })
       );
     }
 

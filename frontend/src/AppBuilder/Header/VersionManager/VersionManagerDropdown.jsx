@@ -13,6 +13,7 @@ import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
 import { ConfirmDialog } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
@@ -78,6 +79,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     (state) => ({ currentBranch: state.currentBranch, pullApp: state.actions.pullApp }),
     shallow
   );
+  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
 
   const appCoRelationId = useStore((state) => state.appStore.modules[moduleId]?.app?.co_relation_id, shallow);
 
@@ -146,22 +148,19 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const draftVersions = developmentVersions.filter((v) => v.versionType === 'version' && v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
 
-  // Disable create draft logic:
-  // - Git sync enabled: disable if any draft already exists
-  // - Git sync disabled: disable if no published versions AND a draft exists (need published version to create from)
-  const shouldDisableCreateDraft = isGitSyncEnabled
-    ? draftVersions.length > 0
-    : savedVersions.length === 0 && draftVersions.length > 0;
+  // A draft is always created FROM a saved version — so hide the button entirely when there are
+  // no saved versions to create from (nothing to pick in the modal).
+  const showCreateDraftButton = savedVersions.length > 0;
 
-  // Determine tooltip message based on why create draft is disabled
-  let createDraftDisabledTooltip = '';
-  if (shouldDisableCreateDraft) {
-    if (isGitSyncEnabled) {
-      createDraftDisabledTooltip = 'Draft version already exists.';
-    } else if (savedVersions.length === 0) {
-      createDraftDisabledTooltip = 'Draft version can only be created from saved versions.';
-    }
-  }
+  // Enable/disable logic (only relevant when shown):
+  // - Git-off: enabled (a workspace can hold multiple drafts).
+  // - Git single-branch: always enabled. Unsynced app → normal create (unlimited drafts, git-off
+  //   style); synced app → creating a draft REPLACES the single synced draft (see replaceDraftVersion).
+  // - Git multi-branch + a synced draft exists: disabled — patches are made on feature branches, not
+  //   by replacing the default-branch draft.
+  const hasSyncedDraft = draftVersions.some((v) => v.isSynced !== false);
+  const shouldDisableCreateDraft = isGitSyncEnabled && isMultiBranchingEnabled && hasSyncedDraft;
+  const createDraftDisabledTooltip = shouldDisableCreateDraft ? 'Draft version already exists.' : '';
 
   const mergedVersions = useMemo(() => {
     const gitOnlyItems = [];
@@ -319,6 +318,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleCreateDraft = () => {
+    // Close the version dropdown before opening the modal, otherwise both stay open at once.
+    closeDropdown();
     setShowCreateDraftModal(true);
   };
 
@@ -389,10 +390,18 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   // Delete version modal state
-  const [deleteVersion, setDeleteVersion] = useState({ versionId: '', versionName: '', showModal: false });
+  const [deleteVersion, setDeleteVersion] = useState({
+    versionId: '',
+    versionName: '',
+    isSynced: true,
+    showModal: false,
+  });
   const [inUseWarning, setInUseWarning] = useState({ show: false, versionName: '' });
 
-  const deleteModalMessage = isGitSyncEnabled ? (
+  // Git-specific delete messaging only for versions actually synced to git
+  const isGitTrackedDelete = isGitSyncEnabled && deleteVersion.isSynced !== false;
+
+  const deleteModalMessage = isGitTrackedDelete ? (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <p className="tj-text-sm" style={{ lineHeight: '18px', color: 'var(--text-default)', margin: 0 }}>
         {"The version '"}
@@ -432,11 +441,24 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   );
 
   const openDeleteModal = (version) => {
-    setDeleteVersion({ versionId: version.id, versionName: version.name, showModal: true });
+    // Last synced draft can't be deleted while git sync is on (mirrors backend guard) — toast, no modal
+    const isSyncedDraft = version.status === 'DRAFT' && version.isSynced !== false;
+    const otherDraftCount = draftVersions.filter((v) => v.id !== version.id).length;
+    if (isGitSyncEnabled && isSyncedDraft && otherDraftCount === 0) {
+      toast.error('Cannot delete the last draft version while git sync is enabled');
+      return;
+    }
+
+    setDeleteVersion({
+      versionId: version.id,
+      versionName: version.name,
+      isSynced: version.isSynced,
+      showModal: true,
+    });
   };
 
   const resetDeleteModal = () => {
-    setDeleteVersion({ versionId: '', versionName: '', showModal: false });
+    setDeleteVersion({ versionId: '', versionName: '', isSynced: true, showModal: false });
   };
 
   const confirmDeleteVersion = () => {
@@ -499,20 +521,24 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
             <span className="tj-text-sm" style={{ fontWeight: 500, color: 'var(--text-default)' }}>
               Versions
             </span>
-            {(selectedEnvironmentFilter || currentEnvironment)?.name === 'development' && (
-              <Button
-                variant="outline"
-                size="small"
-                leadingIcon="refresh"
-                fill="var(--icon-strong)"
-                onClick={handleRefreshFromGit}
-                disabled={isRefreshing}
-                loading={isRefreshing}
-                className={cx({ 'dark-theme theme-dark': darkMode })}
-                style={{ padding: '8px 8px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                Refresh
-              </Button>
+            {(selectedEnvironmentFilter || currentEnvironment)?.name === 'development' && hasSyncedDraft && (
+              <ToolTip message="See all versions in git remote" placement="top">
+                <span>
+                  <Button
+                    variant="outline"
+                    size="small"
+                    leadingIcon="refresh"
+                    fill="var(--icon-strong)"
+                    onClick={handleRefreshFromGit}
+                    disabled={isRefreshing}
+                    loading={isRefreshing}
+                    className={cx({ 'dark-theme theme-dark': darkMode })}
+                    style={{ padding: '8px 8px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    Refresh
+                  </Button>
+                </span>
+              </ToolTip>
             )}
           </div>
         )}
@@ -601,12 +627,14 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        <CreateDraftButton
-          onClick={handleCreateDraft}
-          disabled={shouldDisableCreateDraft}
-          disabledTooltip={createDraftDisabledTooltip}
-          darkMode={darkMode}
-        />
+        {showCreateDraftButton && (
+          <CreateDraftButton
+            onClick={handleCreateDraft}
+            disabled={shouldDisableCreateDraft}
+            disabledTooltip={createDraftDisabledTooltip}
+            darkMode={darkMode}
+          />
+        )}
       </Popover.Body>
     </Popover>
   );
@@ -695,8 +723,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {...props}
       />
 
-      {/* Edit Version Modal — only for non-git-sync workspaces */}
-      {!isGitSyncEnabled && (
+      {/* Edit Version Modal — non-git-sync workspaces, or unsynced apps (never pushed to
+          git) that behave like a non-git workspace for editing purposes */}
+      {(!isGitSyncEnabled || versionToEdit?.isSynced === false) && (
         <EditVersionModal
           showEditAppVersion={showEditVersionModal}
           setShowEditAppVersion={(show) => {
@@ -714,11 +743,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         message={deleteModalMessage}
         onConfirm={confirmDeleteVersion}
         onCancel={resetDeleteModal}
-        confirmButtonText={isGitSyncEnabled ? 'Delete and commit' : 'Delete version'}
+        confirmButtonText={isGitTrackedDelete ? 'Delete and commit' : 'Delete version'}
         cancelButtonText={'Cancel'}
         cancelButtonType="secondary"
-        hideCloseIcon={isGitSyncEnabled}
-        staticBackdrop={isGitSyncEnabled}
+        hideCloseIcon={isGitTrackedDelete}
+        staticBackdrop={isGitTrackedDelete}
       />
 
       {/* In-use warning modal — portalled to body to escape stacking contexts */}

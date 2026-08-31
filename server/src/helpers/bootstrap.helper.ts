@@ -245,6 +245,7 @@ type CorsOriginsCache = { getOriginsSet(): Promise<Set<string> | null> };
 
 function tryGetCacheService(app: NestExpressApplication): CorsOriginsCache | null {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { CustomDomainCacheService } = require('@modules/custom-domains/cache.service');
     return app.get(CustomDomainCacheService, { strict: false }) ?? null;
   } catch {

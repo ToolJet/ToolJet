@@ -1,5 +1,5 @@
 export enum SandboxMode {
-  ENABLED = 'ENABLED',   // Sandboxed execution via nsjail
+  ENABLED = 'ENABLED', // Sandboxed execution via nsjail
   BYPASSED = 'BYPASSED', // No sandbox - development/restricted environments
 }
 
