@@ -11,7 +11,12 @@ import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { AppsModule } from '@modules/apps/module';
+import { WebhookSkipFlagModule } from '@modules/git-sync-webhooks/webhook-skip-flag.module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { NotificationsModule } from '@modules/notifications/module';
+import { BackgroundProcessorModule } from '@modules/background-processor/module';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class WorkspaceBranchesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -46,16 +51,23 @@ export class WorkspaceBranchesModule extends SubModule {
         BullModule.registerQueue({
           name: GIT_SYNC_QUEUE,
         }),
-        BullBoardModule.forFeature({
-          name: GIT_SYNC_QUEUE,
-          adapter: BullMQAdapter,
-        }),
+        ...(getTooljetEdition() !== TOOLJET_EDITIONS.Cloud
+          ? [
+              BullBoardModule.forFeature({
+                name: GIT_SYNC_QUEUE,
+                adapter: BullMQAdapter,
+              }),
+            ]
+          : []),
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
         await AppGitModule.register(configs),
         await FolderAppsModule.register(configs),
         await FoldersModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await WebhookSkipFlagModule.register(configs),
+        await BackgroundProcessorModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
         await NotificationsModule.register(configs),
       ],
       controllers: isMainImport ? [WorkspaceBranchController] : [],

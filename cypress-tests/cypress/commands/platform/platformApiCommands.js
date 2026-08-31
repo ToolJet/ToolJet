@@ -229,24 +229,6 @@ Cypress.Commands.add("apiGetDatasourceIds", (datasourceNames) => {
   });
 });
 
-Cypress.Commands.add("apiGetAppIdByName", (appName) => {
-  return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/apps`,
-        headers: headers,
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-        const app = response.body.apps.find((app) => app.name === appName);
-        expect(app, `App with name "${appName}" not found`).to.exist;
-        return app.id;
-      });
-  });
-});
-
 Cypress.Commands.add("apiGetUserDetails", (options = {}) => {
   const { page = 1 } = options;
 
@@ -333,7 +315,7 @@ Cypress.Commands.add(
       if (isAll) return [];
       else if (type === "datasource") {
         return resources.map((id) => ({ dataSourceId: id }));
-      } else if (resourceType === "folder") {
+      } else if (resourceType === "folder" || resourceType === "module_folder") {
         return resources.map((id) => ({ folderId: id }));
       }
       return resources.map((id) => ({ appId: id }));
@@ -350,7 +332,7 @@ Cypress.Commands.add(
         };
       }
 
-      if (type === "folder") {
+      if (type === "folder" || type === "module_folder") {
         return {
           canEditFolder: perms.canEditFolder ?? true,
           canEditApps: perms.canEditApps ?? false,
@@ -410,9 +392,11 @@ Cypress.Commands.add(
         const isEnterprise = Cypress.env("environment") === "Enterprise";
         const typeMap = {
           app: { type: "app", endpoint: "app" },
+          module: { type: "module", endpoint: "data-source" },
           workflow: { type: "workflow", endpoint: "data-source" },
           datasource: { type: "data_source", endpoint: "data-source" },
           folder: { type: "folder", endpoint: "folder" },
+          module_folder: { type: "module_folder", endpoint: "module-folder" },
         };
         const { type, endpoint } = typeMap[resourceType] || typeMap.app;
         const url = isEnterprise
@@ -493,6 +477,9 @@ Cypress.Commands.add(
               workflow: "app",
               data_source: "data-source",
               folder: "folder",
+              modules:"data-source",
+              workflow_folder: "workflow-folder",
+              module_folder: "module-folder",
             };
             const endpoint = typeEndpointMap[permission.type] || "app";
 
@@ -828,10 +815,12 @@ Cypress.Commands.add(
         .task("dbConnection", {
           dbconfig: Cypress.env("app_db"),
           sql: `
-      SELECT ou.invitation_token 
+      SELECT ou.invitation_token
       FROM organization_users ou
       JOIN users u ON u.id = ou.user_id
       WHERE u.email='${email}'
+      AND ou.invitation_token IS NOT NULL
+      ORDER BY ou.created_at DESC
       LIMIT 1;`,
         })
         .then((resp) => {
@@ -1290,5 +1279,110 @@ Cypress.Commands.add("apiDeleteAllModules", () => {
         });
       }
     });
+  });
+});
+
+Cypress.Commands.add("apiCreateModuleFolder", (folderName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folders`,
+        headers,
+        body: { name: folderName, type: "module" },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(201);
+        return response.body;
+      });
+  });
+});
+
+Cypress.Commands.add("apiGetModuleFolderId", (folderName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/folder-apps?searchKey=&type=module`,
+        headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const folder = response.body.folders.find((f) => f.name === folderName);
+        if (!folder) throw new Error(`Module folder with name ${folderName} not found`);
+        return folder.id;
+      });
+  });
+});
+
+Cypress.Commands.add("apiRenameFolder", (folderId, newName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/folders/${folderId}`,
+        headers,
+        body: { name: newName },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        return response.body;
+      });
+  });
+});
+
+
+Cypress.Commands.add("apiAddModuleToFolder", (moduleId, folderId) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/folder-apps`,
+        headers,
+        body: { app_id: moduleId, folder_id: folderId },
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(201);
+        return response.body;
+      });
+  });
+});
+
+Cypress.Commands.add("apiRemoveModuleFromFolder", (moduleId, folderId) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy.request({
+      method: "PUT",
+      url: `${Cypress.env("server_host")}/api/folder-apps/${folderId}`,
+      headers,
+      body: { app_id: moduleId },
+      log: false,
+    });
+  });
+});
+
+Cypress.Commands.add("apiRemoveUserFromGroup", (groupId, email) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
+        headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const groupUser = response.body.find((gu) => gu.user?.email === email);
+        if (!groupUser) throw new Error(`User ${email} not found in group ${groupId}`);
+        return cy.request({
+          method: "DELETE",
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/users/${groupUser.id}`,
+          headers,
+          log: false,
+        });
+      });
   });
 });

@@ -1,10 +1,13 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const gitSyncService = {
   create,
+  validatePush,
   getGitConfig,
   updateConfig,
+  updateBranchingEnabled,
   setFinalizeConfig,
   deleteConfig,
   getAppConfig,
@@ -25,10 +28,20 @@ export const gitSyncService = {
   switchBranch,
   updateGitConfigs,
   getGitConfigs,
-  createGitTag,
   checkTagExists,
+  // Git-aware version save/delete (backend creates/deletes the git tag as part of the same call).
+  saveVersion,
+  deleteVersion,
   updateEnvConfigs,
   testProviderConnection,
+  // Auto-sync webhook management
+  provisionWebhook,
+  enableAutoSync,
+  updateAutoSyncEvents,
+  disableAutoSync,
+  rotateAutoSyncSecret,
+  getAutoSyncStatus,
+  getAutoSyncEvents,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -62,6 +75,20 @@ function updateConfig(organizationGitId, updateParam, gitType = '') {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/git-sync/${organizationGitId}?gitType=${gitType}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+// Toggles only the workspace branching mode. Hits the dedicated endpoint so the config
+// save flow no longer carries the branching flag.
+function updateBranchingEnabled(organizationGitId, isBranchingEnabled) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ isBranchingEnabled }),
+  };
+  return fetch(`${config.apiUrl}/git-sync/${organizationGitId}/is-branching-enabled`, requestOptions).then(
     handleResponse
   );
 }
@@ -119,7 +146,10 @@ function gitPush(body, appId, versionId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-git/gitpush/${appId}/${versionId}`, requestOptions).then(handleResponse);
+  // gitpush is guarded by AppResourceGuard which reads user.branchId from the query.
+  return fetch(appendBranchParam(`${config.apiUrl}/app-git/gitpush/${appId}/${versionId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getAppConfig(organizationId, versionId) {
@@ -362,14 +392,41 @@ function getGitConfigs(organizationId, versionId) {
   );
 }
 
-function createGitTag(appId, versionId, versionDescription) {
+// NOTE: createGitTag was removed. Git-tag creation is now owned by the backend save-version flow.
+
+/**
+ * Save (publish) a version in a GIT-ENABLED workspace. Hits the app-git endpoint, which performs the
+ * DB save AND creates the git tag in one call (server-side). Body is identical to
+ * appVersionService.save — callers use this instead of appVersionService.save when git sync is on.
+ */
+function saveVersion(appId, versionId, values, isUserSwitchedVersion = false) {
+  const body = { is_user_switched_version: isUserSwitchedVersion };
+  if (values.definition) body['definition'] = values.definition;
+  if (values.name) body['name'] = values.name;
+  if (values.diff) body['app_diff'] = values.diff;
+  if (values.description !== undefined && values.description !== null) body['description'] = values.description;
+  if (values.status) body['status'] = values.status;
+
   const requestOptions = {
-    method: 'POST',
+    method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ message: versionDescription }),
+    body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-git/${appId}/versions/${versionId}/tag`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+
+/**
+ * Delete a version in a GIT-ENABLED workspace. Hits the app-git endpoint, which performs the DB
+ * delete AND removes the git tag in one call (server-side).
+ */
+function deleteVersion(appId, versionId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
 /**
@@ -391,4 +448,84 @@ function checkTagExists(appId, versionName) {
     requestOptions
   ).then(handleResponse);
 }
+function validatePush(appId, resourceType = 'app') {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/validate-push/${appId}?resourceType=${resourceType}`, requestOptions).then(
+    handleResponse
+  );
+}
+
 // Remove all app-git api's to separate service from here.
+
+// Auto-sync webhook management
+
+function provisionWebhook() {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/provision`, requestOptions).then(handleResponse);
+}
+
+function enableAutoSync(selectedEvents) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ events: selectedEvents }),
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/enable`, requestOptions).then(handleResponse);
+}
+
+function updateAutoSyncEvents(selectedEvents) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ events: selectedEvents }),
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/events`, requestOptions).then(handleResponse);
+}
+
+function disableAutoSync() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/disable`, requestOptions).then(handleResponse);
+}
+
+function rotateAutoSyncSecret() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/rotate-secret`, requestOptions).then(handleResponse);
+}
+
+function getAutoSyncStatus() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/status`, requestOptions).then(handleResponse);
+}
+
+function getAutoSyncEvents(page = 1, limit = 20) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/git-sync/auto-sync/events?page=${page}&limit=${limit}`, requestOptions).then(
+    handleResponse
+  );
+}

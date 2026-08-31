@@ -79,10 +79,34 @@ describe('RolesUtilService.checkIfBuilderLevelResourcesPermissions', () => {
 
   it('returns truthy for a group with module permission mixed with other view-only permissions', async () => {
     const service = makeService(
-      jest.fn().mockResolvedValue([
-        makePermission(ResourceType.APP, { canEdit: false, canView: true }),
-        makePermission(ResourceType.MODULE, { canEdit: false, canView: true }),
-      ])
+      jest
+        .fn()
+        .mockResolvedValue([
+          makePermission(ResourceType.APP, { canEdit: false, canView: true }),
+          makePermission(ResourceType.MODULE, { canEdit: false, canView: true }),
+        ])
+    );
+
+    await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();
+  });
+
+  // Modules aren't end-user-visible at all, so a MODULE_FOLDER grant is just as disqualifying
+  // as a MODULE grant — even a view-only ("Build-with") one. Mirrors the MODULE cases above.
+  it('returns truthy for a group with module-folder Build-with (view-only) permission', async () => {
+    const service = makeService(
+      jest
+        .fn()
+        .mockResolvedValue([{ type: ResourceType.MODULE_FOLDER, foldersGroupPermissions: { canViewApps: true } }])
+    );
+
+    await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();
+  });
+
+  it('returns truthy for a group with module-folder Edit permission', async () => {
+    const service = makeService(
+      jest
+        .fn()
+        .mockResolvedValue([{ type: ResourceType.MODULE_FOLDER, foldersGroupPermissions: { canEditFolder: true } }])
     );
 
     await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();

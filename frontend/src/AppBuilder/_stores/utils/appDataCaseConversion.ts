@@ -100,7 +100,7 @@ type QueryLike = { options?: Record<string, unknown> };
  *
  * NO-OP FOR CORRECTLY-STORED DATA (post backend-serialization unification)
  *  - The editor writes these keys camelCase, they are stored verbatim, and all the backend endpoints now return the `options` blob verbatim
- *  - so the whitelisted keys arrive camelCase everywhere and the guard below (`options[snakeKey] !== undefined`) never fires. 
+ *  - so the whitelisted keys arrive camelCase everywhere and the guard below (`options[snakeKey] !== undefined`) never fires.
  *
  * WHY IT'S KEPT (a cheap, idempotent safety net)
  *  - It still HEALS rows that already have these keys stored snake_case

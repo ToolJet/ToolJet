@@ -1,0 +1,74 @@
+.import-branch-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.import-branch-modal {
+  width: 404px;
+  background-color: var(--slate1);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: importBranchModalFadeIn 0.2s ease;
+
+  &.theme-dark {
+    background-color: var(--surfaces-surface-01);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes importBranchModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.import-branch-modal-header {
+  padding: 24px 24px 0;
+
+  .import-branch-modal-title {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: var(--slate12);
+    margin: 0;
+  }
+}
+
+.import-branch-modal-body {
+  padding: 16px 24px 24px;
+}
+
+.import-branch-message {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--slate11);
+  margin: 0;
+
+  strong {
+    font-weight: 600;
+    color: var(--slate12);
+  }
+}
+
+.import-branch-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 24px 24px;
+}

@@ -40,7 +40,7 @@ export const ListviewSubcontainer = ({
     (state) => state.temporaryLayouts?.[getDynamicLayoutKey(id, contextIndices, '', moduleId)],
     shallow
   );
-  const transformedRowHeight = isDynamicHeightEnabled ? temporaryLayout?.height ?? rowHeight : rowHeight;
+  const transformedRowHeight = isDynamicHeightEnabled ? (temporaryLayout?.height ?? rowHeight) : rowHeight;
 
   useDynamicHeight({
     isDynamicHeightEnabled,

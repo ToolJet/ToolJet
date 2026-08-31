@@ -312,11 +312,13 @@ describe("ToolJet: Modules API", () => {
   it("verify import module API fails for duplicate module name", () => {
     const duplicateName = `dup-${Date.now()}`;
 
+    //need to udpate for non gitsync flow
     importModule(workspaceId, { ...requestData, appName: duplicateName }).then(
       (response) => {
         expect(response.status).to.eq(201);
       },
     );
+
 
     importModule(workspaceId, { ...requestData, appName: duplicateName }).then(
       (response) => {

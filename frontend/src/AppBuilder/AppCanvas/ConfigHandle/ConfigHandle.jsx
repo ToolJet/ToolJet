@@ -10,7 +10,7 @@ import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
-import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
+import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash, Waypoints } from 'lucide-react';
 import Popover from '@/_ui/Popover';
 import dynamicHeightSvg from '@assets/images/dynamic-height-info.svg?url';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
@@ -59,6 +59,7 @@ export const ConfigHandle = ({
   const position = widgetTop < 15 ? 'bottom' : 'top';
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const setEntityToViewDependencies = useStore((state) => state.setEntityToViewDependencies);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
 
   // If one component is hovered and one is selected, show the handle for the hovered component
@@ -204,8 +205,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-            ? '-26px'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+              ? '-26px'
+              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -272,6 +273,16 @@ export const ConfigHandle = ({
         dataCy={`${componentName.toLowerCase()}-inspect-button`}
       >
         <SquareDashedMousePointer size={14} color="var(--icon-strong)" />
+      </ConfigHandleButton>
+
+      <ConfigHandleButton
+        customStyles={iconOnlyButtonStyle}
+        onClick={() => setEntityToViewDependencies?.({ kind: 'component', id })}
+        message="Dependencies"
+        show={true}
+        dataCy={`${componentName.toLowerCase()}-dependencies-button`}
+      >
+        <Waypoints size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
 
       <ConfigHandleButton

@@ -41,8 +41,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       let errorResponse: ErrorResponse;
       const message = exception?.response?.message || exception.message;
       const code = exception?.code;
-      const organizationSlug =
-        INVITE_EXPIRY_MESSAGES.includes(message) ? exception?.response?.organizationSlug : undefined;
+      const organizationSlug = INVITE_EXPIRY_MESSAGES.includes(message)
+        ? exception?.response?.organizationSlug
+        : undefined;
 
       if (exception instanceof HttpException) {
         errorResponse = { status: exception.getStatus(), message };

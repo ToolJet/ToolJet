@@ -12,6 +12,7 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 import { EncryptionModule } from '@modules/encryption/module';
@@ -31,6 +32,7 @@ export class VersionModule extends SubModule {
       VersionsCreateService,
       VersionService,
       VersionUtilService,
+      GitSyncEditGuard,
     } = await this.getProviders(configs, 'versions', [
       'controller',
       'controller.v2',
@@ -40,6 +42,7 @@ export class VersionModule extends SubModule {
       'services/create.service',
       'service',
       'util.service',
+      'guards/git-sync-edit.guard',
     ]);
 
     // Get apps related providers
@@ -59,6 +62,7 @@ export class VersionModule extends SubModule {
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
         await EncryptionModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport
         ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]
@@ -81,8 +85,13 @@ export class VersionModule extends SubModule {
         FeatureAbilityFactory,
         GroupPermissionsRepository,
         ValidModuleByCorrelationGuard,
+        GitSyncEditGuard,
       ],
-      exports: [VersionUtilService],
+      // VersionService is exported so the app-git module can inject it to run the git-aware
+      // save/delete flows (call update()/deleteVersion() for the DB work, then create/delete the
+      // git tag). Direction is app-git → versions (app-git imports VersionModule), which replaces
+      // the old versions → app-git moduleRef.get(AppGitService) hack.
+      exports: [VersionUtilService, VersionService],
     });
   }
 }

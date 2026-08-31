@@ -13,7 +13,10 @@ import { validatePasswordServer } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class ProfileService implements IProfileService {
-  constructor(protected userRepository: UserRepository, protected serviceUtils: ProfileUtilService) {}
+  constructor(
+    protected userRepository: UserRepository,
+    protected serviceUtils: ProfileUtilService
+  ) {}
 
   getSessionUserDetails(user: User): Partial<User> {
     const { firstName, lastName, avatarId, email, id } = user;
@@ -58,9 +61,8 @@ export class ProfileService implements IProfileService {
         where: { id: userId },
       });
       const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
-      const passwordExpiry = (!isNaN(rawExpiryDays) && rawExpiryDays > 0)
-        ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
-        : null;
+      const passwordExpiry =
+        !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000) : null;
       await this.userRepository.updateOne(
         userId,
         {

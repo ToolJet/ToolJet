@@ -4,6 +4,8 @@ import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { BullModule } from '@nestjs/bullmq';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { FeatureAbilityFactory } from './ability';
 import { NameResolverRepository } from '@modules/app-history/repositories/name-resolver.repository';
 import { AppHistoryRepository } from '@modules/app-history/repository';
@@ -62,6 +64,16 @@ export class AppHistoryModule extends SubModule {
           },
         })
       );
+
+      // Bull Board's forRoot is not registered on cloud
+      if (edition !== TOOLJET_EDITIONS.Cloud) {
+        imports.push(
+          BullBoardModule.forFeature({
+            name: 'app-history',
+            adapter: BullMQAdapter,
+          })
+        );
+      }
     }
 
     // Register queue processor only when WORKER=true and edition is EE/Cloud
