@@ -7,14 +7,10 @@ interface Features {
   [FEATURE_KEY.GET_LIBRARY]: FeatureConfig;
   [FEATURE_KEY.DELETE_LIBRARY]: FeatureConfig;
   [FEATURE_KEY.LIST_LIBRARIES]: FeatureConfig;
-  [FEATURE_KEY.VALIDATE_TOKEN]: FeatureConfig;
   [FEATURE_KEY.UPLOAD_DEV_BUNDLE]: FeatureConfig;
   [FEATURE_KEY.STREAM_DEV_BUNDLE]: FeatureConfig;
   [FEATURE_KEY.PUBLISH_REVISION]: FeatureConfig;
   [FEATURE_KEY.SERVE_BUNDLE]: FeatureConfig;
-  [FEATURE_KEY.CREATE_CLI_TOKEN]: FeatureConfig;
-  [FEATURE_KEY.LIST_CLI_TOKENS]: FeatureConfig;
-  [FEATURE_KEY.DELETE_CLI_TOKEN]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
