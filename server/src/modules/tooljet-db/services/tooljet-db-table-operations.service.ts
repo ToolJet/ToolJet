@@ -202,12 +202,13 @@ export class TooljetDbTableOperationsService {
   async resolveTableById(
     organizationId: string,
     internalTableId: string,
+    environmentId: string | undefined,
     manager?: EntityManager
   ): Promise<{ relation: InternalTableRelation }> {
     const relation = await this.relationResolverService.getRelation(
       organizationId,
       internalTableId,
-      undefined,
+      environmentId,
       manager
     );
 
@@ -226,7 +227,7 @@ export class TooljetDbTableOperationsService {
     columns: TooljetDatabaseColumn[];
     configurations: any;
   }> {
-    const { table_name: tableName, id: id } = params;
+    const { table_name: tableName, id: id, environmentId } = params;
     const { appManager, tjdbManager } = connectionManagers;
 
     const internalTable = await appManager.findOne(InternalTable, {
@@ -241,7 +242,7 @@ export class TooljetDbTableOperationsService {
     const relation = await this.relationResolverService.getRelation(
       organizationId,
       internalTable.id,
-      undefined,
+      environmentId,
       appManager
     );
 

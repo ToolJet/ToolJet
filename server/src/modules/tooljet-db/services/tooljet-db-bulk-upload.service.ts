@@ -82,9 +82,11 @@ export class TooljetDbBulkUploadService {
     // tables in internalTables aren't resolved eagerly - they're only needed if a raw Postgres
     // error has to be translated back to a display name, so bulkUpsertRows resolves those lazily,
     // on its error path.
+    // CSV upload has no environment on the wire - always resolves in development.
     const { relation: targetRelation } = await this.tableOperationsService.resolveTableById(
       organizationId,
       internalTableId,
+      undefined,
       this.manager
     );
 
@@ -226,6 +228,7 @@ export class TooljetDbBulkUploadService {
             const { relation } = await this.tableOperationsService.resolveTableById(
               organizationId,
               table.id,
+              undefined,
               this.manager
             );
             return { id: relation.id, tableName: table.tableName };
@@ -335,7 +338,8 @@ export class TooljetDbBulkUploadService {
     payload: Array<{ [key: string]: any }>,
     tableId: string,
     primaryKeyColumns: string | string[],
-    organizationId: string
+    organizationId: string,
+    environmentId: string | undefined
   ): Promise<{ status: string; updatedRows: number; error?: string; data?: Array<{ [key: string]: any }> }> {
     if (!payload || payload.length === 0) {
       throw new Error('Payload is empty. Nothing to update.');
@@ -352,7 +356,12 @@ export class TooljetDbBulkUploadService {
     // getRelation's "not found in this environment" throws NotFoundException, same as the tenancy
     // check above - a real miss, not the structured { status: 'failed' } shape this method returns
     // from inside the try block below.
-    const { relation } = await this.tableOperationsService.resolveTableById(organizationId, tableId, this.manager);
+    const { relation } = await this.tableOperationsService.resolveTableById(
+      organizationId,
+      tableId,
+      environmentId,
+      this.manager
+    );
 
     const primaryKeys = Array.isArray(primaryKeyColumns) ? primaryKeyColumns : [primaryKeyColumns];
     const tenantSchema = findTenantSchema(organizationId);
@@ -418,7 +427,8 @@ export class TooljetDbBulkUploadService {
     rows: Record<string, any>[],
     tableId: string,
     primaryKeyColumns: string[],
-    organizationId: string
+    organizationId: string,
+    environmentId: string | undefined
   ): Promise<{ status: string; inserted: number; updated: number; rows: any[]; error?: string }> {
     const rowsToUpsert = [...rows];
     if (isEmpty(rowsToUpsert)) {
@@ -460,7 +470,12 @@ export class TooljetDbBulkUploadService {
     // as a business-level failure.
     let relation: InternalTableRelation;
     try {
-      ({ relation } = await this.tableOperationsService.resolveTableById(organizationId, tableId, this.manager));
+      ({ relation } = await this.tableOperationsService.resolveTableById(
+        organizationId,
+        tableId,
+        environmentId,
+        this.manager
+      ));
     } catch (error) {
       if (!(error instanceof NotFoundException)) throw error;
       return {
@@ -478,7 +493,7 @@ export class TooljetDbBulkUploadService {
       {
         id: tableId,
       },
-      undefined
+      environmentId
     );
     const tableColumns = result?.columns || [];
 

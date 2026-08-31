@@ -95,13 +95,14 @@ export class TooljetDbDataOperationsService implements QueryService {
     try {
       const { table_id: tableId, bulk_update_with_primary_key: bulkUpdateWithPrimaryKey } = queryOptions;
       const { primary_key: primaryKeyColumn, rows_update: rowsToUpdate } = bulkUpdateWithPrimaryKey;
-      const { organization_id: organizationId } = context.app;
+      const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
       const result = await this.tooljetDbBulkUploadService.bulkUpdateRowsWithPrimaryKey(
         rowsToUpdate,
         tableId,
         primaryKeyColumn,
-        organizationId
+        organizationId,
+        environmentId
       );
 
       if (result.status === 'failed') {
@@ -644,7 +645,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     try {
       const { table_id: tableId, bulk_upsert_with_primary_key: bulkUpsertOptions } = queryOptions;
       const { primary_key: primaryKeyColumns, rows: rowsToUpsert } = bulkUpsertOptions;
-      const { organization_id: organizationId } = context.app;
+      const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
       // Validate input
       if (!Array.isArray(rowsToUpsert) || rowsToUpsert.length === 0) {
@@ -668,7 +669,8 @@ export class TooljetDbDataOperationsService implements QueryService {
         rowsToUpsert,
         tableId,
         primaryKeyColumns,
-        organizationId
+        organizationId,
+        environmentId
       );
 
       if (result.status === 'failed') {

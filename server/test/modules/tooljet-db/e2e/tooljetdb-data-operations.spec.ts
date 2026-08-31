@@ -36,6 +36,7 @@ import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet
 // and test/modules/data-queries/e2e/data-queries.spec.ts. Importing the CE base classes would be
 // a different DI token and app.get() would not find them.
 import { TooljetDbDataOperationsService } from '@ee/tooljet-db/services/tooljet-db-data-operations.service';
+import { TooljetDbBulkUploadService } from '@ee/tooljet-db/services/tooljet-db-bulk-upload.service';
 import { DataQueriesUtilService as EEDataQueriesUtilService } from '@ee/data-queries/util.service';
 
 describe('TooljetDbDataController', () => {
@@ -551,6 +552,113 @@ describe('TooljetDbDataController', () => {
         const rows = result.data as any[];
         expect(rows.find((row) => row.id === 102)).toBeDefined();
         expect(rows.find((row) => row.id === 101)).toBeUndefined();
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // bulk_update_with_primary_key and bulk_upsert_with_primary_key write rows - unlike list_rows
+    // above, they run real SQL through the tooljetDb-connection EntityManager (not a mocked
+    // PostgREST call and not a second, genuinely separate connection like sql_execution/
+    // join_tables below), so they stay visible inside this spec file's ordinary suite transaction
+    // and don't need withRealTransactions or a dedicated tenant role. Placed before the
+    // sql_execution/join_tables block deliberately: that block's withRealTransactions rebuilds the
+    // suite transaction from scratch on exit, which leaves the ordinary beforeEach/afterEach
+    // per-test SAVEPOINT machinery pointed at a savepoint name that no longer exists in the new
+    // transaction - a pre-existing test-harness ordering hazard, not this task's to fix.
+    // -------------------------------------------------------------------------
+    describe('bulk_update_with_primary_key & bulk_upsert_with_primary_key | resolve in the requested environment', () => {
+      let bulkTableId: string;
+      let productionEnv: { id: string };
+      let devRelation: InternalTableRelation;
+      let prodRelation: InternalTableRelation;
+      const workspaceSchema = () => `workspace_${adminOrgId}`;
+
+      beforeAll(async () => {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const tableName = `test_bulk_env_${Date.now()}`;
+        const res = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload(tableName));
+        expect([200, 201]).toContain(res.statusCode);
+        bulkTableId = res.body?.result?.id;
+        expect(bulkTableId).toBeDefined();
+
+        const appEnvironments = await ensureAppEnvironments(app, adminOrgId);
+        productionEnv = appEnvironments.find((env) => env.name === 'production');
+        expect(productionEnv).toBeDefined();
+
+        const defaultManager = getDefaultDataSource().manager;
+        // createTable only ever mints the development relation - production has none yet.
+        devRelation = await defaultManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: bulkTableId },
+        });
+        prodRelation = await defaultManager.save(
+          defaultManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: bulkTableId,
+            environmentId: productionEnv.id,
+            branchId: devRelation.branchId,
+          })
+        );
+
+        // Production's physical table carries an extra column development's table never had -
+        // lets the agreement test below prove which relation a shape read actually landed on
+        // without reaching into view_table's internals.
+        await getTooljetDbDataSource().query(
+          `CREATE TABLE "${workspaceSchema()}"."${prodRelation.id}" ` +
+            `(id integer primary key, name varchar, email varchar, prod_only_marker varchar)`
+        );
+      });
+
+      it('bulk_upsert_with_primary_key with production named lands rows in production, not development', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const bulkUploadService = app.get(TooljetDbBulkUploadService);
+        const result = await bulkUploadService.bulkUpsertRowsWithPrimaryKey(
+          [{ id: 9001, name: 'ProdUpsertRow' }],
+          bulkTableId,
+          ['id'],
+          adminOrgId,
+          productionEnv.id
+        );
+
+        expect(result.status).toBe('ok');
+
+        const tjds = getTooljetDbDataSource();
+        const prodRows = await tjds.query(`SELECT * FROM "${workspaceSchema()}"."${prodRelation.id}" WHERE id = 9001`);
+        expect(prodRows.length).toBe(1);
+
+        const devRows = await tjds.query(`SELECT * FROM "${workspaceSchema()}"."${devRelation.id}" WHERE id = 9001`);
+        expect(devRows.length).toBe(0);
+      });
+
+      it('bulkUpsertRowsWithPrimaryKey resolves its write target and its shape read to the same relation', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const tableOperationsService = app.get(TooljetDbTableOperationsService);
+
+        const { relation: writeRelation } = await tableOperationsService.resolveTableById(
+          adminOrgId,
+          bulkTableId,
+          productionEnv.id,
+          getDefaultDataSource().manager
+        );
+        expect(writeRelation.id).toBe(prodRelation.id);
+
+        const viewResult = await tableOperationsService.perform(
+          adminOrgId,
+          'view_table',
+          { id: bulkTableId },
+          productionEnv.id
+        );
+        // prod_only_marker exists only on production's physical table - its presence here proves
+        // view_table resolved the SAME relation id the write target above resolved to, not
+        // development's, which is what bulkUpsertRowsWithPrimaryKey's :458/:470 pair depends on.
+        expect(viewResult.columns.some((column: any) => column.column_name === 'prod_only_marker')).toBe(true);
       });
     });
 
