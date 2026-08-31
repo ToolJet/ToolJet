@@ -130,6 +130,17 @@ fi
 
 export $(grep -v '^#' .env | xargs)
 
+# Create directory for RDS certificates
+mkdir -p /home/ubuntu/certs
+
+# Download the latest AWS RDS CA bundle
+if wget -q -O /home/ubuntu/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
+  echo "RDS cert bundle downloaded successfully."
+else
+  echo "Error: Failed to download RDS cert bundle."
+  exit 1
+fi
+
 if psql -d postgresql://$PG_USER:$PG_PASS@$PG_HOST/postgres -c 'select now()' > /dev/null 2>&1
 then
   echo "Successfully pinged the database!";

@@ -223,20 +223,28 @@ jobs:
           ELAPSED=0
 
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
+            # Check 1: success message in logs
             if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
 
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
 
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
+            echo "❌ Timeout reached without finding success logs or healthy endpoint"
             echo "📄 Showing current logs for troubleshooting..."
             docker-compose logs --tail=100 tooljet
             exit 1
@@ -624,18 +632,25 @@ jobs:
           TIMEOUT=700
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
+            # Check 1: success message in logs
             if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
+            echo "❌ Timeout reached without finding success logs or healthy endpoint"
             echo "📄 Showing current logs for troubleshooting..."
             docker-compose logs --tail=100 tooljet
             exit 1
@@ -1057,18 +1072,25 @@ jobs:
           TIMEOUT=700
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
+            # Check 1: success message in logs
             if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
+            echo "❌ Timeout reached without finding success logs or healthy endpoint"
             echo "📄 Showing current logs for troubleshooting..."
             docker-compose logs --tail=100 tooljet
             exit 1
@@ -1492,18 +1514,25 @@ jobs:
           TIMEOUT=700
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
+            # Check 1: success message in logs
             if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
               echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            # Check 2: health endpoint returns HTTP 200
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_STATUS)!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed, last health check: HTTP ${HTTP_STATUS})"
             sleep 10
             ELAPSED=$((ELAPSED + 10))
           done
           if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
+            echo "❌ Timeout reached without finding success logs or healthy endpoint"
             echo "📄 Showing current logs for troubleshooting..."
             docker-compose logs --tail=100 tooljet
             exit 1

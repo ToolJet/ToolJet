@@ -37,6 +37,7 @@ import Icon from '@/_ui/Icon/solidIcons/index';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
+import { completionLabelTooltip } from './completionLabelTooltip';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
 // CodeMirror `extensions` prop must stay referentially stable, otherwise
@@ -481,6 +482,7 @@ const EditorInput = ({
         ? [
             langExtension,
             autoCompleteConfig,
+            completionLabelTooltip,
             keymap.of([...staticCustomKeyMaps]),
             customTabKeymap,
             tooltipExtension,
