@@ -65,6 +65,26 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   once ownership is ruled out does position decide: an unowned uuid in the URL **path** is 404 (the
   table doesn't exist here); an unowned uuid in an embedded **querystring** reference (a `select=`
   join) is 400 (malformed request). Nothing reaches PostgREST unrewritten in either case.
+- **Every runtime path that resolves a table reference does so through one of five seams**, each
+  independently wireable to `environmentId` — an omission at any one of them silently resolves to
+  development rather than failing loudly:
+
+  | Seam | Where | Reached by |
+  |---|---|---|
+  | Proxy path | `PostgrestProxyService.resolveAndRewrite()` | `list_rows`, `create_row`, `update_rows`, `delete_rows` |
+  | Table-name resolve | `TooljetDbTableOperationsService.resolveTable()` | `sql_execution` |
+  | Table-id resolve | `TooljetDbTableOperationsService.resolveTableById()` | both bulk ops' write target |
+  | View-table shape read | `TooljetDbTableOperationsService.viewTable()` (via `perform('view_table', ...)`) | `bulk_upsert_with_primary_key`'s shape check |
+  | Join resolve | `TooljetDbTableOperationsService`'s join-table resolution | `join_tables` |
+
+  A new caller resolves through one of these five, never by constructing its own rewritten
+  reference. DDL (`create_table`, `edit_table`, etc.) deliberately resolves with no environment —
+  schema edits are development-only.
+- **`bulk_upsert_with_primary_key` resolves its write target and its shape lookup independently** —
+  `resolveTableById` for the row it writes, `perform('view_table', ...)` for the shape it validates
+  against. Both calls must always receive the same `environmentId`, or the operation silently
+  validates against one environment's shape while writing another's rows. Any future change to
+  either call site must change both in the same commit.
 - `joinTable` falls back to the `TOOLJET_DB_USER` admin role when SQL mode is disabled (Cloud
   today) — no workspace-scoped connection exists in that configuration. That role can read every
   workspace's schema; the from/join table references are still validated against the caller's

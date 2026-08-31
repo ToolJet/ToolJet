@@ -9,8 +9,9 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
  * Resolves (logical table id, environment, branch) -> physical relation name.
  *
  * Real in CE, not a stub: a relation id is the only way to name a physical table, so an EE-only
- * resolver would leave CE nothing to resolve to. CE pins the priority-1 environment, which is also
- * the licence-lapse behaviour. EE overrides resolveEnvironment to honour the requested id.
+ * resolver would leave CE nothing to resolve to. The licence gate lives in
+ * AppEnvironmentUtilService.resolveEnvironmentId and is shared by both editions; the EE subclass
+ * of this service exists only to satisfy the same-path service rule, not to override this behaviour.
  *
  * Fail-closed contract: an id the caller does not own, or that has no relation in this
  * (environment, branch), is OMITTED from the returned map. It is never passed through unrewritten.
