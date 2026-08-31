@@ -60,6 +60,11 @@ describe('TooljetDbDataController', () => {
     // In-memory store for mock PostgREST data
     const mockRows: Record<number, any>[] = [];
 
+    // Environment-resolution test only: keyed by physical relation id so two relations of the
+    // same logical table can be told apart by which rewritten id shows up in the request URL.
+    // Reset per test so it never leaks into the shared mockRows-based tests above.
+    let environmentRowsByRelationId: Map<string, any[]> | null = null;
+
     // ---------------------------------------------------------------------------
     // Polly.js setup — intercept PostgREST, passthrough test server
     // ---------------------------------------------------------------------------
@@ -226,6 +231,7 @@ describe('TooljetDbDataController', () => {
 
     beforeEach(() => {
       interceptedRequests = [];
+      environmentRowsByRelationId = null;
 
       // Passthrough requests to the NestJS test server (127.0.0.1).
       context.polly.server
@@ -254,6 +260,15 @@ describe('TooljetDbDataController', () => {
 
       // GET | list rows
       context.polly.server.get('http://localhost:3001/*').intercept((req, res) => {
+        if (environmentRowsByRelationId) {
+          const relationId = [...environmentRowsByRelationId.keys()].find((id) => req.url.includes(id));
+          const rows = relationId ? environmentRowsByRelationId.get(relationId) : [];
+          res.status(200);
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Range', rows.length > 0 ? `0-${rows.length - 1}/${rows.length}` : '*/0');
+          res.json(rows);
+          return;
+        }
         res.status(200);
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Range', mockRows.length > 0 ? `0-${mockRows.length - 1}/${mockRows.length}` : '*/0');
@@ -493,6 +508,47 @@ describe('TooljetDbDataController', () => {
         expect(runSpy).toHaveBeenCalled();
         const context = runSpy.mock.calls[0][4];
         expect(context.app.environment_id).toBe(stagingEnv.id);
+      });
+    });
+
+    describe('list_rows | resolves in the requested environment', () => {
+      it('should return production rows, not development rows, when production is named', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const appEnvironments = await ensureAppEnvironments(app, adminOrgId);
+        const productionEnv = appEnvironments.find((env) => env.name === 'production');
+        expect(productionEnv).toBeDefined();
+
+        const defaultManager = getDefaultDataSource().manager;
+        // createTable (in beforeAll) only ever mints the development relation — production has
+        // none yet, so it's seeded directly here.
+        const devRelation = await defaultManager.findOne(InternalTableRelation, {
+          where: { internalTableId: tableId },
+        });
+        const prodRelation = await defaultManager.save(
+          defaultManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: tableId,
+            environmentId: productionEnv.id,
+            branchId: devRelation.branchId,
+          })
+        );
+
+        environmentRowsByRelationId = new Map([
+          [devRelation.id, [{ id: 101, name: 'DevOnlyRow' }]],
+          [prodRelation.id, [{ id: 102, name: 'ProdOnlyRow' }]],
+        ]);
+
+        const dataOperationsService = app.get(TooljetDbDataOperationsService);
+        const result = await dataOperationsService.listRows(
+          { id: 'q1', table_id: tableId, list_rows: {} },
+          { app: { organization_id: adminOrgId, environment_id: productionEnv.id } }
+        );
+
+        expect(result.status).toBe('ok');
+        const rows = result.data as any[];
+        expect(rows.find((row) => row.id === 102)).toBeDefined();
+        expect(rows.find((row) => row.id === 101)).toBeUndefined();
       });
     });
   });

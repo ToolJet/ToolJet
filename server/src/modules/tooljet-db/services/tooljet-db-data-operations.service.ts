@@ -75,9 +75,10 @@ export class TooljetDbDataOperationsService implements QueryService {
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     headers: Record<string, string>,
-    body: Record<string, any> = {}
+    body: Record<string, any> = {},
+    environmentId: string | undefined
   ): Promise<QueryResult> {
-    const result: any = await this.postgrestProxyService.perform(url, method, headers, body);
+    const result: any = await this.postgrestProxyService.perform(url, method, headers, body, environmentId);
 
     return { status: 'ok', data: result };
   }
@@ -134,7 +135,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
     try {
       const { table_id: tableId, list_rows: listRows } = queryOptions;
-      const { organization_id: organizationId } = context.app;
+      const { organization_id: organizationId, environment_id: environmentId } = context.app;
       const query = [];
 
       if (!isEmpty(listRows)) {
@@ -183,7 +184,7 @@ export class TooljetDbDataOperationsService implements QueryService {
           ? `/api/tooljet-db/proxy/${tableId}` + `?${query.join('&')}`
           : `/api/tooljet-db/proxy/${tableId}`;
 
-      return await this.proxyPostgrest(maybeSetSubPath(url), 'GET', headers);
+      return await this.proxyPostgrest(maybeSetSubPath(url), 'GET', headers, {}, environmentId);
     } catch (error) {
       throw new QueryError(error.message, error.message, {});
     }
@@ -194,11 +195,11 @@ export class TooljetDbDataOperationsService implements QueryService {
       if (isEmpty(colOpts.column)) return acc;
       return Object.assign(acc, { [colOpts.column]: colOpts.value });
     }, {});
-    const { organization_id: organizationId } = context.app;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
 
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${queryOptions.table_id}`);
-    return await this.proxyPostgrest(url, 'POST', headers, columns);
+    return await this.proxyPostgrest(url, 'POST', headers, columns, environmentId);
   }
 
   async updateRows(queryOptions, context): Promise<QueryResult> {
@@ -211,7 +212,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
     const { table_id: tableId, update_rows: updateRows } = queryOptions;
     const { where_filters: whereFilters, columns } = updateRows;
-    const { organization_id: organizationId } = context.app;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
     const query = [];
     const whereQuery = buildPostgrestQuery(whereFilters);
@@ -224,7 +225,7 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&') + '&order=id');
-    return await this.proxyPostgrest(url, 'PATCH', headers, body);
+    return await this.proxyPostgrest(url, 'PATCH', headers, body, environmentId);
   }
 
   async deleteRows(queryOptions, context): Promise<QueryResult> {
@@ -237,7 +238,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
     const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} } } = queryOptions;
     const { where_filters: whereFilters, limit = 1, order_column: orderColumn } = deleteRows;
-    const { organization_id: organizationId } = context.app;
+    const { organization_id: organizationId, environment_id: environmentId } = context.app;
 
     const query = [];
     const whereQuery = buildPostgrestQuery(whereFilters);
@@ -264,7 +265,7 @@ export class TooljetDbDataOperationsService implements QueryService {
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));
-    return await this.proxyPostgrest(url, 'DELETE', headers);
+    return await this.proxyPostgrest(url, 'DELETE', headers, {}, environmentId);
   }
 
   async joinTables(queryOptions, context): Promise<QueryResult> {

@@ -67,9 +67,12 @@ export class PostgrestProxyService {
 
     // replaceUrlForPostgrest strips the /api/tooljet-db/proxy prefix — resolveAndRewrite is
     // written against the bare `/<uuid>?...` form (see its own doc comment).
+    // No environment on the wire for the editor's direct /proxy/* route; the selector and its
+    // permission check land together in H8. Explicit undefined, never a silent default.
     const { url: rewrittenUrl, tableInfo } = await this.resolveAndRewrite(
       replaceUrlForPostgrest(req.url),
-      organizationId
+      organizationId,
+      undefined
     );
     req.url = rewrittenUrl;
     req.headers['tableInfo'] = tableInfo;
@@ -95,13 +98,18 @@ export class PostgrestProxyService {
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     headers: Record<string, any>,
-    body: Record<string, any> = {}
+    body: Record<string, any> = {},
+    environmentId: string | undefined
   ) {
     // Outside the try: NotFoundException/BadRequestException from resolveAndRewrite must
     // propagate as-is. The catch below is shaped for `got`'s HTTP error (error.response.rawBody)
     // and would throw a masking TypeError if a Nest HttpException reached it instead.
     const updatedPath = replaceUrlForPostgrest(url);
-    const { url: rewrittenPath, tableInfo } = await this.resolveAndRewrite(updatedPath, headers['tj-workspace-id']);
+    const { url: rewrittenPath, tableInfo } = await this.resolveAndRewrite(
+      updatedPath,
+      headers['tj-workspace-id'],
+      environmentId
+    );
 
     try {
       const { dbUser, dbSchema } = isSQLModeDisabled()
@@ -186,12 +194,13 @@ export class PostgrestProxyService {
    */
   protected async resolveAndRewrite(
     url: string,
-    organizationId: string
+    organizationId: string,
+    environmentId: string | undefined
   ): Promise<{ url: string; tableInfo: Record<string, string> }> {
     const { path, embedded } = extractTableRefs(url);
     if (!path) throw new NotFoundException('Table not found');
 
-    const resolved = await this.relationResolverService.resolve(organizationId, [path, ...embedded]);
+    const resolved = await this.relationResolverService.resolve(organizationId, [path, ...embedded], environmentId);
 
     if (!resolved.has(path)) throw new NotFoundException('Table not found');
 
