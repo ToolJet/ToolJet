@@ -616,7 +616,12 @@ export const Navigation = function Navigation(props) {
                   <DropdownMenu.Portal>
                     <DropdownMenu.Content
                       className={cx('page-menu-popup', { 'dark-theme': darkMode })}
-                      style={popupThemeVars}
+                      style={{
+                        ...popupThemeVars,
+                        // Caps growth to Radix's available-height var so it never needs to flip sides.
+                        maxHeight: 'min(75vh, var(--radix-dropdown-menu-content-available-height, 75vh))',
+                        overflowY: 'auto',
+                      }}
                       sideOffset={6}
                       align="end"
                       collisionPadding={8}
