@@ -87,13 +87,26 @@ export const addCSA = (componentName, actions) => {
     cy.dragAndDropWidget(buttonText.defaultWidgetText, xOffset, yOffset);
     selectEvent(action.event, "Control Component");
     selectCSA(componentName, action.action);
+    // The CSA action's value renders as a fxEditor CodeHinter wrapped in a
+    // constant `action-options-text-input-field` (EventManager.jsx:1042). The
+    // inner fx/input data-cy is `event-<param.displayName>-*` (varies per action:
+    // Text, Value, …), so target the constant wrapper instead. String params
+    // default to code (fx active → `.cm-line` present); boolean params default to
+    // a toggle, so click the fx button first to reveal the code editor.
     if (action.value) {
       cy.wait(500);
-      cy.get('[data-cy="-input-field"]').clearAndTypeOnCodeMirror(action.value);
+      cy.get('[data-cy="action-options-text-input-field"]:visible')
+        .last()
+        .clearAndTypeOnCodeMirror(action.value);
     } if (action.valueToggle) {
       cy.wait(500);
-      cy.get('[data-cy="-fx-button"]').last().click();
-      cy.get('[data-cy="-input-field"]').clearAndTypeOnCodeMirror(action.valueToggle);
+      cy.get('[data-cy="action-options-text-input-field"]:visible')
+        .last()
+        .find(".fx-button")
+        .click({ force: true });
+      cy.get('[data-cy="action-options-text-input-field"]:visible')
+        .last()
+        .clearAndTypeOnCodeMirror(action.valueToggle);
     }
 
   });

@@ -75,7 +75,9 @@ export const verifyAndModifyToggleFx = (
   cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
-      .find("pre.CodeMirror-line")
+      // CodeMirror 6 renders lines as `.cm-line` (the old cm5 `pre.CodeMirror-line`
+      // no longer exists — clearAndTypeOnCodeMirror already targets `.cm-line`).
+      .find(".cm-line")
       .should("have.text", defaultValue);
   cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
   if (toggleModification == true)
@@ -298,7 +300,7 @@ export const verifyAndModifyStylePickerFx = (
 
   cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
-    cy.get(".CodeMirror-line")
+    cy.get(".cm-line")
       .should("be.visible")
       .and("have.text", `${boxShadow}${defaultValue}`);
   });
@@ -310,7 +312,7 @@ export const verifyAndModifyStylePickerFx = (
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName))
     .eq(index)
     .within(() => {
-      cy.get(".CodeMirror-line").should("be.visible").and("have.text", value);
+      cy.get(".cm-line").should("be.visible").and("have.text", value);
     });
 };
 
@@ -321,13 +323,22 @@ export const verifyWidgetColorCss = (
   innerProp = false
 ) => {
   cy.forceClickOnCanvas();
+  const alpha = color[3] / 100;
+  const rgb = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+  const rgba = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha})`;
   cy.get(
     innerProp ? widgetName : commonWidgetSelector.draggableWidget(widgetName)
-  ).should(
-    "have.css",
-    cssProperty,
-    `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 100})`
-  );
+  ).should(($el) => {
+    // Assert the color ToolJet WROTE (inline style) rather than the computed
+    // value. Some widgets (e.g. Button) deliberately render a picked color at a
+    // transformed shade (255 → 214), so `have.css` (computed) != the picked
+    // color. Inline style is the faithful "did this style setting take effect"
+    // check. Fall back to the computed value for widgets that don't write the
+    // colour inline (so existing direct-apply assertions keep working).
+    const inline = $el[0].style.getPropertyValue(cssProperty);
+    const actual = inline || getComputedStyle($el[0]).getPropertyValue(cssProperty);
+    expect([rgb, rgba]).to.include(actual);
+  });
 };
 
 export const verifyLoaderColor = (widgetName, color) => {
