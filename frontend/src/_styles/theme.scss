@@ -5453,6 +5453,28 @@ div#driver-page-overlay {
     background: var(--base);
   }
 
+  // Env-managed fields (masked {{ENV_KEY}} placeholders) render as disabled inputs — without
+  // this, the unconditional .form-control background above keeps them looking identical to
+  // normal editable fields. Matches the disabled styling already used for the same pattern in
+  // the Git Sync provider modals (see gitlab-configs.scss / https-configs.scss / ssh-configs.scss).
+  // .form-control-env-masked (not the bare "disabled" class) is used for the redirect-url div,
+  // which isn't a real input and has no :disabled pseudo-class — "disabled" collides with a
+  // global pointer-events:none utility class that would also block its copy button.
+  .form-control.form-control-env-masked,
+  .form-control:disabled {
+    background-color: var(--slate3) !important;
+    color: var(--slate9) !important;
+    -webkit-text-fill-color: var(--slate9) !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+  }
+
+  // The redirect-url copy icon stays a real action even when its wrapper looks disabled —
+  // reset the inherited not-allowed cursor so it reads as clickable on hover.
+  .form-control.form-control-env-masked [data-cy='copy-icon'] {
+    cursor: pointer;
+  }
+
   .open-id-sso-card {
     border-bottom: none !important;
   }
