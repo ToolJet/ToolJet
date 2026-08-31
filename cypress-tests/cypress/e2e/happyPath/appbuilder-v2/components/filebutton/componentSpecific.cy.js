@@ -13,7 +13,7 @@ import { openEditorSidebar, openAccordion, verifyAndModifyParameter } from "Supp
 // reset; each test still creates its own fresh app in beforeEach.
 describe(
   "File Button component specific",
-  { testIsolation: false, retries: { runMode: 4, openMode: 0 } },
+  { testIsolation: false, retries: { runMode: 3, openMode: 0 } },
   () => {
   const widget = "filebutton1";
   const dropX = 500;
