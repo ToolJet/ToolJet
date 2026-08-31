@@ -39,19 +39,15 @@ describe('WorkspaceBranchService.removeTargetedAppsFromRepo — only the targete
   beforeEach(async () => {
     repo = fs.mkdtempSync(path.join(os.tmpdir(), 'tj-del-'));
 
-    // Hard guard: this test runs real `git init`/`git commit`. A stray GIT_DIR/GIT_WORK_TREE
-    // env var (leaked from the shell or another tool) makes git ignore cwd-based repo discovery
-    // entirely and operate on whatever those vars point at - which once landed this test's seed
-    // commit on top of the real repo's HEAD instead of the temp dir. Fail loud instead of silently
-    // committing into the wrong repo.
-    const realRepoRoot = path.resolve(__dirname, '../../../../../..');
+    // Hard guard: this test runs real `git init`/`git add`/`git commit`. It has landed its seed
+    // commit on the real repo's HEAD instead of the isolated tmpdir before — the exact leak
+    // mechanism wasn't pinned down (verified it's not a GIT_DIR/GIT_WORK_TREE env leak, not a
+    // process.chdir() elsewhere in the suite, and not the service under test). Rather than guard
+    // against one hypothesized cause, ask git itself where it thinks the repo root is right after
+    // `init` and refuse to go any further if it's not the tmpdir — this catches ANY redirection
+    // mechanism, known or not, before `add`/`commit` can touch the wrong repo.
     if (!path.resolve(repo).startsWith(path.resolve(os.tmpdir()) + path.sep)) {
       throw new Error(`Expected an isolated tmpdir, got: ${repo}`);
-    }
-    if (process.env.GIT_DIR || process.env.GIT_WORK_TREE) {
-      throw new Error(
-        `Refusing to run - GIT_DIR/GIT_WORK_TREE is set in the environment and would redirect git commands away from the isolated ${repo} (would target ${realRepoRoot} instead)`
-      );
     }
 
     for (let i = 1; i <= 10; i++) writeAppJson(`apps/app-${i}`, `corel-app-${i}`);
@@ -60,6 +56,15 @@ describe('WorkspaceBranchService.removeTargetedAppsFromRepo — only the targete
 
     const git = simpleGit({ baseDir: repo });
     await git.init();
+
+    const resolvedRoot = (await git.raw(['rev-parse', '--show-toplevel'])).trim();
+    if (fs.realpathSync(resolvedRoot) !== fs.realpathSync(repo)) {
+      throw new Error(
+        `Refusing to run - after 'git init' in ${repo}, git resolved its repo root to ${resolvedRoot} instead. ` +
+          `Something is redirecting this test's git commands away from the isolated tmpdir.`
+      );
+    }
+
     await git.addConfig('user.email', 'test@tooljet.io');
     await git.addConfig('user.name', 'test');
     await git.add('.');

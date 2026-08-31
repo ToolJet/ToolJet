@@ -103,6 +103,21 @@ describe('AuditLogsController', () => {
         });
         expect(response.body.audit_logs.length).toBeLessThanOrEqual(5);
       });
+
+      it("does not include another organization's audit logs — scope comes from the session, not a request param", async () => {
+        const admin = await createAdmin(app, 'admin@tooljet.io');
+        const otherOrgAdmin = await createAdmin(app, 'other-org-admin@tooljet.io');
+        await seedAuditLog(otherOrgAdmin.user.id, otherOrgAdmin.user.defaultOrganizationId);
+
+        const response = await request(app.getHttpServer())
+          .get('/api/audit-logs')
+          .query(recentTimeRange())
+          .set('tj-workspace-id', admin.user.defaultOrganizationId)
+          .set('Cookie', admin.cookie)
+          .expect(200);
+
+        expect(response.body.audit_logs.some((log: any) => log.resource_id === otherOrgAdmin.user.id)).toBe(false);
+      });
     });
 
     describe('GET /api/audit-logs/resources | List resource types', () => {

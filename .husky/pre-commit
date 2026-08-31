@@ -1,1 +1,26 @@
-npx lint-staged
+set -e
+
+# Resolve root repo directory
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+if [ "$PWD" != "$ROOT" ]; then
+  # Running inside a submodule
+  SUB_PATH="${PWD#$ROOT/}"
+  STAGED=$(git diff --staged --name-only --diff-filter=ACM 2>/dev/null | grep -E '\.(js|jsx|ts|tsx)$' || true)
+  
+  if [ -n "$STAGED" ]; then
+    echo "🔍 Linting staged files in submodule $SUB_PATH..."
+    if [ "$SUB_PATH" = "server/ee" ]; then
+      FILES=$(echo "$STAGED" | sed "s|^|server/ee/|")
+      (cd "$ROOT" && echo "$FILES" | xargs npx eslint --fix --config server/eslint.config.js)
+    elif [ "$SUB_PATH" = "frontend/ee" ]; then
+      FILES=$(echo "$STAGED" | sed "s|^|frontend/ee/|")
+      (cd "$ROOT" && echo "$FILES" | xargs npx eslint --fix --config frontend/eslint.config.mjs)
+    fi
+    # Re-stage any formatting changes applied by eslint --fix
+    echo "$STAGED" | xargs git add
+  fi
+else
+  # Running in root repo
+  npx lint-staged
+fi

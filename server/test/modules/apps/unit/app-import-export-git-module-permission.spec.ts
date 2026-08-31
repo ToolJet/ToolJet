@@ -1,3 +1,4 @@
+/** @group platform */
 import { ForbiddenException } from '@nestjs/common';
 import { AppImportExportService } from '@ee/apps/services/app-import-export.service';
 

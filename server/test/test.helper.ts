@@ -17,3 +17,6 @@ export * from './helpers/api';
 
 // --- Workflows: workflow-specific factories (apps, queries, executions, bundles) ---
 export * from './helpers/workflows';
+
+// --- Ability: CASL ability builder scaffolding + guard ExecutionContext builder ---
+export * from './helpers/ability';

@@ -14,7 +14,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -595,13 +595,14 @@ export class AppsUtilService implements IAppsUtilService {
         // workspaces should never see "branch" in an error they have no context
         // for.
         if (branchId) {
-          const conflictingVersion = await manager.findOne(AppVersion, {
-            where: {
-              slug: versionParams.slug,
-              branchId,
-              appId: Not(appId),
-            },
-          });
+          const conflictingVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'a', 'a.id = av.app_id')
+            .where('av.slug = :slug', { slug: versionParams.slug })
+            .andWhere('av.branch_id = :branchId', { branchId })
+            .andWhere('av.app_id <> :appId', { appId })
+            .andWhere('a.type = :appType', { appType: app.type })
+            .getOne();
           if (conflictingVersion) {
             const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
             throw new BadRequestException(
