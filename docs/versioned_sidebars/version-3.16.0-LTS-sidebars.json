@@ -1150,6 +1150,7 @@
             "beta/branching/overview",
             "beta/branching/enable-branching",
             "beta/branching/managing-branches",
+            "beta/branching/versioning",
             "beta/branching/commit-and-pull",
             "beta/branching/app-builder-git-sync",
             "beta/branching/push-unsynced-resources",

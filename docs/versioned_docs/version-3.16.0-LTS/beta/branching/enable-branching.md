@@ -23,6 +23,8 @@ Branching is supported only over Git HTTPS. SSH connections cannot use branching
 2. Confirm a repository connection is configured and finalized. The toggle stays disabled until one exists.
 3. Turn on the **Branching** toggle. The change saves immediately.
 
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/enable-branching/branching-toggle-settings.png" alt="Branching toggle enabled on the Configure git sync page in Workspace settings" />
+
 You can also open the branch dropdown in the header and select **Enable branching**, which takes you to the same page.
 
 Once branching is enabled, the default branch becomes read-only and your team works on feature branches. See [Managing Branches](/docs/beta/branching/managing-branches) to create your first one.
@@ -35,7 +37,7 @@ Existing feature branches are not deleted when branching is disabled, and the br
 
 ## License Behavior
 
-If your license no longer covers multi-branch Git Sync, the toggle is forced off and your workspace reverts to single-branch behavior, even if branching was previously enabled.
+If your license no longer covers multi-branch Git Sync, the toggle is forced off and your workspace reverts to single-branch behavior, even if branching was previously enabled. Only the default branch remains reachable, and git operations are unavailable until the license is renewed or Git Sync is turned off.
 
 The toggle also stays disabled, with an explanatory tooltip, when your plan does not include multi-branch Git Sync, or when your plan has expired.
 

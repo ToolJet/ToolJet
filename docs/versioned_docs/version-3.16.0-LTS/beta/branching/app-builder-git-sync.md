@@ -38,6 +38,8 @@ Pulling brings changes from Git into the application you have open. On the defau
    - A **saved version** brings that version in as a published version, restored from its Git tag. The editor switches to it.
 3. Confirm the pull.
 
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/app-builder-git-sync/pull-modal-feature-branch.png" alt="Git sync modal inside an application on a feature branch, showing Push and Pull tabs with no version to choose" />
+
 Version tags are stored in Git as `<application-correlation-id>/<version-name>`, but the picker shows only the version name.
 
 :::info

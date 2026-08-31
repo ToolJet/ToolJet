@@ -46,21 +46,34 @@ When branching is enabled and you are on the default branch, ToolJet blocks thes
 
 - Creating or editing applications and modules
 - Creating or deleting datasources
-- Creating and modifying folders
 - Creating applications from templates
 - Using any AI features
 
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/overview/default-branch-locked-banner.png" alt="Applications page on the locked default branch, with a banner stating that a branch is needed to add or edit apps" />
+
+## Resources Covered by a Branch
+
+Applications, modules, datasources and their folder assignments are branch-scoped. On a feature branch, changes to a module or datasource stay on that branch and reach the rest of the workspace only once they are committed and merged. In single-branch mode there is nothing to isolate them from, so those changes apply across the workspace immediately.
+
+Workflows and ToolJet Database tables are not branch-scoped yet. They behave the same on every branch.
+
+### Folders
+
+Folders are workspace-level rather than branch-scoped, so a folder created on one branch exists on all of them. To stop one branch's rename from affecting everyone, multi-branch mode restricts them everywhere, not just on the default branch:
+
+| Action | Single-branch mode | Multi-branch mode |
+|:-------|:-------------------|:------------------|
+| Rename a folder | Allowed | Blocked |
+| Delete an empty folder | Allowed | Allowed |
+| Delete a folder containing resources | Blocked | Blocked, and the error names the branches still using it |
+
 ## Versions and Tags
 
-Versions live only on the default branch and mark stable points in your application's history. Branching builds on ToolJet's usual [version control](/docs/development-lifecycle/release/version-control) model.
-
-- **Draft version**: The current working state. Only one draft is allowed per application per branch, and creating a second is rejected.
-- **Saved version**: A finalized, locked milestone. Saving a version creates a corresponding tag in your Git repository.
-- **Released version**: A saved version promoted through environments and released to production.
+Versions mark stable points in an application's history and live only on the default branch. Each branch holds exactly one draft, and saving a version locks it and tags it in your Git repository.
 
 Feature branches do not have versions. They are working copies that always hold a draft.
 
-Git tags are named `<application-correlation-id>/<version-name>`, for example `9f1c2e4a-.../v1`. ToolJet uses the correlation ID rather than the application name so that the tag stays valid if the application is later renamed.
+Refer to [Versions in Branching](/docs/beta/branching/versioning) for how drafts, saved versions and tags behave on each branch.
 
 ## Where Branch Controls Appear
 
@@ -84,7 +97,7 @@ To decide whether a single or multi-instance setup suits your organization, see 
 - Branching works only over Git HTTPS with GitHub or GitLab. SSH is not supported.
 - Branches can only be created from the default branch, not from another feature branch.
 - Pull requests must be created and merged in your Git provider. ToolJet cannot merge branches.
-- Branches can only be renamed in your Git provider.
+- Branches cannot be renamed once created.
 - Merge conflicts must be resolved in Git before merging.
 - Workflows are not branch-scoped.
 - Only one draft version is allowed per application per branch.

@@ -17,6 +17,8 @@ Branches can only be created from the default branch.
 3. Enter a branch name.
 4. Click **Create branch**.
 
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/managing-branches/create-branch-modal.png" alt="Create branch modal with the branch name field and a note that branches can only be created from the default branch" />
+
 Branch creation runs in the background. ToolJet notifies you when the branch is ready and adds it to the branch list automatically.
 
 ### Branch Naming Rules
@@ -44,6 +46,8 @@ Switching to the branch reaches the same result. Importing is the quicker route 
 1. Open the branch dropdown and select **Switch branch**.
 2. Search for or select the branch you want.
 
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/managing-branches/switch-branch-modal.png" alt="Switch branch modal listing the default branch and a feature branch, with options to view the git repo or create a new branch" />
+
 The list covers branches in your Git repository as well as the ones you have worked on in ToolJet. Selecting a branch you have not used before brings its contents in before switching, so you land on a populated branch rather than an empty one.
 
 ToolJet verifies that the branch still exists in Git before switching. If it has been deleted remotely, the switch is blocked and you need to create a new branch to continue.
@@ -56,10 +60,12 @@ Your last used branch is remembered per workspace and restored the next time you
 2. Find the branch and select the delete option.
 3. Confirm the deletion.
 
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/managing-branches/delete-branch-confirm.png" alt="Confirmation dialog warning that the branch will be deleted in ToolJet and in the git repository" />
+
 Deleting a branch in ToolJet also deletes the branch in your Git repository. The default branch cannot be deleted.
 
 :::info
-Branches can only be renamed in your Git provider, not in ToolJet.
+Branches cannot be renamed. Create a new branch under the wanted name instead.
 :::
 
 ## Branch Permissions
@@ -72,7 +78,7 @@ Branches can only be renamed in your Git provider, not in ToolJet.
 | Pull from Git | Yes | Yes |
 | Use AI features | No | Yes |
 | Delete branch | No | Yes |
-| Rename branch | In Git only | In Git only |
+| Rename branch | Not supported | Not supported |
 
 <br/>
 ---
