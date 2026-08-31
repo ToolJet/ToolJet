@@ -1,13 +1,12 @@
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
-import { getDBConnection } from '@helpers/database.helper';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationInterface {
-  public async up(_queryRunner: QueryRunner): Promise<void> {
+  public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
 
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
@@ -18,11 +17,12 @@ export class EncrpyGoogleCalendarClientSecret1752749046662 implements MigrationI
       );
       const credentialsService = nestApp.get(CredentialsService);
 
-      // Data migrations share a single queryRunner (migrationsTransactionMode: 'all'); an earlier
-      // migration's nestApp.close() can release it, after which queryRunner.manager throws
-      // QueryRunnerAlreadyReleasedError. Use the live manager from this migration's own
-      // freshly-bootstrapped Nest context instead.
-      const entityManager = getDBConnection();
+      // Data migrations run under migrationsTransactionMode: 'all': every migration in the batch
+      // shares one queryRunner/transaction, and earlier migrations hold ACCESS EXCLUSIVE locks on
+      // data_sources (DDL) until that transaction commits. All DB work must therefore go through
+      // queryRunner.manager; a query on any other connection (e.g. the Nest context's own pool via
+      // getDBConnection()) blocks on those locks until statement_timeout cancels it.
+      const entityManager = queryRunner.manager;
 
       const totalRecords = await entityManager.query(
         `

@@ -5,7 +5,6 @@ import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
-import { getDBConnection } from '@helpers/database.helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 
@@ -19,19 +18,18 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
  * - end_user is never touched either way — there's no default-permission spec for it at all
  *   (modules, and by extension module folders, are never end-user-assignable).
  *
- * Connection note: data migrations run under migrationsTransactionMode: 'all', so they share a
- * single queryRunner for the whole batch. An earlier migration's `nestApp.close()` releases that
- * shared runner, after which `queryRunner.manager` throws QueryRunnerAlreadyReleasedError. This
- * migration therefore does its DB work through the live manager of its own freshly-bootstrapped
- * Nest context (getDBConnection()), not the shared queryRunner.
+ * Connection note: data migrations run under migrationsTransactionMode: 'all', so the whole batch
+ * shares one queryRunner/transaction and earlier migrations' DDL locks are held until it commits.
+ * All DB work must go through `queryRunner.manager`; a query on any other connection (e.g. the
+ * Nest context's own pool via getDBConnection()) blocks on those locks until statement_timeout.
  */
 export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups1784551394230 implements MigrationInterface {
-  public async up(_queryRunner: QueryRunner): Promise<void> {
+  public async up(queryRunner: QueryRunner): Promise<void> {
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
 
     try {
       const licenseTermsService = nestApp.get(LicenseTermsService);
-      const manager = getDBConnection();
+      const manager = queryRunner.manager;
 
       const organizationsCount = await manager.count('organizations');
       if (organizationsCount === 0) {
