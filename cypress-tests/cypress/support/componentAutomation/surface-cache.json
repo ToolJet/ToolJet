@@ -1,5 +1,7 @@
 {
   "$schema": "./README.md",
   "shared": { "cssPropertyMap": {} },
-  "components": {}
+  "components": {
+    "richTextarea": { "runtimeName": "richtexteditor1" }
+  }
 }

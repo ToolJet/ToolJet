@@ -19,6 +19,7 @@ Written by the `tj-component-test` skill after each run. Git-tracked so runs com
   "components": {
     "checkbox": {
       "configHash": "a1b2c3d4",                        // sha256 first 8 chars of the config file
+      "runtimeName": "checkbox1",                       // derived or actual runtime widget instance name (e.g. richTextarea → richtexteditor1)
       "exposedVarDrift": [                              // runtime-only exposed vars not in config
         { "key": "isValid", "type": "Boolean", "value": "true" }
       ],
