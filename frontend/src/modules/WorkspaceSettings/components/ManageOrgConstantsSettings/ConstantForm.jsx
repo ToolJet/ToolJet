@@ -346,8 +346,8 @@ const ConstantForm = ({
                               ? '#D1D5DB'
                               : '#656565'
                             : String(fields['value'])?.length
-                            ? '#384151'
-                            : '#D1D5DB'
+                              ? '#384151'
+                              : '#D1D5DB'
                         }
                       />
                     ) : (
@@ -358,8 +358,8 @@ const ConstantForm = ({
                               ? '#D1D5DB'
                               : '#656565'
                             : String(fields['value'])?.length
-                            ? '#384151'
-                            : '#D1D5DB'
+                              ? '#384151'
+                              : '#D1D5DB'
                         }
                         data-cy="test"
                       />
