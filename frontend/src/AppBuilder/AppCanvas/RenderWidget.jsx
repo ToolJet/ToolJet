@@ -6,7 +6,7 @@ import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
-import ErrorBoundary from '@/_ui/ErrorBoundary';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -360,7 +360,16 @@ const RenderWidget = ({
   // tooltip surfaces the widget's *description*, not user-authored content.
   if (inCanvas) {
     return (
-      <ErrorBoundary widgetType={componentType}>
+      <FallbackBoundary
+        variant="inline"
+        label={componentName}
+        location={`Component ${componentName}`}
+        canRetry
+        canReport={currentMode === 'edit'}
+        darkMode={darkMode}
+        resetKeys={[id]}
+        widgetType={componentType}
+      >
         <WidgetTooltip
           content={userTooltipContent}
           format={userTooltipFormat}
@@ -369,12 +378,21 @@ const RenderWidget = ({
         >
           {innerWidget}
         </WidgetTooltip>
-      </ErrorBoundary>
+      </FallbackBoundary>
     );
   }
 
   return (
-    <ErrorBoundary widgetType={componentType}>
+    <FallbackBoundary
+      variant="inline"
+      label={componentName}
+      location={`Component ${componentName}`}
+      canRetry
+      canReport={currentMode === 'edit'}
+      darkMode={darkMode}
+      resetKeys={[id]}
+      widgetType={componentType}
+    >
       <OverlayTrigger
         placement="top"
         delay={{ show: 500, hide: 0 }}
@@ -387,7 +405,7 @@ const RenderWidget = ({
       >
         {innerWidget}
       </OverlayTrigger>
-    </ErrorBoundary>
+    </FallbackBoundary>
   );
 };
 

@@ -344,8 +344,8 @@ function SettingsPage(props) {
                 </div>
               </div>
               <TwoFactorAuthCard darkMode={props.darkMode} />
-              <ProfileNotificationsCard />
               <AccessTokensCard darkMode={props.darkMode} />
+              <ProfileNotificationsCard />
             </div>
           </div>
         </div>

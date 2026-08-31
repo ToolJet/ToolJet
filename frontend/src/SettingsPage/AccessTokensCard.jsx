@@ -6,6 +6,7 @@ import moment from 'moment';
 import { cn } from '@/lib/utils';
 import { customComponentLibrariesService } from '@/_services/customComponentLibraries.service';
 import { authenticationService } from '@/_services/authentication.service';
+import { personalAccessTokensService } from '@/_services/personalAccessTokens.service';
 import { organizationService } from '@/_services';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { Button } from '@/components/ui/Button/Button';
@@ -22,12 +23,9 @@ import Dialog from '@/components/ui/Dialog';
 
 import './resources/styles/access-tokens-card.styles.scss';
 
-const EXPIRY_OPTIONS = [
-  { label: '30 days', value: '30' },
-  { label: '60 days', value: '60' },
-  { label: '90 days', value: '90' },
-  { label: '365 days', value: '365' },
-];
+// Expiry is a caller-picked FUTURE date (no presets — decided 2026-08-17); the server
+// rejects past/absent dates, the input's `min` blocks most of that in the browser.
+const minExpiryDate = () => new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
 const isExpired = (token) => token.expiresAt && new Date(token.expiresAt) < new Date();
 
@@ -40,7 +38,7 @@ export const AccessTokensCard = ({ darkMode }) => {
   const [name, setName] = useState('');
   const [nameTouched, setNameTouched] = useState(false); // frame 08: blur-without-value validation
   const [organizationId, setOrganizationId] = useState('');
-  const [expiresInDays, setExpiresInDays] = useState(EXPIRY_OPTIONS[0].value ?? '');
+  const [expiresAt, setExpiresAt] = useState('');
   const [createInProgress, setCreateInProgress] = useState(false);
 
   const [createdToken, setCreatedToken] = useState(null); // raw token — shown exactly once (frame 07)
@@ -53,8 +51,8 @@ export const AccessTokensCard = ({ darkMode }) => {
 
   const fetchTokens = () => {
     setLoadFailed(false);
-    customComponentLibrariesService
-      .listTokens()
+    personalAccessTokensService
+      .list()
       .then((res) => setTokens(Array.isArray(res) ? res : []))
       .catch(() => {
         // A failed fetch must NOT masquerade as "no tokens" — distinct error state + retry.
@@ -78,7 +76,7 @@ export const AccessTokensCard = ({ darkMode }) => {
   }, []);
 
   useEffect(() => {
-    if (showCreateModal) setExpiresInDays(EXPIRY_OPTIONS[0].value ?? '');
+    if (showCreateModal) setExpiresAt('');
   }, [showCreateModal]);
 
   if (edition === 'ce') return null;
@@ -86,7 +84,7 @@ export const AccessTokensCard = ({ darkMode }) => {
   const resetCreateForm = () => {
     setName('');
     setNameTouched(false);
-    setExpiresInDays('');
+    setExpiresAt('');
     setCreatedToken(null);
   };
 
@@ -102,10 +100,10 @@ export const AccessTokensCard = ({ darkMode }) => {
     }
     setCreateInProgress(true);
     try {
-      const created = await customComponentLibrariesService.createToken({
+      const created = await personalAccessTokensService.create({
         name: name.trim(),
         organizationId,
-        expiresInDays: Number(expiresInDays),
+        expiresAt,
       });
       setCreatedToken(created.token);
       fetchTokens();
@@ -115,21 +113,23 @@ export const AccessTokensCard = ({ darkMode }) => {
     setCreateInProgress(false);
   };
 
-  const handleCopy = async (textToCopy) => {
+  const handleCopy = async (text, label) => {
     try {
-      await navigator.clipboard.writeText(textToCopy);
-      toast.success('Copied to clipboard', { duration: 2000 });
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied to clipboard`, { duration: 2000 });
     } catch {
-      // clipboard API can be denied (permissions / non-secure context) — the token is
+      // clipboard API can be denied (permissions / non-secure context) — the value is
       // still on screen, so tell the user to grab it manually instead of failing silently.
-      toast.error('Could not copy automatically — select and copy the text manually', { duration: 3000 });
+      toast.error(`Could not copy automatically — select and copy the ${label.toLowerCase()} manually`, {
+        duration: 3000,
+      });
     }
   };
 
   const handleRevoke = async () => {
     setRevokeInProgress(true);
     try {
-      await customComponentLibrariesService.deleteToken(revokeTarget.id);
+      await personalAccessTokensService.remove(revokeTarget.id);
       toast.success('Token revoked', { duration: 2000 });
       setRevokeTarget(null);
       fetchTokens();
@@ -145,7 +145,7 @@ export const AccessTokensCard = ({ darkMode }) => {
   };
 
   return (
-    <div className="card profile-page-card tw-my-16 access-tokens-card">
+    <div className="card profile-page-card tw-mt-16 access-tokens-card">
       {/* header: p-16, title 16/500 + subtitle 12 placeholder, primary button (design 52:7675-7679) */}
       <div className="access-tokens-header">
         <div className="access-tokens-header-text">
@@ -226,7 +226,7 @@ export const AccessTokensCard = ({ darkMode }) => {
           {
             label: createdToken ? 'Done' : 'Create token',
             isLoading: createInProgress,
-            disabled: !createdToken && (!name.trim() || !organizationId || !expiresInDays),
+            disabled: !createdToken && (!name.trim() || !organizationId || !expiresAt),
             'data-cy': 'submit-button',
             onClick: createdToken ? closeCreateModal : handleCreate,
           },
@@ -259,7 +259,24 @@ export const AccessTokensCard = ({ darkMode }) => {
                 leadingIcon="copy"
                 className="tw-shrink-0"
                 fill="var(--icon-strong)"
-                onClick={() => handleCopy(createdToken)}
+                onClick={() => handleCopy(createdToken, 'Token')}
+              />
+            </div>
+
+            <div className="tw-flex tw-items-center tw-gap-4 tw-rounded-md tw-p-3 tw-border tw-border-solid tw-border-border-weak tw-mt-4">
+              <div className="tw-min-w-0 tw-flex-1">
+                <p className="tw-mb-1 tw-font-medium tw-text-text-placeholder tw-text-base">Workspace ID</p>
+                <p className="tw-mb-0 tw-font-medium tw-text-text-default tw-text-base tw-truncate">{organizationId}</p>
+              </div>
+
+              <Button
+                isLucid
+                iconOnly
+                variant="ghost"
+                leadingIcon="copy"
+                className="tw-shrink-0"
+                fill="var(--icon-strong)"
+                onClick={() => handleCopy(organizationId, 'Workspace ID')}
               />
             </div>
           </div>
@@ -292,14 +309,17 @@ export const AccessTokensCard = ({ darkMode }) => {
             </div>
             <div className="access-token-field">
               <label className="access-token-field-label">Expiration</label>
-
-              <Dropdown
-                darkMode={darkMode}
-                options={EXPIRY_OPTIONS}
-                selectedOption={expiresInDays ?? null}
-                onChangeSelectedOption={setExpiresInDays}
-                description={`Expires on ${moment().add(Number(expiresInDays), 'days').format('Do MMMM YYYY')}.`}
+              <input
+                type="date"
+                className="access-token-field-input"
+                min={minExpiryDate()}
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                data-cy="token-expiry-input"
               />
+              {expiresAt && (
+                <FieldDescription>{`Expires on ${moment(expiresAt).format('Do MMMM YYYY')}.`}</FieldDescription>
+              )}
             </div>
           </div>
         )}
