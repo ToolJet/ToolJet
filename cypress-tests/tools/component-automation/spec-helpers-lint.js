@@ -9,7 +9,8 @@ function lintSpecHelpers(specPath, rows) {
   const violations = [];
   let m;
   while ((m = UTIL_RE.exec(src)) !== null) {
-    for (const name of m[1].split(",").map(s => s.trim()).filter(Boolean)) {
+    for (const raw of m[1].split(",").map(s => s.trim()).filter(Boolean)) {
+      const name = raw.split(/\s+as\s+/)[0].trim(); // strip "as alias"
       if (!known.has(name)) violations.push({ helper: name, reason: `not in type-helper-index` });
     }
   }
