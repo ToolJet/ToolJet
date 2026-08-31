@@ -70,6 +70,7 @@ export interface Terms {
       release: boolean;
       history: boolean;
       jsLibraries: boolean;
+      publicApp: boolean;
     };
     components?: {
       navigation: boolean;
