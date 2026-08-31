@@ -56,6 +56,11 @@ export default class Dev extends Command {
           this.log(`\n${result.tsErrorReport}`);
         }
 
+        if (result.componentCount === 0) {
+          this.log(`  ${formatError('Skipping upload - no components found in manifest.')}`);
+          return;
+        }
+
         try {
           await client.uploadDev(config.libraryId, result.distDir);
           this.log(`  ${formatSuccess('Uploaded to dev track')}`);

@@ -48,6 +48,11 @@ export default class ComponentDeploy extends Command {
 
       if (result.hasCss) this.log(formatSuccess(`CSS output: dist/index.css (${result.cssSizeKb} KB)`));
 
+      if (result.componentCount === 0) {
+        this.log(formatError(`Aborting - no components found in manifest. Publish requires at least one component.`));
+        process.exit(1);
+      }
+
       const tsCompiledMsg = `TypeScript compiled (${result.tsErrors} errors)`;
       result.tsErrors === 0 && this.log(formatSuccess(tsCompiledMsg));
 
