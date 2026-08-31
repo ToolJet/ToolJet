@@ -1,5 +1,27 @@
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
-import { selectColourFromColourPicker } from "Support/utils/commonWidget";
+import {
+  selectColourFromColourPicker,
+  openEditorSidebar,
+  openAccordion,
+} from "Support/utils/commonWidget";
+
+// Open modal1's right Inspector and (optionally) one of its Properties-tab
+// accordions. Opening a modal in edit mode calls setSelectedComponentAsModal,
+// which swaps the inspector context — so this must be
+// re-called after every modal open/close cycle before the next inspector edit.
+export const openModalInspector = (accordion, componentName = "modal1") => {
+  openEditorSidebar(componentName);
+  if (accordion) openAccordion(accordion);
+};
+
+// Toggle a boolean inspector property by its visible label, then wait for the
+// autosave PATCH so the change is persisted before the next assertion.
+export const toggleModalProperty = (label) => {
+  cy.get(commonWidgetSelector.parameterLabel(label)).should("have.text", label);
+  cy.get(commonWidgetSelector.parameterTogglebutton(label)).click();
+  cy.waitForAutoSave();
+};
+
 
 // ModalV2 trigger button: `${dataCy}-launch-button` where dataCy === the bare
 // component name (RenderWidget.jsx:329 passes dataCy={componentName} →
