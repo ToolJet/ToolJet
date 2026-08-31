@@ -43,10 +43,9 @@ describe(
     waitForDropSettle(widget);
   });
 
-  it.only("should file button render properly", () => {
+  it("should file button render properly", () => {
     cy.get(fileButtonSelector.draggableWidget(widget)).should("exist");
     cy.get(fileButtonSelector.button(widget)).should("be.visible");
-
     // targetX/targetY are canvas-relative top-left; getBoundingClientRect() is
     // viewport-absolute — measure both sides canvas-relative instead. Tolerance
     // is the snap-grid half-cell (appCanvasUtils.js snapToGrid): X's grid width
