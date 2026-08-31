@@ -5,8 +5,9 @@ import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { LicenseInitService } from '@modules/licensing/interfaces/IService';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 /**
  * Backward-compatibility rule for existing orgs:
@@ -18,18 +19,21 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
  * - end_user is never touched either way — there's no default-permission spec for it at all
  *   (modules, and by extension module folders, are never end-user-assignable).
  *
- * Connection note: data migrations run under migrationsTransactionMode: 'all', so the whole batch
- * shares one queryRunner/transaction and earlier migrations' DDL locks are held until it commits.
- * All DB work must go through `queryRunner.manager`; a query on any other connection (e.g. the
- * Nest context's own pool via getDBConnection()) blocks on those locks until statement_timeout.
+ * Plan resolution: data migrations run under migrationsTransactionMode: 'all', so DB work goes
+ * through `queryRunner.manager` (the shared batch transaction) to stay on the right side of the
+ * DDL locks earlier migrations hold. The plan is read via the license init service:
+ * - self-hosted (CE/EE): instance-level, resolved once (getPlanForMigration, reuses initForMigration);
+ * - cloud: per-organization, from the organization_license table (getPlanForMigrationCloud).
+ * Both read through the same shared manager.
  */
 export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups1784551394230 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
 
     try {
-      const licenseTermsService = nestApp.get(LicenseTermsService);
+      const licenseInitService = nestApp.get(LicenseInitService);
       const manager = queryRunner.manager;
+      const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
 
       const organizationsCount = await manager.count('organizations');
       if (organizationsCount === 0) {
@@ -37,10 +41,15 @@ export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups17
         return;
       }
 
+      // Self-hosted plan is instance-level — resolve it once. Cloud is per-org (resolved in the loop).
+      const instancePlan = isCloud ? null : await licenseInitService.getPlanForMigration(manager);
+
       const organizations = await manager.query(`SELECT id FROM organizations`);
 
       for (const { id: organizationId } of organizations) {
-        const plan = await licenseTermsService.getLicenseTerms(LICENSE_FIELD.PLAN, organizationId);
+        const plan = isCloud
+          ? await licenseInitService.getPlanForMigrationCloud(manager, organizationId)
+          : instancePlan;
         const isFreePlan = plan === 'basic' || plan === 'starter';
         const roleNamesToUpdate = isFreePlan ? [USER_ROLE.ADMIN, USER_ROLE.BUILDER] : [USER_ROLE.ADMIN];
 
