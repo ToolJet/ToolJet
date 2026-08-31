@@ -8,12 +8,15 @@ import { RenderHighlight } from './RenderHighlight';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
+import { fitImageWithin } from './imageFrame';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
+export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
   const [outerDivWidth, setOuterDivWidth] = useState();
+  // Rendered photo size, kept current on resize. Drives annotation label placement.
+  const [frameSize, setFrameSize] = useState(null);
 
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
@@ -24,30 +27,73 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       ]
     : [];
   const annotateRef = useRef(null);
+  const rootRef = useRef(null);
 
+  // Sizes react-image-annotation's image wrapper to the photo as actually
+  // rendered, and keeps it there as the canvas resizes.
+  //
+  // The wrapper is the positioning context for every annotation overlay, whose
+  // geometry is stored as a percentage of it, so it has to stay exactly the
+  // photo's bounds. The library ships `width: 100%` with no height, which makes
+  // the rendered height width x aspect and lets the image spill out of the
+  // widget box; see imageFrame for why the correction cannot live in CSS.
+  //
+  // The image and wrapper are located structurally. The `.hIIYQM` / `.jcdOkx`
+  // lookups this replaced were styled-components generated names, which are
+  // derived from a bundle-wide creation counter — they had gone stale and
+  // matched nothing, so both measurements stayed undefined forever and the
+  // widget's own default annotations never rendered at all.
   useEffect(() => {
+    const root = rootRef.current;
+    const imageElement = root?.querySelector('img');
+    if (!root || !imageElement) return undefined;
+
+    const applyFrame = () => {
+      const wrapperElement = imageElement.parentElement;
+      if (!wrapperElement) return;
+
+      const frame = fitImageWithin(
+        { width: imageElement.naturalWidth, height: imageElement.naturalHeight },
+        { width: root.clientWidth, height: root.clientHeight }
+      );
+      if (!frame) return;
+
+      wrapperElement.style.width = `${frame.width}px`;
+      wrapperElement.style.height = `${frame.height}px`;
+      setFrameSize(frame);
+    };
+
     const handleImageLoad = () => {
-      const wrapperElement = document.querySelector(`[widgetid="${id}"] .jcdOkx`);
+      applyFrame();
+
+      const wrapperElement = imageElement.parentElement;
       if (wrapperElement) {
         const { width, height } = wrapperElement.getBoundingClientRect();
-        // Use the width and height of bounding image for further calculations
+        // Use the width and height of bounding image for further calculations.
+        // Deliberately set only on load: these feed the one-shot clamp of the
+        // configured default annotations, and refreshing them on resize would
+        // re-run that clamp and overwrite annotations the user has drawn.
         setOuterDivWidth(width);
         setOuterDivHeight(height);
       }
     };
 
-    const imageElement = document.querySelector(`[widgetid="${id}"] .hIIYQM`);
-    if (imageElement) {
-      imageElement.addEventListener('load', handleImageLoad);
+    // A cached image can already be complete before this effect runs, in which
+    // case no load event is ever fired.
+    if (imageElement.complete && imageElement.naturalWidth) {
+      handleImageLoad();
     }
 
+    imageElement.addEventListener('load', handleImageLoad);
+
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(applyFrame) : null;
+    observer?.observe(root);
+
     return () => {
-      if (imageElement) {
-        imageElement.removeEventListener('load', handleImageLoad);
-      }
+      imageElement.removeEventListener('load', handleImageLoad);
+      observer?.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [properties.imageUrl]);
 
   useEffect(() => {
     let selector = undefined;
@@ -182,6 +228,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
   return (
     <div
+      ref={rootRef}
       onMouseDown={(e) => e.stopPropagation()}
       style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
       className="bounded-box relative"
@@ -201,6 +248,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             <RenderEditor
               annotation={annotation}
               labels={labels}
+              containerHeight={frameSize?.height ?? outerDivHeight}
               setAnnotation={setAnnotation}
               setAnnotations={setAnnotations}
               setExposedVariable={setExposedVariable}
@@ -214,6 +262,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         renderHighlight={({ annotation }) => (
           <RenderHighlight
             annotation={annotation}
+            containerHeight={frameSize?.height ?? outerDivHeight}
             setAnnotations={setAnnotations}
             setExposedVariable={setExposedVariable}
             fireEvent={fireEvent}
