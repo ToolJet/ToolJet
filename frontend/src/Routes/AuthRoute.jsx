@@ -89,6 +89,12 @@ export const AuthRoute = ({ children }) => {
   const fetchOrganizationDetails = (resolvedSlug) => {
     loginConfigsService.getOrganizationConfigs(resolvedSlug || organizationSlug).then(
       (configs) => {
+        // Defensive guard: a malformed/empty success response should never leave the
+        // loading spinner stuck forever — fall through as if configs were unavailable.
+        if (!configs) {
+          setGettingConfig(false);
+          return;
+        }
         setOrganizationId(configs.id);
         setConfigs(configs);
         setGettingConfig(false);
