@@ -77,6 +77,6 @@ export class ApiClient {
   }
 
   async login(): Promise<{ email: string; organizationId: string }> {
-    return this.request('GET', '/custom-component-libraries/validate-token');
+    return this.request('GET', '/personal-access-tokens/validate');
   }
 }
