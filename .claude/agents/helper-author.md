@@ -19,8 +19,8 @@ and the generated docs. You never edit spec files.
 1. Read `cypress-tests/cypress/support/componentAutomation/type-helper-index.md` to see current coverage.
 2. For a missing/incorrect helper: add or fix the helper, then add a `@tj` annotation
    (`@tjType`, `@tjBlock`, `@tjUsage`, `@tjDom`; `@tjBlock` ∈ properties|styles|events|csa|inspector|canvas|contexts|common).
-3. Run `node tools/component-automation/generate-helper-docs.js` to refresh headers + index.
-4. Run `node tools/component-automation/helper-lint.js <files>` until clean.
+3. Run `cd cypress-tests && node tools/component-automation/generate-helper-docs.js` to refresh headers + index.
+4. Run `cd cypress-tests && node tools/component-automation/helper-lint.js <files>` until clean.
 5. Report: helper name, type it serves, and whether a logic change needs human review.
 
 ## Rules
