@@ -41,3 +41,19 @@ You write exactly ONE facet spec per invocation. You never invent selectors or h
 - Each it() self-contained (relies only on beforeEach). No it.only. No stray it.skip unless told (stall-skip with a cited reason).
 - Never claim the spec passes at runtime — a browser run is a separate gate.
 - **CRITICAL: verifyAndModifyToggleFx side-effect**: `verifyAndModifyToggleFx(paramName, defaultValue, toggleModification=true, hiddenFx=true)` FLIPS the toggle by default (toggleModification defaults true) after verifying the fx value. If called twice naively, the second call leaves the value flipped and breaks the second assertion. Model the side-effect: verify+flip once, assert the DOM effect, then either pass `toggleModification: false` for a pure read OR account for the flipped value in assertions. For fx-mode render format (e.g., booleans), resolve the exact `.cm-line` output via RESOLVE-LIVE rather than assuming `{{false}}` verbatim.
+
+### Toggle property pattern (verifyAndModifyToggleFx)
+To verify a toggle's default AND its DOM effect, follow this exact pattern:
+1. Make ONE call `verifyAndModifyToggleFx('<displayName>', '<fxDefault>')` — this verifies the fx code editor shows the fxDefault value, clicks fx back, and FLIPS the toggle ON (default side-effect).
+2. Immediately assert the DOM effect of the FLIPPED/ON state (e.g., `data-disabled='true'` for Disable toggle; `hidden` for visibility; spinner visible for loading; `*` marker for mandatory). Do NOT call `verifyAndModifyToggleFx` again with the same default.
+3. If you must read the value back or toggle OFF again, call `verifyAndModifyToggleFx('<displayName>', '<flippedDefault>', false)` with `toggleModification: false` (pure read, no extra flip) — use the FLIPPED default (not the original) in the assertion.
+4. For fx-mode `.cm-line` render format (e.g., booleans rendering as `false` or `{{false}}`), use the value from the surface-cache fx-format resolution if present; otherwise emit the fx assertion behind a `/* RESOLVE-LIVE fx-format */` marker rather than assuming `{{false}}` verbatim.
+
+**Minimal correct example (Disable toggle):**
+```js
+verifyAndModifyToggleFx('Disable', /* fx default */ 'false'); // source: button.js:42  (flips ON)
+cy.get(commonWidgetSelector.draggableWidget(W)).scrollIntoView().should('have.attr', 'data-disabled', 'true');
+```
+
+### Switch property pattern (verifyAndModifySwitch)
+For `switch`-type fields (not toggle/fx fields), use the new `verifyAndModifySwitch('<displayName>', '<optionDisplayName>')` helper — it clicks the property, selects the option from the dropdown, and asserts the selection. Do NOT emit `/* RESOLVE-LIVE */` for switches anymore; the helper is now in the index.
