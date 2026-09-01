@@ -202,8 +202,7 @@ export const resolveCode = (
 // Eg, input: "Hello, {{name}}! Welcome to {{city}}."
 //     output: ["{{name}}", "{{city}}"]
 export const getDynamicVariables = (text) => {
-  /* eslint-disable no-useless-escape */
-  const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);
+  const matchedParams = text.match(/\{\{(.*?)\}\}/gs) || text.match(/%%(.*?)%%/gs);
   return matchedParams;
 };
 
