@@ -1,3 +1,14 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// events.js
+//   selectEvent                      events               → events
+//   selectCSA                        csa                  → csa
+//   addSupportCSAData                -                    → csa
+//   selectSupportCSAData             -                    → csa
+//   changeEventType                  -                    → events
+//   addMultiEventsWithAlert          events               → events
+//   setCSAParam                      -                    → csa
+//   configureCSA                     csa                  → csa
+// └──────────────────────────────────────────────────────────────────┘
 // ---------------------------------------------------------------------------
 // Shared primitives for the event-handler popover.
 // ---------------------------------------------------------------------------
@@ -28,6 +39,12 @@ const ensureHandlerCardOpen = (index = 0) => {
 //   needWait — pass TRUE whenever config is written straight after (an alert message,
 //              CSA params). With false that write races the handler's POST and is
 //              silently dropped, leaving the handler on its defaults.
+/**
+ * @tjType   events
+ * @tjBlock  events
+ * @tjUsage  selectEvent('On click', 'Show Alert')
+ * @tjDom    add-event-handler click → add-event-menu → event-trigger-option-<value> → action-selection listbox
+ */
 export const selectEvent = (
   event,
   action = "Show Alert",
@@ -100,6 +117,12 @@ const selectSearchableOption = (fieldSelector, label) => {
 
 // Set a "Control Component" action's target and action name, plus its debounce.
 // Requires the handler popover to be open (selectEvent leaves it open).
+/**
+ * @tjType   csa
+ * @tjBlock  csa
+ * @tjUsage  selectCSA('textinput1', 'Set text')
+ * @tjDom    action-options-component-selection-field + action-options-action-selection-field combobox → debounce-input-field
+ */
 export const selectCSA = (
   component,
   componentAction,
@@ -128,6 +151,11 @@ export const selectCSA = (
 // or a CSA param via `event-<label>`. Reopens the handler card if a re-render closed it.
 // NOTE: the value is typed through clearAndTypeOnCodeMirror, which SILENTLY DROPS any
 // character outside [a-zA-Z0-9._-] — keep literals free of punctuation such as `!`.
+/**
+ * @tjBlock  csa
+ * @tjUsage  addSupportCSAData('alert-message', 'Hello world')
+ * @tjDom    <field>-input-field inside popover-card → clearAndTypeOnCodeMirror
+ */
 export const addSupportCSAData = (field, data) => {
   interceptEvents();
   // The config field (e.g. alert-message) lives inside the event's `popover-card`.
@@ -151,6 +179,11 @@ export const addSupportCSAData = (field, data) => {
 // Set a CSA `select`-type parameter. Its combobox shares
 // `action-options-action-selection-field` with the action picker
 // (EventManager.jsx:1044), so the parameter's own control is `.eq(1)`.
+/**
+ * @tjBlock  csa
+ * @tjUsage  selectSupportCSAData('First option')
+ * @tjDom    action-options-action-selection-field:eq(1) searchable combobox option
+ */
 export const selectSupportCSAData = (option) => {
   interceptEvents();
   selectSearchableOption(
@@ -162,6 +195,11 @@ export const selectSupportCSAData = (option) => {
 };
 
 // Change the trigger of an EXISTING handler at `eventIndex`.
+/**
+ * @tjBlock  events
+ * @tjUsage  changeEventType('On blur', 0)
+ * @tjDom    event-handler card click → event-selection searchable combobox
+ */
 export const changeEventType = (event, eventIndex = 0) => {
   interceptEvents();
   cy.get('[data-cy="event-handler"]').eq(eventIndex).click();
@@ -175,6 +213,12 @@ export const changeEventType = (event, eventIndex = 0) => {
 // Wire several triggers to Show Alert in one call: [{ event, message }, ...].
 // Leave isWait TRUE — see selectEvent; false drops the alert message and the handler
 // falls back to its default "Hello world!".
+/**
+ * @tjType   events
+ * @tjBlock  events
+ * @tjUsage  addMultiEventsWithAlert([{ event: 'On click', message: 'clicked' }])
+ * @tjDom    per entry selectEvent Show Alert → alert-message-input-field
+ */
 export const addMultiEventsWithAlert = (events, isWait = true) => {
   events.forEach((eventObj, index) => {
     selectEvent(eventObj.event, 'Show Alert', 0, '[data-cy="add-event-handler"]', index, isWait);
@@ -207,6 +251,11 @@ export const addMultiEventsWithAlert = (events, isWait = true) => {
 //             arrays  : {{[1,2]}}
 //             Getting this wrong fails SILENTLY: the action runs, the param resolves
 //             to undefined, and nothing changes.
+/**
+ * @tjBlock  csa
+ * @tjUsage  setCSAParam({ label: 'Column key', type: 'toggle', value: true })
+ * @tjDom    per type — event-<label>-toggle-button checkbox, select combobox, or event-<label>-input-field code editor
+ */
 export const setCSAParam = (param) => {
   const { label, type, value } = param;
 
@@ -237,6 +286,12 @@ export const setCSAParam = (param) => {
 // Configure a "Control Component" action on the ALREADY-OPEN event handler: pick the
 // target component + action, set every param, then blur and wait for the app to save.
 // Call after selectEvent(<trigger>, "Control Component").
+/**
+ * @tjType   csa
+ * @tjBlock  csa
+ * @tjUsage  configureCSA('textinput1', 'Set text', [{ label: 'text', value: '{{"hi"}}' }])
+ * @tjDom    selectCSA target+action → setCSAParam per param → forceClickOnCanvas + waitForAutoSave
+ */
 export const configureCSA = (component, action, params = []) => {
   selectCSA(component, action);
   params.forEach(setCSAParam);

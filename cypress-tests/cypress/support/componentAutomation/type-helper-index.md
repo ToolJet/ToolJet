@@ -32,12 +32,14 @@
 | - | `addValueOnInput` | commonWidget.js | properties | `addValueOnInput('Border radius', '8')` |
 | - | `verifyContainerElements` | commonWidget.js | properties | `verifyContainerElements()` |
 | - | `checkPaddingOfContainer` | commonWidget.js | styles | `checkPaddingOfContainer('container1', '16', 'Box')` |
-| events | `selectEvent` | events.js | events | `selectEvent('On click', 'Show Alert', 0, '[data-cy="add-event-handler"]', 0)` |
+| events | `selectEvent` | events.js | events | `selectEvent('On click', 'Show Alert')` |
 | csa | `selectCSA` | events.js | csa | `selectCSA('textinput1', 'Set text')` |
-| - | `addSupportCSAData` | events.js | csa | `addSupportCSAData('alert-message', 'Done!')` |
-| - | `selectSupportCSAData` | events.js | csa | `selectSupportCSAData('Clear value')` |
-| - | `changeEventType` | events.js | events | `changeEventType('On mouse over', 0)` |
-| events | `addMultiEventsWithAlert` | events.js | events | `addMultiEventsWithAlert([{ event: 'On click', message: 'Clicked!' }])` |
+| - | `addSupportCSAData` | events.js | csa | `addSupportCSAData('alert-message', 'Hello world')` |
+| - | `selectSupportCSAData` | events.js | csa | `selectSupportCSAData('First option')` |
+| - | `changeEventType` | events.js | events | `changeEventType('On blur', 0)` |
+| events | `addMultiEventsWithAlert` | events.js | events | `addMultiEventsWithAlert([{ event: 'On click', message: 'clicked' }])` |
+| - | `setCSAParam` | events.js | csa | `setCSAParam({ label: 'Column key', type: 'toggle', value: true })` |
+| csa | `configureCSA` | events.js | csa | `configureCSA('textinput1', 'Set text', [{ label: 'text', value: '{{"hi"}}' }])` |
 | - | `verifyControlComponentAction` | editor/textInput.js | csa | `verifyControlComponentAction('textinput1', 'hello')` |
 | - | `randomString` | editor/textInput.js | common | `randomString(8)` |
 | csa | `verifyCSA` | editor/textInput.js | csa | `verifyCSA('textinput1')` |
