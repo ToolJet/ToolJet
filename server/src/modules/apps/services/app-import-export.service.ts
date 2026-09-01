@@ -387,6 +387,13 @@ export class AppImportExportService {
       // columns into the exported JSON for non-workflow apps.
       const appToExport = await this.appsRepository.findById(id, user?.organizationId, versionId, branchId);
 
+      if (!appToExport) {
+        // Guard against an opaque "Cannot read properties of null (reading 'id')" below.
+        // Callers (e.g. recursive module export) may pass an id that doesn't resolve to a
+        // local app; surface a clear error instead of a null-property crash.
+        throw new BadRequestException(`App not found for export (id: ${id})`);
+      }
+
       const queryAppVersions = manager
         .createQueryBuilder(AppVersion, 'app_versions')
         .where('app_versions.appId = :appId', {
@@ -635,6 +642,24 @@ export class AppImportExportService {
       await Promise.all(
         uniqueModuleAppIds.map(async (moduleAppId) => {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
+
+          // Dangling module reference: the ModuleViewer points at a module that isn't
+          // present in this workspace — e.g. an app imported from a file whose nested
+          // modules weren't imported alongside it. When co_relation_id resolution misses,
+          // resolvedId falls back to the raw moduleAppId.value (a co_relation_id, never a
+          // real app.id), so this.export() would hit a null findById() and crash the whole
+          // git push with an opaque "Cannot read properties of null (reading 'id')". Skip
+          // the unresolvable reference instead — the parent app still pushes.
+          const moduleAppExists = await manager.findOne(App, {
+            where: { id: resolvedId, organizationId: appToExport.organizationId },
+            select: ['id'],
+          });
+          if (!moduleAppExists) {
+            console.warn(
+              `Skipping git export of module reference ${moduleAppId.moduleId}: module not found in workspace ${appToExport.organizationId}`
+            );
+            return;
+          }
 
           let versionDbId: string | undefined;
           let isPinnedToVersion = false;
