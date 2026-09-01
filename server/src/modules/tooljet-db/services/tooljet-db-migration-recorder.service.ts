@@ -199,9 +199,11 @@ export class TooljetDbMigrationRecorderService {
   async confirm(
     migration: InternalTableMigration,
     relation: InternalTableRelation,
-    tjdbQueryRunner: QueryRunner
+    tjdbQueryRunner: QueryRunner,
+    manager?: EntityManager
   ): Promise<void> {
-    const internalTable = await this.manager.findOne(InternalTable, {
+    const appManager = manager ?? this.manager;
+    const internalTable = await appManager.findOne(InternalTable, {
       where: { id: migration.internalTableId },
       withDeleted: true,
     });
@@ -209,12 +211,8 @@ export class TooljetDbMigrationRecorderService {
     const columnNames = relation.configurations?.columns?.column_names ?? {};
     const resultingSchema = await buildTableSchemaSnapshot(tjdbQueryRunner, schema, relation.id, columnNames);
 
-    await this.manager.update(
-      InternalTableMigration,
-      { id: migration.id },
-      { resultingSchema: resultingSchema as any }
-    );
-    await this.manager.update(
+    await appManager.update(InternalTableMigration, { id: migration.id }, { resultingSchema: resultingSchema as any });
+    await appManager.update(
       InternalTableMigrationApplication,
       { migrationId: migration.id, relationId: relation.id },
       { appliedAt: new Date() }
@@ -231,10 +229,14 @@ export class TooljetDbMigrationRecorderService {
    * given - callers invoke this from a DDL catch block and must go on to rethrow the real Postgres
    * error, not whatever this cleanup itself produces.
    */
-  async discard(migration: InternalTableMigration, relation: InternalTableRelation): Promise<void> {
+  async discard(
+    migration: InternalTableMigration,
+    relation: InternalTableRelation,
+    manager?: EntityManager
+  ): Promise<void> {
     // `relation` is unused here - kept for symmetry with confirm()'s signature, which every call
     // site already has both arguments in hand for.
-    await this.manager.delete(InternalTableMigration, { id: migration.id });
+    await (manager ?? this.manager).delete(InternalTableMigration, { id: migration.id });
   }
 
   /**
@@ -244,9 +246,13 @@ export class TooljetDbMigrationRecorderService {
    * rows this call already inserted before the crash are left as-is rather than failing the
    * unique constraint.
    */
-  async recordApplications(migrationIds: string[], relation: InternalTableRelation): Promise<void> {
+  async recordApplications(
+    migrationIds: string[],
+    relation: InternalTableRelation,
+    manager?: EntityManager
+  ): Promise<void> {
     if (!migrationIds.length) return;
-    await this.manager.query(
+    await (manager ?? this.manager).query(
       `INSERT INTO internal_table_migration_applications (migration_id, relation_id, applied_at)
        SELECT unnest($1::uuid[]), $2, NULL
        ON CONFLICT (migration_id, relation_id) DO NOTHING`,
@@ -259,9 +265,13 @@ export class TooljetDbMigrationRecorderService {
    * that is authoring-time truth, written once when a migration is first confirmed against the
    * relation it was authored on, and a replay is not an authoring event.
    */
-  async confirmApplications(migrationIds: string[], relation: InternalTableRelation): Promise<void> {
+  async confirmApplications(
+    migrationIds: string[],
+    relation: InternalTableRelation,
+    manager?: EntityManager
+  ): Promise<void> {
     if (!migrationIds.length) return;
-    await this.manager.update(
+    await (manager ?? this.manager).update(
       InternalTableMigrationApplication,
       { migrationId: In(migrationIds), relationId: relation.id },
       { appliedAt: new Date() }
@@ -272,9 +282,13 @@ export class TooljetDbMigrationRecorderService {
    * Removes the pending rows recorded above on a failed replay. Never deletes a migration - the
    * migrations being replayed already exist and are untouched by a replay failing.
    */
-  async discardApplications(migrationIds: string[], relation: InternalTableRelation): Promise<void> {
+  async discardApplications(
+    migrationIds: string[],
+    relation: InternalTableRelation,
+    manager?: EntityManager
+  ): Promise<void> {
     if (!migrationIds.length) return;
-    await this.manager.delete(InternalTableMigrationApplication, {
+    await (manager ?? this.manager).delete(InternalTableMigrationApplication, {
       migrationId: In(migrationIds),
       relationId: relation.id,
     });
@@ -302,17 +316,22 @@ export class TooljetDbMigrationRecorderService {
    * Rows younger than ADJUDICATION_GRACE_WINDOW are skipped entirely - left pending, neither
    * confirmed nor discarded - on the assumption that whichever request just recorded them is still
    * running and will confirm or discard them itself. Compared in SQL against the database's own
-   * `now()`, not `Date.now()`: this runs across requests/processes, where wall-clock skew between
+   * `now()`, not `Date.now()`: this runs across requests/processes, where the wall-clock skew between
    * this process and whichever one is mid-flight would defeat an in-memory comparison.
    */
-  async adjudicatePending(internalTable: InternalTable, relation: InternalTableRelation): Promise<void> {
-    const pendingApplications = await this.manager.find(InternalTableMigrationApplication, {
+  async adjudicatePending(
+    internalTable: InternalTable,
+    relation: InternalTableRelation,
+    manager?: EntityManager
+  ): Promise<void> {
+    const appManager = manager ?? this.manager;
+    const pendingApplications = await appManager.find(InternalTableMigrationApplication, {
       where: { relationId: relation.id, appliedAt: IsNull() },
     });
     if (!pendingApplications.length) return;
 
     const eligibleIds: string[] = (
-      await this.manager.query(
+      await appManager.query(
         `SELECT id FROM internal_table_migrations
          WHERE id = ANY($1) AND created_at <= now() - $2::interval`,
         [
@@ -320,10 +339,10 @@ export class TooljetDbMigrationRecorderService {
           TooljetDbMigrationRecorderService.ADJUDICATION_GRACE_WINDOW,
         ]
       )
-    ).map((row) => row.id);
+    ).map((row: Pick<InternalTableMigration, 'id'>) => row.id);
     if (!eligibleIds.length) return;
 
-    const pendingMigrations = await this.manager.find(InternalTableMigration, {
+    const pendingMigrations = await appManager.find(InternalTableMigration, {
       where: { id: In(eligibleIds) },
     });
 
@@ -346,17 +365,17 @@ export class TooljetDbMigrationRecorderService {
         // which is authoring-time truth a replay must never write.
         if (migration.resultingSchema !== null) {
           if (matches) {
-            await this.confirmApplications([migration.id], relation);
+            await this.confirmApplications([migration.id], relation, manager);
           } else {
-            await this.discardApplications([migration.id], relation);
+            await this.discardApplications([migration.id], relation, manager);
           }
           continue;
         }
 
         if (matches) {
-          await this.confirm(migration, relation, tjdbQueryRunner);
+          await this.confirm(migration, relation, tjdbQueryRunner, manager);
         } else {
-          await this.discard(migration, relation);
+          await this.discard(migration, relation, manager);
         }
       }
     } finally {

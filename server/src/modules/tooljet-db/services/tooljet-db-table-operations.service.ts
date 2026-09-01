@@ -2654,8 +2654,11 @@ export class TooljetDbTableOperationsService {
 
     const migrations = await this.loadMigrationsInOrder(migrationIds, appManager);
 
-    await this.migrationRecorderService.adjudicatePending(targetInternalTable, targetRelation);
-    await this.migrationRecorderService.recordApplications(migrationIds, targetRelation);
+    // Thread `appManager` through every recorder call: when a data migration drives applyMigrations
+    // (rollout migration B's foreign-key pass), the recorder's own injected manager is a different
+    // pool that cannot see the migration transaction's uncommitted internal_table* rows.
+    await this.migrationRecorderService.adjudicatePending(targetInternalTable, targetRelation, appManager);
+    await this.migrationRecorderService.recordApplications(migrationIds, targetRelation, appManager);
 
     const queryRunner = appManager?.queryRunner || appManager.connection.createQueryRunner();
     const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
@@ -2685,9 +2688,9 @@ export class TooljetDbTableOperationsService {
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirmApplications(migrationIds, targetRelation);
+      await this.migrationRecorderService.confirmApplications(migrationIds, targetRelation, appManager);
     } catch (err) {
-      await this.migrationRecorderService.discardApplications(migrationIds, targetRelation);
+      await this.migrationRecorderService.discardApplications(migrationIds, targetRelation, appManager);
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.rollbackTransaction();
       throw new TooljetDatabaseError(
