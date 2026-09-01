@@ -35,7 +35,7 @@ export default class Ups implements QueryService {
       // Prepare headers - only add Content-Type when body is present
       const headers: Record<string, string> = {
         Authorization: `Bearer ${accessToken}`,
-        'x-merchant-id': sourceOptions.shipper_number!,
+        'x-merchant-id': sourceOptions.shipper_number,
         Accept: 'application/json',
       };
 
@@ -78,7 +78,7 @@ export default class Ups implements QueryService {
 
       const headers: Record<string, string> = {
         Authorization: `Bearer ${accessToken}`,
-        'x-merchant-id': sourceOptions.shipper_number!,
+        'x-merchant-id': sourceOptions.shipper_number,
         Accept: 'application/json',
         transID: 'testing',
         transactionSrc: 'testing',
@@ -181,7 +181,7 @@ export default class Ups implements QueryService {
     return new QueryError('Query could not be completed', errorMessage, errorDetails);
   }
 
-  private validateSourceOptions(sourceOptions: SourceOptions) {
+  private validateSourceOptions(sourceOptions: SourceOptions): asserts sourceOptions is Required<SourceOptions> {
     const { client_id, client_secret, shipper_number, base_url } = sourceOptions;
 
     if (!client_id || !client_secret || !shipper_number || !base_url) {

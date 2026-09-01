@@ -218,7 +218,9 @@ export default class Xero implements QueryService {
     const clientSecret = oauth_type === 'tooljet_app' ? process.env.XERO_CLIENT_SECRET : getOption('client_secret');
 
     const redirectHost =
-      oauth_type === 'tooljet_app' ? process.env.TOOLJET_HOST : getOption('tj_redirect_host') || process.env.TOOLJET_HOST;
+      oauth_type === 'tooljet_app'
+        ? process.env.TOOLJET_HOST
+        : getOption('tj_redirect_host') || process.env.TOOLJET_HOST;
     const redirectUri = `${redirectHost}${process.env.SUB_PATH || '/'}oauth2/authorize`;
 
     const data = new URLSearchParams({

@@ -31,9 +31,7 @@ export default class Gmail implements QueryService {
     const isTooljetManagedApp = oauth_type?.value === 'tooljet_app';
     const clientId = isTooljetManagedApp ? process.env.GOOGLE_CLIENT_ID : client_id?.value;
 
-    const host = isTooljetManagedApp
-      ? process.env.TOOLJET_HOST
-      : tj_redirect_host?.value || process.env.TOOLJET_HOST;
+    const host = isTooljetManagedApp ? process.env.TOOLJET_HOST : tj_redirect_host?.value || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const redirectBaseUrl = `${host}${subpath ? subpath : '/'}`;
 
