@@ -218,17 +218,25 @@ async function getProviderModels(provider) {
   );
 }
 
-async function getLlmPreference() {
+// `conversationId` selects which chat's provider/model is being read or written. Omitted on the
+// home page, where no chat exists yet — there the call reads and writes the workspace default,
+// which is what the next new chat will be created with.
+async function getLlmPreference(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
+  const query = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : '';
+  return fetch(`${config.apiUrl}/ai/llm-preference${query}`, requestOptions).then(handleResponse);
 }
 
-async function updateLlmPreference(provider, model, modelContextWindow) {
+async function updateLlmPreference(provider, model, modelContextWindow, conversationId) {
   const requestOptions = {
     method: 'PATCH',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ provider, ...(model ? { model, modelContextWindow } : {}) }),
+    body: JSON.stringify({
+      provider,
+      ...(model ? { model, modelContextWindow } : {}),
+      ...(conversationId ? { conversationId } : {}),
+    }),
   };
   return fetch(`${config.apiUrl}/ai/llm-preference`, requestOptions).then(handleResponse);
 }
