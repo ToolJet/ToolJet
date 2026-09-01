@@ -16,6 +16,7 @@ export default class Zendesk implements QueryService {
         clientSecret: findOption(options, 'client_secret')['value'],
         subdomain: findOption(options, 'subdomain')['value'],
         scope: findOption(options, 'access_type')['value'],
+        redirectHost: findOption(options, 'tj_redirect_host')?.['value'],
       };
     } else {
       return {
@@ -23,6 +24,7 @@ export default class Zendesk implements QueryService {
         clientSecret: options['client_secret'],
         subdomain: options['subdomain'],
         scope: options['access_type'],
+        redirectHost: options['tj_redirect_host'],
       };
     }
   }
@@ -35,7 +37,7 @@ export default class Zendesk implements QueryService {
   }
 
   authUrl(options: any): string {
-    const tooljetHost = process.env.TOOLJET_HOST;
+    const tooljetHost = options?.tj_redirect_host || process.env.TOOLJET_HOST;
     return `https://${options?.subdomain}.zendesk.com/oauth/authorizations/new?response_type=code&client_id=${options?.client_id}&redirect_uri=${tooljetHost}/oauth2/authorize`;
   }
 
@@ -47,10 +49,10 @@ export default class Zendesk implements QueryService {
       ];
     }
 
-    const { clientId, clientSecret, subdomain, scope } = this.sanitizeOptions(options);
+    const { clientId, clientSecret, subdomain, scope, redirectHost } = this.sanitizeOptions(options);
 
     const accessTokenUrl = `https://${subdomain}.zendesk.com/oauth/tokens`;
-    const host = process.env.TOOLJET_HOST;
+    const host = redirectHost || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
