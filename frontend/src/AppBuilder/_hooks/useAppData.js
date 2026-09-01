@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  setCurrentAppName,
+  setCurrentAppMeta,
+  markAppLoadStart,
+  markAppLoaded,
+} from '@/_services/frontend-metrics.service';
+import {
   appEnvironmentService,
   appService,
   appsService,
@@ -23,55 +29,14 @@ import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
-import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
+import { baseTheme } from '../_stores/utils';
+import { convertAllKeysToSnakeCase, normalizeQueryTransformationOptions } from '../_stores/utils/appDataCaseConversion';
 import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
-
-/* 
-Whitelist of cross-cutting query option keys that need snake→camel normalization.
-Editor (data-queries API) returns these as camelCase, but public/released/preview-for-version
-paths return them as snake_case. We only normalize keys here — REST/TooljetDB/gRPC editors
-rely on snake_case for their own option keys (query_timeout, retry_network_errors,
-where_filters, proto_files, etc.) and must NOT be touched.
-*/
-
-const QUERY_OPTION_KEYS_TO_NORMALIZE = [
-  'enableTransformation',
-  'transformationLanguage',
-  'runOnPageLoad',
-  'runOnDependencyChange',
-  'requestConfirmation',
-  'requestConfirmationFx',
-  'confirmationMessage',
-  'showSuccessNotification',
-  'successMessage',
-  'notificationDuration',
-  'disableQuery',
-  'disabledMessage',
-  'workflowId',
-  'workflowVersionId',
-];
-
-const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
-
-export const normalizeQueryTransformationOptions = (query) => {
-  if (!query?.options) return query;
-  QUERY_OPTION_KEYS_TO_NORMALIZE.forEach((camelKey) => {
-    const snakeKey = snakeCase(camelKey);
-    if (query.options[snakeKey] !== undefined) {
-      const value = query.options[snakeKey];
-      delete query.options[snakeKey];
-      if (query.options[camelKey] === undefined) {
-        query.options[camelKey] = value;
-      }
-    }
-  });
-  return query;
-};
 
 const useAppData = (
   appId,
@@ -132,7 +97,6 @@ const useAppData = (
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
-  const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
@@ -189,9 +153,38 @@ const useAppData = (
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
+  useEffect(() => {
+    setCurrentAppName(appName || '');
+    return () => setCurrentAppName('');
+  }, [appName]);
+
+  useEffect(() => {
+    setCurrentAppMeta({
+      environment: selectedEnvironment?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
+    });
+    return () => setCurrentAppMeta({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEnvironment?.name, selectedVersion?.display_name, selectedVersion?.displayName, selectedVersion?.name]);
+
+  useEffect(() => {
+    markAppLoadStart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isComponentLayoutReady) markAppLoaded();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isComponentLayoutReady]);
+
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
   const previousRestoreTimestamp = usePrevious(restoreTimestamp);
+  // Used to trigger the same refresh in place, without unmounting the editor chrome
+  const hotReloadTimestamp = useStore((state) => state.hotReloadTimestamp);
+  const previousHotReloadTimestamp = usePrevious(hotReloadTimestamp);
+  const setCanvasReloading = useStore((state) => state.setCanvasReloading);
+  const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady);
 
   const location = useRouter().location;
 
@@ -230,10 +223,16 @@ const useAppData = (
     }
   };
 
+  // Only OBSERVES pageSwitchInProgress to remember (locally, in a ref) that a
+  // switch is under way, for the onPageLoad-vs-runOnLoadQueries branch further
+  // below. Must NOT reset the flag itself — that's appSlice.js's re-entrancy
+  // guard, and resetting it here as soon as this effect fires (essentially
+  // immediately after switchPage sets it) silently defeated the guard for
+  // virtually its entire intended lifetime, regardless of how long doSwitch
+  // actually takes to finish.
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
       isPageSwitchRef.current = true;
-      setPageSwitchInProgress(false);
     }
   }, [pageSwitchInProgress, moduleMode]);
 
@@ -307,14 +306,8 @@ const useAppData = (
         let editorEnvironment = result.editorEnvironment;
         let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
-          const rawDataQueries = appData?.data_queries;
-          const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
+          // `convertAllKeysToSnakeCase` normalises the metadata envelope.
           appData = convertAllKeysToSnakeCase(appData);
-
-          appData.data_queries = rawDataQueries;
-          if (appData.editing_version && rawEditingVersionDataQueries) {
-            appData.editing_version.data_queries = rawEditingVersionDataQueries;
-          }
 
           editorEnvironment = {
             id: environmentId,
@@ -368,7 +361,12 @@ const useAppData = (
         });
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
-        if (!moduleMode && setConversation && setDocsConversation) {
+        // Modules go through the same AI init as apps: the server always returns an ai_conversation
+        // for every app/module (see server ee apps service), and getCreditBalance() sets
+        // aiFeaturesEnabled which gates the AI sidebar trigger. Gating this behind !moduleMode left
+        // modules without a conversation (crash on open) and without the credit fetch (trigger hidden
+        // unless the singleton store happened to be primed by the create-with-prompt flow).
+        if (setConversation && setDocsConversation) {
           setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs
@@ -452,15 +450,18 @@ const useAppData = (
 
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
-          const global_settings = mapKeys(
-            appData.editing_version?.global_settings || appData.global_settings,
-            (value, key) => camelCase(key)
-          );
-          if (!global_settings?.theme) {
-            global_settings.theme = baseTheme;
-          }
-          setGlobalSettings(global_settings);
         }
+        // Load global settings (app/module mode, theme, canvas styles) from the backend for BOTH apps
+        // and modules — the module editor's Canvas styles fields read these, so gating this to
+        // non-modules left module mode/theme unpopulated.
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings || appData.global_settings,
+          (value, key) => camelCase(key)
+        );
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
+        }
+        setGlobalSettings(global_settings);
         setPages(pages, moduleId);
         if (!moduleMode) {
           setPageSettings(
@@ -502,14 +503,19 @@ const useAppData = (
           // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
         }
 
-        // Add page id and handle to the state on initial load
-        const currentState = window.history.state || {};
-        const pageInfo = {
-          id: startingPage.id,
-          handle: startingPage.handle,
-        };
-        const newState = { ...currentState, ...pageInfo };
-        window.history.replaceState(newState, '', window.location.href);
+        // Add page id and handle to the state on initial load.
+        // Only the main app may write the browser history entry — an embedded module instance
+        // runs this same hook and would otherwise overwrite history.state.id with the module's
+        // page id, which the canvas page lookup can't resolve (blanks the page on back/forward).
+        if (!moduleMode) {
+          const currentState = window.history.state || {};
+          const pageInfo = {
+            id: startingPage.id,
+            handle: startingPage.handle,
+          };
+          const newState = { ...currentState, ...pageInfo };
+          window.history.replaceState(newState, '', window.location.href);
+        }
 
         setCurrentPageHandle(startingPage.handle, moduleId);
         setCurrentPageId(startingPage.id, moduleId);
@@ -550,9 +556,10 @@ const useAppData = (
           isPublicAccess || (mode !== 'edit' && appData.is_public)
             ? appData
             : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
-        const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
-        dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+
+        const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
+
         if (dataQueries?.length > 0) {
           !moduleMode && setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(
@@ -761,16 +768,28 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
-    const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
+    const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
+    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
+    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
+    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
 
-    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
-      setEditorLoading(true, moduleId);
+    if (isEnvChanged || isVersionChanged || isForceRefreshTriggered || isHotReload) {
+      if (isHotReload) {
+        setCanvasReloading(true, moduleId);
+        // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays
+        // mounted, so its unmount cleanup won't clear this. Clear it here so it can flip back to
+        // true once the rebuilt canvas settles — that transition is what re-runs the on-load
+        // queries, onPageLoad events and JS libraries.
+        setIsComponentLayoutReady(false, moduleId);
+      } else {
+        setEditorLoading(true, moduleId);
+      }
       clearSelectedComponents();
       if (isEnvChanged) {
         setEnvironmentLoadingState('loading');
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
-        cleanUpStore(false);
+        cleanUpStore();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
@@ -814,7 +833,19 @@ const useAppData = (
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );
-        setCurrentPageId(startingPage.id, moduleId);
+        // A hot reload keeps the user where they are; everything else lands on the home page
+        const pageToLoad = (isHotReload && appData.pages.find((page) => page.id === currentPageId)) || startingPage;
+        setCurrentPageId(pageToLoad.id, moduleId);
+        if (isHotReload) {
+          // We're staying on the same page, and the refresh may have renamed it — so refresh the
+          // handle and the {{page.*}} constants, which this effect otherwise never sets. Scoped to
+          // hot reload to leave the version/env/history flows behaving exactly as before.
+          setCurrentPageHandle(pageToLoad?.handle, moduleId);
+          setResolvedPageConstants(
+            { id: pageToLoad?.id, handle: pageToLoad?.handle, name: pageToLoad?.name },
+            moduleId
+          );
+        }
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
         // const queryData = await dataqueryService.getAll(currentVersionId);
@@ -840,9 +871,9 @@ const useAppData = (
         }
 
         const queryData = await dataqueryService.getAll(currentVersionId, mode);
-        const dataQueries = queryData.data_queries;
-        dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+        const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
+
         if (dataQueries?.length > 0) {
           setSelectedQuery(dataQueries[0]?.id);
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
@@ -887,10 +918,20 @@ const useAppData = (
 
         setQueryMapping(moduleId);
         initDependencyGraph(moduleId);
+        if (isHotReload) {
+          // The canvas stayed mounted, so pair the batch the same way initial load does: open it
+          // before the rebuilt canvas settles and let the layout-ready effect flush it.
+          startExposedValueBatch();
+          // Datasources/modules may be new in this definition (the env branch above only covers
+          // datasources, and only when the environment changed).
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
+          if (appData.modules) setModuleDefinition(appData.modules);
+        }
+        setCanvasReloading(false, moduleId);
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp, hotReloadTimestamp]);
 
   useEffect(() => {
     if (moduleMode) return;

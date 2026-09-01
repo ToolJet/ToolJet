@@ -93,6 +93,18 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.IMPORT_TJDB_TABLE_AS_CSV]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.UPDATE_TJDB_TABLE_AS_CSV]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.DELETE_TJDB_TABLE_AS_CSV]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.UPDATE_USER_METADATA]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
@@ -111,6 +123,14 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.UNBAN_WORKSPACE]: {
+      isPublic: true,
+    },
+    [FEATURE_KEY.EXPORT_APP_ADMIN]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.GET_WORKSPACE_USERS_BY_GROUPS]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
   },

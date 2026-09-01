@@ -4,6 +4,7 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import useStore from '@/AppBuilder/_stores/store';
 
 var _ = require('lodash');
 
@@ -14,7 +15,19 @@ export function debounce(func) {
 
   return (...args) => {
     const event = args[0] || {};
-    const eventId = uuidv4();
+    const moduleId = args[3] || 'canvas';
+    const eventNameId = event?.eventId || event?.event?.eventId;
+
+    const exposedValue = useStore.getState().getExposedValueOfComponent(event.sourceId, moduleId);
+    let rowIndex = exposedValue?.['selectedRowId'] ?? null;
+    if (eventNameId == 'onRowHovered') {
+      rowIndex = exposedValue?.['hoveredRowId'] ?? null;
+    }
+
+    let eventId = moduleId + '-' + (event?.id || uuidv4());
+    if (rowIndex !== undefined && rowIndex !== null) {
+      eventId += `-${rowIndex}`;
+    }
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
@@ -521,38 +534,6 @@ export function createReferencesLookup(
     });
   }
   return suggestionList;
-}
-
-export function convertAllKeysToSnakeCase(o) {
-  if (Array.isArray(o)) {
-    return o.map(function (value) {
-      if (typeof value === 'object' && value !== null) {
-        value = convertAllKeysToSnakeCase(value);
-      }
-      return value;
-    });
-  } else if (typeof o === 'object' && o !== null) {
-    const newO = {};
-    for (const origKey in o) {
-      if (Object.prototype.hasOwnProperty.call(o, origKey)) {
-        if (!['pages', 'events'].includes(origKey)) {
-          const newKey = origKey
-            .split(/(?=[A-Z])/)
-            .join('_')
-            .toLowerCase();
-          let value = o[origKey];
-          if (typeof value === 'object' && value !== null) {
-            value = convertAllKeysToSnakeCase(value);
-          }
-          newO[newKey] = value;
-        } else {
-          newO[origKey] = o[origKey];
-        }
-      }
-    }
-    return newO;
-  }
-  return o;
 }
 
 export function convertKeysToCamelCase(object) {

@@ -28,6 +28,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     serverSideGlobalResolve: false,
     queryFolders: false,
     scim: false,
+    mfa: false,
     observability: false,
   },
   domains: [],
@@ -68,6 +69,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       release: false,
       history: false,
       jsLibraries: false,
+      publicApp: false,
     },
   },
   modules: {
