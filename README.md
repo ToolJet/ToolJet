@@ -49,6 +49,14 @@ Everything in CE, plus:
 - **Embedded Apps:** Embed ToolJet apps securely within other applications or portals.  
 - **Enterprise Support:** SLAs, priority bug fixes, and onboarding assistance.  
 
+## Build with your coding agent
+
+ToolJet ships a [Model Context Protocol](https://modelcontextprotocol.io/introduction) server, so the coding agent you already use can build ToolJet apps directly: generating pages, queries, and components from a prompt, and modifying existing apps in place.
+
+Works with **Claude Code**, **Codex**, and **Grok Build** as plugins that bundle ToolJet's app-builder skill, and with **Cursor** or any other MCP-compatible client over the MCP server alone. Agents build against ToolJet's governed first-party contracts, so they work from the platform's real schemas instead of guessing at them, and operations run on your own model subscription rather than drawing down ToolJet AI credits.
+
+ToolJet MCP is currently in beta. See the [ToolJet MCP guide](https://docs.tooljet.com/docs/build-with-ai/mcp/overview) to set it up.
+
 <hr>
 
 ## Quickstart
