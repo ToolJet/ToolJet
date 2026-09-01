@@ -93,16 +93,8 @@ const useResolvedManifest = (library, current, latest) => {
   return manifest;
 };
 
-const CustomComponentCard = ({
-  libraryId,
-  correlationId,
-  libraryName,
-  revisionId,
-  name,
-  displayName,
-  description,
-  props,
-}) => {
+const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
+  const { displayName, description, props = [], defaultWidth, defaultHeight } = componentConfig;
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const [isRightSidebarOpen, toggleRightSidebar] = useStore(
     (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
@@ -114,10 +106,18 @@ const CustomComponentCard = ({
     () => ({
       component: 'LibraryComponent',
       displayName: name,
-      defaultSize: { width: 12, height: 200 },
-      libraryComponentInfo: { libraryId, correlationId, libraryName, componentName: name, revisionId, props },
+      defaultSize: { width: defaultWidth ?? 12, height: defaultHeight ?? 200 },
+      libraryComponentInfo: {
+        libraryId,
+        correlationId,
+        libraryName,
+        componentName: name,
+        revisionId,
+        props,
+        defaultSize: { width: defaultWidth ?? 12, height: defaultHeight ?? 200 },
+      },
     }),
-    [libraryId, correlationId, libraryName, name, revisionId, props]
+    [libraryId, correlationId, libraryName, name, revisionId, props, defaultWidth, defaultHeight]
   );
 
   const [{ isDragging }, drag, preview] = useDrag(
@@ -311,9 +311,7 @@ const LibrarySection = ({ library, searchQuery = '' }) => {
               libraryName={library.name}
               revisionId={current}
               name={exportName} // the bundle's export — what the shell resolves
-              displayName={comp.displayName}
-              description={comp.description}
-              props={comp.props ?? []}
+              componentConfig={comp}
             />
           ))}
         </div>
