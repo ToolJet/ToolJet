@@ -2,7 +2,8 @@ import {
     BrainCircuit, Grid3x3, Database, Workflow, Cog, Target, Scale,
     Layers, FileSpreadsheet, Folder, Wand2, LayoutDashboard, Users, UserCheck,
     Lock, UserPlus, ScrollText, Megaphone, Gem, Mail, GitBranch,
-    Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, Cloud, Container, Boxes, Server, Telescope, Globe
+    Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, Cloud, Container, Boxes, Server, Telescope, Globe,
+    Terminal
 } from 'lucide-react';
 
 export const featureCards = [
@@ -12,6 +13,13 @@ export const featureCards = [
         color: "text-blue-500",
         content: "Build applications effortlessly using natural language to generate and customize apps.",
         href: "/docs/build-with-ai/overview/"
+    },
+    {
+        icon: Terminal,
+        title: "Build with Your Coding Agent",
+        color: "text-blue-500",
+        content: "Connect Claude Code, Codex, or any MCP-compatible agent to your workspace and build ToolJet apps without leaving your editor.",
+        href: "/docs/build-with-ai/mcp/overview/"
     },
     {
         icon: Grid3x3,

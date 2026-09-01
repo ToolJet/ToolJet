@@ -3,6 +3,9 @@ id: setup
 title: Setup
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 :::caution BETA
 ToolJet MCP is currently in beta and not recommended for production use.
 :::
@@ -41,6 +44,182 @@ Both URLs default to localhost, so you can omit them only when you are running T
 The agent acts with the permissions of the token's owner in that workspace, so create the token in the workspace you actually want the agent to touch rather than in one with broader access. The token sits in plain text in your shell profile or your client's config file, so keep that file out of version control, and always use an `https://` instance URL, since the token is sent to `TOOLJET_URL` on every call.
 :::
 
+Where you put these depends on your client. Pick one of the options below and set the variables **before** launching your client.
+
+### Option 1: Your Shell Profile
+
+Works with every client, and the right choice if you launch your AI client from a terminal. Adding the variables to your shell profile makes them persist across sessions.
+
+<Tabs>
+
+<TabItem value="zsh" label="zsh" default>
+
+Replace the placeholder values with your own, then run the command. It appends the variables to `~/.zshrc`:
+
+```bash
+cat >> ~/.zshrc <<'EOF'
+export TOOLJET_PAT="tj_pat_..."
+export TOOLJET_URL="https://your-tooljet-instance.com"
+export TOOLJET_APP_URL="https://your-tooljet-instance.com"
+EOF
+```
+
+Load the variables into your current terminal:
+
+```bash
+source ~/.zshrc
+```
+
+</TabItem>
+
+<TabItem value="bash" label="bash">
+
+Replace the placeholder values with your own, then run the command. It appends the variables to `~/.bashrc`:
+
+```bash
+cat >> ~/.bashrc <<'EOF'
+export TOOLJET_PAT="tj_pat_..."
+export TOOLJET_URL="https://your-tooljet-instance.com"
+export TOOLJET_APP_URL="https://your-tooljet-instance.com"
+EOF
+```
+
+Load the variables into your current terminal:
+
+```bash
+source ~/.bashrc
+```
+
+</TabItem>
+
+<TabItem value="powershell" label="PowerShell">
+
+Replace the placeholder values with your own, then run the commands. They set the variables for your Windows user account:
+
+```powershell
+[Environment]::SetEnvironmentVariable("TOOLJET_PAT", "tj_pat_...", "User")
+[Environment]::SetEnvironmentVariable("TOOLJET_URL", "https://your-tooljet-instance.com", "User")
+[Environment]::SetEnvironmentVariable("TOOLJET_APP_URL", "https://your-tooljet-instance.com", "User")
+```
+
+Close and reopen PowerShell to load the variables.
+
+</TabItem>
+
+</Tabs>
+
+Launch your client from that same terminal once the variables are set.
+
+### Option 2: Claude Code Settings File
+
+More reliable than a shell profile if you launch Claude Code from VS Code, the desktop app, or an application icon, since those may never read your shell profile. Set the variables for every project, or for one project only.
+
+#### All Projects
+
+Add this `env` block to `~/.claude/settings.json`. If the file already contains other settings, add `env` alongside them rather than replacing the file:
+
+```json
+{
+  "env": {
+    "TOOLJET_PAT": "tj_pat_...",
+    "TOOLJET_URL": "https://your-tooljet-instance.com",
+    "TOOLJET_APP_URL": "https://your-tooljet-instance.com"
+  }
+}
+```
+
+<details>
+<summary>How to find the settings.json file</summary>
+
+Claude Code stores its configuration in a hidden `.claude` folder in your home directory. A project's `.claude` folder sits at the root of that project instead.
+
+<Tabs>
+
+<TabItem value="mac" label="macOS / Linux" default>
+
+The file is at `~/.claude/settings.json`.
+
+Open it directly:
+
+`code ~/.claude/settings.json`
+
+To browse to it instead, press `Cmd + Shift + G` in Finder and enter `~/.claude`. On Linux, press `Ctrl + H` in your file manager to reveal hidden folders.
+
+If the file doesn't exist yet, create it:
+
+`mkdir -p ~/.claude && echo '{}' > ~/.claude/settings.json`
+
+</TabItem>
+
+<TabItem value="windows" label="Windows">
+
+The file is at `%USERPROFILE%\.claude\settings.json`.
+
+Open it directly:
+
+`code $env:USERPROFILE\.claude\settings.json`
+
+To browse to it instead, paste `%USERPROFILE%\.claude` into the File Explorer address bar.
+
+If the file doesn't exist yet, create it:
+
+`New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude" | Out-Null`
+`'{}' | Out-File -Encoding utf8 "$env:USERPROFILE\.claude\settings.json"`
+
+</TabItem>
+
+</Tabs>
+
+</details>
+
+#### A Single Project
+
+Use this when different projects connect to different ToolJet instances. The variables apply only when Claude Code runs in that directory.
+
+Add the same block to `.claude/settings.local.json` inside the project:
+
+```json
+{
+  "env": {
+    "TOOLJET_PAT": "tj_pat_...",
+    "TOOLJET_URL": "https://your-tooljet-instance.com",
+    "TOOLJET_APP_URL": "https://your-tooljet-instance.com"
+  }
+}
+```
+
+Restart Claude Code for the change to take effect. Note that `/config` manages common settings such as theme and model, but does not expose `env`; that block is edited by hand.
+
+### Option 3: Clients Other Than Claude Code
+
+Most other clients accept the variables inline in their own MCP configuration file, alongside the server definition, rather than reading them from the environment. See [Other MCP clients](#other-mcp-clients) in Step 3 for the full entry.
+
+### Verify Before You Continue
+
+Confirm the variables are actually set in the environment your client will launch from. Both must print a value; if either is empty, the server reports a missing-variable error at startup.
+
+<Tabs>
+
+<TabItem value="unix" label="macOS / Linux" default>
+
+```bash
+echo $TOOLJET_URL
+echo $TOOLJET_PAT
+```
+
+</TabItem>
+
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+echo $env:TOOLJET_URL
+echo $env:TOOLJET_PAT
+```
+
+</TabItem>
+
+</Tabs>
+
 ## Step 3: Install for Your Client
 
 Set the variables above **before** launching your client. A plugin cannot prompt you for secrets, so the server picks them up from the environment at launch. If a credential is missing, the server reports a clear error naming the missing variable rather than failing silently.
@@ -49,18 +228,28 @@ Each install below registers two things together: the MCP server and the `toolje
 
 ### Claude Code
 
-```
-/plugin install github:ToolJet/tooljet-mcp
-```
+Claude Code offers two ways to install, and the difference is whether the source is registered for future updates.
 
-To install through the marketplace instead, which lets you pull updates later, run these two commands in order. The first registers the marketplace, the second installs the plugin from it:
+#### Install Through The Marketplace
+Run these two commands in order. The first registers the ToolJet repository as a plugin marketplace, and the second installs the plugin from its catalog:
 
 ```
 /plugin marketplace add ToolJet/tooljet-mcp
 /plugin install tooljet-app-builder@tooljet
 ```
 
-Restart Claude Code after installing.
+Because the marketplace stays registered, you can pull newer versions later with `/plugin marketplace update tooljet`. This is the recommended option.
+
+#### Install Directly From The Repository
+This is a single command, and no marketplace is registered:
+
+```
+/plugin install github:ToolJet/tooljet-mcp
+```
+
+The install is a one-time snapshot. There is no registered source to refresh, so updating means uninstalling and installing again. Use this for a quick trial.
+
+Restart Claude Code after installing either way.
 
 ### Codex
 
@@ -101,11 +290,13 @@ Clients that support skills should also load the `skill/` directory from the clo
 
 ## Verify the Connection
 
-Ask your agent to list your workspaces:
+Ask your agent whether it can reach ToolJet:
 
-> List my ToolJet workspaces.
+> Can you connect to ToolJet?
 
-The agent should call `list_workspaces` and return the workspace your token is pinned to. Once that works, try a build:
+The agent should confirm the connection and name the workspace your token is pinned to. If it reports that no ToolJet tools are available, or that a credential is missing, see [Troubleshooting](#troubleshooting) below.
+
+Once that works, try a build:
 
 > Build me a tickets dashboard on my ToolJet DB.
 
