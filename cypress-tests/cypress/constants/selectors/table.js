@@ -86,6 +86,63 @@ export const tableSelector = {
 
   labelAnd: (index = 0) => `[data-cy="filter-and-label"]:eq(${index})`,
 
+  // ---- inline editing (column-editable toggles) ----
+  // ProgramaticallyHandleProperties feeds paramLabel={paramMeta.displayName} to the
+  // toggle, whose data-cy = displayName lowercased, spaces->'-', + '-toggle-button'
+  // (CodeBuilder/Elements/Toggle.jsx). Verified in frontend source:
+  //   - per column   : "Make editable"            -> make-editable-toggle-button
+  //                     (Table/ColumnManager/PropertiesTabElements.jsx:389)
+  //   - all columns  : "Make all columns editable"-> make-all-columns-editable-toggle-button
+  //                     (Inspector/Components/Table/Table.jsx:606-617)
+  makeEditableToggle: '[data-cy="make-editable-toggle-button"]',
+  makeAllColumnsEditableToggle:
+    '[data-cy="make-all-columns-editable-toggle-button"]',
+  // Column list item in the inspector's column manager (opens the column popover).
+  // Keyed by column KEY, not the display header (Support/utils/table.js already uses
+  // `column-<name>` in deleteAndVerifyColumn).
+  columnItem: (columnKey) => `[data-cy="column-${normalize(columnKey)}"]`,
+
+  // ---- change bar (renders in footer when there are pending inline edits) ----
+  // ChangeSetUI.jsx:17,35 — text spans only render when table width > 650.
+  saveChangesButton: '[data-cy="table-button-save-changes"]',
+  discardChangesButton: '[data-cy="table-button-discard-changes"]',
+
+  // ---- add-new-row modal (AddNewRow.jsx) ----
+  addNewRowSaveButton: '[data-cy="save-button"]',
+  addNewRowDiscardButton: '[data-cy="discard-button"]',
+  addAnotherRowButton: '[data-cy="add-another-row-button"]',
+  addNewRowsHeader: '[data-cy="add-new-rows-header"]',
+
+  // ---- selection (Chunk 3) ----
+  // The selector column is `id: 'selection'` with a FUNCTION header, so TableRow falls
+  // back to `cell.column.id` for the cell data-cy -> `<name>-selection-row-<i>`
+  // (buildTableColumn.js:62, TableRow.jsx:103-105). The checkbox itself is a plain
+  // `checkbox-input` (IndeterminateCheckbox.jsx:19) — NOT unique on its own, so always
+  // scope it to a row (or to thead for the bulk select-all).
+  rowCheckbox: (rowIndex, name = "table1") =>
+    `[data-cy="${normalize(name)}-selection-row-${rowIndex}"] [data-cy="checkbox-input"]`,
+  // Bulk select-all lives in the header row and only renders when showBulkSelector is
+  // on (buildTableColumn.js:74-83).
+  selectAllRowsCheckbox: 'thead [data-cy="checkbox-input"]',
+  anyRowCheckbox: '[data-cy="checkbox-input"]',
+
+  // ---- sort (Chunk 3) ----
+  // The sort arrow only renders once a column IS sorted (TableHeader.jsx:165-179), so
+  // its existence is the assertion that a sort was applied, and asc/desc distinguishes
+  // the first click from the second.
+  sortIconAscending: (column) =>
+    `[data-cy="${normalize(column)}-sort-icon-ascending"]`,
+  sortIconDescending: (column) =>
+    `[data-cy="${normalize(column)}-sort-icon-descending"]`,
+
+  // ---- pagination (Chunk 3) ----
+  // Verified vs Pagination.jsx dataCy props (:122,170,180,189,203,213,223).
+  paginationButtonToFirst: '[data-cy="pagination-button-to-first"]',
+  paginationButtonToLast: '[data-cy="pagination-button-to-last"]',
+  // Page buttons inside the go-to-page popover are 1-based.
+  pageOptionButton: (pageNumber) =>
+    `[data-cy="page-${pageNumber}-button-option"]`,
+
   // ---- misc ----
   addNewRowButton: (name = "table1") =>
     `[data-cy="${normalize(name)}-add-new-row-button"]`,
