@@ -318,6 +318,16 @@ export const tabsConfig = {
       ],
     },
     {
+      handle: 'setNextTab',
+      displayName: 'Go to next tab',
+      params: [],
+    },
+    {
+      handle: 'setPreviousTab',
+      displayName: 'Go to previous tab',
+      params: [],
+    },
+    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
