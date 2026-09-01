@@ -9,6 +9,17 @@
 //   verifyStylesGeneralAccordion     -                    → styles
 //   checkPaddingOfContainer          -                    → styles
 // └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/styles: right-Inspector **Styles tab** helpers.
+ * FOR AI: set/verify a component's STYLE values. Route by the style config `type`:
+ *   colorSwatches → selectColourFromColourPicker (set) + verifyWidgetColorCss (verify)
+ *   boxShadow     → fillBoxShadowParams + verifyBoxShadowCss
+ *   style fx      → verifyAndModifyStylePickerFx
+ * PRECONDITION: open the Styles tab (buttonStylesEditorSideBar) after openEditorSidebar(W).
+ * NOTE: color pickers display design-token names (e.g. 'Brand/Primary'), not raw CSS vars —
+ *   see surface-cache `colorTokenNames`.
+ * NOT here: properties → properties.js · events & CSA → events.js.
+ */
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 import { openEditorSidebar } from "./properties";

@@ -2,6 +2,12 @@
 // layout.js
 //   verifyLayout                     toggle               → properties
 // └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/layout: device **layout** helpers.
+ * FOR AI: verify a widget's Show-on-desktop / Show-on-mobile behaviour via verifyLayout —
+ * the `others` device-visibility facet, not styling.
+ * NOT here: dynamic/auto height → dynamicHeight.js (planned) · styles → styles.js.
+ */
 import { commonWidgetSelector } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 import { openEditorSidebar, openAccordion, verifyAndModifyToggleFx } from "./properties";

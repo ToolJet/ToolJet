@@ -13,6 +13,15 @@
 //   selectFromSidebarDropdown        -                    → properties
 //   addValueOnInput                  -                    → properties
 // └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/properties: right-Inspector **Properties tab** helpers.
+ * FOR AI: set/verify a component's config PROPERTIES (label, toggles, switches,
+ * tooltip, widget name). Route by the config field `type`:
+ *   code → verifyAndModifyParameter · toggle → verifyAndModifyToggleFx · switch → verifyAndModifySwitch.
+ * PRECONDITION: call openEditorSidebar(W) first to open the panel; open/closeAccordion
+ * are shared panel navigation.
+ * NOT here: styles → styles.js · events & CSA → events.js · component-state tree → inspectorTree.js.
+ */
 import { commonWidgetSelector } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 

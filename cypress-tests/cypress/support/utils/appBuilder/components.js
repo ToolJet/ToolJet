@@ -4,6 +4,12 @@
 //   addTextWidgetToVerifyValue       -                    → canvas
 //   verifyContainerElements          -                    → properties
 // └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/components: on-canvas **widget** render/verify helpers.
+ * FOR AI: assert what a dropped widget renders (text/value) and drop a probe Text
+ * widget to read a component's exposed value on the canvas. Widget-level, not the config panel.
+ * NOT here: config Properties → properties.js · Styles → styles.js · exposed-value tree → inspectorTree.js.
+ */
 import { commonWidgetSelector } from "Selectors/common";
 import { codeMirrorInputLabel } from "Texts/common";
 import { openEditorSidebar } from "./properties";

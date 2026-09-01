@@ -17,6 +17,13 @@
 //   verifyMultipleComponentValuesFromInspector -                    → inspector
 //   verifyComponentFromInspector     -                    → inspector
 // └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/inspectorTree: left-sidebar **component-state inspector** tree.
+ * FOR AI: read a component's exposed values + functions (CSA) from the left Inspector
+ * node tree — the reliable way to assert defaults / exposed values / functions:
+ *   openNode('components') → openAndVerifyNode(W, exposedValues, verifyNodeData) → verifyNodes(functions, verifyNodeData).
+ * NOT here: setting config → properties.js / styles.js · wiring events & CSA → events.js.
+ */
 import { commonWidgetSelector, inspectorSelectors } from "Selectors/common";
 
 /**
