@@ -35,8 +35,8 @@ describe('Checkbox — properties facet', { testIsolation: false }, () => {
         verifyAndModifyParameter('Label', labelText);
         cy.get(commonWidgetSelector.draggableWidget(W))
             .scrollIntoView()
-            .find('.form-check-label')
-            .should('contain.text', labelText); // dynamic: fake echoed label (checkbox label = .form-check-label)
+            .find('label')
+            .should('contain.text', labelText); // dynamic: fake echoed label (checkbox label renders in <label htmlFor=...>)
 
         // defaultValue (switch) — Default state On/Off; default '{{false}}'
         // source: checkbox.js:22
