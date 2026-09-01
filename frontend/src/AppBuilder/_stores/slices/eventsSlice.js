@@ -314,7 +314,7 @@ export const createEventsSlice = (set, get) => ({
         if (action && executeableActions) {
           for (const event of executeableActions) {
             if (event?.event?.actionId) {
-              await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
             }
           }
         } else {
@@ -328,7 +328,7 @@ export const createEventsSlice = (set, get) => ({
         if (column && tableColumnEvents) {
           for (const event of tableColumnEvents) {
             if (event?.event?.actionId) {
-              await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
             }
           }
         } else {
@@ -342,7 +342,7 @@ export const createEventsSlice = (set, get) => ({
         if (column && tableColumnEvents) {
           for (const event of tableColumnEvents) {
             if (event?.event?.actionId) {
-              await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+              await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
             }
           }
         } else {
