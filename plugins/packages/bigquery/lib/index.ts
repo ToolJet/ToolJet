@@ -42,7 +42,9 @@ export default class Bigquery implements QueryService {
 
     const clientId = oauth_type === 'tooljet_app' ? process.env.GOOGLE_CLIENT_ID : getSourceOptionValue('client_id');
     const host =
-      oauth_type === 'tooljet_app' ? process.env.TOOLJET_HOST : getSourceOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
+      oauth_type === 'tooljet_app'
+        ? process.env.TOOLJET_HOST
+        : getSourceOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
 

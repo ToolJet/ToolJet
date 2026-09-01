@@ -49,7 +49,8 @@ export default class Databricks implements QueryService {
     if (!workspaceHost) throw new Error('Databricks workspace host is required for OAuth U2M');
     if (!clientId) throw new Error('Databricks OAuth Client ID is required');
 
-    const tooljetHost = this.getSourceOptionValue(source_options as any, 'tj_redirect_host') || process.env.TOOLJET_HOST;
+    const tooljetHost =
+      this.getSourceOptionValue(source_options as any, 'tj_redirect_host') || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${tooljetHost}${subpath ? subpath : '/'}`;
 
