@@ -8,6 +8,7 @@ import { isArray, debounce } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { usePrevious } from '@dnd-kit/utilities';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useTableRefresh } from '../../_hooks/useTableRefresh';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -34,6 +35,7 @@ export const TableExposedVariables = ({
   const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const { handleRefresh } = useTableRefresh(id, fireEvent);
 
   const mounted = useMounted();
 
@@ -450,6 +452,11 @@ export const TableExposedVariables = ({
     }
     setExposedVariables({ discardChanges });
   }, [clearEditedRows, id, setExposedVariables]);
+
+  // CSA to refresh table data — reruns the query(ies) the table's data depends on
+  useEffect(() => {
+    setExposedVariables({ refreshTable: handleRefresh });
+  }, [handleRefresh, setExposedVariables]);
 
   return null;
 };
