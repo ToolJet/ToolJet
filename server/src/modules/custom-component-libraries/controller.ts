@@ -12,6 +12,11 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
     throw new Error('Method not implemented.');
   }
 
+  @Post('find-or-create')
+  async findOrCreateLibrary(@User() user, @Body() body: { correlationId: string; name: string }): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
   @Get()
   async list(@User() user): Promise<any> {
     throw new Error('Method not implemented.');
