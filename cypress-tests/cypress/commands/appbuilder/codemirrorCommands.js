@@ -20,11 +20,13 @@ Cypress.Commands.add(
       });
 
     const splitIntoFlatArray = (value) => {
-      // NOTE: include `-` in the word-char class. The regex only keeps matched
-      // substrings, so any char absent from every alternative is silently
-      // dropped — previously `custom-btn` tokenized to ["custom","btn"] and was
-      // typed as "custombtn". `-` is placed last in the class so it's a literal.
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._-]+|\s+)/g;
+      // NOTE: include `-` and `#` in the word-char class. The regex only keeps
+      // matched substrings, so any char absent from every alternative is
+      // silently dropped — previously `custom-btn` tokenized to ["custom","btn"]
+      // (typed "custombtn"), and `#ff0000` dropped its `#` (typed "ff0000",
+      // breaking hex-colour fx values). `#` is added to the class and `-` stays
+      // last so it's a literal.
+      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._#-]+|\s+)/g;
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {

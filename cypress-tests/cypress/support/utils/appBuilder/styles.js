@@ -134,7 +134,12 @@ export const verifyBoxShadowCss = (
 /**
  * @tjBlock  styles
  * @tjUsage  verifyAndModifyStylePickerFx('Border radius', '0', '4px')
+ *           verifyAndModifyStylePickerFx('Text color', 'Text/Primary', '#111', 0, '', false, '#1B1F24')
  * @tjDom    style picker label + fx button + CodeMirror input
+ * NOTE: color swatches display a design-TOKEN name in the value row (e.g.
+ *   'Text/Primary') but the fx CODE editor shows the RESOLVED hex (e.g.
+ *   '#1B1F24'). Pass `fxDefaultValue` when they differ; it defaults to
+ *   `defaultValue` for non-color pickers where the two match.
  */
 export const verifyAndModifyStylePickerFx = (
   paramName,
@@ -142,7 +147,8 @@ export const verifyAndModifyStylePickerFx = (
   value,
   index = 0,
   boxShadow = "",
-  hasIndex = false
+  hasIndex = false,
+  fxDefaultValue = defaultValue
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
@@ -171,7 +177,7 @@ export const verifyAndModifyStylePickerFx = (
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".cm-line")
       .should("be.visible")
-      .and("have.text", `${boxShadow}${defaultValue}`);
+      .and("have.text", `${boxShadow}${fxDefaultValue}`);
   });
 
   cy.get(

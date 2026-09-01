@@ -33,8 +33,12 @@ describe('Checkbox — stylesFx facet', { testIsolation: false }, () => {
         // source: checkbox.js:97 (default checkbox.js:227)
         verifyAndModifyStylePickerFx(
             'Text color',
-            'Text/Primary', // source: checkbox.js:227 (design-token display name; config default var(--cc-primary-text) maps to this token)
-            '#111111' // fx test literal (CodeMirror echoes verbatim)
+            'Text/Primary', // swatch shows the design-token name (source: checkbox.js:227)
+            '#111111', // fx test literal (CodeMirror echoes verbatim)
+            0,
+            '',
+            false,
+            '#1B1F24' // fx editor shows the RESOLVED hex of var(--cc-primary-text) (probe)
         );
     });
 
@@ -62,8 +66,12 @@ describe('Checkbox — stylesFx facet', { testIsolation: false }, () => {
         // source: checkbox.js:105 (default checkbox.js:230)
         verifyAndModifyStylePickerFx(
             'Border color',
-            'Border/Default', // source: checkbox.js:230 (design-token display name; config default var(--cc-default-border) maps to this token)
-            '#222222' // fx test literal (CodeMirror echoes verbatim)
+            'Border/Default', // swatch token name (source: checkbox.js:230)
+            '#222222', // fx test literal
+            0,
+            '',
+            false,
+            '#CCD1D5' // resolved hex of var(--cc-default-border) (probe)
         );
     });
 
@@ -76,8 +84,12 @@ describe('Checkbox — stylesFx facet', { testIsolation: false }, () => {
         // source: checkbox.js:113 (default checkbox.js:228)
         verifyAndModifyStylePickerFx(
             'Checked color',
-            'Brand/Primary', // source: checkbox.js:228 (design-token display name; config default var(--cc-primary-brand) maps to this token)
-            '#333333' // fx test literal (CodeMirror echoes verbatim)
+            'Brand/Primary', // swatch token name (source: checkbox.js:228)
+            '#333333', // fx test literal
+            0,
+            '',
+            false,
+            '#4368E3' // resolved hex of var(--cc-primary-brand) (probe)
         );
     });
 
@@ -90,8 +102,12 @@ describe('Checkbox — stylesFx facet', { testIsolation: false }, () => {
         // source: checkbox.js:121 (default checkbox.js:229)
         verifyAndModifyStylePickerFx(
             'Unchecked color',
-            'Surface/Surface1', // source: checkbox.js:229 (design-token display name; config default var(--cc-surface1-surface) maps to this token)
-            '#444444' // fx test literal (CodeMirror echoes verbatim)
+            'Surface/Surface1', // swatch token name (source: checkbox.js:229)
+            '#444444', // fx test literal
+            0,
+            '',
+            false,
+            '#FFFFFF' // resolved hex of var(--cc-surface1-surface) (probe)
         );
     });
 
@@ -106,8 +122,12 @@ describe('Checkbox — stylesFx facet', { testIsolation: false }, () => {
         // this FX facet exercises the fx INPUT path, not the rendered color.
         verifyAndModifyStylePickerFx(
             'Handle color',
-            'Surface/Surface1', // source: checkbox.js:231 (design-token display name; config default var(--cc-surface1-surface) maps to this token)
-            '#555555' // fx test literal (CodeMirror echoes verbatim)
+            'Surface/Surface1', // swatch token name (source: checkbox.js:231)
+            '#555555', // fx test literal
+            0,
+            '',
+            false,
+            '#FFFFFF' // resolved hex of var(--cc-surface1-surface) (probe)
         );
     });
 
