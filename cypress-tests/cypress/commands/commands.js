@@ -42,10 +42,6 @@ Cypress.Commands.add("clearAndType", (selector, text) => {
     .type(`{selectall}{backspace}${text}`);
 });
 
-Cypress.Commands.add("forceClickOnCanvas", () => {
-  cy.get(commonSelectors.canvas).click("topRight", { force: true });
-});
-
 Cypress.Commands.add(
   "verifyToastMessage",
   (selector, message, closeAction = true, timeout = 15000) => {
@@ -62,203 +58,6 @@ Cypress.Commands.add(
     }
   }
 );
-
-Cypress.Commands.add("waitForAutoSave", () => {
-  cy.wait(200);
-  cy.get(commonSelectors.autoSave, { timeout: 20000 })
-    .should("have.text", "", { timeout: 20000 })
-    .find("svg")
-    .should("be.visible", { timeout: 20000 });
-});
-
-Cypress.Commands.add("createApp", (appName) => {
-  const getAppButtonSelector = ($title) =>
-    $title.text().includes(commonText.introductionMessage)
-      ? commonSelectors.dashboardAppCreateButton
-      : commonSelectors.appCreateButton;
-
-  cy.get("body").then(($title) => {
-    cy.get(getAppButtonSelector($title))
-      .scrollIntoView()
-      .click({ force: true }); //workaround for cypress dashboard click issue
-    cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="create-app"]').click();
-  });
-  cy.waitForAppLoad();
-  cy.skipEditorPopover();
-});
-
-Cypress.Commands.add(
-  "dragAndDropWidget",
-  (
-    widgetName,
-    positionX = 100,
-    positionY = 100,
-    widgetName2 = widgetName,
-    canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
-  ) => {
-    // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-components-button"]').click();
-    cy.get(commonSelectors.searchField)
-      .should("be.visible")
-      .first()
-      .clear()
-      .type(widgetName);
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
-
-    // `[data-cy=real-canvas]` is reused by every SubContainer — `cy.get` picks
-    // the FIRST match which can be a sidebar/preview surface, not the actual
-    // editing canvas. Resolve by id instead:
-    //   - module editor → ModuleContainer's sub-canvas (`#canvas-{uuid}`) —
-    //     the root canvas rejects drops in that mode.
-    //   - app editor   → `#real-canvas` (unique).
-    // Caller can override via `canvas` arg if they need a specific sub-canvas.
-    cy.get("body").then(($body) => {
-      let resolvedCanvas = canvas;
-      if (!resolvedCanvas) {
-        const mc = $body.find('[component-type="ModuleContainer"]')[0];
-        resolvedCanvas = mc?.id ? `#${mc.id}` : "#real-canvas";
-      }
-
-      // The react-dnd connector ref sits on `.draggable-box`, ancestor of the
-      // widget-list-box. `:has()` lets the source selector resolve straight to
-      // it. Don't reuse `widgetBox()` here — its trailing `:eq(0)` doesn't
-      // nest cleanly inside `:has()`.
-      const sourceSelector = `.draggable-box:has([data-cy=widget-list-box-${cyParamName(widgetName2)}])`;
-      // Re-prime the drag pipeline for the freshly-navigated app document.
-      // Each test creates+opens an app in beforeEach, which resets the
-      // renderer's intercept state; without this the first drag goes cold and
-      // the plugin's retry loop can overrun the 15s task timeout. Priming here
-      // lands the drag on the first attempt.
-      cy.realDragRewarm();
-      cy.realDragAndDrop(sourceSelector, resolvedCanvas, {
-        targetX: positionX,
-        targetY: positionY,
-      });
-      cy.waitForAutoSave();
-    });
-  }
-);
-
-/* ===========================================================================
- * REUSE-AFTER-PLUGIN-FIX: simplified dragAndDropWidget (band-aid removed)
- * ---------------------------------------------------------------------------
- * The `cy.on('fail')` trap + `installFailTrap`/`currentTrap`/`onFail` above is
- * a WORKAROUND for a bug in cypress-real-dnd: `cy.realDragInit()` is a no-op on
- * a warm (cached) CDP client, so it can't re-arm the intercept after each
- * apiCreateApp+openApp AUT navigation → the first post-navigation drag THROWS
- * "No Input.dragIntercepted", which a rejected cy.task can't recover from.
- *
- * Once cypress-real-dnd is fixed so `cy.realDragInit()` (or a new
- * `cy.realDragRewarm()`) ACTUALLY re-runs the arm+warmup on the existing client
- * — see cypress-tests/CYPRESS_REAL_DND_FIX.md for the exact package change —
- * the throw stops happening, the fail-trap is no longer needed, and this whole
- * command collapses to the version below. Delete `installFailTrap`,
- * `currentTrap`, `onFail`, and the `cy.on('fail')` wiring; keep only the
- * per-navigation re-arm + the silent-miss poll:
- *
- *   const attempt = (triesLeft) => {
- *     countWidgets().then((before) => {
- *       openPanelAndSearch();
- *       cy.get(sourceSelector, { timeout: 15000 }).should("exist");
- *       cy.realDragInit();   // post-fix: genuinely re-arms+re-warms per nav
- *       cy.wait(300);
- *       cy.get("body").then(($body) => {
- *         cy.realDragAndDrop(sourceSelector, resolveCanvas($body), {
- *           targetX: positionX,
- *           targetY: positionY,
- *         });
- *         confirmDropOrRetry(before, 16, triesLeft); // silent-miss safety net
- *       });
- *     });
- *   };
- *   cy.realDragInit();
- *   cy.wait(500);
- *   attempt(3);
- *   cy.waitForAutoSave();
- *
- * Validate after switching: re-run buttonHappyPath + datePickerHappyPath +
- * componentsBasics/button.cy.js — all should stay green with NO fail-trap.
- * =========================================================================== */
-
-Cypress.Commands.add(
-  "clearAndTypeOnCodeMirror",
-  { prevSubject: "optional" },
-  (subject, value) => {
-    cy.wrap(subject)
-      .realClick()
-      .find(".cm-line")
-      .invoke("text")
-      .then((text) => {
-        cy.wrap(subject)
-          .last()
-          .click()
-          .type(createBackspaceText(text), { delay: 0 });
-      });
-
-    const splitIntoFlatArray = (value) => {
-      // NOTE: include `-` in the word-char class. The regex only keeps matched
-      // substrings, so any char absent from every alternative is silently
-      // dropped — previously `custom-btn` tokenized to ["custom","btn"] and was
-      // typed as "custombtn". `-` is placed last in the class so it's a literal.
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._-]+|\s+)/g;
-      let prefix = "";
-      return (
-        value.match(regex)?.reduce((acc, part) => {
-          if (part === "{{" || part === "((") {
-            prefix = "{backspace}{backspace}";
-            acc.push(part);
-          } else if (part === "{" || part === "(" || part === "[") {
-            acc.push(prefix + part);
-            prefix = "{backspace}";
-          } else if (part === "}}") {
-            acc.push(prefix + part);
-          } else if (part === " ") {
-            acc.push(prefix + " ");
-          } else if (part === ":") {
-            acc.push(prefix + ":");
-          } else {
-            acc.push(prefix + part);
-            prefix = "";
-          }
-          return acc;
-        }, []) || []
-      );
-    };
-
-    if (Array.isArray(value)) {
-      cy.wrap(subject).last().realType(value.join(""), {
-        parseSpecialCharSequences: false,
-        delay: 0,
-        force: true,
-      });
-    } else {
-      splitIntoFlatArray(value).forEach((i) => {
-        cy.wrap(subject)
-          .last()
-          .click()
-          .realType(
-            `{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}${i}`,
-            { parseSpecialCharSequences: false, delay: 0, force: true }
-          );
-      });
-    }
-  }
-);
-
-Cypress.Commands.add("deleteApp", (appName) => {
-  cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  selectAppCardOption(
-    appName,
-    commonSelectors.appCardOptions(commonText.deleteAppOption)
-  );
-  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    commonText.appDeletedToast
-  );
-  cy.wait("@appDeleted");
-});
 
 Cypress.Commands.add(
   "verifyVisibleElement",
@@ -282,57 +81,6 @@ Cypress.Commands.add("openInCurrentTab", (selector) => {
   cy.get(selector).parent().invoke("removeAttr", "target").click({ force: true });
 });
 
-Cypress.Commands.add("modifyCanvasSize", (x, y) => {
-  cy.get("[data-cy='left-sidebar-settings-button']").click();
-  cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
-  cy.forceClickOnCanvas();
-});
-
-Cypress.Commands.add("createAppFromTemplate", (appName) => {
-  cy.get('[data-cy="import-dropdown-menu"]').click();
-  cy.get('[data-cy="choose-from-template-button"]').click();
-  cy.get(`[data-cy="${appName}-list-item"]`).click();
-  cy.get('[data-cy="create-application-from-template-button"]').click();
-  cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
-});
-
-Cypress.Commands.add("renameApp", (appName) => {
-  // Renaming is now modal-driven (frontend/src/AppBuilder/Header/EditAppName.jsx):
-  // the editor header shows a button `edit-app-name-button` that opens an
-  // AppModal. The rename input (`app-name-input`) and submit button
-  // (`rename-app`, from generateCypressDataCy("Rename app")) only exist once
-  // that modal is open, so click the header button first.
-  cy.get(commonSelectors.editAppNameButton).click();
-  cy.get(commonSelectors.appNameInput).type(
-    `{selectAll}{backspace}${appName}`,
-    { force: true }
-  );
-  cy.get(commonSelectors.renameAppButton).should("be.enabled").click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    commonText.appRenamedToast
-  );
-});
-
-Cypress.Commands.add(
-  "clearCodeMirror",
-  {
-    prevSubject: "element",
-  },
-  (subject, value) => {
-    cy.wrap(subject)
-      .realClick()
-      .find(".cm-line")
-      .invoke("text")
-      .then((text) => {
-        cy.wrap(subject).realType(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
-      });
-  }
-);
-
 Cypress.Commands.add("closeToastMessage", () => {
   cy.get(`${commonSelectors.toastCloseButton}:eq(0)`).click();
 });
@@ -348,142 +96,6 @@ Cypress.Commands.add("notVisible", (dataCy) => { //Should be removed later
     displayName: "Not Visible",
     message: dataCy,
   });
-});
-
-Cypress.Commands.add(
-  "resizeWidget",
-  (widgetName, x, y, autosaveStatusCheck = true) => {
-    cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover", {
-      force: true,
-    });
-
-    cy.get('[class="bottom-right"]').trigger("mousedown", {
-      which: 1,
-      force: true,
-    });
-    cy.get(commonSelectors.canvas)
-      .trigger("mousemove", {
-        which: 1,
-        clientX: x,
-        ClientY: y,
-        clientX: x,
-        clientY: y,
-        pageX: x,
-        pageY: y,
-        screenX: x,
-        screenY: y,
-      })
-      .trigger("mouseup");
-    if (autosaveStatusCheck) {
-      cy.waitForAutoSave();
-    }
-  }
-);
-
-Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
-  cy.get("body").then(($title) => {
-    if (!$title.text().includes(elementText)) {
-      cy.reload();
-    }
-  });
-});
-
-Cypress.Commands.add("skipEditorPopover", () => {
-  cy.wait(1000);
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Skip", { timeout: 2000 })) {
-      cy.get(commonSelectors.skipButton).realClick();
-    }
-  });
-  const log = Cypress.log({
-    name: "Skip Popover",
-    displayName: "Skip Popover",
-    message: " Popover skipped",
-  });
-});
-
-Cypress.Commands.add("waitForAppLoad", () => {
-  // const API_ENDPOINT =
-  //   Cypress.env("environment") === "Community"
-  //     ? "/api/v2/data_sources"
-  //     : "/api/app-environments**";
-
-  // const TIMEOUT = 15000;
-
-  cy.intercept("GET", "/api/data-queries/**").as("appDs");
-  cy.wait("@appDs", { timeout: 15000 });
-});
-
-Cypress.Commands.add("hideTooltip", () => {
-  cy.get("body").then(($body) => {
-    if ($body.find(".tooltip-inner").length > 0) {
-      cy.get(".tooltip-inner").invoke("css", "display", "none");
-    }
-  });
-});
-
-Cypress.Commands.add("importApp", (appFile) => {
-  cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-  cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
-    force: true,
-  });
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    importText.appImportedToastMessage
-  );
-});
-
-Cypress.Commands.add("moveComponent", (componentName, x, y) => {
-  cy.get(`[data-cy="draggable-widget-${componentName}"]`, { log: false })
-    .trigger("mouseover", {
-      force: true,
-      log: false,
-    })
-    .trigger("mousedown", {
-      which: 1,
-      force: true,
-      log: false,
-    });
-  cy.get(commonSelectors.canvas, { log: false })
-    .trigger("mousemove", {
-      which: 1,
-      // #real-canvas is overlaid by #main-editor-canvas, so an un-forced
-      // mousemove fails the actionability "covered by another element" check.
-      force: true,
-      clientX: x,
-      clientY: y,
-      pageX: x,
-      pageY: y,
-      screenX: x,
-      screenY: y,
-      log: false,
-    })
-    .trigger("mouseup", { force: true, log: false });
-
-  const log = Cypress.log({
-    name: "moveComponent",
-    displayName: "Component moved:",
-    message: `X: ${x}, Y:${y}`,
-  });
-});
-
-Cypress.Commands.add("getPosition", (componentName) => {
-  cy.get(commonWidgetSelector.draggableWidget(componentName)).then(
-    ($element) => {
-      const element = $element[0];
-      const rect = element.getBoundingClientRect();
-
-      const clientX = Math.round(rect.left + window.scrollX + rect.width / 2);
-      const clientY = Math.round(rect.top + window.scrollY + rect.height / 2);
-
-      const log = Cypress.log({
-        name: "getPosition",
-        displayName: `${componentName}'s Position:\n`,
-        message: `\nX: ${clientX}, Y:${clientY}`,
-      });
-      return [clientX, clientY];
-    }
-  );
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", (workspaceName = 'my-workspace') => {
@@ -610,18 +222,6 @@ Cypress.Commands.add("ifEnv", (expectedEnvs, callback) => {
   }
 });
 
-Cypress.Commands.add("openComponentSidebar", (selector, value) => {
-  cy.get("body").then(($body) => {
-    const isSearchVisible = $body
-      .find(commonSelectors.searchField)
-      .is(":visible");
-
-    if (!isSearchVisible) {
-      cy.get('[data-cy="right-sidebar-components-button"]').click();
-    }
-  });
-});
-
 Cypress.Commands.add("runSqlQueryOnDB", (query, db = Cypress.env("app_db")) => {
   return cy.task("dbConnection", {
     dbconfig: db,
@@ -679,4 +279,15 @@ Cypress.Commands.add("verifyFromClipboard", (value, delay = 0) => {
       expect(text).to.eq(value);
     });
   });
+});
+
+Cypress.Commands.add("importApp", (appFile) => {
+  cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+  cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
+    force: true,
+  });
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    importText.appImportedToastMessage
+  );
 });

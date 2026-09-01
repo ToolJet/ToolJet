@@ -20,6 +20,9 @@ import "cypress-real-events";
 
 import "../commands/commands";
 import "../commands/apiCommands";
+import "../commands/appbuilder/appbuilderCommands";
+import "../commands/appbuilder/appbuilderApiCommands";
+import "../commands/appbuilder/codemirrorCommands";
 import "../commands/workflowsApiCommands";
 import '../commands/workflowCommands';
 
