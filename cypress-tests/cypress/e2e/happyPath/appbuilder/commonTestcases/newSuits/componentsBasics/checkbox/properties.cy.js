@@ -35,8 +35,8 @@ describe('Checkbox — properties facet', { testIsolation: false }, () => {
         verifyAndModifyParameter('Label', labelText);
         cy.get(commonWidgetSelector.draggableWidget(W))
             .scrollIntoView()
-            .parent()
-            .should('contain.text', labelText); // dynamic: fake echoed label
+            .find('.form-check-label')
+            .should('contain.text', labelText); // dynamic: fake echoed label (checkbox label = .form-check-label)
 
         // defaultValue (switch) — Default state On/Off; default '{{false}}'
         // source: checkbox.js:22
@@ -74,13 +74,13 @@ describe('Checkbox — properties facet', { testIsolation: false }, () => {
         // source: checkbox.js:45
         verifyAndModifyToggleFx('Collapse when hidden', '{{false}}'); // source: checkbox.js:45 (flips ON)
 
-        // disabledState (toggle) fx default false → verify+flip ON → data-disabled true
+        // disabledState (toggle) fx default false → verify+flip ON → .disabled class
         // source: checkbox.js:51
         verifyAndModifyToggleFx('Disable', '{{false}}'); // source: checkbox.js:51 (flips ON)
         // widget hidden by visibility toggle above; re-enable read via flipped default
         cy.get(commonWidgetSelector.draggableWidget(W))
             .scrollIntoView()
-            .should('have.attr', 'data-disabled', 'true'); // source: checkbox.js:51
+            .should('have.class', 'disabled'); // checkbox uses .disabled class, not data-disabled attr (runtime-confirmed)
 
         // tooltipFormat (switch) — Tooltip Plain text/Markdown/HTML; default plainText
         // source: checkbox.js:60
