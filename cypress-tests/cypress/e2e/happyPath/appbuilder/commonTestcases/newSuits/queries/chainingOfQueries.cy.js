@@ -39,7 +39,7 @@ describe("Chaining of queries", () => {
   //       (frontend/.../shadcn/select.jsx:13 → @radix-ui/react-select). It lives
   //       inside the `popover-card` (a Radix Popover) which scroll-locks
   //       `body { pointer-events:none }`, so opening it by clicking the trigger —
-  //       synthetic (events.js chooseRocketOption force-click) OR native
+  //       synthetic (events.js selectListboxOption) OR native
   //       (realClick) — is swallowed. AND EventManager controls the select's
   //       `open` prop via autoOpenActionSelect (EventManager.jsx:579), so when
   //       auto-open is active a trigger click *closes* the already-open listbox.
@@ -156,7 +156,7 @@ describe("Chaining of queries", () => {
     openEditorSidebar(buttonText.defaultWidgetName);
     // Use the Radix-Select-aware helper (queries.js) instead of events.js
     // selectEvent: the "Run Query" action pick goes through the same flaky
-    // chooseRocketOption otherwise. selectRunQueryEvent drives the
+    // selectListboxOption otherwise. selectRunQueryEvent drives the
     // action-selection Radix Select with a native pointer click (realClick).
     selectRunQueryEvent("On Click", `[data-cy="add-event-handler"]`, 0, 0);
     cy.wait(500);

@@ -51,14 +51,16 @@ export const waitForQueryAction = (action) => {
 // Create an event handler (popover EventManager flow) and set its action to
 // "Run Query", picking the action from the `action-selection` RocketSelect.
 //
-// WHY THIS LIVES HERE (not via events.js `selectEvent`/`chooseRocketOption`):
+// WHY THIS LIVES HERE (not via events.js `selectEvent`/`selectListboxOption`):
 // `action-selection` is a Radix UI Select (frontend/.../shadcn/select.jsx:13
 // → @radix-ui/react-select Trigger). Its Trigger opens the portalled
 // `SelectContent` on a *pointer* gesture, not on a synthetic DOM click.
-// events.js `chooseRocketOption` opens it with `.click({ force:true })`, which
-// — when the EventManager auto-open (`open={true}` via autoOpenActionSelect,
-// EventManager.jsx:579) has NOT kicked in for this render — does not reliably
-// trigger Radix's pointerdown open handler. The portal never mounts, so
+// A synthetic `.click({ force:true })` on that Trigger — when the EventManager
+// auto-open (`open={true}` via autoOpenActionSelect, EventManager.jsx:579) has
+// NOT kicked in for this render — does not reliably trigger Radix's pointerdown
+// open handler. (events.js `selectListboxOption` was since changed to open via
+// KEYBOARD {downarrow} for this same reason; this local helper predates that and
+// is kept because it additionally gates on the trigger's data-state.) The portal never mounts, so
 // `[role="option"]` is never found and the step times out (30s). This was
 // intermittent: it passed whenever the auto-open had the listbox already
 // showing (guard short-circuits the trigger click), and failed when it didn't.
