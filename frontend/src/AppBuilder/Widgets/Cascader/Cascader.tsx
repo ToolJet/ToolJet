@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import * as Popover from '@radix-ui/react-popover';
 import { IconX } from '@tabler/icons-react';
@@ -13,6 +13,7 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 import { getInputBackgroundColor, getInputBorderColor } from '@/AppBuilder/Widgets/DropdownV2/utils';
+import { useMenuWidth } from '@/AppBuilder/Widgets/DropdownV2/useMenuWidth';
 import {
   getLabelFontSize,
   getLabelWidthOfInput,
@@ -177,12 +178,36 @@ export const Cascader = ({
       ? 'var(--text-disabled)'
       : 'var(--text-primary)';
 
-  const menuWidthStyle =
-    menuWidthMode === 'custom'
-      ? `${parseFloat(menuCustomWidth) || 256}px`
-      : menuWidthMode === 'matchContent'
-      ? 'auto'
-      : 'var(--radix-popover-trigger-width)';
+  const triggerWidth = controlRef.current?.getBoundingClientRect?.()?.width;
+  const menuContentWidth = useMemo(() => {
+    if (menuWidthMode !== 'matchContent') return null;
+    if (!Array.isArray(tree) || tree.length === 0) return null;
+
+    try {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) return null;
+
+      const baseFont = window?.getComputedStyle?.(controlRef.current || document.body)?.font || '14px Inter, sans-serif';
+      context.font = baseFont;
+
+      const measureNodes = (nodes: typeof tree): number =>
+        nodes.reduce((acc, node) => {
+          const labelWidth = context.measureText(`${node?.label ?? ''}`).width || 0;
+          const childWidth = node.children ? measureNodes(node.children) : 0;
+          return Math.max(acc, labelWidth, childWidth);
+        }, 0);
+
+      const paddingAllowance = 44;
+      const measurementBuffer = 24;
+      const computed = Math.ceil(measureNodes(tree) + paddingAllowance + measurementBuffer);
+      const capped = Math.min(computed, 520);
+      return Number.isFinite(capped) ? `${capped}px` : null;
+    } catch (_e) {
+      return null;
+    }
+  }, [menuWidthMode, tree]);
+  const menuWidthStyle = useMenuWidth(menuWidthMode, menuCustomWidth, triggerWidth, menuContentWidth);
   const shouldOverridePlaceholderTextColor =
     typeof placeholderTextColor === 'string' &&
     placeholderTextColor.length > 0 &&
@@ -394,9 +419,7 @@ export const Cascader = ({
                 onOpenAutoFocus={(e) => e.preventDefault()}
                 onCloseAutoFocus={(e) => e.preventDefault()}
                 style={{
-                  width: menuWidthStyle,
-                  minWidth: 'var(--radix-popover-trigger-width)',
-                  maxWidth: '420px',
+                  ...menuWidthStyle,
                   padding: 0,
                   backgroundColor: 'var(--cc-surface1-surface)',
                   border: '1px solid var(--cc-weak-border, #e4e7eb)',
