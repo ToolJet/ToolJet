@@ -25,6 +25,7 @@
 //   randomNumber                     -                    → common
 //   pushIntoArrayOfObject            -                    → common
 //   closeAccordions                  -                    → common
+//   verifyAndModifySwitch            switch               → properties
 //   selectFromSidebarDropdown        -                    → properties
 //   addValueOnInput                  -                    → properties
 //   verifyContainerElements          -                    → properties
@@ -656,6 +657,34 @@ export const closeAccordions = (accordionNames = [], index = "0") => {
         });
     });
   }
+};
+
+// SOURCE-DERIVED selector (not live-confirmed — no browser available to author).
+// The `switch` config type (e.g. checkbox.js:23 `Default state` On/Off,
+// `Alignment` Left/Right, `Padding` Default/None) maps via CodeEditor/utils.js:376
+// `switch: 'Switch'` → CodeBuilder/Elements/Switch.jsx, which renders each option
+// as a ToolJetUI ToggleGroupItem: `<div class="toggle-item"
+// data-cy="togglr-button-<value>">` with the option displayName as text content
+// (ToggleGroupItem.jsx:34 — note upstream "togglr" typo). data-cy is keyed by the
+// option *value* (`{{true}}`/`{{false}}` for On/Off), so we match on the rendered
+// displayName text — uniform across slug (left/none) and `{{bool}}` switches.
+// Runtime-confirmed when the checkbox facets run (Plan 3 Task 4).
+/**
+ * @tjType   switch
+ * @tjBlock  properties
+ * @tjUsage  verifyAndModifySwitch('Default state', 'On')
+ * @tjDom    inspector switch (segmented ToggleGroup) — togglr-button option by displayName text
+ */
+export const verifyAndModifySwitch = (displayName, optionDisplayName) => {
+  cy.get(commonWidgetSelector.parameterLabel(displayName)).should(
+    "have.text",
+    displayName
+  );
+  cy.get('[data-cy^="togglr-button-"]')
+    .filter((_i, el) => el.textContent.trim() === optionDisplayName)
+    .first()
+    .scrollIntoView()
+    .click();
 };
 
 /**

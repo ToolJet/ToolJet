@@ -27,6 +27,7 @@
 | - | `randomNumber` | commonWidget.js | common | `randomNumber(1, 100)` |
 | - | `pushIntoArrayOfObject` | commonWidget.js | common | `pushIntoArrayOfObject(['Alice','Bob'], [90, 85])` |
 | - | `closeAccordions` | commonWidget.js | common | `closeAccordions(['General', 'Properties'], '0')` |
+| switch | `verifyAndModifySwitch` | commonWidget.js | properties | `verifyAndModifySwitch('Default state', 'On')` |
 | - | `selectFromSidebarDropdown` | commonWidget.js | properties | `selectFromSidebarDropdown('Alignment', 'center')` |
 | - | `addValueOnInput` | commonWidget.js | properties | `addValueOnInput('Border radius', '8')` |
 | - | `verifyContainerElements` | commonWidget.js | properties | `verifyContainerElements()` |
