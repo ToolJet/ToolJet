@@ -11,6 +11,7 @@ export class CreateCustomComponentLibraryTables1785405680975 implements Migratio
           { name: 'id', type: 'uuid', isPrimary: true, default: 'gen_random_uuid()' },
           { name: 'name', type: 'varchar', isNullable: false },
           { name: 'organization_id', type: 'uuid', isNullable: false },
+          { name: 'correlation_id', type: 'uuid', isNullable: false, default: 'gen_random_uuid()' },
           { name: 'created_at', type: 'timestamptz', default: 'now()' },
           { name: 'updated_at', type: 'timestamptz', default: 'now()' },
         ],

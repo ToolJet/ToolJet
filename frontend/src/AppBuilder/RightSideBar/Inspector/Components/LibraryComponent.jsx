@@ -48,12 +48,13 @@ export const LibraryComponent = ({
 }) => {
   const definitionProps = component.component?.definition?.properties ?? {};
   const libraryId = definitionProps.libraryId?.value;
+  const correlationId = definitionProps.correlationId?.value;
   const componentName = definitionProps.componentName?.value;
   const revisionId = definitionProps.revisionId?.value;
 
   // F5: same resolution as the runner (dev preview > app pin > instance property),
   // so the Inspector always describes the revision that's actually rendering.
-  const effectiveRevision = useEffectiveLibraryRevision(libraryId, revisionId);
+  const effectiveRevision = useEffectiveLibraryRevision(correlationId, revisionId);
 
   const [manifest, setManifest] = useState(null);
 

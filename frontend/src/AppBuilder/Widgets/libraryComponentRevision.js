@@ -7,10 +7,12 @@ export const normalizePin = (pin) => (typeof pin === 'string' ? pin : pin?.revis
 // F5+: the pin IS the selection now — VersionPicker writes it immediately whether the
 // chosen entry is a revision ('v3') or a dev bundle ('dev:{userId}'); there is no
 // separate session-local preview layer anymore (see invariant #14, HANDOFF-NISHIDH.md).
-export const useEffectiveLibraryRevision = (libraryId, instanceRevisionId) => {
+// Keyed by the library's correlationId (stable across workspaces), not its workspace-scoped
+// id — so a pin keeps resolving after the app is exported/imported into another workspace.
+export const useEffectiveLibraryRevision = (correlationId, instanceRevisionId) => {
   const pin = useStore((state) => {
     const pins = state.globalSettings?.customComponentLibraries;
-    return normalizePin(pins?.[pinKey(libraryId)] ?? pins?.[libraryId]);
+    return normalizePin(pins?.[pinKey(correlationId)] ?? pins?.[correlationId]);
   });
   return pin ?? instanceRevisionId;
 };

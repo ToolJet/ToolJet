@@ -36,6 +36,7 @@ export const libraryComponentConfig = {
     },
     properties: {
       libraryId: { value: '' },
+      correlationId: { value: '' },
       componentName: { value: '' },
       revisionId: { value: 'v1' },
     },

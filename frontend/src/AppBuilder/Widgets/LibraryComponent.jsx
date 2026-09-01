@@ -26,7 +26,7 @@ const DevBadge = ({ label }) => (
   </div>
 );
 
-const META_KEYS = new Set(['libraryId', 'componentName', 'revisionId']);
+const META_KEYS = new Set(['libraryId', 'correlationId', 'componentName', 'revisionId']);
 
 /*same-origin iframe and speaks the postMessage protocol:
    shell → ready → we send load {bundleUrl, cssUrl, componentName}
@@ -43,10 +43,10 @@ export const LibraryComponent = ({
   fireEvent,
   dataCy,
 }) => {
-  const { libraryId, componentName, revisionId } = properties;
+  const { libraryId, correlationId, componentName, revisionId } = properties;
   const safeHeight = Math.max(height ?? 0, 0);
 
-  const effectiveRevision = useEffectiveLibraryRevision(libraryId, revisionId);
+  const effectiveRevision = useEffectiveLibraryRevision(correlationId, revisionId);
   const isDevPin = Boolean(effectiveRevision?.startsWith?.('dev:'));
 
   const devEmail = useCustomComponentPreviewStore((state) => state.devPreviewEmails?.[libraryId]);
