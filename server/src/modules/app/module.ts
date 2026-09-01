@@ -83,7 +83,6 @@ import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
-import { BackgroundProcessorModule } from '@modules/background-processor/module';
 import { WorkspaceContextModule } from '@modules/workspace-context/module';
 import { NotificationsModule } from '@modules/notifications/module';
 
@@ -170,7 +169,6 @@ export class AppModule implements OnModuleInit, NestModule {
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
       await CustomDomainsModule.register(configs, true),
-      await BackgroundProcessorModule.register(configs, true),
       await WorkspaceContextModule.register(configs, true),
       await NotificationsModule.register(configs, true),
     ];
@@ -178,7 +176,11 @@ export class AppModule implements OnModuleInit, NestModule {
     const conditionalImports = [];
 
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-      conditionalImports.push(await WorkflowsModule.register(configs, true));
+      // BullBoard's root instance ('bull_board_instance') must exist whenever any
+      // BullBoardModule.forFeature is registered (app-history, git-sync queues) — including in
+      // migration/get-context mode, or those forFeature providers fail to resolve. forRoot is
+      // lightweight: it wires the dashboard route/adapter, it does not start queue workers or open
+      // Redis connections.
       conditionalImports.push(
         BullBoardModule.forRoot({
           route: '/jobs',
@@ -189,6 +191,14 @@ export class AppModule implements OnModuleInit, NestModule {
           }),
         })
       );
+
+      // The workflow scheduler is the heavy part — it loads every schedule from the DB on boot (a
+      // multi-second query) and registers cron timers. That's never needed in migration/get-context
+      // mode, where it would idle the shared migration transaction. Nothing else depends on
+      // WorkflowsModule, so it's safe to omit there.
+      if (!configs.IS_GET_CONTEXT) {
+        conditionalImports.push(await WorkflowsModule.register(configs, true));
+      }
     }
 
     if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
@@ -207,6 +217,21 @@ export class AppModule implements OnModuleInit, NestModule {
 
     const imports = [...baseImports, ...conditionalImports];
 
+    // Cron schedulers are pure @Cron providers (nothing depends on them via DI). They are only
+    // meaningful with ScheduleModule, which is itself excluded in migration/get-context mode — so
+    // omit them there too, keeping the migration context free of background timers.
+    const schedulerProviders = configs.IS_GET_CONTEXT
+      ? []
+      : [
+          ClearSSOResponseScheduler,
+          ClearStaleAiRunsScheduler,
+          SampleDBScheduler,
+          SessionScheduler,
+          AuditLogsClearScheduler,
+          MfaCleanupScheduler,
+          CustomDomainStatusScheduler,
+        ];
+
     return {
       module: AppModule,
       imports: [...modules, ...imports],
@@ -220,14 +245,7 @@ export class AppModule implements OnModuleInit, NestModule {
         GetConnection,
         AppService,
         AppUtilService,
-        ClearSSOResponseScheduler,
-        ClearStaleAiRunsScheduler,
-        SampleDBScheduler,
-        SessionScheduler,
-        AuditLogsClearScheduler,
-        MfaCleanupScheduler,
-        CustomDomainStatusScheduler,
-        AppService,
+        ...schedulerProviders,
       ],
     };
   }
