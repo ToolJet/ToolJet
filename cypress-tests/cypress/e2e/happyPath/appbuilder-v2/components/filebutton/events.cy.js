@@ -1,5 +1,5 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fileButtonSelector } from "Selectors/fileButton";
 import { addEventWithAlert, addMultiEventsWithAlert } from "Support/utils/events";
 import { openEditorSidebar } from "Support/utils/commonWidget";
@@ -29,6 +29,14 @@ describe(
 
   const expectToast = (message) => {
     cy.verifyToastMessage(commonSelectors.toastMessage, message, false);
+  };
+
+  // Same tab rather than a new one, so the rest of the test keeps running in
+  // the same Cypress context. Navigating reloads, so any toast still fading
+  // out from the editor half is gone by the time preview asserts.
+  const openPreview = () => {
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.waitForElement(fileButtonSelector.button(widget));
   };
 
   // Canvas keeps settling after a drop — poll position until it stops before acting.
@@ -64,6 +72,9 @@ describe(
     addEventWithAlert("On file selected", selectedMsg);
     selectFile(validFile);
     expectToast(selectedMsg);
+    openPreview();
+    selectFile(validFile);
+    expectToast(selectedMsg);
   });
 
   it("should fire onFileLoaded when a file is accepted", () => {
@@ -71,10 +82,18 @@ describe(
     selectFile(validFile);
     expectToast(loadedMsg);
     cy.get(fileButtonSelector.label(widget)).should("have.text", "tooljet.png");
+    openPreview();
+    selectFile(validFile);
+    expectToast(loadedMsg);
+    cy.get(fileButtonSelector.label(widget)).should("have.text", "tooljet.png");
   });
 
   it("should fire onFileSelected when the file is rejected", () => {
     addEventWithAlert("On file selected", selectedMsg);
+    selectFile(oversizeFile);
+    expectToast(selectedMsg);
+    cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
+    openPreview();
     selectFile(oversizeFile);
     expectToast(selectedMsg);
     cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
@@ -86,10 +105,17 @@ describe(
     cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
     cy.get(commonSelectors.toastMessage).should("not.contain.text", loadedMsg);
     cy.get(fileButtonSelector.label(widget)).should("not.have.text", "filebutton-oversize.txt");
+    openPreview();
+    selectFile(oversizeFile);
+    cy.get(fileButtonSelector.invalidFeedback(widget)).should("be.visible");
+    cy.get(commonSelectors.toastMessage).should("not.contain.text", loadedMsg);
   });
 
   it("should not fire either event before any file is selected", () => {
     addMultiEventsWithAlert(events);
+    cy.waitForElement(fileButtonSelector.button(widget));
+    cy.get(commonSelectors.toastMessage).should("not.exist");
+    openPreview();
     cy.waitForElement(fileButtonSelector.button(widget));
     cy.get(commonSelectors.toastMessage).should("not.exist");
   });
