@@ -64,7 +64,7 @@ export {
   editAndVerifyWidgetName,
   addAndVerifyTooltip,
   verifyTooltip,
-} from "./appbuilder/properties";
+} from "./appBuilder/properties";
 
 export {
   selectColourFromColourPicker,
@@ -75,18 +75,18 @@ export {
   verifyAndModifyStylePickerFx,
   verifyStylesGeneralAccordion,
   checkPaddingOfContainer,
-} from "./appbuilder/styles";
+} from "./appBuilder/styles";
 
 export {
   verifyWidgetText,
   addTextWidgetToVerifyValue,
   verifyContainerElements,
-} from "./appbuilder/components";
+} from "./appBuilder/components";
 
-export { verifyLayout } from "./appbuilder/layout";
+export { verifyLayout } from "./appBuilder/layout";
 
 export {
   verifyComponentValueFromInspector,
   verifyMultipleComponentValuesFromInspector,
   verifyComponentFromInspector,
-} from "./appbuilder/inspectorTree";
+} from "./appBuilder/inspectorTree";

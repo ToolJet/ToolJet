@@ -1,3 +1,9 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// components.js
+//   verifyWidgetText                 -                    → properties
+//   addTextWidgetToVerifyValue       -                    → canvas
+//   verifyContainerElements          -                    → properties
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector } from "Selectors/common";
 import { codeMirrorInputLabel } from "Texts/common";
 import { openEditorSidebar } from "./properties";

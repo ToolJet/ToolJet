@@ -88,11 +88,11 @@ function checkSync(filePaths, base, indexPath) {
 if (require.main === module) {
   const base = path.join(__dirname, "../../cypress/support/utils");
   const files = [
-    "appbuilder/properties.js",
-    "appbuilder/styles.js",
-    "appbuilder/components.js",
-    "appbuilder/layout.js",
-    "appbuilder/inspectorTree.js",
+    "appBuilder/properties.js",
+    "appBuilder/styles.js",
+    "appBuilder/components.js",
+    "appBuilder/layout.js",
+    "appBuilder/inspectorTree.js",
     "events.js",
     "editor/textInput.js",
   ].map(f => path.join(base, f));

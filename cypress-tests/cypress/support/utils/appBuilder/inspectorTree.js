@@ -1,3 +1,22 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// inspectorTree.js
+//   openAndVerifyNode                exposed              → inspector
+//   verifyNodes                      exposed              → inspector
+//   openNode                         exposed              → inspector
+//   openSubNode                      -                    → inspector
+//   backFromDetail                   -                    → common
+//   openSubNodeAndVerify             -                    → inspector
+//   openStateFromComponent           -                    → inspector
+//   verifyNodeData                   exposed              → inspector
+//   deleteComponentFromInspector     -                    → inspector
+//   navigateToInspectorNodes         -                    → inspector
+//   verifyInspectorValue             -                    → inspector
+//   verifyInspectorKeyValue          -                    → inspector
+//   navigateAndVerifyInspector       -                    → inspector
+//   verifyComponentValueFromInspector -                    → inspector
+//   verifyMultipleComponentValuesFromInspector -                    → inspector
+//   verifyComponentFromInspector     -                    → inspector
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector, inspectorSelectors } from "Selectors/common";
 
 /**

@@ -1,4 +1,4 @@
 // Barrel — re-exports everything that was previously defined here.
-// Function bodies have moved to ./appbuilder/inspectorTree.js.
+// Function bodies have moved to ./appBuilder/inspectorTree.js.
 // All 31 existing import sites continue to resolve without change.
-export * from "./appbuilder/inspectorTree";
+export * from "./appBuilder/inspectorTree";

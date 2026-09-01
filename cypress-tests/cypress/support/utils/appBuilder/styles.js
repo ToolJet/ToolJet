@@ -1,3 +1,14 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// styles.js
+//   selectColourFromColourPicker     colorSwatches        → styles
+//   fillBoxShadowParams              boxShadow            → styles
+//   verifyBoxShadowCss               boxShadow            → styles
+//   verifyAndModifyStylePickerFx     -                    → styles
+//   verifyWidgetColorCss             colorSwatches        → styles
+//   verifyLoaderColor                -                    → styles
+//   verifyStylesGeneralAccordion     -                    → styles
+//   checkPaddingOfContainer          -                    → styles
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 import { openEditorSidebar } from "./properties";

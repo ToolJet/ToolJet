@@ -1,3 +1,18 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// properties.js
+//   closeAccordions                  -                    → common
+//   openAccordion                    -                    → common
+//   openEditorSidebar                -                    → common
+//   verifyAndModifyParameter         code                 → properties
+//   verifyAndModifyToggleFx          toggle               → properties
+//   verifyAndModifySwitch            switch               → properties
+//   verifyTooltip                    -                    → properties
+//   addAndVerifyTooltip              -                    → properties
+//   editAndVerifyWidgetName          -                    → properties
+//   verifyPropertiesGeneralAccordion -                    → properties
+//   selectFromSidebarDropdown        -                    → properties
+//   addValueOnInput                  -                    → properties
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 

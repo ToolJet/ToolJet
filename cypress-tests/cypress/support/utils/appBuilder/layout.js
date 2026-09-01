@@ -1,3 +1,7 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// layout.js
+//   verifyLayout                     toggle               → properties
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 import { openEditorSidebar, openAccordion, verifyAndModifyToggleFx } from "./properties";
