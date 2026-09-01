@@ -261,6 +261,23 @@ describe('DropdownV2', () => {
       expect(widget.exposed().selectedOption).toBeNull();
     });
 
+    test('picking the already-selected option again keeps it selected when allowDeselection is off', async () => {
+      const { container } = widget.render({
+        properties: { options: OPTIONS, allowDeselection: binding('{{false}}') },
+      });
+
+      await openMenu(container);
+      await widget.session.user.click(await screen.findByText('Beta'));
+      expect(widget.exposed().value).toBe('b');
+
+      await widget.session.user.click(trigger(container));
+      const options = await screen.findAllByRole('option');
+      await widget.session.user.click(options.find((el) => el.textContent === 'Beta'));
+
+      expect(widget.exposed().value).toBe('b');
+      expect(widget.exposed().selectedOption).toEqual({ label: 'Beta', value: 'b', caption: null });
+    });
+
     test('the placeholder is what shows while nothing is selected', async () => {
       const { container } = widget.render({ properties: { options: OPTIONS, placeholder: binding('Pick a letter') } });
 
