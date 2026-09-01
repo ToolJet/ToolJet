@@ -9,6 +9,7 @@ export interface UploadFiles {
 export interface LibraryListItem {
   id: string;
   name: string;
+  correlationId: string;
   createdAt: Date;
   manifest: Record<string, any> | null; // latest revision's; null = nothing published yet
   revisions: { id: string; version: string; message: string | null; createdAt: Date }[]; // newest first
@@ -16,7 +17,7 @@ export interface LibraryListItem {
 }
 
 export interface ICustomComponentLibrariesService {
-  createLibrary(organizationId: string, name: string): Promise<{ id: string; name: string }>;
+  createLibrary(organizationId: string, name: string): Promise<{ id: string; name: string; correlationId: string }>;
   getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary>;
   listLibraries(organizationId: string): Promise<LibraryListItem[]>;
   deleteLibrary(organizationId: string, id: string): Promise<void>;

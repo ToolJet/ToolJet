@@ -41,7 +41,7 @@ const initials = (name = '') => (name.match(/[A-Z]/g) || []).slice(0, 2).join(''
 const useLibraryCurrentRevision = (library) => {
   const pins = useStore((state) => state.globalSettings?.customComponentLibraries);
   const latest = library.revisions[0]?.version;
-  const pin = normalizePin(pins?.[pinKey(library.id)] ?? pins?.[library.id]);
+  const pin = normalizePin(pins?.[pinKey(library.correlationId)] ?? pins?.[library.correlationId]);
   const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
   const ownDevBundle = !latest ? library.devBundles?.find((d) => d.userId === currentUserId) : null;
   const current = pin ?? latest ?? (ownDevBundle ? `dev:${ownDevBundle.userId}` : undefined);
@@ -93,7 +93,7 @@ const useResolvedManifest = (library, current, latest) => {
   return manifest;
 };
 
-const CustomComponentCard = ({ libraryId, revisionId, name, displayName, description, props }) => {
+const CustomComponentCard = ({ libraryId, correlationId, revisionId, name, displayName, description, props }) => {
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const [isRightSidebarOpen, toggleRightSidebar] = useStore(
     (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
@@ -106,9 +106,9 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
       component: 'LibraryComponent',
       displayName: name,
       defaultSize: { width: 12, height: 200 },
-      libraryComponentInfo: { libraryId, componentName: name, revisionId, props },
+      libraryComponentInfo: { libraryId, correlationId, componentName: name, revisionId, props },
     }),
-    [libraryId, name, revisionId, props]
+    [libraryId, correlationId, name, revisionId, props]
   );
 
   const [{ isDragging }, drag, preview] = useDrag(
@@ -121,8 +121,8 @@ const CustomComponentCard = ({ libraryId, revisionId, name, displayName, descrip
         handleDrop(item, currentDragCanvasId);
         const { globalSettings, globalSettingsChanged } = useStore.getState();
         const pins = globalSettings?.customComponentLibraries ?? {};
-        if (!normalizePin(pins[pinKey(libraryId)] ?? pins[libraryId])) {
-          globalSettingsChanged({ customComponentLibraries: { ...pins, [pinKey(libraryId)]: revisionId } });
+        if (!normalizePin(pins[pinKey(correlationId)] ?? pins[correlationId])) {
+          globalSettingsChanged({ customComponentLibraries: { ...pins, [pinKey(correlationId)]: revisionId } });
         }
       },
     }),
@@ -164,7 +164,7 @@ const VersionPicker = ({ library }) => {
 
   const selectRevision = (version) => {
     globalSettingsChanged({
-      customComponentLibraries: { ...normalizedPins(), [pinKey(library.id)]: version },
+      customComponentLibraries: { ...normalizedPins(), [pinKey(library.correlationId)]: version },
     });
   };
 
@@ -172,7 +172,7 @@ const VersionPicker = ({ library }) => {
   // private-preview step (see invariant #14, HANDOFF-NISHIDH.md).
   const selectDevPreview = (userId) => {
     globalSettingsChanged({
-      customComponentLibraries: { ...normalizedPins(), [pinKey(library.id)]: `dev:${userId}` },
+      customComponentLibraries: { ...normalizedPins(), [pinKey(library.correlationId)]: `dev:${userId}` },
     });
   };
 
@@ -298,6 +298,7 @@ const LibrarySection = ({ library, searchQuery = '' }) => {
             <CustomComponentCard
               key={exportName}
               libraryId={library.id}
+              correlationId={library.correlationId}
               revisionId={current}
               name={exportName} // the bundle's export — what the shell resolves
               displayName={comp.displayName}

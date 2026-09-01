@@ -21,6 +21,9 @@ export class CustomComponentLibrary extends BaseEntity {
   @Column({ name: 'organization_id' })
   organizationId: string;
 
+  @Column({ name: 'correlation_id', type: 'uuid' })
+  correlationId: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

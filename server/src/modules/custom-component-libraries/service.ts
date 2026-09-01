@@ -4,7 +4,10 @@ import { CustomComponentLibrary } from '@entities/custom_component_library.entit
 
 @Injectable()
 export class CustomComponentLibrariesService implements ICustomComponentLibrariesService {
-  async createLibrary(organizationId: string, name: string): Promise<{ id: string; name: string }> {
+  async createLibrary(
+    organizationId: string,
+    name: string
+  ): Promise<{ id: string; name: string; correlationId: string }> {
     throw new Error('Method not implemented.');
   }
 
