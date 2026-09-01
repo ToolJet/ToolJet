@@ -141,7 +141,7 @@ export const FileButton = (props) => {
     hoverBackgroundColor !== 'auto' ? hoverBackgroundColor : getModifiedColor(backgroundColor, 'hover');
   const computedPressedBgColor = getModifiedColor(backgroundColor, 'active');
   const resolvedBgColor = backgroundColor?.startsWith('var(')
-    ? getCssVarValue(document.documentElement, backgroundColor) ?? backgroundColor
+    ? (getCssVarValue(document.documentElement, backgroundColor) ?? backgroundColor)
     : backgroundColor;
   const computedDisabledBgColor = tinycolor(resolvedBgColor).setAlpha(DISABLED_BG_ALPHA).toRgbString();
 
