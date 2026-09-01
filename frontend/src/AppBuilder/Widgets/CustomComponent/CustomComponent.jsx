@@ -5,16 +5,37 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, dataCy } = props;
+  const { height, properties, styles, id, setExposedVariable, setExposedVariables, dataCy } = props;
   const exposedVariables = useStore((state) => state.getExposedValueOfComponent(id), shallow);
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
-  const { visibility, boxShadow, borderColor, borderRadius } = styles;
+  const { boxShadow, borderColor, borderRadius } = styles;
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
+  const [visibility, setVisibility] = useState(properties?.visibility ?? true);
   const iFrameRef = useRef(null);
   const messageEventListenerRef = useRef(null);
 
   const customPropRef = useRef(data);
+
+  useEffect(() => {
+    if (visibility !== properties?.visibility) setVisibility(properties?.visibility ?? true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties?.visibility]);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariables({
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setCustomProps(data);

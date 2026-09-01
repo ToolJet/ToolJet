@@ -149,6 +149,18 @@ export const NEW_REVAMPED_COMPONENTS = [
   'FlexContainer',
   'Pagination',
   'Timeline',
+  'Map',
+  'Chart',
+  'BoundedBox',
+  'Calendar',
+  'PDF',
+  'QrScanner',
+  'RichTextEditor',
+  'SvgImage',
+  'Spinner',
+  'Timer',
+  'Kanban',
+  'Listview',
 ];
 
 export const Inspector = ({
