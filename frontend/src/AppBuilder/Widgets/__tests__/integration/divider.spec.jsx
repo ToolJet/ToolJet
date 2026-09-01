@@ -149,6 +149,25 @@ describe('Divider widget', () => {
       const label = await screen.findByText('A very long section heading');
       expect(label).toHaveStyle({ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' });
     });
+
+    test('applies the labelFontSize style to the label text', async () => {
+      divider.render({
+        properties: { label: binding('Sized') },
+        styles: { labelFontSize: binding('{{20}}') },
+      });
+
+      const label = await screen.findByText('Sized');
+      expect(label).toHaveStyle({ fontSize: '20px' });
+    });
+
+    test('defaults the label font size to 12px when labelFontSize is not set', async () => {
+      divider.render({
+        properties: { label: binding('Default') },
+      });
+
+      const label = await screen.findByText('Default');
+      expect(label).toHaveStyle({ fontSize: '12px' });
+    });
   });
 
   describe('visibility', () => {
