@@ -2,36 +2,46 @@
 
 | config type | helper | file | block | usage |
 |---|---|---|---|---|
-| - | `openAccordion` | commonWidget.js | common | `openAccordion('Properties', ['General'], '0')` |
-| code | `verifyAndModifyParameter` | commonWidget.js | properties | `verifyAndModifyParameter('Text', 'Hello World')` |
-| - | `openEditorSidebar` | commonWidget.js | common | `openEditorSidebar('textinput1')` |
-| toggle | `verifyAndModifyToggleFx` | commonWidget.js | properties | `verifyAndModifyToggleFx('Loading state', '{{false}}')` |
-| - | `addDefaultEventHandler` | commonWidget.js | events | `addDefaultEventHandler('Button clicked!')` |
-| - | `addAndVerifyTooltip` | commonWidget.js | properties | `addAndVerifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
-| - | `editAndVerifyWidgetName` | commonWidget.js | properties | `editAndVerifyWidgetName('myButton', ['General', 'Properties', 'Devices'])` |
-| - | `verifyComponentValueFromInspector` | commonWidget.js | inspector | `verifyComponentValueFromInspector('textinput1', 'hello')` |
-| - | `verifyMultipleComponentValuesFromInspector` | commonWidget.js | inspector | `verifyMultipleComponentValuesFromInspector('select1', ['opt1', 'opt2'])` |
-| colorSwatches | `selectColourFromColourPicker` | commonWidget.js | styles | `selectColourFromColourPicker('Background', ['255','0','0','100'])` |
-| boxShadow | `fillBoxShadowParams` | commonWidget.js | styles | `fillBoxShadowParams(['X', 'Y', 'Blur', 'Spread'], [2, 4, 6, 0])` |
-| boxShadow | `verifyBoxShadowCss` | commonWidget.js | styles | `verifyBoxShadowCss('textinput1', [0,0,0,1], [2,4,6,0])` |
-| - | `verifyComponentFromInspector` | commonWidget.js | inspector | `verifyComponentFromInspector('textinput1')` |
-| - | `verifyAndModifyStylePickerFx` | commonWidget.js | styles | `verifyAndModifyStylePickerFx('Border radius', '0', '4px')` |
-| colorSwatches | `verifyWidgetColorCss` | commonWidget.js | styles | `verifyWidgetColorCss('textinput1', 'background-color', ['255','0','0','100'])` |
-| - | `verifyLoaderColor` | commonWidget.js | styles | `verifyLoaderColor('button1', ['255','0','0','100'])` |
-| toggle | `verifyLayout` | commonWidget.js | properties | `verifyLayout('textinput1')` |
-| - | `verifyPropertiesGeneralAccordion` | commonWidget.js | properties | `verifyPropertiesGeneralAccordion('textinput1', 'Enter your name')` |
-| - | `verifyStylesGeneralAccordion` | commonWidget.js | styles | `verifyStylesGeneralAccordion('textinput1', [2,4,6,0], '#ff0000', [255,0,0,100])` |
-| - | `addTextWidgetToVerifyValue` | commonWidget.js | canvas | `addTextWidgetToVerifyValue('components.textinput1.value')` |
-| - | `verifyTooltip` | commonWidget.js | properties | `verifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
-| - | `verifyWidgetText` | commonWidget.js | properties | `verifyWidgetText('textinput1', 'Hello')` |
-| - | `randomNumber` | commonWidget.js | common | `randomNumber(1, 100)` |
-| - | `pushIntoArrayOfObject` | commonWidget.js | common | `pushIntoArrayOfObject(['Alice','Bob'], [90, 85])` |
-| - | `closeAccordions` | commonWidget.js | common | `closeAccordions(['General', 'Properties'], '0')` |
-| switch | `verifyAndModifySwitch` | commonWidget.js | properties | `verifyAndModifySwitch('Default state', 'On')` |
-| - | `selectFromSidebarDropdown` | commonWidget.js | properties | `selectFromSidebarDropdown('Alignment', 'center')` |
-| - | `addValueOnInput` | commonWidget.js | properties | `addValueOnInput('Border radius', '8')` |
-| - | `verifyContainerElements` | commonWidget.js | properties | `verifyContainerElements()` |
-| - | `checkPaddingOfContainer` | commonWidget.js | styles | `checkPaddingOfContainer('container1', '16', 'Box')` |
+| - | `closeAccordions` | appbuilder/properties.js | common | `closeAccordions(['General', 'Properties'], '0')` |
+| - | `openAccordion` | appbuilder/properties.js | common | `openAccordion('Properties', ['General'], '0')` |
+| - | `openEditorSidebar` | appbuilder/properties.js | common | `openEditorSidebar('textinput1')` |
+| code | `verifyAndModifyParameter` | appbuilder/properties.js | properties | `verifyAndModifyParameter('Text', 'Hello World')` |
+| toggle | `verifyAndModifyToggleFx` | appbuilder/properties.js | properties | `verifyAndModifyToggleFx('Loading state', '{{false}}')` |
+| switch | `verifyAndModifySwitch` | appbuilder/properties.js | properties | `verifyAndModifySwitch('Default state', 'On')` |
+| - | `verifyTooltip` | appbuilder/properties.js | properties | `verifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
+| - | `addAndVerifyTooltip` | appbuilder/properties.js | properties | `addAndVerifyTooltip(commonWidgetSelector.draggableWidget('textinput1'), 'My tooltip')` |
+| - | `editAndVerifyWidgetName` | appbuilder/properties.js | properties | `editAndVerifyWidgetName('myButton', ['General', 'Properties', 'Devices'])` |
+| - | `verifyPropertiesGeneralAccordion` | appbuilder/properties.js | properties | `verifyPropertiesGeneralAccordion('textinput1', 'Enter your name')` |
+| - | `selectFromSidebarDropdown` | appbuilder/properties.js | properties | `selectFromSidebarDropdown('Alignment', 'center')` |
+| - | `addValueOnInput` | appbuilder/properties.js | properties | `addValueOnInput('Border radius', '8')` |
+| colorSwatches | `selectColourFromColourPicker` | appbuilder/styles.js | styles | `selectColourFromColourPicker('Background', ['255','0','0','100'])` |
+| boxShadow | `fillBoxShadowParams` | appbuilder/styles.js | styles | `fillBoxShadowParams(['X', 'Y', 'Blur', 'Spread'], [2, 4, 6, 0])` |
+| boxShadow | `verifyBoxShadowCss` | appbuilder/styles.js | styles | `verifyBoxShadowCss('textinput1', [0,0,0,1], [2,4,6,0])` |
+| - | `verifyAndModifyStylePickerFx` | appbuilder/styles.js | styles | `verifyAndModifyStylePickerFx('Border radius', '0', '4px')` |
+| colorSwatches | `verifyWidgetColorCss` | appbuilder/styles.js | styles | `verifyWidgetColorCss('textinput1', 'background-color', ['255','0','0','100'])` |
+| - | `verifyLoaderColor` | appbuilder/styles.js | styles | `verifyLoaderColor('button1', ['255','0','0','100'])` |
+| - | `verifyStylesGeneralAccordion` | appbuilder/styles.js | styles | `verifyStylesGeneralAccordion('textinput1', [2,4,6,0], '#ff0000', [255,0,0,100])` |
+| - | `checkPaddingOfContainer` | appbuilder/styles.js | styles | `checkPaddingOfContainer('container1', '16', 'Box')` |
+| - | `verifyWidgetText` | appbuilder/components.js | properties | `verifyWidgetText('textinput1', 'Hello')` |
+| - | `addTextWidgetToVerifyValue` | appbuilder/components.js | canvas | `addTextWidgetToVerifyValue('components.textinput1.value')` |
+| - | `verifyContainerElements` | appbuilder/components.js | properties | `verifyContainerElements()` |
+| toggle | `verifyLayout` | appbuilder/layout.js | properties | `verifyLayout('textinput1')` |
+| exposed | `openAndVerifyNode` | appbuilder/inspectorTree.js | inspector | `openAndVerifyNode('textinput1', nodes, verifyNodeData)` |
+| exposed | `verifyNodes` | appbuilder/inspectorTree.js | inspector | `verifyNodes([{ key: 'value', type: 'string', value: 'hello' }], verifyNodeData)` |
+| exposed | `openNode` | appbuilder/inspectorTree.js | inspector | `openNode('components', 0)` |
+| - | `openSubNode` | appbuilder/inspectorTree.js | inspector | `openSubNode('textinput1', 'components')` |
+| - | `backFromDetail` | appbuilder/inspectorTree.js | common | `backFromDetail()` |
+| - | `openSubNodeAndVerify` | appbuilder/inspectorTree.js | inspector | `openSubNodeAndVerify('globals', 'currentUser', nodes, verifyNodeData)` |
+| - | `openStateFromComponent` | appbuilder/inspectorTree.js | inspector | `openStateFromComponent('textinput1')` |
+| exposed | `verifyNodeData` | appbuilder/inspectorTree.js | inspector | `verifyNodeData('value', 'string', 'hello', 0)` |
+| - | `deleteComponentFromInspector` | appbuilder/inspectorTree.js | inspector | `deleteComponentFromInspector('textinput1')` |
+| - | `navigateToInspectorNodes` | appbuilder/inspectorTree.js | inspector | `navigateToInspectorNodes(['globals', 'currentUser', 'email'])` |
+| - | `verifyInspectorValue` | appbuilder/inspectorTree.js | inspector | `verifyInspectorValue('currentUser', 'admin')` |
+| - | `verifyInspectorKeyValue` | appbuilder/inspectorTree.js | inspector | `verifyInspectorKeyValue('isValid', 'true')` |
+| - | `navigateAndVerifyInspector` | appbuilder/inspectorTree.js | inspector | `navigateAndVerifyInspector(['globals','currentUser','firstName'], [['firstName','Admin']])` |
+| - | `verifyComponentValueFromInspector` | appbuilder/inspectorTree.js | inspector | `verifyComponentValueFromInspector('textinput1', 'hello')` |
+| - | `verifyMultipleComponentValuesFromInspector` | appbuilder/inspectorTree.js | inspector | `verifyMultipleComponentValuesFromInspector('select1', ['opt1', 'opt2'])` |
+| - | `verifyComponentFromInspector` | appbuilder/inspectorTree.js | inspector | `verifyComponentFromInspector('textinput1')` |
 | events | `selectEvent` | events.js | events | `selectEvent('On click', 'Show Alert')` |
 | csa | `selectCSA` | events.js | csa | `selectCSA('textinput1', 'Set text')` |
 | - | `addSupportCSAData` | events.js | csa | `addSupportCSAData('alert-message', 'Hello world')` |
@@ -44,16 +54,3 @@
 | - | `randomString` | editor/textInput.js | common | `randomString(8)` |
 | csa | `verifyCSA` | editor/textInput.js | csa | `verifyCSA('textinput1')` |
 | csa | `addCSA` | editor/textInput.js | csa | `addCSA('textinput1', [{ event: 'On click', action: 'Set text', value: 'hello' }])` |
-| exposed | `openAndVerifyNode` | inspector.js | inspector | `openAndVerifyNode('textinput1', nodes, verifyNodeData)` |
-| exposed | `verifyNodes` | inspector.js | inspector | `verifyNodes([{ key: 'value', type: 'string', value: 'hello' }], verifyNodeData)` |
-| exposed | `openNode` | inspector.js | inspector | `openNode('components', 0)` |
-| - | `openSubNode` | inspector.js | inspector | `openSubNode('textinput1', 'components')` |
-| - | `backFromDetail` | inspector.js | common | `backFromDetail()` |
-| - | `openSubNodeAndVerify` | inspector.js | inspector | `openSubNodeAndVerify('globals', 'currentUser', nodes, verifyNodeData)` |
-| - | `openStateFromComponent` | inspector.js | inspector | `openStateFromComponent('textinput1')` |
-| exposed | `verifyNodeData` | inspector.js | inspector | `verifyNodeData('value', 'string', 'hello', 0)` |
-| - | `deleteComponentFromInspector` | inspector.js | inspector | `deleteComponentFromInspector('textinput1')` |
-| - | `navigateToInspectorNodes` | inspector.js | inspector | `navigateToInspectorNodes(['globals', 'currentUser', 'email'])` |
-| - | `verifyInspectorValue` | inspector.js | inspector | `verifyInspectorValue('currentUser', 'admin')` |
-| - | `verifyInspectorKeyValue` | inspector.js | inspector | `verifyInspectorKeyValue('isValid', 'true')` |
-| - | `navigateAndVerifyInspector` | inspector.js | inspector | `navigateAndVerifyInspector(['globals','currentUser','firstName'], [['firstName','Admin']])` |
