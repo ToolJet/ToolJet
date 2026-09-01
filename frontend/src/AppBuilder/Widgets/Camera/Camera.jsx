@@ -350,11 +350,11 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       // On mobile the camera is chosen by facing direction, so no deviceId is selected.
       if (!isMobile) {
         setSelectedCameraId((prev) =>
-          prev && cameras.some((d) => d.value === prev) ? prev : cameras[0]?.value ?? null
+          prev && cameras.some((d) => d.value === prev) ? prev : (cameras[0]?.value ?? null)
         );
       }
       setSelectedMicrophoneId((prev) =>
-        prev && microphones.some((d) => d.value === prev) ? prev : microphones[0]?.value ?? null
+        prev && microphones.some((d) => d.value === prev) ? prev : (microphones[0]?.value ?? null)
       );
     } catch (error) {
       console.error('Failed to enumerate media devices', error);
@@ -403,8 +403,8 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         video: isMobile
           ? { facingMode: { ideal: facingMode } }
           : selectedCameraId && !selectedCameraId.startsWith?.('camera-')
-          ? { deviceId: { exact: selectedCameraId } }
-          : true,
+            ? { deviceId: { exact: selectedCameraId } }
+            : true,
         audio:
           selectedMicrophoneId && !selectedMicrophoneId.startsWith?.('microphone-')
             ? { deviceId: { exact: selectedMicrophoneId } }

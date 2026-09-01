@@ -126,7 +126,7 @@ const mergeKeyNode = (a, b) => {
   }
   if (a.type === 'array') {
     merged.length = Math.max(a.length ?? 0, b.length ?? 0);
-    merged.items = a.items && b.items ? mergeKeyNode(a.items, b.items) : a.items ?? b.items;
+    merged.items = a.items && b.items ? mergeKeyNode(a.items, b.items) : (a.items ?? b.items);
   }
   if (a.format !== b.format) merged.format = null;
   return merged;
