@@ -44,7 +44,7 @@
           "key": "isValid",
           "type": "Boolean",
           "value": "true",
-          "note": "isValid is set via setExposedVariable at runtime (Checkbox.jsx lines 110, 186) but is NOT listed in checkbox.js exposedVariables config (line 169-176); runtime-only"
+          "note": "isValid is set via setExposedVariables(...) at mount (Checkbox.jsx:159) and again via setExposedVariable at runtime (lines 110, 186); exposed from first frame but is NOT listed in checkbox.js config exposedVariables (line 169-176); runtime-only"
         }
       ],
       "fxFormatNote": "Boolean toggle properties (e.g. defaultValue) use switch type in config, not code/fx type — the fx editor is not exposed for these in the normal panel. For code-type fields, the fx editor renders the raw value without {{}} wrapper in .cm-line (e.g. 'false' not '{{false}}'). Needs Task 4 runtime confirm for exact .cm-line text."
