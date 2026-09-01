@@ -1,3 +1,5 @@
+import { buildChartAxis, toPlotlyColor } from './utils';
+
 function extractTitleText(rawTitle) {
   return rawTitle && typeof rawTitle === 'object' ? rawTitle.text : rawTitle;
 }
@@ -22,7 +24,7 @@ export function buildChartLayout({
   showAxes,
   barmode,
 }) {
-  const axisDefaults = () => ({
+  const axisDefaults = {
     showgrid: showGridLines,
     showline: true,
     color: fontColor,
@@ -30,26 +32,25 @@ export function buildChartLayout({
     visible: showAxes,
     gridcolor: modifiedGridLines,
     linecolor: modifiedAxisColor,
-    title: {
-      font: {
-        color: modifiedTextColor,
-      },
-    },
-    tickfont: {
-      color: modifiedTextColor,
-    },
-  });
+    title: { font: { color: modifiedTextColor } },
+    tickfont: { color: modifiedTextColor },
+  };
+  const buildAxis = (userAxis) => buildChartAxis(userAxis, axisDefaults);
+
+  const jsonTitleObj = chartLayout.title && typeof chartLayout.title === 'object' ? chartLayout.title : undefined;
 
   return {
     ...chartLayout,
-    width: width - 6,
-    height: height - 2,
-    plot_bgcolor: updatedBgColor,
-    paper_bgcolor: updatedBgColor,
+    ...(chartLayout.autosize === true ? { autosize: true } : { width: width - 6, height: height - 2 }),
+    plot_bgcolor: chartLayout.plot_bgcolor ?? toPlotlyColor(updatedBgColor),
+    paper_bgcolor: chartLayout.paper_bgcolor ?? toPlotlyColor(updatedBgColor),
+    // Keep the author's other title settings (x, xanchor, pad, ...) and let their font override ours.
     title: {
+      ...jsonTitleObj,
       text: chartTitle,
       font: {
         color: modifiedTextColor,
+        ...jsonTitleObj?.font,
       },
     },
     showlegend: chartLayout.showlegend ?? false,
@@ -60,22 +61,13 @@ export function buildChartLayout({
       },
       ...chartLayout.legend,
     },
-    xaxis: {
-      ...axisDefaults(),
-      ...chartLayout.xaxis,
-    },
-    yaxis: {
-      ...axisDefaults(),
-      ...chartLayout.yaxis,
-    },
+    xaxis: buildAxis(chartLayout.xaxis),
+    yaxis: buildAxis(chartLayout.yaxis),
     // Dynamically add additional axes (xaxis2, yaxis2, yaxis3, etc.) from user layout
     ...Object.keys(chartLayout)
       .filter((key) => /^(xaxis|yaxis)\d+$/.test(key))
       .reduce((acc, key) => {
-        acc[key] = {
-          ...axisDefaults(),
-          ...chartLayout[key],
-        };
+        acc[key] = buildAxis(chartLayout[key]);
         return acc;
       }, {}),
     margin: {
@@ -83,6 +75,7 @@ export function buildChartLayout({
       r: padding,
       b: padding,
       t: padding,
+      ...chartLayout.margin,
     },
     ...(chartLayout.annotations && { annotations: chartLayout.annotations }),
     barmode: barmode,

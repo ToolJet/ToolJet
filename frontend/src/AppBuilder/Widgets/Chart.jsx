@@ -8,8 +8,9 @@ import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getCssVarValue, getModifiedColor, buildChartAxis, toPlotlyColor } from './utils';
+import { getCssVarValue, getModifiedColor, toPlotlyColor } from './utils';
 import { applyPlotlyCompat } from './plotlyCompat';
+import { resolveChartTitle, buildChartLayout } from './Chart.utils';
 
 var tinycolor = require('tinycolor2');
 
@@ -85,12 +86,7 @@ export default function Chart({
 
   const fontColor = getColor(updatedBgColor);
 
-  const authorTitle = plotFromJson ? (chartLayout?.title ?? title) : title;
-  // An author may write the title either way round: `title: 'Sales'` or the
-  // modern `title: { text: 'Sales' }`. Passing the object straight through would
-  // nest it as title.text.text, which Plotly cannot read — it falls back to its
-  // placeholder and the author's title silently disappears.
-  const chartTitle = typeof authorTitle === 'object' && authorTitle !== null ? authorTitle.text : authorTitle;
+  const chartTitle = resolveChartTitle(chartLayout, title, plotFromJson);
   useEffect(() => {
     if (isInitialRender.current) return;
     const { xaxis, yaxis } = chartLayout;
@@ -109,63 +105,21 @@ export default function Chart({
     setExposedVariables(exposedVariables);
   }, [JSON.stringify(chartLayout, chartTitle)]);
 
-  const axisDefaults = {
-    showgrid: showGridLines,
-    showline: true,
-    color: fontColor,
-    automargin: true,
-    visible: showAxes,
-    gridcolor: modifiedGridLines,
-    linecolor: modifiedAxisColor,
-    title: { font: { color: modifiedTextColor } },
-    tickfont: { color: modifiedTextColor },
-  };
-  const buildAxis = (userAxis) => buildChartAxis(userAxis, axisDefaults);
-
-  const layout = {
-    ...chartLayout,
-    width: width - 6,
-    height: height - 2,
-    plot_bgcolor: toPlotlyColor(updatedBgColor),
-    paper_bgcolor: toPlotlyColor(updatedBgColor),
-    title: {
-      // Keep the author's other title settings (x, xanchor, pad, ...) and font,
-      // rather than replacing the whole object with just our text and colour.
-      ...(typeof authorTitle === 'object' && authorTitle !== null ? authorTitle : {}),
-      text: chartTitle,
-      font: {
-        color: modifiedTextColor,
-        ...(typeof authorTitle === 'object' ? authorTitle?.font : undefined),
-      },
-    },
-    showlegend: chartLayout.showlegend ?? false,
-    legend: {
-      text: chartTitle,
-      font: {
-        color: fontColor,
-      },
-      ...chartLayout.legend,
-    },
-    xaxis: buildAxis(chartLayout.xaxis),
-    yaxis: buildAxis(chartLayout.yaxis),
-    // Dynamically add additional axes (xaxis2, yaxis2, yaxis3, etc.) from user layout
-    ...Object.keys(chartLayout)
-      .filter((key) => /^(xaxis|yaxis)\d+$/.test(key))
-      .reduce((acc, key) => {
-        acc[key] = buildAxis(chartLayout[key]);
-        return acc;
-      }, {}),
-    margin: {
-      l: padding,
-      r: padding,
-      b: padding,
-      t: padding,
-    },
-    ...(chartLayout.annotations && { annotations: chartLayout.annotations }),
-    barmode: barmode,
-    hoverlabel: { namelength: -1 },
-    ...('dragmode' in chartLayout && { dragmode: chartLayout.dragmode }),
-  };
+  const layout = buildChartLayout({
+    chartLayout,
+    chartTitle,
+    width,
+    height,
+    padding,
+    updatedBgColor,
+    modifiedTextColor,
+    fontColor,
+    modifiedGridLines,
+    modifiedAxisColor,
+    showGridLines,
+    showAxes,
+    barmode,
+  });
 
   const computeChartData = (data, dataString) => {
     let rawData = data;
