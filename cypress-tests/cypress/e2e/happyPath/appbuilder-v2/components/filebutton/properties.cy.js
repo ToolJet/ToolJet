@@ -65,6 +65,38 @@ const selectValidationFileType = (option) => {
   cy.waitForAutoSave();
 };
 
+// Tooltip renders through a different node per format (WidgetTooltip.jsx):
+//   plainText -> plain <span>, no wrapper
+//   markdown  -> .widget-tooltip-markdown (react-markdown)
+//   html      -> .widget-tooltip-html (sanitized innerHTML)
+// Raw HTML can't be typed directly: clearAndTypeOnCodeMirror's tokenizer keeps
+// only what its regex matches, and `<`, `>` and `/` aren't in it — "<b>x</b>"
+// arrives as "bxb". Pass HTML as a {{"..."}} expression instead; the quoted
+// string is preserved whole.
+const setTooltip = (format, content) => {
+  cy.get(`[data-cy="togglr-button-${format}"]`).click();
+  cy.waitForAutoSave();
+  cy.get(commonWidgetSelector.tooltipInputField).clearAndTypeOnCodeMirror(content);
+  cy.forceClickOnCanvas();
+  cy.waitForAutoSave();
+};
+
+// Deselect first — a selected widget shows resize handles that sit over it and
+// swallow the hover.
+const hoverWidget = (name) => {
+  cy.forceClickOnCanvas();
+  cy.get(fileButtonSelector.draggableWidget(name)).click();
+  cy.get(fileButtonSelector.draggableWidget(name)).trigger("mouseover").trigger("mouseover");
+};
+
+// Desktop/mobile canvas switch in the editor header. Widgets hidden by the
+// Devices toggles unmount entirely, so anything needing the Inspector has to
+// be done from the layout where the widget is still visible.
+const switchLayout = (target) => {
+  cy.get(`[data-cy="button-change-layout-to-${target}"]`).click();
+  cy.waitForAutoSave();
+};
+
 // No queries in this spec, so free the vertical space. State persists in
 // localStorage across tests — check before clicking, don't assume it's open.
 const closeQueryPanel = () => {
@@ -364,6 +396,9 @@ describe(
     openEditorSidebar(widget);
     cy.get(fileButtonSelector.mandatoryIndicator(widget)).should("not.exist");
     verifyExposedValue("isMandatory", "Boolean", "false");
+    // isValid starts as !isMandatory (useFilePicker.js:77) — nothing is
+    // required yet, so an empty field is already valid.
+    verifyExposedValue("isValid", "Boolean", "true");
 
     // 1. Direct toggle — indicator renders and the input advertises it to AT.
     cy.get(commonWidgetSelector.parameterTogglebutton("Make this field mandatory")).click();
@@ -371,6 +406,13 @@ describe(
     cy.get(fileButtonSelector.mandatoryIndicator(widget)).should("be.visible");
     cy.get(fileButtonSelector.ariaRequired(widget)).should("exist");
     verifyExposedValue("isMandatory", "Boolean", "true");
+
+    // Required with nothing selected — invalid until a file satisfies it.
+    verifyExposedValue("isValid", "Boolean", "false");
+    cy.get(fileButtonSelector.inputField(widget)).selectFile(validFile, { force: true });
+    verifyExposedValue("isValid", "Boolean", "true");
+    clearSelectedFile();
+    verifyExposedValue("isValid", "Boolean", "false");
 
     cy.get(commonWidgetSelector.parameterTogglebutton("Make this field mandatory")).click();
     cy.waitForAutoSave();
@@ -466,5 +508,63 @@ describe(
     // rejection and no feedback (the batch is silently sliced to maxFileCount,
     // useFilePicker.js:347) — known, dev has a fix in flight. Add the
     // over-cap rejection case here once that lands.
+  });
+
+  it("should verify Tooltip: the same text renders per Plain text / Markdown / HTML", () => {
+    // Plain text and Markdown are fed the SAME string, so the only thing that
+    // can explain the different output is the format switch itself.
+    const markup = "**Bold** tip";
+
+    openEditorSidebar(widget);
+    openAccordion("Additional Actions");
+    setTooltip("plainText", markup);
+    hoverWidget(widget);
+    cy.get(".tooltip-inner").last().should("have.text", markup);
+    cy.get(".widget-tooltip-markdown").should("not.exist");
+    cy.get(".widget-tooltip-html").should("not.exist");
+
+    // Markdown — the asterisks become real emphasis instead of literal text.
+    openEditorSidebar(widget);
+    openAccordion("Additional Actions");
+    setTooltip("markdown", markup);
+    hoverWidget(widget);
+    cy.get(".widget-tooltip-markdown").should("exist").find("strong").should("have.text", "Bold");
+
+    // HTML — tags are parsed, not escaped.
+    openEditorSidebar(widget);
+    openAccordion("Additional Actions");
+    setTooltip("html", '{{"<b>HTML</b> tip"}}');
+    hoverWidget(widget);
+    cy.get(".widget-tooltip-html").should("exist").find("b").should("have.text", "HTML");
+  });
+
+  it("should verify Show on desktop and Show on mobile gate the widget per layout", () => {
+    // Defaults are showOnDesktop {{true}} / showOnMobile {{false}}, so the
+    // widget starts visible on desktop and hidden on mobile.
+    cy.get(fileButtonSelector.widget(widget)).should("exist");
+
+    switchLayout("mobile");
+    cy.get(fileButtonSelector.widget(widget)).should("not.exist");
+
+    // Enable it for mobile from the desktop layout — once hidden, the widget
+    // can't be selected to reach its own Inspector.
+    switchLayout("desktop");
+    openEditorSidebar(widget);
+    cy.get(commonWidgetSelector.parameterTogglebutton("Show on mobile")).click();
+    cy.waitForAutoSave();
+
+    switchLayout("mobile");
+    cy.get(fileButtonSelector.widget(widget)).should("exist");
+
+    // Turning desktop off hides it there while mobile keeps showing it.
+    switchLayout("desktop");
+    openEditorSidebar(widget);
+    cy.get(commonWidgetSelector.parameterTogglebutton("Show on desktop")).click();
+    cy.waitForAutoSave();
+    cy.get(fileButtonSelector.widget(widget)).should("not.exist");
+
+    switchLayout("mobile");
+    cy.get(fileButtonSelector.widget(widget)).should("exist");
+    switchLayout("desktop");
   });
 });
