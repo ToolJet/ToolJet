@@ -3,15 +3,20 @@ set -e
 
 npm cache clean --force
 
-# ================== fetch AWS RDS global cert bundle at runtime ==================
+# ================== refresh AWS RDS cert bundle (best-effort, falls back to baked-in) ==================
 mkdir -p /home/appuser/certs
-if wget -q -O /home/appuser/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
-  echo "RDS cert bundle downloaded successfully."
+if wget -O /home/appuser/certs/global-bundle.pem.tmp https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
+  mv /home/appuser/certs/global-bundle.pem.tmp /home/appuser/certs/global-bundle.pem
+  echo "RDS cert bundle refreshed successfully."
 else
-  echo "Error: Failed to download RDS cert bundle. Check network/internet access for this task."
-  exit 1
+  rm -f /home/appuser/certs/global-bundle.pem.tmp
+  echo "Warning: Failed to refresh RDS cert bundle (no internet access or unreachable). Using bundle baked into image at build time."
 fi
-export NODE_EXTRA_CA_CERTS=/home/appuser/certs/global-bundle.pem
+if [ -s /home/appuser/certs/global-bundle.pem ]; then
+  export NODE_EXTRA_CA_CERTS=/home/appuser/certs/global-bundle.pem
+else
+  echo "Warning: No RDS cert bundle available (build-time bake and runtime refresh both failed). Continuing without it - only needed for AWS RDS SSL connections."
+fi
 
 # Load environment variables from .env if the file exists
 if [ -f "./.env" ]; then
