@@ -86,6 +86,29 @@ export {
 export { verifyLayout } from "./appBuilder/layout";
 
 export {
+  copyWidget,
+  pasteWidget,
+  copyPasteWidget,
+  cutWidget,
+  undo,
+  redo,
+  selectAllWidgets,
+  multiSelectWidgets,
+  verifySelectedWidgetCount,
+  nudgeWidget,
+  duplicateWidgetByKeyboard,
+  openComponentInspectorMenu,
+  selectComponentInspectorMenuOption,
+  duplicateWidgetFromMenu,
+  renameWidgetFromMenu,
+  deleteWidgetFromMenu,
+  getWidgetRect,
+  verifyWidgetMoved,
+  verifyWidgetResized,
+  verifyWidgetCount,
+} from "./appBuilder/canvas";
+
+export {
   verifyComponentValueFromInspector,
   verifyMultipleComponentValuesFromInspector,
   verifyComponentFromInspector,

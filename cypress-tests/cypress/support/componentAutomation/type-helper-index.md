@@ -42,6 +42,26 @@
 | - | `verifyComponentValueFromInspector` | appBuilder/inspectorTree.js | inspector | `verifyComponentValueFromInspector('textinput1', 'hello')` |
 | - | `verifyMultipleComponentValuesFromInspector` | appBuilder/inspectorTree.js | inspector | `verifyMultipleComponentValuesFromInspector('select1', ['opt1', 'opt2'])` |
 | - | `verifyComponentFromInspector` | appBuilder/inspectorTree.js | inspector | `verifyComponentFromInspector('textinput1')` |
+| - | `copyWidget` | appBuilder/canvas.js | canvas | `copyWidget('button1')` |
+| - | `pasteWidget` | appBuilder/canvas.js | canvas | `pasteWidget()                                            // onto the root canvas` |
+| - | `copyPasteWidget` | appBuilder/canvas.js | canvas | `copyPasteWidget('button1')   // clones button1 → button2 via clipboard` |
+| - | `duplicateWidgetByKeyboard` | appBuilder/canvas.js | canvas | `duplicateWidgetByKeyboard('button1')` |
+| - | `openComponentInspectorMenu` | appBuilder/canvas.js | canvas | `openComponentInspectorMenu('button1')` |
+| - | `selectComponentInspectorMenuOption` | appBuilder/canvas.js | canvas | `selectComponentInspectorMenuOption('button1', 'duplicate')` |
+| - | `duplicateWidgetFromMenu` | appBuilder/canvas.js | canvas | `duplicateWidgetFromMenu('button1')` |
+| - | `renameWidgetFromMenu` | appBuilder/canvas.js | canvas | `renameWidgetFromMenu('button1', 'submitBtn')` |
+| - | `deleteWidgetFromMenu` | appBuilder/canvas.js | canvas | `deleteWidgetFromMenu('button1')` |
+| - | `selectAllWidgets` | appBuilder/canvas.js | canvas | `selectAllWidgets()   // Cmd/Ctrl+A — selects every widget on the canvas` |
+| - | `multiSelectWidgets` | appBuilder/canvas.js | canvas | `multiSelectWidgets(['button1', 'button2'])` |
+| - | `verifySelectedWidgetCount` | appBuilder/canvas.js | canvas | `verifySelectedWidgetCount(2)   // after selectAll / multiSelect` |
+| - | `undo` | appBuilder/canvas.js | canvas | `undo()   // Cmd/Ctrl+Z — reverts the last canvas action` |
+| - | `redo` | appBuilder/canvas.js | canvas | `redo()   // Cmd/Ctrl+Shift+Z — re-applies the last undone action` |
+| - | `nudgeWidget` | appBuilder/canvas.js | canvas | `nudgeWidget('button1', 'ArrowRight', 10)   // arrow-key move the selected widget` |
+| - | `cutWidget` | appBuilder/canvas.js | canvas | `cutWidget('button1')   // removes it from canvas; pasteWidget() restores it` |
+| - | `getWidgetRect` | appBuilder/canvas.js | canvas | `getWidgetRect('button1').as('r0')   // capture BEFORE a move/resize` |
+| - | `verifyWidgetMoved` | appBuilder/canvas.js | canvas | `verifyWidgetMoved('button1', before)   // before = getWidgetRect result` |
+| - | `verifyWidgetResized` | appBuilder/canvas.js | canvas | `verifyWidgetResized('button1', before) // before = getWidgetRect result` |
+| - | `verifyWidgetCount` | appBuilder/canvas.js | canvas | `verifyWidgetCount('button', 2)   // button1 + button2 after a clone` |
 | events | `selectEvent` | events.js | events | `selectEvent('On click', 'Show Alert')` |
 | csa | `selectCSA` | events.js | csa | `selectCSA('textinput1', 'Set text')` |
 | - | `addSupportCSAData` | events.js | csa | `addSupportCSAData('alert-message', 'Hello world')` |

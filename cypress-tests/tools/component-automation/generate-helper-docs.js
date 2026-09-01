@@ -93,6 +93,7 @@ if (require.main === module) {
     "appBuilder/components.js",
     "appBuilder/layout.js",
     "appBuilder/inspectorTree.js",
+    "appBuilder/canvas.js",
     "events.js",
     "editor/textInput.js",
   ].map(f => path.join(base, f));
