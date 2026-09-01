@@ -31,8 +31,15 @@ surface:
     - name: text
       type: code
       source: button.js:15
+  styles:
+    - name: backgroundColor
+      type: colorSwatches
+      fxCapable: true
+      source: button.js:84
 `;
 const miss = assertSurfaceShape(bad).missing;
 assert(miss.includes("runtimeCandidate"), "must flag missing runtimeCandidate");
 assert(miss.some(m => m.includes("fxCapable")), "must flag missing fxCapable on a property");
+assert(miss.some(m => m.startsWith("section@")), "must flag missing section on a property");
+assert(miss.some(m => m.startsWith("conditionallyRender@")), "must flag missing conditionallyRender on property and styles");
 console.log("config-surface-check.test PASS");
