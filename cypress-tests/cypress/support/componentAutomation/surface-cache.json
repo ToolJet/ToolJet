@@ -1,6 +1,12 @@
 {
   "$schema": "./README.md",
   "shared": {
+    "colorTokenNames": {
+      "var(--cc-primary-text)": "Text/Primary",
+      "var(--cc-default-border)": "Border/Default",
+      "var(--cc-primary-brand)": "Brand/Primary",
+      "var(--cc-surface1-surface)": "Surface/Surface1"
+    },
     "cssPropertyMap": {
       "colorSwatches:textColor": {
         "cssProp": "color",
