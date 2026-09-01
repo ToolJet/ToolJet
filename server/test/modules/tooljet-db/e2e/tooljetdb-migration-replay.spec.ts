@@ -7,7 +7,7 @@
  */
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { IsNull } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import {
   createUser,
@@ -30,10 +30,10 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 // the same pattern.
 import { TooljetDbTableOperationsService } from '@ee/tooljet-db/services/tooljet-db-table-operations.service';
 import { buildTableSchemaSnapshot, TableSchemaSnapshot } from '@modules/tooljet-db/helpers/table-schema-snapshot';
-// Imported only so this test can call the same DDL-synthesis method migration A itself uses,
+// Imported only so this test can call the same DDL-synthesis function migration A itself calls,
 // instead of hand-writing a second copy that could silently drift from what the real migration
 // emits.
-import { TjdbRolloutMigrationASubstrate1787564882760 } from '../../../../data-migrations/1787564882760-TjdbRolloutMigrationASubstrate';
+import { buildCreateTableDdl } from '@modules/tooljet-db/helpers/baseline-synthesis';
 
 describe('TooljetDb migration replay', () => {
   describe('EE (plan: enterprise)', () => {
@@ -374,15 +374,9 @@ describe('TooljetDb migration replay', () => {
           columnUuids
         );
 
-        // Same DDL-synthesis method migration A itself calls, not a hand-written second copy -
+        // Same DDL-synthesis function migration A itself calls, not a hand-written second copy -
         // this is what actually exercises the self-referencing-sequence rewrite.
-        const migrationA = new TjdbRolloutMigrationASubstrate1787564882760();
-        const ddl: string = (migrationA as any).buildCreateTableDdl(
-          tenantSchema,
-          relationId,
-          snapshot.columns,
-          snapshot.primary_key
-        );
+        const ddl: string = buildCreateTableDdl(tenantSchema, relationId, snapshot.columns, snapshot.primary_key);
 
         const createMigration = await appManager.save(
           appManager.create(InternalTableMigration, {
@@ -503,6 +497,97 @@ describe('TooljetDb migration replay', () => {
           `"${tenantSchema}"."${targetRelation.id}"`,
         ]);
         expect(physicalTable).toBeNull();
+      });
+    });
+
+    describe('Applications bookkeeping', () => {
+      it('ticks the real source migrations against the target, mints no synthetic migration row, and never touches resulting_schema', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+        const appManager = getDefaultDataSource().manager;
+
+        const idColumn = {
+          column_name: 'id',
+          data_type: 'integer',
+          constraints_type: { is_not_null: true, is_primary_key: true, is_unique: false },
+        };
+
+        // Three structured migrations: create_table, add_column, edit_column.
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({ table_name: 'replay_bookkeeping', columns: [idColumn], foreign_keys: [] })
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table/replay_bookkeeping/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'note',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+          })
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+
+        await request
+          .agent(app.getHttpServer())
+          .patch(`/api/tooljet-db/organizations/${adminOrgId}/table/replay_bookkeeping/column`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send({
+            column: {
+              column_name: 'note',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: true, is_primary_key: false, is_unique: false },
+            },
+          })
+          .expect((res) => expect(res.statusCode).toBe(200));
+
+        const internalTable = await appManager.findOneOrFail(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'replay_bookkeeping' },
+        });
+        const sourceMigrations = await migrationChainFor(internalTable.id);
+        expect(sourceMigrations.map((m) => (m.payload as any).action)).toEqual([
+          'create_table',
+          'add_column',
+          'edit_column',
+        ]);
+        const migrationIds = sourceMigrations.map((m) => m.id);
+        const resultingSchemasBefore = sourceMigrations.map((m) => JSON.stringify(m.resultingSchema));
+        const migrationCountBefore = await appManager.count(InternalTableMigration, {
+          where: { internalTableId: internalTable.id },
+        });
+
+        const targetRelation = await createTargetRelation(internalTable.id);
+        await tableOperationsService.applyMigrations(migrationIds, targetRelation);
+
+        // Exactly one confirmed application per source migration against the target - no more, no
+        // fewer, and none of them a synthetic entry.
+        const targetApplications = await appManager.find(InternalTableMigrationApplication, {
+          where: { relationId: targetRelation.id },
+        });
+        expect(targetApplications).toHaveLength(migrationIds.length);
+        for (const application of targetApplications) {
+          expect(application.appliedAt).not.toBeNull();
+          expect(migrationIds).toContain(application.migrationId);
+        }
+
+        // No new chain entry was minted for the replay - the table's migration count is unchanged.
+        expect(await appManager.count(InternalTableMigration, { where: { internalTableId: internalTable.id } })).toBe(
+          migrationCountBefore
+        );
+
+        // resulting_schema is authoring-time truth - replay must not have touched it.
+        const reloadedSourceMigrations = await appManager.find(InternalTableMigration, {
+          where: { id: In(migrationIds) },
+        });
+        const bySequence = reloadedSourceMigrations.sort((a, b) => Number(a.sequence) - Number(b.sequence));
+        expect(bySequence.map((m) => JSON.stringify(m.resultingSchema))).toEqual(resultingSchemasBefore);
       });
     });
   });

@@ -238,6 +238,49 @@ export class TooljetDbMigrationRecorderService {
   }
 
   /**
+   * One pending application row per migration against `relation`. Migrations already exist -
+   * this records only that they are being applied here (a replay), never a new migration row.
+   * `ON CONFLICT DO NOTHING` on `(migration_id, relation_id)` makes a retry after a crash safe:
+   * rows this call already inserted before the crash are left as-is rather than failing the
+   * unique constraint.
+   */
+  async recordApplications(migrationIds: string[], relation: InternalTableRelation): Promise<void> {
+    if (!migrationIds.length) return;
+    await this.manager.query(
+      `INSERT INTO internal_table_migration_applications (migration_id, relation_id, applied_at)
+       SELECT unnest($1::uuid[]), $2, NULL
+       ON CONFLICT (migration_id, relation_id) DO NOTHING`,
+      [migrationIds, relation.id]
+    );
+  }
+
+  /**
+   * Flips the rows recorded by recordApplications to applied. Never touches `resulting_schema` -
+   * that is authoring-time truth, written once when a migration is first confirmed against the
+   * relation it was authored on, and a replay is not an authoring event.
+   */
+  async confirmApplications(migrationIds: string[], relation: InternalTableRelation): Promise<void> {
+    if (!migrationIds.length) return;
+    await this.manager.update(
+      InternalTableMigrationApplication,
+      { migrationId: In(migrationIds), relationId: relation.id },
+      { appliedAt: new Date() }
+    );
+  }
+
+  /**
+   * Removes the pending rows recorded above on a failed replay. Never deletes a migration - the
+   * migrations being replayed already exist and are untouched by a replay failing.
+   */
+  async discardApplications(migrationIds: string[], relation: InternalTableRelation): Promise<void> {
+    if (!migrationIds.length) return;
+    await this.manager.delete(InternalTableMigrationApplication, {
+      migrationId: In(migrationIds),
+      relationId: relation.id,
+    });
+  }
+
+  /**
    * How long a pending row is left alone before adjudicatePending will touch it at all. Closes a
    * cross-request race the same-request problem above doesn't cover: request A commits record()
    * for a migration, then - before A's own DDL has run - request B touches the same relation and
@@ -295,6 +338,20 @@ export class TooljetDbMigrationRecorderService {
         const payload = migration.payload as StructuredMigrationPayload;
         const predicate = ADJUDICATION_PREDICATES[payload?.action];
         const matches = predicate ? predicate(payload.request, snapshot) : false;
+
+        // A non-null resulting_schema means this migration was already confirmed once (or, for a
+        // baseline row, never pending in the first place) - so the pending row in front of us is a
+        // replay application, not this migration's own authoring. Route through the applications
+        // API: only the application row is touched, never the migration or its resulting_schema,
+        // which is authoring-time truth a replay must never write.
+        if (migration.resultingSchema !== null) {
+          if (matches) {
+            await this.confirmApplications([migration.id], relation);
+          } else {
+            await this.discardApplications([migration.id], relation);
+          }
+          continue;
+        }
 
         if (matches) {
           await this.confirm(migration, relation, tjdbQueryRunner);

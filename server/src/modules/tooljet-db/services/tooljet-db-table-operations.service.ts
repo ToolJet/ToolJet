@@ -2622,9 +2622,10 @@ export class TooljetDbTableOperationsService {
    * relation currently looks like" also means a later rename on the source can't corrupt replay of
    * an earlier migration in the same chain.
    *
-   * Records and confirms exactly one migration against `targetRelation` for the whole call - the
-   * replayed migrations are not re-recorded individually, the same way a promote is one event even
-   * though it may reapply several authored changes.
+   * Ticks the real chain, not a synthetic stand-in: one pending application per member of
+   * `migrationIds` is recorded against `targetRelation` before the DDL runs and flipped to
+   * confirmed once it commits - no new `internal_table_migrations` row is minted for the replay,
+   * and none of the source migrations' `resulting_schema` (authoring-time truth) is touched.
    *
    * Atomicity: the six table/column ops share one app-DB + TJDB transaction and roll back
    * together, matching apply()'s existing contract for those six. The three foreign-key ops always
@@ -2654,11 +2655,7 @@ export class TooljetDbTableOperationsService {
     const migrations = await this.loadMigrationsInOrder(migrationIds, appManager);
 
     await this.migrationRecorderService.adjudicatePending(targetInternalTable, targetRelation);
-    const migration = await this.migrationRecorderService.record(
-      { action: 'replay', request: { migrationIds } },
-      targetInternalTable,
-      targetRelation
-    );
+    await this.migrationRecorderService.recordApplications(migrationIds, targetRelation);
 
     const queryRunner = appManager?.queryRunner || appManager.connection.createQueryRunner();
     const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
@@ -2688,14 +2685,17 @@ export class TooljetDbTableOperationsService {
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      await this.migrationRecorderService.confirm(migration, targetRelation, tjdbQueryRunner);
+      await this.migrationRecorderService.confirmApplications(migrationIds, targetRelation);
     } catch (err) {
-      await this.migrationRecorderService.discard(migration, targetRelation);
+      await this.migrationRecorderService.discardApplications(migrationIds, targetRelation);
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.rollbackTransaction();
       throw new TooljetDatabaseError(
         err.message,
-        { origin: 'replay', internalTables: [{ id: targetRelation.id, tableName: targetInternalTable.tableName }] },
+        {
+          origin: 'apply_migrations',
+          internalTables: [{ id: targetRelation.id, tableName: targetInternalTable.tableName }],
+        },
         err
       );
     } finally {
@@ -2967,10 +2967,11 @@ export class TooljetDbTableOperationsService {
 
   /**
    * The three foreign-key ops confirm/discard their own `migration` argument internally (they own
-   * their own transaction, unlike the other six - see AGENTS.md). Replay already records and
-   * confirms one migration for the whole call, so this hands them an unpersisted stand-in: their
-   * internal confirm()/discard() calls become no-op updates/deletes against a row that was never
-   * inserted, and the real DDL still runs exactly as it does on the live path.
+   * their own transaction, unlike the other six - see AGENTS.md). Replay's own bookkeeping is
+   * applications-only against the real source migrations, so this hands them an unpersisted
+   * stand-in instead: their internal confirm()/discard() calls become no-op updates/deletes
+   * against a row that was never inserted, and the real DDL still runs exactly as it does on the
+   * live path.
    */
   private replayDummyMigration(internalTableId: string): InternalTableMigration {
     return { id: uuidv4(), internalTableId } as InternalTableMigration;

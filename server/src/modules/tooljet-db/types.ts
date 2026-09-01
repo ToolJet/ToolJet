@@ -75,11 +75,10 @@ export type TooljetDbActions =
   | 'bulk_upload'
   | 'proxy_postgrest'
   | 'bulk_upsert_with_primary_key'
-  // Not a client-facing action - the replay engine's own recorder action, for the one migration
-  // it records against a replay target relation. No ADJUDICATION_PREDICATES entry: a crash between
-  // record() and confirm() on a replay is indistinguishable from one that never happened, so it is
-  // always discarded rather than guessed at.
-  | 'replay';
+  // Origin tag for applyMigrations' own catch block - not a client-facing action; applyMigrations
+  // never writes its own migration row, so there's nothing for ADJUDICATION_PREDICATES to cover
+  // here.
+  | 'apply_migrations';
 
 type ErrorCodeMappingItem = Partial<Record<TooljetDbActions | 'default', string>>;
 type ErrorCodeMapping = {
