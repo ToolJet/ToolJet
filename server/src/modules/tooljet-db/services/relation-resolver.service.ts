@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+
+const DEVELOPMENT_PRIORITY = 1;
 
 /**
  * Resolves (logical table id, environment, branch) -> physical relation name.
@@ -21,9 +25,20 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 export class TooljetDbRelationResolverService {
   constructor(
     protected readonly manager: EntityManager,
-    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService
+    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
+    protected readonly licenseTermsService: LicenseTermsService
   ) {}
 
+  /**
+   * An unlicensed workspace always resolves to development (resolveEnvironmentId's contract), so a
+   * request that names no environment - every released app's bare run route - resolves cleanly
+   * against development even when development is empty and the workspace's real data sits at a
+   * higher, unreachable priority. That is 200 with zero rows: indistinguishable from data loss.
+   * AppEnvironmentUtilService only refuses an EXPLICIT non-development request, and must not grow
+   * this TJDB-shaped rule - it is shared with apps. So the sibling check lives here instead, folded
+   * into the bulk relation lookup below (join in the priority, no second query) rather than costing
+   * a per-request round trip of its own.
+   */
   async resolve(
     organizationId: string,
     logicalTableIds: string[],
@@ -37,17 +52,46 @@ export class TooljetDbRelationResolverService {
 
     const branchId = await this.resolveBranch(organizationId, entityManager);
 
-    const relations = await entityManager
+    const rows = await entityManager
       .createQueryBuilder(InternalTableRelation, 'relation')
       .innerJoin('internal_tables', 'it', 'it.id = relation.internal_table_id')
+      .innerJoin('app_environments', 'ae', 'ae.id = relation.environment_id')
       .where('relation.internal_table_id IN (:...ids)', { ids: logicalTableIds })
-      .andWhere('relation.environment_id = :environmentId', { environmentId })
       .andWhere('relation.branch_id = :branchId', { branchId })
       .andWhere('it.organization_id = :organizationId', { organizationId })
       .andWhere('it.deleted_at IS NULL')
-      .getMany();
+      .select('relation.id', 'relationId')
+      .addSelect('relation.internal_table_id', 'internalTableId')
+      .addSelect('relation.environment_id', 'environmentId')
+      .addSelect('ae.priority', 'priority')
+      .getRawMany<{ relationId: string; internalTableId: string; environmentId: string; priority: number }>();
 
-    return new Map(relations.map((relation) => [relation.internalTableId, relation.id]));
+    const resolved = new Map<string, string>();
+    let isUnlicensed: boolean | undefined;
+
+    for (const tableId of logicalTableIds) {
+      const rowsForTable = rows.filter((row) => row.internalTableId === tableId);
+      const resolvedRow = rowsForTable.find((row) => row.environmentId === environmentId);
+      if (!resolvedRow) continue;
+
+      resolved.set(tableId, resolvedRow.relationId);
+
+      const resolvedToDevelopment = resolvedRow.priority === DEVELOPMENT_PRIORITY;
+      const hasHigherPrioritySibling = rowsForTable.some((row) => row.priority > DEVELOPMENT_PRIORITY);
+      if (!resolvedToDevelopment || !hasHigherPrioritySibling) continue;
+
+      isUnlicensed ??= !(await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      ));
+      if (isUnlicensed) {
+        throw new ForbiddenException(
+          'Multi-environment is not enabled for this organization. Please contact the super admin.'
+        );
+      }
+    }
+
+    return resolved;
   }
 
   /**

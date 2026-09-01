@@ -484,6 +484,69 @@ describe('TooljetDbRelationResolverService', () => {
         expect(resolved.has(table.id)).toBe(false);
       });
 
+      /**
+       * Task 6 (DEV-90): a workspace licensed at upgrade time has its data at the highest priority
+       * and an empty relation at development. If the licence lapses, resolveEnvironmentId pins
+       * development for every unnamed request - the shape of every released app's bare run route -
+       * so the request resolves cleanly against the empty development relation: 200 with zero rows,
+       * indistinguishable from data loss. The workspace cannot address its own data; that is a
+       * licence answer (403), not a promotion answer (404) and never a silent empty success.
+       */
+      it('unlicensed + a sibling relation exists above development: 403, not an empty resolve', async () => {
+        getLicenseTerms.mockResolvedValue(false);
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
+        const productionEnv = await getEnvByPriority(3);
+        await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: table.id,
+            environmentId: productionEnv.id,
+            branchId: adminBranchId,
+          })
+        );
+
+        await expect(service.resolve(organizationId, [table.id])).rejects.toThrow(ForbiddenException);
+      });
+
+      // Regression guard: every ordinary CE workspace has exactly one (development) relation per
+      // table. Unlicensed must still resolve normally when there is no sibling to be locked out of -
+      // this is the case at 'unlicensed + names nothing' above, restated here to pin it against this
+      // task's condition explicitly (single relation, no higher-priority sibling -> no 403).
+      it('unlicensed + no sibling relation: resolves normally, no throw', async () => {
+        getLicenseTerms.mockResolvedValue(false);
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
+        const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+
+        const resolved = await service.resolve(organizationId, [table.id]);
+        expect(resolved.get(table.id)).toBe(devRelation.id);
+      });
+
+      // The common path: licensed workspaces read development tables that also have a production
+      // sibling all the time (that's what "promoted" means). This is the branch that actually
+      // reaches getLicenseTerms - it must not throw, and it's the branch that makes a missing
+      // LicenseTermsService dependency a 500 on every licensed EE read of a promoted table, not
+      // just the unlicensed 403 case.
+      it('licensed + resolved to development + a sibling relation exists above development: resolves normally, no throw', async () => {
+        const table = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
+        const devRelation = await appManager.findOneOrFail(InternalTableRelation, {
+          where: { internalTableId: table.id },
+        });
+        const productionEnv = await getEnvByPriority(3);
+        await appManager.save(
+          appManager.create(InternalTableRelation, {
+            id: uuidv4(),
+            internalTableId: table.id,
+            environmentId: productionEnv.id,
+            branchId: adminBranchId,
+          })
+        );
+
+        const resolved = await service.resolve(organizationId, [table.id]);
+        expect(resolved.get(table.id)).toBe(devRelation.id);
+      });
+
       it('never falls back to the priority-1 relation on a refused request', async () => {
         getLicenseTerms.mockResolvedValue(false);
         const stagingEnv = await getEnvByPriority(2);
