@@ -5,9 +5,15 @@ import {
     openAccordion,
     selectColourFromColourPicker,
     verifyWidgetColorCss,
+    verifyAndModifySwitch,
     fillBoxShadowParams,
     verifyBoxShadowCss,
 } from "Support/utils/commonWidget";
+
+// The visual checkbox box (Checkbox.jsx:296-309) carries border + background
+// colors; it's an anonymous div — the only [data-cy=checkbox1] child holding the
+// hidden .form-check-input. :has() pins it (probe: resolves to exactly 1).
+const BOX = '[data-cy="checkbox1"] > div:has(.form-check-input)';
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec
 // run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+
@@ -36,16 +42,11 @@ describe('Checkbox — styles facet', { testIsolation: false }, () => {
         // textColor (colorSwatches) default var(--cc-primary-text)
         // source: checkbox.js:97 / source_default: checkbox.js:227
         selectColourFromColourPicker('Text color', ['255', '0', '0', '100']); // dynamic: test color
-        /* RESOLVE-LIVE cssProp for textColor */
-        // When resolved, replace <cssProp> with the DOM CSS property the checkbox
-        // label text color maps to (e.g. 'color'); innerProp/sub-selector unknown.
-        // verifyWidgetColorCss(W, '<cssProp>', ['255', '0', '0', '100']); // dynamic: test color
-
-        // alignment (switch) default right — type=switch, no helper in type-helper-index
-        /* RESOLVE-LIVE: no helper for type=switch */
-        // source: checkbox.js:144 / source_default: checkbox.js:232 — default: right
-        // When resolved: interact with the alignment switch (Left | Right) and
-        // assert the label/checkbox flex ordering changes accordingly.
+        // RESOLVED-LIVE: textColor → `color` set on the .form-check-label wrapper
+        // (Checkbox.jsx:256); the inner <label> inherits it. Assert computed color
+        // on the label (no inline color there → verifyWidgetColorCss falls back to
+        // the inherited computed value).
+        verifyWidgetColorCss('[data-cy="checkbox1"] label', 'color', ['255', '0', '0', '100'], true); // dynamic: test color
     });
 
     // ── Switch accordion ───────────────────────────────────────────────────────
@@ -59,20 +60,24 @@ describe('Checkbox — styles facet', { testIsolation: false }, () => {
         // borderColor (colorSwatches) default var(--cc-default-border)
         // source: checkbox.js:105 / source_default: checkbox.js:230
         selectColourFromColourPicker('Border color', ['255', '0', '0', '100']); // dynamic: test color
-        /* RESOLVE-LIVE cssProp for borderColor */
-        // verifyWidgetColorCss(W, '<cssProp>', ['255', '0', '0', '100']); // dynamic: test color
+        // RESOLVED-LIVE: borderColor → box `border-color` (Checkbox.jsx:300/308);
+        // inline value is rgb (probe-confirmed).
+        verifyWidgetColorCss(BOX, 'border-color', ['255', '0', '0', '100'], true); // dynamic: test color
     });
 
     it('switch accordian — checkboxColor / checked color (colorSwatches)', () => {
         openEditorSidebar(W);
+        // checkboxColor is the box background ONLY when checked (Checkbox.jsx:301)
+        // — flip Default state On (Properties tab) before styling.
+        verifyAndModifySwitch('Default state', 'On'); // source: checkbox.js:22
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
         openAccordion('switch');
 
         // checkboxColor (colorSwatches) default var(--cc-primary-brand)
         // source: checkbox.js:113 / source_default: checkbox.js:228
         selectColourFromColourPicker('Checked color', ['255', '0', '0', '100']); // dynamic: test color
-        /* RESOLVE-LIVE cssProp for checkboxColor */
-        // verifyWidgetColorCss(W, '<cssProp>', ['255', '0', '0', '100']); // dynamic: test color
+        // RESOLVED-LIVE: checkboxColor → box `background-color` when checked.
+        verifyWidgetColorCss(BOX, 'background-color', ['255', '0', '0', '100'], true); // dynamic: test color
     });
 
     it('switch accordian — uncheckedColor (colorSwatches)', () => {
@@ -83,20 +88,25 @@ describe('Checkbox — styles facet', { testIsolation: false }, () => {
         // uncheckedColor (colorSwatches) default var(--cc-surface1-surface)
         // source: checkbox.js:121 / source_default: checkbox.js:229
         selectColourFromColourPicker('Unchecked color', ['255', '0', '0', '100']); // dynamic: test color
-        /* RESOLVE-LIVE cssProp for uncheckedColor */
-        // verifyWidgetColorCss(W, '<cssProp>', ['255', '0', '0', '100']); // dynamic: test color
+        // RESOLVED-LIVE: uncheckedColor → box `background-color` when unchecked
+        // (default state; Checkbox.jsx:301).
+        verifyWidgetColorCss(BOX, 'background-color', ['255', '0', '0', '100'], true); // dynamic: test color
     });
 
     it('switch accordian — handleColor (colorSwatches)', () => {
         openEditorSidebar(W);
+        // handleColor is the checkmark SVG stroke, rendered ONLY when checked
+        // (Checkbox.jsx:232-240) — flip Default state On first.
+        verifyAndModifySwitch('Default state', 'On'); // source: checkbox.js:22
         cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
         openAccordion('switch');
 
         // handleColor (colorSwatches) default var(--cc-surface1-surface)
         // source: checkbox.js:129 / source_default: checkbox.js:231
         selectColourFromColourPicker('Handle color', ['255', '0', '0', '100']); // dynamic: test color
-        /* RESOLVE-LIVE cssProp for handleColor */
-        // verifyWidgetColorCss(W, '<cssProp>', ['255', '0', '0', '100']); // dynamic: test color
+        // RESOLVED-LIVE: handleColor → checkmark svg `stroke` (set as attribute;
+        // verifyWidgetColorCss falls back to computed stroke).
+        verifyWidgetColorCss('[data-cy="checkbox1"] svg', 'stroke', ['255', '0', '0', '100'], true); // dynamic: test color
     });
 
     it('switch accordian — boxShadow (boxShadow)', () => {
