@@ -4,7 +4,7 @@ import Selecto from 'react-selecto';
 import './selecto.scss';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { resolveMarqueeCanvasId, isInMarqueeCanvas, mergeMarqueeSelection } from './marqueeSelection';
+import { resolveMarqueeCanvasId, isInMarqueeCanvas, mergeMarqueeSelection } from './Utils/marqueeSelection';
 import { CANVAS_HEADER_ID, CANVAS_FOOTER_ID } from './appCanvasConstants';
 
 const EditorSelecto = () => {

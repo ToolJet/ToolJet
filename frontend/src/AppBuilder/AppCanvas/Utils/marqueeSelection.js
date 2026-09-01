@@ -1,4 +1,4 @@
-import { CANVAS_HEADER_ID, CANVAS_FOOTER_ID } from './appCanvasConstants';
+import { CANVAS_HEADER_ID, CANVAS_FOOTER_ID } from '../appCanvasConstants';
 
 // Decision logic behind EditorSelecto's marquee (Selecto.jsx). Kept here as pure
 // functions because the drag itself is Cypress territory, so this is the layer a
