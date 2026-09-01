@@ -14,6 +14,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 
 export class VersionModule extends SubModule {
@@ -61,6 +62,7 @@ export class VersionModule extends SubModule {
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
         await GitSyncConfigsModule.register(configs),
+        await TooljetDbModule.register(configs),
       ],
       controllers: isMainImport
         ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]

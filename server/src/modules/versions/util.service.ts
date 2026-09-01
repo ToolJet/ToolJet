@@ -1,5 +1,6 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { InternalTable } from '@entities/internal_table.entity';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -28,6 +29,8 @@ import {
   assertGitSyncEditAllowedForOrg,
   assertVersionEditable,
 } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import { AppsUtilService } from '@modules/apps/util.service';
+import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -38,7 +41,9 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly createVersionService: VersionsCreateService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
-    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly appsUtilService: AppsUtilService,
+    protected readonly relationResolverService: TooljetDbRelationResolverService
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
@@ -775,6 +780,54 @@ export class VersionUtilService implements IVersionUtilService {
       if (error instanceof BadRequestException) throw error;
       this.logger.error('Failed to check module environment availability', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions for promote');
+    }
+  }
+
+  /**
+   * Second dependency type promote must validate, same shape as checkModulesPromotableToEnvironment:
+   * a query against a ToolJet DB table that hasn't reached the target environment yet would 404 at
+   * runtime, so promote blocks instead. Offender lookup is one query (relationResolverService.resolve
+   * batches on IN), not one per table. A soft-deleted table is invisible to findTooljetDbTables
+   * already, so it never blocks.
+   */
+  async checkTablesPromotableToEnvironment(
+    appId: string,
+    targetEnvironmentId: string,
+    targetEnvironmentName: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      const tables = await this.appsUtilService.findTooljetDbTables(appId);
+      if (!tables.length) return;
+
+      const tableIds = tables.map((t) => t.table_id);
+      const resolved = await this.relationResolverService.resolve(
+        organizationId,
+        tableIds,
+        targetEnvironmentId,
+        manager
+      );
+      const offenderIds = tableIds.filter((id) => !resolved.has(id));
+      if (!offenderIds.length) return;
+
+      const offenders = await manager.find(InternalTable, { where: { id: In(offenderIds) } });
+      const names = offenders.map((t) => t.tableName);
+      const tableList = names.join(', ');
+      const message =
+        names.length === 1
+          ? `Promote blocked - table "${names[0]}" not available in ${targetEnvironmentName}. Promote the table first.`
+          : `Promote blocked - ${names.length} tables not available in ${targetEnvironmentName}. ${tableList}`;
+      throw new BadRequestException({
+        message: { error: message, details: tableList },
+      });
+    } catch (error) {
+      // ForbiddenException: relationResolverService.resolve() throws it (unlicensed org resolving
+      // to a non-default environment) — a real 403, not a validation failure, so it must pass
+      // through same as BadRequestException rather than get flattened into a misleading 400.
+      if (error instanceof BadRequestException || error instanceof ForbiddenException) throw error;
+      this.logger.error('Failed to check table environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate tooljet database tables for promote');
     }
   }
 
