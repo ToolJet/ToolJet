@@ -2,7 +2,8 @@ import { Command, Flags } from '@oclif/core';
 
 import { Auth } from '../../lib/library/auth';
 import { ApiClient } from '../../lib/library/api-client';
-import { ProjectConfig, ProjectConfigData } from '../../lib/library/project-config';
+import { ProjectConfig, ProjectConfigEntry } from '../../lib/library/project-config';
+import { writeLibraryConfig } from '../../lib/library/scaffolder';
 import { DevWatcher } from '../../lib/library/dev-watcher';
 import { formatError, formatSuccess, formatDuration } from '../../lib/log';
 
@@ -14,26 +15,35 @@ export default class Dev extends Command {
   static examples = [
     '$ tooljet library dev',
     '$ tooljet library dev --debounce 500',
+    '$ tooljet library dev --origin-url https://app.tooljet.ai --api-token <token>',
     '$ tooljet lib dev',
     '$ tooljet lib dev --debounce 500',
   ];
 
   static flags = {
     debounce: Flags.integer({ description: 'Debounce ms between saves', default: 300 }),
+    'origin-url': Flags.string({
+      description: 'ToolJet origin URL to connect to, bypassing the stored login (must be used with --api-token)',
+    }),
+    'api-token': Flags.string({
+      description: 'API token to connect with, bypassing the stored login (must be used with --origin-url)',
+    }),
   };
 
   async run(): Promise<void> {
     const { flags } = await this.parse(Dev);
 
-    const config = this.readConfigOrExit();
-    const { workspaceId, apiToken, url } = Auth.resolveOrExit({ workspaceId: config.workspaceId });
+    const { workspaceId, apiToken, url, config, usedFlags } = await this.resolveTarget(flags);
     const client = new ApiClient(url, apiToken);
 
-    try {
-      await client.verifyLibrary(config.libraryId);
-    } catch (err) {
-      this.log(formatError((err as Error).message));
-      process.exit(1);
+    // findOrCreateLibrary (flags path) already confirmed the library exists.
+    if (!usedFlags) {
+      try {
+        await client.verifyLibrary(config.libraryId);
+      } catch (err) {
+        this.log(formatError((err as Error).message));
+        process.exit(1);
+      }
     }
 
     this.log(formatSuccess(`Connected to ${workspaceId} workspace`));
@@ -87,12 +97,60 @@ export default class Dev extends Command {
     await new Promise(() => {});
   }
 
-  private readConfigOrExit(): ProjectConfigData {
+  // Resolves { workspaceId, apiToken, url, config } either from --origin-url/--api-token
+  // (find-or-create against that workspace directly) or from the stored login + project's
+  // workspaces map (existing behavior). Exits with a clear error on any failure.
+  private async resolveTarget(flags: {
+    'origin-url'?: string;
+    'api-token'?: string;
+  }): Promise<{ workspaceId: string; apiToken: string; url: string; config: ProjectConfigEntry; usedFlags: boolean }> {
+    const originUrl = flags['origin-url'];
+    const apiToken = flags['api-token'];
+
+    if (!originUrl && !apiToken) {
+      const { workspaceId, apiToken, url } = Auth.resolveOrExit();
+      return {
+        workspaceId,
+        apiToken,
+        url,
+        config: ProjectConfig.resolveForWorkspaceOrExit(workspaceId),
+        usedFlags: false,
+      };
+    }
+
+    if (!originUrl || !apiToken) {
+      this.log(formatError('--origin-url and --api-token must be provided together'));
+      process.exit(1);
+    }
+
+    let libraryName: string, correlationId: string;
     try {
-      return ProjectConfig.read();
+      ({ libraryName, correlationId } = ProjectConfig.readFile());
     } catch (err) {
       this.log(formatError((err as Error).message));
       process.exit(1);
     }
+
+    const client = new ApiClient(originUrl, apiToken);
+
+    let resolved;
+    try {
+      resolved = await client.findOrCreateLibrary(correlationId, libraryName);
+    } catch (err) {
+      this.log(formatError((err as Error).message));
+      process.exit(1);
+    }
+
+    const config = { libraryId: resolved.id, libraryName: resolved.name, correlationId: resolved.correlationId };
+    writeLibraryConfig(process.cwd(), { workspaceId: resolved.organizationId, ...config });
+    this.log(
+      formatSuccess(
+        resolved.created
+          ? `Created library on ${resolved.organizationId} workspace`
+          : `Found existing library on ${resolved.organizationId} workspace`
+      )
+    );
+
+    return { workspaceId: resolved.organizationId, apiToken, url: originUrl, config, usedFlags: true };
   }
 }
