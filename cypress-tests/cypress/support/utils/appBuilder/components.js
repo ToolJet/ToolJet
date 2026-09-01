@@ -35,9 +35,11 @@ export const addTextWidgetToVerifyValue = (customfunction) => {
   cy.forceClickOnCanvas();
   cy.dragAndDropWidget("Text", 600, 80);
   openEditorSidebar("text1");
-  cy.get(
-    '[data-cy="textcomponenttextinput-input-field"] '
-  ).clearAndTypeOnCodeMirror(codeMirrorInputLabel(customfunction));
+  // The Text widget's content field data-cy is `text-input-field` (the legacy
+  // `textcomponenttextinput-input-field` no longer exists — verified via probe).
+  cy.get('[data-cy="text-input-field"]').clearAndTypeOnCodeMirror(
+    codeMirrorInputLabel(customfunction)
+  );
   cy.forceClickOnCanvas();
   cy.waitForAutoSave();
 };
