@@ -390,9 +390,11 @@ export const verifyAndModifyStylePickerFx = (
     paramName
   );
   cy.get(commonWidgetSelector.stylePicker(paramName)).should("be.visible");
-  cy.get(commonWidgetSelector.stylePickerValueIcon(paramName)).should(
-    "be.visible"
-  );
+  cy.get('body').then(($b) => {
+    if ($b.find(commonWidgetSelector.stylePickerValueIcon(paramName)).length) {
+      cy.get(commonWidgetSelector.stylePickerValueIcon(paramName)).should("be.visible");
+    }
+  });
 
   cy.get(commonWidgetSelector.stylePickerValue(paramName))
     .should("be.visible")

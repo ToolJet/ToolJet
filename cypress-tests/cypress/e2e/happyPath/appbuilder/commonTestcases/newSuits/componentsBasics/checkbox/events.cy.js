@@ -27,10 +27,10 @@ describe('Checkbox — events facet', { testIsolation: false }, () => {
         const events = [{ event: 'On change', message: 'On change Event' }];
         addMultiEventsWithAlert(events);
 
-        // Trigger onChange by toggling the widget's checkbox input.
+        // Trigger onChange by clicking the label — the real <input> is display:none.
         cy.get(commonWidgetSelector.draggableWidget(W))
             .scrollIntoView()
-            .find('input')
+            .find('label')
             .click({ force: true });
 
         cy.verifyToastMessage(commonSelectors.toastMessage, 'On change Event', false); // dynamic
@@ -50,8 +50,8 @@ describe('Checkbox — events facet', { testIsolation: false }, () => {
 
         cy.get(commonWidgetSelector.draggableWidget(W))
             .scrollIntoView()
-            .find('input')
-            .check({ force: true });
+            .find('label')
+            .click({ force: true });
 
         cy.verifyToastMessage(commonSelectors.toastMessage, 'On check Event', false); // dynamic
     });
@@ -65,9 +65,9 @@ describe('Checkbox — events facet', { testIsolation: false }, () => {
 
         cy.get(commonWidgetSelector.draggableWidget(W))
             .scrollIntoView()
-            .find('input')
-            .check({ force: true })
-            .uncheck({ force: true });
+            .find('label')
+            .click({ force: true })
+            .click({ force: true });
 
         cy.verifyToastMessage(commonSelectors.toastMessage, 'On uncheck Event', false); // dynamic
     });
