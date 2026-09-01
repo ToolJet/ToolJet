@@ -4,6 +4,7 @@ import { FeatureConfig } from '@modules/app/types';
 
 interface Features {
   [FEATURE_KEY.CREATE_LIBRARY]: FeatureConfig;
+  [FEATURE_KEY.FIND_OR_CREATE_LIBRARY]: FeatureConfig;
   [FEATURE_KEY.GET_LIBRARY]: FeatureConfig;
   [FEATURE_KEY.DELETE_LIBRARY]: FeatureConfig;
   [FEATURE_KEY.LIST_LIBRARIES]: FeatureConfig;

@@ -26,7 +26,7 @@ const DevBadge = ({ label }) => (
   </div>
 );
 
-const META_KEYS = new Set(['libraryId', 'correlationId', 'componentName', 'revisionId']);
+const META_KEYS = new Set(['libraryId', 'correlationId', 'libraryName', 'componentName', 'revisionId']);
 
 /*same-origin iframe and speaks the postMessage protocol:
    shell → ready → we send load {bundleUrl, cssUrl, componentName}

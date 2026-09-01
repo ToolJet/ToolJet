@@ -11,6 +11,14 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
     throw new Error('Method not implemented.');
   }
 
+  async findOrCreateLibrary(
+    organizationId: string,
+    correlationId: string,
+    name: string
+  ): Promise<{ id: string; name: string; correlationId: string; created: boolean }> {
+    throw new Error('Method not implemented.');
+  }
+
   async getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary> {
     throw new Error('Method not implemented.');
   }

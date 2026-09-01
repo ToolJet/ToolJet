@@ -73,6 +73,8 @@ export const addNewWidgetToTheEditor = (
   // defaultWidth/Height reads so a manifest-declared size wins.
   if (libraryComponentInfo) {
     componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
+    componentData.definition.properties.correlationId = { value: libraryComponentInfo.correlationId };
+    componentData.definition.properties.libraryName = { value: libraryComponentInfo.libraryName };
     componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
     componentData.definition.properties.revisionId = { value: libraryComponentInfo.revisionId };
     // Manifest prop defaults land as instance values so the Inspector's fields arrive

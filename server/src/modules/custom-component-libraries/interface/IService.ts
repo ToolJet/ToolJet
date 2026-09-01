@@ -18,6 +18,11 @@ export interface LibraryListItem {
 
 export interface ICustomComponentLibrariesService {
   createLibrary(organizationId: string, name: string): Promise<{ id: string; name: string; correlationId: string }>;
+  findOrCreateLibrary(
+    organizationId: string,
+    correlationId: string,
+    name: string
+  ): Promise<{ id: string; name: string; correlationId: string; created: boolean }>;
   getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary>;
   listLibraries(organizationId: string): Promise<LibraryListItem[]>;
   deleteLibrary(organizationId: string, id: string): Promise<void>;
