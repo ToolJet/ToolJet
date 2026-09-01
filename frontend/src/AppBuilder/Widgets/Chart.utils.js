@@ -40,17 +40,19 @@ export function buildChartLayout({
     },
   });
 
+  const jsonTitleObj = chartLayout.title && typeof chartLayout.title === 'object' ? chartLayout.title : undefined;
+
   return {
     ...chartLayout,
-    width: width - 6,
-    height: height - 2,
-    plot_bgcolor: updatedBgColor,
-    paper_bgcolor: updatedBgColor,
+    ...(chartLayout.autosize === true ? { autosize: true } : { width: width - 6, height: height - 2 }),
+    plot_bgcolor: chartLayout.plot_bgcolor ?? updatedBgColor,
+    paper_bgcolor: chartLayout.paper_bgcolor ?? updatedBgColor,
     title: {
-      text: chartTitle,
       font: {
         color: modifiedTextColor,
       },
+      ...jsonTitleObj,
+      text: chartTitle,
     },
     showlegend: chartLayout.showlegend ?? false,
     legend: {
@@ -83,6 +85,7 @@ export function buildChartLayout({
       r: padding,
       b: padding,
       t: padding,
+      ...chartLayout.margin,
     },
     ...(chartLayout.annotations && { annotations: chartLayout.annotations }),
     barmode: barmode,

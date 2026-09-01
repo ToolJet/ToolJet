@@ -9,6 +9,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getModifiedColor } from './utils';
+import { resolveChartTitle, buildChartLayout } from './Chart.utils';
 
 var tinycolor = require('tinycolor2');
 
@@ -85,7 +86,7 @@ export default function Chart({
 
   const fontColor = getColor(updatedBgColor);
 
-  const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
+  const chartTitle = resolveChartTitle(chartLayout, title, plotFromJson);
   useEffect(() => {
     if (isInitialRender.current) return;
     const { xaxis, yaxis } = chartLayout;
@@ -104,97 +105,21 @@ export default function Chart({
     setExposedVariables(exposedVariables);
   }, [JSON.stringify(chartLayout, chartTitle)]);
 
-  const layout = {
-    ...chartLayout,
-    width: width - 6,
-    height: height - 2,
-    plot_bgcolor: updatedBgColor,
-    paper_bgcolor: updatedBgColor,
-    title: {
-      text: chartTitle,
-      font: {
-        color: modifiedTextColor,
-      },
-    },
-    showlegend: chartLayout.showlegend ?? false,
-    legend: {
-      text: chartTitle,
-      font: {
-        color: fontColor,
-      },
-      ...chartLayout.legend,
-    },
-    xaxis: {
-      showgrid: showGridLines,
-      showline: true,
-      color: fontColor,
-      automargin: true,
-      visible: showAxes,
-      gridcolor: modifiedGridLines,
-      linecolor: modifiedAxisColor,
-      title: {
-        font: {
-          color: modifiedTextColor,
-        },
-      },
-      tickfont: {
-        color: modifiedTextColor,
-      },
-      ...chartLayout.xaxis,
-    },
-    yaxis: {
-      showgrid: showGridLines,
-      showline: true,
-      color: fontColor,
-      automargin: true,
-      visible: showAxes,
-      gridcolor: modifiedGridLines,
-      linecolor: modifiedAxisColor,
-      title: {
-        font: {
-          color: modifiedTextColor,
-        },
-      },
-      tickfont: {
-        color: modifiedTextColor,
-      },
-      ...chartLayout.yaxis,
-    },
-    // Dynamically add additional axes (xaxis2, yaxis2, yaxis3, etc.) from user layout
-    ...Object.keys(chartLayout)
-      .filter((key) => /^(xaxis|yaxis)\d+$/.test(key))
-      .reduce((acc, key) => {
-        acc[key] = {
-          showgrid: showGridLines,
-          showline: true,
-          color: fontColor,
-          automargin: true,
-          visible: showAxes,
-          gridcolor: modifiedGridLines,
-          linecolor: modifiedAxisColor,
-          title: {
-            font: {
-              color: modifiedTextColor,
-            },
-          },
-          tickfont: {
-            color: modifiedTextColor,
-          },
-          ...chartLayout[key],
-        };
-        return acc;
-      }, {}),
-    margin: {
-      l: padding,
-      r: padding,
-      b: padding,
-      t: padding,
-    },
-    ...(chartLayout.annotations && { annotations: chartLayout.annotations }),
-    barmode: barmode,
-    hoverlabel: { namelength: -1 },
-    ...('dragmode' in chartLayout && { dragmode: chartLayout.dragmode }),
-  };
+  const layout = buildChartLayout({
+    chartLayout,
+    chartTitle,
+    width,
+    height,
+    padding,
+    updatedBgColor,
+    modifiedTextColor,
+    fontColor,
+    modifiedGridLines,
+    modifiedAxisColor,
+    showGridLines,
+    showAxes,
+    barmode,
+  });
 
   const computeChartData = (data, dataString) => {
     let rawData = data;
