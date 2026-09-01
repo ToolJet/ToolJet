@@ -4,11 +4,13 @@ title: Committing and Pulling Changes
 sidebar_label: Committing and Pulling
 ---
 
+<PlanBadge type="team" />
+
 Committing sends your changes to the branch in Git. Pulling brings changes from Git back into ToolJet.
 
 ## Commit Changes
 
-You can only commit from a feature branch. The default branch is read-only in multi-branch mode, so changes reach it through a merged pull request instead.
+In single-branch mode you commit directly on the default branch. With multiple branches enabled the default branch is read-only, so you commit from a feature branch and the changes reach the default branch through a merged pull request.
 
 To commit datasource changes:
 

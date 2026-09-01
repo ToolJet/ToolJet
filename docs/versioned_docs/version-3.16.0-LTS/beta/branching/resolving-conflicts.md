@@ -4,6 +4,8 @@ title: Resolving Conflicts
 sidebar_label: Resolving Conflicts
 ---
 
+<PlanBadge type="team" />
+
 ToolJet requires applications, modules, datasources, and folders to have unique names and slugs within a branch. Because each branch is isolated, two branches can independently use the same name without either one reporting a problem. Once both are merged, the branch in Git holds two resources competing for the same name, and ToolJet cannot apply those changes without being told which is which.
 
 ToolJet checks for these conflicts **before** making any changes, so a conflicting pull or commit stops safely and leaves your workspace untouched.

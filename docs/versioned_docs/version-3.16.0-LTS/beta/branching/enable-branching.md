@@ -4,13 +4,15 @@ title: Enable Branching
 sidebar_label: Enable Branching
 ---
 
+<PlanBadge type="enterprise" />
+
 Git Sync starts in single-branch mode. Branching is enabled per workspace, and only after a repository connection exists.
 
 ## Prerequisites
 
 - **Git Sync configured over HTTPS**, using either GitHub or GitLab. See the [Git Sync Guide](/docs/development-lifecycle/gitsync/overview) to set it up.
-- A plan that includes **multi-branch Git Sync**. This is licensed separately from Git Sync itself. If your plan covers Git Sync but not multi-branch, the Branching toggle stays disabled.
-- The **Admin** or **Builder** role. End users cannot create, switch, or manage branches.
+- An **Enterprise** plan. Git Sync itself is available on **Team**, but multiple branches require Enterprise. On a Team plan the Branching toggle stays disabled and the workspace runs in single-branch mode.
+- The **Admin** or **Super admin** role to turn branching on. Once enabled, builders can create, switch, and manage branches; end users cannot.
 - On self-hosted instances: a **Redis** connection, and at least one instance started with `WORKER=true`. Branch creation, pulls, and deletions run as background jobs on this worker. Without one, these actions are queued but never processed.
 
 :::warning
@@ -37,9 +39,9 @@ Existing feature branches are not deleted when branching is disabled, and the br
 
 ## License Behavior
 
-If your license no longer covers multi-branch Git Sync, the toggle is forced off and your workspace reverts to single-branch behavior, even if branching was previously enabled. Only the default branch remains reachable, and git operations are unavailable until the license is renewed or Git Sync is turned off.
+If your license no longer covers multiple branches, the toggle is forced off and your workspace reverts to single-branch behavior, even if branching was previously enabled. Only the default branch remains reachable, and git operations are unavailable until the license is renewed or Git Sync is turned off.
 
-The toggle also stays disabled, with an explanatory tooltip, when your plan does not include multi-branch Git Sync, or when your plan has expired.
+The toggle also stays disabled, with an explanatory tooltip, when your plan does not include multiple branches, or when your plan has expired.
 
 <br/>
 ---

@@ -4,6 +4,8 @@ title: Push Unsynced Resources to Git
 sidebar_label: Push Unsynced Resources
 ---
 
+<PlanBadge type="team" />
+
 An unsynced resource is an application, module, or datasource that exists in ToolJet but has never been committed to your Git repository. You will usually meet them right after turning on Git Sync or branching in a workspace that already had resources in it: everything built beforehand is still local, and Git has never seen it.
 
 ## How Unsynced Resources Reach Git

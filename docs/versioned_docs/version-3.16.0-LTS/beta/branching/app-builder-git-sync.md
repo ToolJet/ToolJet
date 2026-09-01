@@ -4,6 +4,8 @@ title: Git Sync in the App Builder
 sidebar_label: Git Sync in the App Builder
 ---
 
+<PlanBadge type="team" />
+
 Alongside the workspace-level **Pull** and **Commit** buttons, each application has its own Git Sync action in the App Builder header. Use it to commit the application you are editing, or to pull a specific version into it.
 
 ## Available Actions

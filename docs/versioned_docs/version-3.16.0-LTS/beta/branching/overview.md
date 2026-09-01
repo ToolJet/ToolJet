@@ -6,10 +6,6 @@ sidebar_label: Overview
 
 <PlanBadge type="team" />
 
-{/* TODO: verify plan tier. Multi-branch Git Sync is gated by a separate license term
-    (gitSyncMultiBranch) with no tier hardcoded in the codebase, so this badge mirrors the
-    Git Sync badge. Confirm with the licensing owner before publishing. */}
-
 Branching lets several builders work on the same applications at the same time without overwriting each other. Each builder works on their own branch, where changes stay separate from what is live until they are reviewed and merged through a pull request in your Git provider. This protects production quality through mandatory review, and gives you a complete, traceable change history in Git.
 
 Branching is useful when:
@@ -33,7 +29,7 @@ There are two kinds of branches:
 
 ## Single-Branch and Multi-Branch Mode
 
-Git Sync starts in single-branch mode. Branching is something you opt into. See [Enable Branching](/docs/beta/branching/enable-branching) for how to turn it on.
+Git Sync starts in single-branch mode, which is included with Git Sync on the **Team** plan. Multiple branches require an **Enterprise** plan and are opted into per workspace. See [Enable Branching](/docs/beta/branching/enable-branching) for how to turn them on.
 
 | Behavior | Single-branch mode | Multi-branch mode |
 |:---------|:-------------------|:------------------|
@@ -77,7 +73,7 @@ Refer to [Versions in Branching](/docs/beta/branching/versioning) for how drafts
 
 ## Where Branch Controls Appear
 
-The branch dropdown and the **Pull** and **Commit** buttons appear in the header on the **Applications**, **Data sources**, and **Modules** pages, and inside the App Builder.
+The branch dropdown and the **Pull** button appear in the header on the **Applications**, **Data sources**, and **Modules** pages. The header **Commit** button appears only on the **Data sources** page. Applications are committed from the App Builder, see [Git Sync in the App Builder](/docs/beta/branching/app-builder-git-sync).
 
 ## Using Git Sync Across Multiple Instances
 

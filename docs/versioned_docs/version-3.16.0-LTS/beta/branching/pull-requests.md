@@ -4,6 +4,8 @@ title: Pull Requests
 sidebar_label: Pull Requests
 ---
 
+<PlanBadge type="enterprise" />
+
 Pull requests are how changes move from a feature branch to the default branch. They are created, reviewed, and merged in your Git provider. ToolJet does not merge branches.
 
 ## Create a Pull Request

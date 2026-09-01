@@ -4,6 +4,8 @@ title: Versions in Branching
 sidebar_label: Versions in Branching
 ---
 
+<PlanBadge type="team" />
+
 Branching separates two jobs that a [version](/docs/development-lifecycle/release/version-control) does on its own. Branches carry work in progress, and versions mark the milestones you promote and release.
 
 ## The Draft Is the Head of the Default Branch

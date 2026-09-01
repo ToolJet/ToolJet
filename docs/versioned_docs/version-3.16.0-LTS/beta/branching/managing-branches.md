@@ -4,6 +4,8 @@ title: Managing Branches
 sidebar_label: Managing Branches
 ---
 
+<PlanBadge type="enterprise" />
+
 Every branch follows the same lifecycle: it is created from the default branch, holds your work until that work is reviewed, and is deleted once the work is merged. This documentation covers each step of that lifecycle, along with the naming rules and permissions that apply along the way.
 
 Branching must be enabled for your workspace first, see [Enable Branching](/docs/beta/branching/enable-branching).
@@ -39,7 +41,7 @@ Branch names are shared with your Git repository, so the name you choose may alr
 
 Rather than reject the name, ToolJet offers to import that branch. Create the branch as usual, and when the name matches one that already exists in Git an **Import branch** dialog appears. Confirming it brings the existing branch in instead of starting an empty one, and ToolJet notifies you when the contents are ready to use.
 
-Switching to the branch reaches the same result. Importing is the quicker route when you already know the branch name.
+Importing is the only way to bring in a branch created outside ToolJet. It will not show up in the branch list on its own.
 
 ## Switch Branches
 
@@ -48,7 +50,7 @@ Switching to the branch reaches the same result. Importing is the quicker route 
 
 <img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/managing-branches/switch-branch-modal.png" alt="Switch branch modal listing the default branch and a feature branch, with options to view the git repo or create a new branch" />
 
-The list covers branches in your Git repository as well as the ones you have worked on in ToolJet. Selecting a branch you have not used before brings its contents in before switching, so you land on a populated branch rather than an empty one.
+The list shows branches ToolJet already tracks. A branch created directly in Git after your workspace was connected does not appear here until you import it, so use the import step above to bring it in.
 
 ToolJet verifies that the branch still exists in Git before switching. If it has been deleted remotely, the switch is blocked and you need to create a new branch to continue.
 
