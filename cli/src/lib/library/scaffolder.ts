@@ -8,6 +8,7 @@ export interface ScaffoldOptions {
   workspaceId: string;
   libraryId: string;
   libraryName: string;
+  correlationId: string;
 }
 
 // Scaffolds a new component library directory via hygen templates.
@@ -35,7 +36,7 @@ export async function scaffoldTemplate(name: string, displayName: string): Promi
 // after the library has been registered on the server, since it embeds the
 // remote workspaceId/libraryId.
 export function writeLibraryConfig(name: string, options: ScaffoldOptions): void {
-  const { workspaceId, libraryId, libraryName } = options;
+  const { workspaceId, libraryId, libraryName, correlationId } = options;
 
   const configPath = path.join(name, '.tooljet', 'config.json');
 
@@ -44,7 +45,7 @@ export function writeLibraryConfig(name: string, options: ScaffoldOptions): void
     existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   }
 
-  const config = { ...existingConfig, workspaceId, libraryId, libraryName };
+  const config = { ...existingConfig, workspaceId, libraryId, libraryName, correlationId };
   fs.mkdirSync(path.join(name, '.tooljet'), { recursive: true });
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
