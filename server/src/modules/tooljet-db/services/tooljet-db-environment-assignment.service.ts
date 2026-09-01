@@ -1,11 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, QueryRunner } from 'typeorm';
+import { InjectEntityManager } from '@nestjs/typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
+import { InternalTable } from '@entities/internal_table.entity';
+import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { InternalTableMigration } from '@entities/internal_table_migration.entity';
 import { buildTableSchemaSnapshot } from '../helpers/table-schema-snapshot';
-import { rewriteSerialDefaults } from '../helpers/baseline-synthesis';
+import { BaselineMigration, rewriteSerialDefaults, synthesizeBaseline } from '../helpers/baseline-synthesis';
+import { TooljetDbMigrationRecorderService } from './tooljet-db-migration-recorder.service';
 
 type AssignmentResult = { productionRelationId: string; developmentRelationId: string };
+
+export type RepairBaselineResult = { baseline_error: null; migrations_recorded: number };
 
 /**
  * Rollout migration B's per-table routine, factored out so migration B can loop it and task 7 can
@@ -25,6 +34,109 @@ type AssignmentResult = { productionRelationId: string; developmentRelationId: s
  */
 @Injectable()
 export class TooljetDbEnvironmentAssignmentService {
+  constructor(
+    private readonly manager: EntityManager,
+    @InjectEntityManager('tooljetDb')
+    private readonly tooljetDbManager: EntityManager,
+    private readonly migrationRecorderService: TooljetDbMigrationRecorderService
+  ) {}
+
+  /**
+   * Re-attempts `synthesizeBaseline` for a table carrying `baseline_error`, never classifies
+   * repairability up front — some reasons are stale state that's since been fixed, some (a missing
+   * physical relation) never will be, and the only honest way to tell them apart is to try again.
+   *
+   * Targets whichever of the table's relations actually holds the data: the highest-priority one.
+   * For a table created after the rollout there is exactly one relation (development, since
+   * `create_table` always resolves with no environment named); for a table migration B repointed,
+   * that's production — the empty `LIKE`-cloned development twin is a structural copy, never the
+   * source of truth for "what does this table actually look like right now".
+   *
+   * No licence gate (Task 7, step 3) — real logic in CE. An unlicensed workspace needs this most:
+   * buying a licence later should not leave them with a table they still can't promote.
+   */
+  async repairBaseline(internalTableId: string, organizationId: string): Promise<RepairBaselineResult> {
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { id: internalTableId, organizationId },
+    });
+    if (!internalTable) throw new NotFoundException('Table not found');
+
+    // Branching is not shipped for TJDB yet, but scope to the default branch anyway rather than
+    // reduce across every branch this table happens to have relations on — matches how promote's
+    // own resolveSourceAndTarget pins branch_id before doing anything else.
+    const defaultBranch = await this.manager.findOne(WorkspaceBranch, { where: { organizationId, isDefault: true } });
+    if (!defaultBranch) throw new NotFoundException('Workspace has no default branch');
+
+    const relations = await this.manager.find(InternalTableRelation, {
+      where: { internalTableId, branchId: defaultBranch.id },
+    });
+    if (!relations.length) throw new NotFoundException('Table has no relation to repair');
+
+    const environments = await this.manager.find(AppEnvironment, { where: { organizationId } });
+    const priorityById = new Map(environments.map((environment) => [environment.id, Number(environment.priority)]));
+    const dataRelation = relations.reduce((highest, current) =>
+      (priorityById.get(current.environmentId) ?? -1) > (priorityById.get(highest.environmentId) ?? -1)
+        ? current
+        : highest
+    );
+
+    // Idempotent: nothing to repair if this relation's chain is already intact. Without this guard
+    // a second call (or a call on a table that was never broken) would re-synthesize and insert a
+    // duplicate baseline chain — there is no uniqueness constraint on (internal_table_id, sequence)
+    // to catch it.
+    if (dataRelation.baselineError === null) {
+      return { baseline_error: null, migrations_recorded: 0 };
+    }
+
+    const schema = findTenantSchema(organizationId);
+    const queryRunner = this.manager.connection.createQueryRunner();
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await tjdbQueryRunner.connect();
+    try {
+      let migrations: BaselineMigration[];
+      try {
+        migrations = await synthesizeBaseline(
+          queryRunner,
+          tjdbQueryRunner,
+          schema,
+          dataRelation.id,
+          dataRelation.configurations
+        );
+      } catch (error) {
+        await this.manager.update(InternalTableRelation, { id: dataRelation.id }, { baselineError: error.message });
+        throw new BadRequestException(error.message);
+      }
+
+      await this.manager.transaction(async (transactionManager) => {
+        for (const migration of migrations) {
+          const saved = await transactionManager.save(
+            transactionManager.create(InternalTableMigration, {
+              internalTableId,
+              sequence: String(migration.sequence),
+              branchId: dataRelation.branchId,
+              kind: 'baseline',
+              payload: migration.payload,
+              resultingSchema: migration.resultingSchema,
+              tooljetVersion: globalThis.TOOLJET_VERSION || null,
+            })
+          );
+          await this.migrationRecorderService.recordApplications([saved.id], dataRelation, transactionManager);
+          await this.migrationRecorderService.confirmApplications([saved.id], dataRelation, transactionManager);
+        }
+        // Every relation for this table, not just the one just repaired — a baseline_error on the
+        // migration-B twin (copied verbatim from the relation this just re-baselined) describes the
+        // same table, and is equally stale now that the chain exists.
+        await transactionManager.update(InternalTableRelation, { internalTableId }, { baselineError: null });
+      });
+
+      return { baseline_error: null, migrations_recorded: migrations.length };
+    } finally {
+      await queryRunner.release();
+      await tjdbQueryRunner.release();
+    }
+  }
+
   /**
    * Re-points the migration-A relation (the row where `id === internal_table_id`) to the
    * workspace's highest-priority environment and materializes an empty development twin next to it.

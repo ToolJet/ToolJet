@@ -15,4 +15,5 @@ export enum FEATURE_KEY {
   DELETE_FOREIGN_KEY = 'delete_foreign_key',
   PROMOTE_TABLE = 'promote_table',
   PROMOTE_TABLE_PREVIEW = 'promote_table_preview',
+  REPAIR_BASELINE = 'repair_baseline',
 }

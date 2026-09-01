@@ -19,6 +19,7 @@ interface Features {
   [FEATURE_KEY.DELETE_FOREIGN_KEY]: FeatureConfig;
   [FEATURE_KEY.PROMOTE_TABLE]: FeatureConfig;
   [FEATURE_KEY.PROMOTE_TABLE_PREVIEW]: FeatureConfig;
+  [FEATURE_KEY.REPAIR_BASELINE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -454,6 +454,88 @@ describe('TooljetDb promote', () => {
         expect(res.body.statement).toEqual(expect.stringContaining('extra'));
       });
     });
+
+    describe('GET .../promote/preview | lists the missing set', () => {
+      async function preview(cookie: string[], tableId: string, environmentId: string) {
+        return request
+          .agent(app.getHttpServer())
+          .get(`/api/tooljet-db/organizations/${orgId}/table/${tableId}/promote/preview`)
+          .query({ environment_id: environmentId })
+          .set(headers(cookie));
+      }
+
+      it('should name the target environment, list the missing migrations in order, and mutate nothing', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        await createTable(adminCookie, 'preview_me', [idColumn]);
+        const tableId = await internalTableId('preview_me');
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${orgId}/table/preview_me/column`)
+          .set(headers(adminCookie))
+          .send({
+            column: {
+              column_name: 'title',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+          })
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+
+        const res = await preview(adminCookie, tableId, devEnvId);
+        expect(res.statusCode).toBe(200);
+        expect(res.body.result.target_environment).toMatchObject({ id: stagingEnvId, name: 'staging' });
+        expect(res.body.result.target_relation_exists).toBe(false);
+        expect(res.body.result.missing_migrations).toHaveLength(2);
+        expect(res.body.result.missing_migrations.map((m) => m.action)).toEqual(['create_table', 'add_column']);
+
+        // Preview mutates nothing: no target relation, no DDL, source's applied set unchanged.
+        expect(await relationFor(tableId, stagingEnvId)).toBeNull();
+        expect(await confirmedApplicationCount((await relationFor(tableId, devEnvId)).id)).toBe(2);
+      });
+
+      it('should list only what the target is missing when the target relation already exists', async () => {
+        expect(tjdbAvailable).toBe(true);
+
+        await createTable(adminCookie, 'preview_partial', [idColumn]);
+        const tableId = await internalTableId('preview_partial');
+        await promote(adminCookie, tableId, devEnvId);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${orgId}/table/preview_partial/column`)
+          .set(headers(adminCookie))
+          .send({
+            column: {
+              column_name: 'extra',
+              data_type: 'character varying',
+              constraints_type: { is_not_null: false, is_primary_key: false, is_unique: false },
+            },
+          })
+          .expect((res) => expect([200, 201]).toContain(res.statusCode));
+
+        const res = await preview(adminCookie, tableId, devEnvId);
+        expect(res.statusCode).toBe(200);
+        expect(res.body.result.target_relation_exists).toBe(true);
+        expect(res.body.result.missing_migrations).toHaveLength(1);
+        expect(res.body.result.missing_migrations[0].action).toBe('add_column');
+      });
+
+      it('should 403 when environmentAccess denies the target environment, same as promote', async () => {
+        expect(tjdbAvailable).toBe(true);
+        await createTable(adminCookie, 'preview_env_denied_tbl', [idColumn]);
+        const tableId = await internalTableId('preview_env_denied_tbl');
+
+        const ability = app.get(AbilityService);
+        jest.spyOn(ability, 'resourceActionsPermission').mockResolvedValue({
+          APP: { environmentAccess: { development: true, staging: false, production: false, released: false } },
+        } as any);
+
+        const res = await preview(adminCookie, tableId, devEnvId);
+        expect(res.statusCode).toBe(403);
+      });
+    });
   });
 
   describe('CE', () => {
@@ -482,6 +564,16 @@ describe('TooljetDb promote', () => {
         .post(`/api/tooljet-db/organizations/${orgId}/table/${uuidv4()}/promote`)
         .set({ Cookie: cookie, 'tj-workspace-id': orgId })
         .send({ environment_id: uuidv4() });
+      expect(res.statusCode).toBe(403);
+      expect(res.body.message).toMatch(/Enterprise licence/);
+    });
+
+    it('should 403 — promote preview requires an Enterprise licence', async () => {
+      const res = await request
+        .agent(app.getHttpServer())
+        .get(`/api/tooljet-db/organizations/${orgId}/table/${uuidv4()}/promote/preview`)
+        .query({ environment_id: uuidv4() })
+        .set({ Cookie: cookie, 'tj-workspace-id': orgId });
       expect(res.statusCode).toBe(403);
       expect(res.body.message).toMatch(/Enterprise licence/);
     });

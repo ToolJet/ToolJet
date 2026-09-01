@@ -9,6 +9,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
   Delete,
   Patch,
   UseInterceptors,
@@ -16,6 +17,7 @@ import {
   BadRequestException,
   UseFilters,
   Put,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
@@ -24,6 +26,7 @@ import { decamelizeKeys } from 'humps';
 import { CreatePostgrestTableDto, EditTableDto, EditColumnTableDto, PostgrestForeignKeyDto, AddColumnDto } from './dto';
 import { PromoteTableDto } from './dto/promote.dto';
 import { TooljetDbPromoteService } from './services/tooljet-db-promote.service';
+import { TooljetDbEnvironmentAssignmentService } from './services/tooljet-db-environment-assignment.service';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -53,6 +56,7 @@ export class TooljetDbController {
     protected readonly postgrestProxyService: PostgrestProxyService,
     protected readonly bulkUploadService: TooljetDbBulkUploadService,
     protected readonly promoteService: TooljetDbPromoteService,
+    protected readonly environmentAssignmentService: TooljetDbEnvironmentAssignmentService,
     protected readonly logger: Logger
   ) {
     this.pinoLogger = logger;
@@ -273,6 +277,28 @@ export class TooljetDbController {
     @Body() promoteTableDto: PromoteTableDto
   ) {
     const result = await this.promoteService.promote(user, organizationId, tableId, promoteTableDto.environment_id);
+    return decamelizeKeys({ result });
+  }
+
+  @InitFeature(FEATURE_KEY.PROMOTE_TABLE_PREVIEW)
+  @Get('/organizations/:organizationId/table/:tableId/promote/preview')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async previewPromoteTable(
+    @User() user: UserEntity,
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Query('environment_id', new ParseUUIDPipe()) environmentId: string
+  ) {
+    const result = await this.promoteService.previewPromote(user, organizationId, tableId, environmentId);
+    return decamelizeKeys({ result });
+  }
+
+  // No licence gate here — repair is real logic in CE, not a promotion.
+  @InitFeature(FEATURE_KEY.REPAIR_BASELINE)
+  @Post('/organizations/:organizationId/table/:tableId/baseline/repair')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async repairBaseline(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
+    const result = await this.environmentAssignmentService.repairBaseline(tableId, organizationId);
     return decamelizeKeys({ result });
   }
 }
