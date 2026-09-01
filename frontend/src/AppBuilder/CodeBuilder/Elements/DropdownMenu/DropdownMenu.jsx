@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import DataSourceIcon from '@/AppBuilder/QueryManager/Components/DataSourceIcon';
@@ -103,9 +103,17 @@ export const DropdownMenu = (props) => {
     setIsOpen(false);
   };
 
-  const [isOpen, setIsOpen] = useState(false);
+  // AddQueryBtn's own "Add new query" list (DataSourceSelect) renders through a react-bootstrap
+  // OverlayTrigger, which portals its content to document.body instead of nesting it under
+  // dropdownRef. A plain ref-containment check would then see every click there as "outside" and
+  // close this dropdown before the click can register, so the inside check also matches that
+  // portaled popover's own id (#component-data-query-add-popover, set in AddQueryBtn.jsx).
+  const [isOpen, setIsOpen] = useShowPopover(
+    false,
+    '#dropdown-menu-inspector-popover, #component-data-query-add-popover',
+    '#dropdown-menu-inspector-trigger'
+  );
   const [selectedSource, setSelectedSource] = useState(() => getSelectedSource(value));
-  const dropdownRef = useRef(null);
 
   // Initialize filtered queries when dataQueries change
   useEffect(() => {
@@ -116,25 +124,6 @@ export const DropdownMenu = (props) => {
   useEffect(() => {
     filterQueries(searchValue, dataQueries);
   }, [searchValue, dataQueries]);
-
-  // Handle outside clicks
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -164,10 +153,11 @@ export const DropdownMenu = (props) => {
   };
 
   return (
-    <div className="tw-w-full tw-max-w-md dropdown-menu-inspector" ref={dropdownRef}>
+    <div className="tw-w-full tw-max-w-md dropdown-menu-inspector">
       <div className="tw-relative">
         {/* Dropdown trigger div */}
         <button
+          id="dropdown-menu-inspector-trigger"
           onClick={toggleDropdown}
           className={cx(
             'tw-flex tw-items-center tw-justify-between tw-w-full tw-px-4 tw-py-2 tw-text-left tw-bg-white dropdown-menu-trigger',
@@ -204,7 +194,10 @@ export const DropdownMenu = (props) => {
 
         {/* Dropdown menu */}
         {isOpen && (
-          <div className="tw-absolute tw-z-10 tw-w-full tw-mt-1 tw-rounded-md dropdown-menu-container">
+          <div
+            id="dropdown-menu-inspector-popover"
+            className="tw-absolute tw-z-10 tw-w-full tw-mt-1 tw-rounded-md dropdown-menu-container"
+          >
             <div className="dropdown-menu-header">
               <InputComponent
                 leadingIcon="search01"
