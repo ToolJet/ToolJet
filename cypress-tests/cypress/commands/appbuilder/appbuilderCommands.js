@@ -6,6 +6,10 @@ import {
 import { commonText } from "Texts/common";
 import { selectAppCardOption } from "Support/utils/common";
 
+/**
+ * @tjCmd   canvas · drop a widget onto the editor canvas by its display name and target coordinates
+ * @tjUsage cy.dragAndDropWidget('Button', 300, 200)
+ */
 Cypress.Commands.add(
   "dragAndDropWidget",
   (
@@ -99,10 +103,18 @@ Cypress.Commands.add(
  * componentsBasics/button.cy.js — all should stay green with NO fail-trap.
  * =========================================================================== */
 
+/**
+ * @tjCmd   interaction · click the canvas background to deselect the current widget or dismiss panels
+ * @tjUsage cy.forceClickOnCanvas()
+ */
 Cypress.Commands.add("forceClickOnCanvas", () => {
   cy.get(commonSelectors.canvas).click("topRight", { force: true });
 });
 
+/**
+ * @tjCmd   wait · pause until the editor autosave indicator clears, confirming all changes are saved
+ * @tjUsage cy.waitForAutoSave()
+ */
 Cypress.Commands.add("waitForAutoSave", () => {
   cy.wait(200);
   cy.get(commonSelectors.autoSave, { timeout: 20000 })
@@ -111,12 +123,20 @@ Cypress.Commands.add("waitForAutoSave", () => {
     .should("be.visible", { timeout: 20000 });
 });
 
+/**
+ * @tjCmd   canvas · change the maximum canvas width via the editor settings panel
+ * @tjUsage cy.modifyCanvasSize(1200, 800)
+ */
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
   cy.get("[data-cy='left-sidebar-settings-button']").click();
   cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
   cy.forceClickOnCanvas();
 });
 
+/**
+ * @tjCmd   canvas · resize a widget on the canvas to new pixel dimensions by dragging its bottom-right handle
+ * @tjUsage cy.resizeWidget('button1', 600, 400)
+ */
 Cypress.Commands.add(
   "resizeWidget",
   (widgetName, x, y, autosaveStatusCheck = true) => {
@@ -147,6 +167,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjCmd   canvas · move an existing widget to a new position on the canvas
+ * @tjUsage cy.moveComponent('button1', 400, 300)
+ */
 Cypress.Commands.add("moveComponent", (componentName, x, y) => {
   cy.get(`[data-cy="draggable-widget-${componentName}"]`, { log: false })
     .trigger("mouseover", {
@@ -181,6 +205,10 @@ Cypress.Commands.add("moveComponent", (componentName, x, y) => {
   });
 });
 
+/**
+ * @tjCmd   canvas · retrieve the current center coordinates of a placed widget on the canvas
+ * @tjUsage cy.getPosition('button1')
+ */
 Cypress.Commands.add("getPosition", (componentName) => {
   cy.get(commonWidgetSelector.draggableWidget(componentName)).then(
     ($element) => {
@@ -200,6 +228,10 @@ Cypress.Commands.add("getPosition", (componentName) => {
   );
 });
 
+/**
+ * @tjCmd   editor · reload the current app page only when a specific element or text is not yet present
+ * @tjUsage cy.reloadAppForTheElement('drag-and-drop-a-component-label')
+ */
 Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
   cy.get("body").then(($title) => {
     if (!$title.text().includes(elementText)) {
@@ -208,6 +240,10 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
   });
 });
 
+/**
+ * @tjCmd   editor · dismiss the onboarding walkthrough popover if it appears after opening the editor
+ * @tjUsage cy.skipEditorPopover()
+ */
 Cypress.Commands.add("skipEditorPopover", () => {
   cy.wait(1000);
   cy.get("body").then(($el) => {
@@ -222,6 +258,10 @@ Cypress.Commands.add("skipEditorPopover", () => {
   });
 });
 
+/**
+ * @tjCmd   wait · wait for the app editor to finish loading by intercepting the data-queries API response
+ * @tjUsage cy.waitForAppLoad()
+ */
 Cypress.Commands.add("waitForAppLoad", () => {
   // const API_ENDPOINT =
   //   Cypress.env("environment") === "Community"
@@ -234,6 +274,10 @@ Cypress.Commands.add("waitForAppLoad", () => {
   cy.wait("@appDs", { timeout: 15000 });
 });
 
+/**
+ * @tjCmd   editor · open the components sidebar panel if it is not already visible
+ * @tjUsage cy.openComponentSidebar()
+ */
 Cypress.Commands.add("openComponentSidebar", (selector, value) => {
   cy.get("body").then(($body) => {
     const isSearchVisible = $body
@@ -246,6 +290,10 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
   });
 });
 
+/**
+ * @tjCmd   interaction · hide any visible tooltip overlay that may obscure elements during a test
+ * @tjUsage cy.hideTooltip()
+ */
 Cypress.Commands.add("hideTooltip", () => {
   cy.get("body").then(($body) => {
     if ($body.find(".tooltip-inner").length > 0) {
@@ -254,6 +302,10 @@ Cypress.Commands.add("hideTooltip", () => {
   });
 });
 
+/**
+ * @tjCmd   app-crud · create a new blank app from the dashboard and wait for the editor to load
+ * @tjUsage cy.createApp('My Test App')
+ */
 Cypress.Commands.add("createApp", (appName) => {
   const getAppButtonSelector = ($title) =>
     $title.text().includes(commonText.introductionMessage)
@@ -271,6 +323,10 @@ Cypress.Commands.add("createApp", (appName) => {
   cy.skipEditorPopover();
 });
 
+/**
+ * @tjCmd   app-crud · delete an app from the dashboard by its name and confirm the deletion toast
+ * @tjUsage cy.deleteApp('My Test App')
+ */
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
   selectAppCardOption(
@@ -285,6 +341,10 @@ Cypress.Commands.add("deleteApp", (appName) => {
   cy.wait("@appDeleted");
 });
 
+/**
+ * @tjCmd   app-crud · rename the currently open app via the editor header rename modal
+ * @tjUsage cy.renameApp('Renamed App')
+ */
 Cypress.Commands.add("renameApp", (appName) => {
   // Renaming is now modal-driven (frontend/src/AppBuilder/Header/EditAppName.jsx):
   // the editor header shows a button `edit-app-name-button` that opens an
@@ -303,6 +363,10 @@ Cypress.Commands.add("renameApp", (appName) => {
   );
 });
 
+/**
+ * @tjCmd   app-crud · create a new app from a named template using the import dropdown
+ * @tjUsage cy.createAppFromTemplate('Ecommerce')
+ */
 Cypress.Commands.add("createAppFromTemplate", (appName) => {
   cy.get('[data-cy="import-dropdown-menu"]').click();
   cy.get('[data-cy="choose-from-template-button"]').click();

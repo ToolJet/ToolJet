@@ -1,5 +1,9 @@
 import { createBackspaceText } from "Texts/common";
 
+/**
+ * @tjCmd   codemirror · type a value into a CodeMirror editor after clearing its current content
+ * @tjUsage cy.get('.code-editor-basic-wrapper').clearAndTypeOnCodeMirror('return components.textinput1.value')
+ */
 Cypress.Commands.add(
   "clearAndTypeOnCodeMirror",
   { prevSubject: "optional" },
@@ -65,6 +69,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjCmd   codemirror · erase all existing content from a CodeMirror editor without typing new content
+ * @tjUsage cy.get('.code-editor-basic-wrapper').clearCodeMirror()
+ */
 Cypress.Commands.add(
   "clearCodeMirror",
   {

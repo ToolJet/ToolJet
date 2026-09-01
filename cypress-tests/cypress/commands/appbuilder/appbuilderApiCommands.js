@@ -1,5 +1,9 @@
 const envVar = Cypress.env("environment");
 
+/**
+ * @tjCmd   api · create a new blank app via the REST API and store its id in Cypress.env for later commands
+ * @tjUsage cy.apiCreateApp('My API App')
+ */
 Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
   cy.window({ log: false }).then((win) => {
     win.localStorage.setItem("walkthroughCompleted", "true");
@@ -46,6 +50,10 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
   });
 });
 
+/**
+ * @tjCmd   api · delete an app by id via the REST API, defaulting to the app created in the current test
+ * @tjUsage cy.apiDeleteApp(Cypress.env('appId'))
+ */
 Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
   cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
     Cypress.env("authToken", `tj_auth_token=${cookie.value}`);
@@ -70,6 +78,10 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
   });
 });
 
+/**
+ * @tjCmd   api · navigate the browser to the app editor for a given app id and wait for the editor to be ready
+ * @tjUsage cy.openApp('my-app-slug', Cypress.env('workspaceId'), Cypress.env('appId'))
+ */
 Cypress.Commands.add(
   "openApp",
   (
@@ -96,6 +108,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjCmd   api · update an existing data query's SQL or options on the current app version via the REST API
+ * @tjUsage cy.apiAddQuery('myQuery', 'SELECT id FROM users', 'data-query-uuid')
+ */
 Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
@@ -126,6 +142,10 @@ Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
   });
 });
 
+/**
+ * @tjCmd   api · create a new data query linked to a named datasource on the current app version via the REST API
+ * @tjUsage cy.apiAddQueryToApp({ queryName: 'getUsers', options: {}, dataSourceName: 'PostgreSQL', dsKind: 'postgresql' })
+ */
 Cypress.Commands.add(
   "apiAddQueryToApp",
   ({ queryName, options, dataSourceName, dsKind }) => {
@@ -191,6 +211,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjCmd   api · add a component to an app's canvas programmatically via the REST API without using the UI drag-and-drop
+ * @tjUsage cy.apiAddComponentToApp('My Test App', 'myText', {}, 'Text', 'Hello World')
+ */
 Cypress.Commands.add(
   "apiAddComponentToApp",
   (
@@ -273,6 +297,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjCmd   api · set an app's visibility to public via the REST API
+ * @tjUsage cy.apiMakeAppPublic(Cypress.env('appId'))
+ */
 Cypress.Commands.add("apiMakeAppPublic", (appId = Cypress.env("appId")) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -289,6 +317,10 @@ Cypress.Commands.add("apiMakeAppPublic", (appId = Cypress.env("appId")) => {
   });
 });
 
+/**
+ * @tjCmd   api · release the current editing version of an app to production via the REST API
+ * @tjUsage cy.apiReleaseApp('My Test App')
+ */
 Cypress.Commands.add("apiReleaseApp", (appName) => {
   cy.getAppId(appName).then((appId) => {
     cy.getAuthHeaders().then((headers) => {
@@ -316,6 +348,10 @@ Cypress.Commands.add("apiReleaseApp", (appName) => {
   });
 });
 
+/**
+ * @tjCmd   api · assign a custom URL slug to an app via the REST API
+ * @tjUsage cy.apiAddAppSlug('My Test App', 'my-custom-slug')
+ */
 Cypress.Commands.add("apiAddAppSlug", (appName, slug) => {
   cy.getAppId(appName).then((appId) => {
     cy.getAuthHeaders().then((headers) => {
@@ -336,6 +372,10 @@ Cypress.Commands.add("apiAddAppSlug", (appName, slug) => {
   });
 });
 
+/**
+ * @tjCmd   api · fetch the full app data object for a given app id via the REST API
+ * @tjUsage cy.apiGetAppData(Cypress.env('appId'))
+ */
 Cypress.Commands.add("apiGetAppData", (appId = Cypress.env("appId")) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
@@ -349,6 +389,10 @@ Cypress.Commands.add("apiGetAppData", (appId = Cypress.env("appId")) => {
   });
 });
 
+/**
+ * @tjCmd   api · execute the last-created data query against the app's current version and environment via the REST API
+ * @tjUsage cy.apiRunQuery()
+ */
 Cypress.Commands.add("apiRunQuery", () => {
   cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
     const authToken = cookie?.value;
@@ -380,6 +424,10 @@ Cypress.Commands.add("apiRunQuery", () => {
   });
 });
 
+/**
+ * @tjCmd   api · update the global settings (canvas background, max width, etc.) of the current app version via the REST API
+ * @tjUsage cy.apiUpdateGlobalSettings({ canvasBackgroundColor: '#ffffff', canvasMaxWidth: 1200 })
+ */
 Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
   cy.getCookie("tj_auth_token")
     .should("exist")
@@ -403,6 +451,10 @@ Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
     });
 });
 
+/**
+ * @tjCmd   api · promote the current app version to a target environment (staging or production) via the REST API
+ * @tjUsage cy.apiPromoteAppVersion(Cypress.env('environmentId'), Cypress.env('appId'))
+ */
 Cypress.Commands.add(
   "apiPromoteAppVersion",
   (
@@ -438,6 +490,10 @@ Cypress.Commands.add(
   }
 );
 
+/**
+ * @tjCmd   api · look up an app's id by its display name via the REST API
+ * @tjUsage cy.apiGetAppIdByName('My Test App')
+ */
 Cypress.Commands.add("apiGetAppIdByName", (appName) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy
@@ -456,6 +512,10 @@ Cypress.Commands.add("apiGetAppIdByName", (appName) => {
   });
 });
 
+/**
+ * @tjCmd   api · publish a draft app version with a given name and description via the REST API
+ * @tjUsage cy.apiPublishDraftVersion('v2', 'Release candidate', Cypress.env('appId'), Cypress.env('editingVersionId'))
+ */
 Cypress.Commands.add(
   "apiPublishDraftVersion",
   (
