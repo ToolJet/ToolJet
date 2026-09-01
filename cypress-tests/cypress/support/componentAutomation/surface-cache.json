@@ -1,7 +1,53 @@
 {
   "$schema": "./README.md",
-  "shared": { "cssPropertyMap": {} },
+  "shared": {
+    "cssPropertyMap": {
+      "colorSwatches:textColor": {
+        "cssProp": "color",
+        "selector": ".form-check-label",
+        "learnedFrom": "checkbox@aab3ba41",
+        "note": "SOURCE-DERIVED — inline style on OverflowTooltip div; Task 4 runtime must confirm computed value resolves the CSS var default"
+      },
+      "colorSwatches:borderColor": {
+        "cssProp": "border-color",
+        "selector": "div[style*='border']",
+        "learnedFrom": "checkbox@aab3ba41",
+        "note": "SOURCE-DERIVED — inline borderColor on checkboxStyle div; default '#CCD1D5' is swapped to 'transparent'(checked) or 'var(--borders-default)'(unchecked) by a conditional; Task 4 must confirm actual computed value"
+      },
+      "colorSwatches:checkboxColor": {
+        "cssProp": "background-color",
+        "selector": "div[style*='background-color']",
+        "learnedFrom": "checkbox@aab3ba41",
+        "note": "SOURCE-DERIVED — inline backgroundColor on checkboxStyle div when checked===true; Task 4 runtime must confirm checked state selector"
+      },
+      "colorSwatches:uncheckedColor": {
+        "cssProp": "background-color",
+        "selector": "div[style*='background-color']",
+        "learnedFrom": "checkbox@aab3ba41",
+        "note": "SOURCE-DERIVED — same element as checkboxColor but when checked===false; selector is the same div; Task 4 must confirm with unchecked state"
+      },
+      "colorSwatches:handleColor": {
+        "cssProp": "stroke",
+        "selector": "svg.icon-tabler-check",
+        "learnedFrom": "checkbox@aab3ba41",
+        "note": "SOURCE-DERIVED — SVG stroke attribute (not CSS property) on the checkmark SVG; only visible when checked===true; Task 4 must confirm whether getComputedStyle or attr() is needed"
+      }
+    }
+  },
   "components": {
-    "richTextarea": { "runtimeName": "richtexteditor1" }
+    "richTextarea": { "runtimeName": "richtexteditor1" },
+    "checkbox": {
+      "runtimeName": "checkbox1",
+      "configHash": "aab3ba41",
+      "exposedVarDrift": [
+        {
+          "key": "isValid",
+          "type": "Boolean",
+          "value": "true",
+          "note": "isValid is set via setExposedVariable at runtime (Checkbox.jsx lines 110, 186) but is NOT listed in checkbox.js exposedVariables config (line 169-176); runtime-only"
+        }
+      ],
+      "fxFormatNote": "Boolean toggle properties (e.g. defaultValue) use switch type in config, not code/fx type — the fx editor is not exposed for these in the normal panel. For code-type fields, the fx editor renders the raw value without {{}} wrapper in .cm-line (e.g. 'false' not '{{false}}'). Needs Task 4 runtime confirm for exact .cm-line text."
+    }
   }
 }
