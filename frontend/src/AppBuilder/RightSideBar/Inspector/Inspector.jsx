@@ -48,10 +48,12 @@ import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { Cascader } from './Components/Cascader/Cascader';
 import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
+
 const INSPECTOR_HEADER_OPTIONS = [
   {
     label: 'Inspect',
@@ -165,6 +167,7 @@ export const Inspector = ({
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
+  const hasCustomStyling = useStore((state) => state.license.featureAccess?.customStyling);
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
@@ -522,45 +525,60 @@ export const Inspector = ({
   };
 
   const propertiesTab = isMounted && (
-    <FlexChildInspectorProvider
-      selectedComponentId={selectedComponentId}
-      allComponents={allComponents}
-      widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
+    <FallbackBoundary
+      label="Properties tab"
+      location="Properties Panel Properties tab"
+      darkMode={darkMode}
+      resetKeys={[selectedComponentId]}
     >
-      <div className={`${shouldFreeze && 'disabled'}`}>
-        <GetAccordion
-          tabsPropertiesPanelKey={tabsPropertiesPanelKey}
-          componentName={componentMeta.component}
-          layoutPropertyChanged={layoutPropertyChanged}
-          component={component}
-          paramUpdated={paramUpdated}
-          paramsUpdated={paramsUpdated}
-          dataQueries={dataQueries}
-          componentMeta={componentMeta}
-          components={allComponents}
-          currentState={currentState}
-          darkMode={darkMode}
-          pages={pages}
-          allComponents={allComponents}
-          selectedComponentId={selectedComponentId}
-        />
-      </div>
-    </FlexChildInspectorProvider>
+      <FlexChildInspectorProvider
+        selectedComponentId={selectedComponentId}
+        allComponents={allComponents}
+        widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
+      >
+        <div className={`${shouldFreeze && 'disabled'}`}>
+          <GetAccordion
+            tabsPropertiesPanelKey={tabsPropertiesPanelKey}
+            componentName={componentMeta.component}
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            paramsUpdated={paramsUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            components={allComponents}
+            currentState={currentState}
+            darkMode={darkMode}
+            pages={pages}
+            allComponents={allComponents}
+            selectedComponentId={selectedComponentId}
+          />
+        </div>
+      </FlexChildInspectorProvider>
+    </FallbackBoundary>
   );
   const stylesTab = (
-    <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
-      <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
-        <Inspector.RenderStyleOptions
-          componentMeta={componentMeta}
-          component={component}
-          paramUpdated={paramUpdated}
-          dataQueries={dataQueries}
-          currentState={currentState}
-          allComponents={allComponents}
-        />
+    <FallbackBoundary
+      label="Styles tab"
+      location="Properties Panel Styles tab"
+      darkMode={darkMode}
+      resetKeys={[selectedComponentId]}
+    >
+      <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
+        <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
+          <Inspector.RenderStyleOptions
+            componentMeta={componentMeta}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            currentState={currentState}
+            allComponents={allComponents}
+            hasCustomStyling={hasCustomStyling}
+          />
+        </div>
+        {!isRevampedComponent && buildGeneralStyle()}
       </div>
-      {!isRevampedComponent && buildGeneralStyle()}
-    </div>
+    </FallbackBoundary>
   );
 
   React.useEffect(() => {
@@ -771,11 +789,15 @@ const widgetsWithStyleConditions = {
   },
 };
 
-const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
-  // Custom CSS class (the "Advanced" group) is an enterprise feature gated by the
-  // `customStyling` license flag. When the license is absent the field is hidden, but
-  // the saved value is left untouched in the schema so it returns if the license is re-enabled.
-  const hasCustomStyling = useStore((state) => state.license.featureAccess?.customStyling);
+const RenderStyleOptions = ({
+  componentMeta,
+  component,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  allComponents,
+  hasCustomStyling,
+}) => {
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
   if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
