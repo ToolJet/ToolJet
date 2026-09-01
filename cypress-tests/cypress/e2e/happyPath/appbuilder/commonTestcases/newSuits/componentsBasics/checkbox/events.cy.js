@@ -26,11 +26,17 @@ describe('Checkbox — events facet', { testIsolation: false }, () => {
         // dynamic: alert message asserted verbatim from Show Alert handler
         const events = [{ event: 'On change', message: 'On change Event' }];
         addMultiEventsWithAlert(events);
+        // The Show-Alert message must persist before we trigger: a probe showed
+        // the FIRST toggle after configuring fired the DEFAULT "Hello world!"
+        // message (the custom message hadn't propagated yet). Autosave + settle.
+        cy.waitForAutoSave();
+        cy.forceClickOnCanvas();
+        cy.wait(1000);
 
-        // Trigger onChange by clicking the label — the real <input> is display:none.
-        cy.get(commonWidgetSelector.draggableWidget(W))
+        // Trigger onChange by toggling the box (its onClick=handleToggleChange
+        // flips the display:none <input>). onChange fires in edit mode (probe).
+        cy.get('[data-cy="checkbox1"] > div:has(.form-check-input)')
             .scrollIntoView()
-            .find('label')
             .click({ force: true });
 
         cy.verifyToastMessage(commonSelectors.toastMessage, 'On change Event', false); // dynamic
