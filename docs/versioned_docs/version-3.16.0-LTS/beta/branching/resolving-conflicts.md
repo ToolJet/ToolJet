@@ -101,7 +101,7 @@ Pulling the default branch will keep failing, so bring in just the affected appl
 
 1. **Create a new temporary workspace** in ToolJet.
 2. **Connect it to the same Git repository** using your existing Git credentials.
-3. **Import the affected application** using the import-from-Git option. Do not use Pull, which brings in the entire branch state and fails for the same reason.
+3. **Import the affected application** using the Import from git repository. Do not use Pull, which brings in the entire branch state and fails for the same reason.
 4. **Create a new branch** in the temporary workspace.
 5. **Rename the conflicting field** so it is unique.
 6. **Commit, push, open a pull request**, and merge it into the default branch.

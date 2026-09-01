@@ -1,7 +1,7 @@
 ---
 id: commit-and-pull
-title: Committing and Pulling Changes
-sidebar_label: Committing and Pulling
+title: Push and Pull Commit
+sidebar_label: Push and Pull Commit
 ---
 
 <PlanBadge type="team" />
@@ -21,7 +21,7 @@ To commit datasource changes:
 
 <img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/commit-and-pull/workspace-commit-modal.png" alt="Push commit modal with a commit message field limited to 50 characters" />
 
-To commit application changes, open the application and use the Git Sync button in the App Builder header. See [Git Sync in the App Builder](/docs/beta/branching/app-builder-git-sync).
+To commit application or module changes, open the application in the App Builder or the module in the Module Builder, and use the Git Sync button in the header. See [Git Sync in the App Builder](/docs/beta/branching/app-builder-git-sync).
 
 **Commit** only re-pushes resources that Git already knows about. A resource that has never been committed is handled by a separate first-time push flow, see [Push Unsynced Resources to Git](/docs/beta/branching/push-unsynced-resources).
 
@@ -46,25 +46,40 @@ Use workspace constants for credentials you want to travel with the repository. 
 
 The **Pull** button is available on every branch, including the default branch.
 
+### Scope of a Pull
+
+What a pull brings in depends on where you start it:
+
+| Where you pull from | What is pulled |
+|:--------------------|:---------------|
+| **Dashboard header**, on the **Applications**, **Data sources**, or **Modules** page | The whole branch: every application, module, datasource, and folder assignment |
+| **App Builder**, using the Git Sync action in the header | The branch first, then the chosen commit or version is resolved for the application you have open |
+| **Module Builder**, using the same Git Sync action | The branch first, then the chosen commit is resolved for the module you have open |
+
+Pulling from a builder is not narrower than pulling from the dashboard. It pulls the branch at the workspace level and then resolves what you picked for the resource you have open, so other applications and modules on the branch are updated by the same operation.
+
+What you can choose also depends on the branch:
+
+- On the **default branch**, you choose between the latest commit and a specific saved version.
+- On a **feature branch**, there is nothing to choose. The latest commit on that branch is pulled.
+
+Refer to [Git Sync in the App Builder](/docs/beta/branching/app-builder-git-sync) for the full set of builder-level actions.
+
+### Pull From the Dashboard
+
 1. Click **Pull** in the header.
 2. Confirm the branch to pull into.
 3. Confirm the pull.
 
 <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/commit-and-pull/workspace-pull-modal.png" alt="Pull commit modal on the default branch, noting that the latest commit across all resources in the branch will be pulled" />
 
-Pulling an application also pulls the modules it references and the datasources it depends on. The **Commit** button's scope follows the page you are on: on the **Data sources** page it commits datasources, elsewhere it commits applications.
+Pulling an application also pulls the modules it references and the datasources it depends on.
 
 Pulling a whole branch runs as a background job and notifies you when it finishes. Applications, folders, and datasources update automatically once the job completes.
 
 :::warning
 On the default branch, pulling removes applications and modules that are no longer present in Git, and deactivates datasources that are no longer present. On feature branches, these resources are preserved.
 :::
-
-### Save a Version From a Feature Branch
-
-Versions can be saved from a feature branch as well as the default branch. Doing so does not move the default branch forward: your feature-branch draft is left untouched, the version is created on the default branch, and the Git tag points at the feature branch's own commit.
-
-The use case is a hotfix. You can branch from an earlier saved version, correct it, and save that correction as a version without disturbing whatever is currently at the head of the default branch.
 
 ### Pull a Saved Version
 

@@ -1,16 +1,16 @@
 ---
 id: versioning
-title: Versions in Branching
-sidebar_label: Versions in Branching
+title: Version Control with Git
+sidebar_label: Version Control with Git
 ---
 
 <PlanBadge type="team" />
 
-Branching separates two jobs that a [version](/docs/development-lifecycle/release/version-control) does on its own. Branches carry work in progress, and versions mark the milestones you promote and release.
+Branching separates two jobs that a [version](/docs/development-lifecycle/release/version-control) does on its own. Branches carry work in progress, and versions mark the stable points you promote and release.
 
 ## The Draft Is the Head of the Default Branch
 
-Each application has exactly one draft version per branch, and it always has one.
+Every application carries exactly one draft version on each branch, and that draft is never absent. The draft is your editable working copy: it holds every change you make in the App Builder until you save that work as a version, and it is what the branch's next commit pushes to Git. Because there is exactly one per branch, switching branches switches which draft you are editing, so the same application can hold separate work in progress on several branches at once.
 
 - A draft is created automatically for every new or imported application.
 - A new draft is created for you each time you save a version, so there is always something to edit.
@@ -38,7 +38,7 @@ What happens next depends on where you save from.
 | | Saved from the default branch | Saved from a feature branch |
 |:--|:------------------------------|:----------------------------|
 | Your draft | Becomes the version | Stays as it is, still editable |
-| The version | Published in place | Created on the default branch |
+| The version | Saved on the default branch | Created on the default branch |
 | A new draft | Created automatically | Not needed, your draft is untouched |
 | The Git tag points at | The default branch | The feature branch's own commit |
 
@@ -48,7 +48,7 @@ Saving from a feature branch does not move the default branch forward. The use c
 
 Only the draft can be updated from Git. Pulling the latest commit refreshes the draft with the newest changes on the branch, and saved versions are left untouched because they are locked.
 
-Pulling a specific saved version brings it in as a published version, which is how a milestone moves between instances. A version that already exists in the workspace is not pulled again.
+Pulling a specific saved version brings it in as a published version, which is how a saved version moves between instances. A version that already exists in the workspace is not pulled again.
 
 In single-branch mode a saved version cannot be changed at all. In multi-branch mode you can still pull, but only the draft is updated.
 

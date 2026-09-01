@@ -20,8 +20,6 @@ A branch in ToolJet is not tied to a single application. Each branch holds its o
 
 All branches live inside the same workspace. You do not need a separate workspace for each branch, for each builder, or for each feature. Everyone works in one workspace and switches between branches in it.
 
-Workflows are the exception. They are not branch-scoped and behave the same on every branch.
-
 There are two kinds of branches:
 
 - **Default branch**: The branch configured in your Git Sync connection, typically `main` or `master`. It holds the live version of your applications. When branching is enabled, this branch is read-only and changes can only enter it through a merged pull request.
@@ -33,7 +31,6 @@ Git Sync starts in single-branch mode, which is included with Git Sync on the **
 
 | Behavior | Single-branch mode | Multi-branch mode |
 |:---------|:-------------------|:------------------|
-| Creating applications, modules, and datasources on the default branch | Allowed | Blocked |
 | Feature branches | Not available | Created from the default branch |
 | Default branch | Editable | Read-only |
 | Changes reach the default branch by | Committing directly | Merging a pull request |
@@ -47,6 +44,29 @@ When branching is enabled and you are on the default branch, ToolJet blocks thes
 
 <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/overview/default-branch-locked-banner.png" alt="Applications page on the locked default branch, with a banner stating that a branch is needed to add or edit apps" />
 
+## How Changes Reach the Default Branch
+
+Branching splits the work between two systems. You build and commit in ToolJet, and the review and merge happen entirely in your Git provider. ToolJet cannot merge branches.
+
+```mermaid
+flowchart LR
+  subgraph TJ["In ToolJet"]
+    direction TB
+    A["Feature branch<br/>build and edit"]
+    B["Commit"]
+    E["Pull to default"]
+    F["Save a version"]
+  end
+  subgraph GIT["In Git"]
+    direction TB
+    C["Branch pushed"]
+    D["Review and merge"]
+  end
+  A --> B --> C --> D --> E --> F
+```
+
+Refer to [Pull Requests](/docs/beta/branching/pull-requests) for the full flow, including how to open and track pull requests from ToolJet.
+
 ## Resources Covered by a Branch
 
 Applications, modules, datasources and their folder assignments are branch-scoped. On a feature branch, changes to a module or datasource stay on that branch and reach the rest of the workspace only once they are committed and merged. In single-branch mode there is nothing to isolate them from, so those changes apply across the workspace immediately.
@@ -55,21 +75,18 @@ Workflows and ToolJet Database tables are not branch-scoped yet. They behave the
 
 ### Folders
 
-Folders are workspace-level rather than branch-scoped, so a folder created on one branch exists on all of them. To stop one branch's rename from affecting everyone, multi-branch mode restricts them everywhere, not just on the default branch:
+Your folder structure in ToolJet is written to Git as the directory structure of the repository, so an application inside a **Billing** folder is committed to a `Billing/` directory. Renaming a folder in ToolJet would move every file inside it in Git, on every branch at once.
+
+<!-- TODO: add a screenshot of the Git repository file tree showing ToolJet folders as directories.
+     Suggested path: /img/development-lifecycle/branching/lts/overview/git-folder-structure.png -->
+
+Folders are also workspace-level rather than branch-scoped, so a folder created on one branch exists on all of them. Between those two constraints, multi-branch mode restricts folders everywhere, not just on the default branch:
 
 | Action | Single-branch mode | Multi-branch mode |
 |:-------|:-------------------|:------------------|
 | Rename a folder | Allowed | Blocked |
 | Delete an empty folder | Allowed | Allowed |
 | Delete a folder containing resources | Blocked | Blocked, and the error names the branches still using it |
-
-## Versions and Tags
-
-Versions mark stable points in an application's history and live only on the default branch. Each branch holds exactly one draft, and saving a version locks it and tags it in your Git repository.
-
-Feature branches do not have versions. They are working copies that always hold a draft.
-
-Refer to [Versions in Branching](/docs/beta/branching/versioning) for how drafts, saved versions and tags behave on each branch.
 
 ## Where Branch Controls Appear
 
@@ -90,7 +107,7 @@ To decide whether a single or multi-instance setup suits your organization, see 
 
 ## Limitations
 
-- Branching works only over Git HTTPS with GitHub or GitLab. SSH is not supported.
+- Branching works with GitHub and GitLab.
 - Branches can only be created from the default branch, not from another feature branch.
 - Pull requests must be created and merged in your Git provider. ToolJet cannot merge branches.
 - Branches cannot be renamed once created.

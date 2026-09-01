@@ -8,9 +8,29 @@ sidebar_label: Pull Requests
 
 Pull requests are how changes move from a feature branch to the default branch. They are created, reviewed, and merged in your Git provider. ToolJet does not merge branches.
 
+## How the Flow Splits Between ToolJet and Git
+
+Every step below happens in one system or the other, never both. ToolJet takes you as far as opening the pull request, and everything from review to merge belongs to your Git provider.
+
+```mermaid
+flowchart TD
+  A["ToolJet<br/>Create branch"] --> B["ToolJet<br/>Build and edit"]
+  B --> C["ToolJet<br/>Commit"]
+  C --> D["Git<br/>Branch updated"]
+  D --> E["ToolJet<br/>Open PR"]
+  E --> F["Git<br/>Review"]
+  F --> G{"Git<br/>Conflicts?"}
+  G -- Yes --> H["Git<br/>Resolve"]
+  H --> F
+  G -- No --> I["Git<br/>Merge to default"]
+  I --> J["ToolJet<br/>Pull to default"]
+  J --> K["ToolJet<br/>Save a version"]
+  K --> L["ToolJet<br/>Promote, release"]
+```
+
 ## Create a Pull Request
 
-1. **Commit your changes** on the feature branch so the branch in Git matches your workspace. See [Committing and Pulling Changes](/docs/beta/branching/commit-and-pull).
+1. **Commit your changes** on the feature branch so the branch in Git matches your workspace. See [Push and Pull Commit](/docs/beta/branching/commit-and-pull).
 2. Open the branch dropdown and click **Create pull request**. ToolJet opens your Git provider in a new tab with the source and target branches pre-filled.
 3. **Add reviewers and a description**, then submit the pull request.
 4. **Resolve any review feedback or merge conflicts** in Git.
