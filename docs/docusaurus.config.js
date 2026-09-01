@@ -418,10 +418,6 @@ module.exports = {
             to: '/docs/build-with-ai/overview',
           },
           {
-            from: '/docs/build-with-ai/mcp/overview',
-            to: '/docs/build-with-ai/mcp/app-generation',
-          },
-          {
             from: '/docs/tj-setup/observability-otel',
             to: '/docs/tj-setup/observability/observability-otel/',
           },
