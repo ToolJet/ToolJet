@@ -24,10 +24,10 @@ ToolJet is the open-source foundation of ToolJet AI - the AI-native platform for
 ## Features  
 
 ### Community Edition (CE)  
-- **Visual App Builder:** 60+ responsive components (Tables, Charts, Forms, Lists, Progress Bars, and more).  
+- **Visual App Builder:** 80+ responsive components (Tables, Charts, Forms, Lists, Progress Bars, and more).  
 - **ToolJet Database:** Built-in no-code database.  
 - **Multi-page Apps & Multiplayer Editing:** Build complex apps collaboratively.  
-- **80+ Data Sources:** Connect to databases, APIs, cloud storage, and SaaS tools.  
+- **90+ Data Sources:** Connect to databases, APIs, cloud storage, and SaaS tools.  
 - **Flexible Deployment:** Self-host with Docker, Kubernetes, AWS, GCP, Azure, and more.  
 - **Collaboration Tools:** Inline comments, mentions, and granular access control.  
 - **Extensibility:** Create plugins and connectors with the [ToolJet CLI](https://www.npmjs.com/package/@tooljet/cli).  
@@ -40,11 +40,13 @@ Everything in CE, plus:
 - **AI Query Builder:** Generate and transform queries with AI assistance.  
 - **AI Debugging:** Identify and fix issues with one click.  
 - **Agent Builder:** Create intelligent agents to automate workflows and orchestrate processes.  
+- **Workflows:** Automate multi-step processes with branching logic, on a schedule or triggered by webhook.  
+- **Modules:** Build reusable units of UI and logic once, then use them across multiple apps.  
 - **Enterprise-grade Security & Compliance:** SOC 2 and GDPR readiness, audit logs, and advanced access control.
-- **User Management:** Role-based access (RBAC), custom groups, and granular app/data permissions.  
+- **User Management:** Role-based access (RBAC), custom groups, SCIM provisioning, and granular app/data permissions.  
 - **Multi-environment Management:** Seamless dev/stage/prod environments.  
-- **GitSync & CI/CD:** Integrate with GitHub/GitLab for version control and streamlined deployments.  
-- **Branding & Customization:** White-labeling, and custom theming for organizational branding.  
+- **GitSync & CI/CD:** Integrate with GitHub/GitLab for version control, app version history, and streamlined deployments.  
+- **Branding & Customization:** White-labeling, custom domains, and custom theming for organizational branding.  
 - **Fine-Grained Access Control:** Secure data and actions at the row, component, page, and query levels.  
 - **Embedded Apps:** Embed ToolJet apps securely within other applications or portals.  
 - **Enterprise Support:** SLAs, priority bug fixes, and onboarding assistance.  
