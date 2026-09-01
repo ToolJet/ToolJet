@@ -6,9 +6,11 @@ export default class PostgrestQueryBuilder {
   }
 
   order(column: string, value: string) {
-    this.url.get('order')
-      ? this.url.set('order', `${this.url.get('order')},${column}.${value}`)
-      : this.url.append(`order`, `${column}.${value}`);
+    if (this.url.get('order')) {
+      this.url.set('order', `${this.url.get('order')},${column}.${value}`);
+    } else {
+      this.url.append(`order`, `${column}.${value}`);
+    }
     return this;
   }
 

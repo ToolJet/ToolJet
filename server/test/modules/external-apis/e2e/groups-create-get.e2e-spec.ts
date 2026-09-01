@@ -150,9 +150,7 @@ describe('External API — Groups create/get', () => {
   describe('GET /ext/workspace/:workspaceId/groups/:groupId', () => {
     it('returns 403 when Authorization header is missing', async () => {
       const org = await seedOrg();
-      await request(app.getHttpServer())
-        .get(`/api/ext/workspace/${org.id}/groups/${NONEXISTENT_UUID}`)
-        .expect(403);
+      await request(app.getHttpServer()).get(`/api/ext/workspace/${org.id}/groups/${NONEXISTENT_UUID}`).expect(403);
     });
 
     it('returns the group with permissions + granularPermissions shape', async () => {

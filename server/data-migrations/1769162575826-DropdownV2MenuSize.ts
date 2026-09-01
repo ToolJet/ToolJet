@@ -14,7 +14,9 @@ export class DropdownV2MenuSize1769162575826 implements MigrationInterface {
     let offset = 0;
     let hasMoreData = true;
 
-    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) as count FROM components WHERE type = $1`, ['DropdownV2']);
+    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) as count FROM components WHERE type = $1`, [
+      'DropdownV2',
+    ]);
     const migrationProgress = new MigrationProgress('DropdownV2MenuSize1769162575826', parseInt(count));
 
     while (hasMoreData) {
@@ -64,5 +66,5 @@ export class DropdownV2MenuSize1769162575826 implements MigrationInterface {
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }

@@ -53,9 +53,7 @@ const isPageVariables = (node: any): boolean =>
   node.object.name === 'page' &&
   propName(node) === 'variables';
 
-const rootBucket = (
-  init: any
-): 'componentRefs' | 'queryRefs' | 'variableReads' | 'pageVariableReads' | null => {
+const rootBucket = (init: any): 'componentRefs' | 'queryRefs' | 'variableReads' | 'pageVariableReads' | null => {
   if (!init) return null;
   if (init.type === 'Identifier') {
     if (init.name === 'components') return 'componentRefs';
@@ -69,12 +67,7 @@ const rootBucket = (
 
 // `const { textinput1 } = components` — MemberExpression never fires for this.
 // Computed keys (`const { [x]: y } = components`) cannot be resolved statically.
-const collectDestructure = (
-  pattern: any,
-  init: any,
-  buckets: Record<string, Set<string>>,
-  result: ScriptAnalysis
-) => {
+const collectDestructure = (pattern: any, init: any, buckets: Record<string, Set<string>>, result: ScriptAnalysis) => {
   if (pattern?.type !== 'ObjectPattern') return;
   const bucket = rootBucket(init);
   if (!bucket) return;
@@ -84,7 +77,8 @@ const collectDestructure = (
       result.dynamicVariableOps = bucket === 'variableReads' || bucket === 'pageVariableReads';
       return;
     }
-    const name = prop.key?.type === 'Identifier' ? prop.key.name : typeof prop.key?.value === 'string' ? prop.key.value : null;
+    const name =
+      prop.key?.type === 'Identifier' ? prop.key.name : typeof prop.key?.value === 'string' ? prop.key.value : null;
     if (name) buckets[bucket].add(name);
   });
 };
@@ -165,8 +159,7 @@ export function analyzeScript(code: string): ScriptAnalysis {
         if (!fn) return;
 
         const firstArg = node.arguments?.[0];
-        const literalKey =
-          firstArg?.type === 'Literal' && typeof firstArg.value === 'string' ? firstArg.value : null;
+        const literalKey = firstArg?.type === 'Literal' && typeof firstArg.value === 'string' ? firstArg.value : null;
 
         if (ACTION_QUERY_FNS.has(fn)) {
           if (literalKey) buckets.queryRefs.add(literalKey);

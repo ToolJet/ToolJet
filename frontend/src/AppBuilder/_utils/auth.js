@@ -1,7 +1,6 @@
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { sessionService } from '@/_services';
-import { unregisterBranchFocusSync } from '@/_helpers/active-branch';
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
@@ -12,7 +11,6 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
 }
 
 export function logoutAction() {
-  unregisterBranchFocusSync();
   localStorage.clear();
   sessionStorage.clear();
   sessionService.logout(false);

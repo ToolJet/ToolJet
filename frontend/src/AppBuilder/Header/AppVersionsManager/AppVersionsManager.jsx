@@ -48,6 +48,7 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
     creationMode,
     isViewer,
     currentMode,
+    allBranches,
     isEditorReadOnly,
   } = useStore(
     (state) => ({
@@ -70,6 +71,7 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
       isPublic: state.appStore.modules[moduleId].app.isPublic,
       isViewer: state.appStore.modules[moduleId].isViewer,
       currentMode: state.modeStore.modules[moduleId].currentMode,
+      allBranches: state.allBranches,
       isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow

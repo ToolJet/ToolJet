@@ -1,5 +1,5 @@
 import { sanitizeInput } from '@helpers/utils.helper';
-import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum, IsIn } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum, IsIn, Matches } from 'class-validator';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { APP_TYPES } from '../constants';
 
@@ -12,6 +12,7 @@ export class AppCreateDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(100, { message: 'Maximum length has been reached.' })
+  @Matches(/^[^/]*$/, { message: "Name should not contain '/'" })
   name: string;
 
   @IsOptional()
@@ -55,6 +56,9 @@ export class AppUpdateDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsNotEmpty({ message: 'App name should not be empty' })
   @MaxLength(100, { message: 'Maximum length has been reached.' })
+  // '/' is used as a filesystem path separator when this app (or module) is
+  // serialized to git; see server/ee/git-sync AGENTS.md.
+  @Matches(/^[^/]*$/, { message: "Name should not contain '/'" })
   name: string;
 
   @IsString()

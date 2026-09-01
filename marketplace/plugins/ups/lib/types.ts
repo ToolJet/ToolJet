@@ -6,18 +6,18 @@ export type SourceOptions = {
 };
 
 export enum BaseUrl {
-  PRODUCTION = "https://onlinetools.ups.com",
-  CIE = "https://wwwcie.ups.com",
+  PRODUCTION = 'https://onlinetools.ups.com',
+  CIE = 'https://wwwcie.ups.com',
 }
 
 export enum SpecType {
-  SHIPPING = "shipping",
-  RATING = "rating",
-  TRACKING = "tracking",
-  ADDRESS_VALIDATION = "address__validation",
-  TIME_IN_TRANSIT = "time__in__transit",
-  PICKUP = "pickup",
-  PAPERLESS_INVOICE = "paperless__invoice",
+  SHIPPING = 'shipping',
+  RATING = 'rating',
+  TRACKING = 'tracking',
+  ADDRESS_VALIDATION = 'address__validation',
+  TIME_IN_TRANSIT = 'time__in__transit',
+  PICKUP = 'pickup',
+  PAPERLESS_INVOICE = 'paperless__invoice',
 }
 
 export type QueryOptions = {

@@ -46,13 +46,7 @@ export type DetailHeaderProps = {
 };
 
 /** Breadcrumb + kebab. Lives in the panel header so it stays put while the list scrolls. */
-export const DetailHeader = ({
-  subject,
-  breadcrumbRoot,
-  onNavigateRoot,
-  menuItems,
-  darkMode,
-}: DetailHeaderProps) => (
+export const DetailHeader = ({ subject, breadcrumbRoot, onNavigateRoot, menuItems, darkMode }: DetailHeaderProps) => (
   <div className="dependency-breadcrumb-bar">
     <div className="dependency-breadcrumb">
       <span
@@ -132,8 +126,8 @@ export const DetailTab = ({ subject, groups, moduleId, onSelect, darkMode }: Det
       entry.kind === 'component'
         ? getComponentDisplayName(componentType)
         : entry.kind === 'action'
-        ? 'Action'
-        : KIND_SUBTITLES[entry.kind];
+          ? 'Action'
+          : KIND_SUBTITLES[entry.kind];
 
     // Only event-driven relationships carry a tag line; bindings explain themselves
     // through the hover tooltip instead.

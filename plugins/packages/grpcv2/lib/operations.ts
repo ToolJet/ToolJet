@@ -1,6 +1,15 @@
-import { SourceOptions, QueryOptions, GrpcService, GrpcMethod, GrpcClient, GrpcOperationError, toError, isRecord } from './types';
+import {
+  SourceOptions,
+  QueryOptions,
+  GrpcService,
+  GrpcMethod,
+  GrpcClient,
+  GrpcOperationError,
+  toError,
+  isRecord,
+} from './types';
 import got from 'got';
-import { GrpcReflection, serviceHelper, ServiceHelperOptionsType } from 'grpc-js-reflection-client';
+import { GrpcReflection } from 'grpc-js-reflection-client';
 import type { ListMethodsType } from 'grpc-js-reflection-client/dist/Types/ListMethodsType';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
@@ -88,7 +97,7 @@ export const buildReflectionClient = async (sourceOptions: SourceOptions, servic
       enums: String,
       longs: String,
       defaults: true,
-      oneofs: true
+      oneofs: true,
     });
 
     const service = findServiceInPackage(packageObject, serviceName);
@@ -108,13 +117,20 @@ export const buildReflectionClient = async (sourceOptions: SourceOptions, servic
     return grpcClient;
   } catch (error: unknown) {
     const err = toError(error);
-    throw new GrpcOperationError(`Failed to create reflection client for service ${serviceName}: ${err.message}`, error);
+    throw new GrpcOperationError(
+      `Failed to create reflection client for service ${serviceName}: ${err.message}`,
+      error
+    );
   }
 };
 
 export const buildProtoFileClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
   try {
-    const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url!);
+    if (!sourceOptions.proto_file_url) {
+      throw new GrpcOperationError('Proto file URL is required to build a proto-file gRPC client.');
+    }
+
+    const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url);
     const grpcObject = grpc.loadPackageDefinition(packageDefinition);
 
     const service = findServiceInPackage(grpcObject, serviceName);
@@ -137,7 +153,10 @@ export const buildProtoFileClient = async (sourceOptions: SourceOptions, service
       throw error;
     }
     const err = toError(error);
-    throw new GrpcOperationError(`Failed to create proto file client for service ${serviceName}: ${err.message}`, error);
+    throw new GrpcOperationError(
+      `Failed to create proto file client for service ${serviceName}: ${err.message}`,
+      error
+    );
   }
 };
 
@@ -173,7 +192,7 @@ export const buildFilesystemClient = async (sourceOptions: SourceOptions, servic
         enums: String,
         defaults: true,
         oneofs: true,
-        includeDirs
+        includeDirs,
       });
     } else {
       // Fallback: Re-discover to find which file contains this service
@@ -207,7 +226,7 @@ export const buildFilesystemClient = async (sourceOptions: SourceOptions, servic
         enums: String,
         defaults: true,
         oneofs: true,
-        includeDirs
+        includeDirs,
       });
     }
 
@@ -233,7 +252,10 @@ export const buildFilesystemClient = async (sourceOptions: SourceOptions, servic
       throw error;
     }
     const err = toError(error);
-    throw new GrpcOperationError(`Failed to create filesystem client for service ${serviceName}: ${err.message}`, error);
+    throw new GrpcOperationError(
+      `Failed to create filesystem client for service ${serviceName}: ${err.message}`,
+      error
+    );
   }
 };
 
@@ -253,27 +275,20 @@ export const createTransportCredentials = (sourceOptions: SourceOptions): grpc.C
       options.certChain = sourceOptions.client_cert ? Buffer.from(sourceOptions.client_cert) : undefined;
     }
 
-    return grpc.credentials.createSsl(
-      options.rootCerts,
-      options.privateKey,
-      options.certChain
-    );
+    return grpc.credentials.createSsl(options.rootCerts, options.privateKey, options.certChain);
   } else {
     return grpc.credentials.createInsecure();
   }
 };
 
-export const sanitizeGrpcServerUrl = (url: string, sslEnabled: boolean = false): string => {
+export const sanitizeGrpcServerUrl = (url: string, sslEnabled = false): string => {
   if (!url || typeof url !== 'string') {
-    throw new GrpcOperationError('URL is required for gRPC connection. Please provide a valid server URL (e.g., grpcb.in:9001)');
+    throw new GrpcOperationError(
+      'URL is required for gRPC connection. Please provide a valid server URL (e.g., grpcb.in:9001)'
+    );
   }
 
-  const protocolPrefixes = [
-    'grpc://',
-    'grpcs://',
-    'http://',
-    'https://'
-  ];
+  const protocolPrefixes = ['grpc://', 'grpcs://', 'http://', 'https://'];
 
   let cleanUrl = url.trim();
 
@@ -309,7 +324,9 @@ export const sanitizeGrpcServerUrl = (url: string, sslEnabled: boolean = false):
 export const discoverServicesUsingReflection = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
   try {
     if (!sourceOptions.url) {
-      throw new GrpcOperationError('Server URL is required for gRPC service discovery. Please configure the server URL in your data source settings.');
+      throw new GrpcOperationError(
+        'Server URL is required for gRPC service discovery. Please configure the server URL in your data source settings.'
+      );
     }
 
     const reflectionClient = await createReflectionClient(sourceOptions);
@@ -342,7 +359,6 @@ export const discoverServicesUsingReflection = async (sourceOptions: SourceOptio
           name: serviceName,
           methods: grpcMethods,
         });
-
       } catch (error: unknown) {
         const err = toError(error);
         console.warn(`Could not get methods for service ${serviceName}: ${err.message}`);
@@ -420,13 +436,11 @@ export const discoverServiceNamesFromFilesystem = async (
     cwd: expandedDir,
     onlyFiles: true,
     absolute: true,
-    stats: true
+    stats: true,
   });
 
   if (entries.length === 0) {
-    throw new GrpcOperationError(
-      `No .proto files found in directory: ${expandedDir} with pattern: ${pattern}`
-    );
+    throw new GrpcOperationError(`No .proto files found in directory: ${expandedDir} with pattern: ${pattern}`);
   }
 
   const cacheKey = discoveryCacheKey(directory, pattern);
@@ -541,10 +555,7 @@ export const discoverMethodsForSelectedServices = async (
 export const extractServicesFromGrpcPackage = (grpcObject: grpc.GrpcObject): GrpcService[] => {
   const services: GrpcService[] = [];
 
-  const extractFromObject = (
-    obj: grpc.GrpcObject,
-    prefix: string = ''
-  ): void => {
+  const extractFromObject = (obj: grpc.GrpcObject, prefix = ''): void => {
     for (const [key, value] of Object.entries(obj)) {
       if (isServiceDefinition(value)) {
         const serviceName = prefix ? `${prefix}.${key}` : key;
@@ -574,7 +585,9 @@ export const extractServicesFromGrpcPackage = (grpcObject: grpc.GrpcObject): Grp
   extractFromObject(grpcObject);
 
   if (services.length === 0) {
-    throw new GrpcOperationError('No services found in the proto file. Please verify the proto file contains valid service definitions.');
+    throw new GrpcOperationError(
+      'No services found in the proto file. Please verify the proto file contains valid service definitions.'
+    );
   }
 
   return services;
@@ -616,9 +629,9 @@ export const loadProtoFromRemoteUrl = async (url: string): Promise<protoLoader.P
   try {
     const response = await got(url, {
       timeout: {
-        request: 30000
+        request: 30000,
       },
-      responseType: 'text'
+      responseType: 'text',
     });
 
     const tempDir = os.tmpdir();
@@ -632,7 +645,7 @@ export const loadProtoFromRemoteUrl = async (url: string): Promise<protoLoader.P
         longs: String,
         enums: String,
         defaults: true,
-        oneofs: true
+        oneofs: true,
       });
 
       return packageDefinition;
@@ -662,7 +675,10 @@ export const loadProtoFromRemoteUrl = async (url: string): Promise<protoLoader.P
   }
 };
 
-export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: string): (new (url: string, credentials: any) => GrpcClient) | null => {
+export const findServiceInPackage = (
+  grpcObject: grpc.GrpcObject,
+  serviceName: string
+): (new (url: string, credentials: any) => GrpcClient) | null => {
   const parts = serviceName.split('.');
   let current: any = grpcObject;
 
@@ -676,12 +692,11 @@ export const findServiceInPackage = (grpcObject: grpc.GrpcObject, serviceName: s
 
   if (typeof current === 'function') {
     // Type assertion necessary: grpc.GrpcObject can contain constructor functions
-    return current as (new (url: string, credentials: any) => GrpcClient);
+    return current as new (url: string, credentials: any) => GrpcClient;
   }
 
   return recursiveServiceSearch(grpcObject, serviceName);
 };
-
 
 /**
  * Build all metadata (auth, datasource, query) for NON-TLS connections
@@ -731,7 +746,7 @@ export const buildMetadataForNonTlsConnection = (
       }
       break;
 
-    case 'oauth2':
+    case 'oauth2': {
       // For OAuth2, access_token is in datasource metadata (already added above)
       const sanitizedAuth = extractSanitizedMetadata(sourceOptions.metadata || []);
       if (sanitizedAuth?.access_token) {
@@ -743,6 +758,7 @@ export const buildMetadataForNonTlsConnection = (
         }
       }
       break;
+    }
   }
 
   // Return the metadata directly for use with unary methods
@@ -768,7 +784,7 @@ export const buildCallOptionsForStreaming = (
     return {
       credentials: grpc.credentials.createFromMetadataGenerator((_context, callback) => {
         callback(null, metadata);
-      })
+      }),
     };
   }
 
@@ -815,11 +831,11 @@ const extractSanitizedMetadata = (metadata: unknown): { [k: string]: string } =>
   type MetadataEntry = [string, string];
 
   const cleanMetadata = (metadata: [string, unknown][]): [string, unknown][] =>
-    metadata.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+    metadata.filter(([k]) => k !== '').map(([k, v]) => [k.trim(), v]);
 
   const filterValidMetadataEntries = (metadata: [string, unknown][]): MetadataEntry[] => {
     return metadata.filter((entry): entry is MetadataEntry => {
-      const [_, value] = entry;
+      const [, value] = entry;
       if (value == null) return false;
       if (typeof value === 'string') return true;
       // Convert array to string by joining
@@ -841,15 +857,13 @@ const extractSanitizedMetadata = (metadata: unknown): { [k: string]: string } =>
     if (!data) return [];
     if (Array.isArray(data)) {
       // Ensure each item is a tuple with at least 2 elements
-      return data.filter(item => Array.isArray(item) && item.length >= 2)
-        .map(item => [String(item[0]), item[1]]);
+      return data.filter((item) => Array.isArray(item) && item.length >= 2).map((item) => [String(item[0]), item[1]]);
     }
     return [];
   };
 
   return processMetadata(ensureArrayFormat(metadata));
 };
-
 
 export const buildChannelCredentials = (sourceOptions: SourceOptions): grpc.ChannelCredentials => {
   const channelCredentials = createTransportCredentials(sourceOptions);
@@ -858,10 +872,7 @@ export const buildChannelCredentials = (sourceOptions: SourceOptions): grpc.Chan
   if (sourceOptions.ssl_enabled) {
     const authCallOptions = buildAuthCallCredentials(sourceOptions);
     if (authCallOptions.credentials) {
-      return grpc.credentials.combineChannelCredentials(
-        channelCredentials,
-        authCallOptions.credentials
-      );
+      return grpc.credentials.combineChannelCredentials(channelCredentials, authCallOptions.credentials);
     }
   }
 
@@ -897,7 +908,7 @@ export const buildAuthCallCredentials = (sourceOptions: SourceOptions): grpc.Cal
       }
       break;
 
-    case 'oauth2':
+    case 'oauth2': {
       const sanitizedMetadata = extractSanitizedMetadata(sourceOptions.metadata || []);
       if (sanitizedMetadata?.access_token) {
         if (sourceOptions.add_token_to === 'header') {
@@ -908,6 +919,7 @@ export const buildAuthCallCredentials = (sourceOptions: SourceOptions): grpc.Cal
         }
       }
       break;
+    }
   }
 
   const metadataMap = authMetadata.getMap();
@@ -917,7 +929,7 @@ export const buildAuthCallCredentials = (sourceOptions: SourceOptions): grpc.Cal
     return {
       credentials: grpc.credentials.createFromMetadataGenerator((_context, callback) => {
         callback(null, authMetadata);
-      })
+      }),
     };
   }
 
@@ -944,10 +956,12 @@ export const executeGrpcMethod = async (
 
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
-      reject(new GrpcOperationError(
-        `Request timeout after 2 minutes for method ${methodName}`,
-        { errorType: 'NetworkError', grpcStatus: 'DEADLINE_EXCEEDED' }
-      ));
+      reject(
+        new GrpcOperationError(`Request timeout after 2 minutes for method ${methodName}`, {
+          errorType: 'NetworkError',
+          grpcStatus: 'DEADLINE_EXCEEDED',
+        })
+      );
     }, 120000);
 
     const callback = (error: grpc.ServiceError | null, response?: Record<string, unknown>) => {
@@ -978,7 +992,9 @@ const createReflectionClient = async (sourceOptions: SourceOptions): Promise<Grp
     }
 
     if (!sourceOptions.url) {
-      throw new GrpcOperationError('Server URL is required to create reflection client. Please configure the server URL in your data source settings.');
+      throw new GrpcOperationError(
+        'Server URL is required to create reflection client. Please configure the server URL in your data source settings.'
+      );
     }
 
     const credentials = buildChannelCredentials(sourceOptions);
@@ -995,12 +1011,15 @@ const createReflectionClient = async (sourceOptions: SourceOptions): Promise<Grp
   }
 };
 
-const recursiveServiceSearch = (grpcObject: grpc.GrpcObject, serviceName: string): (new (url: string, credentials: any) => GrpcClient) | null => {
+const recursiveServiceSearch = (
+  grpcObject: grpc.GrpcObject,
+  serviceName: string
+): (new (url: string, credentials: any) => GrpcClient) | null => {
   for (const key in grpcObject) {
     const value = grpcObject[key];
     if (key === serviceName && typeof value === 'function') {
       // Type assertion necessary: grpc.GrpcObject can contain constructor functions
-      return value as (new (url: string, credentials: any) => GrpcClient);
+      return value as new (url: string, credentials: any) => GrpcClient;
     }
     if (isRecord(value)) {
       const found = recursiveServiceSearch(value as grpc.GrpcObject, serviceName);

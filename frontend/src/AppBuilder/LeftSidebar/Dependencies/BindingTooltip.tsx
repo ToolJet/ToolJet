@@ -1,11 +1,6 @@
 import React from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/Rocket/shadcn/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Rocket/shadcn/tooltip';
 import type { TooltipBinding } from './types';
 
 const TypedTooltipContent = TooltipContent as React.ComponentType<

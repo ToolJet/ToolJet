@@ -4,6 +4,8 @@ import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { BullModule } from '@nestjs/bullmq';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { FeatureAbilityFactory } from './ability';
 import { NameResolverRepository } from '@modules/app-history/repositories/name-resolver.repository';
 import { AppHistoryRepository } from '@modules/app-history/repository';
@@ -39,7 +41,11 @@ export class AppHistoryModule extends SubModule {
       AppsRepository,
       AppHistoryUtilService,
     ];
-    if (isMainImport) {
+    // The stream service opens Redis pub/sub connections in onModuleInit and is only used on the
+    // HTTP/SSE path (via AppHistoryController) — skip it in migration/get-context mode so a data
+    // migration doesn't spin up (and later tear down) pub/sub while the shared transaction is open.
+    const includeStreamService = isMainImport && !_configs?.IS_GET_CONTEXT;
+    if (includeStreamService) {
       providers.push(AppHistoryStreamService);
     }
 
@@ -62,6 +68,16 @@ export class AppHistoryModule extends SubModule {
           },
         })
       );
+
+      // Bull Board's forRoot is not registered on cloud
+      if (edition !== TOOLJET_EDITIONS.Cloud) {
+        imports.push(
+          BullBoardModule.forFeature({
+            name: 'app-history',
+            adapter: BullMQAdapter,
+          })
+        );
+      }
     }
 
     // Register queue processor only when WORKER=true and edition is EE/Cloud
@@ -76,7 +92,9 @@ export class AppHistoryModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: AppHistoryModule,
       imports,
-      controllers: isMainImport ? [AppHistoryController] : [],
+      // AppHistoryController injects AppHistoryStreamService, so it can only load where the stream
+      // service does — i.e. not in migration/get-context mode. No HTTP routes are served there anyway.
+      controllers: includeStreamService ? [AppHistoryController] : [],
       providers,
       exports: [AppHistoryUtilService, EntityChangeService],
     });

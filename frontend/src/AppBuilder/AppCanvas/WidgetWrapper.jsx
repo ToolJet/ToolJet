@@ -168,7 +168,7 @@ const WidgetWrapper = memo(
       temporaryLayouts?.height != null && gridHeight > layoutData?.height
         ? Math.max(temporaryLayouts.height, gridHeight)
         : temporaryLayouts?.height;
-    const gridFinalHeight = visibility ? flooredTemporaryHeight ?? gridHeight : HIDDEN_COMPONENT_HEIGHT;
+    const gridFinalHeight = visibility ? (flooredTemporaryHeight ?? gridHeight) : HIDDEN_COMPONENT_HEIGHT;
     const layoutContext = indices ?? subContainerIndex;
     const serializedLayoutContext = serializeLayoutContext(layoutContext);
 
@@ -196,12 +196,12 @@ const WidgetWrapper = memo(
     const renderWidgetHeight = isFlexLayout
       ? flexLayout.widgetHeight
       : !visibility && mode === 'edit'
-      ? HIDDEN_COMPONENT_HEIGHT
-      : newLayoutData.height;
-    const configWidgetTop = isFlexLayout ? flexLayout.configWidgetTop : temporaryLayouts?.top ?? layoutData.top;
+        ? HIDDEN_COMPONENT_HEIGHT
+        : newLayoutData.height;
+    const configWidgetTop = isFlexLayout ? flexLayout.configWidgetTop : (temporaryLayouts?.top ?? layoutData.top);
     const configWidgetHeight = isFlexLayout
       ? flexLayout.configWidgetHeight
-      : temporaryLayouts?.height ?? layoutData.height;
+      : (temporaryLayouts?.height ?? layoutData.height);
 
     const isModuleContainer = componentType === 'ModuleContainer';
     const configHandleClassName = cx({

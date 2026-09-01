@@ -17,8 +17,7 @@ export const sorted = (map: Map<string, UsageEntry>) =>
   Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
 
 /** Stored bindings keep component/query UUIDs. Hover UI must show display names. */
-const ENTITY_UUID_IN_PATH =
-  /(components|queries)\.([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
+const ENTITY_UUID_IN_PATH = /(components|queries)\.([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
 
 export function prettyExpression(state: any, moduleId: string, expression?: string): string | undefined {
   if (!expression) return expression;

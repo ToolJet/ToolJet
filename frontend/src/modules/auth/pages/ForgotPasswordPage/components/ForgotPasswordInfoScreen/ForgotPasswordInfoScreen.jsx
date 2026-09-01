@@ -13,10 +13,10 @@ const ForgotPasswordInfoScreen = ({ email, appSlug, redirectTo, organizationSlug
   const loginPath = appSlug
     ? `/applications/${appSlug}/login?redirectTo=${encodeURIComponent(redirectTo || `/applications/${appSlug}`)}`
     : organizationSlug
-    ? `/login/${organizationSlug}${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
-    : redirectTo
-    ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
-    : '/login';
+      ? `/login/${organizationSlug}${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
+      : redirectTo
+        ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
+        : '/login';
 
   const message = t(
     'forgotPasswordInfo.message',
