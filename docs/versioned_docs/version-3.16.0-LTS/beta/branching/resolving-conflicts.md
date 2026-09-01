@@ -20,6 +20,8 @@ ToolJet runs a conflict check before it writes anything, when you:
 
 If a conflict is found, the operation stops and a dialog opens describing what is wrong and which action was blocked.
 
+<img className="screenshot-full img-m" src="/img/development-lifecycle/branching/lts/resolving-conflicts/conflict-dialog-overview.png" alt="Conflict dialog for a blocked pull, showing a duplicate data section requiring manual resolution and a second section of resources that can be synced from git" />
+
 Nothing is written to your workspace or to Git until the conflicts are resolved.
 
 ## Fields That Must Be Unique

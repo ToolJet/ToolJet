@@ -40,6 +40,8 @@ GitLab has no branch-deletion event that ToolJet recognises, so a branch deleted
 
 1. Go to the **Workspace settings** page and open the **Configure git sync** tab.
 2. Turn on **Auto-sync from repository**. The webhook setup panel opens.
+
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/auto-sync/auto-sync-webhook-drawer.png" alt="Webhook setup panel showing the payload URL, masked secret, the three subscribable events, and a reminder to set the content type to application/json in GitHub" />
 3. Copy the **Payload URL**.
 4. Copy the **Secret**. It is shown only once during first-time setup, so save it before closing the panel.
 5. Select the events to subscribe to.
