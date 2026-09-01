@@ -60,6 +60,14 @@ export class ApiClient {
     await this.request('GET', `/custom-component-libraries/${id}`);
   }
 
+  // POST /api/custom-component-libraries/find-or-create
+  async findOrCreateLibrary(
+    correlationId: string,
+    name: string
+  ): Promise<{ id: string; name: string; correlationId: string; created: boolean; organizationId: string }> {
+    return this.request('POST', '/custom-component-libraries/find-or-create', { correlationId, name });
+  }
+
   // POST /api/custom-component-libraries/:id/dev (multipart)
   async uploadDev(libraryId: string, distDir: string): Promise<{ devUploadedAt: string }> {
     const form = buildUploadFormData(distDir);

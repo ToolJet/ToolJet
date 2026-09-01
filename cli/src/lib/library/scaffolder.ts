@@ -32,20 +32,27 @@ export async function scaffoldTemplate(name: string, displayName: string): Promi
   }
 }
 
-// Writes/merges the library's .tooljet/config.json. Should be called only
-// after the library has been registered on the server, since it embeds the
-// remote workspaceId/libraryId.
+// Writes/merges the library's .tooljet/config.json. Should be called only after the
+// library has been registered on the server, since it embeds the remote libraryId.
+// libraryName/correlationId are shared across every workspace (same library everywhere);
+// only libraryId varies, so it's merged into the `workspaces` map under workspaceId
+// alongside any other workspace already registered for this project.
 export function writeLibraryConfig(name: string, options: ScaffoldOptions): void {
   const { workspaceId, libraryId, libraryName, correlationId } = options;
 
   const configPath = path.join(name, '.tooljet', 'config.json');
 
-  let existingConfig = {};
+  let existingWorkspaces: Record<string, { libraryId: string }> = {};
   if (fs.existsSync(configPath)) {
-    existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    existingWorkspaces = existingConfig.workspaces ?? {};
   }
 
-  const config = { ...existingConfig, workspaceId, libraryId, libraryName, correlationId };
+  const config = {
+    libraryName,
+    correlationId,
+    workspaces: { ...existingWorkspaces, [workspaceId]: { libraryId } },
+  };
   fs.mkdirSync(path.join(name, '.tooljet'), { recursive: true });
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
