@@ -215,12 +215,17 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   - `loadMigrationsInOrder` throws if any migration in the requested chain has `resultingSchema ===
     null` (authoring never confirmed) — every uuid lookup below depends on reading that field, and
     would otherwise silently resolve to `undefined`.
-  - **Known preconditions/gaps for whichever later module wires replay to a real caller (e.g.
-    promote) — not exercised by any test here since nothing calls `applyMigrations` from a real
-    request path yet:**
-    1. The three foreign-key ops are not atomic with the other six during replay (see above) — a
-       chain mixing a foreign-key op with a later failing op leaves that key's DDL applied even
-       though the whole call throws.
+  - **Known preconditions/gaps, most inherited from before `applyMigrations` had a real request-path
+    caller:**
+    1. **Live, reachable in production as of promote (Task 4) — not fixed there, recorded here for
+       the plan owner.** The three foreign-key ops are not atomic with the other six during replay
+       (see above) — a chain mixing a foreign-key op with a later failing op leaves that key's DDL
+       applied even though the whole call throws. On an *incremental* promote (target already has
+       the table) this is now reachable from a real request: promote applies an FK op, a later op in
+       the same batch fails, the FK DDL stays applied while every application row for the batch is
+       discarded (`applyMigrations`'s own catch), and the next promote replays that FK op again and
+       fails with "constraint already exists" — the same stuck state Critical #2 of the Task 4 round-1
+       review describes for the crash-recovery path, but with no crash required.
     2. No `ADJUDICATION_PREDICATES` entry for the `'replay'` action (see above) — a crash between
        the target's DDL committing and `applyMigrations`'s own `confirm()` is always discarded as
        "never happened", so a retry re-runs DDL against a relation that already has it.

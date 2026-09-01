@@ -62,6 +62,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.ADD_FOREIGN_KEY,
           FEATURE_KEY.UPDATE_FOREIGN_KEY,
           FEATURE_KEY.DELETE_FOREIGN_KEY,
+          FEATURE_KEY.PROMOTE_TABLE,
+          FEATURE_KEY.PROMOTE_TABLE_PREVIEW,
         ],
         InternalTable
       );

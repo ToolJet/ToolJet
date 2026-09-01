@@ -2693,6 +2693,11 @@ export class TooljetDbTableOperationsService {
       await this.migrationRecorderService.discardApplications(migrationIds, targetRelation, appManager);
       await queryRunner.rollbackTransaction();
       await tjdbQueryRunner.rollbackTransaction();
+
+      // TooljetDatabaseError's constructor assumes a QueryFailedError shape (it indexes
+      // err.driverError) and throws a TypeError on anything else - a fail-closed NotFoundException
+      // from a sibling resolver, e.g., would otherwise crash the wrap instead of surfacing itself.
+      if (!(err instanceof QueryFailedError)) throw err;
       throw new TooljetDatabaseError(
         err.message,
         {

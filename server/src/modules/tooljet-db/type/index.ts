@@ -17,6 +17,8 @@ interface Features {
   [FEATURE_KEY.ADD_FOREIGN_KEY]: FeatureConfig;
   [FEATURE_KEY.UPDATE_FOREIGN_KEY]: FeatureConfig;
   [FEATURE_KEY.DELETE_FOREIGN_KEY]: FeatureConfig;
+  [FEATURE_KEY.PROMOTE_TABLE]: FeatureConfig;
+  [FEATURE_KEY.PROMOTE_TABLE_PREVIEW]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -13,4 +13,6 @@ export enum FEATURE_KEY {
   ADD_FOREIGN_KEY = 'add_foreign_key',
   UPDATE_FOREIGN_KEY = 'update_foreign_key',
   DELETE_FOREIGN_KEY = 'delete_foreign_key',
+  PROMOTE_TABLE = 'promote_table',
+  PROMOTE_TABLE_PREVIEW = 'promote_table_preview',
 }

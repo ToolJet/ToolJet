@@ -22,6 +22,10 @@ import { TableCountGuard } from '@modules/licensing/guards/table.guard';
 import { decamelizeKeys } from 'humps';
 
 import { CreatePostgrestTableDto, EditTableDto, EditColumnTableDto, PostgrestForeignKeyDto, AddColumnDto } from './dto';
+import { PromoteTableDto } from './dto/promote.dto';
+import { TooljetDbPromoteService } from './services/tooljet-db-promote.service';
+import { User } from '@modules/app/decorators/user.decorator';
+import { User as UserEntity } from '@entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TooljetDbJoinDto } from '@modules/tooljet-db/dto/join.dto';
 import { TooljetDbJoinExceptionFilter } from '@modules/tooljet-db/filters/tooljetdb-join-exceptions-filter';
@@ -48,6 +52,7 @@ export class TooljetDbController {
     protected readonly tableOperationsService: TooljetDbTableOperationsService,
     protected readonly postgrestProxyService: PostgrestProxyService,
     protected readonly bulkUploadService: TooljetDbBulkUploadService,
+    protected readonly promoteService: TooljetDbPromoteService,
     protected readonly logger: Logger
   ) {
     this.pinoLogger = logger;
@@ -253,6 +258,21 @@ export class TooljetDbController {
       foreign_key_id: foreignKeyId,
     };
     const result = await this.tableOperationsService.perform(organizationId, 'delete_foreign_key', params, undefined);
+    return decamelizeKeys({ result });
+  }
+
+  // Keys on :tableId, not :tableName like its neighbours — promote is an identity operation and a
+  // display name is not one.
+  @InitFeature(FEATURE_KEY.PROMOTE_TABLE)
+  @Post('/organizations/:organizationId/table/:tableId/promote')
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  async promoteTable(
+    @User() user: UserEntity,
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Body() promoteTableDto: PromoteTableDto
+  ) {
+    const result = await this.promoteService.promote(user, organizationId, tableId, promoteTableDto.environment_id);
     return decamelizeKeys({ result });
   }
 }
