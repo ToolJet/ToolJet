@@ -47,7 +47,7 @@ To verify a toggle's default AND its DOM effect, follow this exact pattern:
 1. Make ONE call `verifyAndModifyToggleFx('<displayName>', '<fxDefault>')` — this verifies the fx code editor shows the fxDefault value, clicks fx back, and FLIPS the toggle ON (default side-effect).
 2. Immediately assert the DOM effect of the FLIPPED/ON state (e.g., `data-disabled='true'` for Disable toggle; `hidden` for visibility; spinner visible for loading; `*` marker for mandatory). Do NOT call `verifyAndModifyToggleFx` again with the same default.
 3. If you must read the value back or toggle OFF again, call `verifyAndModifyToggleFx('<displayName>', '<flippedDefault>', false)` with `toggleModification: false` (pure read, no extra flip) — use the FLIPPED default (not the original) in the assertion.
-4. For fx-mode `.cm-line` render format (e.g., booleans rendering as `false` or `{{false}}`), use the value from the surface-cache fx-format resolution if present; otherwise emit the fx assertion behind a `/* RESOLVE-LIVE fx-format */` marker rather than assuming `{{false}}` verbatim.
+4. **RUNTIME-CONFIRMED**: Boolean toggle fx defaults render WITH `{{}}` wrapper in `.cm-line` (e.g., `{{false}}` NOT `false`). Pass the config default verbatim to verifyAndModifyToggleFx — use `'{{false}}'` or `'{{true}}'` per the source config, NOT the unwrapped raw value. The fx editor renders the braced form.
 
 **Minimal correct example (Disable toggle):**
 ```js
