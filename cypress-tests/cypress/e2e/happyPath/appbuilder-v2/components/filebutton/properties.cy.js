@@ -227,7 +227,7 @@ describe(
 
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-Filebutton-App`);
+    cy.apiCreateApp(`${fake.companyName}-${Date.now()}-Filebutton-App`);
     cy.openApp();
     dropWidget("File button", widget, 500, 100);
     cy.waitForElement(fileButtonSelector.button(widget));
