@@ -30,18 +30,21 @@ Copy the token, which begins with `tj_pat_`. You won't be able to view it again.
 
 ## Step 2: Set Your Environment Variables
 
-The server reads its configuration from the environment your AI client is launched from. Every client uses the same three variables.
+The server reads its configuration from the environment your AI client is launched from. Every client uses the same two variables.
 
 | Variable | Required | Description | Default |
 | ---------| -------- | ----------- | --------|
+| `TOOLJET_DEPLOYMENT_URL` | Yes | URL of your ToolJet instance | `http://localhost:3000` |
 | `TOOLJET_PAT` | Yes | The personal access token from Step 1 | — |
-| `TOOLJET_URL` | Yes | URL of your ToolJet Instance | `http://localhost:3000` |
-| `TOOLJET_APP_URL` | No | URL of the ToolJet App you wish to edit  | `http://localhost:8082` |
 
-Both URLs default to localhost, so you can omit them only when you are running ToolJet locally on the default ports. If you leave `TOOLJET_APP_URL` at its default while pointing at a deployed instance, the server still works but the app links it hands back will point at localhost.
+Most deployments serve the API and the UI from the same origin, so `TOOLJET_DEPLOYMENT_URL` covers both and is the only URL you need. It defaults to localhost, so you can omit it only when you are running ToolJet locally on the default ports.
+
+:::note If your API and UI are on different origins
+Set `TOOLJET_URL` to the API origin as well. The common case is a local ToolJet checkout, where the frontend runs on `:8082` and the backend on `:3000`: point `TOOLJET_DEPLOYMENT_URL` at the frontend and `TOOLJET_URL` at the backend. An explicit `TOOLJET_URL` always wins over the fallback.
+:::
 
 :::warning Treat your token as a secret
-The agent acts with the permissions of the token's owner in that workspace, so create the token in the workspace you actually want the agent to touch rather than in one with broader access. The token sits in plain text in your shell profile or your client's config file, so keep that file out of version control, and always use an `https://` instance URL, since the token is sent to `TOOLJET_URL` on every call.
+The agent acts with the permissions of the token's owner in that workspace, so create the token in the workspace you actually want the agent to touch rather than in one with broader access. The token sits in plain text in your shell profile or your client's config file, so keep that file out of version control, and always use an `https://` instance URL, since the token is sent to your instance on every call.
 :::
 
 Where you put these depends on your client. Pick one of the options below and set the variables **before** launching your client.
@@ -59,8 +62,7 @@ Replace the placeholder values with your own, then run the command. It appends t
 ```bash
 cat >> ~/.zshrc <<'EOF'
 export TOOLJET_PAT="tj_pat_..."
-export TOOLJET_URL="https://your-tooljet-instance.com"
-export TOOLJET_APP_URL="https://your-tooljet-instance.com"
+export TOOLJET_DEPLOYMENT_URL="https://your-tooljet-instance.com"
 EOF
 ```
 
@@ -79,8 +81,7 @@ Replace the placeholder values with your own, then run the command. It appends t
 ```bash
 cat >> ~/.bashrc <<'EOF'
 export TOOLJET_PAT="tj_pat_..."
-export TOOLJET_URL="https://your-tooljet-instance.com"
-export TOOLJET_APP_URL="https://your-tooljet-instance.com"
+export TOOLJET_DEPLOYMENT_URL="https://your-tooljet-instance.com"
 EOF
 ```
 
@@ -98,8 +99,7 @@ Replace the placeholder values with your own, then run the commands. They set th
 
 ```powershell
 [Environment]::SetEnvironmentVariable("TOOLJET_PAT", "tj_pat_...", "User")
-[Environment]::SetEnvironmentVariable("TOOLJET_URL", "https://your-tooljet-instance.com", "User")
-[Environment]::SetEnvironmentVariable("TOOLJET_APP_URL", "https://your-tooljet-instance.com", "User")
+[Environment]::SetEnvironmentVariable("TOOLJET_DEPLOYMENT_URL", "https://your-tooljet-instance.com", "User")
 ```
 
 Close and reopen PowerShell to load the variables.
@@ -122,8 +122,7 @@ Add this `env` block to `~/.claude/settings.json`. If the file already contains 
 {
   "env": {
     "TOOLJET_PAT": "tj_pat_...",
-    "TOOLJET_URL": "https://your-tooljet-instance.com",
-    "TOOLJET_APP_URL": "https://your-tooljet-instance.com"
+    "TOOLJET_DEPLOYMENT_URL": "https://your-tooljet-instance.com"
   }
 }
 ```
@@ -182,8 +181,7 @@ Add the same block to `.claude/settings.local.json` inside the project:
 {
   "env": {
     "TOOLJET_PAT": "tj_pat_...",
-    "TOOLJET_URL": "https://your-tooljet-instance.com",
-    "TOOLJET_APP_URL": "https://your-tooljet-instance.com"
+    "TOOLJET_DEPLOYMENT_URL": "https://your-tooljet-instance.com"
   }
 }
 ```
@@ -203,7 +201,7 @@ Confirm the variables are actually set in the environment your client will launc
 <TabItem value="unix" label="macOS / Linux" default>
 
 ```bash
-echo $TOOLJET_URL
+echo $TOOLJET_DEPLOYMENT_URL
 echo $TOOLJET_PAT
 ```
 
@@ -212,7 +210,7 @@ echo $TOOLJET_PAT
 <TabItem value="powershell" label="PowerShell">
 
 ```powershell
-echo $env:TOOLJET_URL
+echo $env:TOOLJET_DEPLOYMENT_URL
 echo $env:TOOLJET_PAT
 ```
 
@@ -278,8 +276,7 @@ Add the equivalent of this entry to your client's MCP configuration, using the a
       "args": ["/absolute/path/to/tooljet-mcp/bundle/index.js"],
       "env": {
         "TOOLJET_PAT": "tj_pat_...",
-        "TOOLJET_URL": "https://your-tooljet-instance.com",
-        "TOOLJET_APP_URL": "https://your-tooljet-instance.com"
+        "TOOLJET_DEPLOYMENT_URL": "https://your-tooljet-instance.com"
       }
     }
   }
@@ -306,9 +303,9 @@ The agent should inspect your datasources, create an app, add a query, bind a ta
 
 | Symptom | Cause and fix |
 | ------- | ------------- |
-| The server reports a missing variable | `TOOLJET_PAT` or `TOOLJET_URL` didn't reach the server. Export them and restart the client, which reads the environment at launch. |
+| The server reports a missing variable | `TOOLJET_PAT` or `TOOLJET_DEPLOYMENT_URL` didn't reach the server. Export them and restart the client, which reads the environment at launch. |
 | Tools don't appear at all | Your client didn't start the server. Confirm `node --version` is 20 or newer and that your client can see it. |
 | Calls fail with an authentication error | The token is expired, revoked, or was copied incompletely. Create a fresh one under **Settings → Access tokens**. |
-| Calls fail with a connection error | `TOOLJET_URL` is wrong or unreachable from your machine. Confirm it is the backend origin, not the frontend. |
+| Calls fail with a connection error | `TOOLJET_DEPLOYMENT_URL` is wrong or unreachable from your machine. If your API and UI are on different origins, set `TOOLJET_URL` to the backend origin. |
 | The agent can't see the workspace you expected    | A token's session is pinned to the workspace it was created in. Create a token in that workspace instead. |
-| App links point at localhost | `TOOLJET_APP_URL` is still at its default. Set it to your frontend origin. |
+| App links point at localhost | `TOOLJET_DEPLOYMENT_URL` is still at its default. Set it to your instance URL. |
