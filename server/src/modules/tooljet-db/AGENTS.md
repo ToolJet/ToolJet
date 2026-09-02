@@ -245,6 +245,24 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
        would need to advance the target's sequence past whatever it inserts, or later inserts will
        collide with the copied ids.
 
+- **A physical table is owned by `user_<organizationId>`, never the TJDB admin, at every place one is
+  physically created** — `applyCreateTable`, `TooljetDbEnvironmentAssignmentService`'s migration-B
+  `LIKE`-clone step, and `replayBaselineMigration` each call `transferTableOwnershipToTenant` right
+  after `CREATE TABLE`. Postgres requires ownership, not a grantable privilege, to run DDL as the
+  tenant role — without this, raw SQL (below) could only ever run DML.
+- **`applyMigrations`'s replay dispatch is three-way, not two**: `baseline` → `replayBaselineMigration`,
+  `raw_sql` → `replayRawSqlMigration`, everything else → `replayStructuredMigration`.
+- **`recordRawSql` breaks the record-then-confirm shape every structured op uses** — it writes
+  `resultingSchema` and the application's `appliedAt` together, in the same transaction as the SQL
+  itself, with no pending row ever visible. There is no shape-based predicate `adjudicatePending`
+  could ask of arbitrary SQL the way `ADJUDICATION_PREDICATES` asks of a structured action, so a
+  pending window here would risk a crash getting wrongly discarded as failed when it had actually
+  succeeded.
+- **Revert's "this is destructive" check is a single inline discriminator in
+  `TooljetDbRawSqlMigrationService.revert()`** (`kind === 'structured' && payload.action ===
+  'add_column'`), separate from `ADJUDICATION_PREDICATES` — extending "what's destructive" means
+  adding a case there, not in the recorder.
+
 ## Related modules
 
 - `app-environments` — owns environment/branch resolution; the relation resolver defers to it rather
