@@ -94,8 +94,8 @@ if (require.main === module) {
     "appBuilder/layout.js",
     "appBuilder/inspectorTree.js",
     "appBuilder/canvas.js",
-    "events.js",
-    "editor/textInput.js",
+    "appBuilder/events.js",
+    "appBuilder/editor/textInput.js",
   ].map(f => path.join(base, f));
   const out = path.join(__dirname, "../../cypress/support/componentAutomation/type-helper-index.md");
 

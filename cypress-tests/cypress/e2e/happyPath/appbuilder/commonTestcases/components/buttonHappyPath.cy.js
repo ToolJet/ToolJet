@@ -30,7 +30,7 @@ import {
   selectCSA,
   selectEvent,
   addSupportCSAData,
-} from "Support/utils/events";
+} from "Support/utils/appBuilder/events";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec
 // run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+

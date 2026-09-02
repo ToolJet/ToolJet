@@ -10,7 +10,7 @@ import {
 } from "Support/utils/appBuilder/components/modal";
 
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
-import { selectCSA, selectEvent } from "Support/utils/events";
+import { selectCSA, selectEvent } from "Support/utils/appBuilder/events";
 
 // REGENERATED for ModalV2 (legacy Modal removed). The old spec targeted the
 // deprecated Modal widget: `[data-cy="modal-title"]`, the size dropdown

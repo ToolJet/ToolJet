@@ -1,7 +1,7 @@
 import { commonWidgetSelector, cyParamName } from "Selectors/common";
 import { tableSelector } from "Selectors/table";
 import { verifyNodeData } from "Support/utils/appBuilder/inspector";
-import { selectEvent, configureCSA } from "Support/utils/events";
+import { selectEvent, configureCSA } from "Support/utils/appBuilder/events";
 import { tableText } from "Texts/table";
 
 // Spec-local scoped resize. The shared `cy.resizeWidget` uses `[class="bottom-right"]`

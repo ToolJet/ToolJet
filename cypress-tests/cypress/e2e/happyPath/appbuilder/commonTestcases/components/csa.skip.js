@@ -5,7 +5,7 @@ import {
   selectCSA,
   selectEvent,
   addSupportCSAData,
-} from "Support/utils/events";
+} from "Support/utils/appBuilder/events";
 import {
   openAccordion,
   addDefaultEventHandler,

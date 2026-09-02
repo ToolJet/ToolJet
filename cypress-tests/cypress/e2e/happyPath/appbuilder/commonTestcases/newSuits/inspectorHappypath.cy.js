@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
-import { addSupportCSAData, selectEvent } from "Support/utils/events";
+import { addSupportCSAData, selectEvent } from "Support/utils/appBuilder/events";
 import { createNewVersion } from "Support/utils/exportImport";
 import {
   deleteComponentFromInspector,

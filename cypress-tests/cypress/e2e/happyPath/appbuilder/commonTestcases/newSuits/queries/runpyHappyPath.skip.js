@@ -6,10 +6,10 @@ import {
 } from "Support/utils/commonWidget";
 import {
   randomString
-} from "Support/utils/editor/textInput";
+} from "Support/utils/appBuilder/editor/textInput";
 import {
   selectEvent
-} from "Support/utils/events";
+} from "Support/utils/appBuilder/events";
 
 import {
   addInputOnQueryField,

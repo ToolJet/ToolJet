@@ -1,5 +1,5 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
-import { selectEvent } from "Support/utils/events";
+import { selectEvent } from "Support/utils/appBuilder/events";
 import { commonQuerySelectors } from "Selectors/common";
 import { postgreSqlText } from "Texts/postgreSql";
 

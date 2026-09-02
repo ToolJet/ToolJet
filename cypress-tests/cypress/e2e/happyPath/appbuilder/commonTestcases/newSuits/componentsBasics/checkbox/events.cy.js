@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { addMultiEventsWithAlert } from "Support/utils/events";
+import { addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec

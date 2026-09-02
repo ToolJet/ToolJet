@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
-import { addCSA } from "Support/utils/editor/textInput";
+import { addCSA } from "Support/utils/appBuilder/editor/textInput";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec
 // run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+

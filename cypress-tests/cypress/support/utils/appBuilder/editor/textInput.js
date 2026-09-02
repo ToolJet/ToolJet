@@ -15,7 +15,7 @@ import {
   addSupportCSAData,
   selectCSA,
   selectEvent,
-} from "Support/utils/events";
+} from "Support/utils/appBuilder/events";
 
 /**
  * @tjBlock  csa

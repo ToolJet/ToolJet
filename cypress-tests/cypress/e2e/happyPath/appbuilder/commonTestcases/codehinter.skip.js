@@ -1,5 +1,5 @@
 import { fake } from "Fixtures/fake";
-import { addAndVerifyOnSingleLine } from "Support/utils/editor/codehinter";
+import { addAndVerifyOnSingleLine } from "Support/utils/appBuilder/editor/codehinter";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
     openEditorSidebar,

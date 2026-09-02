@@ -12,7 +12,7 @@ import {
   addNewRow,
 } from "Support/utils/appBuilder/components/table";
 import { openEditorSidebar, openAccordion } from "Support/utils/commonWidget";
-import { addMultiEventsWithAlert } from "Support/utils/events";
+import { addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
 import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // ---------------------------------------------------------------------------

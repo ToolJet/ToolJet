@@ -8,7 +8,7 @@ import {
   addSupportCSAData,
   selectCSA,
   selectEvent,
-} from "Support/utils/events";
+} from "Support/utils/appBuilder/events";
 
 export const verifyControlComponentAction = (widgetName, value) => {
   cy.forceClickOnCanvas();

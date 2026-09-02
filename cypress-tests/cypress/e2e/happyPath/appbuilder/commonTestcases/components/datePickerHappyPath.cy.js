@@ -3,7 +3,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { datePickerSelector } from "Selectors/datePicker";
 import { commonWidgetText } from "Texts/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
-import { selectEvent, addSupportCSAData } from "Support/utils/events";
+import { selectEvent, addSupportCSAData } from "Support/utils/appBuilder/events";
 import {
   openAndVerifyNode,
   openNode,

@@ -4,7 +4,7 @@ import {
   openEditorSidebar,
   verifyAndModifyParameter,
 } from "Support/utils/commonWidget";
-import { selectEvent, addSupportCSAData } from "Support/utils/events";
+import { selectEvent, addSupportCSAData } from "Support/utils/appBuilder/events";
 import { numberInputText } from "Texts/numberInput";
 import { commonWidgetText } from "Texts/common";
 

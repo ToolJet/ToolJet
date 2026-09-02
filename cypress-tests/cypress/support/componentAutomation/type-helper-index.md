@@ -62,15 +62,15 @@
 | - | `verifyWidgetMoved` | appBuilder/canvas.js | canvas | `verifyWidgetMoved('button1', before)   // before = getWidgetRect result` |
 | - | `verifyWidgetResized` | appBuilder/canvas.js | canvas | `verifyWidgetResized('button1', before) // before = getWidgetRect result` |
 | - | `verifyWidgetCount` | appBuilder/canvas.js | canvas | `verifyWidgetCount('button', 2)   // button1 + button2 after a clone` |
-| events | `selectEvent` | events.js | events | `selectEvent('On click', 'Show Alert')` |
-| csa | `selectCSA` | events.js | csa | `selectCSA('textinput1', 'Set text')` |
-| - | `addSupportCSAData` | events.js | csa | `addSupportCSAData('alert-message', 'Hello world')` |
-| - | `selectSupportCSAData` | events.js | csa | `selectSupportCSAData('First option')` |
-| - | `changeEventType` | events.js | events | `changeEventType('On blur', 0)` |
-| events | `addMultiEventsWithAlert` | events.js | events | `addMultiEventsWithAlert([{ event: 'On click', message: 'clicked' }])` |
-| - | `setCSAParam` | events.js | csa | `setCSAParam({ label: 'Column key', type: 'toggle', value: true })` |
-| csa | `configureCSA` | events.js | csa | `configureCSA('textinput1', 'Set text', [{ label: 'text', value: '{{"hi"}}' }])` |
-| - | `verifyControlComponentAction` | editor/textInput.js | csa | `verifyControlComponentAction('textinput1', 'hello')` |
-| - | `randomString` | editor/textInput.js | common | `randomString(8)` |
-| csa | `verifyCSA` | editor/textInput.js | csa | `verifyCSA('textinput1')` |
-| csa | `addCSA` | editor/textInput.js | csa | `addCSA('textinput1', [{ event: 'On click', action: 'Set text', value: 'hello' }])` |
+| events | `selectEvent` | appBuilder/events.js | events | `selectEvent('On click', 'Show Alert')` |
+| csa | `selectCSA` | appBuilder/events.js | csa | `selectCSA('textinput1', 'Set text')` |
+| - | `addSupportCSAData` | appBuilder/events.js | csa | `addSupportCSAData('alert-message', 'Hello world')` |
+| - | `selectSupportCSAData` | appBuilder/events.js | csa | `selectSupportCSAData('First option')` |
+| - | `changeEventType` | appBuilder/events.js | events | `changeEventType('On blur', 0)` |
+| events | `addMultiEventsWithAlert` | appBuilder/events.js | events | `addMultiEventsWithAlert([{ event: 'On click', message: 'clicked' }])` |
+| - | `setCSAParam` | appBuilder/events.js | csa | `setCSAParam({ label: 'Column key', type: 'toggle', value: true })` |
+| csa | `configureCSA` | appBuilder/events.js | csa | `configureCSA('textinput1', 'Set text', [{ label: 'text', value: '{{"hi"}}' }])` |
+| - | `verifyControlComponentAction` | appBuilder/editor/textInput.js | csa | `verifyControlComponentAction('textinput1', 'hello')` |
+| - | `randomString` | appBuilder/editor/textInput.js | common | `randomString(8)` |
+| csa | `verifyCSA` | appBuilder/editor/textInput.js | csa | `verifyCSA('textinput1')` |
+| csa | `addCSA` | appBuilder/editor/textInput.js | csa | `addCSA('textinput1', [{ event: 'On click', action: 'Set text', value: 'hello' }])` |

@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
-import { selectEvent, addSupportCSAData } from "Support/utils/events";
+import { selectEvent, addSupportCSAData } from "Support/utils/appBuilder/events";
 import {
   openNode,
   openAndVerifyNode,

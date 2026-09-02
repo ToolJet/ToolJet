@@ -36,7 +36,7 @@ import {
   selectCSA,
   selectEvent,
   addSupportCSAData,
-} from "Support/utils/events";
+} from "Support/utils/appBuilder/events";
 
 describe("Multiselect widget", () => {
   beforeEach(() => {

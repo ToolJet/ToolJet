@@ -3,7 +3,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { importSelectors } from "Selectors/exportImport";
 import { versionSwitcherSelectors } from "Selectors/version";
-import { renameApp } from "Support/utils/editor/editorHeaderOperations";
+import { renameApp } from "Support/utils/appBuilder/editor/editorHeaderOperations";
 import {
   importAndVerifyApp,
   setupDataSourceWithConstants,
