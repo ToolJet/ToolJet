@@ -12,6 +12,12 @@ concurrency:
   # cancel superseded PR runs (last label wins); never kill a push-validation run
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # Minimum % of a PR's changed executable lines the server suites must cover
+  # for the 'Patch Coverage' commit status to pass (see ci-gate). The
+  # 'skip-patch-coverage' PR label exempts a PR.
+  PATCH_COV_THRESHOLD: "80"
+
 jobs:
   # ---------------------------------------------------------------------------
   # 1. Detect which directories changed — gates all downstream jobs
@@ -364,7 +370,8 @@ jobs:
       # Patch coverage (server suite): of the lines this PR changed, how many did the
       # server tests cover. Computed here (not in ci-gate) because it must diff inside
       # the server/ee submodule, which is checked out with the token in this job. PR
-      # events only (needs a base SHA); informational — never gates.
+      # events only (needs a base SHA); enforced by ci-gate's 'Patch Coverage'
+      # commit status against PATCH_COV_THRESHOLD.
       - name: Patch coverage (server)
         if: >-
           ${{ !cancelled() && github.event_name == 'pull_request'
@@ -513,7 +520,8 @@ jobs:
         run: npm run --prefix server test:gitsync:e2e
       # Patch coverage (git-sync suite): diffs inside server/ee (checked out with the
       # token in this job) and intersects with the git-sync unit coverage. PR events
-      # only; informational — never gates.
+      # only; enforced by ci-gate's 'Patch Coverage' commit status against
+      # PATCH_COV_THRESHOLD.
       # v1: unit coverage only — git-sync lines exercised solely by the e2e suite read
       # as uncovered here (wiring e2e coverage in is a documented follow-up).
       - name: Patch coverage (git-sync)
@@ -768,7 +776,9 @@ jobs:
           # Coverage merging is a continue-on-error STEP inside test-server, not a
           # separate job — its own failure can't flip test-server.result, so it's
           # already excluded from the gate without needing an array exclusion here.
-          # coverageThreshold is 0 everywhere anyway; this is informational only.
+          # Global coverageThreshold is 0 everywhere and stays informational;
+          # patch coverage is enforced separately via the 'Patch Coverage'
+          # commit status (steps.patchcov below), not this verdict.
           builds=(
             "build-server:${{ needs.build-server.result }}"
             "build-frontend:${{ needs.build-frontend.result }}"
@@ -889,6 +899,25 @@ jobs:
           name: patch-coverage-gitsync
           path: /tmp/ci-results/patchcov
 
+      # Patch coverage enforcement: union both suites' patch-coverage JSONs and
+      # compare against PATCH_COV_THRESHOLD. Feeds the 'Patch Coverage' commit
+      # status below. The 'skip-patch-coverage' PR label exempts a PR; missing
+      # artifacts (push events, no server changes, failed suite) read as 'na'.
+      - name: Evaluate patch coverage
+        id: patchcov
+        if: >-
+          steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        run: |
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'skip-patch-coverage') }}" == "true" ]]; then
+            echo "verdict=skipped" >> "$GITHUB_OUTPUT"
+            echo "Patch coverage skipped via skip-patch-coverage label"
+          else
+            node scripts/check-patch-coverage.mjs \
+              --inputs /tmp/ci-results/patchcov/server.json,/tmp/ci-results/patchcov/gitsync.json \
+              --threshold "$PATCH_COV_THRESHOLD"
+          fi
+
       - name: Render PR comment
         if: >-
           github.event_name == 'pull_request'
@@ -978,6 +1007,36 @@ jobs:
               state: verdict === 'pass' ? 'success' : 'failure',
               context: 'CI Gate',
               description: verdict === 'pass' ? 'Full CI green' : 'Full CI failed',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Post Patch Coverage commit status
+        # Merge-enforcement companion to 'CI Gate': same `if`, so whenever a run
+        # mints a CI Gate status it also mints 'Patch Coverage' — a ruleset
+        # requiring it can never wedge a PR on an unposted status. success for
+        # na/skipped; failure only when coverage is below PATCH_COV_THRESHOLD.
+        if: >-
+          steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const verdict = '${{ steps.patchcov.outputs.verdict }}' || 'na';
+            const pct = '${{ steps.patchcov.outputs.pct }}';
+            const threshold = process.env.PATCH_COV_THRESHOLD;
+            const desc = {
+              pass: `${pct}% of changed executable lines covered (>= ${threshold}%)`,
+              fail: `${pct}% < ${threshold}% — changed lines need tests (see PR comment)`,
+              na: 'no applicable server changes',
+              skipped: 'skipped via skip-patch-coverage label',
+            }[verdict] || 'no applicable server changes';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request?.head?.sha || context.sha,
+              state: verdict === 'fail' ? 'failure' : 'success',
+              context: 'Patch Coverage',
+              description: desc.slice(0, 140),
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             });
 
