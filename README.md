@@ -14,12 +14,9 @@ ToolJet is the open-source foundation of ToolJet AI - the AI-native platform for
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img src="docs/static/img/readme/banner.png" alt="Tooljet dashboard showing inventory and orders"/>
+    <img width="2608" height="1578" alt="Screenshot 2026-09-01 at 6 56 04 PM" src="https://github.com/user-attachments/assets/a6451f99-4533-49f3-93c9-58191fe33447" />
 </p>
 
-<p align="center">
-    <img src="docs/static/img/readme/flowchart.png"/>
-</p>
 
 ## Features  
 
