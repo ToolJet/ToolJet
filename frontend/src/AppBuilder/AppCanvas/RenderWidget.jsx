@@ -317,7 +317,11 @@ const RenderWidget = ({
     <div
       style={{
         height: '100%',
-        padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
+        /* 
+         chart ,image, navigation has a padding property,
+         For components which missed padding property, we introduced a margin field so we are giving precedence to margin over padding.
+        */
+        padding: (resolvedStyles?.margin ?? resolvedStyles?.padding) == 'none' ? '0px' : `${BOX_PADDING}px`,
       }}
       className={innerWidgetClassName}
       data-cy={`draggable-widget-${componentName}`}
