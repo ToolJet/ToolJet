@@ -184,7 +184,6 @@
           "items": [
             "build-with-ai/use-ai-in-tooljet",
             "build-with-ai/generate-applications",
-            "build-with-ai/generate-queries",
             "build-with-ai/referencing-app-resources",
             "build-with-ai/ai-docs-assistant",
             "build-with-ai/ai-credits",
