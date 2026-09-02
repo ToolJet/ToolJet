@@ -7,7 +7,7 @@ import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
-import { BOX_PADDING } from './appCanvasConstants';
+import { resolveContainerBoxPadding } from './appCanvasUtils';
 import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
@@ -317,11 +317,7 @@ const RenderWidget = ({
     <div
       style={{
         height: '100%',
-        /* 
-         chart ,image, navigation has a padding property,
-         For components which missed padding property, we introduced a margin field so we are giving precedence to margin over padding.
-        */
-        padding: (resolvedStyles?.margin ?? resolvedStyles?.padding) == 'none' ? '0px' : `${BOX_PADDING}px`,
+        padding: resolveContainerBoxPadding(resolvedStyles),
       }}
       className={innerWidgetClassName}
       data-cy={`draggable-widget-${componentName}`}

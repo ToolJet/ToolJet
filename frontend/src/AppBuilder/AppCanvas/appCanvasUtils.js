@@ -294,6 +294,9 @@ export function computeComponentName(componentType, currentComponents, moduleNam
   return _componentName;
 }
 
+export const resolveContainerBoxPadding = (resolvedStyles) =>
+  (resolvedStyles?.margin ?? resolvedStyles?.padding) === 'none' ? '0px' : `${BOX_PADDING}px`;
+
 // Walks the ancestor chain of `newParentId`; returns true if `componentId`
 // appears anywhere along it (assigning it as the new parent would close a
 // cycle), or if the chain is already cyclic (defensive — protects against
