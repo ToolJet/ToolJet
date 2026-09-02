@@ -100,6 +100,21 @@ describe('TooljetDbDataController', () => {
       }
     }
 
+    // `createUser` bypasses SetupOrganizationsUtilService.create() (the real onboarding path that
+    // calls createTooljetDbTenantSchemaAndRole), so Task B0's ownership transfer needs the tenant
+    // role provisioned here instead.
+    async function ensureTenantRole(orgId: string): Promise<boolean> {
+      const tjds = getTooljetDbDataSource();
+      if (!tjds) return false;
+      try {
+        const [existing] = await tjds.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [`user_${orgId}`]);
+        if (!existing) await tjds.query(`CREATE ROLE "user_${orgId}"`);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     // ---------------------------------------------------------------------------
     // Helper: build a create-table payload matching CreatePostgrestTableDto
     // ---------------------------------------------------------------------------
@@ -200,6 +215,11 @@ describe('TooljetDbDataController', () => {
         if (!schemaReady) tooljetDbAvailable = false;
       }
 
+      if (tooljetDbAvailable) {
+        const roleReady = await ensureTenantRole(adminOrgId);
+        if (!roleReady) tooljetDbAvailable = false;
+      }
+
       // A freshly created test org has no app_environments row — the backfill migration only
       // covered pre-existing orgs, and createUser() (unlike real signup) doesn't seed one either.
       // createTable/create-relation need it (resolveEnvironmentId), same as a real signup flow provides.
@@ -242,6 +262,7 @@ describe('TooljetDbDataController', () => {
         });
         const otherOrgId = otherUser.defaultOrganizationId;
         await ensureWorkspaceSchema(otherOrgId);
+        await ensureTenantRole(otherOrgId);
         await ensureAppEnvironments(app, otherOrgId);
         const otherAuth = await login(app, 'other-admin@tooljet.io');
 

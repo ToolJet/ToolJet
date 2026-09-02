@@ -37,6 +37,7 @@ import {
   grantTenantRoleToTjdbAdminRole,
   isSQLModeDisabled,
   generateTJDBPasswordForRole,
+  transferTableOwnershipToTenant,
 } from 'src/helpers/tooljet_db.helper';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
 import {
@@ -505,6 +506,15 @@ export class TooljetDbTableOperationsService {
 
     const tableNameWithSchema = concatSchemaAndTableName(tenantSchema, relation.id);
     await tjdbQueryRunner.createPrimaryKey(tableNameWithSchema, primaryKeyColumnList);
+
+    if (!isSQLModeDisabled()) {
+      await transferTableOwnershipToTenant(
+        tjdbQueryRunner,
+        tenantSchema,
+        relation.id,
+        `user_${payload.organizationId}`
+      );
+    }
   }
 
   protected async createTable(
@@ -2769,6 +2779,15 @@ export class TooljetDbTableOperationsService {
       return resolved;
     });
     await tjdbQueryRunner.query(ddl);
+
+    if (!isSQLModeDisabled()) {
+      await transferTableOwnershipToTenant(
+        tjdbQueryRunner,
+        findTenantSchema(organizationId),
+        targetRelation.id,
+        `user_${organizationId}`
+      );
+    }
 
     if (payload.column_uuids && Object.keys(payload.column_uuids).length) {
       const columnNames = { ...(targetRelation.configurations?.columns?.column_names || {}), ...payload.column_uuids };

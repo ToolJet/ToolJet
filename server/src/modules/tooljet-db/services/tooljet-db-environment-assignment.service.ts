@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { EntityManager, QueryRunner } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
+import { findTenantSchema, isSQLModeDisabled, transferTableOwnershipToTenant } from 'src/helpers/tooljet_db.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
@@ -226,6 +226,10 @@ export class TooljetDbEnvironmentAssignmentService {
       `CREATE TABLE IF NOT EXISTS "${schema}"."${developmentRelationId}" (LIKE "${schema}"."${productionRelationId}" INCLUDING ALL)`
     );
 
+    if (!isSQLModeDisabled()) {
+      await transferTableOwnershipToTenant(tjdbQueryRunner, schema, developmentRelationId, `user_${organizationId}`);
+    }
+
     // 6. LIKE INCLUDING ALL copies serial columns' DEFAULT verbatim - still pointing at the
     // production table's sequence. Rewrite each to a fresh sequence owned by the twin, or a
     // development insert would advance production's counter.
@@ -234,7 +238,8 @@ export class TooljetDbEnvironmentAssignmentService {
       schema,
       productionRelationId,
       developmentRelationId,
-      columnNames
+      columnNames,
+      organizationId
     );
 
     // 7. Tick the baseline create migration against the twin so a later dev->production promote sees
@@ -263,7 +268,8 @@ export class TooljetDbEnvironmentAssignmentService {
     schema: string,
     productionRelationId: string,
     developmentRelationId: string,
-    columnNames: Record<string, string>
+    columnNames: Record<string, string>,
+    organizationId: string
   ): Promise<void> {
     const snapshot = await buildTableSchemaSnapshot(tjdbQueryRunner, schema, developmentRelationId, columnNames);
     // Match against the production relation id - that is the sequence name LIKE copied in. On a
@@ -277,7 +283,23 @@ export class TooljetDbEnvironmentAssignmentService {
     const substitute = (ddl: string) => ddl.replace(/\{\{self\}\}/g, developmentRelationId);
 
     for (const statement of sequenceDdl) {
-      await tjdbQueryRunner.query(substitute(statement.replace('CREATE SEQUENCE ', 'CREATE SEQUENCE IF NOT EXISTS ')));
+      const createStatement = substitute(statement.replace('CREATE SEQUENCE ', 'CREATE SEQUENCE IF NOT EXISTS '));
+      await tjdbQueryRunner.query(createStatement);
+
+      // The sequence is created as the TJDB admin (this connection), never the twin table's new
+      // owner (Task B0) - `ALTER SEQUENCE ... OWNED BY` below requires both to match, or Postgres
+      // refuses with "sequence must have same owner as table it is linked to". Skipped, same as
+      // transferTableOwnershipToTenant, when the tenant role doesn't exist (pre-per-tenant-role
+      // workspace) - the twin table's own transfer above already left it admin-owned in that case,
+      // so leaving the sequence admin-owned too keeps them matching.
+      if (!isSQLModeDisabled()) {
+        const dbUser = `user_${organizationId}`;
+        const [role] = await tjdbQueryRunner.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [dbUser]);
+        if (role) {
+          const sequenceName = createStatement.replace('CREATE SEQUENCE IF NOT EXISTS ', '');
+          await tjdbQueryRunner.query(`ALTER SEQUENCE ${sequenceName} OWNER TO "${dbUser}"`);
+        }
+      }
     }
     for (let index = 0; index < columns.length; index++) {
       const rewritten = columns[index];

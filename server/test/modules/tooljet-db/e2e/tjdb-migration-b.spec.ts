@@ -70,6 +70,15 @@ describe('TjdbRolloutMigrationB', () => {
       const organizationId = user.defaultOrganizationId;
       await ensureAppEnvironments(app, organizationId);
       await getTooljetDbDataSource().query(`CREATE SCHEMA IF NOT EXISTS "workspace_${organizationId}"`);
+
+      // `createUser` bypasses SetupOrganizationsUtilService.create() (the real onboarding path
+      // that calls createTooljetDbTenantSchemaAndRole), so Task B0's ownership transfer on the
+      // LIKE-clone call site needs the tenant role provisioned here instead.
+      const [existingRole] = await getTooljetDbDataSource().query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [
+        `user_${organizationId}`,
+      ]);
+      if (!existingRole) await getTooljetDbDataSource().query(`CREATE ROLE "user_${organizationId}"`);
+
       return organizationId;
     }
 
@@ -237,6 +246,14 @@ describe('TjdbRolloutMigrationB', () => {
       const developmentRelation = await relationRow(result.developmentRelationId);
       expect(developmentRelation.environment_id).toEqual(development.id);
       expect(await physicalRowCount(schema, result.developmentRelationId)).toBe(0);
+
+      // Task B0: the LIKE-cloned twin must come out owned by the workspace's tenant role, not the
+      // TJDB admin that ran the CREATE TABLE.
+      const [owner] = await getTooljetDbDataSource().query(
+        `SELECT tableowner FROM pg_tables WHERE schemaname = $1 AND tablename = $2`,
+        [schema, result.developmentRelationId]
+      );
+      expect(owner.tableowner).toBe(`user_${organizationId}`);
     });
 
     it('development inserts do not advance production sequence (serial default rewritten)', async () => {

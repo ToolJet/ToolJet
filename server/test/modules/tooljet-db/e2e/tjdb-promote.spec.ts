@@ -114,6 +114,14 @@ describe('TooljetDb promote', () => {
       if (tjdbAvailable) {
         try {
           await getTooljetDbDataSource().query(`CREATE SCHEMA IF NOT EXISTS "${tenantSchema}"`);
+
+          // `createUser` bypasses SetupOrganizationsUtilService.create() (the real onboarding path
+          // that calls createTooljetDbTenantSchemaAndRole), so Task B0's ownership transfer needs
+          // the tenant role provisioned here instead.
+          const [existingRole] = await getTooljetDbDataSource().query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [
+            `user_${orgId}`,
+          ]);
+          if (!existingRole) await getTooljetDbDataSource().query(`CREATE ROLE "user_${orgId}"`);
         } catch {
           tjdbAvailable = false;
         }

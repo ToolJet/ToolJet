@@ -48,6 +48,22 @@ describe('TooljetDbController', () => {
       }
     }
 
+    // `createUser` seeds Organization/User rows directly, bypassing SetupOrganizationsUtilService
+    // - the real onboarding path that calls createTooljetDbTenantSchemaAndRole. Task B0's ownership
+    // transfer needs the tenant role to actually exist, so tests exercising it provision the role
+    // themselves, same workaround shape as ensureWorkspaceSchema above.
+    async function ensureTenantRole(orgId: string): Promise<boolean> {
+      const tjds = getTooljetDbDataSource();
+      if (!tjds) return false;
+      try {
+        const [existing] = await tjds.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [`user_${orgId}`]);
+        if (!existing) await tjds.query(`CREATE ROLE "user_${orgId}"`);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
       tooljetDbAvailable = !!getTooljetDbDataSource();
@@ -68,6 +84,12 @@ describe('TooljetDbController', () => {
       if (tooljetDbAvailable) {
         const schemaReady = await ensureWorkspaceSchema(adminOrgId);
         if (!schemaReady) tooljetDbAvailable = false;
+      }
+
+      // Ensure the tenant role exists - Task B0's ownership transfer needs it to be a real role.
+      if (tooljetDbAvailable) {
+        const roleReady = await ensureTenantRole(adminOrgId);
+        if (!roleReady) tooljetDbAvailable = false;
       }
 
       const auth = await login(app);
@@ -162,6 +184,35 @@ describe('TooljetDbController', () => {
         const names = tableNames.map((row) => row.table_name);
         expect(names).toContain(relations[0].id);
         expect(names).not.toContain(internalTable.id);
+      });
+
+      // Table B0: raw SQL migration steps run as the tenant role, which needs ownership (not just
+      // grants) to run DDL - Postgres has no GRANT ALTER TABLE. create_table must transfer
+      // ownership at creation time.
+      it('transfers ownership of a newly created table to the workspace tenant role', async function () {
+        expect(tooljetDbAvailable).toBe(true);
+
+        const createRes = await request
+          .agent(app.getHttpServer())
+          .post(`/api/tooljet-db/organizations/${adminOrgId}/table`)
+          .set('Cookie', adminCookie)
+          .set('tj-workspace-id', adminOrgId)
+          .send(buildCreateTablePayload('ownership_tbl'));
+        expect([200, 201]).toContain(createRes.statusCode);
+
+        const manager = getDefaultDataSource().manager;
+        const internalTable = await manager.findOne(InternalTable, {
+          where: { organizationId: adminOrgId, tableName: 'ownership_tbl' },
+        });
+        const relations = await manager.find(InternalTableRelation, {
+          where: { internalTableId: internalTable.id },
+        });
+
+        const [owner] = await getTooljetDbDataSource().query(
+          `SELECT tableowner FROM pg_tables WHERE schemaname = $1 AND tablename = $2`,
+          [`workspace_${adminOrgId}`, relations[0].id]
+        );
+        expect(owner.tableowner).toBe(`user_${adminOrgId}`);
       });
 
       it('admin can list tables', async function () {

@@ -174,6 +174,58 @@ export class TooljetDbMigrationRecorderService {
   }
 
   /**
+   * Raw SQL's own recording shape - not insertPendingMigration's. There is no adjudication
+   * predicate for arbitrary SQL (a backfill or reference-data insert may not touch the schema at
+   * all), so a pending window here is not "not yet adjudicated," it is a state adjudicatePending
+   * could wrongly discard even though the SQL already succeeded. Insert the migration and its
+   * already-applied application row in one transaction, after the SQL has already run and
+   * resultingSchema has already been computed - this method's own transaction is the atomicity
+   * boundary, no confirm()/discard() call needed afterward.
+   */
+  async recordRawSql(
+    payload: { sql: string; refs: Record<string, string> },
+    internalTable: InternalTable,
+    relation: InternalTableRelation,
+    resultingSchema: TableSchemaSnapshot,
+    revertsMigrationId: string | null,
+    manager?: EntityManager
+  ): Promise<InternalTableMigration> {
+    const write = async (entityManager: EntityManager) => {
+      const sequence = await this.nextSequence(internalTable.id, entityManager);
+      const branchId = await this.relationResolverService.resolveBranchIdFor(
+        internalTable.organizationId,
+        entityManager
+      );
+
+      const migration = entityManager.create(InternalTableMigration, {
+        internalTableId: internalTable.id,
+        sequence: String(sequence),
+        branchId,
+        kind: 'raw_sql',
+        payload,
+        resultingSchema,
+        revertsMigrationId,
+        tooljetVersion: globalThis.TOOLJET_VERSION || null,
+        createdBy: (RequestContext.currentContext?.req as any)?.user?.id ?? null,
+      });
+      await entityManager.save(migration);
+
+      await entityManager.save(
+        entityManager.create(InternalTableMigrationApplication, {
+          migrationId: migration.id,
+          relationId: relation.id,
+          appliedAt: new Date(),
+        })
+      );
+
+      return migration;
+    };
+
+    if (manager) return write(manager);
+    return this.manager.transaction((transactionManager) => write(transactionManager));
+  }
+
+  /**
    * A timestamp, not a counter: `now()` wins whenever it is already past the table's highest
    * recorded sequence, which is always true for the first real migration after the rollout
    * baselines (sequence 1/2). The `max + 1` fallback only matters for several migrations recorded

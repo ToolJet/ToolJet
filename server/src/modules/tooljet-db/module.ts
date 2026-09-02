@@ -42,6 +42,7 @@ export class TooljetDbModule extends SubModule {
       TooljetDbMigrationRecorderService,
       TooljetDbEnvironmentAssignmentService,
       TooljetDbPromoteService,
+      TooljetDbRawSqlMigrationService,
     } = await this.getProviders(configs, 'tooljet-db', [
       'controller',
       'services/tooljet-db-table-operations.service',
@@ -53,6 +54,7 @@ export class TooljetDbModule extends SubModule {
       'services/tooljet-db-migration-recorder.service',
       'services/tooljet-db-environment-assignment.service',
       'services/tooljet-db-promote.service',
+      'services/tooljet-db-raw-sql-migration.service',
     ]);
 
     return this.cacheModule(cacheKey, {
@@ -81,6 +83,7 @@ export class TooljetDbModule extends SubModule {
         TooljetDbMigrationRecorderService,
         TooljetDbEnvironmentAssignmentService,
         TooljetDbPromoteService,
+        TooljetDbRawSqlMigrationService,
         TableCountGuard,
         FeatureAbilityFactory,
       ],

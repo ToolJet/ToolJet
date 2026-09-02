@@ -67,6 +67,14 @@ describe('TooljetDb replay equivalence', () => {
       if (tjdbAvailable) {
         try {
           await getTooljetDbDataSource().query(`CREATE SCHEMA IF NOT EXISTS "${tenantSchema}"`);
+
+          // `createUser` bypasses SetupOrganizationsUtilService.create() (the real onboarding path
+          // that calls createTooljetDbTenantSchemaAndRole), so the tenant role Task B0's ownership
+          // transfer needs at replay time does not exist unless provisioned here.
+          const [existingRole] = await getTooljetDbDataSource().query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [
+            `user_${orgId}`,
+          ]);
+          if (!existingRole) await getTooljetDbDataSource().query(`CREATE ROLE "user_${orgId}"`);
         } catch {
           tjdbAvailable = false;
         }
@@ -374,6 +382,15 @@ describe('TooljetDb replay equivalence', () => {
         expect(targetIdDefault).not.toContain(relationId);
 
         expect(await fullTypesByColumn(stagingRelation.id)).toEqual(await fullTypesByColumn(relationId));
+
+        // Task B0: this is the one path where a legacy/baselined table's physical CREATE TABLE
+        // executes live, outside migration A/B - the replayed table must come out owned by the
+        // workspace's tenant role, same as a freshly authored create_table.
+        const [owner] = await tjdb.query(`SELECT tableowner FROM pg_tables WHERE schemaname = $1 AND tablename = $2`, [
+          tenantSchema,
+          stagingRelation.id,
+        ]);
+        expect(owner.tableowner).toBe(`user_${orgId}`);
       });
     });
   });

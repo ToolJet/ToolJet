@@ -25,8 +25,10 @@ import { decamelizeKeys } from 'humps';
 
 import { CreatePostgrestTableDto, EditTableDto, EditColumnTableDto, PostgrestForeignKeyDto, AddColumnDto } from './dto';
 import { PromoteTableDto } from './dto/promote.dto';
+import { RawSqlMigrationDto } from './dto/raw-sql-migration.dto';
 import { TooljetDbPromoteService } from './services/tooljet-db-promote.service';
 import { TooljetDbEnvironmentAssignmentService } from './services/tooljet-db-environment-assignment.service';
+import { TooljetDbRawSqlMigrationService } from './services/tooljet-db-raw-sql-migration.service';
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -57,6 +59,7 @@ export class TooljetDbController {
     protected readonly bulkUploadService: TooljetDbBulkUploadService,
     protected readonly promoteService: TooljetDbPromoteService,
     protected readonly environmentAssignmentService: TooljetDbEnvironmentAssignmentService,
+    protected readonly rawSqlMigrationService: TooljetDbRawSqlMigrationService,
     protected readonly logger: Logger
   ) {
     this.pinoLogger = logger;
@@ -299,6 +302,21 @@ export class TooljetDbController {
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   async repairBaseline(@Param('organizationId') organizationId: string, @Param('tableId') tableId: string) {
     const result = await this.environmentAssignmentService.repairBaseline(tableId, organizationId);
+    return decamelizeKeys({ result });
+  }
+
+  // Keys on :tableId, not :tableName like its neighbours, same reason promote does — this is an
+  // identity operation, not a display-name one.
+  // TODO(B4): gate this route behind FEATURE_KEY.ADD_RAW_SQL_MIGRATION + FeatureAbilityGuard, same
+  // shape as promoteTable above — the licence/permission key itself is Task B4's job.
+  @Post('/organizations/:organizationId/table/:tableId/migrations/sql')
+  @UseGuards(JwtAuthGuard)
+  async recordRawSqlMigration(
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Body() rawSqlMigrationDto: RawSqlMigrationDto
+  ) {
+    const result = await this.rawSqlMigrationService.recordRawSqlMigration(organizationId, tableId, rawSqlMigrationDto);
     return decamelizeKeys({ result });
   }
 }
