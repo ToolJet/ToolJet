@@ -331,6 +331,7 @@ export function getGridBoundsShift(placements) {
   const minLeft = Math.min(...placements.map(({ left }) => left));
   const maxRight = Math.max(...placements.map(({ left, width }) => left + width));
 
+  if (maxRight - minLeft > NO_OF_GRIDS) return 0;
   if (minLeft < 0) return Math.min(-minLeft, Math.max(0, NO_OF_GRIDS - maxRight));
   if (maxRight > NO_OF_GRIDS) return NO_OF_GRIDS - maxRight;
   return 0;
