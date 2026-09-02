@@ -21,25 +21,42 @@ import {
  * @tjBlock  csa
  * @tjUsage  verifyControlComponentAction('textinput1', 'hello')
  * @tjDom    canvas → button widget → Control Component event → Set text action
+ * AUDIT: the event FLOW was rewritten to the current selectEvent/selectCSA path
+ * (the legacy `eventHandlerCard.eq(1)` card click no longer exists). KNOWN
+ * BLOCKER: the Set-text VALUE is a `{{...}}` binding, and clearAndTypeOnCodeMirror
+ * currently mangles braces (string form scrambles via its backspace logic → e.g.
+ * `{{components.text}i}nput1.value`; array form hits realType's can't-type-`{`).
+ * This is a suite-wide CodeMirror brace-typing bug (same class that quarantined
+ * addTextWidgetToVerifyValue) — this helper cannot go green until that is fixed.
  */
 export const verifyControlComponentAction = (widgetName, value) => {
+  // Rewritten to the current event flow (selectEvent/selectCSA): the legacy
+  // path used the pre-popover `eventHandlerCard.eq(1)` card click and the
+  // `["{{", ...]` array typing that realType cannot type. Wire the target
+  // widget's On change → Control Component → Set text on button1, binding
+  // button1's text to the widget's exposed value; typing the widget then
+  // reflects onto button1.
   cy.forceClickOnCanvas();
-  cy.dragAndDropWidget("button", 340, 90);
+  // Close the components panel if the caller's drop left it open, so this
+  // Button drag's own components-button click re-opens it (else search hidden).
+  cy.get("body").then(($b) => {
+    if ($b.find('[data-cy="widget-search-box-search-bar"]:visible').length) {
+      cy.get('[data-cy="right-sidebar-components-button"]').click();
+    }
+  });
+  cy.dragAndDropWidget("Button", 340, 90);
 
   openEditorSidebar(widgetName);
-  openAccordion(commonWidgetText.accordionEvents, ["Validation", "Devices"]);
-
-  cy.get(commonWidgetSelector.addMoreEventHandlerLink).click();
-  cy.get(commonWidgetSelector.eventHandlerCard).eq(1).click();
-
-  cy.get(commonWidgetSelector.actionSelection).type("Control component{Enter}");
-  cy.get(commonWidgetSelector.eventComponentSelection).type("button1{Enter}");
-  cy.get(commonWidgetSelector.eventComponentActionSelection).type(
-    "Set text{Enter}"
+  selectEvent("On change", "Control Component");
+  selectCSA("button1", "Set text");
+  cy.waitForAutoSave();
+  // Set-text value = the widget's bound value. String form so
+  // clearAndTypeOnCodeMirror's tokenizer handles the {{ }} (the array form hits
+  // the realType-can't-type-`{` branch).
+  cy.get('[data-cy="action-options-text-input-field"]:visible').clearAndTypeOnCodeMirror(
+    `{{components.${widgetName}.value}}`
   );
-  cy.get(commonWidgetSelector.componentTextInput)
-    .find('[data-cy*="-input-field"]')
-    .clearAndTypeOnCodeMirror(["{{", `components.${widgetName}.value}}`]);
+  cy.forceClickOnCanvas();
 
   cy.clearAndType(commonWidgetSelector.draggableWidget(widgetName), value);
   cy.get(
