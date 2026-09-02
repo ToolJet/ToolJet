@@ -97,7 +97,6 @@ const useAppData = (
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
-  const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
@@ -224,10 +223,16 @@ const useAppData = (
     }
   };
 
+  // Only OBSERVES pageSwitchInProgress to remember (locally, in a ref) that a
+  // switch is under way, for the onPageLoad-vs-runOnLoadQueries branch further
+  // below. Must NOT reset the flag itself — that's appSlice.js's re-entrancy
+  // guard, and resetting it here as soon as this effect fires (essentially
+  // immediately after switchPage sets it) silently defeated the guard for
+  // virtually its entire intended lifetime, regardless of how long doSwitch
+  // actually takes to finish.
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
       isPageSwitchRef.current = true;
-      setPageSwitchInProgress(false);
     }
   }, [pageSwitchInProgress, moduleMode]);
 
@@ -784,7 +789,7 @@ const useAppData = (
         setEnvironmentLoadingState('loading');
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
-        cleanUpStore(false);
+        cleanUpStore();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 
