@@ -10,6 +10,13 @@
  */
 import { resolveMarqueeCanvasId, isInMarqueeCanvas, mergeMarqueeSelection } from '../marqueeSelection';
 
+/** querySelector that throws on a miss, so a typo'd selector fails loudly instead of yielding null. */
+const queryOrThrow = (selector) => {
+  const element = document.querySelector(selector);
+  if (!element) throw new Error(`No element matched ${selector}`);
+  return element;
+};
+
 /** Mirrors the editor's DOM: an optional slot wrapper, .real-canvas[data-parentId], .rm-container[component-id]. */
 const canvasElement = ({ parentId, componentId, slotId }) => {
   document.body.innerHTML = `
@@ -18,7 +25,7 @@ const canvasElement = ({ parentId, componentId, slotId }) => {
         <div class="container-fluid rm-container p-0" component-id="${componentId}"></div>
       </div>
     ${slotId ? '</div>' : ''}`;
-  return document.querySelector(`.rm-container[component-id="${componentId}"]`);
+  return queryOrThrow(`.rm-container[component-id="${componentId}"]`);
 };
 
 describe('resolveMarqueeCanvasId', () => {
@@ -39,12 +46,12 @@ describe('resolveMarqueeCanvasId', () => {
 
   test('a drag in the header slot padding, outside the inner .real-canvas, still resolves to the header', () => {
     document.body.innerHTML = `<div component-id="canvas-header" id="slot"></div>`;
-    expect(resolveMarqueeCanvasId(document.getElementById('slot'))).toBe('canvas-header');
+    expect(resolveMarqueeCanvasId(queryOrThrow('#slot'))).toBe('canvas-header');
   });
 
   test('an element outside any canvas resolves to null rather than throwing', () => {
     document.body.innerHTML = `<div id="stray"></div>`;
-    expect(resolveMarqueeCanvasId(document.getElementById('stray'))).toBeNull();
+    expect(resolveMarqueeCanvasId(queryOrThrow('#stray'))).toBeNull();
   });
 });
 
@@ -71,8 +78,13 @@ describe('isInMarqueeCanvas', () => {
     });
 
     test('keeps a nested container as one unit rather than reaching into its children', () => {
-      expect(isInMarqueeCanvas('sub-1', 'sub-1')).toBe(true); // sub-2, a child of sub-1
-      expect(isInMarqueeCanvas('sub-2', 'sub-1')).toBe(false); // sub-2's own grandchildren
+      // Widgets are identified here by their parent, since that is what the scoping reads.
+      // A marquee drawn in sub-1, over a container sub-2 that holds widgets of its own.
+      const nestedContainer = { parent: 'sub-1' }; // sub-2 itself, a child of sub-1
+      const itsChildren = { parent: 'sub-2' }; // the widgets inside sub-2
+
+      expect(isInMarqueeCanvas(nestedContainer.parent, 'sub-1')).toBe(true);
+      expect(isInMarqueeCanvas(itsChildren.parent, 'sub-1')).toBe(false);
     });
 
     test('excludes a widget from a sibling canvas', () => {
