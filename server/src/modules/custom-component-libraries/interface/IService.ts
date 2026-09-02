@@ -24,17 +24,18 @@ export interface ICustomComponentLibrariesService {
     name: string
   ): Promise<{ id: string; name: string; correlationId: string; created: boolean }>;
   getLibrary(organizationId: string, id: string): Promise<CustomComponentLibrary>;
+  getLibraryByCorrelationId(organizationId: string, correlationId: string): Promise<CustomComponentLibrary>;
   listLibraries(organizationId: string): Promise<LibraryListItem[]>;
   deleteLibrary(organizationId: string, id: string): Promise<void>;
   uploadDev(
     userId: string,
     organizationId: string,
-    libraryId: string,
+    correlationId: string,
     files: UploadFiles
   ): Promise<{ devUploadedAt: Date }>;
   publishRevision(
     organizationId: string,
-    libraryId: string,
+    correlationId: string,
     files: UploadFiles,
     version: string,
     message?: string

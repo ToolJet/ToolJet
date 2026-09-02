@@ -23,6 +23,10 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
     throw new Error('Method not implemented.');
   }
 
+  async getLibraryByCorrelationId(organizationId: string, correlationId: string): Promise<CustomComponentLibrary> {
+    throw new Error('Method not implemented.');
+  }
+
   async listLibraries(organizationId: string): Promise<LibraryListItem[]> {
     throw new Error('Method not implemented.');
   }
@@ -34,7 +38,7 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
   async uploadDev(
     userId: string,
     organizationId: string,
-    libraryId: string,
+    correlationId: string,
     files: UploadFiles
   ): Promise<{ devUploadedAt: Date }> {
     throw new Error('Method not implemented.');
@@ -42,7 +46,7 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
 
   async publishRevision(
     organizationId: string,
-    libraryId: string,
+    correlationId: string,
     files: UploadFiles,
     version: string,
     message?: string

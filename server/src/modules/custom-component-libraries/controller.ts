@@ -22,15 +22,15 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
     throw new Error('Method not implemented.');
   }
 
-  @Post(':id/dev')
-  async uploadDev(@User() user, @Param('id') id: string, files?: any): Promise<any> {
+  @Post(':correlationId/dev')
+  async uploadDev(@User() user, @Param('correlationId') correlationId: string, files?: any): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
-  @Post(':id/revisions')
+  @Post(':correlationId/revisions')
   async publishRevision(
     @User() user,
-    @Param('id') id: string,
+    @Param('correlationId') correlationId: string,
     files?: any,
     body?: { version: string; message?: string }
   ): Promise<any> {
@@ -62,8 +62,8 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
     throw new Error('Method not implemented.');
   }
 
-  @Get(':id')
-  async get(@User() user, @Param('id') id: string): Promise<any> {
+  @Get(':correlationId')
+  async get(@User() user, @Param('correlationId') correlationId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

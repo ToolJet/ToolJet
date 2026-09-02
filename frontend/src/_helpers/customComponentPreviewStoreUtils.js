@@ -3,8 +3,9 @@
 
 export const streamKey = (libraryId, userId) => `${libraryId}:${userId}`;
 
-// devPinKeys: { [dashlessLibraryId]: 'dev:{userId}' }, exactly as stored in
-// globalSettings.customComponentLibraries.
+// devPinKeys: { [dashlessCorrelationId]: 'dev:{userId}' }, exactly as stored in
+// globalSettings.customComponentLibraries (pins are keyed by the library's stable
+// correlationId, not its workspace-scoped id, so they keep resolving across import/export).
 // Resolves them against the library list (dashless keys -> real libraryIds), returning:
 // - emails: { libraryId -> uploader email }, for every dev-pinned library (canvas badge)
 // - ownPins: { libraryId -> userId }, only pins where userId === currentUserId (streams)
@@ -13,7 +14,7 @@ export function resolveDevPins(libraries, devPinKeys, currentUserId) {
   const ownPins = {};
 
   libraries.forEach((lib) => {
-    const dashlessId = lib.id.replace(/-/g, '');
+    const dashlessId = lib.correlationId.replace(/-/g, '');
     const value = devPinKeys[dashlessId];
     if (typeof value !== 'string' || !value.startsWith('dev:')) return;
 
