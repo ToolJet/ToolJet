@@ -44,6 +44,7 @@ export class CustomComponentLibrariesService implements ICustomComponentLibrarie
     organizationId: string,
     libraryId: string,
     files: UploadFiles,
+    version: string,
     message?: string
   ): Promise<{ id: string; version: string; bundleUrl: string }> {
     throw new Error('Method not implemented.');

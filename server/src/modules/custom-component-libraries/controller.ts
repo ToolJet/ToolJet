@@ -28,7 +28,12 @@ export class CustomComponentLibrariesController implements ICustomComponentLibra
   }
 
   @Post(':id/revisions')
-  async publishRevision(@User() user, @Param('id') id: string, files?: any, body?: { message?: string }): Promise<any> {
+  async publishRevision(
+    @User() user,
+    @Param('id') id: string,
+    files?: any,
+    body?: { version: string; message?: string }
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

@@ -5,6 +5,21 @@ import { CSS_LIMIT, MANIFEST_LIMIT, MB } from './constants/limits';
 type MulterFile = { buffer: Buffer; size: number };
 type MulterFields = { bundle?: MulterFile[]; css?: MulterFile[]; manifest?: MulterFile[] };
 
+const VERSION_PATTERN = /^(\d+)(?:\.(\d+))?(?:\.(\d+))?$/;
+
+// Accepts X, X.Y, or X.Y.Z (digits only — no pre-release/build suffixes) and fills in missing
+// parts with 0, so "1" -> "1.0.0" and "1.1" -> "1.1.0". Normalizing to a single canonical form
+// keeps duplicate-version checks and storage paths (digits and dots only) unambiguous — otherwise
+// "1.1" and "1.1.0" would collide in meaning but not in the DB's uniqueness check.
+export function normalizeVersion(version: string): string {
+  const match = version ? VERSION_PATTERN.exec(version.trim()) : null;
+  if (!match) {
+    throw new BadRequestException('Version must be in the format X, X.Y, or X.Y.Z (e.g. 1, 1.1, or 1.2.0)');
+  }
+  const [, major, minor = '0', patch = '0'] = match;
+  return `${major}.${minor}.${patch}`;
+}
+
 function formatLimit(bytes: number): string {
   return `${(bytes / MB).toFixed(2)}MB`;
 }
