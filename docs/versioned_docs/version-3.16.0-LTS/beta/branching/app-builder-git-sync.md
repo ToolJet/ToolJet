@@ -10,7 +10,7 @@ Alongside the workspace-level **Pull** and **Commit** buttons, each application 
 
 ## Available Actions
 
-The button is labelled according to the action available in the current context:
+The button changes with the branch you are on and whether the application has reached Git yet:
 
 - **Commit** - Commits the application to the current branch. Available on a feature branch, and on the default branch in single-branch mode.
 - **Pull commit** - Pulls changes from Git into the application. Available on the default branch in multi-branch mode.
@@ -45,7 +45,7 @@ Pulling brings changes from Git into the application you have open. On the defau
 Version tags are stored in Git as `<application-correlation-id>/<version-name>`, but the picker shows only the version name.
 
 :::info
-Pulling from the App Builder first pulls the branch at the workspace level, then resolves the version for the application you have open. Other applications on the branch are updated by the same operation.
+Pulling from the App Builder brings in only this application and the modules and datasources it needs to run. Other applications on the branch are left untouched. To bring in the whole branch, pull from the dashboard instead.
 :::
 
 <br/>

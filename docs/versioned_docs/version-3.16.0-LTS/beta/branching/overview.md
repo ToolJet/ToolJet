@@ -75,7 +75,7 @@ Workflows and ToolJet Database tables are not branch-scoped yet. They behave the
 
 ### Folders
 
-Your folder structure in ToolJet is written to Git as the directory structure of the repository, so an application inside a **Billing** folder is committed to a `Billing/` directory. Renaming a folder in ToolJet would move every file inside it in Git, on every branch at once.
+Your folder structure in ToolJet is written to Git as the directory structure of the repository, so an application inside a **Billing** folder is committed to a `Billing/` directory.
 
 <!-- TODO: add a screenshot of the Git repository file tree showing ToolJet folders as directories.
      Suggested path: /img/development-lifecycle/branching/lts/overview/git-folder-structure.png -->

@@ -25,6 +25,18 @@ To commit application or module changes, open the application in the App Builder
 
 **Commit** only re-pushes resources that Git already knows about. A resource that has never been committed is handled by a separate first-time push flow, see [Push Unsynced Resources to Git](/docs/beta/branching/push-unsynced-resources).
 
+### Scope of a Push
+
+A push always covers the resource you are pushing plus the resources it needs to run. Unlike pulling, there is no dashboard action that pushes a whole branch at once, so each application, module, or set of datasource changes is pushed from its own screen.
+
+| Where you push from | What is pushed |
+|:--------------------|:---------------|
+| **App Builder** | The application, plus the modules and datasources it depends on |
+| **Module Builder** | The module, plus the resources it depends on |
+| **Data sources** page | Datasource changes on the current branch |
+
+Dependent resources travel with the resource so it does not arrive in Git in a broken state.
+
 ### What Is Committed
 
 Applications, modules, datasources and folder assignments are written to Git. Datasource credentials are treated carefully, so connecting the same repository to several instances does not move secrets between them.
@@ -39,7 +51,7 @@ Applications, modules, datasources and folder assignments are written to Git. Da
 Pulling follows the same rule in reverse. A workspace constant reference from Git updates the local value, non-encrypted values from Git overwrite local ones, and a directly entered credential is never overwritten by a pull.
 
 :::info
-Use workspace constants for credentials you want to travel with the repository. Anything typed directly into a datasource field stays on the instance where it was entered, so each instance keeps its own credentials and must have them set once.
+Use [workspace constants](/docs/security/constants/constants) for credentials you want to travel with the repository. Constants are resolved per environment, so the same reference points at the development value on one instance and the production value on another. Anything typed directly into a datasource field stays on the instance where it was entered, so each instance keeps its own credentials and must have them set once.
 :::
 
 ## Pull Changes
@@ -53,10 +65,10 @@ What a pull brings in depends on where you start it:
 | Where you pull from | What is pulled |
 |:--------------------|:---------------|
 | **Dashboard header**, on the **Applications**, **Data sources**, or **Modules** page | The whole branch: every application, module, datasource, and folder assignment |
-| **App Builder**, using the Git Sync action in the header | The branch first, then the chosen commit or version is resolved for the application you have open |
-| **Module Builder**, using the same Git Sync action | The branch first, then the chosen commit is resolved for the module you have open |
+| **App Builder**, using the Git Sync action in the header | Only that application, plus the modules and datasources it needs to run |
+| **Module Builder**, using the same Git Sync action | Only that module, plus the resources it needs to run |
 
-Pulling from a builder is not narrower than pulling from the dashboard. It pulls the branch at the workspace level and then resolves what you picked for the resource you have open, so other applications and modules on the branch are updated by the same operation.
+Pulling from a builder leaves the rest of the branch untouched, which is what you want when only one application is ready to test or release. Pull from the dashboard when you want the branch brought in as a whole, for example when setting up a fresh instance.
 
 What you can choose also depends on the branch:
 
@@ -73,7 +85,6 @@ Refer to [Git Sync in the App Builder](/docs/beta/branching/app-builder-git-sync
 
 <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/commit-and-pull/workspace-pull-modal.png" alt="Pull commit modal on the default branch, noting that the latest commit across all resources in the branch will be pulled" />
 
-Pulling an application also pulls the modules it references and the datasources it depends on.
 
 Pulling a whole branch runs as a background job and notifies you when it finishes. Applications, folders, and datasources update automatically once the job completes.
 
@@ -90,7 +101,31 @@ Saved versions can be pulled for the following use cases:
 - **Application migration** - Move a version from one instance to another, such as development to staging or production, without exporting and importing it.
 - **Version recovery** - Restore a version that was deleted from the workspace.
 
-Saved versions exist only on the default branch, and they are pulled from inside the application rather than from the dashboard. Open the application on the default branch, click **Pull commit**, and choose the version. A version that already exists in the workspace is not pulled again.
+Saved versions exist only on the default branch, and they are pulled from inside the application rather than from the dashboard. There are two ways to do it.
+
+#### From the Version Dropdown
+
+Use this to see which versions exist in Git but not yet in this workspace, and bring one in on its own.
+
+1. Open the application on the default branch and open the version dropdown in the header.
+2. Click **Refresh**. ToolJet checks Git for versions of this application.
+3. Any version that exists in Git but not in this workspace is added to the list.
+4. Hover that version and click **Pull**.
+
+<img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/commit-and-pull/version-dropdown-pull.png" alt="Version dropdown with a Refresh control, showing a version that exists in Git but not in the workspace with a Pull button beside it" />
+
+Versions are listed per environment, so switch the **Development**, **Staging**, and **Production** tabs to see the versions available in each.
+
+#### From the Pull Commit Dialog
+
+Use this when you want to choose between the latest commit and a saved version in one place.
+
+1. Open the application on the default branch.
+2. Click **Pull commit** in the App Builder header.
+3. Choose a version from the **Version** list, or keep **Latest commit** to pull the newest changes instead.
+4. Confirm the pull.
+
+A version that already exists in the workspace is not pulled again.
 
 
 <img className="screenshot-full img-full" src="/img/development-lifecycle/branching/lts/commit-and-pull/pull-modal-default-branch.png" alt="Pull commit modal inside an application on the default branch, with a version selected and a note that only this app and its dependencies will be pulled" />

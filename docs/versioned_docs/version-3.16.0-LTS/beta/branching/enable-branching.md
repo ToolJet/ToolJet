@@ -119,12 +119,6 @@ There are two ways out of the frozen state:
 - **Apply a valid license.** Once a license that includes branching is in place, everything unfreezes and your branches, commits, and versions continue to work exactly as before.
 - **Turn the toggle off yourself.** If you do not plan to renew, turn off **Branching** to continue on a single branch, or turn off **Git Sync** entirely. Editing resumes on the default branch as soon as you do.
 
-:::info
-The freeze is deliberate rather than an automatic downgrade. Moving a workspace between multi-branch and single-branch mode is not a clean transition once builders have edited applications and modules on feature branches, so ToolJet holds the workspace as it is and waits for an explicit decision instead of silently reverting it.
-:::
-
-The **Branching** toggle also stays disabled, with an explanatory tooltip, when your plan does not include multiple branches.
-
 <br/>
 ---
 
