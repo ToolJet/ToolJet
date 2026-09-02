@@ -1,12 +1,12 @@
-import { cyParamName } from "../../constants/selectors/common";
+import { cyParamName } from "Selectors/common";
 
-export const dataSourceSelector = {
+export const postgreSqlSelector = {
   leftSidebarDatasourceButton: "[data-cy='left-sidebar-database-button']",
   labelDataSources: "[data-cy='label-datasources']",
   addDatasourceLink: "[data-cy='add-datasource-link']",
 
   allDatasourceLabelAndCount: '[data-cy="datasource-list-header"]',
-  commonDsLabelAndCount: '[data-cy="commonlyused-datasource-button"]',
+  commonlyUsedLabelAndCount: '[data-cy="commonlyused-datasource-button"]',
   databaseLabelAndCount: '[data-cy="databases-datasource-button"]',
   apiLabelAndCount: '[data-cy="apis-datasource-button"]',
   cloudStorageLabelAndCount: '[data-cy="cloudstorage-datasource-button"]',
@@ -14,7 +14,7 @@ export const dataSourceSelector = {
   dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
-  dataSourceNameInputField: '[data-cy="added-ds-search-bar"]',
+  dataSourceNameInputField: '[data-cy="data-source-name-input-field"]',
   labelHost: '[data-cy="label-host"]',
   labelPort: '[data-cy="label-port"]',
   labelSsl: '[data-cy="label-ssl"]',
@@ -52,18 +52,10 @@ export const dataSourceSelector = {
   labelTransformation: '[data-cy="label-query-transformation"]',
   toggleTransformation: '[data-cy="transformation-toggle-switch"]',
   inputFieldTransformation: '[data-cy="transformation-input-input-field"]',
-  editorVariablePreview: '[data-cy="variable-preview"]',
-  baseUrlTextField: '[data-cy="base-url-text-field"]',
-  previewJsonDataContainer: '[data-cy="preview-json-data-container"]',
-  editorDSPopover: '[data-cy="show-ds-popover-button"]',
-  runjsQuery: '[data-cy="ds-run javascript code"]',
-  runjsInputField: '[data-cy="runjs-input-field"]',
-  queryAddParamButton: '[data-cy="query-param-add-button"]',
-  queryCardDeleteButton: '[data-cy="query-card-delete-button"]',
+
   headerQueryPreview: ".py-2",
   previewTabJson: '[data-cy="preview-tab-json"]',
   previewTabRaw: '[data-cy="preview-tab-raw"]',
-  previewTabRawContainer: '[data-cy="preview-raw-data-container"]',
 
   operationsDropDownLabel: '[data-cy="operation-dropdown-label"]',
   labelTableNameInputField: '[data-cy="label-table"]',
@@ -71,7 +63,6 @@ export const dataSourceSelector = {
   labelRecordsToUpdate: '[data-cy="label-records-to-update"]',
 
   queryTabAdvanced: '[data-cy="query-tab-advanced"]',
-  queryTabSettings: '[data-cy="query-tab-settings"]',
 
   labelRunQueryOnPageLoad: '[data-cy="run-on-app-load-toggle-label"]',
   labelRequestConfirmationOnRun:
@@ -81,14 +72,13 @@ export const dataSourceSelector = {
   labelSuccessMessageInput: '[data-cy="label-success-message-input"]',
   notificationDurationInput: '[data-cy="label-notification-duration-input"]',
   addEventHandler: '[data-cy="add-event-handler"]',
-  noEventHandlerMessage: '[data-cy="no-event-handler-message"]',
+  noEventHandlerMessage: '[data-cy="no-items-banner"]',
   postgresqlQueryRunButton: '[data-cy="postgresql1-query-run-button"]',
   psqlQueryLabel: '[data-cy="postgresql1-query-label"]',
   psqlQueryDeleteButton: '[data-cy="postgresql1-query-delete-button"]',
   deleteModalMessage: '[data-cy="modal-message"]',
   deleteModalCancelButton: '[data-cy="modal-cancel-button"]',
   deleteModalConfirmButton: '[data-cy="modal-confirm-button"]',
-  deleteQueryConfirmButton: '[data-cy="confirm-delete-query"]',
 
   querySelectDropdown: "[data-cy='query-select-dropdown']",
   opetionQuerySave: "[data-cy='query-save-option']",
@@ -99,63 +89,17 @@ export const dataSourceSelector = {
   recordsInputField: '[data-cy="records-input-field"]',
 
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
-  addedDsSearchIcon: '[data-cy="added-ds-search-icon"]',
-  AddedDsSearchBar: '[data-cy="added-ds-search-bar"]',
-  dsNameInputField: '[data-cy="data-source-name-input-field"]',
-  unSavedModalTitle: '[data-cy="unsaved-changes-title"]',
-  eventQuerySelectionField: '[data-cy="query-selection-field"]',
-  connectionAlertText: '[data-cy="connection-alert-text"]',
-  requiredIndicator: '[data-cy="required-indicator"]',
-  informationIcon: '[data-cy="information-icon"]',
-  deleteDSButton: (datasourceName) => {
-    return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
+  sslToggleInput: '[data-cy="ssl-enabled-toggle-input"]',
+  labelEncryptedText: '[data-cy="encrypted-text"]',
+  labelQueryTab: (tabName) => {
+    return `[data-cy="query-tab-${cyParamName(tabName)}"]`;
   },
-  labelFieldName: (fieldName) => {
-    return `[data-cy="label-${cyParamName(fieldName)}"]`;
-  },
-  dataSourceNameButton: (dataSourceName) => {
-    return `[data-cy="${cyParamName(dataSourceName)}-button"]`;
-  },
-  dropdownLabel: (label) => {
-    return `[data-cy="${cyParamName(label)}-dropdown-label"]`;
-  },
-  textField: (fieldName) => {
-    return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
-  },
-  subSection: (header) => {
-    return `[data-cy="${cyParamName(header)}-section"]`;
-  },
-  toggleInput: (toggleName) => {
-    return `[data-cy="${cyParamName(toggleName)}-toggle-input"]`;
-  },
-  button: (buttonName) => {
-    return `[data-cy="button-${cyParamName(buttonName)}"]`;
-  },
-  keyInputField: (header, index) => {
-    return `[data-cy="${cyParamName(header)}-key-input-field-${cyParamName(index)}"]`;
-  },
-  valueInputField: (header, index) => {
-    return `[data-cy="${cyParamName(header)}-value-input-field-${cyParamName(index)}"]`;
-  },
-  deleteButton: (header, index) => {
-    return `[data-cy="${cyParamName(header)}-delete-button-${cyParamName(index)}"]`;
-  },
-  addMoreButton: (header) => {
-    return `[data-cy="${cyParamName(header)}-add-button"]`;
-  },
-  dropdownField: (fieldName) => {
-    return `[data-cy="${cyParamName(fieldName)}-select-dropdown"]`;
-  },
-  labelFieldValidation: (fieldName) => {
-    return `[data-cy="${cyParamName(fieldName)}-is-required-validation-label"]`;
-  },
-  listQuery: (queryName) => {
-    return `[data-cy="list-query-${cyParamName(queryName)}"]`;
-  },
-  queryHandlerMenu: (queryName) => {
-    return `[data-cy="query-handler-menu-${cyParamName(queryName)}"]`;
-  },
-  datasourceOption: (datasourceName) => {
-    return `[data-cy="ds-${cyParamName(datasourceName)}"]`;
-  },
+};
+
+export const airTableSelector = {
+  operationSelectDropdown: '[data-cy="operation-select-dropdown"]',
+  baseIdInputField: '[data-cy="base-id-input-field"]',
+  tableNameInputField: '[data-cy="table-name-input-field"]',
+  recordIdInputField: '[data-cy="record-id-input-field"]',
+  bodyInputField: '[data-cy="body-input-field"]',
 };

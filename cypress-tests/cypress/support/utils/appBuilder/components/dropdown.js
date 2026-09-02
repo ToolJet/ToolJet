@@ -12,7 +12,7 @@
 // └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
-import { buttonText } from "Texts/button";
+import { buttonText } from "Texts/appBuilder/components/button";
 import { commonWidgetText } from "Texts/common";
 import {
   addDefaultEventHandler,

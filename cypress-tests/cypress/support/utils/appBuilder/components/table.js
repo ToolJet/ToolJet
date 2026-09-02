@@ -32,10 +32,10 @@
 //   sortByColumn                     -                    → canvas
 // └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector, cyParamName } from "Selectors/common";
-import { tableSelector } from "Selectors/table";
+import { tableSelector } from "Selectors/appBuilder/components/table";
 import { verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { selectEvent, configureCSA } from "Support/utils/appBuilder/events";
-import { tableText } from "Texts/table";
+import { tableText } from "Texts/appBuilder/components/table";
 
 /**
  * MODULE — appBuilder/components/table: NewTable widget test helpers spanning several facets.

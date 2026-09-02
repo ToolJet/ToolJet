@@ -3,7 +3,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 import { selectEvent } from "Support/utils/appBuilder/events";
 import { randomString } from "Support/utils/appBuilder/csa";
-import { buttonText } from "Texts/button";
+import { buttonText } from "Texts/appBuilder/components/button";
 
 import {
   addSuccessNotification,

@@ -20,7 +20,7 @@ import {
   verifyWidgetColorCss,
 } from "Support/utils/commonWidget";
 import { commonWidgetText, customValidation } from "Texts/common";
-import { textInputText } from "Texts/textInput";
+import { textInputText } from "Texts/appBuilder/components/textInput";
 
 /**
  * MODULE — appBuilder/components/inputField: shared input-widget helpers

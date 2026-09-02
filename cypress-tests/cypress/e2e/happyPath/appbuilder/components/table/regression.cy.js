@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
-import { tableText } from "Texts/table";
-import { tableSelector } from "Selectors/table";
+import { tableText } from "Texts/appBuilder/components/table";
+import { tableSelector } from "Selectors/appBuilder/components/table";
 import {
   searchOnTable,
   verifyTableElements,
@@ -14,8 +14,8 @@ import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPan
 
 // ---------------------------------------------------------------------------
 // NewTable rewrite (was Table). The widget migrated Table -> NewTable and the
-// ENTIRE data-cy schema changed; this spec, Selectors/table.js and
-// Support/utils/table.js were migrated to the new schema, verified against
+// ENTIRE data-cy schema changed; this spec, Selectors/appBuilder/components/table.js and
+// Support/utils/appBuilder/components/table.js were migrated to the new schema, verified against
 // frontend source AND a runtime DIAG dump:
 //   - search  : `<name>-search-input-field`      (SearchBar.jsx:38)
 //   - row     : `<name>-row-<i>`                  (TableRow.jsx:60)

@@ -5,7 +5,7 @@
 // └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector } from "Selectors/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
-import { buttonText } from "Texts/button";
+import { buttonText } from "Texts/appBuilder/components/button";
 import { commonWidgetText } from "Texts/common";
 import {
   selectColourFromColourPicker,

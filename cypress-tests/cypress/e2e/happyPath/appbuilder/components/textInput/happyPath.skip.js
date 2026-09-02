@@ -34,7 +34,7 @@ import {
   verifyCSA,
 } from "Support/utils/appBuilder/csa";
 import { commonWidgetText } from "Texts/common";
-import { textInputText } from "Texts/textInput";
+import { textInputText } from "Texts/appBuilder/components/textInput";
 
 describe("Text Input", () => {
   beforeEach(() => {

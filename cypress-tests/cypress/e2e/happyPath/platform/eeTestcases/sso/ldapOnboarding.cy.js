@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
-import { usersSelector } from "Selectors/manageUsers";
+import { commonEeSelectors, ssoEeSelector } from "Selectors/platform/eeCommon";
+import { usersSelector } from "Selectors/platform/manageUsers";
 import {
     logout,
     navigateToAppEditor,
@@ -14,8 +14,8 @@ import {
 import { setupAndUpdateRole } from "Support/utils/manageGroups";
 import { disableToggle, enableToggle } from "Support/utils/platform/eeCommon";
 import { ssoText } from "Texts/common";
-import { ssoEeText } from "Texts/eeCommon";
-import { usersText } from "Texts/manageUsers";
+import { ssoEeText } from "Texts/platform/eeCommon";
+import { usersText } from "Texts/platform/manageUsers";
 import { sanitize } from "Support/utils/common";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { apiRequest as baseApiRequest } from "Support/utils/externalApi";

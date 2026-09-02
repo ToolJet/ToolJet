@@ -9,8 +9,8 @@ import {
   deleteDatasource,
   verifyValueOnInspector,
 } from "Support/utils/marketplace/datasources/dataSource";
-import { dataSourceSelector } from "Selectors/dataSource";
-import { dataSourceText } from "Texts/dataSource";
+import { dataSourceSelector } from "Selectors/marketplace/dataSource";
+import { dataSourceText } from "Texts/marketplace/dataSource";
 import {
   navigateToManageGroups,
   pinInspector,

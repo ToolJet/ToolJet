@@ -37,12 +37,12 @@
  * NOT here: component event handlers → appBuilder/events.js · datasource connection
  *   setup → marketplace/datasources · component-state tree → inspectorTree.js.
  */
-import { postgreSqlSelector } from "Selectors/postgreSql";
+import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
 import { selectEvent } from "Support/utils/appBuilder/events";
 import { commonSelectors, commonQuerySelectors } from "Selectors/common";
-import { dataSourceSelector } from "Selectors/dataSource";
+import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { navigateToAppEditor } from "Support/utils/common";
-import { postgreSqlText } from "Texts/postgreSql";
+import { postgreSqlText } from "Texts/marketplace/postgreSql";
 
 /**
  * @tjBlock  common

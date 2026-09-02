@@ -1,5 +1,5 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { buttonText } from "Texts/button";
+import { buttonText } from "Texts/appBuilder/components/button";
 import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 

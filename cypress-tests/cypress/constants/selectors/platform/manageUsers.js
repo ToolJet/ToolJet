@@ -1,4 +1,4 @@
-import { cyParamName } from "./common";
+import { cyParamName } from "Selectors/common";
 
 export const usersSelector = {
   dropdown: "[data-cy=workspace-dropdown]",

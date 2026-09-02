@@ -19,7 +19,7 @@ import {
   selectEvent,
 } from "Support/utils/appBuilder/events";
 import { randomString } from "Support/utils/appBuilder/csa";
-import { buttonText } from "Texts/button";
+import { buttonText } from "Texts/appBuilder/components/button";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec
 // run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+

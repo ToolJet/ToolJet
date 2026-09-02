@@ -7,14 +7,14 @@ import {
   sortSelectors,
   editRowSelectors,
   bulkUploadDataSelectors,
-} from "Selectors/database";
+} from "Selectors/marketplace/database";
 import {
   databaseText,
   createNewColumnText,
   createNewRowText,
   editRowText,
   bulkUploadDataText,
-} from "Texts/database";
+} from "Texts/marketplace/database";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 

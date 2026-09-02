@@ -1,4 +1,4 @@
-import { cyParamName } from "./common";
+import { cyParamName } from "Selectors/common";
 
 export const dashboardSelector = {
   emptyPageImage: '[data-cy="empty-home-page-image"]',

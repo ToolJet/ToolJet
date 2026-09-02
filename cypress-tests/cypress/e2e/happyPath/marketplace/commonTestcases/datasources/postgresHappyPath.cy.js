@@ -4,7 +4,7 @@ import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dat
 import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { postgresUIConfig, postgresFormConfig, postgresQueryConfig, postgresQueryFillConfig } from "Constants/constants/marketplace/datasources/postgres";
 import { verifyPreviewData } from "Support/utils/appBuilder/querymanager/queries";
-import { dataSourceSelector } from "Constants/selectors/dataSource";
+import { dataSourceSelector } from "Constants/selectors/marketplace/dataSource";
 
 const data = {};
 

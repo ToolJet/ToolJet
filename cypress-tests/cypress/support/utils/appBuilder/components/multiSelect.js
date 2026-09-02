@@ -6,7 +6,7 @@
 //   verifyMultiselectHeader          -                    → canvas
 // └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { multiselectSelector } from "Selectors/multiselect";
+import { multiselectSelector } from "Selectors/appBuilder/components/multiselect";
 
 /**
  * MODULE — appBuilder/components/multiSelect: Multiselect widget canvas helpers.

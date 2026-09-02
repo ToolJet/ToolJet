@@ -2,9 +2,9 @@ import {
   fillDataSourceTextField,
   selectAndAddDataSource,
 } from "Support/utils/marketplace/datasources/postgreSql";
-import { mongoDbText } from "Texts/mongoDb";
-import { postgreSqlSelector } from "Selectors/postgreSql";
-import { postgreSqlText } from "Texts/postgreSql";
+import { mongoDbText } from "Texts/marketplace/mongoDb";
+import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
+import { postgreSqlText } from "Texts/marketplace/postgreSql";
 
 export const connectMongo = () => {
   selectAndAddDataSource(mongoDbText.mongoDb);

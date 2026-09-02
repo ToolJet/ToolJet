@@ -5,7 +5,7 @@
 //   selectAndVerifyTime              -                    → canvas
 // └──────────────────────────────────────────────────────────────────┘
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { datePickerSelector } from "Selectors/datePicker";
+import { datePickerSelector } from "Selectors/appBuilder/components/datePicker";
 import moment from "moment";
 
 /**
@@ -13,7 +13,7 @@ import moment from "moment";
  * FOR AI: drive the rendered date/time picker on the canvas — open the widget's calendar
  * and pick a date (selectAndVerifyDate), assert the current input value (verifyDate), or
  * type/verify a time (selectAndVerifyTime). Dates are passed as `DD/MM/YYYY` strings and
- * normalised via moment. Selectors come from Selectors/datePicker (calendar year/month/day,
+ * normalised via moment. Selectors come from Selectors/appBuilder/components/datePicker (calendar year/month/day,
  * time input).
  * NOT here: inspector property/style config → appBuilder/properties.js · styles.js.
  */

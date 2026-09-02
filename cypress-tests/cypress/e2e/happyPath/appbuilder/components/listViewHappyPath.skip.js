@@ -1,4 +1,4 @@
-import { listviewText } from "Texts/listview";
+import { listviewText } from "Texts/appBuilder/components/listview";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 

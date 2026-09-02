@@ -2,8 +2,8 @@ import {
   databaseSelectors,
   filterSelectors,
   sortSelectors,
-} from "Selectors/database";
-import { databaseText, filterText, sortText } from "Texts/database";
+} from "Selectors/marketplace/database";
+import { databaseText, filterText, sortText } from "Texts/marketplace/database";
 import { navigateToDatabase } from "Support/utils/common";
 import {
   verifyAllElementsOfPage,

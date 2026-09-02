@@ -5,8 +5,8 @@ import {
 } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
-import { postgreSqlSelector } from "Selectors/postgreSql";
-import { postgreSqlText } from "Texts/postgreSql";
+import { postgreSqlSelector } from "Selectors/marketplace/postgreSql";
+import { postgreSqlText } from "Texts/marketplace/postgreSql";
 import { closeDSModal } from "Support/utils/marketplace/datasources/dataSource";
 
 export const addQuery = (queryName, query, dbName) => {

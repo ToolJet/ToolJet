@@ -5,7 +5,7 @@ import {
   verifyAndModifyParameter,
 } from "Support/utils/commonWidget";
 import { selectEvent, addSupportCSAData } from "Support/utils/appBuilder/events";
-import { numberInputText } from "Texts/numberInput";
+import { numberInputText } from "Texts/appBuilder/components/numberInput";
 import { commonWidgetText } from "Texts/common";
 
 // REGENERATED 2026-06-24 — replaces the quarantined legacy spec.

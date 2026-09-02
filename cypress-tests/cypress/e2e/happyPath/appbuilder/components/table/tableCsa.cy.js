@@ -1,8 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { commonWidgetText } from "Texts/common";
-import { tableText } from "Texts/table";
-import { tableSelector } from "Selectors/table";
+import { tableText } from "Texts/appBuilder/components/table";
+import { tableSelector } from "Selectors/appBuilder/components/table";
 import {
   resizeTableWidget,
   toggleTableProperty,

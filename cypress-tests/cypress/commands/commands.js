@@ -4,12 +4,12 @@ import {
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
-import { importSelectors } from "Selectors/exportImport";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
+import { importSelectors } from "Selectors/platform/exportImport";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { selectAppCardOption } from "Support/utils/common";
 import { commonText, createBackspaceText } from "Texts/common";
-import { importText } from "Texts/exportImport";
+import { importText } from "Texts/platform/exportImport";
 const API_ENDPOINT =
   Cypress.env("environment") === "Community"
     ? "/api/library_apps"

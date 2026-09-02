@@ -1,4 +1,4 @@
-import { cyParamName } from "./common";
+import { cyParamName } from "Selectors/common";
 
 export const databaseSelectors = {
   addTableButton: '[data-cy="add-table-button"]',

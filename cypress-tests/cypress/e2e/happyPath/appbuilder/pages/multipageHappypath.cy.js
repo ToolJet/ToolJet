@@ -1,5 +1,5 @@
 import { fake } from "Fixtures/fake";
-import { multipageSelector } from "Selectors/multipage";
+import { multipageSelector } from "Selectors/appBuilder/pages/multipage";
 
 import {
   addEventHandler,

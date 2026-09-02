@@ -23,7 +23,7 @@
  * PRECONDITION: openPagesPanel() first; per-page ops openPageEditor then closePageEditor.
  * NOT here: header/version ops → editorHeader.js · component config → properties.js/styles.js.
  */
-import { multipageSelector } from "Selectors/multipage";
+import { multipageSelector } from "Selectors/appBuilder/pages/multipage";
 import { commonSelectors } from "../../../constants/selectors/common";
 
 /**

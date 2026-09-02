@@ -1,6 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { multipageSelector } from "Selectors/multipage";
+import { multipageSelector } from "Selectors/appBuilder/pages/multipage";
 import {
   openEditorSidebar
 } from "Support/utils/commonWidget";

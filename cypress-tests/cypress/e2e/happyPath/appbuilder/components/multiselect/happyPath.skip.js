@@ -1,5 +1,5 @@
-import { multiselectSelector } from "Selectors/multiselect";
-import { multiselectText } from "Texts/multiselect";
+import { multiselectSelector } from "Selectors/appBuilder/components/multiselect";
+import { multiselectText } from "Texts/appBuilder/components/multiselect";
 import {
   commonText,
   commonWidgetText,
