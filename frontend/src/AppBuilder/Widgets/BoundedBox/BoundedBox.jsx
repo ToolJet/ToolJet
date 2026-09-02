@@ -15,6 +15,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
   const [outerDivWidth, setOuterDivWidth] = useState();
+  const [frameSize, setFrameSize] = useState();
 
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
@@ -50,6 +51,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
       wrapperElement.style.width = `${frame.width}px`;
       wrapperElement.style.height = `${frame.height}px`;
+      setFrameSize((current) => (current?.width === frame.width && current?.height === frame.height ? current : frame));
     };
 
     const handleImageLoad = () => {
@@ -240,6 +242,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
               darkMode={darkMode}
               selectElementStyles={selectElementStyles}
               getExposedAnnotations={getExposedAnnotations}
+              containerSize={frameSize}
             />
           );
         }}
@@ -253,6 +256,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
             selectElementStyles={selectElementStyles}
             labels={labels}
             getExposedAnnotations={getExposedAnnotations}
+            containerSize={frameSize}
           />
         )}
         renderContent={() => null}
