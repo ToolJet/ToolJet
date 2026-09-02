@@ -74,7 +74,7 @@ export class TooljetDbRawSqlMigrationService {
       // is recorded as this migration's output, and a later migration's replay reads column
       // identity from its predecessor's resultingSchema (see replayStructuredMigration). Recording
       // the pre-reconciliation snapshot would permanently record `undefined` as a new column's uuid.
-      const reconciled = this.reconcileColumns(snapshot, relation.configurations);
+      const reconciled = reconcileColumns(snapshot, relation.configurations);
       snapshot.columns.forEach((column) => (column.uuid = reconciled.column_names[column.name]));
       relation.configurations = { columns: reconciled };
 
@@ -132,29 +132,33 @@ export class TooljetDbRawSqlMigrationService {
       return resolved;
     });
   }
+}
 
-  /**
-   * A column present in the new snapshot with no prior uuid (`column.uuid` undefined - there is no
-   * `normalize*` step for arbitrary SQL to have minted one) is new: mint one now, the one place
-   * this standing invariant ("a column uuid is minted only in a normalize* method") deliberately
-   * bends. A prior column no longer in the snapshot was dropped by the SQL - its entry is not
-   * carried forward. Everything else keeps its existing uuid untouched.
-   */
-  private reconcileColumns(
-    snapshot: TableSchemaSnapshot,
-    currentConfigurations: { columns?: { configurations?: Record<string, unknown> } }
-  ): { column_names: Record<string, string>; configurations: Record<string, unknown> } {
-    const priorConfigurations = currentConfigurations?.columns?.configurations || {};
+/**
+ * A column present in the new snapshot with no prior uuid (`column.uuid` undefined - there is no
+ * `normalize*` step for arbitrary SQL to have minted one) is new: mint one now, the one place this
+ * standing invariant ("a column uuid is minted only in a normalize* method") deliberately bends. A
+ * prior column no longer in the snapshot was dropped by the SQL - its entry is not carried forward.
+ * Everything else keeps its existing uuid untouched.
+ *
+ * Module-level (not a class method): shared verbatim between this service's live-authoring path and
+ * `TooljetDbTableOperationsService.replayRawSqlMigration` - both must reconcile identically or replay
+ * can drift from what authoring recorded.
+ */
+export function reconcileColumns(
+  snapshot: TableSchemaSnapshot,
+  currentConfigurations: { columns?: { configurations?: Record<string, unknown> } }
+): { column_names: Record<string, string>; configurations: Record<string, unknown> } {
+  const priorConfigurations = currentConfigurations?.columns?.configurations || {};
 
-    const column_names: Record<string, string> = {};
-    const configurations: Record<string, unknown> = {};
+  const column_names: Record<string, string> = {};
+  const configurations: Record<string, unknown> = {};
 
-    for (const column of snapshot.columns) {
-      const uuid = column.uuid || uuidv4();
-      column_names[column.name] = uuid;
-      configurations[uuid] = priorConfigurations[uuid] ?? {};
-    }
-
-    return { column_names, configurations };
+  for (const column of snapshot.columns) {
+    const uuid = column.uuid || uuidv4();
+    column_names[column.name] = uuid;
+    configurations[uuid] = priorConfigurations[uuid] ?? {};
   }
+
+  return { column_names, configurations };
 }

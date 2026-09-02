@@ -56,8 +56,9 @@ import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@modules/lic
 import { generatePayloadForLimits } from '@modules/licensing/helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
-import { fetchForeignKeys, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
+import { buildTableSchemaSnapshot, fetchForeignKeys, TableSchemaSnapshot } from '../helpers/table-schema-snapshot';
 import { TooljetDbMigrationRecorderService, StructuredMigrationPayload } from './tooljet-db-migration-recorder.service';
+import { reconcileColumns } from './tooljet-db-raw-sql-migration.service';
 import { InternalTableMigration } from 'src/entities/internal_table_migration.entity';
 
 enum AggregateFunctions {
@@ -2683,6 +2684,8 @@ export class TooljetDbTableOperationsService {
       for (const sourceMigration of migrations) {
         if (sourceMigration.kind === 'baseline') {
           await this.replayBaselineMigration(sourceMigration, organizationId, targetRelation, sharedConnectionManagers);
+        } else if (sourceMigration.kind === 'raw_sql') {
+          await this.replayRawSqlMigration(sourceMigration, organizationId, targetRelation, sharedConnectionManagers);
         } else {
           await this.replayStructuredMigration(
             sourceMigration,
@@ -2761,23 +2764,13 @@ export class TooljetDbTableOperationsService {
     };
     const tjdbQueryRunner = tjdbManager.queryRunner;
 
-    const resolvedIdByPlaceholder = new Map<string, string>([['self', targetRelation.id]]);
-    for (const [placeholder, coRelationId] of Object.entries(payload.refs || {})) {
-      const sibling = await this.relationResolverService.resolveSiblingByCoRelationId(
-        organizationId,
-        coRelationId,
-        targetRelation.environmentId,
-        targetRelation.branchId,
-        appManager
-      );
-      resolvedIdByPlaceholder.set(placeholder, sibling.id);
-    }
-
-    const ddl = payload.ddl.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
-      const resolved = resolvedIdByPlaceholder.get(key);
-      if (!resolved) throw new Error(`Unresolved placeholder "{{${key}}}" in baseline migration ${sourceMigration.id}`);
-      return resolved;
-    });
+    const resolvedIdByPlaceholder = await this.resolveRefPlaceholders(
+      payload.refs,
+      organizationId,
+      targetRelation,
+      appManager
+    );
+    const ddl = this.resolvePlaceholders(payload.ddl, resolvedIdByPlaceholder, sourceMigration.id);
     await tjdbQueryRunner.query(ddl);
 
     if (!isSQLModeDisabled()) {
@@ -2795,6 +2788,93 @@ export class TooljetDbTableOperationsService {
       for (const uuid of Object.values(payload.column_uuids)) columnConfigurations[uuid] ??= {};
       targetRelation.configurations = { columns: { column_names: columnNames, configurations: columnConfigurations } };
       await appManager.save(targetRelation);
+    }
+  }
+
+  /** Resolves `refs`/`{{self}}` to concrete relation ids against `targetRelation`'s own
+   * environment/branch - shared by every replay path that substitutes placeholders
+   * (`replayBaselineMigration`, `replayRawSqlMigration`), so a sibling lookup can't drift between them.
+   * `self` is seeded last, after the `refs` loop: `self` always means this table's own relation, even
+   * if the caller's `refs` map also has a `self` key (same rule B1's authoring-time
+   * `substitutePlaceholders` enforces - a `refs.self` entry must not be able to override it). */
+  private async resolveRefPlaceholders(
+    refs: Record<string, string> | undefined,
+    organizationId: string,
+    targetRelation: InternalTableRelation,
+    appManager: EntityManager
+  ): Promise<Map<string, string>> {
+    const resolvedIdByPlaceholder = new Map<string, string>();
+    for (const [placeholder, coRelationId] of Object.entries(refs || {})) {
+      const sibling = await this.relationResolverService.resolveSiblingByCoRelationId(
+        organizationId,
+        coRelationId,
+        targetRelation.environmentId,
+        targetRelation.branchId,
+        appManager
+      );
+      resolvedIdByPlaceholder.set(placeholder, sibling.id);
+    }
+    resolvedIdByPlaceholder.set('self', targetRelation.id);
+    return resolvedIdByPlaceholder;
+  }
+
+  private resolvePlaceholders(
+    ddlOrSql: string,
+    resolvedIdByPlaceholder: Map<string, string>,
+    migrationId: string
+  ): string {
+    return ddlOrSql.replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+      const resolved = resolvedIdByPlaceholder.get(key);
+      if (!resolved) throw new Error(`Unresolved placeholder "{{${key}}}" in migration ${migrationId}`);
+      return resolved;
+    });
+  }
+
+  /**
+   * Executes a raw SQL migration's stored statement against `targetRelation` as the workspace's own
+   * tenant role, on its own connection - never `tjdbQueryRunner`, the admin connection every other
+   * replay path uses. This is the one place replay must not reuse the ambient admin connection every
+   * other `apply*`/`replay*` method gets handed, since raw SQL's whole reason for existing is to
+   * never run as admin, including on replay. Column reconciliation calls the exact same
+   * `reconcileColumns` Task B1's live-authoring path uses (`tooljet-db-raw-sql-migration.service.ts`),
+   * so replay can't drift from what authoring already recorded.
+   */
+  private async replayRawSqlMigration(
+    sourceMigration: InternalTableMigration,
+    organizationId: string,
+    targetRelation: InternalTableRelation,
+    connectionManagers: Record<string, EntityManager>
+  ): Promise<void> {
+    const { appManager } = connectionManagers;
+    const payload = sourceMigration.payload as { sql: string; refs: Record<string, string> };
+
+    const resolvedIdByPlaceholder = await this.resolveRefPlaceholders(
+      payload.refs,
+      organizationId,
+      targetRelation,
+      appManager
+    );
+    const sql = this.resolvePlaceholders(payload.sql, resolvedIdByPlaceholder, sourceMigration.id);
+
+    const tjdbTenantConfigs = await appManager.findOne(OrganizationTjdbConfigurations, { where: { organizationId } });
+    if (!tjdbTenantConfigs) throw new NotFoundException(`Tooljet database schema configuration doesn't exist`);
+    const { pgPassword, pgUser } = tjdbTenantConfigs;
+    const tjdbPassKey = await decryptTooljetDatabasePassword(pgPassword);
+    const tenantSchema = findTenantSchema(organizationId);
+    const { tooljetDbTenantConnection } = await createTooljetDatabaseConnection(tjdbPassKey, pgUser, tenantSchema);
+
+    try {
+      await tooljetDbTenantConnection.query(`SET search_path TO "${tenantSchema}"`);
+      await tooljetDbTenantConnection.query(sql);
+
+      const queryRunner = tooljetDbTenantConnection.createQueryRunner();
+      const priorColumnNames = targetRelation.configurations?.columns?.column_names || {};
+      const snapshot = await buildTableSchemaSnapshot(queryRunner, tenantSchema, targetRelation.id, priorColumnNames);
+      const reconciled = reconcileColumns(snapshot, targetRelation.configurations);
+      targetRelation.configurations = { columns: reconciled };
+      await appManager.save(targetRelation);
+    } finally {
+      await tooljetDbTenantConnection.destroy();
     }
   }
 
