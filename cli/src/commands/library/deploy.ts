@@ -13,14 +13,20 @@ export default class ComponentDeploy extends Command {
   static aliases = ['lib:deploy'];
 
   static examples = [
-    `$ tooljet library deploy`,
-    `$ tooljet library deploy --message "Add dark mode support"`,
-    `$ tooljet library deploy --origin-url https://app.tooljet.ai --api-token <token>`,
-    `$ tooljet lib deploy`,
-    `$ tooljet lib deploy --message "Add dark mode support"`,
+    `$ tooljet library deploy --version 1.0.0`,
+    `$ tooljet library deploy -v 1.0.0`,
+    `$ tooljet library deploy --version 1.0.0 --message "Add dark mode support"`,
+    `$ tooljet library deploy --version 1.0.0 --origin-url https://app.tooljet.ai --api-token <token>`,
+    `$ tooljet lib deploy --version 1.0.0`,
+    `$ tooljet lib deploy --version 1.0.0 --message "Add dark mode support"`,
   ];
 
   static flags = {
+    version: Flags.string({
+      char: 'v',
+      description: 'Version for this revision — X, X.Y, or X.Y.Z (e.g. 1, 1.1, or 1.2.0); missing parts default to 0',
+      required: true,
+    }),
     message: Flags.string({ description: 'Optional label for the revision (shown in app builder revision picker)' }),
     force: Flags.boolean({
       description: 'Publish even if the build reports TypeScript errors',
@@ -36,7 +42,12 @@ export default class ComponentDeploy extends Command {
 
   async run(): Promise<void> {
     const { flags } = await this.parse(ComponentDeploy);
-    const { message, force } = flags;
+    const { version, message, force } = flags;
+
+    if (!/^\d+(\.\d+){0,2}$/.test(version)) {
+      this.log(formatError('--version must be in the format X, X.Y, or X.Y.Z (e.g. 1, 1.1, or 1.2.0)'));
+      process.exit(1);
+    }
 
     const { workspaceId, apiToken, url, config, usedFlags } = await this.resolveTarget(flags);
 
@@ -79,7 +90,7 @@ export default class ComponentDeploy extends Command {
 
       this.log('\nUploading build to server...');
 
-      const revision = await client.publishRevision(config.libraryId, result.distDir, message);
+      const revision = await client.publishRevision(config.libraryId, result.distDir, version, message);
 
       this.log(formatSuccess(`\nPublished as ${revision.version} on ${workspaceId} workspace\n`));
     } catch (err) {
