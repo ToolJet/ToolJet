@@ -1,3 +1,14 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// inputField.js
+//   addValidations                   -                    → properties
+//   addAndVerifyAdditionalActions    -                    → properties
+//   addAllInputFieldColors           colorSwatches        → styles
+//   verifyInputFieldColors           colorSwatches        → styles
+//   verifyLabelStyleElements         -                    → styles
+//   verifyAlignment                  -                    → styles
+//   verifyCustomWidthOfLabel         -                    → styles
+//   addCustomWidthOfLabel            -                    → styles
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector } from "Selectors/common";
 import {
   addAndVerifyTooltip,
@@ -11,6 +22,24 @@ import {
 import { commonWidgetText, customValidation } from "Texts/common";
 import { textInputText } from "Texts/textInput";
 
+/**
+ * MODULE — appBuilder/components/inputField: shared input-widget helpers
+ * (text/number/email/password/etc).
+ * FOR AI: configure & verify the parts common to input fields — validation rules
+ * (addValidations), Additional Actions toggles + tooltip (addAndVerifyAdditionalActions),
+ * the input colour swatches (addAllInputFieldColors / verifyInputFieldColors), and
+ * the label style block (verifyLabelStyleElements, verifyAlignment,
+ * verifyCustomWidthOfLabel, addCustomWidthOfLabel).
+ * PRECONDITION: several helpers call openEditorSidebar(widgetName) themselves; the
+ * colour/label helpers assume the Styles tab is already open.
+ * NOT here: generic properties → appBuilder/properties.js · generic styles → appBuilder/styles.js.
+ */
+
+/**
+ * @tjBlock  properties
+ * @tjUsage  addValidations('input1', data)
+ * @tjDom    Validation accordion → regex/min/max/custom params + mandatory toggle fx
+ */
 export const addValidations = (
   widgetName,
   data,
@@ -32,6 +61,11 @@ export const addValidations = (
   verifyAndModifyToggleFx("Make this field mandatory", "");
 };
 
+/**
+ * @tjBlock  properties
+ * @tjUsage  addAndVerifyAdditionalActions('input1', 'help text')
+ * @tjDom    Additional Actions accordion → visibility/disable/loading toggle fx + tooltip
+ */
 export const addAndVerifyAdditionalActions = (widgetName, tooltipText) => {
   openEditorSidebar(widgetName);
   openAccordion("Additional Actions");
@@ -85,6 +119,12 @@ export const addAndVerifyAdditionalActions = (widgetName, tooltipText) => {
   );
 };
 
+/**
+ * @tjType   colorSwatches
+ * @tjBlock  styles
+ * @tjUsage  addAllInputFieldColors(data)
+ * @tjDom    Background/Border/Text/Error text/icon style swatches → colour picker
+ */
 export const addAllInputFieldColors = (data) => {
   selectColourFromColourPicker("Background", data.bgColor);
   selectColourFromColourPicker("Border", data.borderColor);
@@ -97,6 +137,12 @@ export const addAllInputFieldColors = (data) => {
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 };
 
+/**
+ * @tjType   colorSwatches
+ * @tjBlock  styles
+ * @tjUsage  verifyInputFieldColors('[data-cy="..."]', data)
+ * @tjDom    asserts computed text/border/bg + invalid-feedback + icon stroke css
+ */
 export const verifyInputFieldColors = (selectorInput, data) => {
   verifyWidgetColorCss(selectorInput, "color", data.textColor);
   verifyWidgetColorCss(selectorInput, "border-color", data.borderColor);
@@ -122,6 +168,11 @@ export const verifyInputFieldColors = (selectorInput, data) => {
     );
 };
 
+/**
+ * @tjBlock  styles
+ * @tjUsage  verifyLabelStyleElements()
+ * @tjDom    Label style accordion — asserts label/alignment/width/auto-width controls
+ */
 export const verifyLabelStyleElements = () => {
   cy.get('[data-cy="widget-accordion-label"]').verifyVisibleElement(
     "have.text",
@@ -143,6 +194,11 @@ export const verifyLabelStyleElements = () => {
   );
 };
 
+/**
+ * @tjBlock  styles
+ * @tjUsage  verifyAlignment('input1', 'topLeft', side)
+ * @tjDom    asserts label-<name> layout class + label justify-content css
+ */
 export const verifyAlignment = (componentName, position, side) => {
   const alignments = {
     topLeft: { y: "flex-column", x: "flex-start" },
@@ -159,15 +215,23 @@ export const verifyAlignment = (componentName, position, side) => {
     .should("have.css", "justify-content", x);
 };
 
+/**
+ * @tjBlock  styles
+ * @tjUsage  verifyCustomWidthOfLabel('input1', 50)
+ * @tjDom    asserts label style attr includes width: <width>%
+ */
 export const verifyCustomWidthOfLabel = (componentName, width) => {
   cy.get(`[data-cy="label-${componentName.toLowerCase()}"]`)
     .children("label")
     .should("have.attr", "style")
     .and("include", `width: ${width}%`);
-  //
-  // .should("have.css", "width", `${width}%`);
 };
 
+/**
+ * @tjBlock  styles
+ * @tjUsage  addCustomWidthOfLabel(50)
+ * @tjDom    toggles auto-width-checkbox, types width into width-input-field
+ */
 export const addCustomWidthOfLabel = (width) => {
   cy.get('[data-cy="auto-width-checkbox"]').click();
   cy.get('[data-cy="width-input-field"]')

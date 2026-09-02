@@ -9,6 +9,21 @@
 //   setCSAParam                      -                    → csa
 //   configureCSA                     csa                  → csa
 // └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/events: right-Inspector **Events tab** + Component-Specific
+ * Action (CSA) helpers.
+ * FOR AI: wire a component's event handlers and their actions. Route by need:
+ *   add a trigger + action        → selectEvent (e.g. 'On click' → 'Show Alert')
+ *   Show-Alert message / code arg → addSupportCSAData
+ *   Control-Component action      → selectCSA + setCSAParam, or configureCSA (one call)
+ *   change an existing trigger    → changeEventType
+ *   many alert handlers at once   → addMultiEventsWithAlert
+ * PRECONDITION: open the Events tab / handler popover; most CSA helpers assume
+ *   selectEvent already left the handler card open. Triggers/labels match
+ *   case-insensitively. CSA code params are evaluated as JS — see setCSAParam.
+ * NOT here: properties → properties.js · styles → styles.js · Run-Query event &
+ *   query chaining → querymanager/queries.js (selectRunQueryEvent) · state tree → inspectorTree.js.
+ */
 // ---------------------------------------------------------------------------
 // Shared primitives for the event-handler popover.
 // ---------------------------------------------------------------------------

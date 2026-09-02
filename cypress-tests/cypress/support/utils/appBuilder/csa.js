@@ -5,6 +5,16 @@
 //   verifyCSA                        csa                  → csa
 //   addCSA                           csa                  → csa
 // └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/csa: Component-Specific Action (CSA) helpers — wire a
+ * Control-Component action from a trigger and verify its runtime effect.
+ * FOR AI: addCSA(component, actions) drops a Button per action and wires each
+ * (On click -> Control Component -> <action>), routing the value by rendered
+ * field type (toggle vs code editor). verifyCSA asserts numberInput-style
+ * effects across button1..9. CSA effects fire at RUNTIME -> trigger + assert in
+ * PREVIEW, not edit mode. randomString is a small faker helper.
+ * NOT here: component event handlers -> events.js * query events -> querymanager.
+ */
 import { faker } from "@faker-js/faker";
 import { commonWidgetSelector } from "Selectors/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";

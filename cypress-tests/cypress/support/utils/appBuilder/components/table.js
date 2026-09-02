@@ -1,8 +1,60 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// table.js
+//   tableWidgetOuter                 -                    → canvas
+//   resizeTableWidget                -                    → canvas
+//   setTableData                     -                    → canvas
+//   searchOnTable                    -                    → canvas
+//   verifyTableElements              -                    → canvas
+//   selectDropdownOption             -                    → inspector
+//   verifyAndEnterColumnOptionInput  -                    → inspector
+//   addAndOpenColumnOption           -                    → inspector
+//   deleteAndVerifyColumn            -                    → inspector
+//   verifyInvalidFeedback            -                    → canvas
+//   addInputOnTable                  -                    → canvas
+//   verifySingleValueOnTable         -                    → canvas
+//   verifyAndModifyToggleFx          toggle               → properties
+//   selectFromSidebarDropdown        -                    → properties
+//   dataPdfAssertionHelper           -                    → common
+//   dataCsvAssertionHelper           -                    → common
+//   addFilter                        -                    → canvas
+//   verifyTableExposedVars           -                    → inspector
+//   makeAllColumnsEditable           -                    → inspector
+//   makeColumnEditable               -                    → inspector
+//   typeIntoEditableCell             -                    → canvas
+//   editTableCell                    -                    → canvas
+//   addNewRow                        -                    → canvas
+//   addNewRowCellInput               -                    → canvas
+//   toggleTableProperty              toggle               → properties
+//   setRowsPerPage                   -                    → properties
+//   selectTableRow                   -                    → canvas
+//   toggleRowCheckbox                -                    → canvas
+//   verifySelectedRowCount           -                    → canvas
+//   sortByColumn                     -                    → canvas
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector, cyParamName } from "Selectors/common";
 import { tableSelector } from "Selectors/table";
 import { verifyNodeData } from "Support/utils/appBuilder/inspector";
 import { selectEvent, configureCSA } from "Support/utils/appBuilder/events";
 import { tableText } from "Texts/table";
+
+/**
+ * MODULE — appBuilder/components/table: NewTable widget test helpers spanning several facets.
+ * FOR AI: route by what you need to do with the Table —
+ *   canvas render  → setTableData, searchOnTable, verifyTableElements, verifySingleValueOnTable,
+ *                     addInputOnTable, verifyInvalidFeedback, resizeTableWidget, tableWidgetOuter.
+ *   inspector cols → addAndOpenColumnOption, deleteAndVerifyColumn, verifyAndEnterColumnOptionInput,
+ *                     selectDropdownOption, makeAllColumnsEditable, makeColumnEditable.
+ *   properties     → toggleTableProperty, setRowsPerPage, verifyAndModifyToggleFx, selectFromSidebarDropdown.
+ *   inline edit    → typeIntoEditableCell, editTableCell, addNewRow, addNewRowCellInput.
+ *   selection/sort → selectTableRow, toggleRowCheckbox, verifySelectedRowCount, sortByColumn.
+ *   filter         → addFilter.
+ *   inspector tree → verifyTableExposedVars (LEFT inspector exposed vars).
+ *   csa            → wireTableCSA + triggerTableCSA (arm a CSA on Row-hovered, then fire it).
+ *   export helpers → dataPdfAssertionHelper, dataCsvAssertionHelper (pure data shaping, no DOM).
+ * KEY GOTCHA: `draggable-widget-<name>` matches TWO nodes for the Table (outer moveable box +
+ * inner <table>) — always scope to :eq(0)/.first(); see tableWidgetOuter.
+ * NOT here: generic property/style/event drivers → appBuilder/properties.js · styles.js · events.js.
+ */
 
 // Spec-local scoped resize. The shared `cy.resizeWidget` uses `[class="bottom-right"]`
 // which now matches 2 elements (commands.js:375 — forbidden to edit). We scope the
@@ -12,9 +64,19 @@ import { tableText } from "Texts/table";
 // (RenderWidget.jsx:308, the outer moveable box) AND its internal <table>
 // (Table.jsx:340) — so the data-cy matches 2 els. The OUTER (first in DOM) is the
 // selectable/resizable moveable box. Use this for clicks/resize.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  cy.get(tableWidgetOuter('table1')).first().click()
+ * @tjDom    returns the draggable-widget-<name> selector (matches 2 nodes — use .first())
+ */
 export const tableWidgetOuter = (widgetName) =>
   `[data-cy="draggable-widget-${widgetName}"]`;
 
+/**
+ * @tjBlock  canvas
+ * @tjUsage  resizeTableWidget('table1', 1200, 300)
+ * @tjDom    moveable east resize handle → mousemove/mouseup on #real-canvas
+ */
 export const resizeTableWidget = (widgetName, x, y) => {
   // The Table is a `moveable-dynamic-height` widget (Grid.css:25): height auto-fits
   // content, only the EAST (`e`) / WEST (`w`) resize handles render — the legacy
@@ -43,13 +105,6 @@ export const resizeTableWidget = (widgetName, x, y) => {
   cy.forceClickOnCanvas();
 };
 
-// Set the Table `data` property (the inspector field whose displayName is ' ', so its
-// data-cy normalises to `-input-field`; lives in the "Data" accordion — exactly one
-// such field is present right after openEditorSidebar). The shared
-// clearAndTypeOnCodeMirror re-clicks per token, and a click lands on the codehinter
-// autocomplete <li> popup which covers the input. We type natively with force:true and
-// parseSpecialCharSequences:false (so `{`/`}` are literal) to avoid that, then press
-// {esc} to dismiss the autocomplete before blurring.
 // Set the Table `data` property. The field (displayName ' ' -> data-cy `-input-field`,
 // in the "Data" accordion) ships PRE-POPULATED with a 10-row, multi-LINE sample dataset.
 // The shared clearAndTypeOnCodeMirror clears only via the first `.cm-line`'s text, which
@@ -57,6 +112,11 @@ export const resizeTableWidget = (widgetName, x, y) => {
 // JSON -> "0 Records". So we hard-clear the whole editor with a real Cmd/Ctrl+A +
 // Delete first, then type. `value` should be the codehinter expression WITHOUT the
 // `{{ }}` wrapper; we add it here (the data field evaluates a JS expression).
+/**
+ * @tjBlock  canvas
+ * @tjUsage  setTableData('[{ id: 1, name: "A" }]')
+ * @tjDom    Data accordion -input-field CodeMirror → hard-cleared then native-typed {{...}}
+ */
 export const setTableData = (value) => {
   cy.get('[data-cy="widget-accordion-data"]')
     .closest(".accordion-item")
@@ -80,6 +140,11 @@ export const setTableData = (value) => {
   cy.waitForAutoSave();
 };
 
+/**
+ * @tjBlock  canvas
+ * @tjUsage  searchOnTable('Sarah', 'table1')
+ * @tjDom    rendered table global search input (debounced 500ms)
+ */
 export const searchOnTable = (value = "", name = "table1") => {
   // force:true — the search input is position:fixed and can be reported "covered" by
   // canvas-content under load; the type itself is valid (verified by the resulting rows).
@@ -93,6 +158,11 @@ export const searchOnTable = (value = "", name = "table1") => {
 // NewTable cells are keyed by widget name + column HEADER + row index
 // (`<name>-<column>-row-<i>`), NOT a numeric column index. Assert per
 // column-name (TableRow.jsx:103).
+/**
+ * @tjBlock  canvas
+ * @tjUsage  verifyTableElements([{ id: 1, name: 'A', email: 'a@x.com' }], ['id','name','email'], 'table1')
+ * @tjDom    rendered body cells <name>-<column>-row-<i>
+ */
 export const verifyTableElements = (
   values,
   columns = ["id", "name", "email"],
@@ -109,6 +179,11 @@ export const verifyTableElements = (
   cy.forceClickOnCanvas();
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  selectDropdownOption('[data-cy="dropdown-column-type"]>>:eq(0)', 'string')
+ * @tjDom    inspector select-search control → option by data-index (named type or numeric)
+ */
 export const selectDropdownOption = (inputSelector, option) => {
   const data = {
     default: 0,
@@ -148,20 +223,25 @@ export const selectDropdownOption = (inputSelector, option) => {
   ).click({ force: true });
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  verifyAndEnterColumnOptionInput('Column name', 'status')
+ * @tjDom    column popover input-and-label-<label> → its -input-field CodeMirror
+ */
 export const verifyAndEnterColumnOptionInput = (label, value) => {
   cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`)
     .find("label")
     .should("have.text", label);
   cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`)
     .find(`[data-cy="-input-field"]`)
-    // .click({ force: true })
-    // .realClick()
-    // .realPress(["Meta", "A"])
-    // .realType(`{backspace}{backspace}{backspace}{backspace}`)
-    // .realPress(["Meta", "A"])
     .clearAndTypeOnCodeMirror(`${value}`);
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  addAndOpenColumnOption('status', 'string')
+ * @tjDom    button-add-column → new column-new_column row → type dropdown + Column name input
+ */
 export const addAndOpenColumnOption = (name, type) => {
   cy.get('[data-cy="button-add-column"]').click();
   cy.get('[data-cy="button-add-column"]')
@@ -173,6 +253,11 @@ export const addAndOpenColumnOption = (name, type) => {
   verifyAndEnterColumnOptionInput("Column name", name);
 };
 
+/**
+ * @tjBlock  inspector
+ * @tjUsage  deleteAndVerifyColumn('email')
+ * @tjDom    pages-name-<column> row → delete popover option, asserts column + header gone
+ */
 export const deleteAndVerifyColumn = (columnName) => {
   cy.get(`[data-cy="pages-name-${columnName}"]`)
     .parent()
@@ -187,12 +272,22 @@ export const deleteAndVerifyColumn = (columnName) => {
 
 // NewTable cells are addressed by column HEADER + row index (not a numeric column
 // index). These helpers now take a column header string as their first arg.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  verifyInvalidFeedback('id', 0, 'Required')
+ * @tjDom    rendered cell <column>-row-<i> → its validation feedback node
+ */
 export const verifyInvalidFeedback = (column = "id", rowIndex = 0, text) => {
   cy.get(tableSelector.cell(column, rowIndex))
     .find(">>>>:eq(1)")
     .should("have.text", text);
 };
 
+/**
+ * @tjBlock  canvas
+ * @tjUsage  addInputOnTable('name', 0, 'Alice', 'input')
+ * @tjDom    rendered cell <column>-row-<i> → nested input/element, clears then types
+ */
 export const addInputOnTable = (
   column = "id",
   rowIndex = 0,
@@ -208,10 +303,21 @@ export const addInputOnTable = (
   cy.forceClickOnCanvas();
 };
 
+/**
+ * @tjBlock  canvas
+ * @tjUsage  verifySingleValueOnTable('name', 0, 'Alice')
+ * @tjDom    rendered cell <column>-row-<i> text
+ */
 export const verifySingleValueOnTable = (column = "id", rowIndex = 0, value) => {
   cy.get(tableSelector.cell(column, rowIndex)).should("have.text", value);
 };
 
+/**
+ * @tjType   toggle
+ * @tjBlock  properties
+ * @tjUsage  verifyAndModifyToggleFx('Show search', 'false')
+ * @tjDom    inspector toggle label + fx button + fx code input, then flips the toggle
+ */
 export const verifyAndModifyToggleFx = (
   paramName,
   defaultValue,
@@ -238,10 +344,20 @@ export const verifyAndModifyToggleFx = (
     cy.get(commonWidgetSelector.parameterTogglebutton(paramName)).click();
 };
 
+/**
+ * @tjBlock  properties
+ * @tjUsage  selectFromSidebarDropdown('[data-cy="..."]', 'Fixed')
+ * @tjDom    inspector dropdown selector → type option + {enter}
+ */
 export const selectFromSidebarDropdown = (selector, option) => {
   cy.get(selector).click().type(`${option}{enter}`);
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  dataPdfAssertionHelper(rows)
+ * @tjDom    none — pure data shaping (concats id+name+email per row for PDF export assertion)
+ */
 export const dataPdfAssertionHelper = (data) => {
   let dataArray = [];
   data.forEach((a) => {
@@ -250,6 +366,11 @@ export const dataPdfAssertionHelper = (data) => {
   return dataArray;
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  dataCsvAssertionHelper(rows)
+ * @tjDom    none — pure data shaping (comma-joins id,name,email per row for CSV export assertion)
+ */
 export const dataCsvAssertionHelper = (data) => {
   let dataArray = [];
   data.forEach((a) => {
@@ -272,6 +393,11 @@ const selectReactFilterOption = (wrapperSelector, label) => {
     .click({ force: true });
 };
 
+/**
+ * @tjBlock  canvas
+ * @tjUsage  addFilter([{ column: 'name', operation: 'contains', value: 'Sarah' }], true, 'table1')
+ * @tjDom    table filter toolbar button → filter panel react-select column/operation + value input
+ */
 export const addFilter = (
   data = [{ column: "name", operation: "contains", value: "Sarah" }],
   freshFilter = false,
@@ -319,6 +445,11 @@ export const addFilter = (
 // — so scope to the outer box (:eq(0)) and click the ConfigHandle's inspect button
 // (`<name>-inspect-button`, ConfigHandle.jsx:272). `nodes` is a [{key,type,value}] list
 // verified via verifyNodeData against the detail rows (inspector-<key>-label / -value).
+/**
+ * @tjBlock  inspector
+ * @tjUsage  verifyTableExposedVars([{ key: 'currentPageData', type: 'Array', value: '[...]' }], 'table1')
+ * @tjDom    LEFT inspector via <name>-inspect-button → exposed-var detail rows
+ */
 export const verifyTableExposedVars = (nodes, name = "table1") => {
   cy.get(`[data-cy="draggable-widget-${name}"]`).eq(0).realHover().realHover();
   cy.get(`[data-cy="draggable-widget-${name}"]`)
@@ -336,6 +467,11 @@ export const verifyTableExposedVars = (nodes, name = "table1") => {
 // Toggle "Make all columns editable" (Inspector > Table). Single click, no column
 // popover — the low-flake way to make every column's cells editable for inline-edit
 // tests. Requires the right inspector to be open (openEditorSidebar first).
+/**
+ * @tjBlock  inspector
+ * @tjUsage  makeAllColumnsEditable()
+ * @tjDom    inspector "Make all columns editable" toggle
+ */
 export const makeAllColumnsEditable = () => {
   cy.get(tableSelector.makeAllColumnsEditableToggle)
     .scrollIntoView()
@@ -345,6 +481,11 @@ export const makeAllColumnsEditable = () => {
 
 // Make a SINGLE column editable: open its column popover (column-<key>) then flip the
 // per-column "Make editable" toggle. Use when a test needs per-column granularity.
+/**
+ * @tjBlock  inspector
+ * @tjUsage  makeColumnEditable('name')
+ * @tjDom    column-<key> popover → per-column "Make editable" toggle
+ */
 export const makeColumnEditable = (columnKey = "name") => {
   cy.get(tableSelector.columnItem(columnKey)).scrollIntoView().click();
   cy.get(tableSelector.makeEditableToggle).scrollIntoView().click({ force: true });
@@ -362,6 +503,11 @@ export const makeColumnEditable = (columnKey = "name") => {
 // The click MUST land on `.long-text-input` itself: the surrounding <td> carries no
 // such handler, so clicking the cell wrapper leaves the cell in display mode. Verified
 // by runtime probe — clicking the <td> gave `inputs=0 editable=0`.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  typeIntoEditableCell(tableSelector.cell('name', 0, 'table1'), 'Alice')
+ * @tjDom    cell .long-text-input (flips to edit) → [contenteditable] div, commits on {enter}
+ */
 export const typeIntoEditableCell = (cellSelector, value) => {
   cy.get(cellSelector).find(".long-text-input").click({ force: true });
   cy.get(cellSelector)
@@ -371,6 +517,11 @@ export const typeIntoEditableCell = (cellSelector, value) => {
 };
 
 // Inline-edit a cell of the rendered table body (`<name>-<column>-row-<i>`).
+/**
+ * @tjBlock  canvas
+ * @tjUsage  editTableCell('name', 0, 'Alice', 'table1')
+ * @tjDom    rendered body cell <name>-<column>-row-<i> via typeIntoEditableCell
+ */
 export const editTableCell = (
   column = "name",
   rowIndex = 0,
@@ -396,6 +547,11 @@ export const editTableCell = (
 // by other elements" even though it is genuinely on screen — confirmed by a runtime
 // probe: rect 263x300 at (443,105), display:flex, visibility:visible, opacity:1.
 // Same false negative already documented for the search input and header toolbar.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  addNewRow('table1')
+ * @tjDom    add-new-row button → .table-add-new-row panel, fills id/name/email of blank row 0
+ */
 export const addNewRow = (name = "table1") => {
   cy.get(tableSelector.addNewRowButton(name)).click({ force: true });
   cy.get(".table-add-new-row").should("exist");
@@ -413,6 +569,11 @@ export const addNewRow = (name = "table1") => {
 // `isEditable: true` (AddNewRow.jsx:243-246), so its cells are the identical
 // display-div -> contenteditable widgets used by the table body — there is no <input>
 // to type into. Confirmed by runtime probe: `inputs=0 editable=0 longText=1`.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  addNewRowCellInput('name', 0, 'Nick')
+ * @tjDom    add-new-row panel cell <column>-column-<rowIndex> via typeIntoEditableCell
+ */
 export const addNewRowCellInput = (column = "id", rowIndex = 0, value) => {
   typeIntoEditableCell(`[data-cy="${column}-column-${rowIndex}"]`, value);
 };
@@ -428,6 +589,12 @@ export const addNewRowCellInput = (column = "id", rowIndex = 0, value) => {
 // WidgetManager/widgets/table.js (see tableText.toggle* constants).
 // force:true — the inspector panel virtualises and a toggle can be partially covered
 // by the sticky accordion header even after scrollIntoView.
+/**
+ * @tjType   toggle
+ * @tjBlock  properties
+ * @tjUsage  toggleTableProperty(tableText.toggleShowSearch)
+ * @tjDom    inspector <displayName>-toggle-button
+ */
 export const toggleTableProperty = (displayName) => {
   cy.get(tableSelector.toggleButton(displayName))
     .scrollIntoView()
@@ -447,6 +614,11 @@ export const toggleTableProperty = (displayName) => {
 // clearAndTypeOnCodeMirror — which computes the exact backspace count from the current
 // text — is the correct helper here. (The plan's warning against it applies only to
 // the multi-LINE `data` field, which it genuinely cannot clear.)
+/**
+ * @tjBlock  properties
+ * @tjUsage  setRowsPerPage(3)
+ * @tjDom    inspector number-of-rows-per-page-input-field CodeMirror (single-line)
+ */
 export const setRowsPerPage = (rows) => {
   cy.get('[data-cy="number-of-rows-per-page-input-field"]')
     .filter(":visible")
@@ -461,6 +633,11 @@ export const setRowsPerPage = (rows) => {
 // own cell rather than the <tr>: the <tr> is a flex container whose centre can land in
 // the gap between cells. force:true because the table body is position:fixed under the
 // canvas overlay.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  selectTableRow(0, 'name', 'table1')
+ * @tjDom    rendered cell <name>-<column>-row-<i> click → drives selectedRow/onRowClicked
+ */
 export const selectTableRow = (rowIndex = 0, column = "name", name = "table1") => {
   cy.get(tableSelector.cell(column, rowIndex, name)).click({ force: true });
   cy.wait(300);
@@ -478,12 +655,22 @@ export const selectTableRow = (rowIndex = 0, column = "name", name = "table1") =
 //
 // Clicking the row body runs handleRowClick exactly once, and with "Bulk selection" on
 // tanstack keeps multi-row selection, so successive row clicks accumulate.
+/**
+ * @tjBlock  canvas
+ * @tjUsage  toggleRowCheckbox(0, 'table1')
+ * @tjDom    row body (NOT the checkbox) via selectTableRow — one click toggles selection once
+ */
 export const toggleRowCheckbox = (rowIndex = 0, name = "table1") => {
   selectTableRow(rowIndex, "name", name);
 };
 
 // Assert exactly `count` row checkboxes are checked (excludes the thead select-all,
 // which is scoped out via the `<name>-selection-row-` prefix).
+/**
+ * @tjBlock  canvas
+ * @tjUsage  verifySelectedRowCount(2, 'table1')
+ * @tjDom    checked row checkboxes under <name>-selection-row- (excludes thead select-all)
+ */
 export const verifySelectedRowCount = (count, name = "table1") => {
   cy.get(`[data-cy^="${name}-selection-row-"] [data-cy="checkbox-input"]:checked`)
     .should("have.length", count);
@@ -492,6 +679,11 @@ export const verifySelectedRowCount = (count, name = "table1") => {
 // Click a column header to sort it. Sorting must be enabled (enabledSort defaults true).
 // Returns nothing — assert with tableSelector.sortIconAscending/Descending, which only
 // render once the column IS sorted (TableHeader.jsx:165-179).
+/**
+ * @tjBlock  canvas
+ * @tjUsage  sortByColumn('name')
+ * @tjDom    rendered column header click → toggles sort (assert sort icon separately)
+ */
 export const sortByColumn = (column) => {
   cy.get(tableSelector.columnHeader(column)).click({ force: true });
   cy.wait(500);

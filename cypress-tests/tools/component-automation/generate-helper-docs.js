@@ -96,6 +96,22 @@ if (require.main === module) {
     "appBuilder/canvas.js",
     "appBuilder/events.js",
     "appBuilder/csa.js",
+    "appBuilder/codehinter.js",
+    "appBuilder/editorHeader.js",
+    "appBuilder/pages.js",
+    "appBuilder/querymanager/queries.js",
+    "appBuilder/querymanager/queryPanel.js",
+    "appBuilder/components/button.js",
+    "appBuilder/components/table.js",
+    "appBuilder/components/dropdown.js",
+    "appBuilder/components/datePicker.js",
+    "appBuilder/components/listView.js",
+    "appBuilder/components/multiSelect.js",
+    "appBuilder/components/modal.js",
+    "appBuilder/components/basicComponents.js",
+    "appBuilder/components/inputField.js",
+    "appBuilder/components/properties/common.js",
+    "appBuilder/components/properties/imageComponent.js",
   ].map(f => path.join(base, f));
   const out = path.join(__dirname, "../../cypress/support/componentAutomation/type-helper-index.md");
 

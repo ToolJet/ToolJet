@@ -1,3 +1,42 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// queries.js
+//   selectQueryFromLandingPage       -                    → common
+//   deleteQuery                      -                    → common
+//   query                            -                    → common
+//   changeQueryToggles               -                    → common
+//   renameQueryFromEditor            -                    → common
+//   addInputOnQueryField             -                    → common
+//   waitForQueryAction               -                    → common
+//   selectRunQueryEvent              events               → events
+//   chainQuery                       -                    → events
+//   addSuccessNotification           -                    → common
+//   performQueryAction               -                    → common
+//   verifypreview                    -                    → common
+//   addQueryN                        -                    → common
+//   addQuery                         -                    → common
+//   addDsAndAddQuery                 -                    → common
+//   addQueryAndOpenEditor            -                    → common
+//   createDataQuery                  -                    → common
+//   createRestAPIQuery               -                    → common
+//   verifyPreviewData                -                    → common
+// └──────────────────────────────────────────────────────────────────┘
+/**
+ * MODULE — appBuilder/querymanager/queries: **Query panel** helpers (create, rename,
+ * configure, preview, delete queries + wire query events).
+ * FOR AI: operate the bottom query manager, not a component. Route by need:
+ *   create via API+UI      → addQuery / addQueryN / addQueryAndOpenEditor / addDsAndAddQuery
+ *   create purely via API  → createDataQuery / createRestAPIQuery
+ *   rename / duplicate /    → renameQueryFromEditor · performQueryAction · deleteQuery
+ *     delete a query
+ *   fill a query field      → addInputOnQueryField
+ *   run / wait / preview    → query · waitForQueryAction · verifypreview / verifyPreviewData
+ *   query events & chaining → selectRunQueryEvent (Run-Query event) · chainQuery · addSuccessNotification
+ * NOTE: selectRunQueryEvent is a local copy of the events.js flow — it drives the
+ *   Radix `action-selection` Select via keyboard and gates on data-state; do not
+ *   replace with events.js selectEvent (see its inline rationale).
+ * NOT here: component event handlers → appBuilder/events.js · datasource connection
+ *   setup → marketplace/datasources · component-state tree → inspectorTree.js.
+ */
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { selectEvent } from "Support/utils/appBuilder/events";
 import { commonSelectors, commonQuerySelectors } from "Selectors/common";
@@ -5,6 +44,11 @@ import { dataSourceSelector } from "Selectors/dataSource";
 import { navigateToAppEditor } from "Support/utils/common";
 import { postgreSqlText } from "Texts/postgreSql";
 
+/**
+ * @tjBlock  common
+ * @tjUsage  selectQueryFromLandingPage('PostgreSQL', 'PostgreSQL')
+ * @tjDom    <db>-add-query-card on the empty query-manager landing page
+ */
 export const selectQueryFromLandingPage = (dbName, label) => {
   cy.get(
     `[data-cy="${dbName.toLowerCase().replace(/\s+/g, "-")}-add-query-card"]`
@@ -14,35 +58,63 @@ export const selectQueryFromLandingPage = (dbName, label) => {
   cy.waitForAutoSave();
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  deleteQuery('restapi1')
+ * @tjDom    list-query-<name> → delete-query-<name> → component-inspector-delete-button
+ */
 export const deleteQuery = (queryName) => {
   cy.get(`[data-cy="list-query-${queryName}"]`).click();
   cy.get(`[data-cy="delete-query-${queryName}"]`).click();
   cy.get('[data-cy="component-inspector-delete-button"]').click();
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  query('create')   // clicks query-create-button
+ * @tjDom    query-<action>-button (create / preview / run …)
+ */
 export const query = (action) => {
   cy.get(`[data-cy="query-${action}-button"]`).click();
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  changeQueryToggles('notification-on-success')
+ * @tjDom    <option>-toggle-switch parent (query settings toggle)
+ */
 export const changeQueryToggles = (option) => {
   cy.get(`[data-cy="${option}-toggle-switch"]`).parent().click();
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  renameQueryFromEditor('getUsers')
+ * @tjDom    query-name-label breadcrumb → rename icon → query-rename-input
+ */
 export const renameQueryFromEditor = (name) => {
   cy.get('[data-cy="query-name-label"]').realHover();
   cy.get('[class="breadcrum-rename-query-icon"]').click();
   cy.get('[data-cy="query-rename-input"]').clear().type(`${name}{enter}`);
-  // cy.realType(`{selectAll}{backspace}${name}{enter}`);
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  addInputOnQueryField('url', 'https://api.example.com')
+ * @tjDom    <field>-input-field CodeMirror in the query editor
+ */
 export const addInputOnQueryField = (field, data) => {
   cy.get(`[data-cy="${field}-input-field"]`)
     .click()
     .clearAndTypeOnCodeMirror(`{backSpace}`);
   cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(data);
-  // cy.forceClickOnCanvas();
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  waitForQueryAction('run')
+ * @tjDom    query-<action>-button — waits until it loses the button-loading class
+ */
 export const waitForQueryAction = (action) => {
   cy.get(`[data-cy="query-${action}-button"]`, { timeout: 20000 }).should(
     "not.have.class",
@@ -70,6 +142,12 @@ export const waitForQueryAction = (action) => {
 // Fix: drive the Radix Select deterministically with cypress-real-events
 // `.realClick()` (a native pointer event Radix responds to), and only when the
 // listbox isn't already open from auto-open. Then pick the role=option.
+/**
+ * @tjType   events
+ * @tjBlock  events
+ * @tjUsage  selectRunQueryEvent('Query Success')
+ * @tjDom    add-event-handler → event-trigger-option-<value> → action-selection Radix Select ("Run Query")
+ */
 export const selectRunQueryEvent = (
   event,
   addEventhandlerSelector = '[data-cy="add-event-handler"]',
@@ -135,6 +213,11 @@ export const selectRunQueryEvent = (
   cy.wait("@chainEvents");
 };
 
+/**
+ * @tjBlock  events
+ * @tjUsage  chainQuery('getUsers', 'refreshTable')
+ * @tjDom    list-query-<name> → query-tab-settings → selectRunQueryEvent → query-selection-field combobox
+ */
 export const chainQuery = (currentQuery, trigger) => {
   cy.get(`[data-cy="list-query-${currentQuery}"]`).click();
   cy.wait(1000);
@@ -156,14 +239,16 @@ export const chainQuery = (currentQuery, trigger) => {
     .click({ force: true });
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  addSuccessNotification('Saved!')
+ * @tjDom    query-tab-settings → notification-on-success toggle → success-message-input-field
+ */
 export const addSuccessNotification = (notification) => {
   cy.get('[data-cy="query-tab-settings"]').click();
   cy.get("body").then(($body) => {
     if (!$body.find('[data-cy="success-message-input-field"]').is(":visible")) {
       changeQueryToggles("notification-on-success");
-      // cy.get('[data-cy="success-message-input-field"]').then(($input) => {
-      //   cy.wrap($input).clearAndTypeOnCodeMirror(notification);
-      // });
     }
   });
   cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(
@@ -173,6 +258,11 @@ export const addSuccessNotification = (notification) => {
   cy.wait(300);
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  performQueryAction('q1', 'rename', 'q2') // action: rename | duplicate | delete
+ * @tjDom    query-handler-menu-<name> context menu → rename/duplicate/delete action
+ */
 export const performQueryAction = (queryName, action, newName) => {
   cy.get(commonQuerySelectors.queryNameList(queryName))
     .should("be.visible")
@@ -206,6 +296,11 @@ export const performQueryAction = (queryName, action, newName) => {
 // ── Query create / preview (moved from marketplace/datasources/dataSource.js;
 //    these operate the query panel, not the datasource connection) ────────────
 
+/**
+ * @tjBlock  common
+ * @tjUsage  verifypreview('json', 'success')  // type: json | raw
+ * @tjDom    preview-tab-<type> → preview-<type>-data-container
+ */
 export const verifypreview = (type, data) => {
   cy.get(`[data-cy="preview-tab-${type}"]`).click();
   cy.get(`[data-cy="preview-${type}-data-container"]`).verifyVisibleElement(
@@ -215,6 +310,11 @@ export const verifypreview = (type, data) => {
   );
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  addQueryN('getUsers', 'SELECT * FROM users', 'postgresql')
+ * @tjDom    <db>-add-query-card → query-rename-input; then apiAddQuery + reopen app (UI create, API body)
+ */
 export const addQueryN = (queryName, query, dbName) => {
   cy.get("body").then(($body) => {
     if ($body.find('[data-cy="gds-querymanager-search-bar"]').length > 0) {
@@ -235,6 +335,11 @@ export const addQueryN = (queryName, query, dbName) => {
   });
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  addQuery('getUsers', 'SELECT * FROM users', 'postgresql')
+ * @tjDom    show-ds-popover-button → react-select ds option → query-rename-input; then apiAddQuery + reopen app
+ */
 export const addQuery = (queryName, query, dbName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
   cy.get(".css-4e90k9").type(`${dbName}`);
@@ -251,6 +356,11 @@ export const addQuery = (queryName, query, dbName) => {
   });
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  addDsAndAddQuery('getUsers', 'SELECT 1', 'postgresql')
+ * @tjDom    show-ds-popover-button → ds option → query input CodeMirror → queryPreviewButton (fully UI-driven, no API)
+ */
 export const addDsAndAddQuery = (queryName, query, dbName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
   cy.get(".css-4e90k9").type(`${dbName}`);
@@ -268,6 +378,11 @@ export const addDsAndAddQuery = (queryName, query, dbName) => {
   );
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  addQueryAndOpenEditor('getUsers', 'SELECT 1', 'postgresql', 'MyApp')
+ * @tjDom    show-ds-popover-button → ds option → query-rename-input; then apiAddQuery + navigateToAppEditor(appName)
+ */
 export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
   cy.get(".css-4e90k9").type(`${dbName}`);
@@ -286,6 +401,11 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
   });
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  createDataQuery('MyApp', 'baseUrl', 'apiKey', 'token')
+ * @tjDom    none (pure API) — POST /api/data-queries a REST query bound to {{constants.*}}
+ */
 export const createDataQuery = (appName, url, key, value) => {
   let appId, versionId;
   cy.task("dbConnection", {
@@ -336,6 +456,11 @@ export const createDataQuery = (appName, url, key, value) => {
   });
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  createRestAPIQuery('getData', 'restDs', '', '', 'https://api.example.com', true)
+ * @tjDom    none (pure API) — POST a REST query against an existing data source; run = runOnPageLoad
+ */
 export const createRestAPIQuery = (
   queryName,
   dsName,
@@ -396,6 +521,11 @@ export const createRestAPIQuery = (
   });
 };
 
+/**
+ * @tjBlock  common
+ * @tjUsage  verifyPreviewData('expected value')
+ * @tjDom    query-preview-button → preview-json-data-container tree (expands first node, asserts contains)
+ */
 export const verifyPreviewData = (expectedData) => {
   cy.get('[data-cy="query-preview-button"]').click();
   cy.wait(2000);

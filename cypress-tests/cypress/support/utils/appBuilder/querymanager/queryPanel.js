@@ -1,3 +1,7 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// queryPanel.js
+//   resizeQueryPanel                 -                    → querymanager
+// └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/querymanager/queryPanel: the app-builder bottom QUERY PANEL.
  * FOR AI: resize the query panel (drag/collapse) while building an app.

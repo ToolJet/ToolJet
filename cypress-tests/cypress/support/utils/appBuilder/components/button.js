@@ -1,3 +1,8 @@
+// ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
+// button.js
+//   addBasicData                     -                    → properties
+//   verifyBasicData                  -                    → properties
+// └──────────────────────────────────────────────────────────────────┘
 import { commonWidgetSelector } from "Selectors/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 import { buttonText } from "Texts/button";
@@ -7,6 +12,17 @@ import {
   verifyAndModifyParameter,
   verifyWidgetColorCss,
 } from "Support/utils/commonWidget";
+
+/**
+ * MODULE — appBuilder/components/button: Button-widget test helpers built for the
+ * component-DUPLICATION happypath (apply a distinctive property/style surface, then
+ * assert it survived a clone).
+ * FOR AI: use addBasicData(data) to stamp a small set of edits onto button1 (Label +
+ * Tooltip properties, Background style), and verifyBasicData(widgetName, data) to assert
+ * the same edits carried onto a duplicated widget. Both open the inspector themselves.
+ * NOT here: generic property/style/event drivers → appBuilder/properties.js · styles.js ·
+ * events.js. Shared inspector navigation → commonWidget.js.
+ */
 
 // Duplication-tolerant tooltip verification.
 //
@@ -37,6 +53,11 @@ const verifyTooltipProperty = (widgetName, message) => {
 // style colour, one style numeric) instead of the old exhaustive
 // label + event + 3 colour pickers + box-shadow + control-component chain,
 // which was stale against the current 2-tab inspector.
+/**
+ * @tjBlock  properties
+ * @tjUsage  addBasicData({ widgetName: 'btnClone', tooltipText: 'hi', backgroundColor: ['255','0','0','100'] })
+ * @tjDom    Properties Label field + tooltip-input-field code editor, Styles background-picker swatch
+ */
 export const addBasicData = (data) => {
   // Properties tab — Label (text field) + Tooltip (label-less code field).
   openEditorSidebar(buttonText.defaultWidgetName);
@@ -70,6 +91,11 @@ export const addBasicData = (data) => {
   cy.waitForAutoSave();
 };
 
+/**
+ * @tjBlock  properties
+ * @tjUsage  verifyBasicData('btnClone', { widgetName: 'btnClone', tooltipText: 'hi', backgroundColor: ['255','0','0','100'] })
+ * @tjDom    on-canvas draggable widget text + clone's tooltip property field + background-color CSS
+ */
 export const verifyBasicData = (widgetName, data) => {
   // Label carried over.
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).verifyVisibleElement(
