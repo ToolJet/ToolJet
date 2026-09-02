@@ -26,7 +26,7 @@ None. Every ToolJet Cloud workspace has AI features enabled by default.
 There is no setup required:
 
 1. Sign in to your ToolJet Cloud workspace.
-2. Start using any [AI capability](/docs/build-with-ai/overview#ai-capabilities), for example, generating an application or fixing a component with AI.
+2. Start using any [AI capability](/docs/build-with-ai/use-ai-in-tooljet#ai-capabilities), for example, generating an application or fixing a component with AI.
 3. Usage is metered against your workspace's monthly and add-on AI credits. You can check consumption anytime under **Settings &rarr; Subscription**.
 
 ## Billing
