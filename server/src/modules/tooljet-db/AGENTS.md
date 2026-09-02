@@ -25,6 +25,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 | `services/tooljet-db-data-operations.service.ts` | Row-level actions (`list_rows`, `create_row`, `update_rows`, `delete_rows`). |
 | `services/tooljet-db-migration-recorder.service.ts` | Bookkeeping for the migration chain: `record`/`confirm`/`discard`/`adjudicatePending`. Wired into every one of the nine structured `perform()` ops (see invariant below); `view_table` calls `adjudicatePending` only. The `*Applications`/`confirm`/`discard`/`adjudicatePending` methods take an optional trailing `manager?` so a data migration can drive them on its own transaction's connection. |
 | `services/tooljet-db-environment-assignment.service.ts` | Rollout migration B's per-table routine: re-points a migration-A relation (`id === internal_table_id`) to the highest-priority environment and materializes an empty `LIKE`-cloned development twin. Every app-DB statement runs on a caller-supplied `appManager` (no `this.manager`) so migration B can share migration A's transaction; idempotent on the `id === internal_table_id` predicate. Also called by task 7 for a single repaired table. |
+| `services/tooljet-db-promote.service.ts` (CE stub, real logic in `server/ee/tooljet-db/services/`) | `POST .../table/:tableId/promote`: resolves source → next-highest-priority target environment, finds-or-creates the target relation, computes the missing migration set (`computeMissingMigrations`), and replays it via `applyMigrations`. CE throws `ForbiddenException`; the licence/permission gates live in EE. |
 | `helpers/table-schema-snapshot.ts` | Introspects a relation's current shape (columns, primary key, unique constraints, indexes, foreign keys). Used by the recorder and by the rollout migration's baseline synthesis - kept byte-identical between the two on purpose. |
 | `controller.ts` | `/proxy/*` (PostgREST passthrough) plus the DDL/DML REST endpoints. |
 
@@ -51,6 +52,12 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `resolveTable`/`resolveTableById` helpers on `TooljetDbTableOperationsService`) — never a logical id.
   A new call site that names a table by a logical id will fail immediately on any table created after
   the divergence landed, which is the point.
+- **That same equality doubles as migration B's idempotency discriminator.** `id === internal_table_id`
+  identifies "a relation migration A produced, still unclaimed" — a re-run's own inserts (fresh uuids)
+  and every relation `create_table` has ever minted never satisfy it, so filtering work by this
+  predicate rather than by `environment_id` makes a re-run a clean no-op instead of re-promoting a
+  relation B already moved. `TooljetDbEnvironmentAssignmentService.assignExistingTableToEnvironments`
+  is the one caller.
 - `configurations` (column metadata) lives on the relation row, not on `internal_tables`. It moved
   there because a workspace-global settings map has no way to represent "this column was configured
   differently per environment" — `drop_column` would have to guess which environment's copy to edit.
@@ -166,8 +173,11 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   the exact same nine `apply*` methods `perform()` calls, never a copy: a structured migration's
   stored `{action, request}` is reassembled into whatever shape that op's `apply*` expects by
   `replayStructuredMigration`, and a baseline migration's `{ddl, refs, column_uuids}` is executed
-  directly by `replayBaselineMigration`. It records and confirms exactly one migration against
-  `targetRelation` for the whole call, not one per replayed migration.
+  directly by `replayBaselineMigration`. It records one `internal_table_migration_application` row
+  per migration id being replayed — up front, before any DDL runs — then confirms all of them
+  together on success or discards all of them together on failure. Never mints a synthetic
+  "replay" migration of its own; every applied row points at a real migration that already exists
+  on the source relation's chain.
   - **No `uuidv4()` here either.** A column a migration minted the first time it ran is already
     sitting in that migration's own `resulting_schema` (confirm() wrote it there when it first
     applied) — replay reads it from there (the migration's own schema for a column it inserted,
@@ -179,22 +189,12 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
     confirm/discard during replay, same as they do in `perform()`.** Replay hands them a
     never-persisted stand-in `InternalTableMigration` (real `internalTableId`, random `id`) instead
     of its own real migration row, so their internal `confirm()`/`discard()` calls become harmless
-    no-op updates/deletes; the real DDL still runs exactly as it does on the live path, and
-    replay's own single migration is recorded/confirmed separately around the whole call. Known
+    no-op updates/deletes; the real DDL still runs exactly as it does on the live path, and the
+    real applications for the whole call are recorded/confirmed separately, up front. Known
     gap: this means a chain that mixes a foreign-key op with a later op that fails leaves that
     foreign key's DDL applied even though the whole `applyMigrations` call throws — full
     cross-op-type atomicity would need the FK three refactored onto the other six's shared-
     transaction shape, which is out of scope here (see the six-vs-three signature split above).
-  - **The replay migration itself has no `ADJUDICATION_PREDICATES` entry for the `'replay'`
-    action, so a crash between the target's DDL committing and `applyMigrations`'s own `confirm()`
-    call is always resolved as "never happened" and discarded** — unlike every other action, which
-    can tell the two cases apart by introspecting the live relation. In that narrow window the
-    target relation is left correctly replayed but with no migration/application row recording it,
-    so a retry would re-run DDL (e.g. `CREATE TABLE`) against a relation that already has it. Not
-    exercised by any test here since nothing calls `applyMigrations` from a real request path yet;
-    whichever later module wires replay to a real caller (promote) needs either a real predicate
-    (comparing the target's live snapshot to the last replayed migration's own `resulting_schema`)
-    or to accept and handle the retry-on-existing-relation failure mode.
   - `buildEditTableColumnDiff` is `normalizeEditTable`'s column-diff logic (insert/update/delete,
     every uuid) pulled out as a pure function so replay's `edit_table` case can reuse it unchanged
     — only `mintColumnUuid` differs (`uuidv4()` live, a `resulting_schema` read on replay).
@@ -226,20 +226,21 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
        discarded (`applyMigrations`'s own catch), and the next promote replays that FK op again and
        fails with "constraint already exists" — the same stuck state Critical #2 of the Task 4 round-1
        review describes for the crash-recovery path, but with no crash required.
-    2. No `ADJUDICATION_PREDICATES` entry for the `'replay'` action (see above) — a crash between
-       the target's DDL committing and `applyMigrations`'s own `confirm()` is always discarded as
-       "never happened", so a retry re-runs DDL against a relation that already has it.
-    3. Replay's `edit_column` case never calls `writeThroughColumnConfigurations` — that's a
+    2. Replay's `edit_column` case never calls `writeThroughColumnConfigurations` — that's a
        settings-only write with nothing to promote, and lives in the *handler* between `normalize`
        and `apply`, not in either. A promoted/replayed relation gets correct column *identity* but
        only whatever display-setting configuration was in place at replay time via the *inserting*
        migration, not every display-setting change ever recorded against the column.
-    4. `applyMigrations` requires `targetRelation` (and any FK sibling relations it references) to
+    3. `applyMigrations` requires `targetRelation` (and any FK sibling relations it references) to
        already be committed and visible to a fresh read — `record()`'s own transaction and
        `resolveSiblingByCoRelationId`'s lookup can't see a relation created inside the caller's
-       still-open transaction. The caller must create and commit the target relation before calling
-       replay, not do both in one transaction.
-    5. A replayed `serial` column's sequence always starts at 1 on the target — correct for a
+       still-open transaction. This is the two-phase recorder's requirement (`recordApplications`
+       needs a real relation id to insert against), not a design flaw: a crash between that commit
+       and `applyMigrations` running is self-healing, because `computeMissingMigrations`' set
+       difference against the target's confirmed applications sees the same "everything missing"
+       state either way — a retry (e.g. promote's own retry) replays the full chain again instead of
+       leaving the relation stuck half-created.
+    4. A replayed `serial` column's sequence always starts at 1 on the target — correct for a
        schema-only replay (nothing to seed it from), but a future replay that also copies rows
        would need to advance the target's sequence past whatever it inserts, or later inserts will
        collide with the copied ids.
