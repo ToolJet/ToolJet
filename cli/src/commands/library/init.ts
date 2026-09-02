@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import { Auth } from '../../lib/library/auth';
 import { ApiClient } from '../../lib/library/api-client';
 import { scaffoldTemplate, writeLibraryConfig } from '../../lib/library/scaffolder';
-import { formatError } from '../../lib/log';
+import { formatError, formatSuccess } from '../../lib/log';
 
 interface InitAnswers {
   display_name: string;
@@ -84,8 +84,6 @@ export default class ComponentInit extends Command {
 
     try {
       writeLibraryConfig(libraryDirectoryName, {
-        workspaceId,
-        libraryId: library.id,
         libraryName: library.name,
         correlationId: library.correlationId,
       });
@@ -93,7 +91,7 @@ export default class ComponentInit extends Command {
       this.log(
         formatError(
           `Library "${displayName}" (ID: ${
-            library.id
+            library.correlationId
           }) was registered on ${workspaceId}, but writing ./${libraryDirectoryName}/.tooljet/config.json failed: ${
             (err as Error).message
           }. The project directory is otherwise valid — retry writing the config manually or contact support.`
@@ -102,8 +100,12 @@ export default class ComponentInit extends Command {
       process.exit(1);
     }
 
-    this.log(`✓ Registered library "${displayName}" on ${workspaceId} workspace (ID: ${library.id})`);
-    this.log(`✓ Created project directory: ./${libraryDirectoryName}/`);
-    this.log(`✓ Run: cd ${libraryDirectoryName} && npm install`);
+    this.log(
+      `\n${formatSuccess(
+        `Registered library "${displayName}" on ${workspaceId} workspace (ID: ${library.correlationId})`
+      )}`
+    );
+    this.log(formatSuccess(`Created project directory: ./${libraryDirectoryName}/`));
+    this.log(`\n\x1b[1mRun: cd ${libraryDirectoryName} && npm install\x1b[0m\n`);
   }
 }
