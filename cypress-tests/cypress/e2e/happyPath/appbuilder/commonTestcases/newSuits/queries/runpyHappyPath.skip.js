@@ -27,7 +27,7 @@ import {
 import { openNode, verifyNodeData } from "Support/utils/appBuilder/inspector";
 import {
   addNewPage
-} from "Support/utils/multipage";
+} from "Support/utils/appBuilder/pages";
 
 describe("runpy", () => {
   beforeEach(() => {

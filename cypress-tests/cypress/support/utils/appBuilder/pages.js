@@ -1,5 +1,5 @@
 import { multipageSelector } from "Selectors/multipage";
-import { commonSelectors } from "../../constants/selectors/common";
+import { commonSelectors } from "../../../constants/selectors/common";
 
 // generateCypressDataCy: lowercases, non-alphanumerics -> '-', trims '-'
 // (frontend/src/modules/common/helpers/cypressHelpers.js)

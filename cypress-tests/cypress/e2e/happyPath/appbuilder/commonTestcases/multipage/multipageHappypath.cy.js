@@ -12,7 +12,7 @@ import {
   openPagesPanel,
   openPageEditor,
   pageHandleCy,
-} from "Support/utils/multipage";
+} from "Support/utils/appBuilder/pages";
 
 describe("Multipage", { testIsolation: false }, () => {
   beforeEach(() => {
