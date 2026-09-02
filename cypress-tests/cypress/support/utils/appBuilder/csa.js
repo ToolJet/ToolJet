@@ -1,5 +1,5 @@
 // ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
-// textInput.js
+// csa.js
 //   verifyControlComponentAction     -                    → csa
 //   randomString                     -                    → common
 //   verifyCSA                        csa                  → csa

@@ -27,12 +27,12 @@ import {
   verifyCustomWidthOfLabel,
   verifyInputFieldColors,
   verifyLabelStyleElements,
-} from "Support/utils/appBuilder/editor/inputFieldUtils";
+} from "Support/utils/appBuilder/components/inputField";
 import {
   addCSA,
   randomString,
   verifyCSA,
-} from "Support/utils/appBuilder/editor/textInput";
+} from "Support/utils/appBuilder/csa";
 import { commonWidgetText } from "Texts/common";
 import { textInputText } from "Texts/textInput";
 

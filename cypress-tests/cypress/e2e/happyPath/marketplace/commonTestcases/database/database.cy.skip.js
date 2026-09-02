@@ -24,7 +24,7 @@ import {
 } from "Support/utils/marketplace/tjdb/database";
 import { fake } from "Fixtures/fake";
 import { randomNumber } from "Support/utils/commonWidget";
-import { randomString } from "Support/utils/appBuilder/editor/textInput";
+import { randomString } from "Support/utils/appBuilder/csa";
 
 describe("Database Functionality", () => {
   const data = {};

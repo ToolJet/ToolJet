@@ -70,7 +70,7 @@
 | events | `addMultiEventsWithAlert` | appBuilder/events.js | events | `addMultiEventsWithAlert([{ event: 'On click', message: 'clicked' }])` |
 | - | `setCSAParam` | appBuilder/events.js | csa | `setCSAParam({ label: 'Column key', type: 'toggle', value: true })` |
 | csa | `configureCSA` | appBuilder/events.js | csa | `configureCSA('textinput1', 'Set text', [{ label: 'text', value: '{{"hi"}}' }])` |
-| - | `verifyControlComponentAction` | appBuilder/editor/textInput.js | csa | `verifyControlComponentAction('textinput1', 'hello')` |
-| - | `randomString` | appBuilder/editor/textInput.js | common | `randomString(8)` |
-| csa | `verifyCSA` | appBuilder/editor/textInput.js | csa | `verifyCSA('textinput1')` |
-| csa | `addCSA` | appBuilder/editor/textInput.js | csa | `addCSA('textinput1', [{ event: 'On click', action: 'Set text', value: 'hello' }])` |
+| - | `verifyControlComponentAction` | appBuilder/csa.js | csa | `verifyControlComponentAction('textinput1', 'hello')` |
+| - | `randomString` | appBuilder/csa.js | common | `randomString(8)` |
+| csa | `verifyCSA` | appBuilder/csa.js | csa | `verifyCSA('textinput1')` |
+| csa | `addCSA` | appBuilder/csa.js | csa | `addCSA('textinput1', [{ event: 'On click', action: 'Set text', value: 'hello' }])` |

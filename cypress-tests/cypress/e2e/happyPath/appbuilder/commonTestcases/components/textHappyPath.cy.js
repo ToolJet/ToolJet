@@ -18,7 +18,7 @@ import {
   selectCSA,
   selectEvent,
 } from "Support/utils/appBuilder/events";
-import { randomString } from "Support/utils/appBuilder/editor/textInput";
+import { randomString } from "Support/utils/appBuilder/csa";
 import { buttonText } from "Texts/button";
 
 // testIsolation:false — cypress-real-dnd caches its CDP client for the spec

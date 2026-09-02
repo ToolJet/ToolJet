@@ -3,7 +3,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { multipageSelector } from "Selectors/multipage";
 import {
     randomString
-} from "Support/utils/appBuilder/editor/textInput";
+} from "Support/utils/appBuilder/csa";
 
 import {
     addInputOnQueryField,

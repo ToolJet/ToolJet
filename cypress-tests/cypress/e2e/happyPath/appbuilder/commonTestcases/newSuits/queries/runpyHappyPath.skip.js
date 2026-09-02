@@ -6,7 +6,7 @@ import {
 } from "Support/utils/commonWidget";
 import {
   randomString
-} from "Support/utils/appBuilder/editor/textInput";
+} from "Support/utils/appBuilder/csa";
 import {
   selectEvent
 } from "Support/utils/appBuilder/events";

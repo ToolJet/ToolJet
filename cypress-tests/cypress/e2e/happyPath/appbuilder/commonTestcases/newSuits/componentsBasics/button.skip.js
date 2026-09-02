@@ -3,7 +3,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
     addCSA,
     verifyCSA
-} from "Support/utils/appBuilder/editor/textInput";
+} from "Support/utils/appBuilder/csa";
 import { addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/appBuilder/inspector";
 
